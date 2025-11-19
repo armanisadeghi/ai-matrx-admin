@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -183,12 +184,14 @@ export function VariableEditor({
             {/* Default Value */}
             <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Default Value</Label>
-                <Input
-                    type="text"
+                <Textarea
                     placeholder="Optional"
                     value={defaultValue}
                     onChange={(e) => onDefaultValueChange?.(e.target.value)}
                     disabled={readonly}
+                    autoGrow={true}
+                    minHeight={80}
+                    maxHeight={300}
                 />
             </div>
 

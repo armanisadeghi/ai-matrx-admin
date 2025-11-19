@@ -13,6 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
+import IconInputWithValidation from '@/components/official/IconInputWithValidation';
+import { DynamicIcon } from '@/components/official/IconResolver';
 import {
   Plus,
   Trash2,
@@ -601,7 +603,12 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               </>
             ) : (
               <>
-                <Folder className="w-3.5 h-3.5 flex-shrink-0" style={{ color: node.color || '#666' }} />
+                <DynamicIcon 
+                  name={node.icon_name || 'Folder'} 
+                  color={node.color || 'zinc'}
+                  size={3.5}
+                  className="flex-shrink-0" 
+                />
                 <span className="text-xs font-medium truncate">{node.label}</span>
                 {!node.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
               </>
@@ -939,13 +946,13 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
                         <div className="grid grid-cols-3 gap-4">
                           <div>
-                            <Label>Icon Name</Label>
-                            <Input
+                            <Label htmlFor="shortcut-icon-input">Icon Name</Label>
+                            <IconInputWithValidation
+                              id="shortcut-icon-input"
                               value={editShortcutData.icon_name || ''}
-                              onChange={(e) => handleShortcutChange('icon_name', e.target.value)}
-                              placeholder="Zap"
+                              onChange={(value) => handleShortcutChange('icon_name', value)}
+                              placeholder="e.g., Zap"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Lucide icon name</p>
                           </div>
                           <div>
                             <Label>Category</Label>
@@ -1468,11 +1475,12 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                 <p className="text-xs text-gray-500 mt-1">Use prefix dropdown or type full shortcut</p>
               </div>
               <div>
-                <Label>Icon Name</Label>
-                <Input
+                <Label htmlFor="create-shortcut-icon">Icon Name</Label>
+                <IconInputWithValidation
+                  id="create-shortcut-icon"
                   value={createShortcutData.icon_name || ''}
-                  onChange={(e) => setCreateShortcutData({ ...createShortcutData, icon_name: e.target.value })}
-                  placeholder="Zap (optional)"
+                  onChange={(value) => setCreateShortcutData({ ...createShortcutData, icon_name: value })}
+                  placeholder="e.g., Zap (optional)"
                 />
               </div>
             </div>

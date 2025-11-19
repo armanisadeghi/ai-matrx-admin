@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Sparkles } from "lucide-react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,9 @@ import { PromptEditorContextMenu } from "./PromptEditorContextMenu";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { ModelSettings } from "./configuration/ModelSettings";
 import { VariableEditor } from "./configuration/VariableEditor";
+import { VariableValidationPanel } from "./configuration/VariableValidationPanel";
 import { sanitizeVariableName } from "@/features/prompts/utils/variable-utils";
+import { validateVariables } from "@/features/prompts/utils/variable-validator";
 import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from "@/features/prompts/types/core";
@@ -90,12 +92,17 @@ export function FullScreenEditor({
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
     const [selectedVariableIndex, setSelectedVariableIndex] = useState<number | null>(null);
     const [isAddingVariable, setIsAddingVariable] = useState(false);
-    const [viewMode, setViewMode] = useState<"view" | "edit" | "pretty">("edit");
+    const [viewMode, setViewMode] = useState<"view" | "edit" | "pretty">("view");
 
     // State for variable being edited/added
     const [editingVariableName, setEditingVariableName] = useState("");
     const [editingVariableDefaultValue, setEditingVariableDefaultValue] = useState("");
     const [editingVariableCustomComponent, setEditingVariableCustomComponent] = useState<VariableCustomComponent | undefined>();
+
+    // Calculate variable validation
+    const variableValidation = useMemo(() => {
+        return validateVariables(messages, developerMessage, variableDefaults);
+    }, [messages, developerMessage, variableDefaults]);
 
     // Update selected item when initialSelection changes
     useEffect(() => {
@@ -106,6 +113,20 @@ export function FullScreenEditor({
             setSelectedItem({ type: "system", index: -1 });
         }
     }, [isOpen, initialSelection]);
+
+    // Reset to view mode when switching between messages
+    useEffect(() => {
+        if (selectedItem.type === "system" || selectedItem.type === "message") {
+            setViewMode("view");
+        }
+    }, [selectedItem]);
+
+    // Auto-focus textarea when switching to edit mode
+    useEffect(() => {
+        if (viewMode === "edit" && textareaRef.current) {
+            textareaRef.current.focus();
+        }
+    }, [viewMode]);
 
     // Sync editing state when selecting a variable
     useEffect(() => {
@@ -209,7 +230,6 @@ export function FullScreenEditor({
                                     </Button>
                                 </div>
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Select a message to edit</p>
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -490,12 +510,14 @@ export function FullScreenEditor({
                                                             : "Enter message content..."
                                                     }
                                                     className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
-                                                    autoFocus
                                                 />
                                             </PromptEditorContextMenu>
                                         )}
                                         {viewMode === "view" && (
-                                            <div className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 overflow-y-auto">
+                                            <div 
+                                                className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 overflow-y-auto cursor-text"
+                                                onClick={() => setViewMode("edit")}
+                                            >
                                                 <div className="whitespace-pre-wrap">
                                                     {getCurrentContent() ? (
                                                         <HighlightedText
@@ -531,8 +553,8 @@ export function FullScreenEditor({
 
                             {selectedItem.type === "settings" && model && models && modelConfig && onModelConfigChange && onModelChange && (
                                 <div className="absolute inset-2 overflow-hidden">
-                                    <div className="h-full overflow-y-auto bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4">
-                                        <div className="space-y-4">
+                                    <div className="h-full overflow-y-auto bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-6">
+                                        <div className="max-w-2xl space-y-4">
                                             {/* Model Selection */}
                                             <div className="pb-3 border-b border-gray-200 dark:border-gray-800">
                                                 <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
@@ -576,8 +598,8 @@ export function FullScreenEditor({
                                 <div className="absolute inset-2 overflow-hidden flex">
                                     <div className="flex-1 overflow-hidden flex">
                                         {/* Variables List */}
-                                        <div className="w-72 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-4 overflow-y-auto">
-                                            <div className="flex items-center justify-between mb-4">
+                                        <div className="w-72 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-2 overflow-y-auto">
+                                            <div className="flex items-center justify-between mb-3">
                                                 <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                     Variables ({variableDefaults.length})
                                                 </Label>
@@ -593,6 +615,50 @@ export function FullScreenEditor({
                                                     <Plus className="w-3.5 h-3.5 mr-1" />
                                                     Add
                                                 </Button>
+                                            </div>
+
+                                            {/* Validation Summary */}
+                                            <div className={`mb-3 p-2 rounded-lg border ${
+                                                variableValidation.hasIssues
+                                                    ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+                                                    : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                                            }`}>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    {variableValidation.hasIssues ? (
+                                                        <AlertTriangle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
+                                                    ) : (
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                                                    )}
+                                                    <span className={`text-xs font-medium ${
+                                                        variableValidation.hasIssues
+                                                            ? "text-yellow-800 dark:text-yellow-300"
+                                                            : "text-green-800 dark:text-green-300"
+                                                    }`}>
+                                                        {variableValidation.hasIssues ? "Issues Found" : "All Valid"}
+                                                    </span>
+                                                </div>
+                                                <div className={`text-[10px] space-y-0.5 ${
+                                                    variableValidation.hasIssues
+                                                        ? "text-yellow-700 dark:text-yellow-400"
+                                                        : "text-green-700 dark:text-green-400"
+                                                }`}>
+                                                    <div className="flex justify-between">
+                                                        <span>Used:</span>
+                                                        <span className="font-medium">{variableValidation.usedVariables.length}</span>
+                                                    </div>
+                                                    {variableValidation.undefinedVariables.length > 0 && (
+                                                        <div className="flex justify-between">
+                                                            <span>Undefined:</span>
+                                                            <span className="font-medium">{variableValidation.undefinedVariables.length}</span>
+                                                        </div>
+                                                    )}
+                                                    {variableValidation.unusedVariables.length > 0 && (
+                                                        <div className="flex justify-between">
+                                                            <span>Unused:</span>
+                                                            <span className="font-medium">{variableValidation.unusedVariables.length}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {variableDefaults.length === 0 && !isAddingVariable && (
@@ -618,14 +684,19 @@ export function FullScreenEditor({
                                                     >
                                                         <div className="flex items-start justify-between gap-2">
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="font-mono text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                                <div className="flex items-baseline gap-2">
+                                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                        {formatText(variable.name)}
+                                                                    </p>
+                                                                    {variable.customComponent && (
+                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium">
+                                                                            {variable.customComponent.type}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <p className="font-mono text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                                                     {variable.name}
                                                                 </p>
-                                                                {variable.customComponent && (
-                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                                        {variable.customComponent.type}
-                                                                    </p>
-                                                                )}
                                                             </div>
                                                             <button
                                                                 onClick={(e) => {
@@ -648,8 +719,24 @@ export function FullScreenEditor({
 
                                         {/* Variable Editor */}
                                         <div className="flex-1 overflow-y-auto bg-textured p-6">
+                                            <div className="max-w-2xl">
+                                            {/* Validation Details Panel - Always show at top */}
+                                            <div className="mb-6">
+                                                <VariableValidationPanel 
+                                                    validation={variableValidation}
+                                                    onAddVariable={(name) => {
+                                                        // Add the variable with empty default value
+                                                        onAddVariable(name, "", undefined);
+                                                        // Switch to adding mode for that variable
+                                                        const newIndex = variableDefaults.length;
+                                                        setSelectedVariableIndex(newIndex);
+                                                        setIsAddingVariable(false);
+                                                    }}
+                                                />
+                                            </div>
+
                                             {isAddingVariable ? (
-                                                <div className="max-w-2xl mx-auto">
+                                                <div>
                                                     <div className="mb-6">
                                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                                             Add Variable
@@ -698,7 +785,7 @@ export function FullScreenEditor({
                                                     </div>
                                                 </div>
                                             ) : selectedVariableIndex !== null && variableDefaults[selectedVariableIndex] ? (
-                                                <div className="max-w-2xl mx-auto">
+                                                <div>
                                                     <div className="mb-6">
                                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                                             Edit Variable
@@ -737,11 +824,14 @@ export function FullScreenEditor({
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="max-w-2xl mx-auto text-center text-gray-500 dark:text-gray-400 py-20">
-                                                    <Variable className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                                                    <p className="text-sm">Select a variable to edit or click Add to create a new one</p>
+                                                <div className="flex items-center justify-center h-full text-center text-gray-500 dark:text-gray-400">
+                                                    <div>
+                                                        <Variable className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                                                        <p className="text-sm">Select a variable to edit or click Add to create a new one</p>
+                                                    </div>
                                                 </div>
                                             )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -820,7 +910,7 @@ export function FullScreenEditor({
 
                                         {/* Available Tools */}
                                         <div className="flex-1 overflow-y-auto bg-textured p-6">
-                                            <div className="max-w-2xl mx-auto h-full flex flex-col">
+                                            <div className="max-w-2xl h-full flex flex-col">
                                                 <div className="mb-6 flex-shrink-0">
                                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                                         Available Tools

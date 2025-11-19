@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
+import IconInputWithValidation from '@/components/official/IconInputWithValidation';
 import {
     Plus,
     Trash2,
@@ -1124,11 +1125,13 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="flex-1">
-                                                <Label className="text-xs">Icon</Label>
-                                                <Input
-                                                    placeholder="Icon name (e.g., Folder)"
+                                                <Label htmlFor="quick-category-icon" className="text-xs">Icon</Label>
+                                                <IconInputWithValidation
+                                                    id="quick-category-icon"
+                                                    placeholder="e.g., Folder"
                                                     value={quickCategoryData.icon_name}
-                                                    onChange={(e) => setQuickCategoryData({ ...quickCategoryData, icon_name: e.target.value })}
+                                                    onChange={(value) => setQuickCategoryData({ ...quickCategoryData, icon_name: value })}
+                                                    showLucideLink={false}
                                                 />
                                             </div>
                                             <div className="flex-1">
@@ -1190,18 +1193,19 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                 placeholder="Label"
                                                                 className="flex-1"
                                                             />
-                                                            <Input
+                                                            <IconInputWithValidation
                                                                 value={category.icon_name}
-                                                                onChange={(e) => {
+                                                                onChange={(value) => {
                                                                     const updatedCategories = categories.map(c =>
                                                                         c.id === category.id
-                                                                            ? { ...c, icon_name: e.target.value }
+                                                                            ? { ...c, icon_name: value }
                                                                             : c
                                                                     );
                                                                     setCategories(updatedCategories);
                                                                 }}
                                                                 placeholder="Icon"
                                                                 className="w-32"
+                                                                showLucideLink={false}
                                                             />
                                                             <Input
                                                                 type="color"
@@ -1307,16 +1311,16 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                         placeholder="Label"
                                                                         className="text-sm flex-1"
                                                                     />
-                                                                    <Input
+                                                                    <IconInputWithValidation
                                                                         value={childCat.icon_name}
-                                                                        onChange={(e) => {
+                                                                        onChange={(value) => {
                                                                             const updatedCategories = categories.map(c =>
                                                                                 c.id === category.id
                                                                                     ? {
                                                                                         ...c,
                                                                                         children: c.children?.map(ch =>
                                                                                             ch.id === childCat.id
-                                                                                                ? { ...ch, icon_name: e.target.value }
+                                                                                                ? { ...ch, icon_name: value }
                                                                                                 : ch
                                                                                         ) || []
                                                                                     }
@@ -1326,6 +1330,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                         }}
                                                                         placeholder="Icon"
                                                                         className="text-sm w-32"
+                                                                        showLucideLink={false}
                                                                     />
                                                                     <Button
                                                                         size="sm"

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Plus, Edit2 } from 'lucide-react';
+import IconInputWithValidation from '@/components/official/IconInputWithValidation';
 import {
   ShortcutCategory,
   PromptBuiltin,
@@ -106,11 +107,12 @@ export function PromptBuiltinEditPanel({
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label>Icon Name</Label>
-                <Input
+                <Label htmlFor="category-icon-edit">Icon Name</Label>
+                <IconInputWithValidation
+                  id="category-icon-edit"
                   value={editCategoryData.icon_name || ''}
-                  onChange={(e) => onCategoryChange('icon_name', e.target.value)}
-                  placeholder="Folder"
+                  onChange={(value) => onCategoryChange('icon_name', value)}
+                  placeholder="e.g., Folder"
                 />
               </div>
               <div>
@@ -232,13 +234,13 @@ export function PromptBuiltinEditPanel({
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label>Icon Name</Label>
-                <Input
+                <Label htmlFor="shortcut-icon-edit">Icon Name</Label>
+                <IconInputWithValidation
+                  id="shortcut-icon-edit"
                   value={editShortcutData.icon_name || ''}
-                  onChange={(e) => onShortcutChange('icon_name', e.target.value)}
-                  placeholder="Zap"
+                  onChange={(value) => onShortcutChange('icon_name', value)}
+                  placeholder="e.g., Zap"
                 />
-                <p className="text-xs text-gray-500 mt-1">Lucide icon name</p>
               </div>
               <div>
                 <Label>Category</Label>

@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
+import IconInputWithValidation from "@/components/official/IconInputWithValidation";
 import * as LucideIcons from "lucide-react";
 import {
   SchemaField,
@@ -280,23 +281,11 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Icon Name</label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={field.ICON_NAME}
-                            onChange={(e) => updateField(index, { ICON_NAME: e.target.value })}
-                            className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
-                            placeholder="Must be a valid Lucide icon name"
-                          />
-                          <button
-                            onClick={() => checkIcon(index)}
-                            className="mt-1 px-2 py-1 rounded text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                            disabled={!field.ICON_NAME}
-                          >
-                            Test
-                          </button>
-                        </div>
-                        {getIconMessage(index)}
+                        <IconInputWithValidation
+                          value={field.ICON_NAME}
+                          onChange={(value) => updateField(index, { ICON_NAME: value })}
+                          placeholder="e.g., Sparkles"
+                        />
                         {iconValidation[index] === true && field.ICON_NAME && (
                           <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded flex justify-center items-center">
                             {React.createElement((LucideIcons as any)[field.ICON_NAME], {

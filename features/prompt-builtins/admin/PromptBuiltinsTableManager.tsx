@@ -69,7 +69,7 @@ import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { LinkBuiltinToShortcutModal } from '../components/LinkBuiltinToShortcutModal';
 import { ScopeMappingEditor } from '../components/ScopeMappingEditor';
 import { getUserFriendlyError } from '../utils/error-handler';
-import { UniversalPromptEditor, normalizePromptData, UniversalPromptData } from '@/features/prompts/components/universal-editor';
+import { BuiltinEditor } from '@/features/prompts/components/universal-editor';
 import { updatePromptShortcut } from '../services/admin-service';
 import type { ScopeMapping } from '../types/core';
 
@@ -364,38 +364,9 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
     }
   };
 
-  const handleUpdateBuiltin = async (updated: UniversalPromptData) => {
-    try {
-      const response = await fetch(`/api/admin/prompt-builtins/${updated.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: updated.name,
-          description: updated.description,
-          messages: updated.messages,
-          variable_defaults: updated.variable_defaults,
-          settings: updated.settings,
-          is_active: updated.is_active,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update builtin');
-      }
-
-      toast({ title: 'Success', description: 'Prompt builtin updated successfully' });
-      setEditingBuiltinId(null);
-      await loadData();
-    } catch (error: any) {
-      const errorMessage = getUserFriendlyError(error);
-      toast({
-        title: 'Failed to Update Builtin',
-        description: errorMessage,
-        variant: 'destructive'
-      });
-      throw error;
-    }
+  const handleBuiltinSaved = async () => {
+    setEditingBuiltinId(null);
+    await loadData();
   };
 
   const handleDelete = async (builtinId: string, builtinName: string) => {
@@ -895,26 +866,24 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
           const builtin = builtins.find(b => b.id === editingBuiltinId);
           if (!builtin) return null;
 
-          // Convert builtin to universal format
-          const promptData = normalizePromptData({
-            id: builtin.id,
-            name: builtin.name,
-            description: builtin.description,
-            messages: builtin.messages,
-            variable_defaults: builtin.variableDefaults,
-            settings: builtin.settings,
-            is_active: builtin.is_active,
-            source_prompt_id: builtin.source_prompt_id,
-          }, 'builtin');
-
           return (
-            <UniversalPromptEditor
+            <BuiltinEditor
+              builtinId={editingBuiltinId}
               isOpen={true}
               onClose={() => setEditingBuiltinId(null)}
-              promptData={promptData}
+              onSaveSuccess={handleBuiltinSaved}
+              builtinData={{
+                id: builtin.id,
+                name: builtin.name,
+                description: builtin.description,
+                messages: builtin.messages,
+                variable_defaults: builtin.variableDefaults,
+                settings: builtin.settings,
+                is_active: builtin.is_active,
+                source_prompt_id: builtin.source_prompt_id,
+              }}
               models={models}
-              availableTools={availableTools}
-              onSave={handleUpdateBuiltin}
+              tools={availableTools}
             />
           );
         })()}

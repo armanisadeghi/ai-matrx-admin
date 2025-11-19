@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import IconInputWithValidation from "@/components/official/IconInputWithValidation";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -618,11 +619,11 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <Label htmlFor="icon">Icon Name</Label>
-                            <Input
+                            <IconInputWithValidation
                                 id="icon"
                                 value={editedTool.icon || ''}
-                                onChange={(e) => handleFieldChange('icon', e.target.value)}
-                                placeholder="e.g., Search, Database"
+                                onChange={(value) => handleFieldChange('icon', value)}
+                                placeholder="e.g., Search"
                             />
                         </div>
                         <div>

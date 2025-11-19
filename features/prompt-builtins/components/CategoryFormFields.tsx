@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Folder, AlertCircle } from 'lucide-react';
+import IconInputWithValidation from '@/components/official/IconInputWithValidation';
 import { ShortcutCategory, CreateShortcutCategoryInput, UpdateShortcutCategoryInput } from '../types';
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
 import { CategorySelector } from './CategorySelector';
@@ -175,15 +176,16 @@ export function CategoryFormFields({
       {/* Icon, Color, Sort Order - Visual & Ordering */}
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <Label className="text-xs font-medium">Icon Name</Label>
-          <Input
+          <Label htmlFor="icon-name-input" className="text-xs font-medium">Icon Name</Label>
+          <IconInputWithValidation
+            id="icon-name-input"
             value={formData.icon_name}
-            onChange={(e) => handleChange('icon_name', e.target.value)}
-            placeholder="Folder"
+            onChange={(value) => handleChange('icon_name', value)}
+            placeholder="e.g., Folder"
             disabled={disabled}
             className="h-8 text-sm"
+            showLucideLink={true}
           />
-          <p className="text-xs text-muted-foreground mt-0.5">Lucide icon</p>
         </div>
         <div>
           <Label className="text-xs font-medium">Color</Label>

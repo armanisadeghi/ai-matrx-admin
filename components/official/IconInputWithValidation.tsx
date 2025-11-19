@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Check, X, ExternalLink } from "lucide-react";
@@ -59,11 +59,12 @@ export default function IconInputWithValidation({
 }: IconInputWithValidationProps) {
   const [validationState, setValidationState] = useState<ValidationState>("idle");
   const [validatedIconName, setValidatedIconName] = useState<string | null>(null);
+  const [lastValidatedValue, setLastValidatedValue] = useState<string>("");
 
   /**
    * Validates an icon name by attempting to load it dynamically
    */
-  const validateIcon = async (iconName: string) => {
+  const validateIcon = useCallback(async (iconName: string) => {
     if (!iconName || iconName.trim() === "") {
       setValidationState("idle");
       setValidatedIconName(null);
@@ -95,6 +96,7 @@ export default function IconInputWithValidation({
     if (isValid) {
       setValidationState("valid");
       setValidatedIconName(iconName);
+      setLastValidatedValue(iconName);
       return;
     }
 
@@ -106,6 +108,7 @@ export default function IconInputWithValidation({
       if (isCapitalizedValid) {
         setValidationState("valid");
         setValidatedIconName(capitalized);
+        setLastValidatedValue(capitalized);
         // Auto-update the value with capitalized version
         onChange(capitalized);
         return;
@@ -115,7 +118,21 @@ export default function IconInputWithValidation({
     // Icon not found
     setValidationState("invalid");
     setValidatedIconName(null);
-  };
+    setLastValidatedValue(iconName);
+  }, [onChange]);
+
+  // Auto-validate when value changes externally (e.g., form load)
+  useEffect(() => {
+    // Only validate if value has changed and hasn't been validated yet
+    if (value && value.trim() !== "" && value !== lastValidatedValue) {
+      validateIcon(value);
+    } else if (!value || value.trim() === "") {
+      // Reset validation state if value is cleared
+      setValidationState("idle");
+      setValidatedIconName(null);
+      setLastValidatedValue("");
+    }
+  }, [value, lastValidatedValue, validateIcon]);
 
   const handleValidateClick = () => {
     validateIcon(value);

@@ -377,6 +377,7 @@ interface IconResolverProps {
     className?: string;
     size?: number;
     fallbackIcon?: string;
+    style?: React.CSSProperties;
 }
 
 /**
@@ -388,7 +389,8 @@ const IconResolver: React.FC<IconResolverProps> = ({
     iconName, 
     className = "h-4 w-4", 
     size,
-    fallbackIcon = "Zap" 
+    fallbackIcon = "Zap",
+    style
 }) => {
     const [DynamicIcon, setDynamicIcon] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -448,10 +450,10 @@ const IconResolver: React.FC<IconResolverProps> = ({
     // Show fallback while loading dynamic icons (seamless experience)
     if (isLoading && !DynamicIcon) {
         const FallbackIcon = staticLucideIconMap[fallbackIcon] || Zap;
-        return <FallbackIcon className={className} size={size} />;
+        return <FallbackIcon className={className} size={size} style={style} />;
     }
 
-    return <IconComponent className={className} size={size} />;
+    return <IconComponent className={className} size={size} style={style} />;
 };
 
 export default IconResolver;
@@ -486,8 +488,18 @@ export const getIconComponent = (iconName: string | null, fallbackIcon: string =
 };
 
 
+/**
+ * Utility to detect if a string is a hex color code
+ */
+export const isHexColor = (color: string): boolean => {
+    return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
+};
+
 export const getTextColorClass = (color?: string) => {
     if (!color) return "text-gray-600 dark:text-gray-400";
+    
+    // If it's a hex color, return null (we'll use inline styles instead)
+    if (isHexColor(color)) return null;
     
     const colorMap: Record<string, string> = {
         gray: "text-gray-600 dark:text-gray-400",
@@ -531,6 +543,8 @@ export const getIconWithColorAndSize = (iconName: string | null, color: string =
 /**
  * Simple Icon component for direct usage with color and size support
  * Uses IconResolver internally to support both static and dynamic icons
+ * 
+ * Supports both Tailwind color names (e.g., "blue", "red", "zinc") and hex colors (e.g., "#ff0000", "#666")
  */
 interface IconProps {
     name: string | null;
@@ -547,11 +561,28 @@ export const DynamicIcon: React.FC<IconProps> = ({
     className,
     fallbackIcon = "Zap"
 }) => {
-    const colorClass = getTextColorClass(color);
+    const isHex = color && isHexColor(color);
+    const colorClass = isHex ? null : getTextColorClass(color);
     const sizeClass = `h-${size} w-${size}`;
-    const combinedClassName = `${sizeClass} ${colorClass} ${className || ""}`.trim();
     
-    return <IconResolver iconName={name} className={combinedClassName} fallbackIcon={fallbackIcon} />;
+    // Build className: always include size, include colorClass if not hex, include custom className
+    const combinedClassName = [
+        sizeClass,
+        !isHex && colorClass,
+        className
+    ].filter(Boolean).join(" ").trim();
+    
+    // If hex color, apply as inline style
+    const style = isHex ? { color } : undefined;
+    
+    return (
+        <IconResolver 
+            iconName={name} 
+            className={combinedClassName} 
+            fallbackIcon={fallbackIcon}
+            style={style}
+        />
+    );
 };
 
 

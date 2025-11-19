@@ -147,11 +147,6 @@ export function CategoryFormModal({
           <DialogTitle className="text-lg">
             {isEditMode ? 'Edit Category' : 'Create New Category'}
           </DialogTitle>
-          <DialogDescription className="text-sm">
-            {isEditMode 
-              ? 'Modify category properties and organization' 
-              : 'Create a new category for organizing prompt shortcuts'}
-          </DialogDescription>
         </DialogHeader>
 
         <div className="py-3">
