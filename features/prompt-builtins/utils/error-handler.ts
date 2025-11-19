@@ -68,6 +68,7 @@ export function formatSupabaseError(error: PostgrestError | any): SupabaseErrorD
 export function logDetailedError(context: string, error: any) {
   // Simple error logging for production
   if (process.env.NODE_ENV === 'development') {
+    console.log('Error in ', context, ':', error);
     console.error(`Error in ${context}:`, error);
   }
 }

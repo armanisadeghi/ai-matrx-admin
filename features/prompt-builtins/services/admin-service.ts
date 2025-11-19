@@ -12,6 +12,7 @@ import {
   UpdatePromptShortcutInput,
   PromptExecutionData,
 } from '../types/core';
+import { ContentBlockDB, UpdateContentBlockInput } from '@/types/content-blocks-db';
 import { logDetailedError } from '../utils/error-handler';
 
 // Helper to get the right client based on context
@@ -149,8 +150,88 @@ export async function updateShortcutCategory(input: UpdateShortcutCategoryInput)
   return data as ShortcutCategory;
 }
 
+/**
+ * Check if a category has dependent records that would prevent deletion
+ * Returns information about blocking dependencies
+ */
+export async function checkCategoryDependencies(categoryId: string): Promise<{
+  canDelete: boolean;
+  dependencies: {
+    contentBlocks: number;
+    promptShortcuts: number;
+    childCategories: number;
+  };
+}> {
+  const supabase = getClient();
+
+  // Check for content blocks using this category
+  const { count: contentBlocksCount, error: cbError } = await supabase
+    .from('content_blocks')
+    .select('id', { count: 'exact', head: true })
+    .eq('category_id', categoryId);
+
+  if (cbError) {
+    logDetailedError('checkCategoryDependencies - content_blocks', cbError);
+    throw new Error(`Failed to check content blocks: ${cbError.message}`);
+  }
+
+  // Check for prompt shortcuts using this category
+  const { count: shortcutsCount, error: psError } = await supabase
+    .from('prompt_shortcuts')
+    .select('id', { count: 'exact', head: true })
+    .eq('category_id', categoryId);
+
+  if (psError) {
+    logDetailedError('checkCategoryDependencies - prompt_shortcuts', psError);
+    throw new Error(`Failed to check prompt shortcuts: ${psError.message}`);
+  }
+
+  // Check for child categories
+  const { count: childrenCount, error: childError } = await supabase
+    .from('shortcut_categories')
+    .select('id', { count: 'exact', head: true })
+    .eq('parent_category_id', categoryId);
+
+  if (childError) {
+    logDetailedError('checkCategoryDependencies - child_categories', childError);
+    throw new Error(`Failed to check child categories: ${childError.message}`);
+  }
+
+  const dependencies = {
+    contentBlocks: contentBlocksCount || 0,
+    promptShortcuts: shortcutsCount || 0,
+    childCategories: childrenCount || 0,
+  };
+
+  const canDelete = Object.values(dependencies).every(count => count === 0);
+
+  return { canDelete, dependencies };
+}
+
 export async function deleteShortcutCategory(id: string): Promise<void> {
   const supabase = getClient();
+  
+  // Check dependencies first
+  const { canDelete, dependencies } = await checkCategoryDependencies(id);
+  
+  if (!canDelete) {
+    const blockingItems: string[] = [];
+    if (dependencies.contentBlocks > 0) {
+      blockingItems.push(`${dependencies.contentBlocks} content block${dependencies.contentBlocks > 1 ? 's' : ''}`);
+    }
+    if (dependencies.promptShortcuts > 0) {
+      blockingItems.push(`${dependencies.promptShortcuts} prompt shortcut${dependencies.promptShortcuts > 1 ? 's' : ''}`);
+    }
+    if (dependencies.childCategories > 0) {
+      blockingItems.push(`${dependencies.childCategories} child categor${dependencies.childCategories > 1 ? 'ies' : 'y'}`);
+    }
+    
+    throw new Error(
+      `Cannot delete category because it is being used by: ${blockingItems.join(', ')}. ` +
+      `Please reassign or remove these items first.`
+    );
+  }
+  
   const { error } = await supabase
     .from('shortcut_categories')
     .delete()
@@ -622,5 +703,151 @@ export async function fetchCategoriesWithShortcutCounts(placementType?: string):
     ...category,
     shortcut_count: countMap.get(category.id) || 0,
   }));
+}
+
+// ============================================================================
+// Content Blocks
+// ============================================================================
+
+/**
+ * Fetch content blocks with optional filters
+ */
+export async function fetchContentBlocks(filters?: {
+  category_id?: string;
+  is_active?: boolean;
+}): Promise<ContentBlockDB[]> {
+  const supabase = getClient();
+  let query = supabase
+    .from('content_blocks')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (filters?.category_id) {
+    query = query.eq('category_id', filters.category_id);
+  }
+  if (filters?.is_active !== undefined) {
+    query = query.eq('is_active', filters.is_active);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    logDetailedError('fetchContentBlocks', error);
+    throw new Error(`Failed to fetch content blocks: ${error.message || 'Unknown error'}`);
+  }
+
+  return data as ContentBlockDB[];
+}
+
+/**
+ * Get a single content block by ID
+ */
+export async function getContentBlockById(id: string): Promise<ContentBlockDB | null> {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from('content_blocks')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+
+  return data as ContentBlockDB;
+}
+
+/**
+ * Update an existing content block
+ */
+export async function updateContentBlock(input: UpdateContentBlockInput): Promise<ContentBlockDB> {
+  const supabase = getClient();
+  
+  const { id, ...updates } = input;
+  
+  const { data, error } = await supabase
+    .from('content_blocks')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    logDetailedError('updateContentBlock', error);
+    throw new Error(`Failed to update content block: ${error.message || 'Unknown error'}`);
+  }
+
+  return data as ContentBlockDB;
+}
+
+/**
+ * Delete a content block
+ */
+export async function deleteContentBlock(id: string): Promise<void> {
+  const supabase = getClient();
+  
+  const { error } = await supabase
+    .from('content_blocks')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    logDetailedError('deleteContentBlock', error);
+    throw new Error(`Failed to delete content block: ${error.message || 'Unknown error'}`);
+  }
+}
+
+// ============================================================================
+// Unified Category Items (Shortcuts + Content Blocks)
+// ============================================================================
+
+export type CategoryItem = 
+  | (PromptShortcut & { item_type: 'shortcut'; category?: ShortcutCategory; builtin?: PromptBuiltin })
+  | (ContentBlockDB & { item_type: 'content_block'; category?: ShortcutCategory });
+
+/**
+ * Fetch all items (shortcuts and content blocks) with their relations
+ * This provides a unified view for the admin UI
+ */
+export async function fetchCategoryItemsWithRelations(filters?: {
+  category_id?: string;
+  is_active?: boolean;
+}): Promise<CategoryItem[]> {
+  // Fetch shortcuts and content blocks in parallel
+  const [shortcuts, contentBlocks] = await Promise.all([
+    fetchShortcutsWithRelations(filters),
+    fetchContentBlocks(filters),
+  ]);
+
+  // Transform shortcuts to include item_type
+  const shortcutItems: CategoryItem[] = shortcuts.map(s => ({
+    ...s,
+    item_type: 'shortcut' as const,
+  }));
+
+  // Fetch categories for content blocks if needed
+  const supabase = getClient();
+  const categoryIds = [...new Set(contentBlocks.map(cb => cb.category_id).filter(Boolean) as string[])];
+  const { data: categories } = categoryIds.length > 0 
+    ? await supabase.from('shortcut_categories').select('*').in('id', categoryIds)
+    : { data: [] };
+
+  const categoryMap = new Map((categories || []).map(c => [c.id, c]));
+
+  // Transform content blocks to include item_type and category
+  const contentBlockItems: CategoryItem[] = contentBlocks.map(cb => ({
+    ...cb,
+    item_type: 'content_block' as const,
+    category: cb.category_id ? categoryMap.get(cb.category_id) || undefined : undefined,
+  }));
+
+  // Combine and sort by category and sort_order
+  return [...shortcutItems, ...contentBlockItems].sort((a, b) => {
+    if (a.category_id !== b.category_id) {
+      return (a.category_id || '').localeCompare(b.category_id || '');
+    }
+    return a.sort_order - b.sort_order;
+  });
 }
 

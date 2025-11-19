@@ -6,6 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -140,6 +150,18 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [quickCategoryData, setQuickCategoryData] = useState({ label: '', icon_name: 'Folder', color: '#3b82f6', parent_category_id: null as string | null });
     // Preview mode for Template Content
     const [previewMode, setPreviewMode] = useState<'editor' | 'preview'>('preview');
+    // Delete confirmation dialog state
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{
+        isOpen: boolean;
+        type: 'block' | 'category' | null;
+        item: any | null;
+        hasChildren?: boolean;
+        hasBlocks?: number;
+    }>({
+        isOpen: false,
+        type: null,
+        item: null,
+    });
 
     // Toast notifications
     const { toast } = useToast();
@@ -362,21 +384,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     };
 
     const handleDeleteBlock = async (block: ContentBlockDB) => {
-        if (!confirm(`Are you sure you want to delete "${block.label}"?`)) return;
-
-        try {
-            const supabase = getBrowserSupabaseClient();
-            const { error } = await supabase
-                .from('content_blocks')
-                .delete()
-                .eq('id', block.id);
-
-            if (error) throw error;
-            
-            loadData(); // Reload data
-        } catch (error) {
-            console.error('Error deleting block:', error);
-        }
+        setDeleteConfirmation({
+            isOpen: true,
+            type: 'block',
+            item: block,
+        });
     };
 
     const handleToggleActive = async (block: ContentBlockDB) => {
@@ -527,42 +539,67 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         // Check if category has content blocks
         const blocksInCategory = contentBlocks.filter(b => b.category_id === categoryId);
         
-        if (hasChildren || blocksInCategory.length > 0) {
-            const message = hasChildren 
-                ? `This category has ${category.children!.length} child categories. Are you sure you want to deactivate it?`
-                : `This category has ${blocksInCategory.length} content blocks. Are you sure you want to deactivate it?`;
+        setDeleteConfirmation({
+            isOpen: true,
+            type: 'category',
+            item: category,
+            hasChildren,
+            hasBlocks: blocksInCategory.length,
+        });
+    };
+
+    const confirmDelete = async () => {
+        const { type, item, hasChildren, hasBlocks } = deleteConfirmation;
+        
+        if (!item) return;
+        
+        try {
+            const supabase = getBrowserSupabaseClient();
             
-            if (!confirm(message)) return;
-            
-            // Deactivate instead of delete
-            await handleUpdateCategory(categoryId, { is_active: false });
-        } else {
-            if (!confirm('Are you sure you want to delete this category?')) return;
-            
-            try {
-                const supabase = getBrowserSupabaseClient();
+            if (type === 'block') {
                 const { error } = await supabase
-                    .from('shortcut_categories')
+                    .from('content_blocks')
                     .delete()
-                    .eq('id', categoryId);
+                    .eq('id', item.id);
 
                 if (error) throw error;
                 
                 toast({
                     title: "Success",
-                    description: "Category deleted successfully.",
-                    variant: "success"
+                    description: "Content block deleted successfully.",
                 });
                 
-                loadData();
-            } catch (error) {
-                console.error('Error deleting category:', error);
-                toast({
-                    title: "Error",
-                    description: "Failed to delete category.",
-                    variant: "destructive"
-                });
+                if (selectedBlockId === item.id) {
+                    setSelectedBlockId(null);
+                }
+            } else if (type === 'category') {
+                if (hasChildren || (hasBlocks && hasBlocks > 0)) {
+                    // Deactivate instead of delete
+                    await handleUpdateCategory(item.id, { is_active: false });
+                } else {
+                    const { error } = await supabase
+                        .from('shortcut_categories')
+                        .delete()
+                        .eq('id', item.id);
+
+                    if (error) throw error;
+                    
+                    toast({
+                        title: "Success",
+                        description: "Category deleted successfully.",
+                    });
+                }
             }
+            
+            setDeleteConfirmation({ isOpen: false, type: null, item: null });
+            await loadData();
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            toast({
+                title: "Error",
+                description: `Failed to delete ${type}.`,
+                variant: "destructive"
+            });
         }
     };
 
@@ -1523,6 +1560,54 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog 
+                open={deleteConfirmation.isOpen} 
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setDeleteConfirmation({ isOpen: false, type: null, item: null });
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {deleteConfirmation.type === 'block' ? 'Delete Content Block' : 'Delete Category'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {deleteConfirmation.type === 'block' ? (
+                                <>
+                                    Are you sure you want to delete <strong>"{deleteConfirmation.item?.label}"</strong>?{' '}
+                                    This action cannot be undone.
+                                </>
+                            ) : deleteConfirmation.hasChildren || (deleteConfirmation.hasBlocks && deleteConfirmation.hasBlocks > 0) ? (
+                                <>
+                                    This category <strong>"{deleteConfirmation.item?.label}"</strong> has{' '}
+                                    {deleteConfirmation.hasChildren && `${deleteConfirmation.item?.children?.length} child categories`}
+                                    {deleteConfirmation.hasChildren && deleteConfirmation.hasBlocks && deleteConfirmation.hasBlocks > 0 && ' and '}
+                                    {deleteConfirmation.hasBlocks && deleteConfirmation.hasBlocks > 0 && `${deleteConfirmation.hasBlocks} content blocks`}.
+                                    {' '}It will be deactivated instead of deleted.
+                                </>
+                            ) : (
+                                <>
+                                    Are you sure you want to delete the category <strong>"{deleteConfirmation.item?.label}"</strong>?{' '}
+                                    This action cannot be undone.
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {deleteConfirmation.hasChildren || (deleteConfirmation.hasBlocks && deleteConfirmation.hasBlocks > 0) ? 'Deactivate' : 'Delete'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
         </div>
     );

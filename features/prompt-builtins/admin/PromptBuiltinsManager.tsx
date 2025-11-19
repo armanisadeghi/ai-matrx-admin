@@ -6,6 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,6 +41,7 @@ import {
   Zap,
   Check,
   AlertTriangle,
+  FileText,
 } from 'lucide-react';
 import {
   ShortcutCategory,
@@ -41,17 +52,21 @@ import {
   CreatePromptShortcutInput,
   UpdatePromptShortcutInput,
 } from '../types';
+import { ContentBlockDB } from '@/types/content-blocks-db';
 import {
   fetchShortcutCategories,
   createShortcutCategory,
   updateShortcutCategory,
   deleteShortcutCategory,
+  checkCategoryDependencies,
   fetchPromptShortcuts,
   createPromptShortcut,
   updatePromptShortcut,
   deletePromptShortcut,
   fetchPromptBuiltins,
   fetchShortcutsWithRelations,
+  fetchCategoryItemsWithRelations,
+  type CategoryItem,
 } from '../services/admin-service';
 import { PLACEMENT_TYPES, getPlacementTypeMeta, COMMON_SCOPE_CONFIGURATIONS } from '../constants';
 import { RESULT_DISPLAY_META, type ResultDisplay } from '../types';
@@ -61,6 +76,7 @@ import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
 import { ShortcutEditModal } from '../components/ShortcutEditModal';
 import { CategoryFormModal } from '../components/CategoryFormModal';
+import { ContentBlockEditModal } from '../components/ContentBlockEditModal';
 import { 
   CategoryFormFields, 
   CategoryFormData,
@@ -75,12 +91,13 @@ interface PromptBuiltinsManagerProps {
 type SelectedItem = 
   | { type: 'category'; data: ShortcutCategory }
   | { type: 'shortcut'; data: PromptShortcut & { category?: ShortcutCategory; builtin?: PromptBuiltin } }
+  | { type: 'content_block'; data: ContentBlockDB & { category?: ShortcutCategory } }
   | null;
 
 export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps) {
   // State
   const [categories, setCategories] = useState<ShortcutCategory[]>([]);
-  const [shortcuts, setShortcuts] = useState<(PromptShortcut & { category?: ShortcutCategory; builtin?: PromptBuiltin })[]>([]);
+  const [categoryItems, setCategoryItems] = useState<CategoryItem[]>([]);
   const [builtins, setBuiltins] = useState<PromptBuiltin[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
@@ -119,11 +136,31 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const [isShortcutEditModalOpen, setIsShortcutEditModalOpen] = useState(false);
   const [editingShortcut, setEditingShortcut] = useState<(PromptShortcut & { category?: ShortcutCategory; builtin?: PromptBuiltin }) | null>(null);
   
+  // Content block edit modal state
+  const [isContentBlockEditModalOpen, setIsContentBlockEditModalOpen] = useState(false);
+  const [editingContentBlock, setEditingContentBlock] = useState<(ContentBlockDB & { category?: ShortcutCategory }) | null>(null);
+  
   // Prompt settings modal state
   const [isPromptSettingsOpen, setIsPromptSettingsOpen] = useState(false);
   const [editingBuiltinId, setEditingBuiltinId] = useState<string | null>(null);
   const [models, setModels] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
+  
+  // Confirmation dialog state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    type: 'category' | 'shortcut' | null;
+    item: ShortcutCategory | PromptShortcut | null;
+    dependencies?: {
+      contentBlocks: number;
+      promptShortcuts: number;
+      childCategories: number;
+    };
+  }>({
+    isOpen: false,
+    type: null,
+    item: null,
+  });
   
   const { toast } = useToast();
 
@@ -131,16 +168,16 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [categoriesData, shortcutsData, builtinsData, modelsResponse, toolsResponse] = await Promise.all([
+      const [categoriesData, categoryItemsData, builtinsData, modelsResponse, toolsResponse] = await Promise.all([
         fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
+        fetchCategoryItemsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
         fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
         fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
       ]);
       
       setCategories(categoriesData);
-      setShortcuts(shortcutsData);
+      setCategoryItems(categoryItemsData);
       setBuiltins(builtinsData);
       setModels(modelsResponse?.models || []);
       setAvailableTools(toolsResponse?.tools || []);
@@ -192,14 +229,14 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
   // Build tree structure grouped by placement type
   const buildTree = () => {
-    const categoryMap = new Map(filteredCategories.map(c => [c.id, { ...c, children: [], shortcuts: [] }]));
+    const categoryMap = new Map(filteredCategories.map(c => [c.id, { ...c, children: [], items: [] }]));
     
-    // Add shortcuts to categories
-    shortcuts.forEach(shortcut => {
-      const category = categoryMap.get(shortcut.category_id);
-      const shouldShow = showInactive || shortcut.is_active;
+    // Add items (shortcuts and content blocks) to categories
+    categoryItems.forEach(item => {
+      const category = categoryMap.get(item.category_id || '');
+      const shouldShow = showInactive || item.is_active;
       if (category && shouldShow) {
-        category.shortcuts.push(shortcut);
+        category.items.push(item);
       }
     });
     
@@ -248,7 +285,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           type: 'placement',
           placement_type: placementType,
           children: categories,
-          shortcuts: [],
+          items: [],
           is_active: true,
           totalCount,
         });
@@ -259,7 +296,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       items.sort((a, b) => a.sort_order - b.sort_order);
       items.forEach(item => {
         if (item.children) sortItems(item.children);
-        if (item.shortcuts) item.shortcuts.sort((a: any, b: any) => a.sort_order - b.sort_order);
+        if (item.items) item.items.sort((a: any, b: any) => a.sort_order - b.sort_order);
       });
     };
     
@@ -342,14 +379,14 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       setHasUnsavedChanges(false);
       
       // Reload data without showing full loading state
-      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+      const [categoriesData, categoryItemsData, builtinsData] = await Promise.all([
         fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
+        fetchCategoryItemsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
       ]);
       
       setCategories(categoriesData);
-      setShortcuts(shortcutsData);
+      setCategoryItems(categoryItemsData);
       setBuiltins(builtinsData);
     } catch (error) {
       console.error('Error updating category:', error);
@@ -358,24 +395,60 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   };
 
   const handleDeleteCategory = async (category: ShortcutCategory) => {
-    const shortcutsInCategory = shortcuts.filter(s => s.category_id === category.id);
-    
-    if (shortcutsInCategory.length > 0) {
-      if (!confirm(`This category has ${shortcutsInCategory.length} shortcuts. Deleting it will also delete all shortcuts. Continue?`)) {
-        return;
-      }
-    } else if (!confirm(`Delete category "${category.label}"?`)) {
-      return;
+    try {
+      // Check dependencies before showing delete confirmation
+      const { dependencies } = await checkCategoryDependencies(category.id);
+      
+      setDeleteConfirmation({
+        isOpen: true,
+        type: 'category',
+        item: category,
+        dependencies,
+      });
+    } catch (error) {
+      console.error('Error checking category dependencies:', error);
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to check category dependencies', 
+        variant: 'destructive' 
+      });
     }
+  };
+
+  const confirmDelete = async () => {
+    const { type, item } = deleteConfirmation;
+    
+    if (!item) return;
     
     try {
-      await deleteShortcutCategory(category.id);
-      toast({ title: 'Success', description: 'Category deleted successfully' });
+      if (type === 'category') {
+        await deleteShortcutCategory(item.id);
+        toast({ title: 'Success', description: 'Category deleted successfully' });
+      } else if (type === 'shortcut') {
+        await deletePromptShortcut(item.id);
+        toast({ title: 'Success', description: 'Shortcut deleted successfully' });
+      }
+      
       setSelectedItem(null);
+      setDeleteConfirmation({ isOpen: false, type: null, item: null });
       await loadData();
     } catch (error) {
-      console.error('Error deleting category:', error);
-      toast({ title: 'Error', description: 'Failed to delete category', variant: 'destructive' });
+      console.error('Error deleting item:', error);
+      
+      // Show user-friendly error message from the service
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : `Failed to delete ${type}`;
+      
+      toast({ 
+        title: 'Cannot Delete', 
+        description: errorMessage, 
+        variant: 'destructive',
+        duration: 8000, // Longer duration for complex error messages
+      });
+      
+      // Close the confirmation dialog even on error
+      setDeleteConfirmation({ isOpen: false, type: null, item: null });
     }
   };
 
@@ -418,14 +491,14 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       setHasUnsavedChanges(false);
       
       // Reload data without showing full loading state
-      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+      const [categoriesData, categoryItemsData, builtinsData] = await Promise.all([
         fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
+        fetchCategoryItemsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
       ]);
       
       setCategories(categoriesData);
-      setShortcuts(shortcutsData);
+      setCategoryItems(categoryItemsData);
       setBuiltins(builtinsData);
     } catch (error) {
       console.error('Error updating shortcut:', error);
@@ -434,17 +507,11 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   };
 
   const handleDeleteShortcut = async (shortcut: PromptShortcut) => {
-    if (!confirm(`Delete shortcut "${shortcut.label}"?`)) return;
-    
-    try {
-      await deletePromptShortcut(shortcut.id);
-      toast({ title: 'Success', description: 'Shortcut deleted successfully' });
-      setSelectedItem(null);
-      await loadData();
-    } catch (error) {
-      console.error('Error deleting shortcut:', error);
-      toast({ title: 'Error', description: 'Failed to delete shortcut', variant: 'destructive' });
-    }
+    setDeleteConfirmation({
+      isOpen: true,
+      type: 'shortcut',
+      item: shortcut,
+    });
   };
 
   const handleDiscardChanges = () => {
@@ -481,20 +548,20 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       setCreateShortcutData({});
       
       // Reload data without showing full loading state
-      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+      const [categoriesData, categoryItemsData, builtinsData] = await Promise.all([
         fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
+        fetchCategoryItemsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
       ]);
       
       setCategories(categoriesData);
-      setShortcuts(shortcutsData);
+      setCategoryItems(categoryItemsData);
       setBuiltins(builtinsData);
       
       // Find and select the newly created shortcut
-      const createdShortcut = shortcutsData.find((s: any) => s.id === newShortcut.id);
-      if (createdShortcut) {
-        setSelectedItem({ type: 'shortcut', data: createdShortcut });
+      const createdShortcut = categoryItemsData.find((item: any) => item.item_type === 'shortcut' && item.id === newShortcut.id);
+      if (createdShortcut && createdShortcut.item_type === 'shortcut') {
+        setSelectedItem({ type: 'shortcut', data: createdShortcut as PromptShortcut & { category?: ShortcutCategory; builtin?: PromptBuiltin } });
         // Expand the category to show the new shortcut
         if (createdShortcut.category_id) {
           setExpandedCategories(prev => new Set(prev).add(createdShortcut.category_id));
@@ -544,14 +611,14 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       toast({ title: 'Success', description: 'Prompt builtin updated successfully' });
       
       // Reload data without showing full loading state
-      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+      const [categoriesData, categoryItemsData, builtinsData] = await Promise.all([
         fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
+        fetchCategoryItemsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
       ]);
       
       setCategories(categoriesData);
-      setShortcuts(shortcutsData);
+      setCategoryItems(categoryItemsData);
       setBuiltins(builtinsData);
     } catch (error: any) {
       const errorMessage = getUserFriendlyError(error);
@@ -570,8 +637,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     const isSelected = !isPlacementNode && selectedItem?.type === 'category' && selectedItem.data.id === node.id;
     const expanded = isExpanded(node.id);
     const hasChildren = node.children && node.children.length > 0;
-    const hasShortcuts = node.shortcuts && node.shortcuts.length > 0;
-    const hasContent = hasChildren || hasShortcuts;
+    const hasItems = node.items && node.items.length > 0;
+    const hasContent = hasChildren || hasItems;
     
     return (
       <div key={node.id}>
@@ -616,29 +683,44 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           </div>
         </div>
         
-        {/* Children and Shortcuts */}
+        {/* Children and Items */}
         {expanded && (
           <div>
             {/* Child Categories */}
             {node.children?.map((child: any) => renderTreeNode(child, depth + 1))}
             
-            {/* Shortcuts */}
-            {node.shortcuts?.map((shortcut: any) => {
-              const isShortcutSelected = selectedItem?.type === 'shortcut' && selectedItem.data.id === shortcut.id;
+            {/* Items (Shortcuts and Content Blocks) */}
+            {node.items?.map((item: any) => {
+              const isItemSelected = 
+                (item.item_type === 'shortcut' && selectedItem?.type === 'shortcut' && selectedItem.data.id === item.id) ||
+                (item.item_type === 'content_block' && selectedItem?.type === 'content_block' && selectedItem.data.id === item.id);
+              
+              const isShortcut = item.item_type === 'shortcut';
+              const icon = isShortcut ? (
+                <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+              ) : (
+                <FileText className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+              );
+              
               return (
                 <div
-                  key={shortcut.id}
+                  key={`${item.item_type}-${item.id}`}
                   className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors
-                    ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                    ${isItemSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                   style={{ paddingLeft: `${(depth + 1) * 12 + 20}px` }}
                   onClick={() => {
-                    setEditingShortcut(shortcut);
-                    setIsShortcutEditModalOpen(true);
+                    if (isShortcut) {
+                      setEditingShortcut(item);
+                      setIsShortcutEditModalOpen(true);
+                    } else {
+                      setEditingContentBlock(item);
+                      setIsContentBlockEditModalOpen(true);
+                    }
                   }}
                 >
-                  <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                  <span className="text-xs truncate">{shortcut.label}</span>
-                  {!shortcut.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
+                  {icon}
+                  <span className="text-xs truncate">{item.label}</span>
+                  {!item.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
                 </div>
               );
             })}
@@ -704,7 +786,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               className="flex-1"
             >
               <Zap className="w-4 h-4 mr-1" />
-              Shortcuts
+              Items
             </Button>
           </div>
           
@@ -778,25 +860,25 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                 tree.map(node => renderTreeNode(node))
               )
             ) : (
-              // Shortcuts-only view
-              shortcuts.filter(s => {
-                const category = categories.find(c => c.id === s.category_id);
+              // Items-only view (shortcuts + content blocks)
+              categoryItems.filter(item => {
+                const category = categories.find(c => c.id === item.category_id);
                 const matchesPlacement = selectedPlacement === 'all' || category?.placement_type === selectedPlacement;
-                const matchesSearch = searchTerm === '' || s.label.toLowerCase().includes(searchTerm.toLowerCase());
-                const matchesActive = showInactive || s.is_active;
+                const matchesSearch = searchTerm === '' || item.label.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesActive = showInactive || item.is_active;
                 return matchesPlacement && matchesSearch && matchesActive;
               }).length === 0 ? (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                   <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No shortcuts found</p>
+                  <p className="text-sm">No items found</p>
                 </div>
               ) : (
-                shortcuts
-                  .filter(s => {
-                    const category = categories.find(c => c.id === s.category_id);
+                categoryItems
+                  .filter(item => {
+                    const category = categories.find(c => c.id === item.category_id);
                     const matchesPlacement = selectedPlacement === 'all' || category?.placement_type === selectedPlacement;
-                    const matchesSearch = searchTerm === '' || s.label.toLowerCase().includes(searchTerm.toLowerCase());
-                    const matchesActive = showInactive || s.is_active;
+                    const matchesSearch = searchTerm === '' || item.label.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesActive = showInactive || item.is_active;
                     return matchesPlacement && matchesSearch && matchesActive;
                   })
                   .sort((a, b) => {
@@ -807,27 +889,40 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                     if (catCompare !== 0) return catCompare;
                     return a.sort_order - b.sort_order;
                   })
-                  .map(shortcut => {
-                    const isShortcutSelected = selectedItem?.type === 'shortcut' && selectedItem.data.id === shortcut.id;
-                    const category = categories.find(c => c.id === shortcut.category_id);
+                  .map(item => {
+                    const isItemSelected = 
+                      (item.item_type === 'shortcut' && selectedItem?.type === 'shortcut' && selectedItem.data.id === item.id) ||
+                      (item.item_type === 'content_block' && selectedItem?.type === 'content_block' && selectedItem.data.id === item.id);
+                    const category = categories.find(c => c.id === item.category_id);
+                    const isShortcut = item.item_type === 'shortcut';
+                    
                     return (
                       <div
-                        key={shortcut.id}
+                        key={`${item.item_type}-${item.id}`}
                         className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors mb-0.5
-                          ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                          ${isItemSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                         onClick={() => {
-                          setEditingShortcut(shortcut);
-                          setIsShortcutEditModalOpen(true);
+                          if (isShortcut) {
+                            setEditingShortcut(item);
+                            setIsShortcutEditModalOpen(true);
+                          } else {
+                            setEditingContentBlock(item);
+                            setIsContentBlockEditModalOpen(true);
+                          }
                         }}
                       >
-                        <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                        {isShortcut ? (
+                          <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                        )}
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">{shortcut.label}</div>
+                          <div className="text-xs font-medium truncate">{item.label}</div>
                           {category && (
                             <div className="text-[10px] text-gray-500 truncate">{category.label}</div>
                           )}
                         </div>
-                        {!shortcut.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
+                        {!item.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
                       </div>
                     );
                   })
@@ -839,7 +934,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         {/* Stats */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
           <div className="text-xs text-gray-600 dark:text-gray-400">
-            {categories.length} categories • {shortcuts.length} shortcuts
+            {categories.length} categories • {categoryItems.filter(i => i.item_type === 'shortcut').length} shortcuts • {categoryItems.filter(i => i.item_type === 'content_block').length} content blocks
           </div>
         </div>
       </div>
@@ -879,7 +974,14 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                   <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => selectedItem.type === 'category' ? handleDeleteCategory(selectedItem.data) : handleDeleteShortcut(selectedItem.data)}
+                    onClick={() => {
+                      if (selectedItem.type === 'category') {
+                        handleDeleteCategory(selectedItem.data);
+                      } else if (selectedItem.type === 'shortcut') {
+                        handleDeleteShortcut(selectedItem.data);
+                      }
+                      // Note: content blocks are handled via their own modal
+                    }}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
                     Delete
@@ -1522,6 +1624,125 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         models={models}
         availableTools={availableTools}
       />
+
+      {/* Content Block Edit Modal */}
+      <ContentBlockEditModal
+        isOpen={isContentBlockEditModalOpen}
+        onClose={() => {
+          setIsContentBlockEditModalOpen(false);
+          setEditingContentBlock(null);
+        }}
+        onSuccess={() => {
+          setIsContentBlockEditModalOpen(false);
+          setEditingContentBlock(null);
+          loadData();
+        }}
+        contentBlock={editingContentBlock}
+        categories={categories}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog 
+        open={deleteConfirmation.isOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteConfirmation({ isOpen: false, type: null, item: null });
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {(() => {
+                const deps = deleteConfirmation.dependencies;
+                const hasDeps = deps && (deps.contentBlocks > 0 || deps.promptShortcuts > 0 || deps.childCategories > 0);
+                
+                return (
+                  <>
+                    {hasDeps && <AlertTriangle className="h-5 w-5 text-destructive" />}
+                    {deleteConfirmation.type === 'category' ? 'Delete Category' : 'Delete Shortcut'}
+                  </>
+                );
+              })()}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                {deleteConfirmation.type === 'category' && deleteConfirmation.dependencies ? (
+                  <>
+                    {(() => {
+                      const { contentBlocks, promptShortcuts, childCategories } = deleteConfirmation.dependencies;
+                      const hasAnyDeps = contentBlocks > 0 || promptShortcuts > 0 || childCategories > 0;
+                      
+                      if (hasAnyDeps) {
+                        return (
+                          <>
+                            <p>
+                              <strong>Cannot delete category "{(deleteConfirmation.item as ShortcutCategory)?.label}"</strong>
+                            </p>
+                            <p>This category is currently being used by:</p>
+                            <ul className="list-disc list-inside space-y-1 pl-2">
+                              {contentBlocks > 0 && (
+                                <li>
+                                  <strong>{contentBlocks}</strong> content block{contentBlocks !== 1 ? 's' : ''}
+                                </li>
+                              )}
+                              {promptShortcuts > 0 && (
+                                <li>
+                                  <strong>{promptShortcuts}</strong> prompt shortcut{promptShortcuts !== 1 ? 's' : ''}
+                                </li>
+                              )}
+                              {childCategories > 0 && (
+                                <li>
+                                  <strong>{childCategories}</strong> child categor{childCategories !== 1 ? 'ies' : 'y'}
+                                </li>
+                              )}
+                            </ul>
+                            <p className="text-sm">
+                              Please reassign or remove these items before deleting this category.
+                            </p>
+                          </>
+                        );
+                      } else {
+                        return (
+                          <p>
+                            Are you sure you want to delete the category <strong>"{(deleteConfirmation.item as ShortcutCategory)?.label}"</strong>? 
+                            This action cannot be undone.
+                          </p>
+                        );
+                      }
+                    })()}
+                  </>
+                ) : deleteConfirmation.type === 'shortcut' ? (
+                  <p>
+                    Are you sure you want to delete the shortcut <strong>"{(deleteConfirmation.item as PromptShortcut)?.label}"</strong>? 
+                    This action cannot be undone.
+                  </p>
+                ) : null}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {(() => {
+              const deps = deleteConfirmation.dependencies;
+              const hasDeps = deps && (deps.contentBlocks > 0 || deps.promptShortcuts > 0 || deps.childCategories > 0);
+              
+              // Only show delete button if no dependencies exist
+              if (!hasDeps || deleteConfirmation.type !== 'category') {
+                return (
+                  <AlertDialogAction
+                    onClick={confirmDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                );
+              }
+              return null;
+            })()}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

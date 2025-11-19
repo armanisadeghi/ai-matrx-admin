@@ -32,6 +32,17 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTools } from "@/hooks/useTools";
 import { mapIcon } from "@/utils/icons/icon-mapper";
@@ -60,12 +71,22 @@ interface EditingTool extends Tool {
 
 export function McpToolsManager() {
     const { databaseTools, isLoading, error, refetch } = useTools({ autoFetch: true });
+    const { toast } = useToast();
     const [tools, setTools] = useState<EditingTool[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [editingTool, setEditingTool] = useState<EditingTool | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [expandedTools, setExpandedTools] = useState<Set<string>>(new Set());
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{
+        isOpen: boolean;
+        toolId: string | null;
+        toolName: string | null;
+    }>({
+        isOpen: false,
+        toolId: null,
+        toolName: null,
+    });
 
     // Update tools when database tools change
     useEffect(() => {
@@ -115,31 +136,60 @@ export function McpToolsManager() {
                 throw new Error(errorData.error || 'Failed to save tool');
             }
 
+            toast({
+                title: 'Success',
+                description: `Tool ${isNewTool ? 'created' : 'updated'} successfully`,
+            });
+
             setEditingTool(null);
             await refetch();
         } catch (error) {
             console.error('Error saving tool:', error);
-            alert(`Failed to save tool: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            toast({
+                title: 'Error',
+                description: `Failed to save tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                variant: 'destructive',
+            });
         }
     };
 
-    const handleDeleteTool = async (toolId: string) => {
-        if (window.confirm("Are you sure you want to delete this tool? This action cannot be undone.")) {
-            try {
-                const response = await fetch(`/api/admin/tools/${toolId}`, {
-                    method: 'DELETE',
-                });
+    const handleDeleteTool = async (toolId: string, toolName: string) => {
+        setDeleteConfirmation({
+            isOpen: true,
+            toolId,
+            toolName,
+        });
+    };
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete tool');
-                }
+    const confirmDelete = async () => {
+        const { toolId } = deleteConfirmation;
+        
+        if (!toolId) return;
+        
+        try {
+            const response = await fetch(`/api/admin/tools/${toolId}`, {
+                method: 'DELETE',
+            });
 
-                await refetch();
-            } catch (error) {
-                console.error('Error deleting tool:', error);
-                alert(`Failed to delete tool: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete tool');
             }
+
+            toast({
+                title: 'Success',
+                description: 'Tool deleted successfully',
+            });
+
+            setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null });
+            await refetch();
+        } catch (error) {
+            console.error('Error deleting tool:', error);
+            toast({
+                title: 'Error',
+                description: `Failed to delete tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                variant: 'destructive',
+            });
         }
     };
 
@@ -162,9 +212,18 @@ export function McpToolsManager() {
             setTools(prev => prev.map(tool => 
                 tool.id === toolId ? { ...tool, is_active: isActive } : tool
             ));
+
+            toast({
+                title: 'Success',
+                description: `Tool ${isActive ? 'activated' : 'deactivated'} successfully`,
+            });
         } catch (error) {
             console.error('Error toggling tool status:', error);
-            alert(`Failed to update tool: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            toast({
+                title: 'Error',
+                description: `Failed to update tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                variant: 'destructive',
+            });
             // Revert the change on error
             setTools(prev => prev.map(tool => 
                 tool.id === toolId ? { ...tool, is_active: !isActive } : tool
@@ -311,7 +370,7 @@ export function McpToolsManager() {
                         isExpanded={expandedTools.has(tool.id)}
                         onToggleExpanded={() => toggleExpanded(tool.id)}
                         onEdit={() => handleEditTool(tool)}
-                        onDelete={() => handleDeleteTool(tool.id)}
+                        onDelete={() => handleDeleteTool(tool.id, tool.name)}
                         onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
                     />
                 ))}
@@ -353,6 +412,35 @@ export function McpToolsManager() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog 
+                open={deleteConfirmation.isOpen} 
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null });
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Tool</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete <strong>"{deleteConfirmation.toolName}"</strong>?{' '}
+                            This action cannot be undone and will permanently remove the tool from the system.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
@@ -502,6 +590,7 @@ interface ToolEditorProps {
 }
 
 function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
+    const { toast } = useToast();
     const [editedTool, setEditedTool] = useState<EditingTool>(() => 
         tool || {
             id: '',
@@ -526,13 +615,21 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
     const handleSave = async () => {
         // Validate required fields
         if (!editedTool.name || !editedTool.description || !editedTool.function_path) {
-            alert('Please fill in all required fields: Name, Description, and Function Path');
+            toast({
+                title: 'Validation Error',
+                description: 'Please fill in all required fields: Name, Description, and Function Path',
+                variant: 'destructive',
+            });
             return;
         }
 
         // Check for JSON errors
         if (Object.keys(jsonErrors).length > 0) {
-            alert('Please fix JSON errors before saving');
+            toast({
+                title: 'Validation Error',
+                description: 'Please fix JSON errors before saving',
+                variant: 'destructive',
+            });
             return;
         }
 
