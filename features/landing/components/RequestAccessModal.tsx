@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, AlertCircle, Loader2, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { Check, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { submitInvitationRequestStep1, submitInvitationRequestStep2 } from '../actions';
 import { InvitationRequestStep1, InvitationRequestStep2, USER_TYPE_OPTIONS } from '../types';
 import { cn } from '@/lib/utils';
@@ -18,11 +18,10 @@ interface RequestAccessModalProps {
 }
 
 export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalProps) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<'form' | 'followup' | 'final'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   // Step 1 form data
   const [step1Data, setStep1Data] = useState<InvitationRequestStep1>({
@@ -43,12 +42,13 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
     recent_project: '',
   });
 
-  const handleStep1Submit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
     try {
+      // Silently submit the request in the background
       const result = await submitInvitationRequestStep1(step1Data);
 
       if (!result.success) {
@@ -57,16 +57,17 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
         return;
       }
 
+      // Save the request ID and move to optional follow-up
       setRequestId(result.data.requestId);
-      setStep(2);
+      setStep('followup');
+      setIsSubmitting(false);
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleStep2Submit = async (e: React.FormEvent) => {
+  const handleFollowupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
@@ -81,28 +82,28 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
       const result = await submitInvitationRequestStep2(requestId, step2Data);
 
       if (!result.success) {
-        setError('error' in result ? result.error : 'Failed to complete request');
+        setError('error' in result ? result.error : 'Failed to submit additional information');
         setIsSubmitting(false);
         return;
       }
 
-      // Success!
-      setShowSuccess(true);
+      // Show final success message
+      setStep('final');
+      setIsSubmitting(false);
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
     }
   };
 
-  const handleSkipStep2 = async () => {
-    setIsSubmitting(true);
-    setShowSuccess(true);
-    setIsSubmitting(false);
+  const handleSkipFollowup = () => {
+    // User skipped optional fields - that's fine, we already have their core data
+    setStep('final');
   };
 
   const handleClose = () => {
     // Reset form
-    setStep(1);
+    setStep('form');
     setStep1Data({
       full_name: '',
       company: '',
@@ -120,11 +121,11 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
     });
     setError(null);
     setRequestId(null);
-    setShowSuccess(false);
     onOpenChange(false);
   };
 
-  if (showSuccess) {
+  // Final Success State - only shown after follow-up is completed or skipped
+  if (step === 'final') {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md bg-background border-zinc-200 dark:border-zinc-800">
@@ -137,7 +138,7 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
               Thank you for your interest in AI Matrx. We'll review your request and be in touch soon with your
               exclusive invitation.
             </DialogDescription>
-            <Button onClick={handleClose} size="lg" className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleClose} size="lg" className="w-full bg-primary hover:bg-primary/90">
               Close
             </Button>
           </div>
@@ -150,35 +151,14 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl bg-background border-zinc-200 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex gap-2">
-              <div
-                className={cn(
-                  'h-1.5 w-8 rounded-full transition-colors',
-                  step === 1 ? 'bg-primary' : 'bg-primary/30'
-                )}
-              />
-              <div
-                className={cn(
-                  'h-1.5 w-8 rounded-full transition-colors',
-                  step === 2 ? 'bg-primary' : 'bg-zinc-300 dark:bg-zinc-700'
-                )}
-              />
-            </div>
-            <span className="text-xs text-muted-foreground">Step {step} of 2</span>
-          </div>
-          <DialogTitle className="text-2xl font-semibold">
-            {step === 1 ? 'Request Early Access' : 'Tell Us More (Optional)'}
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-semibold">Request Early Access</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            {step === 1
-              ? 'Join the future of enterprise AI. Share a few details to request your invitation.'
-              : 'Help us understand your needs better. All fields are optional.'}
+            Join the future of enterprise AI. Share a few details to request your invitation.
           </DialogDescription>
         </DialogHeader>
 
-        {step === 1 ? (
-          <form onSubmit={handleStep1Submit} className="space-y-4 mt-4">
+        {step === 'form' ? (
+          <form onSubmit={handleFormSubmit} className="space-y-4 mt-4">
             {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="full_name" className="text-sm font-medium">
@@ -321,15 +301,15 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
                   </>
                 ) : (
                   <>
-                    Continue
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <Check className="mr-2 h-4 w-4" />
+                    Submit Request
                   </>
                 )}
               </Button>
             </div>
           </form>
         ) : (
-          <form onSubmit={handleStep2Submit} className="space-y-4 mt-4">
+          <form onSubmit={handleFollowupSubmit} className="space-y-4 mt-4">
             {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium">
@@ -423,18 +403,14 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
             )}
 
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={handleSkipStep2} disabled={isSubmitting}>
-                Skip
-              </Button>
               <Button
                 type="button"
-                variant="ghost"
-                onClick={() => setStep(1)}
+                variant="outline"
+                onClick={handleSkipFollowup}
                 disabled={isSubmitting}
                 className="flex-1"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+                Skip
               </Button>
               <Button type="submit" disabled={isSubmitting} className="flex-1 bg-primary hover:bg-primary/90">
                 {isSubmitting ? (

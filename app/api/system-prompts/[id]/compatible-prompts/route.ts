@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/config/admin.config";
-import { extractVariablesFromPrompt } from "@/lib/services/functionality-helpers";
 
 /**
  * GET /api/system-prompts/[id]/compatible-prompts

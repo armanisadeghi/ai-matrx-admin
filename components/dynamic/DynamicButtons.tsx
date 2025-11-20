@@ -158,7 +158,6 @@ export function DynamicButtons({
           promptData={modalConfig.promptData}
           variables={modalConfig.variables}
           executionConfig={modalConfig.executionConfig}
-          mode={modalConfig.mode}
           title={modalConfig.title}
           initialMessage={modalConfig.initialMessage}
         />

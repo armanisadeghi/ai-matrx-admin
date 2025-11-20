@@ -1,7 +1,8 @@
 // features/landing/actions.ts
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient as createServerClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/adminClient';
 import { InvitationRequestStep1, InvitationRequestStep2 } from './types';
 
 // Response types for actions
@@ -16,7 +17,8 @@ export async function submitInvitationRequestStep1(
   data: InvitationRequestStep1
 ): Promise<ActionResponse<{ requestId: string }>> {
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for server-side operations
+    const supabase = createAdminClient();
 
     // Validate required fields
     if (!data.full_name || !data.company || !data.email || !data.use_case || !data.user_type) {
@@ -93,7 +95,8 @@ export async function submitInvitationRequestStep2(
   data: InvitationRequestStep2
 ): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for server-side operations
+    const supabase = createAdminClient();
 
     // Update the existing request with step 2 data
     const { error } = await supabase
@@ -124,7 +127,8 @@ export async function validateInvitationCode(
   code: string
 ): Promise<ActionResponse<{ valid: boolean; codeId?: string }>> {
   try {
-    const supabase = await createClient();
+    // Use admin client for validation
+    const supabase = createAdminClient();
 
     // Clean the code (remove spaces, uppercase)
     const cleanCode = code.trim().toUpperCase().replace(/\s/g, '');
@@ -179,14 +183,15 @@ export async function validateInvitationCode(
 
 /**
  * Mark invitation code as used (called after successful signup)
- * This should be called from the signup flow
+ * This should be called from the signup flow with authenticated user
  */
 export async function markInvitationCodeUsed(
   code: string,
   userId: string
 ): Promise<ActionResponse> {
   try {
-    const supabase = await createClient();
+    // This needs server client as it's called during authenticated signup
+    const supabase = await createServerClient();
 
     const cleanCode = code.trim().toUpperCase().replace(/\s/g, '');
 
