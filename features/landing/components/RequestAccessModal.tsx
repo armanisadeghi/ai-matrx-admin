@@ -371,7 +371,7 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
                 type="text"
                 value={step2Data.current_ai_systems}
                 onChange={(e) => setStep2Data({ ...step2Data, current_ai_systems: e.target.value })}
-                placeholder="ChatGPT, Claude, etc."
+                placeholder="List your current AI systems..."
                 disabled={isSubmitting}
                 className="text-base"
                 style={{ fontSize: '16px' }}

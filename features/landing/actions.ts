@@ -1,8 +1,7 @@
 // features/landing/actions.ts
 'use server';
 
-import { createClient as createServerClient } from '@/utils/supabase/server';
-import { createAdminClient } from '@/utils/supabase/adminClient';
+import { createClient } from '@/utils/supabase/server';
 import { InvitationRequestStep1, InvitationRequestStep2 } from './types';
 
 // Response types for actions
@@ -17,8 +16,8 @@ export async function submitInvitationRequestStep1(
   data: InvitationRequestStep1
 ): Promise<ActionResponse<{ requestId: string }>> {
   try {
-    // Use admin client to bypass RLS for server-side operations
-    const supabase = createAdminClient();
+    // Use standard server client - RLS policies allow both anon and authenticated inserts
+    const supabase = await createClient();
 
     // Validate required fields
     if (!data.full_name || !data.company || !data.email || !data.use_case || !data.user_type) {
@@ -95,8 +94,8 @@ export async function submitInvitationRequestStep2(
   data: InvitationRequestStep2
 ): Promise<ActionResponse> {
   try {
-    // Use admin client to bypass RLS for server-side operations
-    const supabase = createAdminClient();
+    // Use standard server client - RLS policies allow both anon and authenticated inserts
+    const supabase = await createClient();
 
     // Update the existing request with step 2 data
     const { error } = await supabase
@@ -127,8 +126,8 @@ export async function validateInvitationCode(
   code: string
 ): Promise<ActionResponse<{ valid: boolean; codeId?: string }>> {
   try {
-    // Use admin client for validation
-    const supabase = createAdminClient();
+    // Use public client with anon key - RLS policies allow anonymous validation
+    const supabase = await createClient();
 
     // Clean the code (remove spaces, uppercase)
     const cleanCode = code.trim().toUpperCase().replace(/\s/g, '');
@@ -190,8 +189,8 @@ export async function markInvitationCodeUsed(
   userId: string
 ): Promise<ActionResponse> {
   try {
-    // This needs server client as it's called during authenticated signup
-    const supabase = await createServerClient();
+    // Use public client - this will be called during signup with the invitation code
+    const supabase = await createClient();
 
     const cleanCode = code.trim().toUpperCase().replace(/\s/g, '');
 
