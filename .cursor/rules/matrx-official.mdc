@@ -24,6 +24,19 @@ alwaysApply: true
 **Rules:** Never save to project root. Respect existing structures.
 </file_organization>
 
+<development_environment>
+**Terminal:** PowerShell (Windows) - Use PowerShell syntax for all commands
+**Examples:**
+```powershell
+# Correct (PowerShell)
+cd D:\app_dev\ai-matrx-admin; Copy-Item app\page.tsx app\page-original.tsx
+cd features\notes; New-Item -ItemType Directory -Name components
+
+# Incorrect (Bash/Unix)
+cd D:\app_dev\ai-matrx-admin && cp app/page.tsx app/page-original.tsx
+```
+</development_environment>
+
 <code_standards>
 - Extract complex logic into utilities
 - Leverage existing ShadCN and custom components
