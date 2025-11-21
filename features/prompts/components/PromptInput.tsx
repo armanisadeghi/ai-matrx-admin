@@ -29,7 +29,7 @@ interface PromptInputProps {
     submitOnEnter: boolean;
     onSubmitOnEnterChange?: (value: boolean) => void; // Optional - if not provided, toggle will be hidden
     messages: Array<{ role: string; content: string }>;
-    
+
     // Optional props for customization
     showVariables?: boolean;
     showAutoClear?: boolean; // Controls visibility of the auto-clear toggle
@@ -42,9 +42,9 @@ interface PromptInputProps {
         supportsYoutubeVideos: boolean;
     };
     placeholder?: string;
-    sendButtonVariant?: 'gray' | 'blue';
+    sendButtonVariant?: 'gray' | 'blue' | 'default';
     showShiftEnterHint?: boolean;
-    
+
     // Resource management
     resources?: Resource[];
     onResourcesChange?: (resources: Resource[] | ((prev: Resource[]) => Resource[])) => void;
@@ -80,11 +80,13 @@ export function PromptInput({
     uploadBucket = "userContent",
     uploadPath = "prompt-attachments",
 }: PromptInputProps) {
+    if (sendButtonVariant === 'default') sendButtonVariant = 'gray';
+
     const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isDebugMode = useAppSelector(selectIsDebugMode);
     const pendingVoiceSubmitRef = useRef(false);
-    
+
     // File upload hook for paste support
     const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
 
@@ -101,10 +103,10 @@ export function PromptInput({
             if (result.success && result.text) {
                 // Append transcribed text to existing input
                 const newText = chatInput ? `${chatInput}\n${result.text}` : result.text;
-                
+
                 // Set flag to submit after state update
                 pendingVoiceSubmitRef.current = true;
-                
+
                 // Update the input value
                 onChatInputChange(newText);
             }
@@ -121,7 +123,7 @@ export function PromptInput({
     useEffect(() => {
         if (pendingVoiceSubmitRef.current && chatInput.trim()) {
             pendingVoiceSubmitRef.current = false;
-            
+
             // Small delay to ensure parent component state is updated
             setTimeout(() => {
                 onSendMessage();
@@ -193,10 +195,10 @@ export function PromptInput({
     // Check if the last prompt message is a user message
     const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isLastMessageUser = lastPromptMessage?.role === "user";
-    
+
     // Check if all variables already have values (for visible vars mode with pre-filled values)
     const allVariablesHaveValues = variableDefaults.every(v => v.defaultValue && v.defaultValue.trim() !== '');
-    
+
     // Determine if the send button should be disabled
     const isSendDisabled = isTestingPrompt || (!isLastMessageUser && !chatInput.trim());
 
@@ -211,8 +213,8 @@ export function PromptInput({
     };
 
     // Determine placeholder text
-    const placeholderText = placeholder || (showVariables 
-        ? "Add a message to the bottom of prompt..." 
+    const placeholderText = placeholder || (showVariables
+        ? "Add a message to the bottom of prompt..."
         : "Type your message...");
 
     // Send button classes based on variant
@@ -229,7 +231,7 @@ export function PromptInput({
                         <div className="space-y-0">
                             {variableDefaults.map((variable, index) => {
                                 const isExpanded = expandedVariable === variable.name;
-                                
+
                                 return (
                                     <div key={variable.name}>
                                         {isExpanded ? (
@@ -264,8 +266,8 @@ export function PromptInput({
                                                         <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0 transition-colors" />
                                                     </div>
                                                 </PopoverTrigger>
-                                                <PopoverContent 
-                                                    className="w-[500px] max-h-[500px] p-2 border-gray-300 dark:border-gray-700 overflow-y-auto scrollbar-thin" 
+                                                <PopoverContent
+                                                    className="w-[500px] max-h-[500px] p-2 border-gray-300 dark:border-gray-700 overflow-y-auto scrollbar-thin"
                                                     align="center"
                                                     side="top"
                                                     sideOffset={8}
@@ -286,7 +288,7 @@ export function PromptInput({
                                                 </Label>
                                                 <input
                                                     type="text"
-                                                    value={variable.defaultValue?.includes('\n') 
+                                                    value={variable.defaultValue?.includes('\n')
                                                         ? (variable.defaultValue || "").replace(/\n/g, " ↵ ")
                                                         : (variable.defaultValue || "")}
                                                     onChange={(e) => onVariableValueChange(variable.name, e.target.value)}
@@ -313,7 +315,7 @@ export function PromptInput({
                     </div>
                 </div>
             )}
-            
+
             {/* Resource Chips Display */}
             {resources.length > 0 && (
                 <div className="border-b border-gray-200 dark:border-gray-800 py-1">
@@ -324,7 +326,7 @@ export function PromptInput({
                     />
                 </div>
             )}
-            
+
             {/* Text Area */}
             <div className="px-2 pt-1.5">
                 <textarea
@@ -353,7 +355,7 @@ export function PromptInput({
                         <div className="flex items-center gap-1 px-1">
                             {/* Audio level indicator - pulsing dot that grows with audio */}
                             <div className="relative flex items-center justify-center w-5 h-5">
-                                <div 
+                                <div
                                     className="absolute rounded-full bg-blue-500 dark:bg-blue-400 transition-transform duration-75"
                                     style={{
                                         width: '8px',
@@ -433,7 +435,7 @@ export function PromptInput({
                     </Button>
                 </div>
             </div>
-            
+
             {/* Resource Preview Sheet */}
             {previewResource && (
                 <ResourcePreviewSheet
@@ -444,7 +446,7 @@ export function PromptInput({
             )}
 
             {/* Debug Modal */}
-            <ResourceDebugModal 
+            <ResourceDebugModal
                 resources={resources}
                 isVisible={isDebugMode}
                 chatInput={chatInput}
