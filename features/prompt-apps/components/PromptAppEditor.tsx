@@ -13,11 +13,11 @@ import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Load
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
-import { AICodeEditorModal } from '@/components/code-editor/AICodeEditorModal';
+import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
 import type { PromptApp } from '../types';
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
-const CodeBlock = lazy(() => import('@/components/mardown-display/code/CodeBlock'));
+const CodeBlock = lazy(() => import('@/features/code-editor/components/code-block/CodeBlock'));
 
 interface PromptAppEditorProps {
   app: PromptApp;

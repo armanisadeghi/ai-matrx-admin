@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { cn } from "@/styles/themes/utils";
-import LanguageDisplay from "@/components/mardown-display/code/LanguageDisplay";
 import { useTheme } from "@/styles/themes/ThemeProvider";
-import CodeBlockHeader from "@/components/mardown-display/code/CodeBlockHeader";
+import CodeBlockHeader from "@/features/code-editor/components/code-block/CodeBlockHeader";
 
 interface StreamingCodeProps {
     code: string;

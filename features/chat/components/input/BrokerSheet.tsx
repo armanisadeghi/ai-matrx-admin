@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
-import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
+import FloatingSheet from "@/components/official/FloatingSheet";
 import { allInformationBrokers, InformationBroker } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";

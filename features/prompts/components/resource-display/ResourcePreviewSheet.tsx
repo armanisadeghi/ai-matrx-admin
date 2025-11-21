@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLink, Image, FileText, Mic, Calendar, Flag, User, MessageSquare, Circle, CheckCircle2 } from "lucide-react";
 import { CiYoutube } from "react-icons/ci";
-import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
+import FloatingSheet from "@/components/official/FloatingSheet";
 import type { Resource } from "../../types/resources";
 import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
 import { supabase } from "@/utils/supabase/client";

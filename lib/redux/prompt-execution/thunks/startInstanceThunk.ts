@@ -51,6 +51,7 @@ export const startPromptInstance = createAsyncThunk<
   async (payload, { dispatch, getState }) => {
     const {
       promptId,
+      promptSource = 'prompts', // Default to custom prompts for backwards compatibility
       executionConfig = {},
       variables = {},
       initialMessage = '',
@@ -74,18 +75,18 @@ export const startPromptInstance = createAsyncThunk<
           throw new Error(`Prompt ${promptId} is already being fetched. Please try again.`);
         }
         
-        // Fetch from database
+        // Fetch from database (correct table based on source)
         dispatch(setFetchStatus({ promptId, status: 'loading' }));
         
         const { data: promptData, error } = await supabase
-          .from('prompts')
+          .from(promptSource)
           .select('*')
           .eq('id', promptId)
           .single();
         
         if (error || !promptData) {
           dispatch(setFetchStatus({ promptId, status: 'error' }));
-          throw new Error(`Failed to fetch prompt: ${promptId}`);
+          throw new Error(`Failed to fetch prompt from ${promptSource}: ${promptId}`);
         }
         
         // Cache the prompt
@@ -97,6 +98,7 @@ export const startPromptInstance = createAsyncThunk<
           variableDefaults: promptData.variable_defaults || [],
           variable_defaults: promptData.variable_defaults || [],
           settings: promptData.settings || {},
+          source: promptSource,
           fetchedAt: Date.now(),
           status: 'cached',
         };
@@ -122,6 +124,7 @@ export const startPromptInstance = createAsyncThunk<
         // Identity
         instanceId,
         promptId,
+        promptSource,
         
         // Status
         status: 'ready',
@@ -190,6 +193,7 @@ export const startPromptInstance = createAsyncThunk<
       console.log('✅ Prompt instance created:', {
         instanceId,
         promptId,
+        promptSource,
         promptName: prompt.name,
         runId,
       });

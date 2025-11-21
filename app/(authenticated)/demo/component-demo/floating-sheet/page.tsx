@@ -1,6 +1,6 @@
 "use client";
 
-import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
+import FloatingSheet from "@/components/official/FloatingSheet";
 import React, { useState } from "react";
 
 const FloatingSheetDemo = () => {

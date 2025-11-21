@@ -12,7 +12,7 @@ import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircl
 import { PromptVariable, PromptMessage, VariableCustomComponent } from "@/features/prompts/types/core";
 import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
-import CodeBlock from "@/components/mardown-display/code/CodeBlock";
+import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 import { FullPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/FullPromptOptimizer";
 import StandalonePromptsPreferences from "@/components/user-preferences/StandalonePromptsPreferences";
 

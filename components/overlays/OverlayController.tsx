@@ -79,42 +79,42 @@ const UtilitiesOverlay = dynamic(
 );
 
 const QuickAIResultsSheet = dynamic(
-  () => import("@/features/prompts/components/results/QuickAIResultsSheet").then(mod => ({ default: mod.QuickAIResultsSheet })),
+  () => import("@/features/prompts/components/results-display/QuickAIResultsSheet").then(mod => ({ default: mod.QuickAIResultsSheet })),
   { ssr: false }
 );
 
 const FloatingSheet = dynamic(
-  () => import("@/components/ui/matrx/FloatingSheet"),
+  () => import("@/components/official/FloatingSheet"),
   { ssr: false }
 );
 
 // Prompt Runner Modal (modal-full)
 const PromptRunnerModal = dynamic(
-  () => import("@/features/prompts/components/modal/PromptRunnerModal").then(mod => ({ default: mod.PromptRunnerModal })),
+  () => import("@/features/prompts/components/results-display/PromptRunnerModal").then(mod => ({ default: mod.PromptRunnerModal })),
   { ssr: false }
 );
 
 // Prompt Compact Modal (modal-compact)
 const PromptCompactModal = dynamic(
-  () => import("@/features/prompts/components/modal/PromptCompactModal"),
+  () => import("@/features/prompts/components/results-display/PromptCompactModal"),
   { ssr: false }
 );
 
 // Prompt Inline Overlay (inline)
 const PromptInlineOverlay = dynamic(
-  () => import("@/features/prompts/components/inline/PromptInlineOverlay"),
+  () => import("@/features/prompts/components/results-display/PromptInlineOverlay"),
   { ssr: false }
 );
 
 // Prompt Sidebar Runner (sidebar)
 const PromptSidebarRunner = dynamic(
-  () => import("@/features/prompts/components/sidebar/PromptSidebarRunner"),
+  () => import("@/features/prompts/components/results-display/PromptSidebarRunner"),
   { ssr: false }
 );
 
 // Prompt Flexible Panel (flexible-panel)
 const PromptFlexiblePanel = dynamic(
-  () => import("@/features/prompts/components/flexible-panel/PromptFlexiblePanel"),
+  () => import("@/features/prompts/components/results-display/PromptFlexiblePanel"),
   { ssr: false }
 );
 

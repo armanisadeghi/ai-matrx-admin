@@ -8,7 +8,7 @@ import { TableWrapper, LinkWrapper } from ".";
 import dynamic from "next/dynamic";
 import type { MarkdownWithPluginsProps } from "@/components/message-display/MarkdownWithPlugins";
 
-const CodeBlock = dynamic(() => import("../mardown-display/code/CodeBlock"), {
+const CodeBlock = dynamic(() => import("../../features/code-editor/components/code-block/CodeBlock"), {
     ssr: false,
 });
 

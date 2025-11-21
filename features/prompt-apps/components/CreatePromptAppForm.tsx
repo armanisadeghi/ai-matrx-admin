@@ -13,10 +13,10 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Code, Settings, Sparkles, Plus, X, Loader2, CheckCircle } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
-import { AICodeEditorModal } from '@/components/code-editor/AICodeEditorModal';
+import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
-const CodeBlock = lazy(() => import('@/components/mardown-display/code/CodeBlock'));
+const CodeBlock = lazy(() => import('@/features/code-editor/components/code-block/CodeBlock'));
 
 interface CreatePromptAppFormProps {
   prompts: Array<{

@@ -24,6 +24,7 @@ export interface CachedPrompt {
   variableDefaults?: any[];
   variable_defaults?: any[]; // Alternative naming from DB
   settings: Record<string, any>;
+  source: 'prompts' | 'prompt_builtins'; // Which table this came from
   fetchedAt: number; // Timestamp when fetched
   status: 'cached' | 'stale'; // For future cache invalidation
 }

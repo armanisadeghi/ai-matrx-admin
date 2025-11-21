@@ -73,6 +73,7 @@ export interface ExecutionInstance {
   // ========== Identity ==========
   instanceId: string;       // UUID - created on init
   promptId: string;         // Reference to cached prompt
+  promptSource: 'prompts' | 'prompt_builtins'; // Which table the prompt came from
   
   // ========== Status ==========
   status: ExecutionStatus;
@@ -146,6 +147,7 @@ export interface PromptExecutionState {
 
 export interface StartInstancePayload {
   promptId: string;
+  promptSource?: 'prompts' | 'prompt_builtins'; // Optional: defaults to 'prompts'
   executionConfig?: Partial<ExecutionConfig>;
   variables?: Record<string, string>;
   initialMessage?: string;

@@ -5,7 +5,7 @@ import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import BasicMarkdownContent from "../BasicMarkdownContent";
 
 // Lazy-load CodeBlock to avoid circular dependency with Redux store
-const CodeBlock = lazy(() => import("@/components/mardown-display/code/CodeBlock"));
+const CodeBlock = lazy(() => import("@/features/code-editor/components/code-block/CodeBlock"));
 
 // Static imports for frequently used, lightweight components
 import { QuestionnaireProvider } from "../../blocks/questionnaire/QuestionnaireContext";

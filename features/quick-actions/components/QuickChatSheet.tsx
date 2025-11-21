@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageSquarePlus, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { PromptRunner } from '@/features/prompts/components/modal/PromptRunner';
+import { PromptRunner } from '@/features/prompts/components/results-display/PromptRunner';
 import { cn } from '@/lib/utils';
 
 interface QuickChatSheetProps {

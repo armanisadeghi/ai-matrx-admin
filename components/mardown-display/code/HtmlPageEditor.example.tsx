@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import MultiFileCodeEditor, { CodeFile } from "./MultiFileCodeEditor";
+import MultiFileCodeEditor, { CodeFile } from "../../../features/code-editor/components/code-block/MultiFileCodeEditor";
 
 /**
  * Example: HTML Page Editor with CSS, HTML, and combined view

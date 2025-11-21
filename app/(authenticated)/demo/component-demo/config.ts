@@ -4,6 +4,12 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
+        title: 'AI Prog Code Editor Demo',
+        path: 'ai-prog',
+        relative: true,
+        description: 'Code Editor with AI Prog integration'
+    },
+    {
         title: 'Transformable Cards Demo',
         path: 'draggables/transformable-cards-demo',
         relative: true,

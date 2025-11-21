@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Copy } from "lucide-react";
-import SmallCodeEditor from "@/components/mardown-display/code/SmallCodeEditor";
+import SmallCodeEditor from "@/features/code-editor/components/code-block/SmallCodeEditor";
 import type { HtmlPreviewTabProps } from "../types";
 
 export function EditHtmlTab({ state, actions }: HtmlPreviewTabProps) {

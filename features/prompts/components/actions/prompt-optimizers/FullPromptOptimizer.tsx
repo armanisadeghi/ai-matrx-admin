@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
-import CodeBlock from '@/components/mardown-display/code/CodeBlock';
+import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 
 interface FullPromptOptimizerProps {

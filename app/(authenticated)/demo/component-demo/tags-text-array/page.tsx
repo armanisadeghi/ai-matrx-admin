@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import TextArrayInput from "@/components/ui/matrx/TextArrayInput";
+import TextArrayInput from "@/components/official/TextArrayInput";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 export default function TextInputDemo() {

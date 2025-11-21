@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/context-menu';
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
-import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
+import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
 import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';

@@ -217,6 +217,14 @@ export const componentList: ComponentEntry[] = [
     tags: ['overlay', 'fullscreen', 'modal', 'dialog', 'tabs']
   },
   {
+    id: 'floating-sheet',
+    name: 'Floating Sheet',
+    path: 'components/official/FloatingSheet.tsx',
+    description: 'Versatile floating sheet/modal component with multiple positions (right, left, top, bottom, center), mobile support, and extensive customization',
+    categories: ['modals', 'layout', 'interactive'],
+    tags: ['sheet', 'modal', 'dialog', 'drawer', 'panel', 'sidebar', 'overlay', 'mobile', 'bottom-sheet', 'slide-over', 'position', 'backdrop']
+  },
+  {
     id: 'card-and-grid',
     name: 'Card & Grid System',
     path: 'components/official/card-and-grid',
@@ -455,6 +463,14 @@ export const componentList: ComponentEntry[] = [
     description: 'All-in-one icon name input with real-time validation, live preview, auto-capitalization, and visual feedback. Seamlessly replaces standard Input for icon name entry',
     categories: ['inputs', 'utilities', 'feedback'],
     tags: ['icon', 'input', 'validation', 'preview', 'lucide', 'form', 'field', 'auto-capitalize', 'checkmark', 'visual-feedback']
+  },
+  {
+    id: 'text-array-input',
+    name: 'Text Array Input',
+    path: 'components/official/TextArrayInput.tsx',
+    description: 'Flexible tag/chip input component for managing arrays of strings. Add, remove, copy, with optional URL cleaning and duplicate prevention',
+    categories: ['inputs', 'interactive', 'utilities'],
+    tags: ['tags', 'chips', 'array', 'input', 'list', 'multiple', 'copy', 'url', 'clean', 'form', 'field', 'string-array']
   }
 ]; 
 

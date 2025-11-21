@@ -16,7 +16,7 @@ import TroubleshootingBlock from '@/components/mardown-display/blocks/troublesho
 import DecisionTreeBlock from '@/components/mardown-display/blocks/decision-tree/DecisionTreeBlock';
 import InteractiveDiagramBlock from '@/components/mardown-display/blocks/diagram/InteractiveDiagramBlock';
 import FlashcardsBlock from '@/components/mardown-display/blocks/flashcards/FlashcardsBlock';
-import CodeBlock from '@/components/mardown-display/code/CodeBlock';
+import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 
 interface PublicCanvasRendererProps {
     content: CanvasContent | any;

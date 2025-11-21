@@ -11,7 +11,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useButtonPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
-import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
+import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
 import { Loader2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

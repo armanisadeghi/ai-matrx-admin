@@ -21,7 +21,7 @@ import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-genera
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
+import { PromptRunnerModalSidebarTester } from "./runner-tester/PromptRunnerModalSidebarTester";
 import { generateRunNameFromVariables } from "@/features/ai-runs/utils/name-generator";
 import { PromptModeNavigation } from "./PromptModeNavigation";
 

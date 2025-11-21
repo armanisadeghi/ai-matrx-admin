@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Download, ExternalLink, Info, X, Maximize, Minimize, Edit, Copy, FileInput, Link, Share2, Trash2 } from "lucide-react";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
 import { fetchWithUrlRefresh, createUrlMetadata } from "@/utils/file-operations/urlRefreshUtils";
-import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
+import FloatingSheet from "@/components/official/FloatingSheet";
 import ImagePreview from "./previews/ImagePreview";
 import TextPreview from "./previews/TextPreview";
 import CodePreview from "./previews/CodePreview";

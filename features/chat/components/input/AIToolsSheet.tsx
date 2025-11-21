@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
-import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
+import FloatingSheet from "@/components/official/FloatingSheet";
 import { Tool } from "@/types/mcp-tools";
 import { useTools } from "@/hooks/useTools";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";

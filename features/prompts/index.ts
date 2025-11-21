@@ -69,7 +69,7 @@ export type {
 } from './types/core';
 
 // Component Types
-export type { PromptRunnerProps } from './components/modal/PromptRunner';
+export type { PromptRunnerProps } from './components/results-display/PromptRunner';
 
 // Services
 export { importPrompt, importPromptBatch, exportPromptAsJSON } from './services/prompt-import-service';
@@ -109,10 +109,10 @@ export { PromptExecutionButton, PromptExecutionIconButton } from './components/a
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
 export { ConvertToBuiltinModal } from './components/layouts/ConvertToBuiltinModal';
 export { PromptImporter } from './components/common/PromptImporter';
-export { PromptRunner } from './components/modal/PromptRunner';
-export { PromptRunnerModal } from './components/modal/PromptRunnerModal';
-export { PromptRunnerModalSidebarTester } from './components/modal/PromptRunnerModalSidebarTester';
+export { PromptRunner } from './components/results-display/PromptRunner';
+export { PromptRunnerModal } from './components/results-display/PromptRunnerModal';
+export { PromptRunnerModalSidebarTester } from './components/runner-tester/PromptRunnerModalSidebarTester';
 
 // System Prompts Components
-export { PromptExecutionCard, PromptExecutionCardsGrid, createPromptCard } from './components/cards/PromptExecutionCard';
+export { PromptExecutionCard, PromptExecutionCardsGrid, createPromptCard } from './components/dynamic/PromptExecutionCard';
 

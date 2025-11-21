@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { RefreshCw, RotateCcw, AlertCircle } from "lucide-react";
-import MultiFileCodeEditor, { CodeFile } from "@/components/mardown-display/code/MultiFileCodeEditor";
+import MultiFileCodeEditor, { CodeFile } from "@/features/code-editor/components/code-block/MultiFileCodeEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { HtmlPreviewState, HtmlPreviewActions } from "../types";

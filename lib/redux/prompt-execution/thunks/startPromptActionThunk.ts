@@ -133,6 +133,10 @@ export const startPromptAction = createAsyncThunk<
 
       // ========== STEP 2: Get Referenced Prompt ==========
       const promptId = action.prompt_id || action.prompt_builtin_id;
+      const promptSource: 'prompts' | 'prompt_builtins' = action.prompt_id 
+        ? 'prompts' 
+        : 'prompt_builtins';
+      
       if (!promptId) {
         throw new Error('Action has no prompt reference');
       }
@@ -145,7 +149,7 @@ export const startPromptAction = createAsyncThunk<
         // We just verify it exists in the action
         console.log('ℹ️ Prompt not cached, will be fetched by execution engine');
       } else {
-        console.log('✅ Prompt loaded from cache:', prompt.name);
+        console.log('✅ Prompt loaded from cache:', prompt.name, `(${promptSource})`);
       }
 
       // ========== STEP 3: Resolve Brokers ==========
@@ -218,6 +222,7 @@ export const startPromptAction = createAsyncThunk<
       const instanceId = await dispatch(
         startPromptInstance({
           promptId,
+          promptSource,
           variables: finalVariables,
           executionConfig: {
             auto_run: action.execution_config.auto_run,

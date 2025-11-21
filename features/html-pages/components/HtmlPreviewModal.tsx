@@ -7,7 +7,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
 import { getWordPressCSS, loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
-import SmallCodeEditor from "@/components/mardown-display/code/SmallCodeEditor";
+import SmallCodeEditor from "@/features/code-editor/components/code-block/SmallCodeEditor";
 
 interface HtmlPreviewModalProps {
     isOpen: boolean;

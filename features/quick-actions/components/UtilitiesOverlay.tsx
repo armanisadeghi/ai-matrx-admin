@@ -8,7 +8,7 @@ import TaskApp from '@/features/tasks/components/TaskApp';
 import { QuickChatSheet } from './QuickChatSheet';
 import { QuickDataSheet } from './QuickDataSheet';
 import { QuickFilesSheet } from './QuickFilesSheet';
-import { ActivePromptResults } from '@/features/prompts/components/results/ActivePromptResults';
+import { ActivePromptResults } from '@/features/prompts/components/results-display/ActivePromptResults';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { StickyNote, CheckSquare, MessageSquare, Database, FolderOpen, ExternalLink, Sparkles } from 'lucide-react';
