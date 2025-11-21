@@ -1,8 +1,11 @@
 "use client";
+
 import React, { Suspense, lazy } from "react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import BasicMarkdownContent from "../BasicMarkdownContent";
+
+// Lazy-load CodeBlock to avoid circular dependency with Redux store
+const CodeBlock = lazy(() => import("@/components/mardown-display/code/CodeBlock"));
 
 // Static imports for frequently used, lightweight components
 import { QuestionnaireProvider } from "../../blocks/questionnaire/QuestionnaireContext";
@@ -67,9 +70,15 @@ const LazyBlockWrapper: React.FC<LazyBlockWrapperProps> = ({ children, fallback 
  * Export wrapped components for use in EnhancedChatMarkdown
  */
 export const BlockComponents = {
-    // Lightweight components that can remain static
-    CodeBlock,
+    // Lightweight components
     BasicMarkdownContent,
+    
+    // CodeBlock is lazy-loaded to avoid circular dependency with Redux
+    CodeBlock: (props: any) => (
+        <LazyBlockWrapper>
+            <CodeBlock {...props} />
+        </LazyBlockWrapper>
+    ),
     
     // Wrapped lazy components
     ThinkingVisualization: (props: any) => (

@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import {

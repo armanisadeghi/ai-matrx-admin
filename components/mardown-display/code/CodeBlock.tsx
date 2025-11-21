@@ -1,9 +1,6 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
-import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
+'use client';
 
-// Type assertion to resolve React 19 type incompatibility
-const SyntaxHighlighter = SyntaxHighlighterBase as any;
+import React, { useRef, useState, useEffect } from "react";
 import { cn } from "@/styles/themes/utils";
 import SmallCodeEditor from "./SmallCodeEditor";
 import CodeBlockHeader from "./CodeBlockHeader";
@@ -15,6 +12,11 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { Globe, Loader2 } from "lucide-react";
 import { useCanvas } from "@/hooks/useCanvas";
+import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
+import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
+
+// Type assertion to resolve React 19 type incompatibility
+const SyntaxHighlighter = SyntaxHighlighterBase as any;
 
 interface CodeBlockProps {
     code: string;

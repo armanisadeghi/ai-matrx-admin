@@ -1,22 +1,28 @@
-'use client';
+import { createClient } from '@/utils/supabase/server';
+import { notFound } from 'next/navigation';
+import { PromptAppEditor } from '@/features/prompt-apps/components/PromptAppEditor';
 
-import dynamic from 'next/dynamic';
-import { Loader2 } from 'lucide-react';
+interface PromptAppPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
 
-// Dynamically import the editor component with SSR disabled to avoid Redux initialization issues
-const PromptAppEditorClient = dynamic(
-  () => import('./PromptAppEditorClient').then(mod => ({ default: mod.default })),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="h-page flex items-center justify-center bg-textured">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+export default async function PromptAppPage({ params }: PromptAppPageProps) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  // RLS ensures user can only fetch their own apps
+  const { data: app, error } = await supabase
+    .from('prompt_apps')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !app) {
+    notFound();
   }
-);
 
-export default function PromptAppPage() {
-  return <PromptAppEditorClient />;
+  return <PromptAppEditor app={app} />;
 }
 

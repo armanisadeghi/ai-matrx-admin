@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState }  from "react";
 import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, ChevronDown, ChevronUp, Globe, Loader2, Wand2, RotateCcw, WrapText, Maximize2, ListOrdered, FileText } from "lucide-react";
 import { cn } from "@/styles/themes/utils";

@@ -1,4 +1,5 @@
 // File: lib/redux/selectors/userSelectors.ts
+'use client';
 
 import { RootState } from '../store';
 import {createSelector} from "reselect";

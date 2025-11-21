@@ -2,9 +2,9 @@
 
 'use client';
 
+import {AppStore, makeStore} from '@/lib/redux/store';
 import {useRef, useEffect} from 'react';
 import {Provider} from 'react-redux';
-import {AppStore, makeStore} from '@/lib/redux/store';
 import {loadPreferences} from '@/lib/redux/middleware/preferencesMiddleware';
 import {InitialReduxState} from '@/types/reduxTypes';
 

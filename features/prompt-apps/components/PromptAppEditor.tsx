@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -9,13 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
-import CodeBlock from '@/components/mardown-display/code/CodeBlock';
 import { AICodeEditorModal } from '@/components/code-editor/AICodeEditorModal';
 import type { PromptApp } from '../types';
+
+// Lazy-load CodeBlock to avoid circular dependency with Providers
+const CodeBlock = lazy(() => import('@/components/mardown-display/code/CodeBlock'));
 
 interface PromptAppEditorProps {
   app: PromptApp;
@@ -334,11 +336,13 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     <CardTitle>Component Code</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CodeBlock
-                      code={app.component_code}
-                      language={app.component_language || 'tsx'}
-                      showLineNumbers={true}
-                    />
+                    <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+                      <CodeBlock
+                        code={app.component_code}
+                        language={app.component_language || 'tsx'}
+                        showLineNumbers={true}
+                      />
+                    </Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -349,11 +353,13 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     <CardTitle>Variable Schema</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CodeBlock
-                      code={JSON.stringify(app.variable_schema, null, 2)}
-                      language="json"
-                      showLineNumbers={true}
-                    />
+                    <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+                      <CodeBlock
+                        code={JSON.stringify(app.variable_schema, null, 2)}
+                        language="json"
+                        showLineNumbers={true}
+                      />
+                    </Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -475,12 +481,14 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <CodeBlock
-                    code={editComponentCode}
-                    language={app.component_language || 'tsx'}
-                    showLineNumbers={true}
-                    onCodeChange={(newCode) => setEditComponentCode(newCode)}
-                  />
+                  <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+                    <CodeBlock
+                      code={editComponentCode}
+                      language={app.component_language || 'tsx'}
+                      showLineNumbers={true}
+                      onCodeChange={(newCode) => setEditComponentCode(newCode)}
+                    />
+                  </Suspense>
                 </CardContent>
               </Card>
 
