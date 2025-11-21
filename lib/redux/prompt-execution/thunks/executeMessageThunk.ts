@@ -37,7 +37,7 @@ import {
 import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import { generateRunNameFromVariables, generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 /**
  * Execute a message for a prompt instance
@@ -130,6 +130,9 @@ export const executeMessage = createAsyncThunk<
         const runName = generateRunNameFromVariables(mergedVariables, [])
           || generateRunNameFromMessage(userMessageWithVariables);
         
+        // Create fresh client to pick up current auth session
+        const supabase = createClient();
+        
         // Create run in database
         const { data: run, error: runError } = await supabase
           .from('ai_runs')
@@ -217,6 +220,7 @@ export const executeMessage = createAsyncThunk<
       
       if (currentRunId) {
         try {
+          const supabase = createClient();
           await supabase
             .from('ai_tasks')
             .insert({

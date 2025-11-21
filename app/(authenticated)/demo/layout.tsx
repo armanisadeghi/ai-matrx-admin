@@ -1,6 +1,4 @@
 // /layout.tsx
-"use client";
-
 import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 
@@ -10,13 +8,13 @@ export default function Layout(
     }: {
         children: React.ReactNode;
     }) {
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-
+    // No need for typeof window check in server component
+    // The currentPath will be handled by ModuleHeader internally
     return (
         <div className="flex flex-col h-page">
             <ModuleHeader
                 pages={filteredPages}
-                currentPath={currentPath}
+                currentPath="" // Empty string - let ModuleHeader handle it client-side
                 moduleHome={MODULE_HOME}
                 moduleName={MODULE_NAME}
             />

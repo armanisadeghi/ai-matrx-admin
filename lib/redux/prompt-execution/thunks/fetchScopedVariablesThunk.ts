@@ -21,7 +21,7 @@ import {
   setScopedVariablesStatus,
   setScopedVariables,
 } from '../slice';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export const fetchScopedVariables = createAsyncThunk<
   void,
@@ -51,6 +51,9 @@ export const fetchScopedVariables = createAsyncThunk<
       }
 
       dispatch(setScopedVariablesStatus('loading'));
+
+      // Create fresh client to pick up current auth session
+      const supabase = createClient();
 
       // Fetch user variables
       let userVariables: Record<string, string> = {};

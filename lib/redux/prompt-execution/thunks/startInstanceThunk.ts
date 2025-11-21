@@ -22,7 +22,7 @@ import {
   setFetchStatus,
   type CachedPrompt,
 } from '../../slices/promptCacheSlice';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 /**
  * Start a new prompt execution instance
@@ -78,6 +78,8 @@ export const startPromptInstance = createAsyncThunk<
         // Fetch from database (correct table based on source)
         dispatch(setFetchStatus({ promptId, status: 'loading' }));
         
+        // Create fresh client to pick up current auth session
+        const supabase = createClient();
         const { data: promptData, error } = await supabase
           .from(promptSource)
           .select('*')

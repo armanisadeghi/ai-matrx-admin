@@ -47,13 +47,16 @@ import { DiffView } from './DiffView';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { shallowEqual } from 'react-redux';
 import { selectPromptsPreferences } from '@/lib/redux/selectors/userPreferenceSelectors';
+import { completeExecutionThunk } from '@/lib/redux/prompt-execution/thunks/completeExecutionThunk';
 import { 
   startPromptInstance, 
   executeMessage,
   updateVariable,
   setCurrentInput,
+  removeInstance,
   selectInstance,
   selectStreamingTextForInstance,
+  selectIsResponseEndedForInstance,
   selectMergedVariables,
 } from '@/lib/redux/prompt-execution';
 import { PromptInput } from '@/features/prompts/components/PromptInput';
@@ -164,6 +167,9 @@ export function AICodeEditorModal({
   );
   const streamingText = useAppSelector(state => 
     instanceId ? selectStreamingTextForInstance(state, instanceId) : ''
+  );
+  const isResponseEnded = useAppSelector(state => 
+    instanceId ? selectIsResponseEndedForInstance(state, instanceId) : false
   );
   // Use shallowEqual to prevent unnecessary re-renders from object reference changes
   const variables = useAppSelector(
@@ -277,6 +283,35 @@ export function AICodeEditorModal({
     }
   }, [open, defaultBuiltinId]);
 
+  // Complete execution when streaming ends
+  useEffect(() => {
+    if (
+      instanceId &&
+      instance &&
+      isResponseEnded &&
+      streamingText &&
+      (instance.status === 'streaming' || instance.status === 'executing') &&
+      instance.execution.messageStartTime
+    ) {
+      const totalTime = Date.now() - instance.execution.messageStartTime;
+      const timeToFirstToken = instance.execution.timeToFirstToken;
+      
+      console.log('🏁 Streaming ended, completing execution...', {
+        instanceId,
+        streamingTextLength: streamingText.length,
+        totalTime,
+        timeToFirstToken,
+      });
+      
+      dispatch(completeExecutionThunk({
+        instanceId,
+        responseText: streamingText,
+        timeToFirstToken,
+        totalTime,
+      }));
+    }
+  }, [instanceId, instance, isResponseEnded, streamingText, dispatch]);
+  
   // Parse response when streaming completes
   useEffect(() => {
     if (streamingText && !isExecuting && state === 'processing') {
@@ -470,6 +505,10 @@ export function AICodeEditorModal({
     if (state === 'processing') {
       // Can't cancel during processing in this implementation
       return;
+    }
+    // Cleanup instance when closing
+    if (instanceId) {
+      dispatch(removeInstance({ instanceId }));
     }
     onOpenChange(false);
   };

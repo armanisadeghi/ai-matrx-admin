@@ -17,7 +17,7 @@ import {
   completeExecution,
   setInstanceStatus,
 } from '../slice';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export const completeExecutionThunk = createAsyncThunk<
   void,
@@ -66,6 +66,9 @@ export const completeExecutionThunk = createAsyncThunk<
       // Complete task in database if tracking
       if (instance.runTracking.runId && instance.execution.currentTaskId) {
         try {
+          // Create fresh client to pick up current auth session
+          const supabase = createClient();
+          
           // Complete task
           const { error: taskError } = await supabase
             .from('ai_tasks')
