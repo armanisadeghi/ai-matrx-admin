@@ -65,6 +65,7 @@ import { PromptInput } from '@/features/prompts/components/PromptInput';
 import { PromptVariable } from '@/features/prompts/types/core';
 import type { Resource } from '@/features/prompts/components/resource-display';
 import { selectCachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
+import { cn } from '@/lib/utils';
 
 export interface AICodeEditorModalProps {
   open: boolean;
@@ -263,9 +264,15 @@ export function AICodeEditorModal({
     }
   }, [instanceId, cachedPrompt, currentCode, selection, context, dispatch]);
 
-  // Reset state when modal closes
+  // Reset state and cleanup when modal closes
   useEffect(() => {
     if (!open) {
+      // Cleanup instance
+      if (instanceId) {
+        dispatch(removeInstance({ instanceId }));
+      }
+      
+      // Reset all state
       setInstanceId(null);
       setResources([]);
       setExpandedVariable(null);
@@ -278,7 +285,7 @@ export function AICodeEditorModal({
       setSelectedBuiltinId(defaultBuiltinId);
       setSubmitOnEnter(submitOnEnterPreference);
     }
-  }, [open, defaultBuiltinId, submitOnEnterPreference]);
+  }, [open, defaultBuiltinId, submitOnEnterPreference, instanceId, dispatch]);
 
   // Update selected builtin when default changes (e.g., when modal reopens with different context)
   useEffect(() => {
@@ -326,31 +333,21 @@ export function AICodeEditorModal({
     // Use rawAIResponse instead of streamingText because streamingText
     // becomes empty after completeExecution sets currentTaskId to null
     if (rawAIResponse && !isExecuting && state === 'processing') {
-      // Response complete, parse it
+      // Response complete, try to parse for edits
       const parsed = parseCodeEdits(rawAIResponse);
       setParsedEdits(parsed);
 
-      if (!parsed.success) {
-        setState('error');
-        // Show detailed error with parse details
-        let errorMsg = parsed.error || 'Failed to parse AI response';
-
-        if (parsed.parseDetails) {
-          errorMsg += `\n\nParse Details:`;
-          errorMsg += `\n- SEARCH blocks found: ${parsed.parseDetails.foundSearchBlocks}`;
-          errorMsg += `\n- REPLACE blocks found: ${parsed.parseDetails.foundReplaceBlocks}`;
-
-          if (parsed.parseDetails.warnings.length > 0) {
-            errorMsg += `\n\nWarnings:`;
-            parsed.parseDetails.warnings.forEach((w, i) => {
-              errorMsg += `\n${i + 1}. ${w}`;
-            });
-          }
-        }
-
-        setErrorMessage(errorMsg);
+      // CRITICAL: No edits found = normal conversation, NOT an error
+      // The AI can chat, ask questions, provide explanations without edits
+      if (!parsed.success || parsed.edits.length === 0) {
+        console.log('📝 No code edits found in response - continuing conversation');
+        // Reset to input state to continue the conversation
+        setState('input');
         return;
       }
+
+      // Edits found - now validate them
+      console.log(`✏️ Found ${parsed.edits.length} edit(s) - validating...`);
 
       // Validate edits against current code
       const validation = validateEdits(currentCode, parsed.edits);
@@ -362,9 +359,12 @@ export function AICodeEditorModal({
       }
 
       if (!validation.valid) {
+        console.error('❌ Edit validation failed');
         setState('error');
-        let errorMsg = `⚠️ VALIDATION FAILED\n\n`;
-        errorMsg += `The AI generated ${parsed.edits.length} edit${parsed.edits.length !== 1 ? 's' : ''}, but some SEARCH patterns don't match the current code.\n\n`;
+        let errorMsg = `⚠️ INVALID CODE EDITS\n\n`;
+        errorMsg += `The AI provided ${parsed.edits.length} edit${parsed.edits.length !== 1 ? 's' : ''}, but some SEARCH patterns don't match the current code.\n\n`;
+        errorMsg += `This usually means the AI is trying to edit code that doesn't exist or has changed.\n`;
+        errorMsg += `You can continue the conversation to clarify or try again.\n\n`;
 
         if (validation.warnings.length > 0) {
           errorMsg += `✓ ${validation.warnings.length} edit${validation.warnings.length !== 1 ? 's' : ''} will use fuzzy matching (whitespace-tolerant)\n`;
@@ -438,21 +438,8 @@ export function AICodeEditorModal({
       }
 
       // Prepare user input with resources if any
+      // CRITICAL: NEVER modify the user's message - instructions are in the prompt itself
       let finalUserInput = instance?.conversation.currentInput.trim() || '';
-
-      // Add system reminder about format
-      const formatReminder = `
-IMPORTANT: You must output your changes using the SEARCH/REPLACE block format.
-SEARCH:
-<<<
-[exact code to find]
->>>
-REPLACE:
-<<<
-[replacement code]
->>>
-`;
-      finalUserInput += formatReminder;
 
       if (resources.length > 0) {
         // Add resources as context in the user message
@@ -534,17 +521,6 @@ REPLACE:
     }, 1500);
   };
 
-  const handleCancel = () => {
-    if (state === 'processing') {
-      // Can't cancel during processing in this implementation
-      return;
-    }
-    // Cleanup instance when closing
-    if (instanceId) {
-      dispatch(removeInstance({ instanceId }));
-    }
-    onOpenChange(false);
-  };
 
   const diffStats = modifiedCode ? getDiffStats(currentCode, modifiedCode) : null;
 
@@ -558,70 +534,68 @@ REPLACE:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col overflow-hidden">
-        {/* Fixed Header */}
-        <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
-          <div className="flex items-center justify-between gap-3 pr-8">
-            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
-              <span className="truncate">{title}</span>
-            </DialogTitle>
-
-            <div className="flex items-center gap-2">
-              {allowPromptSelection && (
-                <Select value={selectedBuiltinId} onValueChange={setSelectedBuiltinId} disabled={isLoadingPrompt}>
-                  <SelectTrigger className="w-[180px] h-8 text-xs">
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableBuiltins.map((builtin) => (
-                      <SelectItem key={builtin.id} value={builtin.id} className="text-xs">
-                        {builtin.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      <DialogContent className="max-w-7xl h-[95vh] p-0 flex flex-col overflow-hidden gap-0">
+        {/* Compact Header - Only show when needed */}
+        {(allowPromptSelection || title !== 'AI Code Editor') && (
+          <DialogHeader className="px-3 py-2 border-b shrink-0 bg-muted/30">
+            <div className="flex items-center justify-between gap-2 pr-8">
+              {title !== 'AI Code Editor' && (
+                <DialogTitle className="flex items-center gap-1.5 text-sm font-medium">
+                  <Code2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="truncate">{title}</span>
+                </DialogTitle>
               )}
+
+              <div className="flex items-center gap-2 ml-auto">
+                {allowPromptSelection && (
+                  <Select value={selectedBuiltinId} onValueChange={setSelectedBuiltinId} disabled={isLoadingPrompt}>
+                    <SelectTrigger className="w-[160px] h-7 text-xs">
+                      <SelectValue placeholder="Select mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableBuiltins.map((builtin) => (
+                        <SelectItem key={builtin.id} value={builtin.id} className="text-xs">
+                          {builtin.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
+        )}
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0 bg-muted/10">
-          <div className="space-y-4 h-full flex flex-col">
-
-            {/* Code Display Area */}
+        {/* Main Content - Two-column layout */}
+        <div className="flex-1 overflow-hidden min-h-0 flex gap-2 p-2">
+          {/* Left: Main Content Area (changes based on state) */}
+          <div className="flex-1 flex flex-col min-h-0 gap-2">
+            {/* Code Display (input/processing states) */}
             {(state === 'input' || state === 'processing') && (
-              <div className="flex-1 flex flex-col min-h-0 border rounded-lg overflow-hidden bg-background shadow-sm">
-                <div className="px-4 py-2 border-b bg-muted/30 flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2">
-                    <Code2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">Current Code</span>
-                  </div>
-                  <Badge variant="outline" className="text-xs font-normal">
+              <div className="flex-1 flex flex-col min-h-0 border rounded overflow-hidden bg-background">
+                <div className="px-2 py-1 border-b bg-muted/20 flex items-center justify-between shrink-0">
+                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Current Code</span>
+                  <Badge variant="outline" className="text-[10px] h-4 px-1.5">
                     {language}
                   </Badge>
                 </div>
-                <div className="flex-1 overflow-hidden relative">
-                  <div className="absolute inset-0 overflow-auto">
-                    <CodeBlock
-                      code={currentCode}
-                      language={language}
-                      showLineNumbers={true}
-                    />
-                  </div>
+                <div className="flex-1 overflow-auto relative">
+                  <CodeBlock
+                    code={currentCode}
+                    language={language}
+                    showLineNumbers={true}
+                  />
 
-                  {/* Processing Overlay */}
+                  {/* Processing Overlay - Compact */}
                   {state === 'processing' && (
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-                      <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                      <p className="text-lg font-medium text-foreground">Generating Changes...</p>
-                      <p className="text-sm text-muted-foreground mt-2">Analyzing your code and creating edits</p>
+                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+                      <Loader2 className="w-10 h-10 animate-spin text-primary mb-3" />
+                      <p className="text-sm font-medium">AI is responding...</p>
 
                       {streamingText && (
-                        <div className="mt-6 w-full max-w-2xl px-6">
-                          <div className="bg-muted/50 rounded-lg border p-4 max-h-[200px] overflow-y-auto font-mono text-xs">
-                            <p className="text-muted-foreground mb-2 text-[10px] uppercase tracking-wider font-semibold">Live Output</p>
+                        <div className="mt-4 w-full max-w-xl px-4">
+                          <div className="bg-muted/50 rounded border p-2 max-h-[150px] overflow-y-auto font-mono text-[10px]">
+                            <p className="text-muted-foreground mb-1 text-[9px] uppercase tracking-wider font-semibold">Live Response</p>
                             <pre className="whitespace-pre-wrap break-words">{streamingText}</pre>
                           </div>
                         </div>
@@ -635,58 +609,58 @@ REPLACE:
             {/* Review Stage */}
             {state === 'review' && parsedEdits && (
               <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex items-center justify-between mb-4 shrink-0">
-                  <div>
-                    <h3 className="text-lg font-semibold">Review Changes</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {parsedEdits.edits.length} change{parsedEdits.edits.length !== 1 ? 's' : ''} proposed
-                    </p>
+                <div className="flex items-center justify-between mb-2 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold">Review Changes</span>
+                    <span className="text-xs text-muted-foreground">
+                      {parsedEdits.edits.length} edit{parsedEdits.edits.length !== 1 ? 's' : ''}
+                    </span>
                   </div>
                   {diffStats && (
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className="text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30">
-                        +{diffStats.additions} additions
+                    <div className="flex gap-1.5 pr-8">
+                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30">
+                        +{diffStats.additions}
                       </Badge>
-                      <Badge variant="outline" className="text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30">
-                        -{diffStats.deletions} deletions
+                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30">
+                        -{diffStats.deletions}
                       </Badge>
                     </div>
                   )}
                 </div>
 
                 {parsedEdits.explanation && (
-                  <Alert className="mb-4 shrink-0">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    <AlertDescription>{parsedEdits.explanation}</AlertDescription>
+                  <Alert className="mb-2 shrink-0 py-2">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    <AlertDescription className="text-xs">{parsedEdits.explanation}</AlertDescription>
                   </Alert>
                 )}
 
                 <Tabs defaultValue="diff" className="flex-1 flex flex-col min-h-0">
-                  <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto">
+                  <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0">
                     <TabsTrigger
                       value="diff"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Diff View
+                      <Eye className="w-3.5 h-3.5 mr-1.5" />
+                      Diff
                     </TabsTrigger>
                     <TabsTrigger
                       value="after"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
                     >
-                      <FileCode className="w-4 h-4 mr-2" />
-                      Preview Result
+                      <FileCode className="w-3.5 h-3.5 mr-1.5" />
+                      Preview
                     </TabsTrigger>
                     <TabsTrigger
                       value="response"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
                     >
-                      <FileText className="w-4 h-4 mr-2" />
-                      Raw Response
+                      <FileText className="w-3.5 h-3.5 mr-1.5" />
+                      Response
                     </TabsTrigger>
                   </TabsList>
 
-                  <div className="flex-1 mt-4 min-h-0 border rounded-lg overflow-hidden bg-background">
+                  <div className="flex-1 mt-2 min-h-0 border rounded overflow-hidden bg-background">
                     <TabsContent value="diff" className="h-full m-0 p-0 overflow-hidden">
                       <DiffView
                         originalCode={currentCode}
@@ -707,7 +681,7 @@ REPLACE:
                     </TabsContent>
 
                     <TabsContent value="response" className="h-full m-0 p-0 overflow-hidden">
-                      <div className="h-full overflow-auto p-4">
+                      <div className="h-full overflow-auto p-3">
                         <EnhancedChatMarkdown
                           content={rawAIResponse}
                           type="message"
@@ -722,101 +696,134 @@ REPLACE:
               </div>
             )}
 
-            {/* Applying Stage */}
+            {/* Applying Stage - Compact */}
             {state === 'applying' && (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
-                  <h3 className="text-xl font-semibold">Applying Changes...</h3>
-                  <p className="text-muted-foreground">Updating your code...</p>
+                <div className="text-center space-y-2">
+                  <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+                  <p className="text-sm font-medium">Applying Changes...</p>
                 </div>
               </div>
             )}
 
-            {/* Complete Stage */}
+            {/* Complete Stage - Compact */}
             {state === 'complete' && (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
-                  <h3 className="text-xl font-semibold">Changes Applied!</h3>
-                  <p className="text-muted-foreground">Your code has been updated successfully.</p>
+                  <p className="text-sm font-medium">Changes Applied!</p>
                 </div>
               </div>
             )}
 
-            {/* Error Stage */}
+            {/* Error Stage - Compact */}
             {state === 'error' && (
-              <div className="flex-1 flex flex-col min-h-0 space-y-4">
-                <Alert variant="destructive" className="shrink-0">
-                  <AlertCircle className="w-4 h-4" />
-                  <AlertDescription className="font-medium">
+              <div className="flex-1 flex flex-col min-h-0 gap-2">
+                <Alert variant="destructive" className="shrink-0 py-2">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <AlertDescription className="text-xs font-medium">
                     Failed to process AI response
                   </AlertDescription>
                 </Alert>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
-                  <div className="border rounded-lg p-4 overflow-auto bg-destructive/5">
-                    <h4 className="font-semibold text-destructive mb-2">Error Details</h4>
-                    <pre className="text-xs whitespace-pre-wrap font-mono text-destructive/80">{errorMessage}</pre>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 flex-1 min-h-0">
+                  <div className="border rounded p-2 overflow-auto bg-destructive/5">
+                    <h4 className="font-semibold text-destructive mb-1 text-xs">Error Details</h4>
+                    <pre className="text-[10px] whitespace-pre-wrap font-mono text-destructive/80">{errorMessage}</pre>
                   </div>
 
-                  <div className="border rounded-lg flex flex-col overflow-hidden">
-                    <div className="px-4 py-2 bg-muted/50 border-b font-medium text-sm flex items-center justify-between">
-                      <span>Raw AI Response</span>
+                  <div className="border rounded flex flex-col overflow-hidden">
+                    <div className="px-2 py-1 bg-muted/50 border-b flex items-center justify-between shrink-0">
+                      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Raw AI Response</span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2"
+                        className="h-6 px-1.5"
                         onClick={handleCopyResponse}
                         disabled={!rawAIResponse}
                       >
                         {isCopied ? (
                           <>
-                            <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
-                            <span className="text-xs">Copied!</span>
+                            <Check className="w-3 h-3 mr-1 text-green-600" />
+                            <span className="text-[10px]">Copied!</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-3.5 h-3.5 mr-1.5" />
-                            <span className="text-xs">Copy</span>
+                            <Copy className="w-3 h-3 mr-1" />
+                            <span className="text-[10px]">Copy</span>
                           </>
                         )}
                       </Button>
                     </div>
-                    <div className="flex-1 overflow-auto p-4 bg-background">
-                      <pre className="text-xs whitespace-pre-wrap font-mono">{rawAIResponse}</pre>
+                    <div className="flex-1 overflow-auto p-2 bg-background">
+                      <pre className="text-[10px] whitespace-pre-wrap font-mono">{rawAIResponse}</pre>
                     </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Right: Persistent Conversation Panel */}
+          {instance?.conversation.messages && instance.conversation.messages.length > 0 && (
+            <div className="w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-background shrink-0">
+              <div className="px-2 py-1 border-b bg-muted/20 shrink-0">
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Conversation</span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                {instance.conversation.messages.map((msg, idx) => (
+                  <div key={idx} className={cn(
+                    "p-2 rounded text-xs",
+                    msg.role === 'user' ? 'bg-primary/10 ml-4' : 'bg-muted mr-4'
+                  )}>
+                    <div className="font-semibold text-[10px] uppercase tracking-wide mb-1 text-muted-foreground">
+                      {msg.role === 'user' ? 'You' : 'Assistant'}
+                    </div>
+                    <div className="whitespace-pre-wrap break-words">
+                      {typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)}
+                    </div>
+                  </div>
+                ))}
+                {/* Show streaming response in conversation */}
+                {isExecuting && streamingText && (
+                  <div className="p-2 rounded text-xs bg-muted mr-4 animate-pulse">
+                    <div className="font-semibold text-[10px] uppercase tracking-wide mb-1 text-muted-foreground">
+                      Assistant
+                    </div>
+                    <div className="whitespace-pre-wrap break-words">
+                      {streamingText}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Fixed Footer - Input Area */}
-        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t shrink-0 bg-background z-20">
+        {/* Fixed Footer - Input Area - Compact */}
+        <DialogFooter className="px-2 py-2 border-t shrink-0 bg-background z-20">
           <div className="w-full">
             {state === 'review' ? (
               <div className="flex items-center justify-between w-full">
-                <Button variant="ghost" onClick={() => setState('input')}>
-                  Cancel & Retry
+                <Button variant="ghost" size="sm" onClick={() => setState('input')}>
+                  Retry
                 </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setState('input')}>
+                <div className="flex gap-1.5">
+                  <Button variant="outline" size="sm" onClick={() => setState('input')}>
                     Discard
                   </Button>
-                  <Button onClick={handleApplyChanges} className="bg-green-600 hover:bg-green-700 text-white">
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Apply Changes
+                  <Button size="sm" onClick={handleApplyChanges} className="bg-green-600 hover:bg-green-700 text-white">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                    Apply
                   </Button>
                 </div>
               </div>
             ) : state === 'error' ? (
               <div className="flex justify-end w-full">
-                <Button onClick={() => setState('input')}>
-                  Try Again
+                <Button size="sm" onClick={() => setState('input')}>
+                  Continue Conversation
                 </Button>
               </div>
             ) : (
