@@ -5,7 +5,7 @@
  * Similar to content-blocks-service.ts pattern.
  */
 
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import type {
   SystemPromptDB,
   SystemPromptQueryOptions,
@@ -15,11 +15,14 @@ import type {
   SystemPromptWithStats
 } from '@/types/system-prompts-db';
 
+// TODO: Fix Linter Errors
+
+
 /**
  * Fetch all system prompts with optional filtering
  */
 export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {}) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   let query = supabase
     .from('system_prompts')
@@ -77,7 +80,7 @@ export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {})
  * Fetch a single system prompt by ID
  */
 export async function fetchSystemPromptById(id: string) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data, error } = await supabase
     .from('system_prompts')
@@ -97,7 +100,7 @@ export async function fetchSystemPromptById(id: string) {
  * Fetch a single system prompt by system_prompt_id
  */
 export async function fetchSystemPromptBySystemId(systemPromptId: string) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data, error } = await supabase
     .from('system_prompts')
@@ -153,7 +156,7 @@ export async function fetchButtonPrompts() {
  * Create a new system prompt
  */
 export async function createSystemPrompt(input: CreateSystemPromptInput) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) {
@@ -198,7 +201,7 @@ export async function createSystemPrompt(input: CreateSystemPromptInput) {
  * Update an existing system prompt
  */
 export async function updateSystemPrompt(id: string, input: UpdateSystemPromptInput) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) {
@@ -250,7 +253,7 @@ export async function publishSystemPromptUpdate(
   id: string, 
   input: PublishSystemPromptUpdateInput
 ) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) {
@@ -282,7 +285,7 @@ export async function publishSystemPromptUpdate(
  * Delete a system prompt
  */
 export async function deleteSystemPrompt(id: string) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { error } = await supabase
     .from('system_prompts')
@@ -308,7 +311,7 @@ export async function trackSystemPromptExecution(
   errorMessage?: string,
   executionTimeMs?: number
 ) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data: user } = await supabase.auth.getUser();
   
@@ -335,7 +338,7 @@ export async function trackSystemPromptExecution(
  * Get system prompt categories
  */
 export async function getSystemPromptCategories() {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data, error } = await supabase
     .from('system_prompts')
@@ -356,7 +359,7 @@ export async function getSystemPromptCategories() {
  * Get system prompt statistics
  */
 export async function getSystemPromptStats(id: string) {
-  const supabase = getBrowserSupabaseClient();
+  const supabase = createClient();
   
   const { data, error } = await supabase
     .from('system_prompt_executions')

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { HTMLPageService } from '@/features/html-pages/services/htmlPageService';
 

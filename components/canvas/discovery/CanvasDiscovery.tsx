@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,7 +27,7 @@ export function CanvasDiscovery() {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<SortOption>('trending');
     const [filterType, setFilterType] = useState<CanvasType | 'all'>('all');
-    const supabase = getBrowserSupabaseClient();
+    const supabase = createClient();
 
     const { data: canvases = [], isLoading } = useQuery({
         queryKey: ['discover-canvases', sortBy, filterType, searchTerm],

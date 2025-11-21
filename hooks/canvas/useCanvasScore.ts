@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import type { SubmitScoreRequest, SubmitScoreResponse, CanvasScore } from '@/types/canvas-social';
 
 export function useCanvasScore(canvasId: string) {
-    const supabase = getBrowserSupabaseClient();
+    const supabase = createClient();
     const queryClient = useQueryClient();
 
     // Get user's best score

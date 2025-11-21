@@ -6,14 +6,14 @@ import {
     MessageRole,
     TemplatesByRole
 } from '@/features/content-templates/types/content-templates-db';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient';
 
 // Helper to get the right client based on context
 function getClient() {
     if (typeof window !== 'undefined') {
         // Browser context - use browser client
-        return getBrowserSupabaseClient();
+        return createClient();
     } else {
         // Script/server context - use script client
         return getScriptSupabaseClient();

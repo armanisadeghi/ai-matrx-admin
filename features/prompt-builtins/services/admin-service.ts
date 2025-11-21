@@ -1,4 +1,3 @@
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient';
 import {
   ShortcutCategory,
@@ -14,11 +13,12 @@ import {
 } from '../types/core';
 import { ContentBlockDB, UpdateContentBlockInput } from '@/types/content-blocks-db';
 import { logDetailedError } from '../utils/error-handler';
+import { createClient } from '@/utils/supabase/client';
 
 // Helper to get the right client based on context
 function getClient() {
   if (typeof window !== 'undefined') {
-    return getBrowserSupabaseClient();
+    return createClient();
   } else {
     return getScriptSupabaseClient();
   }

@@ -1,10 +1,10 @@
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient';
 
 // Helper to get the right client based on context
 function getClient() {
     if (typeof window !== 'undefined') {
-        return getBrowserSupabaseClient();
+        return createClient();
     } else {
         return getScriptSupabaseClient();
     }

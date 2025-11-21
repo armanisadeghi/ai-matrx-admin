@@ -1,4 +1,6 @@
-import supabaseHtml from '@/features/html-pages/lib/supabase-html';
+'use client';
+
+import { getSupabaseHtml } from '@/features/html-pages/lib/supabase-html';
 
 export class HTMLPageService {
   /**
@@ -16,6 +18,7 @@ export class HTMLPageService {
    */
   static async createPage(htmlContent, metaTitle, metaDescription = '', userId, metaFields = {}) {
     try {
+      const supabaseHtml = getSupabaseHtml();
 
       const insertData = {
         html_content: htmlContent,
@@ -65,6 +68,8 @@ export class HTMLPageService {
    */
   static async getUserPages(userId) {
     try {
+      const supabaseHtml = getSupabaseHtml();
+      
       const { data, error } = await supabaseHtml
         .from('html_pages')
         .select('id, meta_title, meta_description, is_indexable, created_at')
@@ -99,6 +104,7 @@ export class HTMLPageService {
    */
   static async updatePage(pageId, htmlContent, metaTitle, metaDescription = '', userId, metaFields = {}) {
     try {
+      const supabaseHtml = getSupabaseHtml();
 
       const updateData = {
         html_content: htmlContent,
@@ -151,6 +157,8 @@ export class HTMLPageService {
    */
   static async deletePage(pageId, userId) {
     try {
+      const supabaseHtml = getSupabaseHtml();
+      
       const { error } = await supabaseHtml
         .from('html_pages')
         .delete()
@@ -176,6 +184,8 @@ export class HTMLPageService {
    */
   static async getPage(pageId) {
     try {
+      const supabaseHtml = getSupabaseHtml();
+      
       const { data, error } = await supabaseHtml
         .from('html_pages')
         .select('*')

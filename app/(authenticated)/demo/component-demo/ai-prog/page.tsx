@@ -122,9 +122,6 @@ export default function AICodeEditorDemoPage() {
               <Sparkles className="w-8 h-8 text-primary" />
               AI Code Editor Demo
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Test the AI Code Editor modal with different configurations
-            </p>
           </div>
 
           {/* Configuration */}

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import type { LeaderboardEntry } from '@/types/canvas-social';
 
 export function useLeaderboard(canvasId: string, limit: number = 10) {
-    const supabase = getBrowserSupabaseClient();
+    const supabase = createClient();
 
     return useQuery({
         queryKey: ['canvas-leaderboard', canvasId, limit],

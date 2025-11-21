@@ -1,6 +1,5 @@
 {
     "java.project.explorer.showNonJavaResources": false,
-
     "files.exclude": {
         "**/__pycache__": true,
         "**/.history": true,
@@ -8,7 +7,6 @@
         "**/.idea": true,
         "**/node_modules": true
     },
-
     "search.exclude": {
         "**/__pycache__": true,
         "**/.history": true,

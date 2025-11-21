@@ -41,15 +41,15 @@ import {
     Columns2,
     PanelLeft
 } from 'lucide-react';
-import { 
-    ContentBlockDB, 
-    CategoryConfigDB, 
+import {
+    ContentBlockDB,
+    CategoryConfigDB,
     SubcategoryConfigDB,
     CreateContentBlockInput,
     UpdateContentBlockInput,
     CategoryWithSubcategories
 } from '@/types/content-blocks-db';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 
@@ -67,9 +67,9 @@ const AutoResizeTextarea = React.forwardRef<
     }
 >(({ className, value, onChange, minHeight = 100, ...props }, ref) => {
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-    
+
     React.useImperativeHandle(ref, () => textareaRef.current!);
-    
+
     const adjustHeight = React.useCallback(() => {
         const textarea = textareaRef.current;
         if (textarea) {
@@ -78,11 +78,11 @@ const AutoResizeTextarea = React.forwardRef<
             textarea.style.height = Math.max(minHeight, scrollHeight) + 'px';
         }
     }, [minHeight]);
-    
+
     React.useEffect(() => {
         adjustHeight();
     }, [value, adjustHeight]);
-    
+
     React.useEffect(() => {
         const textarea = textareaRef.current;
         if (textarea) {
@@ -92,13 +92,13 @@ const AutoResizeTextarea = React.forwardRef<
             return () => window.removeEventListener('resize', adjustHeight);
         }
     }, [adjustHeight]);
-    
+
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChange?.(e);
         // Small delay to ensure the value is updated before adjusting height
         setTimeout(adjustHeight, 0);
     };
-    
+
     return (
         <textarea
             ref={textareaRef}
@@ -170,7 +170,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const loadData = async () => {
         try {
             setLoading(true);
-            const supabase = getBrowserSupabaseClient();
+            const supabase = createClient();
 
             // Load all categories from unified shortcut_categories
             const { data: allCategoriesData, error: categoryError } = await supabase
@@ -237,11 +237,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     // Filtered and searched content blocks
     const filteredBlocks = contentBlocks.filter(block => {
         const matchesCategory = selectedCategory === 'all' || block.category_id === selectedCategory;
-        const matchesSearch = searchTerm === '' || 
+        const matchesSearch = searchTerm === '' ||
             block.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
             block.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             block.block_id.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         return matchesCategory && matchesSearch;
     });
 
@@ -287,8 +287,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         if (!selectedBlockId || !editData.id) return;
 
         try {
-            const supabase = getBrowserSupabaseClient();
-            
+            const supabase = createClient();
+
             const { error } = await supabase
                 .from('content_blocks')
                 .update({
@@ -317,7 +317,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 description: `Content block "${editData.label}" updated successfully.`,
                 variant: "success"
             });
-            
+
             setHasUnsavedChanges(false);
             loadData(); // Reload data
         } catch (error) {
@@ -327,8 +327,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
     const handleCreateBlock = async () => {
         try {
-            const supabase = getBrowserSupabaseClient();
-            
+            const supabase = createClient();
+
             const { error } = await supabase
                 .from('content_blocks')
                 .insert([{
@@ -393,14 +393,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
     const handleToggleActive = async (block: ContentBlockDB) => {
         try {
-            const supabase = getBrowserSupabaseClient();
+            const supabase = createClient();
             const { error } = await supabase
                 .from('content_blocks')
                 .update({ is_active: !block.is_active })
                 .eq('id', block.id);
 
             if (error) throw error;
-            
+
             loadData(); // Reload data
         } catch (error) {
             console.error('Error toggling block status:', error);
@@ -449,18 +449,18 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     // Unified category management handlers (works for both parent and child categories)
     const handleCreateCategory = async (label: string, iconName: string = 'Folder', color: string = '#3b82f6', parentCategoryId: string | null = null) => {
         if (!label.trim()) return null;
-        
+
         try {
-            const supabase = getBrowserSupabaseClient();
-            
+            const supabase = createClient();
+
             // Calculate sort order within the parent context
             const allFlat = getAllCategoriesFlat();
             const siblings = allFlat.filter(c => c.parent_category_id === parentCategoryId);
             const maxSortOrder = Math.max(0, ...siblings.map(c => c.sort_order || 0));
-            
+
             // If creating a child category, inherit parent's color
             const finalColor = parentCategoryId ? (findCategoryById(parentCategoryId)?.color || color) : color;
-            
+
             // Insert into unified shortcut_categories table
             const { data, error } = await supabase
                 .from('shortcut_categories')
@@ -479,22 +479,22 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
             if (error) {
                 console.error('Supabase error details:', error);
-                
+
                 toast({
                     title: "Error Creating Category",
                     description: error.message,
                     variant: "destructive"
                 });
-                
+
                 throw error;
             }
-            
+
             toast({
                 title: "Success",
                 description: `Category "${label}" created successfully.`,
                 variant: "success"
             });
-            
+
             await loadData();
             return data.id; // Return UUID
         } catch (error: any) {
@@ -505,20 +505,20 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
     const handleUpdateCategory = async (categoryId: string, updates: any) => {
         try {
-            const supabase = getBrowserSupabaseClient();
+            const supabase = createClient();
             const { error } = await supabase
                 .from('shortcut_categories')
                 .update(updates)
                 .eq('id', categoryId);
 
             if (error) throw error;
-            
+
             toast({
                 title: "Success",
                 description: "Category updated successfully.",
                 variant: "success"
             });
-            
+
             loadData();
         } catch (error) {
             console.error('Error updating category:', error);
@@ -533,12 +533,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const handleDeleteCategory = async (categoryId: string) => {
         const category = findCategoryById(categoryId);
         if (!category) return;
-        
+
         // Check if category has children
         const hasChildren = category.children && category.children.length > 0;
         // Check if category has content blocks
         const blocksInCategory = contentBlocks.filter(b => b.category_id === categoryId);
-        
+
         setDeleteConfirmation({
             isOpen: true,
             type: 'category',
@@ -550,12 +550,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
     const confirmDelete = async () => {
         const { type, item, hasChildren, hasBlocks } = deleteConfirmation;
-        
+
         if (!item) return;
-        
+
         try {
-            const supabase = getBrowserSupabaseClient();
-            
+            const supabase = createClient();
+
             if (type === 'block') {
                 const { error } = await supabase
                     .from('content_blocks')
@@ -563,12 +563,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     .eq('id', item.id);
 
                 if (error) throw error;
-                
+
                 toast({
                     title: "Success",
                     description: "Content block deleted successfully.",
                 });
-                
+
                 if (selectedBlockId === item.id) {
                     setSelectedBlockId(null);
                 }
@@ -583,14 +583,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         .eq('id', item.id);
 
                     if (error) throw error;
-                    
+
                     toast({
                         title: "Success",
                         description: "Category deleted successfully.",
                     });
                 }
             }
-            
+
             setDeleteConfirmation({ isOpen: false, type: null, item: null });
             await loadData();
         } catch (error) {
@@ -608,12 +608,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     // Quick create handler
     const handleQuickCreateCategory = async () => {
         const categoryId = await handleCreateCategory(
-            quickCategoryData.label, 
-            quickCategoryData.icon_name, 
+            quickCategoryData.label,
+            quickCategoryData.icon_name,
             quickCategoryData.color,
             quickCategoryData.parent_category_id
         );
-        
+
         if (categoryId) {
             // Set the newly created category in the form
             if (quickCreateContext === 'create') {
@@ -621,7 +621,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             } else {
                 handleEditChange('category_id', categoryId);
             }
-            
+
             // Reset and close
             setQuickCategoryData({ label: '', icon_name: 'Folder', color: '#3b82f6', parent_category_id: null });
             setIsQuickCreateCategoryOpen(false);
@@ -654,7 +654,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                             Add
                         </Button>
                     </div>
-                    
+
                     {/* Search */}
                     <div className="relative mb-3">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -665,7 +665,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                             className="pl-9"
                         />
                     </div>
-                    
+
                     {/* Category Filter */}
                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                         <SelectTrigger>
@@ -699,22 +699,22 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 const childBlocks = cat.children?.reduce((sum, child) => sum + countBlocksInTree(child), 0) || 0;
                                 return directBlocks + childBlocks;
                             };
-                            
+
                             // Recursive function to render a category and its children
                             const renderCategory = (cat: Category, depth: number = 0) => {
                                 const categoryBlocks = filteredBlocks.filter(b => b.category_id === cat.id);
                                 const totalInTree = countBlocksInTree(cat);
-                                
+
                                 // Skip if no blocks in this category tree
                                 if (totalInTree === 0) return null;
-                                
+
                                 const isExpanded = isCategoryExpanded(cat.id);
                                 const hasChildren = cat.children && cat.children.length > 0;
-                                
+
                                 return (
                                     <div key={cat.id}>
                                         {/* Category Header - Collapsible */}
-                                        <div 
+                                        <div
                                             className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
                                             style={{ paddingLeft: `${depth * 12 + 8}px` }}
                                             onClick={() => toggleCategoryExpanded(cat.id)}
@@ -738,21 +738,21 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 ({totalInTree})
                                             </span>
                                         </div>
-                                        
+
                                         {/* Category Content - Show only if expanded */}
                                         {isExpanded && (
                                             <div>
                                                 {/* Child Categories first (recursive) */}
                                                 {cat.children?.map(childCat => renderCategory(childCat, depth + 1))}
-                                                
+
                                                 {/* Then blocks directly in this category */}
                                                 {categoryBlocks.map(block => (
                                                     <div
                                                         key={block.id}
                                                         onClick={() => setSelectedBlockId(block.id)}
                                                         className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
-                                                            ${selectedBlockId === block.id 
-                                                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                                                            ${selectedBlockId === block.id
+                                                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
                                                                 : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                                                             }`}
                                                         style={{ paddingLeft: `${(depth + 1) * 12 + 8}px` }}
@@ -776,7 +776,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                     </div>
                                 );
                             };
-                            
+
                             return renderCategory(category, 0);
                         })}
                     </div>
@@ -809,8 +809,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {hasUnsavedChanges && (
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             size="sm"
                                             onClick={handleDiscardChanges}
                                         >
@@ -818,7 +818,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                             Discard
                                         </Button>
                                     )}
-                                    <Button 
+                                    <Button
                                         size="sm"
                                         onClick={handleSaveChanges}
                                         disabled={!hasUnsavedChanges}
@@ -826,16 +826,16 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                         <Save className="w-4 h-4 mr-1" />
                                         Save Changes
                                     </Button>
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         size="sm"
                                         onClick={() => handleToggleActive(selectedBlock)}
                                     >
                                         {selectedBlock.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                         {selectedBlock.is_active ? 'Deactivate' : 'Activate'}
                                     </Button>
-                                    <Button 
-                                        variant="destructive" 
+                                    <Button
+                                        variant="destructive"
                                         size="sm"
                                         onClick={() => handleDeleteBlock(selectedBlock)}
                                     >
@@ -888,8 +888,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="edit-category">Category</Label>
-                                                <Select 
-                                                    value={editData.category_id || ''} 
+                                                <Select
+                                                    value={editData.category_id || ''}
                                                     onValueChange={(value) => {
                                                         if (value === '__new_cat__') {
                                                             setQuickCreateContext('edit');
@@ -984,13 +984,13 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     minHeight={300}
                                                 />
                                             </div>
-                                            
+
                                             {/* Preview Section */}
                                             {previewMode === 'preview' && (
                                                 <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                        <EnhancedChatMarkdown 
-                                                            content={editData.template || ''} 
+                                                        <EnhancedChatMarkdown
+                                                            content={editData.template || ''}
                                                         />
                                                     </div>
                                                 </div>
@@ -1018,7 +1018,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     <DialogHeader>
                         <DialogTitle>Create New Content Block</DialogTitle>
                     </DialogHeader>
-                    
+
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -1056,8 +1056,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         <div className="grid grid-cols-3 gap-4">
                             <div>
                                 <Label htmlFor="create-category">Category</Label>
-                                <Select 
-                                    value={createFormData.category_id || ''} 
+                                <Select
+                                    value={createFormData.category_id || ''}
                                     onValueChange={(value) => {
                                         if (value === '__new_cat__') {
                                             setQuickCreateContext('create');
@@ -1121,7 +1121,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 />
                                 <Label className="text-sm">Active (visible in context menus)</Label>
                             </div>
-                            
+
                             <div className="flex gap-2">
                                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                                     Cancel
@@ -1141,7 +1141,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     <DialogHeader>
                         <DialogTitle>Manage Categories</DialogTitle>
                     </DialogHeader>
-                    
+
                     <div className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: 'calc(90vh - 180px)' }}>
                         <div className="space-y-6 pb-6">
                             {/* Create New Category */}
@@ -1189,8 +1189,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     />
                                                 </div>
                                             </div>
-                                            <Button 
-                                                onClick={() => handleCreateCategory(newCategoryLabel, quickCategoryData.icon_name, quickCategoryData.color, null).then(() => setNewCategoryLabel(''))} 
+                                            <Button
+                                                onClick={() => handleCreateCategory(newCategoryLabel, quickCategoryData.icon_name, quickCategoryData.color, null).then(() => setNewCategoryLabel(''))}
                                                 disabled={!newCategoryLabel.trim()}
                                                 className="mt-5"
                                             >
@@ -1208,8 +1208,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                     <Card key={category.id} className={!category.is_active ? 'opacity-60' : ''}>
                                         <CardHeader className="pb-3">
                                             <div className="flex items-center gap-3">
-                                                <div 
-                                                    className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0" 
+                                                <div
+                                                    className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
                                                     style={{ backgroundColor: category.color }}
                                                 >
                                                     <Folder className="w-5 h-5 text-white" />
@@ -1260,7 +1260,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                             <Button
                                                                 size="sm"
                                                                 onClick={() => {
-                                                                    handleUpdateCategory(category.id, { 
+                                                                    handleUpdateCategory(category.id, {
                                                                         label: category.label,
                                                                         icon_name: category.icon_name,
                                                                         color: category.color
@@ -1320,112 +1320,112 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                             <div className="space-y-2 ml-8">
                                                 {category.children && category.children.length > 0 && (
                                                     <>
-                                                    {category.children.map(childCat => (
-                                                        <div
-                                                            key={childCat.id}
-                                                            className={`flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 ${!childCat.is_active ? 'opacity-60' : ''}`}
-                                                        >
-                                                            <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
-                                                            {editingCategoryId === childCat.id ? (
-                                                                <div className="flex-1 flex items-center gap-2">
-                                                                    <Input
-                                                                        value={childCat.label}
-                                                                        onChange={(e) => {
-                                                                            const updatedCategories = categories.map(c =>
-                                                                                c.id === category.id
-                                                                                    ? {
-                                                                                        ...c,
-                                                                                        children: c.children?.map(ch =>
-                                                                                            ch.id === childCat.id
-                                                                                                ? { ...ch, label: e.target.value }
-                                                                                                : ch
-                                                                                        ) || []
-                                                                                    }
-                                                                                    : c
-                                                                            );
-                                                                            setCategories(updatedCategories);
-                                                                        }}
-                                                                        placeholder="Label"
-                                                                        className="text-sm flex-1"
-                                                                    />
-                                                                    <IconInputWithValidation
-                                                                        value={childCat.icon_name}
-                                                                        onChange={(value) => {
-                                                                            const updatedCategories = categories.map(c =>
-                                                                                c.id === category.id
-                                                                                    ? {
-                                                                                        ...c,
-                                                                                        children: c.children?.map(ch =>
-                                                                                            ch.id === childCat.id
-                                                                                                ? { ...ch, icon_name: value }
-                                                                                                : ch
-                                                                                        ) || []
-                                                                                    }
-                                                                                    : c
-                                                                            );
-                                                                            setCategories(updatedCategories);
-                                                                        }}
-                                                                        placeholder="Icon"
-                                                                        className="text-sm w-32"
-                                                                        showLucideLink={false}
-                                                                    />
-                                                                    <Button
-                                                                        size="sm"
-                                                                        onClick={() => {
-                                                                            handleUpdateCategory(childCat.id, { 
-                                                                                label: childCat.label,
-                                                                                icon_name: childCat.icon_name
-                                                                            });
-                                                                            setEditingCategoryId(null);
-                                                                        }}
-                                                                    >
-                                                                        <Check className="w-3 h-3" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        onClick={() => {
-                                                                            setEditingCategoryId(null);
-                                                                            loadData();
-                                                                        }}
-                                                                    >
-                                                                        <X className="w-3 h-3" />
-                                                                    </Button>
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    <div className="flex-1 text-sm">
-                                                                        <span className="text-gray-900 dark:text-gray-100">{childCat.label}</span>
-                                                                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                                                            (ID: {childCat.id} • Icon: {childCat.icon_name})
-                                                                        </span>
+                                                        {category.children.map(childCat => (
+                                                            <div
+                                                                key={childCat.id}
+                                                                className={`flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 ${!childCat.is_active ? 'opacity-60' : ''}`}
+                                                            >
+                                                                <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                                                                {editingCategoryId === childCat.id ? (
+                                                                    <div className="flex-1 flex items-center gap-2">
+                                                                        <Input
+                                                                            value={childCat.label}
+                                                                            onChange={(e) => {
+                                                                                const updatedCategories = categories.map(c =>
+                                                                                    c.id === category.id
+                                                                                        ? {
+                                                                                            ...c,
+                                                                                            children: c.children?.map(ch =>
+                                                                                                ch.id === childCat.id
+                                                                                                    ? { ...ch, label: e.target.value }
+                                                                                                    : ch
+                                                                                            ) || []
+                                                                                        }
+                                                                                        : c
+                                                                                );
+                                                                                setCategories(updatedCategories);
+                                                                            }}
+                                                                            placeholder="Label"
+                                                                            className="text-sm flex-1"
+                                                                        />
+                                                                        <IconInputWithValidation
+                                                                            value={childCat.icon_name}
+                                                                            onChange={(value) => {
+                                                                                const updatedCategories = categories.map(c =>
+                                                                                    c.id === category.id
+                                                                                        ? {
+                                                                                            ...c,
+                                                                                            children: c.children?.map(ch =>
+                                                                                                ch.id === childCat.id
+                                                                                                    ? { ...ch, icon_name: value }
+                                                                                                    : ch
+                                                                                            ) || []
+                                                                                        }
+                                                                                        : c
+                                                                                );
+                                                                                setCategories(updatedCategories);
+                                                                            }}
+                                                                            placeholder="Icon"
+                                                                            className="text-sm w-32"
+                                                                            showLucideLink={false}
+                                                                        />
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                handleUpdateCategory(childCat.id, {
+                                                                                    label: childCat.label,
+                                                                                    icon_name: childCat.icon_name
+                                                                                });
+                                                                                setEditingCategoryId(null);
+                                                                            }}
+                                                                        >
+                                                                            <Check className="w-3 h-3" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => {
+                                                                                setEditingCategoryId(null);
+                                                                                loadData();
+                                                                            }}
+                                                                        >
+                                                                            <X className="w-3 h-3" />
+                                                                        </Button>
                                                                     </div>
-                                                                    {!childCat.is_active && (
-                                                                        <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
-                                                                            Inactive
-                                                                        </Badge>
-                                                                    )}
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="ghost"
-                                                                        onClick={() => setEditingCategoryId(childCat.id)}
-                                                                    >
-                                                                        <Edit2 className="w-3 h-3" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="ghost"
-                                                                        onClick={() => handleDeleteCategory(childCat.id)}
-                                                                    >
-                                                                        <Trash2 className="w-3 h-3" />
-                                                                    </Button>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    ))}
+                                                                ) : (
+                                                                    <>
+                                                                        <div className="flex-1 text-sm">
+                                                                            <span className="text-gray-900 dark:text-gray-100">{childCat.label}</span>
+                                                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                                                                (ID: {childCat.id} • Icon: {childCat.icon_name})
+                                                                            </span>
+                                                                        </div>
+                                                                        {!childCat.is_active && (
+                                                                            <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
+                                                                                Inactive
+                                                                            </Badge>
+                                                                        )}
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            onClick={() => setEditingCategoryId(childCat.id)}
+                                                                        >
+                                                                            <Edit2 className="w-3 h-3" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            onClick={() => handleDeleteCategory(childCat.id)}
+                                                                        >
+                                                                            <Trash2 className="w-3 h-3" />
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        ))}
                                                     </>
                                                 )}
-                                                
+
                                                 {/* Add Child Category */}
                                                 {newCategoryData.parent_category_id === category.id ? (
                                                     <div className="flex items-center gap-2 p-2">
@@ -1493,7 +1493,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     <DialogHeader>
                         <DialogTitle>Create New Category</DialogTitle>
                     </DialogHeader>
-                    
+
                     <div className="space-y-4">
                         <div>
                             <Label htmlFor="quick-category-label">Category Name</Label>
@@ -1510,7 +1510,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 autoFocus
                             />
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="quick-category-icon">Icon Name</Label>
                             <Input
@@ -1520,7 +1520,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 placeholder="e.g., Folder"
                             />
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="quick-category-color">Color</Label>
                             <div className="flex gap-2">
@@ -1539,10 +1539,10 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="flex justify-end gap-2">
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => {
                                     setIsQuickCreateCategoryOpen(false);
                                     setQuickCategoryData({ label: '', icon_name: 'Folder', color: '#3b82f6', parent_category_id: null });
@@ -1550,7 +1550,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                             >
                                 Cancel
                             </Button>
-                            <Button 
+                            <Button
                                 onClick={handleQuickCreateCategory}
                                 disabled={!quickCategoryData.label.trim()}
                             >
@@ -1562,8 +1562,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             </Dialog>
 
             {/* Delete Confirmation Dialog */}
-            <AlertDialog 
-                open={deleteConfirmation.isOpen} 
+            <AlertDialog
+                open={deleteConfirmation.isOpen}
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeleteConfirmation({ isOpen: false, type: null, item: null });

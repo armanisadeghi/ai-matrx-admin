@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 export function useCanvasLike(canvasId: string) {
-    const supabase = getBrowserSupabaseClient();
+    const supabase = createClient();
     const queryClient = useQueryClient();
     const { toast } = useToast();
 

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import type { SharedCanvasItem } from '@/types/canvas-social';
 
 export function useSharedCanvas(shareToken: string | null) {
-    const supabase = getBrowserSupabaseClient();
+    const supabase = createClient();
 
     return useQuery({
         queryKey: ['shared-canvas', shareToken],
@@ -30,7 +30,7 @@ export function useSharedCanvas(shareToken: string | null) {
 
 async function trackView(shareToken: string) {
     try {
-        const supabase = getBrowserSupabaseClient();
+        const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         // Get or create session ID

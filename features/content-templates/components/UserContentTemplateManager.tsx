@@ -42,7 +42,7 @@ import {
 } from '@/features/content-templates/services/content-templates-service';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 
 interface UserContentTemplateManagerProps {
     className?: string;
@@ -83,7 +83,7 @@ export function UserContentTemplateManager({ className }: UserContentTemplateMan
     // Get current user
     useEffect(() => {
         const getCurrentUser = async () => {
-            const supabase = getBrowserSupabaseClient();
+            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setCurrentUserId(user.id);

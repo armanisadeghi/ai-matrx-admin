@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import { createClient } from '@/utils/supabase/client';
 import type { CreateShareRequest, CreateShareResponse } from '@/types/canvas-social';
 
 export function useCanvasShare() {
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const queryClient = useQueryClient();
-    const supabase = getBrowserSupabaseClient();
+    const supabase = createClient();
 
     const generateShareToken = () => {
         // Generate URL-safe token
