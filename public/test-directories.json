@@ -1,5 +1,9 @@
 [
   {
+    "path": "/tests/_maps",
+    "name": "_maps"
+  },
+  {
     "path": "/tests/advanced-data-table",
     "name": "advanced-data-table"
   },
@@ -24,16 +28,12 @@
     "name": "backup"
   },
   {
+    "path": "/tests/camera-test",
+    "name": "camera-test"
+  },
+  {
     "path": "/tests/chat-tests",
     "name": "chat-tests"
-  },
-  {
-    "path": "/tests/content",
-    "name": "content"
-  },
-  {
-    "path": "/tests/context-menu",
-    "name": "context-menu"
   },
   {
     "path": "/tests/dynamic-entity-test",
@@ -54,10 +54,6 @@
   {
     "path": "/tests/field-tests",
     "name": "field-tests"
-  },
-  {
-    "path": "/tests/flashcard-app-tests",
-    "name": "flashcard-app-tests"
   },
   {
     "path": "/tests/forms",
@@ -100,36 +96,16 @@
     "name": "modals"
   },
   {
-    "path": "/tests/monoco-editor",
-    "name": "monoco-editor"
-  },
-  {
     "path": "/tests/oauth",
     "name": "oauth"
-  },
-  {
-    "path": "/tests/openai-chat",
-    "name": "openai-chat"
-  },
-  {
-    "path": "/tests/photo-video",
-    "name": "photo-video"
   },
   {
     "path": "/tests/qr-labels",
     "name": "qr-labels"
   },
   {
-    "path": "/tests/reaact-patterns",
-    "name": "reaact-patterns"
-  },
-  {
     "path": "/tests/relationship-management",
     "name": "relationship-management"
-  },
-  {
-    "path": "/tests/selector-test",
-    "name": "selector-test"
   },
   {
     "path": "/tests/slack",
@@ -140,16 +116,8 @@
     "name": "socket-tests"
   },
   {
-    "path": "/tests/ssr-test",
-    "name": "ssr-test"
-  },
-  {
     "path": "/tests/tailwind-test",
     "name": "tailwind-test"
-  },
-  {
-    "path": "/tests/use-hooks-tests",
-    "name": "use-hooks-tests"
   },
   {
     "path": "/tests/utility-function-tests",
@@ -162,9 +130,5 @@
   {
     "path": "/tests/workflow-source-config",
     "name": "workflow-source-config"
-  },
-  {
-    "path": "/tests/_maps",
-    "name": "_maps"
   }
 ]

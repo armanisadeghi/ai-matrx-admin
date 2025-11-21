@@ -146,7 +146,6 @@ Ask questions about what you don't know.
 
 Frontend development:
 pnpm for package management (Never npm or yarn)
-Terminal: PowerShell is the standard (Linux is only used when absolutely necessary and on the server, not on my local)
 
 Tec stack:
 Python 3.11 backend

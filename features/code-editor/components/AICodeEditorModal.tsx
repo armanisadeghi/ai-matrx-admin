@@ -29,6 +29,8 @@ import {
   Eye,
   FileCode,
   FileText,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
@@ -189,6 +191,7 @@ export function AICodeEditorModal({
   const [modifiedCode, setModifiedCode] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [rawAIResponse, setRawAIResponse] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
 
   const isExecuting = instance?.status === 'executing' || instance?.status === 'streaming';
   const isLoadingPrompt = instance?.status === 'initializing';
@@ -271,6 +274,7 @@ export function AICodeEditorModal({
       setModifiedCode('');
       setErrorMessage('');
       setRawAIResponse('');
+      setIsCopied(false);
       setSelectedBuiltinId(defaultBuiltinId);
       setSubmitOnEnter(submitOnEnterPreference);
     }
@@ -505,6 +509,16 @@ REPLACE:
   const handleSubmitOnEnterChange = useCallback((value: boolean) => {
     setSubmitOnEnter(value);
   }, []);
+
+  const handleCopyResponse = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(rawAIResponse);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  }, [rawAIResponse]);
 
   const handleApplyChanges = () => {
     setState('applying');
@@ -749,8 +763,27 @@ REPLACE:
                   </div>
 
                   <div className="border rounded-lg flex flex-col overflow-hidden">
-                    <div className="px-4 py-2 bg-muted/50 border-b font-medium text-sm">
-                      Raw AI Response
+                    <div className="px-4 py-2 bg-muted/50 border-b font-medium text-sm flex items-center justify-between">
+                      <span>Raw AI Response</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={handleCopyResponse}
+                        disabled={!rawAIResponse}
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
+                            <span className="text-xs">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 mr-1.5" />
+                            <span className="text-xs">Copy</span>
+                          </>
+                        )}
+                      </Button>
                     </div>
                     <div className="flex-1 overflow-auto p-4 bg-background">
                       <pre className="text-xs whitespace-pre-wrap font-mono">{rawAIResponse}</pre>

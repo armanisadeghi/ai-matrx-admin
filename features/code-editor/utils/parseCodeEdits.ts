@@ -67,61 +67,122 @@ export function parseCodeEdits(response: string): ParseResult {
 
     // Use regex to extract SEARCH/REPLACE blocks with STRICT line-based matching
     // Delimiters MUST be on their own lines
-    // We match <<< with >>>, << with >>, and < with >
-    const blockPattern = /SEARCH:\s*\n\s*(<<<|<<|<)\s*\n([\s\S]*?)\n\s*(>>>|>>|>)\s*\n\s*REPLACE:\s*\n\s*(<<<|<<|<)\s*\n([\s\S]*?)\n\s*(>>>|>>|>)\s*/gi;
+    // We try to match each delimiter type separately to ensure proper pairing
+    // Priority: <<< ... >>> (most common), then << ... >>, then < ... >
+    const blockPatterns = [
+      // Pattern for <<< ... >>>
+      /SEARCH:\s*\n\s*(<<<)\s*\n([\s\S]*?)\n\s*(>>>)\s*\n\s*REPLACE:\s*\n\s*(<<<)\s*\n([\s\S]*?)\n\s*(>>>)\s*/gi,
+      // Pattern for << ... >>
+      /SEARCH:\s*\n\s*(<<)\s*\n([\s\S]*?)\n\s*(>>)\s*\n\s*REPLACE:\s*\n\s*(<<)\s*\n([\s\S]*?)\n\s*(>>)\s*/gi,
+      // Pattern for < ... >
+      /SEARCH:\s*\n\s*(<)\s*\n([\s\S]*?)\n\s*(>)\s*\n\s*REPLACE:\s*\n\s*(<)\s*\n([\s\S]*?)\n\s*(>)\s*/gi,
+    ];
     
-    let match;
-    let blockIndex = 0;
     const explanation = cleanedResponse.split(/SEARCH:/i)[0].trim();
     
     console.log('\n=== Starting to parse SEARCH/REPLACE blocks ===');
     console.log('Cleaned response length:', cleanedResponse.length);
     console.log('First 500 chars:', cleanedResponse.substring(0, 500));
     
-    while ((match = blockPattern.exec(cleanedResponse)) !== null) {
+    // Collect all matches from all patterns
+    interface MatchResult {
+      index: number;
+      searchOpenDelim: string;
+      searchContent: string;
+      searchCloseDelim: string;
+      replaceOpenDelim: string;
+      replaceContent: string;
+      replaceCloseDelim: string;
+      fullMatch: string;
+    }
+    
+    const allMatches: MatchResult[] = [];
+    
+    // Try each pattern and collect matches
+    for (const blockPattern of blockPatterns) {
+      let match;
+      // Reset lastIndex for each pattern
+      blockPattern.lastIndex = 0;
+      
+      while ((match = blockPattern.exec(cleanedResponse)) !== null) {
+        allMatches.push({
+          index: match.index,
+          searchOpenDelim: match[1],
+          searchContent: match[2].trim(),
+          searchCloseDelim: match[3],
+          replaceOpenDelim: match[4],
+          replaceContent: match[5].trim(),
+          replaceCloseDelim: match[6],
+          fullMatch: match[0],
+        });
+      }
+    }
+    
+    // Sort by position and deduplicate overlapping matches
+    // Keep the match with the most specific delimiter (longest)
+    allMatches.sort((a, b) => a.index - b.index);
+    
+    const dedupedMatches: MatchResult[] = [];
+    for (const match of allMatches) {
+      const matchEnd = match.index + match.fullMatch.length;
+      
+      // Check if this match overlaps with any existing match
+      const overlaps = dedupedMatches.some(existing => {
+        const existingEnd = existing.index + existing.fullMatch.length;
+        return (
+          (match.index >= existing.index && match.index < existingEnd) ||
+          (matchEnd > existing.index && matchEnd <= existingEnd) ||
+          (match.index <= existing.index && matchEnd >= existingEnd)
+        );
+      });
+      
+      if (!overlaps) {
+        dedupedMatches.push(match);
+      }
+    }
+    
+    console.log(`Found ${allMatches.length} total matches, ${dedupedMatches.length} after deduplication`);
+    
+    // Process deduplicated matches
+    let blockIndex = 0;
+    for (const match of dedupedMatches) {
       blockIndex++;
       
-      const searchOpenDelim = match[1]; // Opening delimiter for SEARCH (<<<, <<, or <)
-      const searchContent = match[2].trim();
-      const searchCloseDelim = match[3]; // Closing delimiter for SEARCH (>>>, >>, or >)
-      const replaceOpenDelim = match[4]; // Opening delimiter for REPLACE
-      const replaceContent = match[5].trim();
-      const replaceCloseDelim = match[6]; // Closing delimiter for REPLACE
-      
       console.log(`\n--- Parsed SEARCH/REPLACE block ${blockIndex} ---`);
-      console.log('Search delimiters:', `${searchOpenDelim}...${searchCloseDelim}`);
-      console.log('Search content length:', searchContent.length);
-      console.log('Search content preview:', searchContent.substring(0, 100).replace(/\n/g, '\\n'));
-      console.log('Replace delimiters:', `${replaceOpenDelim}...${replaceCloseDelim}`);
-      console.log('Replace content length:', replaceContent.length);
-      console.log('Replace content preview:', replaceContent.substring(0, 100).replace(/\n/g, '\\n'));
+      console.log('Search delimiters:', `${match.searchOpenDelim}...${match.searchCloseDelim}`);
+      console.log('Search content length:', match.searchContent.length);
+      console.log('Search content preview:', match.searchContent.substring(0, 100).replace(/\n/g, '\\n'));
+      console.log('Replace delimiters:', `${match.replaceOpenDelim}...${match.replaceCloseDelim}`);
+      console.log('Replace content length:', match.replaceContent.length);
+      console.log('Replace content preview:', match.replaceContent.substring(0, 100).replace(/\n/g, '\\n'));
       
-      // Validate delimiter matching
+      // With separate patterns, delimiters are already guaranteed to match
+      // But we still validate they're correct
       const searchDelimMatch = 
-        (searchOpenDelim === '<<<' && searchCloseDelim === '>>>') ||
-        (searchOpenDelim === '<<' && searchCloseDelim === '>>') ||
-        (searchOpenDelim === '<' && searchCloseDelim === '>');
+        (match.searchOpenDelim === '<<<' && match.searchCloseDelim === '>>>') ||
+        (match.searchOpenDelim === '<<' && match.searchCloseDelim === '>>') ||
+        (match.searchOpenDelim === '<' && match.searchCloseDelim === '>');
       
       const replaceDelimMatch = 
-        (replaceOpenDelim === '<<<' && replaceCloseDelim === '>>>') ||
-        (replaceOpenDelim === '<<' && replaceCloseDelim === '>>') ||
-        (replaceOpenDelim === '<' && replaceCloseDelim === '>');
+        (match.replaceOpenDelim === '<<<' && match.replaceCloseDelim === '>>>') ||
+        (match.replaceOpenDelim === '<<' && match.replaceCloseDelim === '>>') ||
+        (match.replaceOpenDelim === '<' && match.replaceCloseDelim === '>');
       
       if (!searchDelimMatch) {
-        const warning = `Block ${blockIndex}: SEARCH delimiters don't match (${searchOpenDelim} vs ${searchCloseDelim})`;
+        const warning = `Block ${blockIndex}: SEARCH delimiters don't match (${match.searchOpenDelim} vs ${match.searchCloseDelim})`;
         warnings.push(warning);
         console.warn(warning);
         continue;
       }
       
       if (!replaceDelimMatch) {
-        const warning = `Block ${blockIndex}: REPLACE delimiters don't match (${replaceOpenDelim} vs ${replaceCloseDelim})`;
+        const warning = `Block ${blockIndex}: REPLACE delimiters don't match (${match.replaceOpenDelim} vs ${match.replaceCloseDelim})`;
         warnings.push(warning);
         console.warn(warning);
         continue;
       }
       
-      if (!searchContent) {
+      if (!match.searchContent) {
         const warning = `Block ${blockIndex}: Empty SEARCH content`;
         warnings.push(warning);
         skippedBlocks.push(`Empty SEARCH at position ${match.index}`);
@@ -131,8 +192,8 @@ export function parseCodeEdits(response: string): ParseResult {
       
       edits.push({
         id: `edit-${blockIndex}`,
-        search: searchContent,
-        replace: replaceContent, // Can be empty (deletion)
+        search: match.searchContent,
+        replace: match.replaceContent, // Can be empty (deletion)
       });
     }
     
