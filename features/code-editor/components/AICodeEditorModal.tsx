@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -312,13 +311,6 @@ export function AICodeEditorModal({
       const totalTime = Date.now() - instance.execution.messageStartTime;
       const timeToFirstToken = instance.execution.timeToFirstToken;
 
-      console.log('🏁 Streaming ended, completing execution...', {
-        instanceId,
-        streamingTextLength: streamingText.length,
-        totalTime,
-        timeToFirstToken,
-      });
-
       dispatch(completeExecutionThunk({
         instanceId,
         responseText: streamingText,
@@ -346,8 +338,6 @@ export function AICodeEditorModal({
         return;
       }
 
-      // Edits found - now validate them
-      console.log(`✏️ Found ${parsed.edits.length} edit(s) - validating...`);
 
       // Validate edits against current code
       const validation = validateEdits(currentCode, parsed.edits);

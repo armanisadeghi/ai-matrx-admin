@@ -8,37 +8,14 @@ export const useMonacoTheme = () => {
     );
 
     useEffect(() => {
-        if (monaco) {
-            // Define custom themes
-            monaco.editor.defineTheme("customDark", {
-                base: "vs-dark",
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": "#1a1b26",
-                },
-            });
-
-            monaco.editor.defineTheme("customLight", {
-                base: "vs",
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": "#ffffff",
-                },
-            });
-
-            // Set initial theme
-            monaco.editor.setTheme(isDark ? "customDark" : "customLight");
-        }
-
-        // Setup theme observer
+        // SIMPLE FIX: Don't set themes globally via this hook
+        // Let individual editors control their own themes
+        // This hook now just tracks dark mode state
+        
+        // Setup theme observer to track system dark mode
         const updateTheme = () => {
             const isDarkMode = document.documentElement.classList.contains("dark");
             setIsDark(isDarkMode);
-            if (monaco) {
-                monaco.editor.setTheme(isDarkMode ? "customDark" : "customLight");
-            }
         };
 
         const observer = new MutationObserver((mutations) => {

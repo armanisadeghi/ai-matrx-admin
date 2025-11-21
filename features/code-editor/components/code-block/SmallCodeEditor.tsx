@@ -5,11 +5,11 @@ import { useMonaco } from "@monaco-editor/react";
 import Editor from "@monaco-editor/react";
 import { useMeasure } from "@uidotdev/usehooks";
 import { Button } from "@/components/ui/button";
-import { useMonacoTheme } from "@/features/code-editor/hooks/useMonacoTheme";
 import { Wand2, Copy, RotateCcw, CheckCircle2, WrapText, Type, Maximize2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import CodeEditorLoading from "./CodeEditorLoading";
 import type { editor } from "monaco-editor";
+import { configureMonaco } from "../../config/monaco-config";
 
 interface CodeEditorProps {
     language?: string;
@@ -54,7 +54,6 @@ const SmallCodeEditor = ({
 }: CodeEditorProps) => {
     const [ref, { width, height }] = useMeasure();
     const monaco = useMonaco();
-    const isDark = useMonacoTheme();
     const [output, setOutput] = useState<string>("");
     const [copied, setCopied] = useState(false);
     const [internalWordWrap, setInternalWordWrap] = useState<"off" | "on">(defaultWordWrap);
@@ -65,18 +64,9 @@ const SmallCodeEditor = ({
     const wordWrap = controlledWordWrap !== undefined ? controlledWordWrap : internalWordWrap;
     const minimapEnabled = controlledMinimap !== undefined ? controlledMinimap : internalMinimapEnabled;
     
-    // Get the appropriate theme based on mode (fallback to vs-dark/vs if custom themes not ready)
-    const [editorTheme, setEditorTheme] = useState<string>(mode === "dark" ? "vs-dark" : "vs");
-    
-    // Update theme when monaco is ready and mode changes
-    useEffect(() => {
-        if (monaco) {
-            const theme = mode === "dark" ? "customDark" : "customLight";
-            setEditorTheme(theme);
-        } else {
-            setEditorTheme(mode === "dark" ? "vs-dark" : "vs");
-        }
-    }, [monaco, mode]);
+    // SIMPLE FIX: Just use built-in Monaco themes - they work perfectly
+    // Custom themes can interfere with syntax highlighting token rules
+    const editorTheme = mode === "dark" ? "vs-dark" : "vs";
 
     // Sync external changes to initialCode (for multi-model support)
     useEffect(() => {
@@ -97,6 +87,21 @@ const SmallCodeEditor = ({
             }
         }
     }, [initialCode]);
+
+    // CRITICAL: Update language when it changes to ensure syntax highlighting
+    useEffect(() => {
+        const editor = editorRef.current;
+        if (!editor || !monaco || !language) return;
+
+        const model = editor.getModel();
+        if (!model) return;
+
+        // Update the model's language to trigger syntax highlighting
+        const currentLanguage = model.getLanguageId();
+        if (currentLanguage !== language) {
+            monaco.editor.setModelLanguage(model, language);
+        }
+    }, [language, monaco]);
 
     // Auto-format when switching files (path changes) or when content changes
     useEffect(() => {
@@ -152,8 +157,28 @@ const SmallCodeEditor = ({
         formatFromExternal();
     }, [formatTrigger]); // Trigger when formatTrigger changes
 
+    // CRITICAL: Configure Monaco BEFORE it mounts - this is lazy loaded
+    const handleEditorWillMount = useCallback((monaco: any) => {
+        // This triggers Monaco configuration only when editor is about to mount
+        // Returns immediately if already configured
+        configureMonaco().catch(error => {
+            console.error('Failed to configure Monaco:', error);
+        });
+    }, []);
+
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: any) => {
         editorRef.current = editor;
+        
+        // CRITICAL: Ensure the model uses the correct language for syntax highlighting
+        const model = editor.getModel();
+        if (model && language) {
+            // Force set the language mode to ensure syntax highlighting is activated
+            // Use setTimeout to ensure Monaco's language services are ready
+            setTimeout(() => {
+                monaco.editor.setModelLanguage(model, language);
+                console.log(`✅ Monaco Editor: Language set to "${language}"`);
+            }, 0);
+        }
         
         // Auto-format on mount if enabled
         if (autoFormat) {
@@ -205,7 +230,7 @@ const SmallCodeEditor = ({
             
             attemptFormat();
         }
-    }, [autoFormat]);
+    }, [autoFormat, language]);
 
     const handleFormatCode = useCallback(() => {
         if (editorRef.current) {
@@ -394,6 +419,7 @@ const SmallCodeEditor = ({
                     defaultValue={initialCode}
                     theme={editorTheme}
                     onChange={onChange}
+                    beforeMount={handleEditorWillMount}
                     onMount={handleEditorDidMount}
                     loading={<CodeEditorLoading />}
                     options={{
@@ -408,6 +434,12 @@ const SmallCodeEditor = ({
                         wrappingIndent: "indent",
                         padding: { top: 16, bottom: 16 },
                         readOnly: readOnly,
+                        // Simplified - let Monaco handle syntax highlighting defaults
+                        quickSuggestions: {
+                            other: true,
+                            comments: false,
+                            strings: false
+                        },
                     }}
                 />
             </div>
