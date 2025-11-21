@@ -1,15 +1,14 @@
 // app/(authenticated)/(admin-auth)/layout.tsx
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { mapUserData } from "@/utils/userDataMapper";
-import { isAdminUser } from "@/config/admin.config";
+import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { headers } from "next/headers";
 
 // Admin pages require authentication and cannot be statically generated
 export const dynamic = 'force-dynamic';
 
 
-export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminAuthLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
 
     const {
@@ -21,13 +20,12 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         const pathname = headersList.get("x-pathname") || "/dashboard";
         const searchParams = headersList.get("x-search-params") || "";
         const fullPath = searchParams ? `${pathname}${searchParams}` : pathname;
-        
+
         return redirect(`/login?redirectTo=${encodeURIComponent(fullPath)}`);
     }
 
-    const session = await supabase.auth.getSession();
-    const accessToken = session.data.session?.access_token;
-    const isAdmin = isAdminUser(user.id);
+    // Check admin status from database
+    const isAdmin = await checkIsUserAdmin(supabase, user.id);
 
     if (!isAdmin) {
         return redirect("/dashboard");

@@ -5,7 +5,6 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { UserData } from "@/utils/userDataMapper";
 import { useSetGlobalBasics } from "@/hooks/brokers/useSetGlobalBasics";
-import { isAdminUser } from "@/config/admin.config";
 
 interface GlobalBrokersInitializerProps {
     user: UserData;
@@ -54,12 +53,11 @@ export function GlobalBrokersInitializer({ user }: GlobalBrokersInitializerProps
             })
         );
 
-        const isAdmin = isAdminUser(user.id);
-
+        // Use admin status from user object (already determined from database in layout)
         dispatch(
             brokerActions.setValue({
                 brokerId: "GLOBAL_USER_IS_ADMIN",
-                value: isAdmin,
+                value: user.isAdmin,
             })
         );
         

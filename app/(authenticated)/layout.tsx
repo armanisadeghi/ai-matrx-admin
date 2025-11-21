@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
 import { appSidebarLinks, adminSidebarLinks } from "@/constants";
-import { isAdminUser } from "@/config/admin.config";
+import { getUserSessionData } from "@/utils/supabase/userSessionData";
 import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
 import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
@@ -41,7 +41,10 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     const session = await supabase.auth.getSession();
     const accessToken = session.data.session?.access_token;
-    const isAdmin = isAdminUser(user.id);
+
+    // Fetch admin status and preferences in a single efficient query
+    const sessionData = await getUserSessionData(supabase, user.id);
+    const isAdmin = sessionData.isAdmin;
     const userData = mapUserData(user, accessToken, isAdmin);
 
     const layoutProps = {
@@ -55,34 +58,26 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
     const testDirectories = [];
 
-    // Handle user preferences - create defaults for new users
+    // Handle user preferences - create defaults for new users if needed
     let userPreferences;
-    const { data: preferences, error } = await supabase.from("user_preferences").select("preferences").eq("user_id", userData.id).single();
 
-    if (error && error.code === "PGRST116") {
+    if (!sessionData.preferencesExist) {
         // No preferences found - create default preferences for new user
-        const defaultPreferences = defaultUserPreferences;
-
-        // Create the preferences record in the database
         const { error: insertError } = await supabase.from("user_preferences").insert({
             user_id: userData.id,
-            preferences: defaultPreferences,
+            preferences: defaultUserPreferences,
         });
 
         if (insertError) {
             console.error("Error creating default preferences:", insertError);
-            userPreferences = initializeUserPreferencesState(defaultPreferences, true); // Use helper function with setAsLoaded
         } else {
             console.log("✅ Created default preferences for new user");
-            userPreferences = initializeUserPreferencesState(defaultPreferences, true); // Use helper function with setAsLoaded
         }
-    } else if (error) {
-        // Some other error occurred
-        console.error("Error loading preferences from Supabase:", error);
-        userPreferences = initializeUserPreferencesState({}, true); // Use helper function with defaults and setAsLoaded
+
+        userPreferences = initializeUserPreferencesState(defaultUserPreferences, true);
     } else {
-        // Preferences loaded successfully - use helper function to ensure proper structure
-        userPreferences = initializeUserPreferencesState(preferences?.preferences || {}, true); // Mark as loaded for reset functionality
+        // Preferences loaded successfully from the combined query
+        userPreferences = initializeUserPreferencesState(sessionData.preferences || {}, true);
     }
 
     const initialReduxState: InitialReduxState = {

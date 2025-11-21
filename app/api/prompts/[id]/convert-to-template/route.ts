@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-import { isAdminUser } from "@/config/admin.config";
+import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 
 export async function POST(
     request: NextRequest,
@@ -20,8 +20,9 @@ export async function POST(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Check if user is a system admin using the config-based admin check
-        if (!isAdminUser(user.id)) {
+        // Check if user is a system admin
+        const isAdmin = await checkIsUserAdmin(supabase, user.id);
+        if (!isAdmin) {
             return NextResponse.json(
                 { error: "Forbidden: Admin access required" },
                 { status: 403 }
