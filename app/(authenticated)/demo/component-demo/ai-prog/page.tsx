@@ -92,6 +92,10 @@ export default function AICodeEditorDemoPage() {
   const [selectedBuiltinId, setSelectedBuiltinId] = useState<string>(CODE_EDITOR_PROMPT_BUILTINS.GENERIC_CODE.id);
   const [allowPromptSelection, setAllowPromptSelection] = useState(false);
   const [modalTitle, setModalTitle] = useState<string>('AI Code Editor');
+  
+  // Future: These will be populated when we have selection/context features
+  const [selectedText] = useState<string | undefined>(undefined);
+  const [multiFileContext] = useState<string | undefined>(undefined);
 
   const handleSampleChange = (value: keyof typeof SAMPLE_CODE) => {
     setSelectedSample(value);
@@ -239,6 +243,9 @@ export default function AICodeEditorDemoPage() {
         onCodeChange={handleCodeChange}
         title={modalTitle}
         allowPromptSelection={allowPromptSelection}
+        // Optional: Future features
+        selection={selectedText}
+        context={multiFileContext}
       />
     </div>
   );

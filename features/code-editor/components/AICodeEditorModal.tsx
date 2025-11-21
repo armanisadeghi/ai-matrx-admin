@@ -34,10 +34,18 @@ import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/pars
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { getDiffStats } from '@/features/code-editor/utils/generateDiff';
 import { getCodeEditorBuiltinId, CODE_EDITOR_PROMPT_BUILTINS } from '@/features/code-editor/utils/codeEditorPrompts';
+import { 
+  buildSpecialVariables, 
+  filterOutSpecialVariables, 
+  getRequiredSpecialVariables,
+  logSpecialVariablesUsage,
+  type CodeEditorContext 
+} from '@/features/code-editor/utils/specialVariables';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { DiffView } from './DiffView';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { shallowEqual } from 'react-redux';
 import { selectPromptsPreferences } from '@/lib/redux/selectors/userPreferenceSelectors';
 import { 
   startPromptInstance, 
@@ -64,6 +72,10 @@ export interface AICodeEditorModalProps {
   title?: string;
   description?: string;
   allowPromptSelection?: boolean; // Whether to show the prompt selector dropdown
+  
+  // Optional: Special context variables (for future features)
+  selection?: string; // Currently selected/highlighted text
+  context?: string; // Multi-file context
 }
 
 type EditorState = 'input' | 'processing' | 'review' | 'applying' | 'complete' | 'error';
@@ -124,6 +136,8 @@ export function AICodeEditorModal({
   title = 'AI Code Editor',
   description = '',
   allowPromptSelection = false,
+  selection,
+  context,
 }: AICodeEditorModalProps) {
   const dispatch = useAppDispatch();
   
@@ -151,8 +165,10 @@ export function AICodeEditorModal({
   const streamingText = useAppSelector(state => 
     instanceId ? selectStreamingTextForInstance(state, instanceId) : ''
   );
-  const variables = useAppSelector(state =>
-    instanceId ? selectMergedVariables(state, instanceId) : {}
+  // Use shallowEqual to prevent unnecessary re-renders from object reference changes
+  const variables = useAppSelector(
+    state => instanceId ? selectMergedVariables(state, instanceId) : {},
+    shallowEqual
   );
   const cachedPrompt = useAppSelector(state =>
     selectedBuiltinId ? selectCachedPrompt(state, selectedBuiltinId) : null
@@ -176,12 +192,12 @@ export function AICodeEditorModal({
     if (open && selectedBuiltinId) {
       const initInstance = async () => {
         try {
+          // First, we need to fetch the prompt to see what variables it needs
+          // We'll let startPromptInstance handle the fetch, then update special vars after
           const id = await dispatch(startPromptInstance({
             promptId: selectedBuiltinId,
             promptSource: 'prompt_builtins',
-            variables: {
-              current_code: currentCode,
-            },
+            variables: {}, // Empty for now, we'll populate after
             executionConfig: {
               auto_run: false,
               allow_chat: false,
@@ -192,6 +208,9 @@ export function AICodeEditorModal({
           })).unwrap();
           
           setInstanceId(id);
+          
+          // Now populate special variables based on what the prompt needs
+          // This will happen in the next effect when cachedPrompt is loaded
         } catch (err) {
           console.error('Error initializing prompt instance:', err);
           setState('error');
@@ -201,7 +220,39 @@ export function AICodeEditorModal({
 
       initInstance();
     }
-  }, [open, selectedBuiltinId, currentCode, dispatch]);
+  }, [open, selectedBuiltinId, dispatch]);
+
+  // Populate special variables when prompt is loaded
+  useEffect(() => {
+    if (instanceId && cachedPrompt) {
+      const promptVariables = cachedPrompt.variableDefaults || [];
+      const requiredSpecialVars = getRequiredSpecialVariables(promptVariables);
+      
+      if (requiredSpecialVars.length > 0) {
+        // Build code context
+        const codeContext: CodeEditorContext = {
+          currentCode,
+          selection,
+          context,
+        };
+        
+        // Build special variables
+        const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
+        
+        // Log what we're doing (helpful for debugging)
+        logSpecialVariablesUsage(cachedPrompt.name, specialVars);
+        
+        // Update Redux with special variables
+        Object.entries(specialVars).forEach(([name, value]) => {
+          dispatch(updateVariable({
+            instanceId,
+            variableName: name,
+            value,
+          }));
+        });
+      }
+    }
+  }, [instanceId, cachedPrompt, currentCode, selection, context, dispatch]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -311,7 +362,7 @@ export function AICodeEditorModal({
   }, [streamingText, isExecuting, state, currentCode]);
 
   const handleSubmit = async () => {
-    if (!instanceId) {
+    if (!instanceId || !cachedPrompt) {
       setErrorMessage('Instance not initialized');
       setState('error');
       return;
@@ -320,12 +371,28 @@ export function AICodeEditorModal({
     setState('processing');
 
     try {
-      // Update current_code variable with latest code
-      dispatch(updateVariable({
-        instanceId,
-        variableName: 'current_code',
-        value: currentCode,
-      }));
+      // Update ALL special variables with latest values before execution
+      const promptVariables = cachedPrompt.variableDefaults || [];
+      const requiredSpecialVars = getRequiredSpecialVariables(promptVariables);
+      
+      if (requiredSpecialVars.length > 0) {
+        const codeContext: CodeEditorContext = {
+          currentCode,
+          selection,
+          context,
+        };
+        
+        const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
+        
+        // Update each special variable
+        Object.entries(specialVars).forEach(([name, value]) => {
+          dispatch(updateVariable({
+            instanceId,
+            variableName: name,
+            value,
+          }));
+        });
+      }
 
       // Prepare user input with resources if any
       let finalUserInput = instance?.conversation.currentInput.trim() || '';
@@ -412,9 +479,9 @@ export function AICodeEditorModal({
   // Get available builtins for the selector
   const availableBuiltins = Object.values(CODE_EDITOR_PROMPT_BUILTINS);
   
-  // Get display variables (filter out current_code as it's auto-managed)
-  const displayVariables = (cachedPrompt?.variableDefaults || []).filter(
-    (v: PromptVariable) => v.name !== 'current_code'
+  // Get display variables (filter out ALL special variables as they're auto-managed)
+  const displayVariables = filterOutSpecialVariables(
+    cachedPrompt?.variableDefaults || []
   );
   
   return (
