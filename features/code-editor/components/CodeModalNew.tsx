@@ -143,9 +143,12 @@ export function AICodeEditorModal({
           <div className="flex-1 flex flex-col min-h-0 gap-2">
             {/* Code Display (input/processing states) */}
             {(state === 'input' || state === 'processing') && (
-              <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
-                <div className="px-2 py-1 flex items-center justify-between shrink-0">
+              <div className="flex-1 flex flex-col min-h-0 border rounded overflow-hidden bg-background">
+                <div className="px-2 py-1 border-b bg-muted/20 flex items-center justify-between shrink-0">
                   <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Current Code</span>
+                  <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                    {language}
+                  </Badge>
                 </div>
                 <div className="flex-1 overflow-auto relative">
                   <CodeBlock
