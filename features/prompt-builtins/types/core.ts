@@ -29,11 +29,23 @@ export interface ScopeMapping {
 
 /**
  * Runtime scope values provided by the application
+ * 
+ * DEFAULT SCOPES:
+ * - selection: Currently highlighted/selected text
+ * - content: Full content of current item (e.g., entire code file)
+ * - context: Additional surrounding context (e.g., language, file path, other files)
+ * 
+ * CUSTOM SCOPES (dynamic):
+ * Components can provide additional scopes beyond the defaults.
+ * For example, Monaco editor might provide: errors, diagnostics, languageId, etc.
+ * 
+ * The [key: string] allows for any custom scope to be passed.
  */
 export interface ApplicationScope {
   selection: string | null;  // Can be "", "NOT AVAILABLE", or actual content
   content: any;              // Can be "", "NOT AVAILABLE", or actual data
   context: any;              // Can be "", "NOT AVAILABLE", or actual data
+  [key: string]: any;        // Allow custom scopes (errors, diagnostics, etc.)
 }
 
 // ============================================================================
@@ -52,6 +64,7 @@ export interface ShortcutCategory {
   sort_order: number // default 999
   is_active: boolean // default true
   metadata: Record<string, unknown> | null // Placeholder for future use - default {}
+  enabled_contexts?: string[] | null // JSONB array of context names where this category appears
 }
 
 // prompt_builtins
@@ -93,6 +106,7 @@ export interface PromptShortcut {
   apply_variables: boolean // Apply variables (true) or ignore (false) - default true
   is_active: boolean // default true
   created_by_user_id: string | null
+  enabled_contexts: string[] | null // JSONB array of context names where this shortcut appears
 }
 
 // ============================================================================
@@ -110,6 +124,7 @@ export interface CreateShortcutCategoryInput {
   sort_order?: number;
   is_active?: boolean;
   metadata?: Record<string, unknown> | null;
+  enabled_contexts?: string[] | null;
 }
 
 export interface UpdateShortcutCategoryInput {
@@ -123,6 +138,7 @@ export interface UpdateShortcutCategoryInput {
   sort_order?: number;
   is_active?: boolean;
   metadata?: Record<string, unknown> | null;
+  enabled_contexts?: string[] | null;
 }
 
 export interface CreatePromptBuiltinInput {
@@ -165,6 +181,7 @@ export interface CreatePromptShortcutInput {
   show_variables?: boolean; // Show variable form or hide - default false
   apply_variables?: boolean; // Apply variables or ignore - default true
   is_active?: boolean;
+  enabled_contexts?: string[] | null;
 }
 
 export interface UpdatePromptShortcutInput {
@@ -185,6 +202,7 @@ export interface UpdatePromptShortcutInput {
   show_variables?: boolean; // Show variable form or hide
   apply_variables?: boolean; // Apply variables or ignore
   is_active?: boolean;
+  enabled_contexts?: string[] | null;
 }
 
 /**

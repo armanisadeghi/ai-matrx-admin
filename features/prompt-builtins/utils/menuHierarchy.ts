@@ -15,8 +15,47 @@ interface FlatCategory {
     sort_order: number;
     is_active: boolean;
     metadata: any;
+    enabled_contexts?: string[] | null; // NEW: context filtering support
   };
   items: any[];
+}
+
+/**
+ * Filters categories and their items by enabled_contexts.
+ * Only returns categories and items that include the specified context.
+ * 
+ * @param flatData - Flat array of categories with items
+ * @param contextFilter - Context to filter by (e.g., 'code-editor', 'note-editor')
+ * @returns Filtered flat array with only relevant categories/items
+ */
+export function filterByContext(
+  flatData: FlatCategory[],
+  contextFilter?: string
+): FlatCategory[] {
+  // If no filter specified, return all data
+  if (!contextFilter) return flatData;
+
+  return flatData
+    .map(category => {
+      // Check if category is enabled for this context
+      const categoryEnabled = category.category.enabled_contexts?.includes(contextFilter) ?? true;
+      if (!categoryEnabled) return null;
+
+      // Filter items that are enabled for this context
+      const filteredItems = category.items.filter(item => {
+        const itemEnabled = item.enabled_contexts?.includes(contextFilter) ?? true;
+        return itemEnabled;
+      });
+
+      // Only return category if it has items after filtering
+      if (filteredItems.length === 0) return null;
+
+      return {
+        ...category,
+        items: filteredItems,
+      };
+    })
+    .filter((cat): cat is FlatCategory => cat !== null);
 }
 
 /**
@@ -24,29 +63,37 @@ interface FlatCategory {
  * Each category can have children nested inside it.
  * 
  * @param flatData - Flat array of categories with items
+ * @param contextFilter - Optional context to filter by (e.g., 'code-editor')
  * @returns Hierarchical array of CategoryGroup nodes
  */
-export function buildCategoryHierarchy(flatData: FlatCategory[]): CategoryGroup[] {
+export function buildCategoryHierarchy(
+  flatData: FlatCategory[],
+  contextFilter?: string
+): CategoryGroup[] {
   if (!flatData || flatData.length === 0) return [];
+
+  // Apply context filter if specified
+  const filteredData = filterByContext(flatData, contextFilter);
+  if (filteredData.length === 0) return [];
 
   const idMap = new Map<string, CategoryGroup>();
   const roots: CategoryGroup[] = [];
 
   // First pass: Create all nodes with hydrated icons
-  flatData.forEach(item => {
+  filteredData.forEach(item => {
     const hydratedItems = hydrateIcons(item.items || []);
-    
+
     const node: CategoryGroup = {
       category: item.category,
       items: hydratedItems,
       children: [],
     };
-    
+
     idMap.set(item.category.id, node);
   });
 
   // Second pass: Link children to parents
-  flatData.forEach(item => {
+  filteredData.forEach(item => {
     const node = idMap.get(item.category.id);
     if (!node) return;
 
