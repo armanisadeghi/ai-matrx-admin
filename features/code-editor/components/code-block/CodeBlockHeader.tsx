@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 type AIModalConfig = {
-    version: 'v1' | 'v2';
+    version: 'v1' | 'v2' | 'v3';
     builtinId: string;
     title: string;
 };
@@ -410,6 +410,20 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                             <Sparkles className="h-4 w-4" />
                             <span>V2 - Conversational</span>
                         </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAIEdit({
+                                    version: 'v3',
+                                    builtinId: '87efa869-9c11-43cf-b3a8-5b7c775ee415',
+                                    title: 'Master Code Editor (V3 - Context-Aware)',
+                                });
+                            }}
+                            className="flex items-center gap-2 cursor-pointer"
+                        >
+                            <Sparkles className="h-4 w-4" />
+                            <span>V3 - Context-Aware 🚀</span>
+                        </DropdownMenuItem>
                         
                         <DropdownMenuSeparator />
                         
@@ -441,6 +455,20 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                         >
                             <Sparkles className="h-4 w-4" />
                             <span>V2 - Conversational</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAIEdit({
+                                    version: 'v3',
+                                    builtinId: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
+                                    title: 'Prompt App Editor (V3 - Context-Aware)',
+                                });
+                            }}
+                            className="flex items-center gap-2 cursor-pointer"
+                        >
+                            <Sparkles className="h-4 w-4" />
+                            <span>V3 - Context-Aware 🚀</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

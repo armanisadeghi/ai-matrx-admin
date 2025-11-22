@@ -10,3 +10,6 @@ export type { AICodeEditorModalProps } from '@/features/code-editor/components/A
 export { AICodeEditorModalV2 } from '@/features/code-editor/components/AICodeEditorModalV2';
 export type { AICodeEditorModalV2Props } from '@/features/code-editor/components/AICodeEditorModalV2';
 
+export { ContextAwareCodeEditorModal } from '@/features/code-editor/components/ContextAwareCodeEditorModal';
+export type { ContextAwareCodeEditorModalProps } from '@/features/code-editor/components/ContextAwareCodeEditorModal';
+

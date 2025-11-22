@@ -47,8 +47,8 @@ export interface AdvancedMenuProps {
   className?: string;
   width?: string; // Default "280px"
   maxWidth?: string; // Default "320px"
-  zIndex?: number; // Menu z-index, Default 9999
-  backdropZIndex?: number; // Backdrop z-index, Default 9998
+  zIndex?: number; // Menu z-index, Default 2147483647 (max safe integer for z-index)
+  backdropZIndex?: number; // Backdrop z-index, Default 2147483646
   
   // Behavior
   closeOnAction?: boolean; // Default true for non-async, false for async
@@ -79,8 +79,8 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
   className = "",
   width = "280px",
   maxWidth = "320px",
-  zIndex = 9999,
-  backdropZIndex = 9998,
+  zIndex = 2147483647, // Maximum z-index value to guarantee top layer
+  backdropZIndex = 2147483646,
   closeOnAction = true,
   showBackdrop = true,
   backdropBlur = true,
@@ -304,13 +304,22 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
     : "calc(100vh - 24px)";
 
   const menuContent = (
-    <>
+    <div 
+      className="isolate" 
+      style={{ 
+        zIndex: zIndex,
+        position: 'fixed',
+        inset: 0,
+        pointerEvents: 'none'
+      }}
+    >
       {/* Backdrop Overlay */}
       {showBackdrop && (
         <div
           style={{ zIndex: backdropZIndex }}
           className={cn(
             "fixed inset-0 bg-black/20 dark:bg-black/40",
+            "pointer-events-auto",
             backdropBlur && "backdrop-blur-[2px]"
           )}
           onClick={onClose}
@@ -332,6 +341,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]",
           "rounded-lg border border-zinc-300 dark:border-zinc-600",
           "overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
+          "pointer-events-auto",
           className
         )}
       >
@@ -434,7 +444,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Render menu in a portal to avoid overflow-hidden issues
