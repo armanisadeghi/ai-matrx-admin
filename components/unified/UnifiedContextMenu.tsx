@@ -91,16 +91,19 @@ export function UnifiedContextMenu({
 }: UnifiedContextMenuProps) {
   // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(p => p !== 'quick-action');
-  
+
   console.log('[UnifiedContextMenu] Config:', {
     enabledPlacements,
     dbPlacementTypes,
     PLACEMENT_TYPES,
   });
-  
-  // Load ALL menu items (shortcuts + content blocks) from unified view - THREE QUERIES!
+
+  // Load ALL menu items (shortcuts + content blocks) from unified view 
+  // Extract contextFilter from contextData if provided
+  const contextFilter = contextData?.contextFilter as string | undefined;
   const { categoryGroups, loading } = useUnifiedContextMenu(
     dbPlacementTypes,
+    contextFilter, // Pass context filter for filtering by enabled_contexts
     dbPlacementTypes.length > 0
   );
 
@@ -170,7 +173,7 @@ export function UnifiedContextMenu({
     // Store the selection immediately, before the menu opens and selection is cleared
     setSelectedText(text);
     setSelectionRange({ start, end, element });
-    
+
     console.log('[UnifiedContextMenu] Selection captured:', { text, start, end });
   };
 
@@ -206,7 +209,7 @@ export function UnifiedContextMenu({
 
       // Check if shortcut is configured for inline execution
       const resultDisplay = shortcut.result_display || 'modal';
-      
+
       if (resultDisplay === 'inline' && isEditable && selectionRange && onTextReplace) {
         // Execute inline - we'll handle the result with the captured selection range
         const result = await executeShortcut(shortcut, {
@@ -216,14 +219,14 @@ export function UnifiedContextMenu({
         // If we got a result and have selection range, replace the text
         if (result && typeof result === 'string') {
           const resultText: string = result;
-          
+
           if (selectionRange.element instanceof HTMLTextAreaElement) {
             const textarea = selectionRange.element;
             const { start } = selectionRange;
-            
+
             // Update via callback
             onTextReplace(resultText);
-            
+
             // Restore focus and select replaced text
             setTimeout(() => {
               textarea.focus();
@@ -299,7 +302,7 @@ export function UnifiedContextMenu({
   // Group category groups by placement type
   const groupedByPlacement = React.useMemo(() => {
     const groups: Record<string, typeof categoryGroups> = {};
-    
+
     categoryGroups.forEach(group => {
       const placementType = group.category.placement_type;
       if (!groups[placementType]) {
@@ -334,7 +337,7 @@ export function UnifiedContextMenu({
   const renderCategoryGroup = (group: typeof categoryGroups[0], placementType: string) => {
     const { category, items, children } = group;
     const CategoryIcon = getIcon(category.icon_name);
-    
+
     // Show category even if empty (user wants this!)
     const hasContent = items.length > 0 || (children && children.length > 0);
 
@@ -342,9 +345,9 @@ export function UnifiedContextMenu({
       <React.Fragment key={category.id}>
         <ContextMenuSub>
           <ContextMenuSubTrigger>
-            <CategoryIcon 
-              className="h-4 w-4 mr-2" 
-              style={{ color: category.color || 'currentColor' }} 
+            <CategoryIcon
+              className="h-4 w-4 mr-2"
+              style={{ color: category.color || 'currentColor' }}
             />
             {category.label}
           </ContextMenuSubTrigger>
@@ -362,9 +365,9 @@ export function UnifiedContextMenu({
               const ItemIcon = item.type === 'content_block'
                 ? item.icon
                 : getIcon(item.icon_name);
-              
+
               // Check if disabled (only for shortcuts)
-              const isDisabled = item.type === 'prompt_shortcut' 
+              const isDisabled = item.type === 'prompt_shortcut'
                 && (!item.prompt_builtin || !item.prompt_builtin_id);
 
               return (
@@ -418,7 +421,7 @@ export function UnifiedContextMenu({
             return (
               <React.Fragment key={placementType}>
                 {index > 0 && <ContextMenuSeparator />}
-                
+
                 <ContextMenuSub>
                   <ContextMenuSubTrigger>
                     <PlacementIcon className="h-4 w-4 mr-2" />
@@ -445,7 +448,7 @@ export function UnifiedContextMenu({
           {shouldShowPlacement('quick-action') && (
             <>
               {Object.keys(groupedByPlacement).length > 0 && <ContextMenuSeparator />}
-              
+
               <ContextMenuSub>
                 <ContextMenuSubTrigger>
                   <Zap className="h-4 w-4 mr-2" />

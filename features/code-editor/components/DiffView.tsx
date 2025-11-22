@@ -62,29 +62,29 @@ export function DiffView({
     <div className={cn('h-full rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700', className)}>
       <div className="h-full overflow-auto">
         <div className={cn(
-          'font-mono text-sm',
+          'font-mono text-xs',
           mode === 'dark' ? 'bg-[#1e1e1e]' : 'bg-white'
         )}>
           {diff.lines.map((line, index) => (
             <div
               key={index}
               className={cn(
-                'flex items-center py-0.5',
+                'flex items-center',
                 getDiffLineStyle(line.type)
               )}
             >
               {showLineNumbers && (
                 <div className={cn(
-                  'shrink-0 w-12 text-right pr-3 select-none',
+                  'shrink-0 w-10 text-right pr-2 select-none',
                   mode === 'dark' ? 'text-gray-500' : 'text-gray-400'
                 )}>
                   {line.lineNumber}
                 </div>
               )}
-              <div className={cn('shrink-0 w-6 select-none font-bold', getDiffLinePrefixColor(line.type))}>
+              <div className={cn('shrink-0 w-4 select-none font-bold', getDiffLinePrefixColor(line.type))}>
                 {getDiffLinePrefix(line.type)}
               </div>
-              <div className="flex-1 pr-4 overflow-x-auto leading-tight">
+              <div className="flex-1 pr-2 overflow-x-auto">
                 <SyntaxHighlighter
                   language={language}
                   style={mode === 'dark' ? vscDarkPlus : vs}
@@ -95,13 +95,13 @@ export function DiffView({
                     background: 'transparent',
                     fontSize: 'inherit',
                     fontFamily: 'inherit',
-                    lineHeight: '1.5',
+                    lineHeight: '1.2',
                   }}
                   codeTagProps={{
                     style: {
                       background: 'transparent',
                       fontFamily: 'inherit',
-                      lineHeight: '1.5',
+                      lineHeight: '1.2',
                     }
                   }}
                 >

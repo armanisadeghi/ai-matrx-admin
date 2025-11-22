@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import CodeEditorLoading from "./CodeEditorLoading";
 import type { editor } from "monaco-editor";
 import { configureMonaco } from "../../config/monaco-config";
+import { CodeEditorContextMenu } from "../CodeEditorContextMenu";
 
 interface CodeEditorProps {
     language?: string;
@@ -33,12 +34,12 @@ interface CodeEditorProps {
     fileExtension?: string; // Explicit file extension hint (e.g., '.tsx', '.jsx')
 }
 
-const SmallCodeEditor = ({ 
-    language = "javascript", 
-    initialCode = "// Start coding here...", 
+const SmallCodeEditor = ({
+    language = "javascript",
+    initialCode = "// Start coding here...",
     path,
-    onChange, 
-    runCode, 
+    onChange,
+    runCode,
     mode = "dark",
     showFormatButton = true,
     showCopyButton = true,
@@ -62,11 +63,11 @@ const SmallCodeEditor = ({
     const [internalMinimapEnabled, setInternalMinimapEnabled] = useState(false);
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
     const [isConfigured, setIsConfigured] = useState(false);
-    
+
     // Use controlled props if provided, otherwise use internal state
     const wordWrap = controlledWordWrap !== undefined ? controlledWordWrap : internalWordWrap;
     const minimapEnabled = controlledMinimap !== undefined ? controlledMinimap : internalMinimapEnabled;
-    
+
     // SIMPLE FIX: Just use built-in Monaco themes - they work perfectly
     // Custom themes can interfere with syntax highlighting token rules
     const editorTheme = mode === "dark" ? "vs-dark" : "vs";
@@ -78,7 +79,7 @@ const SmallCodeEditor = ({
         if (fileExtension) {
             return fileExtension.startsWith('.') ? fileExtension : `.${fileExtension}`;
         }
-        
+
         const extensionMap: Record<string, string> = {
             'typescript': '.ts',
             'javascript': '.js',
@@ -228,18 +229,18 @@ const SmallCodeEditor = ({
 
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: any) => {
         editorRef.current = editor;
-        
+
         // CRITICAL: Force set the language immediately after mount
         const model = editor.getModel();
         if (model && language) {
             const currentLanguage = model.getLanguageId();
-            
+
             if (currentLanguage !== language) {
                 // Force set the language
                 monaco.editor.setModelLanguage(model, language);
             }
         }
-        
+
         // Auto-format on mount if enabled
         if (autoFormat) {
             // Wait for language services and formatters to be ready
@@ -249,11 +250,11 @@ const SmallCodeEditor = ({
 
                 // Wait a bit for language services to initialize
                 await new Promise(resolve => setTimeout(resolve, 300));
-                
+
                 try {
                     // Try to format using the formatting provider
                     const formatAction = editor.getAction('editor.action.formatDocument');
-                    
+
                     if (formatAction) {
                         await formatAction.run();
                     } else {
@@ -262,13 +263,13 @@ const SmallCodeEditor = ({
                             tabSize: model.getOptions().tabSize,
                             insertSpaces: model.getOptions().insertSpaces
                         };
-                        
+
                         const formatEdits = await monaco.languages.provideDocumentFormattingEdits(
                             model,
                             formattingOptions,
                             {}
                         );
-                        
+
                         if (formatEdits && formatEdits.length > 0) {
                             editor.executeEdits('auto-format', formatEdits);
                         }
@@ -287,7 +288,7 @@ const SmallCodeEditor = ({
                     }, 1000);
                 }
             };
-            
+
             attemptFormat();
         }
     }, [autoFormat, language]);
@@ -330,19 +331,19 @@ const SmallCodeEditor = ({
         const newMinimapEnabled = !minimapEnabled;
         setInternalMinimapEnabled(newMinimapEnabled);
         if (editorRef.current) {
-            editorRef.current.updateOptions({ 
-                minimap: { enabled: newMinimapEnabled } 
+            editorRef.current.updateOptions({
+                minimap: { enabled: newMinimapEnabled }
             });
         }
     }, [minimapEnabled]);
-    
+
     // Update editor when controlled props change
     React.useEffect(() => {
         if (editorRef.current && controlledWordWrap !== undefined) {
             editorRef.current.updateOptions({ wordWrap: controlledWordWrap });
         }
     }, [controlledWordWrap]);
-    
+
     React.useEffect(() => {
         if (editorRef.current && controlledMinimap !== undefined) {
             editorRef.current.updateOptions({ minimap: { enabled: controlledMinimap } });
@@ -350,174 +351,180 @@ const SmallCodeEditor = ({
     }, [controlledMinimap]);
 
     return (
-        <div ref={ref} className="flex flex-col w-full h-full">
-            {/* Toolbar */}
-            <div className="flex gap-2 mb-2 flex-wrap">
-                {showFormatButton && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleFormatCode}
-                                    className="h-8 px-3"
-                                >
-                                    <Wand2 className="h-4 w-4 mr-2" />
-                                    Format
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Format code (Shift+Alt+F)</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
-                
-                {showCopyButton && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleCopyCode}
-                                    className="h-8 px-3"
-                                >
-                                    {copied ? (
-                                        <>
-                                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                                            Copied!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="h-4 w-4 mr-2" />
-                                            Copy
-                                        </>
-                                    )}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Copy code to clipboard</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
-                
-                {showResetButton && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleResetCode}
-                                    className="h-8 px-3"
-                                >
-                                    <RotateCcw className="h-4 w-4 mr-2" />
-                                    Reset
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Reset to initial code</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
-                
-                {showWordWrapToggle && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={wordWrap === "on" ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={handleToggleWordWrap}
-                                    className="h-8 px-3"
-                                >
-                                    <WrapText className="h-4 w-4 mr-2" />
-                                    Wrap
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Toggle word wrap (Alt+Z)</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
-                
-                {showMinimapToggle && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={minimapEnabled ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={handleToggleMinimap}
-                                    className="h-8 px-3"
-                                >
-                                    <Maximize2 className="h-4 w-4 mr-2" />
-                                    Map
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Toggle minimap</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+        <CodeEditorContextMenu
+            editorRef={editorRef}
+            language={language}
+            filePath={path}
+        >
+            <div ref={ref} className="flex flex-col w-full h-full">
+                {/* Toolbar */}
+                <div className="flex gap-2 mb-2 flex-wrap">
+                    {showFormatButton && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleFormatCode}
+                                        className="h-8 px-3"
+                                    >
+                                        <Wand2 className="h-4 w-4 mr-2" />
+                                        Format
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Format code (Shift+Alt+F)</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+
+                    {showCopyButton && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleCopyCode}
+                                        className="h-8 px-3"
+                                    >
+                                        {copied ? (
+                                            <>
+                                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                                Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="h-4 w-4 mr-2" />
+                                                Copy
+                                            </>
+                                        )}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Copy code to clipboard</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+
+                    {showResetButton && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleResetCode}
+                                        className="h-8 px-3"
+                                    >
+                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                        Reset
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Reset to initial code</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+
+                    {showWordWrapToggle && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant={wordWrap === "on" ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={handleToggleWordWrap}
+                                        className="h-8 px-3"
+                                    >
+                                        <WrapText className="h-4 w-4 mr-2" />
+                                        Wrap
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Toggle word wrap (Alt+Z)</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+
+                    {showMinimapToggle && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant={minimapEnabled ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={handleToggleMinimap}
+                                        className="h-8 px-3"
+                                    >
+                                        <Maximize2 className="h-4 w-4 mr-2" />
+                                        Map
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Toggle minimap</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
+
+                {/* Main editor area */}
+                <div className="flex-grow relative">
+                    {!isConfigured ? (
+                        <CodeEditorLoading />
+                    ) : (
+                        <Editor
+                            height={customHeight || (height ? `${height - 80}px` : "300px")} // Use custom height or calculate
+                            width="100%"
+                            path={modelPath} // Path with proper extension for language detection
+                            defaultLanguage={language}
+                            language={language}
+                            defaultValue={initialCode}
+                            theme={editorTheme}
+                            onChange={onChange}
+                            beforeMount={handleEditorWillMount}
+                            onMount={handleEditorDidMount}
+                            loading={<CodeEditorLoading />}
+                            options={{
+                                minimap: { enabled: minimapEnabled },
+                                fontSize: 14,
+                                lineNumbers: "on",
+                                scrollBeyondLastLine: true,
+                                automaticLayout: true,
+                                formatOnPaste: true,
+                                formatOnType: false,
+                                wordWrap: wordWrap,
+                                wrappingIndent: "indent",
+                                padding: { top: 16, bottom: 16 },
+                                readOnly: readOnly,
+                                // Simplified - let Monaco handle syntax highlighting defaults
+                                quickSuggestions: {
+                                    other: true,
+                                    comments: false,
+                                    strings: false
+                                },
+                            }}
+                        />
+                    )}
+                </div>
+
+                {runCode && (
+                    <Button
+                        variant="default"
+                        className="w-full mt-2"
+                        onClick={runCode}
+                    >
+                        Run Code
+                    </Button>
                 )}
             </div>
-
-            {/* Main editor area */}
-            <div className="flex-grow relative">
-                {!isConfigured ? (
-                    <CodeEditorLoading />
-                ) : (
-                <Editor
-                    height={customHeight || (height ? `${height - 80}px` : "300px")} // Use custom height or calculate
-                    width="100%"
-                    path={modelPath} // Path with proper extension for language detection
-                    defaultLanguage={language}
-                    language={language}
-                    defaultValue={initialCode}
-                    theme={editorTheme}
-                    onChange={onChange}
-                    beforeMount={handleEditorWillMount}
-                    onMount={handleEditorDidMount}
-                    loading={<CodeEditorLoading />}
-                    options={{
-                        minimap: { enabled: minimapEnabled },
-                        fontSize: 14,
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: true,
-                        automaticLayout: true,
-                        formatOnPaste: true,
-                        formatOnType: false,
-                        wordWrap: wordWrap,
-                        wrappingIndent: "indent",
-                        padding: { top: 16, bottom: 16 },
-                        readOnly: readOnly,
-                        // Simplified - let Monaco handle syntax highlighting defaults
-                        quickSuggestions: {
-                            other: true,
-                            comments: false,
-                            strings: false
-                        },
-                    }}
-                />
-                )}
-            </div>
-
-            {runCode && (
-                <Button 
-                    variant="default" 
-                    className="w-full mt-2"
-                    onClick={runCode}
-                >
-                    Run Code
-                </Button>
-            )}
-        </div>
+        </CodeEditorContextMenu>
     );
 };
 

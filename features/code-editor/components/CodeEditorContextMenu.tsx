@@ -225,6 +225,7 @@ export function CodeEditorContextMenu({
         return {
             content: scopes.content,
             context: scopes.context,
+            contextFilter: 'code-editor', // Filter to code-editor enabled contexts
             // Pass custom scopes through contextData
             ...scopes,
         };

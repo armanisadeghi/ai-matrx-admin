@@ -21,15 +21,17 @@ interface ViewResponse {
  * Load all context menu items from unified view and build hierarchy.
  * 
  * @param placementTypes - Array of placement types to filter by (e.g., ['ai-action', 'content-block'])
+ * @param contextFilter - Optional context to filter by (e.g., 'code-editor', 'note-editor')
  * @param enabled - Whether to fetch data (useful for conditional loading)
  * 
  * @example
  * ```tsx
- * const { categoryGroups, loading, error } = useUnifiedContextMenu(['ai-action']);
+ * const { categoryGroups, loading, error } = useUnifiedContextMenu(['ai-action'], 'code-editor');
  * ```
  */
 export function useUnifiedContextMenu(
   placementTypes: string[] = [],
+  contextFilter?: string,
   enabled: boolean = true
 ): UseUnifiedContextMenuReturn {
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
@@ -60,9 +62,9 @@ export function useUnifiedContextMenu(
         throw new Error(`Failed to load menu: ${queryError.message}`);
       }
 
-      // Build hierarchical structure from flat data
-      const allGroups = (data as ViewResponse[])?.flatMap(row => 
-        buildCategoryHierarchy(row.categories_flat || [])
+      // Build hierarchical structure from flat data with optional context filtering
+      const allGroups = (data as ViewResponse[])?.flatMap(row =>
+        buildCategoryHierarchy(row.categories_flat || [], contextFilter)
       ) || [];
 
       setCategoryGroups(allGroups);
@@ -80,7 +82,7 @@ export function useUnifiedContextMenu(
   useEffect(() => {
     loadMenuItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(placementTypes), enabled]);
+  }, [JSON.stringify(placementTypes), contextFilter, enabled]);
 
   return {
     categoryGroups,
