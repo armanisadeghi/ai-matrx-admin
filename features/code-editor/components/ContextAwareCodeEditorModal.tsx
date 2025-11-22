@@ -8,6 +8,7 @@ import { getCodeEditorBuiltinId } from '@/features/code-editor/utils/codeEditorP
 import { normalizeLanguage } from '@/features/code-editor/utils/languages';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
+import { getDiffStats } from '@/features/code-editor/utils/generateDiff';
 import { supabase } from '@/utils/supabase/client';
 import { DYNAMIC_CONTEXT_VARIABLE } from '@/features/code-editor/utils/ContextVersionManager';
 import type { PromptData } from '@/features/prompts/types/modal';
@@ -186,6 +187,24 @@ export function ContextAwareCodeEditorModal({
         
         const newCode = result_apply.code || '';
         
+        // Get diff stats for the title
+        const diffStats = getDiffStats(currentCodeRef.current, newCode);
+        
+        // Build title with stats
+        const editsCount = parsed.edits.length;
+        const titleParts = ['Code Preview'];
+        if (editsCount > 0) {
+            titleParts.push(`${editsCount} edit${editsCount !== 1 ? 's' : ''}`);
+        }
+        if (diffStats) {
+            titleParts.push(`+${diffStats.additions} -${diffStats.deletions}`);
+        }
+        
+        // Add explanation to title if it's short
+        if (parsed.explanation && parsed.explanation.length < 50) {
+            titleParts.push(parsed.explanation);
+        }
+        
         // Success! Open canvas with code preview
         openCanvas({
             type: 'code_preview',
@@ -208,8 +227,8 @@ export function ContextAwareCodeEditorModal({
                         updateContextRef.current(newCode, parsed.explanation || 'Applied code edits');
                     }
                     
-                    // Close canvas but keep conversation open
-                    closeCanvas();
+                    // Keep canvas open so user can continue viewing the code
+                    // They can manually close it or make another edit
                 },
                 onDiscard: () => {
                     // Just close canvas, keep conversation open
@@ -217,7 +236,7 @@ export function ContextAwareCodeEditorModal({
                 },
             },
             metadata: {
-                title: 'Code Preview',
+                title: titleParts.join(' • '),
             },
         });
     }, [language, openCanvas, closeCanvas, onCodeChange]);

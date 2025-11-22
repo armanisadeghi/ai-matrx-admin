@@ -101,6 +101,18 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --gradient-2: linear-gradient(to right, hsl(var(--chart-1)), hsl(var(--chart-2)));
         --gradient-3: linear-gradient(to bottom right, hsl(var(--accent-2)), hsl(var(--accent-3)));
 
+        /* Z-Index Scale - Proper layering management */
+        --z-base: 0;
+        --z-dropdown: 1000;
+        --z-sticky: 1100;
+        --z-fixed: 1200;
+        --z-modal-backdrop: 1300;
+        --z-modal: 1400;
+        --z-popover: 1500;
+        --z-tooltip: 1600;
+        --z-notification: 1700;
+        --z-max: 2147483647; /* Maximum safe integer for edge cases */
+
         /* Animation specific */
         --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
         --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);

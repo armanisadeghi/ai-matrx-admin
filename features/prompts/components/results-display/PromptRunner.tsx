@@ -145,9 +145,14 @@ export function PromptRunner({
                 setShowCanvasOnMobile(true);
             }
         } else {
-            // Desktop - just toggle the canvas open/close state
+            // Desktop - toggle the canvas open/close state
             if (isCanvasOpen) {
                 closeCanvas();
+            } else {
+                // Reopen the canvas with the last content
+                if (canvasContent) {
+                    openCanvas(canvasContent);
+                }
             }
         }
     };
@@ -715,7 +720,7 @@ export function PromptRunner({
                         <h2 className="text-base font-semibold text-foreground truncate flex-1">
                             {title || promptData.name || "Run Prompt"}
                         </h2>
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-2 flex-shrink-0 pr-8">
                             {/* Only show canvas toggle if canvas has content */}
                             {canvasContent && (
                                 <Button

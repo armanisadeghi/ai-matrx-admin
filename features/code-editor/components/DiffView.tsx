@@ -59,7 +59,7 @@ export function DiffView({
   };
 
   return (
-    <div className={cn('h-full rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700', className)}>
+    <div className={cn('h-full overflow-hidden', className)}>
       <div className="h-full overflow-auto">
         <div className={cn(
           'font-mono text-xs',

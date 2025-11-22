@@ -11,7 +11,7 @@ export default function AICodeEditorV3DemoPage() {
   const [currentCode, setCurrentCode] = useState(EXAMPLE_CODE);
   const [currentVersion, setCurrentVersion] = useState(1);
   const [language, setLanguage] = useState('typescript');
-  const [builtinId] = useState('87efa869-9c11-43cf-b3a8-5b7c775ee415'); // Master Code Editor
+  const [builtinId] = useState('970856c5-3b9d-4034-ac9d-8d8a11fb3dba'); // Code Editor (Dynamic Context)
 
   const handleCodeChange = (newCode: string, version: number) => {
     console.log(`✅ Code updated to version ${version}`);

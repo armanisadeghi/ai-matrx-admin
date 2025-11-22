@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, useState, ReactNode } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { LucideIcon, Check, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
@@ -47,11 +47,9 @@ export interface AdvancedMenuProps {
   className?: string;
   width?: string; // Default "280px"
   maxWidth?: string; // Default "320px"
-  zIndex?: number; // Menu z-index, Default 2147483647 (max safe integer for z-index)
-  backdropZIndex?: number; // Backdrop z-index, Default 2147483646
   
   // Behavior
-  closeOnAction?: boolean; // Default true for non-async, false for async
+  closeOnAction?: boolean; // Default true
   showBackdrop?: boolean; // Default true
   backdropBlur?: boolean; // Default true
   categorizeItems?: boolean; // Default true if items have categories
@@ -79,8 +77,6 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
   className = "",
   width = "280px",
   maxWidth = "320px",
-  zIndex = 2147483647, // Maximum z-index value to guarantee top layer
-  backdropZIndex = 2147483646,
   closeOnAction = true,
   showBackdrop = true,
   backdropBlur = true,
@@ -300,26 +296,24 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
 
   // Calculate max height to prevent overflow - more conservative to ensure it fits
   const maxMenuHeight = isMobile 
-    ? "calc(100vh - 24px)" 
+    ? "calc(100dvh - 24px)" 
     : "calc(100vh - 24px)";
 
   const menuContent = (
     <div 
-      className="isolate" 
       style={{ 
-        zIndex: zIndex,
         position: 'fixed',
         inset: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        zIndex: 1500
       }}
     >
       {/* Backdrop Overlay */}
       {showBackdrop && (
         <div
-          style={{ zIndex: backdropZIndex }}
+          style={{ pointerEvents: 'auto' }}
           className={cn(
             "fixed inset-0 bg-black/20 dark:bg-black/40",
-            "pointer-events-auto",
             backdropBlur && "backdrop-blur-[2px]"
           )}
           onClick={onClose}
@@ -333,15 +327,16 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           minWidth: width, 
           maxWidth,
           maxHeight: maxMenuHeight,
-          zIndex: zIndex,
+          zIndex: 1,
+          pointerEvents: 'auto',
+          position: 'fixed',
           ...getPositionStyles()
         }}
         className={cn(
-          "fixed bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
+          "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
           "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]",
           "rounded-lg border border-zinc-300 dark:border-zinc-600",
           "overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
-          "pointer-events-auto",
           className
         )}
       >
@@ -380,14 +375,18 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
                   return (
                     <button
                       key={item.key}
-                      onClick={() => !isDisabled && handleAction(item)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isDisabled) handleAction(item);
+                      }}
                       disabled={isDisabled}
+                      style={{ pointerEvents: 'auto' }}
                       className={cn(
                         "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md",
                         "text-left transition-all duration-150",
                         isDisabled
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800/70 active:scale-[0.98]",
+                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800/70 active:scale-[0.98] cursor-pointer",
                         isSuccess && "bg-green-50 dark:bg-green-900/20",
                         isError && "bg-red-50 dark:bg-red-900/20",
                         "group"
@@ -452,4 +451,3 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
 };
 
 export default AdvancedMenu;
-

@@ -36,8 +36,9 @@ function useStreamingState(content: string, isStreamActive: boolean): {
   confidence: number;
 } {
   return useMemo(() => {
-    // Not enough content to detect
-    if (!content || content.trim().length < 10) {
+    // CRITICAL: Show loading for first 15 characters to prevent initial UI jumps
+    // This prevents flickering when ```diff first appears
+    if (!content || content.trim().length < 15) {
       return { state: 'detecting', style: 'unknown', confidence: 0 };
     }
 
@@ -47,6 +48,7 @@ function useStreamingState(content: string, isStreamActive: boolean): {
     // Low confidence or unknown - keep detecting or fallback
     if (detection.confidence < 0.6) {
       if (isStreamActive) {
+        // Keep showing loading while we figure out what this is
         return { state: 'detecting', style: 'unknown', confidence: detection.confidence };
       } else {
         // Stream ended and still don't know - fallback to code block
@@ -54,15 +56,23 @@ function useStreamingState(content: string, isStreamActive: boolean): {
       }
     }
 
-    // High confidence - we know the style
-    // Determine if we're still streaming or complete
-    const state: StreamingDiffState = isStreamActive ? 'streaming' : 'complete';
-
-    return {
-      state,
-      style: detection.style,
-      confidence: detection.confidence,
-    };
+    // High confidence - we know the style (search-replace detected)
+    // Now determine state based on stream status
+    if (isStreamActive) {
+      // Still streaming - let the renderer handle showing REPLACE in real-time
+      return {
+        state: 'streaming',
+        style: detection.style,
+        confidence: detection.confidence,
+      };
+    } else {
+      // Stream complete - show final collapsed diff view
+      return {
+        state: 'complete',
+        style: detection.style,
+        confidence: detection.confidence,
+      };
+    }
   }, [content, isStreamActive]);
 }
 

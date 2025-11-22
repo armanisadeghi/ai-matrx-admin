@@ -5,16 +5,27 @@
  * 1. Buffer SEARCH silently (show loading)
  * 2. Stream REPLACE as code
  * 3. Switch to diff view when complete
+ * 
+ * Features:
+ * - Collapsed preview (4 lines) when complete
+ * - Diff statistics (+/- counts)
+ * - Smooth expand/collapse with fade effect
  */
 
 import React, { useMemo } from 'react';
-import { generateUnifiedDiff } from '@/features/code-editor/utils/generateDiff';
+import { generateUnifiedDiff, DiffLine } from '@/features/code-editor/utils/generateDiff';
 import { DiffView } from '@/features/code-editor/components/DiffView';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import { DiffLoadingIndicator } from '../DiffLoadingIndicator';
 import { DiffCollapsible } from '../DiffCollapsible';
 import { GitCompare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/styles/themes/ThemeProvider';
+import { Prism as SyntaxHighlighterBase } from 'react-syntax-highlighter';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+
+// Type assertion for React 19 compatibility
+const SyntaxHighlighter = SyntaxHighlighterBase as any;
 
 interface SearchReplaceData {
   search: string;
@@ -32,6 +43,100 @@ interface SearchReplaceDiffRendererProps {
 }
 
 /**
+ * Render a mini preview of the diff (first N lines)
+ * Used in collapsed state
+ */
+const DiffPreview: React.FC<{
+  lines: DiffLine[];
+  language: string;
+  maxLines?: number;
+}> = ({ lines, language, maxLines = 4 }) => {
+  const { mode } = useTheme();
+  const previewLines = lines.slice(0, maxLines);
+
+  const getDiffLineStyle = (type: DiffLine['type']) => {
+    if (type === 'added') {
+      return mode === 'dark'
+        ? 'bg-green-900/60 border-l-4 border-green-500'
+        : 'bg-green-100 border-l-4 border-green-600';
+    }
+    if (type === 'removed') {
+      return mode === 'dark'
+        ? 'bg-red-900/60 border-l-4 border-red-500'
+        : 'bg-red-100 border-l-4 border-red-600';
+    }
+    return mode === 'dark' ? 'bg-transparent' : 'bg-transparent';
+  };
+
+  const getDiffLinePrefix = (type: DiffLine['type']) => {
+    if (type === 'added') return '+ ';
+    if (type === 'removed') return '- ';
+    return '  ';
+  };
+
+  const getDiffLinePrefixColor = (type: DiffLine['type']) => {
+    if (type === 'added') {
+      return mode === 'dark' ? 'text-green-400' : 'text-green-700';
+    }
+    if (type === 'removed') {
+      return mode === 'dark' ? 'text-red-400' : 'text-red-700';
+    }
+    return mode === 'dark' ? 'text-gray-500' : 'text-gray-600';
+  };
+
+  return (
+    <div className={cn(
+      'font-mono text-xs',
+      mode === 'dark' ? 'bg-zinc-900' : 'bg-white'
+    )}>
+      {previewLines.map((line, index) => (
+        <div
+          key={index}
+          className={cn(
+            'flex items-center',
+            getDiffLineStyle(line.type)
+          )}
+        >
+          <div className={cn(
+            'shrink-0 w-10 text-right pr-2 select-none',
+            mode === 'dark' ? 'text-gray-500' : 'text-gray-400'
+          )}>
+            {line.lineNumber}
+          </div>
+          <div className={cn('shrink-0 w-4 select-none font-bold', getDiffLinePrefixColor(line.type))}>
+            {getDiffLinePrefix(line.type)}
+          </div>
+          <div className="flex-1 pr-2 overflow-x-auto">
+            <SyntaxHighlighter
+              language={language}
+              style={mode === 'dark' ? vscDarkPlus : vs}
+              PreTag="span"
+              customStyle={{
+                margin: 0,
+                padding: 0,
+                background: 'transparent',
+                fontSize: 'inherit',
+                fontFamily: 'inherit',
+                lineHeight: '1.2',
+              }}
+              codeTagProps={{
+                style: {
+                  background: 'transparent',
+                  fontFamily: 'inherit',
+                  lineHeight: '1.2',
+                }
+              }}
+            >
+              {line.content || ' '}
+            </SyntaxHighlighter>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
  * Efficiently render SEARCH/REPLACE diff with streaming support
  */
 export const SearchReplaceDiffRenderer: React.FC<SearchReplaceDiffRendererProps> = ({
@@ -43,8 +148,9 @@ export const SearchReplaceDiffRenderer: React.FC<SearchReplaceDiffRendererProps>
   const { search, replace, searchComplete, replaceComplete, isComplete } = data;
 
   // Memoize diff generation - only when both are complete
-  const showDiffView = useMemo(() => {
-    return isComplete && search && replace;
+  const diffData = useMemo(() => {
+    if (!isComplete || !search || !replace) return null;
+    return generateUnifiedDiff(search, replace);
   }, [isComplete, search, replace]);
 
   // Phase 1: Buffering SEARCH (show loading)
@@ -80,23 +186,31 @@ export const SearchReplaceDiffRenderer: React.FC<SearchReplaceDiffRendererProps>
     );
   }
 
-  // Phase 3: Both complete - show diff view
-  if (showDiffView) {
+  // Phase 3: Both complete - show diff view with collapsed preview
+  if (diffData) {
     return (
       <DiffCollapsible
         icon={<GitCompare className="h-3.5 w-3.5 text-emerald-500" />}
         title="Code Updates"
-        initialOpen={true}
+        initialOpen={false}
         className={className}
-      >
-        <div className="py-1">
-          <DiffView
-            originalCode={search}
-            modifiedCode={replace}
+        additions={diffData.additions}
+        deletions={diffData.deletions}
+        showPreview={true}
+        previewContent={
+          <DiffPreview
+            lines={diffData.lines}
             language={language}
-            showLineNumbers={true}
+            maxLines={4}
           />
-        </div>
+        }
+      >
+        <DiffView
+          originalCode={search}
+          modifiedCode={replace}
+          language={language}
+          showLineNumbers={true}
+        />
       </DiffCollapsible>
     );
   }

@@ -97,6 +97,17 @@ const config: Config = {
                 bounce: 'var(--animated-menu-bounce)',
                 smooth: 'var(--animated-menu-smooth)'
             },
+            zIndex: {
+                'dropdown': 'var(--z-dropdown)',
+                'sticky': 'var(--z-sticky)',
+                'fixed': 'var(--z-fixed)',
+                'modal-backdrop': 'var(--z-modal-backdrop)',
+                'modal': 'var(--z-modal)',
+                'popover': 'var(--z-popover)',
+                'tooltip': 'var(--z-tooltip)',
+                'notification': 'var(--z-notification)',
+                'max': 'var(--z-max)',
+            },
             typography: {
                 DEFAULT: {
                     css: {

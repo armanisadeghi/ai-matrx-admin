@@ -52,62 +52,34 @@ export function CodePreviewCanvas({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="px-4 py-3 border-b bg-muted/30 shrink-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <h3 className="text-sm font-semibold">Code Preview</h3>
-            <span className="text-xs text-muted-foreground">
-              {edits.length} edit{edits.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-          {diffStats && (
-            <div className="flex gap-1.5">
-              <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30">
-                +{diffStats.additions}
-              </Badge>
-              <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30">
-                -{diffStats.deletions}
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {explanation && (
-          <Alert className="py-2">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <AlertDescription className="text-xs">{explanation}</AlertDescription>
-          </Alert>
-        )}
-      </div>
-
-      {/* Tabs */}
+      {/* Tabs - VSCode style with minimal padding */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0 gap-0 mx-4 mt-2">
+        <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0 gap-0">
           <TabsTrigger
             value="diff"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1.5 text-xs gap-1.5 h-8 font-normal"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1 text-xs gap-1.5 h-7 font-normal"
           >
             <GitCompare className="w-3.5 h-3.5" />
             Diff
           </TabsTrigger>
           <TabsTrigger
             value="original"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1.5 text-xs gap-1.5 h-8 font-normal"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1 text-xs gap-1.5 h-7 font-normal"
           >
             <File className="w-3.5 h-3.5" />
             Original
           </TabsTrigger>
           <TabsTrigger
             value="preview"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1.5 text-xs gap-1.5 h-8 font-normal"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1 text-xs gap-1.5 h-7 font-normal"
           >
             <FileCode className="w-3.5 h-3.5" />
             Preview
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex-1 mt-2 min-h-0 mx-4 mb-4 border rounded overflow-hidden bg-background">
+        {/* Content - No padding, edge-to-edge */}
+        <div className="flex-1 min-h-0 overflow-hidden">
           <TabsContent value="diff" className="h-full m-0 p-0 overflow-hidden">
             <DiffView
               originalCode={originalCode}
@@ -140,13 +112,13 @@ export function CodePreviewCanvas({
       </Tabs>
 
       {/* Footer Actions */}
-      <div className="px-4 py-3 border-t bg-muted/20 shrink-0">
+      <div className="px-4 py-2.5 border-t bg-muted/20 shrink-0">
         <div className="flex items-center justify-end gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onDiscard}
-            className="gap-1.5"
+            className="gap-1.5 h-8"
           >
             <X className="w-3.5 h-3.5" />
             Discard
@@ -154,7 +126,7 @@ export function CodePreviewCanvas({
           <Button
             size="sm"
             onClick={onApply}
-            className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
+            className="bg-green-600 hover:bg-green-700 text-white gap-1.5 h-8"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             Apply Changes
