@@ -14,8 +14,8 @@ import {
 export type ViewMode = 'preview' | 'source' | 'library';
 
 export interface CanvasHeaderProps {
-  title: string;
-  subtitle?: string;
+  title: string | ReactNode;
+  subtitle?: string | ReactNode;
   onClose: () => void;
   
   // View mode toggle
@@ -87,13 +87,21 @@ export function CanvasHeader({
       >
         {/* Left: Title and Subtitle */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-            {title}
-          </h3>
+          <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 min-w-0">
+            {typeof title === 'string' ? (
+              <span className="truncate">{title}</span>
+            ) : (
+              title
+            )}
+          </div>
           {subtitle && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-              {subtitle}
-            </p>
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2 min-w-0">
+              {typeof subtitle === 'string' ? (
+                <span className="truncate">{subtitle}</span>
+              ) : (
+                subtitle
+              )}
+            </div>
           )}
         </div>
 

@@ -733,9 +733,9 @@ export function PromptRunner({
                                     {isMobile && showCanvasOnMobile ? (
                                         <X className="w-4 h-4" />
                                     ) : isCanvasOpen ? (
-                                        <PanelRightClose className="w-4 h-4" />
+                                        <PanelRightClose className="w-5 h-5" />
                                     ) : (
-                                        <PanelRightOpen className="w-4 h-4" />
+                                        <PanelRightOpen className="w-5 h-5" />
                                     )}
                                 </Button>
                             )}

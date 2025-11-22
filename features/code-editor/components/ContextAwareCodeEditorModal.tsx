@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { ContextAwarePromptRunner } from '@/features/prompts/components/results-display/ContextAwarePromptRunner';
 import { useCanvas } from '@/hooks/useCanvas';
 import { getCodeEditorBuiltinId } from '@/features/code-editor/utils/codeEditorPrompts';
@@ -68,6 +69,7 @@ export function ContextAwareCodeEditorModal({
     
     const language = normalizeLanguage(rawLanguage);
     const currentCodeRef = useRef(code);
+    const currentVersionRef = useRef(1);
     const updateContextRef = useRef<((content: string, summary?: string) => void) | null>(null);
     const defaultBuiltinId = builtinId || getCodeEditorBuiltinId(promptContext);
     
@@ -190,20 +192,28 @@ export function ContextAwareCodeEditorModal({
         // Get diff stats for the title
         const diffStats = getDiffStats(currentCodeRef.current, newCode);
         
-        // Build title with stats
+        // Build rich title with badges and colors
         const editsCount = parsed.edits.length;
-        const titleParts = ['Code Preview'];
-        if (editsCount > 0) {
-            titleParts.push(`${editsCount} edit${editsCount !== 1 ? 's' : ''}`);
-        }
-        if (diffStats) {
-            titleParts.push(`+${diffStats.additions} -${diffStats.deletions}`);
-        }
-        
-        // Add explanation to title if it's short
-        if (parsed.explanation && parsed.explanation.length < 50) {
-            titleParts.push(parsed.explanation);
-        }
+        const titleNode = (
+            <>
+                <span className="truncate">Code Preview</span>
+                {editsCount > 0 && (
+                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal">
+                        {editsCount} edit{editsCount !== 1 ? 's' : ''}
+                    </Badge>
+                )}
+                {diffStats && (
+                    <>
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30 font-normal">
+                            +{diffStats.additions}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30 font-normal">
+                            -{diffStats.deletions}
+                        </Badge>
+                    </>
+                )}
+            </>
+        );
         
         // Success! Open canvas with code preview
         openCanvas({
@@ -215,17 +225,17 @@ export function ContextAwareCodeEditorModal({
                 edits: parsed.edits,
                 explanation: parsed.explanation,
                 onApply: () => {
-                    // Update the code in parent component
-                    // The version is managed by ContextVersionManager
-                    onCodeChange(newCode, 0); // Version will be tracked internally
+                    // Call the context update function to increment version FIRST
+                    if (updateContextRef.current) {
+                        updateContextRef.current(newCode, parsed.explanation || 'Applied code edits');
+                    }
                     
                     // Update our ref so next edits work on the new code
                     currentCodeRef.current = newCode;
                     
-                    // Call the context update function to increment version
-                    if (updateContextRef.current) {
-                        updateContextRef.current(newCode, parsed.explanation || 'Applied code edits');
-                    }
+                    // Update the code in parent component with the new version
+                    // currentVersionRef will be updated by handleContextChange callback
+                    onCodeChange(newCode, currentVersionRef.current);
                     
                     // Keep canvas open so user can continue viewing the code
                     // They can manually close it or make another edit
@@ -236,7 +246,8 @@ export function ContextAwareCodeEditorModal({
                 },
             },
             metadata: {
-                title: titleParts.join(' • '),
+                title: titleNode as ReactNode,
+                subtitle: parsed.explanation && parsed.explanation.length < 100 ? parsed.explanation : undefined,
             },
         });
     }, [language, openCanvas, closeCanvas, onCodeChange]);
@@ -244,7 +255,7 @@ export function ContextAwareCodeEditorModal({
     // Handle context version changes
     const handleContextChange = useCallback((newContent: string, version: number) => {
         console.log(`✅ Context updated to v${version}`);
-        // The ContextVersionManager handles the version tracking
+        currentVersionRef.current = version;
     }, []);
     
     // Receive the updateContext function from ContextAwarePromptRunner
@@ -298,4 +309,3 @@ export function ContextAwareCodeEditorModal({
         </Dialog>
     );
 }
-

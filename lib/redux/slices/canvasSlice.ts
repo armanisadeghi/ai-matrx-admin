@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
+import type { ReactNode } from 'react';
 
 // Supported canvas content types
 export type CanvasContentType = 
@@ -27,7 +28,8 @@ export interface CanvasContent {
   type: CanvasContentType;
   data: any; // Flexible data structure - each block handles its own data
   metadata?: {
-    title?: string;
+    title?: string | ReactNode;
+    subtitle?: string | ReactNode;
     sourceMessageId?: string;
     sourceTaskId?: string;
   };

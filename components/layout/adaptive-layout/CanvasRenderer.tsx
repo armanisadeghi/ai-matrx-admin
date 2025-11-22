@@ -18,6 +18,7 @@ import { CanvasNavigation } from "./CanvasNavigation";
 import { SavedCanvasItems } from "@/components/canvas/SavedCanvasItems";
 import { CanvasShareSheet } from "@/components/canvas/social/CanvasShareSheet";
 import type { CanvasType } from "@/types/canvas-social";
+import { isValidElement } from "react";
 
 // Import all interactive blocks
 import MultipleChoiceQuiz from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
@@ -174,11 +175,47 @@ export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
         onOpenChange={setIsShareSheetOpen}
         canvasData={content.data}
         canvasType={content.type as CanvasType}
-        defaultTitle={content.metadata?.title || getDefaultTitle(content.type)}
+        defaultTitle={titleToString(content.metadata?.title) || getDefaultTitle(content.type)}
         hasScoring={content.type === 'quiz' || content.type === 'flashcards'}
       />
     </div>
   );
+}
+
+/**
+ * Convert ReactNode title to string for components that need plain text
+ * Recursively extracts text content from React elements
+ */
+function titleToString(title: string | React.ReactNode | undefined): string {
+  if (!title) return '';
+  if (typeof title === 'string') return title;
+  if (typeof title === 'number') return String(title);
+  if (typeof title === 'boolean') return String(title);
+  
+  // Handle arrays (e.g., fragments with multiple children)
+  if (Array.isArray(title)) {
+    return title
+      .map(titleToString)
+      .filter(Boolean)
+      .join(' ');
+  }
+  
+  // For React elements, try to extract text from children
+  if (isValidElement(title)) {
+    const children = (title.props as any)?.children;
+    
+    if (children) {
+      // Recursively extract text from children
+      const extracted = titleToString(children);
+      if (extracted) return extracted;
+    }
+    
+    // If no children or couldn't extract text, use fallback
+    return 'Canvas Content';
+  }
+  
+  // For any other type, use fallback
+  return 'Canvas Content';
 }
 
 /**
@@ -370,7 +407,7 @@ function renderContent(content: CanvasContent): React.ReactNode {
         <iframe
           src={data.url || data}
           className="w-full h-full border-0"
-          title={content.metadata?.title || 'Canvas Content'}
+          title={titleToString(content.metadata?.title) || 'Canvas Content'}
           sandbox="allow-scripts allow-same-origin allow-forms"
         />
       );
@@ -388,7 +425,7 @@ function renderContent(content: CanvasContent): React.ReactNode {
         <div className="h-full flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
           <img
             src={data.url || data}
-            alt={content.metadata?.title || 'Canvas Image'}
+            alt={titleToString(content.metadata?.title) || 'Canvas Image'}
             className="max-w-full max-h-full object-contain"
           />
         </div>
