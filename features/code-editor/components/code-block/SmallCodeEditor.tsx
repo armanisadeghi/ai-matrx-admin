@@ -30,6 +30,7 @@ interface CodeEditorProps {
     formatTrigger?: number; // Increment this to trigger formatting externally
     controlledWordWrap?: "on" | "off"; // Controlled word wrap from parent
     controlledMinimap?: boolean; // Controlled minimap from parent
+    fileExtension?: string; // Explicit file extension hint (e.g., '.tsx', '.jsx')
 }
 
 const SmallCodeEditor = ({ 
@@ -50,7 +51,8 @@ const SmallCodeEditor = ({
     readOnly = false,
     formatTrigger = 0,
     controlledWordWrap,
-    controlledMinimap
+    controlledMinimap,
+    fileExtension
 }: CodeEditorProps) => {
     const [ref, { width, height }] = useMeasure();
     const monaco = useMonaco();
@@ -59,6 +61,7 @@ const SmallCodeEditor = ({
     const [internalWordWrap, setInternalWordWrap] = useState<"off" | "on">(defaultWordWrap);
     const [internalMinimapEnabled, setInternalMinimapEnabled] = useState(false);
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+    const [isConfigured, setIsConfigured] = useState(false);
     
     // Use controlled props if provided, otherwise use internal state
     const wordWrap = controlledWordWrap !== undefined ? controlledWordWrap : internalWordWrap;
@@ -67,6 +70,57 @@ const SmallCodeEditor = ({
     // SIMPLE FIX: Just use built-in Monaco themes - they work perfectly
     // Custom themes can interfere with syntax highlighting token rules
     const editorTheme = mode === "dark" ? "vs-dark" : "vs";
+
+    // Generate a unique file path with extension based on language
+    // This helps Monaco recognize TypeScript/TSX files correctly
+    const getFileExtension = (lang: string): string => {
+        // Use explicit fileExtension if provided
+        if (fileExtension) {
+            return fileExtension.startsWith('.') ? fileExtension : `.${fileExtension}`;
+        }
+        
+        const extensionMap: Record<string, string> = {
+            'typescript': '.ts',
+            'javascript': '.js',
+            'json': '.json',
+            'html': '.html',
+            'css': '.css',
+            'python': '.py',
+            'java': '.java',
+            'cpp': '.cpp',
+            'c': '.c',
+            'csharp': '.cs',
+            'php': '.php',
+            'ruby': '.rb',
+            'go': '.go',
+            'rust': '.rs',
+            'swift': '.swift',
+            'kotlin': '.kt',
+            'sql': '.sql',
+            'shell': '.sh',
+            'yaml': '.yaml',
+            'xml': '.xml',
+            'markdown': '.md',
+        };
+        return extensionMap[lang] || '.txt';
+    };
+
+    // Use provided path or generate a unique one with proper extension
+    // Use a ref to maintain stable path across re-renders to avoid duplicate models
+    const modelPathRef = useRef<string>(
+        path || `inmemory://model-${Date.now()}-${Math.random().toString(36).substr(2, 9)}${getFileExtension(language)}`
+    );
+    const modelPath = modelPathRef.current;
+
+    // Configure Monaco IMMEDIATELY when component mounts (but only once globally)
+    useEffect(() => {
+        configureMonaco().then(() => {
+            setIsConfigured(true);
+        }).catch(error => {
+            console.error('Failed to configure Monaco:', error);
+            setIsConfigured(true); // Still set to true to show editor
+        });
+    }, []);
 
     // Sync external changes to initialCode (for multi-model support)
     useEffect(() => {
@@ -157,27 +211,33 @@ const SmallCodeEditor = ({
         formatFromExternal();
     }, [formatTrigger]); // Trigger when formatTrigger changes
 
-    // CRITICAL: Configure Monaco BEFORE it mounts - this is lazy loaded
+    // CRITICAL: Set up language services when Monaco instance is available
     const handleEditorWillMount = useCallback((monaco: any) => {
-        // This triggers Monaco configuration only when editor is about to mount
-        // Returns immediately if already configured
-        configureMonaco().catch(error => {
-            console.error('Failed to configure Monaco:', error);
-        });
-    }, []);
+        // If we have a model path, ensure the model will be created with the correct language
+        if (modelPath) {
+            const uri = monaco.Uri.parse(modelPath);
+            const existingModel = monaco.editor.getModel(uri);
+            if (existingModel) {
+                const currentLang = existingModel.getLanguageId();
+                if (currentLang !== language) {
+                    monaco.editor.setModelLanguage(existingModel, language);
+                }
+            }
+        }
+    }, [language, modelPath]);
 
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: any) => {
         editorRef.current = editor;
         
-        // CRITICAL: Ensure the model uses the correct language for syntax highlighting
+        // CRITICAL: Force set the language immediately after mount
         const model = editor.getModel();
         if (model && language) {
-            // Force set the language mode to ensure syntax highlighting is activated
-            // Use setTimeout to ensure Monaco's language services are ready
-            setTimeout(() => {
+            const currentLanguage = model.getLanguageId();
+            
+            if (currentLanguage !== language) {
+                // Force set the language
                 monaco.editor.setModelLanguage(model, language);
-                console.log(`✅ Monaco Editor: Language set to "${language}"`);
-            }, 0);
+            }
         }
         
         // Auto-format on mount if enabled
@@ -410,10 +470,13 @@ const SmallCodeEditor = ({
 
             {/* Main editor area */}
             <div className="flex-grow relative">
+                {!isConfigured ? (
+                    <CodeEditorLoading />
+                ) : (
                 <Editor
                     height={customHeight || (height ? `${height - 80}px` : "300px")} // Use custom height or calculate
                     width="100%"
-                    path={path} // Multi-model support - each path gets its own model
+                    path={modelPath} // Path with proper extension for language detection
                     defaultLanguage={language}
                     language={language}
                     defaultValue={initialCode}
@@ -442,6 +505,7 @@ const SmallCodeEditor = ({
                         },
                     }}
                 />
+                )}
             </div>
 
             {runCode && (

@@ -28,28 +28,54 @@ interface User {
   role: 'admin' | 'user';
 }
 
-class UserService {
-  private users: User[] = [];
-  
-  addUser(user: User): void {
-    this.users.push(user);
-  }
-  
-  getUserById(id: number): User | undefined {
-    return this.users.find(u => u.id === id);
-  }
+function createUser(name: string, email: string): User {
+  return {
+    id: Math.random(),
+    name,
+    email,
+    role: 'user'
+  };
 }
 
 // Try typing and see type hints!
-const service = new UserService();
-const user: User = {
-  id: 1,
-  name: 'John Doe',
-  email: 'john@example.com',
-  role: 'admin'
+const user = createUser('John Doe', 'john@example.com');
+console.log(user);`;
+
+const SAMPLE_TSX = `// React TypeScript (TSX)
+import React, { useState } from 'react';
+
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+export const Button: React.FC<ButtonProps> = ({ label, onClick, variant = 'primary' }) => {
+  return (
+    <button 
+      onClick={onClick}
+      className={\`btn btn-\${variant}\`}
+    >
+      {label}
+    </button>
+  );
 };
 
-service.addUser(user);`;
+interface CounterProps {
+  initialCount?: number;
+}
+
+export function Counter({ initialCount = 0 }: CounterProps) {
+  const [count, setCount] = useState<number>(initialCount);
+  
+  return (
+    <div className="counter">
+      <h1>Count: {count}</h1>
+      <Button label="Increment" onClick={() => setCount(count + 1)} />
+      <Button label="Decrement" onClick={() => setCount(count - 1)} variant="secondary" />
+    </div>
+  );
+}`;
 
 const SAMPLE_JSON = `{
   "name": "monaco-test",
@@ -113,6 +139,7 @@ class Calculator:
 export default function MonacoTestPage() {
   const [jsCode, setJsCode] = useState(SAMPLE_JS);
   const [tsCode, setTsCode] = useState(SAMPLE_TS);
+  const [tsxCode, setTsxCode] = useState(SAMPLE_TSX);
   const [jsonCode, setJsonCode] = useState(SAMPLE_JSON);
   const [cssCode, setCssCode] = useState(SAMPLE_CSS);
   const [pythonCode, setPythonCode] = useState(SAMPLE_PYTHON);
@@ -131,9 +158,10 @@ export default function MonacoTestPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="javascript" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="javascript">JavaScript</TabsTrigger>
                   <TabsTrigger value="typescript">TypeScript</TabsTrigger>
+                  <TabsTrigger value="tsx">TSX/React</TabsTrigger>
                   <TabsTrigger value="json">JSON</TabsTrigger>
                   <TabsTrigger value="css">CSS</TabsTrigger>
                   <TabsTrigger value="python">Python</TabsTrigger>
@@ -167,6 +195,25 @@ export default function MonacoTestPage() {
                       language="typescript"
                       initialCode={tsCode}
                       onChange={setTsCode}
+                      height="500px"
+                      showFormatButton={true}
+                      showCopyButton={true}
+                      showResetButton={true}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="tsx" className="mt-4">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">TSX/React Editor</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Should show TypeScript + JSX support with component IntelliSense
+                    </p>
+                    <SmallCodeEditor
+                      language="typescript"
+                      fileExtension=".tsx"
+                      initialCode={tsxCode}
+                      onChange={setTsxCode}
                       height="500px"
                       showFormatButton={true}
                       showCopyButton={true}
@@ -244,16 +291,28 @@ export default function MonacoTestPage() {
                   <li>Strings should be colored</li>
                   <li>Comments should be colored (different from code)</li>
                   <li>Numbers should be colored</li>
+                  <li>JSX/TSX: HTML-like syntax should be highlighted</li>
                 </ul>
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">✅ IntelliSense (JS/TS)</h4>
+                <h4 className="font-semibold mb-2">✅ IntelliSense (JS/TS/TSX)</h4>
                 <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
                   <li>Type "console." and you should see method suggestions</li>
                   <li>Type "document." and you should see DOM API suggestions</li>
                   <li>For TypeScript: you should see type information on hover</li>
                   <li>Parameter hints should appear when calling functions</li>
+                  <li>TSX: React component props should show IntelliSense</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">✅ TypeScript Features</h4>
+                <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                  <li>TypeScript: interface and type declarations work without errors</li>
+                  <li>TSX: JSX syntax works in TypeScript files</li>
+                  <li>No "duplicate function" errors</li>
+                  <li>Proper type checking and error reporting</li>
                 </ul>
               </div>
 

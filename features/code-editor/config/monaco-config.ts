@@ -44,6 +44,7 @@ export function configureMonaco(): Promise<void> {
       jsx: monaco.languages.typescript.JsxEmit.React,
       reactNamespace: 'React',
       allowJs: true,
+      checkJs: false, // Don't check JS files for TypeScript errors
       typeRoots: ['node_modules/@types'],
     });
 
@@ -57,7 +58,16 @@ export function configureMonaco(): Promise<void> {
       jsx: monaco.languages.typescript.JsxEmit.React,
       reactNamespace: 'React',
       allowJs: true,
+      checkJs: false,
       typeRoots: ['node_modules/@types'],
+      // Enable all TypeScript features
+      strict: false, // Disable strict mode to be more lenient
+      noImplicitAny: false,
+      strictNullChecks: false,
+      strictFunctionTypes: false,
+      strictPropertyInitialization: false,
+      noImplicitThis: false,
+      alwaysStrict: false,
     });
 
     // Enable diagnostic options (error checking)
@@ -101,7 +111,7 @@ export function configureMonaco(): Promise<void> {
       enableSchemaRequest: true,
     });
 
-    console.log('✅ Monaco Editor: Language services configured');
+    // Configuration complete
   })();
 
   return configurationPromise;

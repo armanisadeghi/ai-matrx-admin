@@ -80,9 +80,9 @@ const mapLanguageForMonaco = (lang: string): string => {
     }
 
     const languageMap: Record<string, string> = {
-        'react': 'typescriptreact',  // React components → TypeScript React
-        'jsx': 'javascriptreact',    // JavaScript JSX
-        'tsx': 'typescriptreact',    // TypeScript JSX
+        'react': 'typescript',  // React components → TypeScript (Monaco uses 'typescript' for TSX)
+        'jsx': 'javascript',    // JavaScript JSX → Monaco uses 'javascript' for JSX
+        'tsx': 'typescript',    // TypeScript JSX → Monaco uses 'typescript' for TSX
         'typescript': 'typescript',
         'javascript': 'javascript',
         'js': 'javascript',
@@ -132,6 +132,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     // Map language for respective editors (with additional safety checks)
     const prismLanguage = mapLanguageForPrism(rawLanguage);
     const monacoLanguage = mapLanguageForMonaco(rawLanguage);
+    
+    // Determine file extension for Monaco to enable JSX/TSX support
+    const getMonacoFileExtension = (raw: string): string | undefined => {
+        const normalized = raw.trim().toLowerCase();
+        if (normalized === 'tsx' || normalized === 'react') return '.tsx';
+        if (normalized === 'jsx') return '.jsx';
+        return undefined; // Let Monaco infer from language
+    };
+    const monacoFileExtension = getMonacoFileExtension(rawLanguage);
     
     const [editedCode, setEditedCode] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
@@ -413,6 +422,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                     <div className="w-full">
                         <SmallCodeEditor 
                             language={monacoLanguage}
+                            fileExtension={monacoFileExtension}
                             initialCode={code} 
                             onChange={handleCodeChange} 
                             mode={mode}
