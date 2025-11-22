@@ -31,12 +31,12 @@ export function DiffView({
   const getDiffLineStyle = (type: DiffLine['type']) => {
     if (type === 'added') {
       return mode === 'dark'
-        ? 'bg-green-900/40 border-l-4 border-green-500'
+        ? 'bg-green-900/60 border-l-4 border-green-500'
         : 'bg-green-100 border-l-4 border-green-600';
     }
     if (type === 'removed') {
       return mode === 'dark'
-        ? 'bg-red-900/40 border-l-4 border-red-500'
+        ? 'bg-red-900/60 border-l-4 border-red-500'
         : 'bg-red-100 border-l-4 border-red-600';
     }
     return mode === 'dark' ? 'bg-transparent' : 'bg-transparent';
@@ -63,7 +63,7 @@ export function DiffView({
       <div className="h-full overflow-auto">
         <div className={cn(
           'font-mono text-xs',
-          mode === 'dark' ? 'bg-[#1e1e1e]' : 'bg-white'
+          mode === 'dark' ? 'bg-zinc-900' : 'bg-white'
         )}>
           {diff.lines.map((line, index) => (
             <div

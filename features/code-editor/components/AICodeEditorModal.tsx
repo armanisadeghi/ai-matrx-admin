@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/select';
 import {
   Loader2,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   Code2,
@@ -562,12 +561,9 @@ export function AICodeEditorModal({
           <div className="flex-1 flex flex-col min-h-0 gap-2">
             {/* Code Display (input/processing states) */}
             {(state === 'input' || state === 'processing') && (
-              <div className="flex-1 flex flex-col min-h-0 border rounded overflow-hidden bg-background">
-                <div className="px-2 py-1 border-b bg-muted/20 flex items-center justify-between shrink-0">
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-textured">
+                <div className="px-2 py-1 flex items-center justify-between shrink-0">
                   <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Current Code</span>
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5">
-                    {language}
-                  </Badge>
                 </div>
                 <div className="flex-1 overflow-auto relative">
                   <CodeBlock
@@ -620,7 +616,6 @@ export function AICodeEditorModal({
 
                 {parsedEdits.explanation && (
                   <Alert className="mb-2 shrink-0 py-2">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
                     <AlertDescription className="text-xs">{parsedEdits.explanation}</AlertDescription>
                   </Alert>
                 )}
@@ -629,28 +624,35 @@ export function AICodeEditorModal({
                   <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0">
                     <TabsTrigger
                       value="diff"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-1 text-xs"
                     >
-                      <Eye className="w-3.5 h-3.5 mr-1.5" />
+                      <Eye className="w-3.5 h-3.5 mr-1" />
                       Diff
                     </TabsTrigger>
                     <TabsTrigger
-                      value="after"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
+                      value="original"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-1 text-xs"
                     >
-                      <FileCode className="w-3.5 h-3.5 mr-1.5" />
+                      <Code2 className="w-3.5 h-3.5 mr-1" />
+                      Original
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="preview"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-1 text-xs"
+                    >
+                      <FileCode className="w-3.5 h-3.5 mr-1" />
                       Preview
                     </TabsTrigger>
                     <TabsTrigger
                       value="response"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-1 text-xs"
                     >
-                      <FileText className="w-3.5 h-3.5 mr-1.5" />
+                      <FileText className="w-3.5 h-3.5 mr-1" />
                       Response
                     </TabsTrigger>
                   </TabsList>
 
-                  <div className="flex-1 mt-2 min-h-0 border rounded overflow-hidden bg-background">
+                  <div className="flex-1 mt-2 min-h-0 border rounded overflow-hidden bg-textured">
                     <TabsContent value="diff" className="h-full m-0 p-0 overflow-hidden">
                       <DiffView
                         originalCode={currentCode}
@@ -660,7 +662,17 @@ export function AICodeEditorModal({
                       />
                     </TabsContent>
 
-                    <TabsContent value="after" className="h-full m-0 p-0 overflow-hidden">
+                    <TabsContent value="original" className="h-full m-0 p-0 overflow-hidden">
+                      <div className="h-full overflow-auto">
+                        <CodeBlock
+                          code={currentCode}
+                          language={language}
+                          showLineNumbers={true}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="preview" className="h-full m-0 p-0 overflow-hidden">
                       <div className="h-full overflow-auto">
                         <CodeBlock
                           code={modifiedCode}
@@ -758,7 +770,7 @@ export function AICodeEditorModal({
 
           {/* Right: Persistent Conversation Panel */}
           {instance?.conversation.messages && instance.conversation.messages.length > 0 && (
-            <div className="w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-background shrink-0">
+            <div className="w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-textured shrink-0">
               <div className="px-2 py-1 border-b bg-muted/20 shrink-0">
                 <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Conversation</span>
               </div>

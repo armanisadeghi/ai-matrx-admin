@@ -74,7 +74,7 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
         <div
             className={cn(
                 "flex items-center justify-between",
-                "pl-2 py-0 rounded-t-xl",
+                "pl-5 py-0 rounded-t-xl",
                 "bg-zinc-300 dark:bg-zinc-700",
                 "text-xs text-gray-700 dark:text-gray-300",
                 "transition-all duration-200",
@@ -195,7 +195,7 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     return (
-        <div className="flex items-center gap-0.5 pr-2">
+        <div className="flex items-center gap-0.5 pr-5">
             {/* Fullscreen - Always visible on desktop */}
             {toggleFullScreen && !isMobile && (
                 <IconButton
