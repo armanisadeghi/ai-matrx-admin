@@ -329,10 +329,10 @@ export function ConvertToBuiltinModal({
         linkedToOther: shortcutsData.filter(s => s.prompt_builtin_id && s.prompt_builtin_id !== builtinId).length,
       });
       
-      // If there are linked shortcuts, default to updating them
+      // If there are linked shortcuts, default to keeping them (safe option)
       if (linkedShortcuts.length > 0) {
         setSelectedShortcut(linkedShortcuts[0]);
-        setShortcutAction('link');
+        setShortcutAction('skip'); // Default to "Keep Current Shortcut"
       } else if (shortcutsData.length > 0) {
         // If there are any shortcuts at all, default to link option
         setShortcutAction('link');
@@ -655,11 +655,50 @@ export function ConvertToBuiltinModal({
 
       case 'shortcut-choice':
         const hasAnyShortcuts = shortcuts.length > 0;
+        const linkedShortcuts = shortcuts.filter(s => s.prompt_builtin_id === createdBuiltin?.id);
+        const hasLinkedShortcuts = linkedShortcuts.length > 0;
 
         return (
           <div className="space-y-3">
+            {/* Show currently linked shortcuts if any */}
+            {hasLinkedShortcuts && (
+              <Alert className="border-success/30 bg-success/5">
+                <CheckCircle2 className="h-4 w-4 text-success" />
+                <AlertDescription>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <strong className="text-foreground">Currently Linked Shortcut{linkedShortcuts.length > 1 ? 's' : ''}:</strong>
+                      <div className="mt-1.5 space-y-1">
+                        {linkedShortcuts.map(shortcut => (
+                          <div key={shortcut.id} className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-foreground">{shortcut.label}</div>
+                            {shortcut.category && (
+                              <Badge variant="secondary" className="text-xs">
+                                {shortcut.category.label}
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <RadioGroup value={shortcutAction} onValueChange={(v) => setShortcutAction(v as 'create' | 'link' | 'skip')}>
               <div className="space-y-2">
+                {/* Safe option when there's already a linked shortcut */}
+                {hasLinkedShortcuts && (
+                  <div className="flex items-center space-x-2 p-2 rounded border bg-success/10 border-success/30">
+                    <RadioGroupItem value="skip" id="skip" />
+                    <Label htmlFor="skip" className="font-medium cursor-pointer flex-1">
+                      Keep Current Shortcut
+                      <span className="text-xs text-muted-foreground ml-2">(no changes)</span>
+                    </Label>
+                  </div>
+                )}
+                
                 <div className="flex items-center space-x-2 p-2 rounded border bg-card">
                   <RadioGroupItem value="create" id="create" />
                   <Label htmlFor="create" className="font-medium cursor-pointer flex-1">Create New Shortcut</Label>
@@ -668,14 +707,22 @@ export function ConvertToBuiltinModal({
                 {hasAnyShortcuts && (
                   <div className="flex items-center space-x-2 p-2 rounded border bg-card">
                     <RadioGroupItem value="link" id="link" />
-                    <Label htmlFor="link" className="font-medium cursor-pointer flex-1">Link Existing Shortcut</Label>
+                    <Label htmlFor="link" className="font-medium cursor-pointer flex-1">
+                      {hasLinkedShortcuts ? 'Change Linked Shortcut' : 'Link Existing Shortcut'}
+                    </Label>
                   </div>
                 )}
 
-                <div className="flex items-center space-x-2 p-2 rounded border bg-card">
-                  <RadioGroupItem value="skip" id="skip" />
-                  <Label htmlFor="skip" className="font-medium cursor-pointer flex-1">Skip for Now</Label>
-                </div>
+                {/* Skip option only when there's no linked shortcut */}
+                {!hasLinkedShortcuts && (
+                  <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                    <RadioGroupItem value="skip" id="skip" />
+                    <Label htmlFor="skip" className="font-medium cursor-pointer flex-1">
+                      Skip for Now
+                      <span className="text-xs text-muted-foreground ml-2">(no shortcut)</span>
+                    </Label>
+                  </div>
+                )}
               </div>
             </RadioGroup>
 

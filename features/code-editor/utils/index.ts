@@ -14,9 +14,8 @@ export { generateUnifiedDiff, formatDiff, getDiffStats } from '@/features/code-e
 export type { DiffLine, DiffResult } from '@/features/code-editor/utils/generateDiff';
 
 export { 
-  CODE_EDITOR_PROMPTS, 
-  getCodeEditorPromptId, 
-  getPromptMetadata 
+  getCodeEditorBuiltinId, 
+  getBuiltinMetadata 
 } from '@/features/code-editor/utils/codeEditorPrompts';
 export type { CodeEditorPrompt } from '@/features/code-editor/utils/codeEditorPrompts';
 

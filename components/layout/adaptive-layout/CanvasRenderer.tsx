@@ -34,6 +34,8 @@ import InteractiveDiagramBlock from "@/components/mardown-display/blocks/diagram
 import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
 import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 import MathProblem from "@/features/math/components/MathProblem";
+import { CodePreviewCanvas } from "@/features/code-editor/components/canvas/CodePreviewCanvas";
+import { CodeEditErrorCanvas } from "@/features/code-editor/components/canvas/CodeEditErrorCanvas";
 
 interface CanvasRendererProps {
   // Props are now optional - component gets data from Redux
@@ -201,6 +203,8 @@ function getDefaultTitle(type: string): string {
     resources: 'Resources',
     progress: 'Progress Tracker',
     math_problem: 'Math Problem',
+    code_preview: 'Code Preview',
+    code_edit_error: 'Code Edit Error',
   };
   return titles[type] || 'Canvas View';
 }
@@ -335,6 +339,29 @@ function renderContent(content: CanvasContent): React.ReactNode {
             language={data.language || 'javascript'}
           />
         </div>
+      );
+
+    case 'code_preview':
+      return (
+        <CodePreviewCanvas
+          originalCode={data.originalCode}
+          modifiedCode={data.modifiedCode}
+          language={data.language}
+          edits={data.edits}
+          explanation={data.explanation}
+          onApply={data.onApply}
+          onDiscard={data.onDiscard}
+        />
+      );
+
+    case 'code_edit_error':
+      return (
+        <CodeEditErrorCanvas
+          errors={data.errors}
+          warnings={data.warnings}
+          rawResponse={data.rawResponse}
+          onClose={data.onClose || (() => {})}
+        />
       );
 
     // 🚧 SIMPLE CONTENT TYPES

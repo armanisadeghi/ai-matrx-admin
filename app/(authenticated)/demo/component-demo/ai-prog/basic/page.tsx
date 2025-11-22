@@ -216,6 +216,7 @@ export default function AICodeEditorDemoPage() {
                     code={currentCode}
                     language={selectedLanguage}
                     showLineNumbers={true}
+                    onCodeChange={handleCodeChange}
                   />
                 </div>
               </TabsContent>

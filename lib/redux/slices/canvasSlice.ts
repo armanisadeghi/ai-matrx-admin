@@ -18,6 +18,8 @@ export type CanvasContentType =
   | 'flashcards'
   | 'recipe'
   | 'resources'
+  | 'code_preview'
+  | 'code_edit_error'
   | 'progress'
   | 'math_problem';
 

@@ -11,24 +11,6 @@ export interface CodeEditorPrompt {
   useCase: string;
 }
 
-/**
- * Available code editor prompts
- */
-export const CODE_EDITOR_PROMPTS = {
-  PROMPT_APP_UI: {
-    id: 'f6649577-aa9e-4b81-afef-47f11a6bef1b',
-    name: 'Prompt App Editor',
-    description: 'Specialized for editing React components for Prompt Apps',
-    useCase: 'prompt-app-ui',
-  },
-  GENERIC_CODE: {
-    id: '55cc4ad1-bafd-4b82-af0b-4b4f40406ca3',
-    name: 'Code Editor',
-    description: 'General-purpose code editor for any programming language',
-    useCase: 'generic',
-  },
-} as const;
-
 export const CODE_EDITOR_PROMPT_BUILTINS = {
   PROMPT_APP_UI: {
     id: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
@@ -65,19 +47,3 @@ export function getCodeEditorBuiltinId(context: 'prompt-app-ui' | 'generic' | st
 export function getBuiltinMetadata(builtinId: string): CodeEditorPrompt | undefined {
   return Object.values(CODE_EDITOR_PROMPT_BUILTINS).find(p => p.id === builtinId);
 }
-
-/** 
- * @deprecated Use getCodeEditorBuiltinId instead
- */
-export function getCodeEditorPromptId(context: 'prompt-app-ui' | 'generic' | string): string {
-  return getCodeEditorBuiltinId(context);
-}
-
-/**
- * @deprecated Use getBuiltinMetadata instead
- */
-export function getPromptMetadata(promptId: string): CodeEditorPrompt | undefined {
-  return getBuiltinMetadata(promptId);
-}
-
-

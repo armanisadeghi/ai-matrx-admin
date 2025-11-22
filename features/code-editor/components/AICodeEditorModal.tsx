@@ -29,6 +29,8 @@ import {
   FileText,
   Copy,
   Check,
+  File,
+  GitCompare,
 } from 'lucide-react';
 import { CODE_EDITOR_PROMPT_BUILTINS } from '@/features/code-editor/utils/codeEditorPrompts';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
@@ -204,26 +206,33 @@ export function AICodeEditorModal({
                 )}
 
                 <Tabs defaultValue="diff" className="flex-1 flex flex-col min-h-0">
-                  <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0">
+                  <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0 gap-0">
                     <TabsTrigger
                       value="diff"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-1 text-[11px] gap-1 h-7 font-normal"
                     >
-                      <Eye className="w-3.5 h-3.5 mr-1.5" />
+                      <GitCompare className="w-3 h-3" />
                       Diff
                     </TabsTrigger>
                     <TabsTrigger
-                      value="after"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
+                      value="original"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-1 text-[11px] gap-1 h-7 font-normal"
                     >
-                      <FileCode className="w-3.5 h-3.5 mr-1.5" />
+                      <File className="w-3 h-3" />
+                      Original
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="after"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-1 text-[11px] gap-1 h-7 font-normal"
+                    >
+                      <FileCode className="w-3 h-3" />
                       Preview
                     </TabsTrigger>
                     <TabsTrigger
                       value="response"
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 py-1.5 text-xs"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-1 text-[11px] gap-1 h-7 font-normal"
                     >
-                      <FileText className="w-3.5 h-3.5 mr-1.5" />
+                      <FileText className="w-3 h-3" />
                       Response
                     </TabsTrigger>
                   </TabsList>
@@ -236,6 +245,16 @@ export function AICodeEditorModal({
                         language={language}
                         showLineNumbers={true}
                       />
+                    </TabsContent>
+
+                    <TabsContent value="original" className="h-full m-0 p-0 overflow-hidden">
+                      <div className="h-full overflow-auto">
+                        <CodeBlock
+                          code={currentCode}
+                          language={language}
+                          showLineNumbers={true}
+                        />
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="after" className="h-full m-0 p-0 overflow-hidden">

@@ -14,9 +14,18 @@ import { Globe, Loader2 } from "lucide-react";
 import { useCanvas } from "@/hooks/useCanvas";
 import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
+import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
+import { CODE_EDITOR_PROMPT_BUILTINS } from "@/features/code-editor/utils/codeEditorPrompts";
 
 // Type assertion to resolve React 19 type incompatibility
 const SyntaxHighlighter = SyntaxHighlighterBase as any;
+
+type AIModalConfig = {
+    version: 'v1' | 'v2';
+    builtinId: string;
+    title: string;
+};
 
 interface CodeBlockProps {
     code: string;
@@ -154,6 +163,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const [isBottomInView, setIsBottomInView] = useState(false);
     const [isCreatingPage, setIsCreatingPage] = useState(false);
     const [formatTrigger, setFormatTrigger] = useState(0);
+    const [aiModalConfig, setAiModalConfig] = useState<AIModalConfig | null>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const topRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -366,13 +376,27 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         setMinimapEnabled(!minimapEnabled);
     };
 
+    const handleOpenAIModal = (config: AIModalConfig) => {
+        console.log('AI Modal Opening with config:', config);
+        setAiModalConfig(config);
+    };
+
+    const handleCloseAIModal = () => {
+        setAiModalConfig(null);
+    };
+
+    const handleAICodeChange = (newCode: string) => {
+        setEditedCode(newCode);
+        onCodeChange?.(newCode);
+    };
+
     return (
         <div
             ref={containerRef}
             className={cn(
                 "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-300 ease-in-out",
                 isFullScreen &&
-                    "fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[90%] z-50 bg-white dark:bg-neutral-900 flex flex-col shadow-2xl",
+                    "fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[90%] z-50 bg-textured flex flex-col shadow-2xl",
                 className
             )}
             style={{
@@ -406,6 +430,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 minimapEnabled={minimapEnabled}
                 toggleMinimap={toggleMinimap}
                 showLineNumbers={lineNumbers}
+                onAIEdit={handleOpenAIModal}
             />
             {showStickyButtons && (
                 <StickyButtons
@@ -516,6 +541,34 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* AI Code Editor Modal V1 */}
+            {aiModalConfig?.version === 'v1' && (
+                <AICodeEditorModal
+                    open={true}
+                    onOpenChange={handleCloseAIModal}
+                    currentCode={code}
+                    language={monacoLanguage}
+                    builtinId={aiModalConfig.builtinId}
+                    onCodeChange={handleAICodeChange}
+                    title={aiModalConfig.title}
+                    allowPromptSelection={false}
+                />
+            )}
+
+            {/* AI Code Editor Modal V2 */}
+            {aiModalConfig?.version === 'v2' && (
+                <AICodeEditorModalV2
+                    open={true}
+                    onOpenChange={handleCloseAIModal}
+                    currentCode={code}
+                    language={monacoLanguage}
+                    builtinId={aiModalConfig.builtinId}
+                    onCodeChange={handleAICodeChange}
+                    title={aiModalConfig.title}
+                    allowPromptSelection={false}
+                />
+            )}
         </div>
     );
 };
