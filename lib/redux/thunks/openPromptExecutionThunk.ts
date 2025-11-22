@@ -20,6 +20,8 @@ import {
 import { cachePrompt } from '../slices/promptCacheSlice';
 import { supabase } from '@/utils/supabase/client';
 import { executePromptDirect } from './executePromptDirectThunk';
+import { createAndSubmitTask } from '../socket-io/thunks/submitTaskThunk';
+import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 
 export interface OpenPromptExecutionPayload {
   // Prompt identification
@@ -105,6 +107,7 @@ export const openPromptExecution = createAsyncThunk(
 
         dispatch(cachePrompt({
           ...fetchedPrompt,
+          source: 'prompts' as const,
           fetchedAt: Date.now(),
           status: 'cached' as const,
         }));
@@ -175,21 +178,52 @@ export const openPromptExecution = createAsyncThunk(
         break;
 
       case 'toast': {
-        // Execute first, then show toast
-        const result = await dispatch(executePromptDirect({
-          promptData: finalPromptData,
-          variables: variables || {},
+        // Show toast immediately and stream the response
+        const messagesWithVariables = (finalPromptData.messages || []).map(msg => ({
+          ...msg,
+          content: replaceVariablesInText(msg.content, variables || {})
+        }));
+        
+        const finalMessages = initialMessage
+          ? [...messagesWithVariables, { role: 'user' as const, content: initialMessage }]
+          : messagesWithVariables;
+        
+        const chatConfig: Record<string, any> = {
+          model_id: finalPromptData.settings?.model_id,
+          messages: finalMessages,
+          stream: true,
+          ...finalPromptData.settings,
+        };
+        
+        // Submit task to get taskId immediately
+        const result = await dispatch(createAndSubmitTask({
+          service: 'chat_service',
+          taskName: 'direct_chat',
+          taskData: {
+            chat_config: chatConfig
+          }
         })).unwrap();
 
+        // Show toast immediately with taskId (will stream in real-time)
         dispatch(addToastResult({
-          result: result.response,
+          result: '', // Start with empty result
           promptName: finalPromptData.name,
           duration: 5000,
+          promptData: finalPromptData,
+          executionConfig,
+          taskId: result.taskId,
+          isStreaming: true, // Mark as streaming
         }));
 
+        // Optionally wait for completion for onExecutionComplete callback
         if (onExecutionComplete) {
-          onExecutionComplete(result);
+          const completeResult = await dispatch(executePromptDirect({
+            promptData: finalPromptData,
+            variables: variables || {},
+          })).unwrap();
+          onExecutionComplete(completeResult);
         }
+        
         break;
       }
 

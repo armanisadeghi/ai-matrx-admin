@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { PromptRunner, type PromptRunnerProps } from "./PromptRunner";
 import { ContextVersionManager, DYNAMIC_CONTEXT_VARIABLE } from "@/features/code-editor/utils/ContextVersionManager";
-import type { PromptData } from "@/features/prompts/types/modal";
 
 export interface ContextAwarePromptRunnerProps extends Omit<PromptRunnerProps, 'variables' | 'onExecutionComplete'> {
   /** Initial context content */

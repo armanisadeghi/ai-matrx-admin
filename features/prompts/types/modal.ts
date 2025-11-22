@@ -61,6 +61,9 @@ export interface PromptRunnerModalProps {
   
   /** Optional run ID to load existing conversation */
   runId?: string;
+  
+  /** Optional custom message for AdditionalInfoModal */
+  customMessage?: string;
 }
 
 /**
@@ -115,6 +118,7 @@ export interface PromptRunnerModalConfig {
   title?: string;
   runId?: string;
   onExecutionComplete?: (result: ExecutionResult) => void;
+  customMessage?: string;
 }
 
 /**
@@ -143,6 +147,9 @@ export interface PromptExecutionRequest {
   
   /** Optional callback when execution completes */
   onExecutionComplete?: (result: ExecutionResult) => void;
+  
+  /** Optional custom message for AdditionalInfoModal */
+  customMessage?: string;
 }
 
 // ============================================================================

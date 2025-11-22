@@ -20,7 +20,7 @@ import {  PromptRunnerModalProps,
   type NewExecutionConfig
 } from "@/features/prompts/types/modal";
 import type { Resource } from "../resource-display";
-import { AdditionalInfoModal } from "@/features/prompts/components/runner-tester/AdditionalInfoModal";
+import { AdditionalInfoModal } from "@/features/prompts/components/results-display/AdditionalInfoModal";
 import { useResourceMessageFormatter } from "@/features/prompts/hooks/useResourceMessageFormatter";
 import { replaceVariablesInText } from "@/features/prompts/utils/variable-resolver";
 
@@ -46,6 +46,8 @@ export interface PromptRunnerProps {
     onClose?: () => void;
     className?: string;
     isActive?: boolean; // Used to control initialization/reset
+    customMessage?: string; // Optional custom message for AdditionalInfoModal
+    countdownSeconds?: number; // Optional countdown override for AdditionalInfoModal
 }
 
 /**
@@ -73,6 +75,8 @@ export function PromptRunner({
     onClose,
     className,
     isActive = true,
+    customMessage,
+    countdownSeconds,
 }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
@@ -104,7 +108,7 @@ export function PromptRunner({
     const [resources, setResources] = useState<Resource[]>([]);
     const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
     const [apiConversationHistory, setApiConversationHistory] = useState<PromptMessage[]>([]);
-    const [isTestingPrompt, setIsTestingPrompt] = useState(false);
+    const [isExecutingPrompt, setIsExecutingPrompt] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
     const [messageStartTime, setMessageStartTime] = useState<number | null>(null);
     const timeToFirstTokenRef = useRef<number | undefined>(undefined);
@@ -217,7 +221,7 @@ export function PromptRunner({
                 
                 // Clear streaming/task state
                 setCurrentTaskId(null);
-                setIsTestingPrompt(false);
+                setIsExecutingPrompt(false);
                 setPendingTaskId(null);
                 setMessageStartTime(null);
                 timeToFirstTokenRef.current = undefined;
@@ -304,7 +308,7 @@ export function PromptRunner({
     
     // Debounced task update during streaming
     useEffect(() => {
-        if (pendingTaskId && streamingText && isTestingPrompt) {
+        if (pendingTaskId && streamingText && isExecutingPrompt) {
             if (updateTaskTimeoutRef.current) {
                 clearTimeout(updateTaskTimeoutRef.current);
             }
@@ -322,11 +326,11 @@ export function PromptRunner({
                 clearTimeout(updateTaskTimeoutRef.current);
             }
         };
-    }, [streamingText, pendingTaskId, isTestingPrompt, updateTask]);
+    }, [streamingText, pendingTaskId, isExecutingPrompt, updateTask]);
     
     // Handle response completion
     useEffect(() => {
-        if (currentTaskId && isResponseEnded && isTestingPrompt && messageStartTime && pendingTaskId) {
+        if (currentTaskId && isResponseEnded && isExecutingPrompt && messageStartTime && pendingTaskId) {
             const totalTime = Math.round(performance.now() - messageStartTime);
             const tokenCount = Math.round(streamingText.length / 4);
             
@@ -395,12 +399,12 @@ export function PromptRunner({
             })();
 
             setCurrentTaskId(null);
-            setIsTestingPrompt(false);
+            setIsExecutingPrompt(false);
             setMessageStartTime(null);
             setPendingTaskId(null);
             timeToFirstTokenRef.current = undefined;
         }
-    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, pendingTaskId, run, modelId, completeTask, addMessage, onExecutionComplete]);
+    }, [isResponseEnded, currentTaskId, isExecutingPrompt, messageStartTime, streamingText, pendingTaskId, run, modelId, completeTask, addMessage, onExecutionComplete]);
     
     // Auto-execute for auto-run modes
     useEffect(() => {
@@ -420,7 +424,7 @@ export function PromptRunner({
                 setConversationStarted(true);
                 // Small delay to ensure UI is ready
                 setTimeout(() => {
-                    handleSendTestMessage();
+                    handleSendMessage();
                 }, 100);
             }
         }
@@ -442,14 +446,14 @@ export function PromptRunner({
             setConversationStarted(true);
             // Small delay to ensure UI is ready
             setTimeout(() => {
-                handleSendTestMessage();
+                handleSendMessage();
             }, 100);
         }
     }, [isActive, additionalInfoProvided, hasAutoExecuted, promptData, isLoadingPrompt]);
     
     // Handler to send message
-    const handleSendTestMessage = async () => {
-        if (isTestingPrompt || !promptData) return;
+    const handleSendMessage = async () => {
+        if (isExecutingPrompt || !promptData) return;
 
         const isFirstMessage = apiConversationHistory.length === 0;
 
@@ -511,7 +515,7 @@ export function PromptRunner({
         // Note: settingsAttachments (image_url, file_url, youtube, etc.) will be added to chatConfig below
         // metadata (files array, resources array) will be attached to the user message
 
-        setIsTestingPrompt(true);
+        setIsExecutingPrompt(true);
         setMessageStartTime(performance.now());
         timeToFirstTokenRef.current = undefined;
 
@@ -608,9 +612,9 @@ export function PromptRunner({
             setCurrentTaskId(result.taskId);
             
         } catch (error) {
-            console.error("Error testing prompt:", error);
+            console.error("Error executing prompt:", error);
             setConversationMessages((prev) => [...prev, { role: "assistant", content: "Error: Failed to get response from AI" }]);
-            setIsTestingPrompt(false);
+            setIsExecutingPrompt(false);
             setCurrentTaskId(null);
             setMessageStartTime(null);
             timeToFirstTokenRef.current = undefined;
@@ -681,13 +685,24 @@ export function PromptRunner({
     // Main render
     return (
         <>
+            {/* Fade animation for loading state */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    @keyframes fadeInOut {
+                        0%, 100% { opacity: 0.3; }
+                        50% { opacity: 1; }
+                    }
+                `
+            }} />
+            
             {/* Additional Info Modal for hidden-variables mode */}
             {!autoRun && applyVariables && !showVariables && (
                 <AdditionalInfoModal
                     isOpen={showAdditionalInfoModal}
                     onContinue={handleAdditionalInfoContinue}
                     onCancel={handleAdditionalInfoCancel}
-                    promptName={promptData?.name || 'this prompt'}
+                    customMessage={customMessage}
+                    countdownSeconds={countdownSeconds}
                 />
             )}
             
@@ -750,16 +765,20 @@ export function PromptRunner({
                             rightPanel={
                                 <ConversationWithInput
                                     messages={displayMessages}
-                                    isStreaming={isTestingPrompt}
+                                    isStreaming={isExecutingPrompt}
                                     emptyState={
-                                        <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
-                                            <div className="text-center max-w-2xl">
-                                                <p className="text-lg font-medium mb-2">
-                                                    {autoRun ? 'Starting execution...' : 'Ready to run your prompt'}
-                                                </p>
-                                                {autoRun ? (
-                                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mt-4"></div>
-                                                ) : (
+                                        isExecutingPrompt ? (
+                                            <div className="flex items-start px-6 py-8">
+                                                <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
+                                                    Thinking...
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
+                                                <div className="text-center max-w-2xl">
+                                                    <p className="text-lg font-medium mb-2">
+                                                        Ready to run your prompt
+                                                    </p>
                                                     <p className="text-sm">
                                                         {variableDefaults.length > 0 
                                                             ? shouldShowVariables 
@@ -767,9 +786,9 @@ export function PromptRunner({
                                                                 : "Type your message to continue"
                                                             : "Type your message below to get started"}
                                                     </p>
-                                                )}
+                                                </div>
                                             </div>
-                                        </div>
+                                        )
                                     }
                                     variableDefaults={variableDefaults}
                                     onVariableValueChange={handleVariableValueChange}
@@ -777,7 +796,7 @@ export function PromptRunner({
                                     onExpandedVariableChange={setExpandedVariable}
                                     chatInput={chatInput}
                                     onChatInputChange={setChatInput}
-                                    onSendMessage={handleSendTestMessage}
+                                    onSendMessage={handleSendMessage}
                                     showVariables={shouldShowVariables}
                                     templateMessages={conversationTemplate}
                                     resources={resources}

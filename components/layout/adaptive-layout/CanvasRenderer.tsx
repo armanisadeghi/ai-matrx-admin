@@ -388,6 +388,7 @@ function renderContent(content: CanvasContent): React.ReactNode {
           explanation={data.explanation}
           onApply={data.onApply}
           onDiscard={data.onDiscard}
+          onCloseModal={data.onCloseModal}
         />
       );
 

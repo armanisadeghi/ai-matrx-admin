@@ -220,6 +220,8 @@ export default function AICodeEditorV3DemoPage() {
         builtinId={builtinId}
         onCodeChange={handleCodeChange}
         title="AI Code Editor V3 (Context-Aware)"
+        customMessage="Describe the specific code changes you want to make. Be clear about what functionality to add, modify, or remove."
+        countdownSeconds={10}
       />
     </div>
   );

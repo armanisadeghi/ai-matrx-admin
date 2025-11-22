@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { X, Check, Maximize2 } from 'lucide-react';
 import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
-import { useAppDispatch } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openCompactModal } from '@/lib/redux/slices/promptRunnerSlice';
+import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 
 interface PromptToastProps {
   toastId: string;
@@ -13,6 +14,7 @@ interface PromptToastProps {
   promptData?: any;
   executionConfig?: any;
   taskId?: string; // Socket.io task ID for loading full result
+  isStreaming?: boolean; // Whether the response is currently streaming
   onDismiss: (toastId: string) => void;
 }
 
@@ -30,15 +32,28 @@ interface PromptToastProps {
  */
 export default function PromptToast({
   toastId,
-  result,
+  result: initialResult,
   promptName,
   promptData,
   executionConfig,
   taskId,
+  isStreaming: initialStreaming = false,
   onDismiss,
 }: PromptToastProps) {
   const dispatch = useAppDispatch();
   const [isExiting, setIsExiting] = useState(false);
+  
+  // Get live streaming response from Redux if taskId provided
+  const streamingResponse = useAppSelector((state) =>
+    taskId ? selectPrimaryResponseTextByTaskId(taskId)(state) : null
+  );
+  const hasEnded = useAppSelector((state) =>
+    taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : true
+  );
+  
+  // Use streaming response if available, otherwise use initial result
+  const result = streamingResponse || initialResult;
+  const isStreaming = taskId ? !hasEnded : initialStreaming;
   
   // Check if content is long (more than 150 characters or 3 lines)
   const isLongContent = result.length > 150 || result.split('\n').length > 3;
@@ -72,19 +87,30 @@ export default function PromptToast({
   };
 
   return (
-    <div
-      className={`
-        bg-card dark:bg-card
-        border border-border dark:border-border
-        rounded-lg shadow-lg
-        max-w-sm w-full
-        transition-all duration-300
-        ${isExiting 
-          ? 'opacity-0 translate-x-full' 
-          : 'opacity-100 translate-x-0 animate-in slide-in-from-right-5'
-        }
-      `}
-    >
+    <>
+      {/* Fade animation for loading state */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+          }
+        `
+      }} />
+      
+      <div
+        className={`
+          bg-card dark:bg-card
+          border border-border dark:border-border
+          rounded-lg shadow-lg
+          max-w-sm w-full
+          transition-all duration-300
+          ${isExiting 
+            ? 'opacity-0 translate-x-full' 
+            : 'opacity-100 translate-x-0 animate-in slide-in-from-right-5'
+          }
+        `}
+      >
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-2">
@@ -106,7 +132,13 @@ export default function PromptToast({
 
         {/* Content - Markdown rendered, line-clamped */}
         <div className="text-sm leading-relaxed line-clamp-3 overflow-hidden">
-          {result ? (
+          {isStreaming && !result ? (
+            <div className="flex items-start">
+              <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
+                Thinking...
+              </span>
+            </div>
+          ) : result ? (
             <BasicMarkdownContent 
               content={result} 
               showCopyButton={false}
@@ -128,6 +160,7 @@ export default function PromptToast({
         )}
       </div>
     </div>
+    </>
   );
 }
 

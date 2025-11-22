@@ -16,6 +16,7 @@ export function PromptRunnerModal({
     onExecutionComplete,
     title,
     runId,
+    customMessage,
 }: PromptRunnerModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -33,6 +34,7 @@ export function PromptRunnerModal({
                     runId={runId}
                     onClose={onClose}
                     isActive={isOpen}
+                    customMessage={customMessage}
                 />
             </DialogContent>
         </Dialog>

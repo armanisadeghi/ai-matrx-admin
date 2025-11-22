@@ -218,12 +218,16 @@ export function AICodeEditorModalV2({
                     // Update our ref so next edits work on the new code
                     currentCodeRef.current = newCode;
                     
-                    // Close canvas but keep conversation open
-                    closeCanvas();
+                    // Canvas will now show success state with options to close or continue
                 },
                 onDiscard: () => {
                     // Just close canvas, keep conversation open
                     closeCanvas();
+                },
+                onCloseModal: () => {
+                    // Close the entire modal so user can see their updated code
+                    closePrompt();
+                    onOpenChange(false);
                 },
             },
             metadata: {

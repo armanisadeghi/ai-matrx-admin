@@ -74,6 +74,7 @@ export interface PromptRunnerState {
     promptData?: any;
     executionConfig?: any;
     taskId?: string;
+    isStreaming?: boolean;
   }>;
 }
 
@@ -422,6 +423,7 @@ const promptRunnerSlice = createSlice({
       promptData?: any;
       executionConfig?: any;
       taskId?: string;
+      isStreaming?: boolean;
     }>) => {
       state.toastQueue.push({
         id: `toast-${Date.now()}-${Math.random()}`,
@@ -432,6 +434,7 @@ const promptRunnerSlice = createSlice({
         promptData: action.payload.promptData,
         executionConfig: action.payload.executionConfig,
         taskId: action.payload.taskId,
+        isStreaming: action.payload.isStreaming,
       });
     },
     removeToast: (state, action: PayloadAction<string>) => {

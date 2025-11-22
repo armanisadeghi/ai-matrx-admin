@@ -511,6 +511,7 @@ export const OverlayController: React.FC = () => {
             promptData={toast.promptData}
             executionConfig={toast.executionConfig}
             taskId={toast.taskId}
+            isStreaming={toast.isStreaming}
             onDismiss={handleDismissToast}
           />
         </div>

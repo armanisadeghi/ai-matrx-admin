@@ -25,6 +25,8 @@ export interface ContextAwareCodeEditorModalProps {
     selection?: string;
     context?: string;
     title?: string;
+    customMessage?: string;
+    countdownSeconds?: number;
 }
 
 /**
@@ -61,6 +63,8 @@ export function ContextAwareCodeEditorModal({
     selection,
     context,
     title = 'AI Code Editor (Context-Aware)',
+    customMessage="Describe the specific code changes you want to make.",
+    countdownSeconds,
 }: ContextAwareCodeEditorModalProps) {
     const { open: openCanvas, close: closeCanvas } = useCanvas();
     
@@ -225,7 +229,11 @@ export function ContextAwareCodeEditorModal({
                 edits: parsed.edits,
                 explanation: parsed.explanation,
                 onApply: () => {
-                    // Call the context update function to increment version FIRST
+                    // Increment version BEFORE calling onCodeChange
+                    const nextVersion = currentVersionRef.current + 1;
+                    currentVersionRef.current = nextVersion;
+                    
+                    // Call the context update function to add tombstone for old version
                     if (updateContextRef.current) {
                         updateContextRef.current(newCode, parsed.explanation || 'Applied code edits');
                     }
@@ -233,16 +241,18 @@ export function ContextAwareCodeEditorModal({
                     // Update our ref so next edits work on the new code
                     currentCodeRef.current = newCode;
                     
-                    // Update the code in parent component with the new version
-                    // currentVersionRef will be updated by handleContextChange callback
-                    onCodeChange(newCode, currentVersionRef.current);
+                    // Update the code in parent component with the NEW version
+                    onCodeChange(newCode, nextVersion);
                     
-                    // Keep canvas open so user can continue viewing the code
-                    // They can manually close it or make another edit
+                    // Canvas will now show success state with options to close or continue
                 },
                 onDiscard: () => {
                     // Just close canvas, keep conversation open
                     closeCanvas();
+                },
+                onCloseModal: () => {
+                    // Close the entire modal so user can see their updated code
+                    onOpenChange(false);
                 },
             },
             metadata: {
@@ -252,10 +262,10 @@ export function ContextAwareCodeEditorModal({
         });
     }, [language, openCanvas, closeCanvas, onCodeChange]);
     
-    // Handle context version changes
+    // Handle context version changes (for logging/verification)
     const handleContextChange = useCallback((newContent: string, version: number) => {
-        console.log(`✅ Context updated to v${version}`);
-        currentVersionRef.current = version;
+        // Note: We manage version in onApply, this is just for logging
+        // and verifying the ContextVersionManager is in sync
     }, []);
     
     // Receive the updateContext function from ContextAwarePromptRunner
@@ -297,6 +307,8 @@ export function ContextAwareCodeEditorModal({
                         title={title}
                         onClose={() => onOpenChange(false)}
                         isActive={open}
+                        customMessage={customMessage}
+                        countdownSeconds={countdownSeconds}
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Copy, Loader2, Check, MessageSquare, GripVertical, X, ChevronsUp, ChevronsDown } from 'lucide-react';
+import { Copy, Check, MessageSquare, GripVertical, X, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { usePromptExecutionCore } from '../../hooks/usePromptExecutionCore';
@@ -157,6 +157,10 @@ export default function PromptCompactModal({
             [data-radix-portal] {
               z-index: 10000 !important;
             }
+            @keyframes fadeInOut {
+              0%, 100% { opacity: 0.3; }
+              50% { opacity: 1; }
+            }
           `
         }} />
       )}
@@ -207,9 +211,10 @@ export default function PromptCompactModal({
                 className="min-h-[200px]"
                 emptyState={
                   isExecuting && !latestResponse ? (
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-8">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Generating response...</span>
+                    <div className="flex items-start px-4 py-8">
+                      <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
+                        Thinking...
+                      </span>
                     </div>
                   ) : (
                     <div className="text-sm text-muted-foreground italic text-center py-8">No response</div>
@@ -225,9 +230,10 @@ export default function PromptCompactModal({
                 className="min-h-[200px]"
                 emptyState={
                   isExecuting && executionHook.streamingText?.length === 0 ? (
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-8">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Thinking...</span>
+                    <div className="flex items-start px-4 py-8">
+                      <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
+                        Thinking...
+                      </span>
                     </div>
                   ) : (
                     <div className="text-sm text-muted-foreground italic text-center py-8">Start a conversation...</div>

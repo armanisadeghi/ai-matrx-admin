@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { Check, X, CornerDownLeft, ArrowLeftToLine, ArrowRightFromLine, Loader2 } from 'lucide-react';
+import { Check, X, CornerDownLeft, ArrowLeftToLine, ArrowRightFromLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
 
@@ -68,6 +68,16 @@ export default function PromptInlineOverlay({
 
   return (
     <>
+      {/* Fade animation for loading state */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+          }
+        `
+      }} />
+      
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[100]"
@@ -81,9 +91,8 @@ export default function PromptInlineOverlay({
           <div className="px-3 py-2 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center justify-between">
             <div className="text-xs font-medium text-[#cccccc] dark:text-[#cccccc]">{promptName || 'AI Result'}</div>
             {isStreaming && (
-              <div className="flex items-center gap-1 text-[10px] text-[#858585]">
-                <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                <span>Streaming...</span>
+              <div className="text-[10px] text-[#858585] animate-[fadeInOut_2s_ease-in-out_infinite]">
+                Thinking...
               </div>
             )}
           </div>
@@ -91,9 +100,10 @@ export default function PromptInlineOverlay({
           {/* Content - Compact display */}
           <div className="px-3 py-3 max-h-[60vh] overflow-y-auto">
             {isStreaming && !result ? (
-              <div className="flex items-center gap-2 text-sm text-[#858585]">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Processing...</span>
+              <div className="flex items-start">
+                <span className="text-sm text-[#858585] animate-[fadeInOut_2s_ease-in-out_infinite]">
+                  Thinking...
+                </span>
               </div>
             ) : result ? (
               <div className="text-sm leading-relaxed">

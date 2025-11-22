@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight } from "lucide-react";
@@ -9,37 +9,44 @@ interface AdditionalInfoModalProps {
     isOpen: boolean;
     onContinue: (additionalInfo?: string) => void;
     onCancel: () => void;
-    promptName: string;
+    customMessage?: string; // Optional custom message to display
+    countdownSeconds?: number; // Optional override for countdown timer
 }
 
 /**
  * AdditionalInfoModal - Quick optional additional instructions before AI runs
- * Auto-proceeds in 3 seconds if no interaction
+ * Auto-proceeds if no interaction
  */
 export function AdditionalInfoModal({
     isOpen,
     onContinue,
     onCancel,
-    promptName
+    customMessage,
+    countdownSeconds = 3
 }: AdditionalInfoModalProps) {
     const [additionalInfo, setAdditionalInfo] = useState('');
-    const [countdown, setCountdown] = useState(3);
+    const [countdown, setCountdown] = useState(countdownSeconds);
     const [hasInteracted, setHasInteracted] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const handleContinue = useCallback(() => {
         onContinue(additionalInfo.trim() || undefined);
         setAdditionalInfo('');
-        setCountdown(3);
+        setCountdown(countdownSeconds);
         setHasInteracted(false);
-    }, [additionalInfo, onContinue]);
+    }, [additionalInfo, onContinue, countdownSeconds]);
 
-    // Reset state when modal opens
+    // Reset state and focus textarea when modal opens
     useEffect(() => {
         if (isOpen) {
-            setCountdown(3);
+            setCountdown(countdownSeconds);
             setHasInteracted(false);
+            // Ensure focus after modal animation
+            setTimeout(() => {
+                textareaRef.current?.focus();
+            }, 100);
         }
-    }, [isOpen]);
+    }, [isOpen, countdownSeconds]);
 
     // Auto-proceed countdown (only if no interaction)
     useEffect(() => {
@@ -81,28 +88,24 @@ export function AdditionalInfoModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="max-w-[500px] p-6">
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+            <DialogContent className="max-w-[500px] p-4">
+                <div className="space-y-2.5">
+                    {customMessage && (
+                        <p className="text-sm text-foreground pr-6">
+                            {customMessage}
+                        </p>
+                    )}
+                    
+                    <div className="text-xs text-muted-foreground pr-6">
                         {!hasInteracted ? (
-                            <p className="text-sm text-muted-foreground">
-                                Proceeding in <span className="font-semibold text-foreground">{countdown}s</span>
-                            </p>
+                            <>Auto-continuing in <span className="font-semibold text-foreground">{countdown}s</span> • <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> to submit</>
                         ) : (
-                            <p className="text-sm text-muted-foreground">
-                                Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to continue
-                            </p>
+                            <><kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> to submit • <kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+Enter</kbd> for new line</>
                         )}
-                        <button
-                            onClick={handleContinue}
-                            className="text-xs text-primary hover:underline flex items-center gap-1"
-                        >
-                            Continue now
-                            <ArrowRight className="w-3 h-3" />
-                        </button>
                     </div>
 
                     <Textarea
+                        ref={textareaRef}
                         value={additionalInfo}
                         onChange={(e) => {
                             handleInteraction();
@@ -111,17 +114,17 @@ export function AdditionalInfoModal({
                         onClick={handleInteraction}
                         onKeyDown={handleKeyDown}
                         placeholder="Add additional instructions (optional)..."
-                        className="min-h-[100px] resize-none text-sm"
-                        autoFocus
+                        className="min-h-[120px] resize-none text-sm"
                     />
 
-                    <p className="text-xs text-muted-foreground">
-                        {!hasInteracted ? (
-                            <>Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> or wait to continue</>
-                        ) : (
-                            <><kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Enter</kbd> for new line</>
-                        )}
-                    </p>
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleContinue}
+                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                            Continue now <ArrowRight className="w-3 h-3" />
+                        </button>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

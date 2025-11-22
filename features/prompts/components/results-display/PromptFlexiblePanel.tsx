@@ -18,6 +18,7 @@ interface PromptFlexiblePanelProps {
   title?: string;
   runId?: string;
   onExecutionComplete?: (result: { runId: string; response: string; metadata: any }) => void;
+  customMessage?: string;
 }
 
 /**
@@ -42,6 +43,7 @@ export default function PromptFlexiblePanel({
   title,
   runId,
   onExecutionComplete,
+  customMessage,
 }: PromptFlexiblePanelProps) {
   if (!isOpen) return null;
 
@@ -77,6 +79,7 @@ export default function PromptFlexiblePanel({
         runId={runId}
         onClose={onClose}
         isActive={isOpen}
+        customMessage={customMessage}
       />
     </MatrxDynamicPanel>
   );

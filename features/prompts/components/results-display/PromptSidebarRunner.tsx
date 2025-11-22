@@ -25,6 +25,7 @@ interface PromptSidebarRunnerProps {
   executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
   variables?: Record<string, string>;
   title?: string;
+  customMessage?: string;
 }
 
 /**
@@ -47,6 +48,7 @@ export default function PromptSidebarRunner({
   executionConfig,
   variables,
   title,
+  customMessage,
 }: PromptSidebarRunnerProps) {
   // Map size to FloatingSheet width
   const widthMap = {
@@ -76,6 +78,7 @@ export default function PromptSidebarRunner({
         title={title}
         onClose={onClose}
         isActive={isOpen}
+        customMessage={customMessage}
       />
     </FloatingSheet>
   );
