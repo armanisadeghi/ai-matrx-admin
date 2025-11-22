@@ -2,6 +2,7 @@
 import React, { useCallback } from "react";
 import { BlockComponents, LoadingComponents } from "./BlockComponentRegistry";
 import { ContentBlock } from "@/components/mardown-display/markdown-classification/processors/utils/content-splitter-v2";
+import { looksLikeDiff } from "../diff-blocks/diff-style-registry";
 
 interface BlockRendererProps {
     block: ContentBlock;
@@ -86,6 +87,20 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "code":
+            // Special handling for diff blocks - use StreamingDiffBlock if content looks like a diff
+            if (block.language === 'diff' && looksLikeDiff(block.content)) {
+                return (
+                    <BlockComponents.StreamingDiffBlock
+                        key={index}
+                        content={block.content}
+                        language={block.language || 'typescript'}
+                        isStreamActive={isStreamActive}
+                        className="my-3"
+                    />
+                );
+            }
+            
+            // Regular code block
             return (
                 <BlockComponents.CodeBlock
                     key={index}

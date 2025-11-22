@@ -9,6 +9,7 @@ import {
   Terminal,
   FileText,
   Braces,
+  GitCompare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SiKotlin, SiSwift, SiDocker, SiGraphql, SiRuby, SiGo, SiRust, SiR } from "react-icons/si";
@@ -26,6 +27,12 @@ export const languageMap = {
     name: 'Code',
     icon: (props) => <Code2 {...props} />,
     color: 'text-blue-500',
+    size: DEFAULT_ICON_SIZE
+  },
+  diff: {
+    name: 'Updates',
+    icon: (props) => <GitCompare {...props} />,
+    color: 'text-emerald-500',
     size: DEFAULT_ICON_SIZE
   },
   javascript: {
