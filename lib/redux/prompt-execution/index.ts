@@ -60,6 +60,7 @@ export { completeExecutionThunk } from './thunks/completeExecutionThunk';
 export { fetchScopedVariables } from './thunks/fetchScopedVariablesThunk';
 export { startPromptAction } from './thunks/startPromptActionThunk';
 export { executeBuiltinWithCodeExtraction } from './thunks/executeBuiltinWithCodeExtractionThunk';
+export { executeBuiltinWithJsonExtraction } from './thunks/executeBuiltinWithJsonExtractionThunk';
 export type { StartActionPayload } from './thunks/startPromptActionThunk';
 
 // Types

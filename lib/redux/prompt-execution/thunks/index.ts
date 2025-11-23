@@ -7,4 +7,5 @@ export { executeMessage } from './executeMessageThunk';
 export { completeExecutionThunk } from './completeExecutionThunk';
 export { fetchScopedVariables } from './fetchScopedVariablesThunk';
 export { executeBuiltinWithCodeExtraction } from './executeBuiltinWithCodeExtractionThunk';
+export { executeBuiltinWithJsonExtraction } from './executeBuiltinWithJsonExtractionThunk';
 

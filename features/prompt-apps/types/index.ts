@@ -34,6 +34,19 @@ export type ExecutionErrorType =
   | 'cost_limit_exceeded';
 
 // ============================================================================
+// Auto-Create Types
+// ============================================================================
+
+export interface AppMetadata {
+  name: string;
+  tagline: string;
+  description: string;
+  slug_options: string[];
+  category: string | null;
+  tags: string[];
+}
+
+// ============================================================================
 // Core Types
 // ============================================================================
 

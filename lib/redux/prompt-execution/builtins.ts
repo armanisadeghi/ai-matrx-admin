@@ -64,6 +64,13 @@ export interface PromptBuiltin {
       key: 'code-editor-dynamic-context',
       context: true,
     },
+    PROMPT_APP_METADATA_GENERATOR: {
+      id: 'a2919657-8572-441c-8355-840185f8447c',
+      name: 'Prompt App Metadata Generator',
+      description: 'Generate metadata for a prompt app using the prompt object. Provides everything, other than the component code.',
+      key: 'prompt-app-metadata-generator',
+      context: false,
+    },
   } as const;
   
   // Create reverse lookups for O(1) access

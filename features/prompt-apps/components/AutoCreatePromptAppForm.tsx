@@ -61,6 +61,24 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   // Debug mode selector
   const isDebugMode = useAppSelector(selectIsDebugMode);
 
+  // Safety check: If no prompt is provided, show a message
+  if (!prompt) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center space-y-3">
+            <p className="text-muted-foreground text-lg">
+              No prompt selected
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Please select a prompt from the dropdown above to continue
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Auto-create hook
   const { createApp, isCreating, progress } = useAutoCreateApp({
     onSuccess: (appId) => {
@@ -85,6 +103,12 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
     });
     setIncludedVariables(initialState);
   }, [prompt]);
+
+  // Reset to initial mode when prompt changes
+  useEffect(() => {
+    setCreationMode('initial');
+    setError(null);
+  }, [prompt?.id]);
 
   const handleSubmit = async () => {
     setError(null);
