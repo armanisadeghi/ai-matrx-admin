@@ -1,11 +1,86 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import SmallCodeEditor from "./SmallCodeEditor";
-import { File, FileCode, FileType, Folder, PanelLeftClose, PanelLeft } from "lucide-react";
+import CodeBlockHeader from "@/features/code-editor/components/code-block/CodeBlockHeader";
+import LanguageDisplay, { languageMap } from "@/features/code-editor/components/code-block/LanguageDisplay";
+import { Folder, PanelLeftClose, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { useMeasure } from "@uidotdev/usehooks";
+import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { useCanvas } from "@/hooks/useCanvas";
+import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
+import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
+
+type AIModalConfig = {
+    version: 'v2' | 'v3';
+    builtinId: string;
+    title: string;
+};
+
+/**
+ * Map language identifiers to Monaco Editor-compatible language names
+ * (Identical to CodeBlock.tsx for consistency)
+ */
+const mapLanguageForMonaco = (lang: string): string => {
+    // Defensive: Handle undefined, null, empty, or non-string values
+    if (!lang || typeof lang !== 'string') {
+        return 'plaintext';
+    }
+
+    const languageMap: Record<string, string> = {
+        'react': 'typescript',  // React components → TypeScript (Monaco uses 'typescript' for TSX)
+        'jsx': 'javascript',    // JavaScript JSX → Monaco uses 'javascript' for JSX
+        'tsx': 'typescript',    // TypeScript JSX → Monaco uses 'typescript' for TSX
+        'typescript': 'typescript',
+        'javascript': 'javascript',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'html': 'html',
+        'css': 'css',
+        'scss': 'scss',
+        'json': 'json',
+        'markdown': 'markdown',
+        'md': 'markdown',
+        'bash': 'shell',
+        'shell': 'shell',
+        'sh': 'shell',
+        'sql': 'sql',
+        'python': 'python',
+        'py': 'python',
+        'diff': 'diff',
+        'java': 'java',
+        'csharp': 'csharp',
+        'cs': 'csharp',
+        'php': 'php',
+        'ruby': 'ruby',
+        'go': 'go',
+        'rust': 'rust',
+        'yaml': 'yaml',
+        'yml': 'yaml',
+        'xml': 'xml',
+        'text': 'plaintext',
+        'plaintext': 'plaintext',
+    };
+    
+    const normalizedLang = lang.trim().toLowerCase();
+    return languageMap[normalizedLang] || normalizedLang || 'plaintext';
+};
+
+/**
+ * Get Monaco file extension for JSX/TSX support
+ */
+const getMonacoFileExtension = (lang: string): string | undefined => {
+    const normalized = lang.trim().toLowerCase();
+    if (normalized === 'tsx' || normalized === 'react') return '.tsx';
+    if (normalized === 'jsx') return '.jsx';
+    return undefined;
+};
 
 export interface CodeFile {
     name: string;
@@ -40,11 +115,49 @@ export default function MultiFileCodeEditor({
     const [ref, { height: measuredHeight }] = useMeasure();
     const [activeFile, setActiveFile] = useState<string>(files[0]?.path || "");
     const [sidebarVisible, setSidebarVisible] = useState(initialShowSidebar);
+    
+    // CodeBlock-like state management
+    const [isCopied, setIsCopied] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [lineNumbers, setLineNumbers] = useState(false);
+    const [showWrapLines, setShowWrapLines] = useState(false);
+    const [minimapEnabled, setMinimapEnabled] = useState(false);
+    const [isCreatingPage, setIsCreatingPage] = useState(false);
+    const [formatTrigger, setFormatTrigger] = useState(0);
+    const [aiModalConfig, setAiModalConfig] = useState<AIModalConfig | null>(null);
+    
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { mode } = useTheme();
+    const isMobile = useIsMobile();
+    const user = useAppSelector(selectUser);
+    const { open: openCanvas } = useCanvas();
 
     const currentFile = files.find(f => f.path === activeFile);
+    if (!currentFile) return null;
     
-    // Calculate editor height: use measured height if available, subtract tab header height (44px)
-    const editorHeight = measuredHeight ? `${measuredHeight - 44}px` : "500px";
+    const code = currentFile.content;
+    const monacoLanguage = mapLanguageForMonaco(currentFile.language);
+    const monacoFileExtension = getMonacoFileExtension(currentFile.language);
+    
+    // Ensure the path has the correct extension for Monaco to recognize TSX/JSX properly
+    const getProperPath = (file: CodeFile): string => {
+        const ext = monacoFileExtension || getMonacoFileExtension(file.language);
+        if (ext) {
+            // If we have a specific extension for TSX/JSX, ensure the path uses it
+            const pathWithoutExt = file.path.replace(/\.[^.]+$/, '');
+            return `${pathWithoutExt}${ext}`;
+        }
+        return file.path;
+    };
+    
+    const editorPath = getProperPath(currentFile);
+    
+    // Calculate editor height: use measured height if available, subtract custom tab height
+    // Tab bar is roughly 48px (py-2 + content)
+    const tabBarHeight = 48;
+    const editorHeight = measuredHeight ? `${measuredHeight - tabBarHeight}px` : "500px";
 
     const handleFileSelect = useCallback((path: string) => {
         setActiveFile(path);
@@ -56,36 +169,187 @@ export default function MultiFileCodeEditor({
             onChange?.(activeFile, content);
         }
     }, [activeFile, onChange]);
-
-    const getFileIcon = (file: CodeFile, compact = false) => {
-        if (file.icon) return file.icon;
+    
+    // CodeBlock-like handlers
+    const handleCopy = async (e: React.MouseEvent, withLineNumbers: boolean = false) => {
+        e.stopPropagation();
+        let textToCopy = code;
         
-        const size = compact ? "h-3.5 w-3.5" : "h-4 w-4";
-        const ext = file.name.split('.').pop()?.toLowerCase();
-        switch (ext) {
-            case 'html':
-            case 'htm':
-                return <FileCode className={`${size} text-orange-500 dark:text-orange-400`} />;
-            case 'css':
-            case 'scss':
-            case 'sass':
-                return <FileType className={`${size} text-blue-500 dark:text-blue-400`} />;
-            case 'js':
-            case 'jsx':
-            case 'ts':
-            case 'tsx':
-                return <FileCode className={`${size} text-yellow-500 dark:text-yellow-400`} />;
-            case 'json':
-                return <File className={`${size} text-green-500 dark:text-green-400`} />;
-            default:
-                return <File className={`${size} text-gray-500 dark:text-gray-400`} />;
+        if (withLineNumbers) {
+            const lines = code.split('\n');
+            const paddedLines = lines.map((line, index) => {
+                const lineNumber = (index + 1).toString().padStart(lines.length.toString().length, ' ');
+                return `${lineNumber} | ${line}`;
+            });
+            textToCopy = paddedLines.join('\n');
+        }
+        
+        await navigator.clipboard.writeText(textToCopy);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    const handleDownload = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const blob = new Blob([code], { type: "text/plain" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = currentFile.name;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+
+    const toggleLineNumbers = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setLineNumbers(!lineNumbers);
+    };
+
+    const toggleWrapLines = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowWrapLines(!showWrapLines);
+    };
+
+    const toggleFullScreen = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isFullScreen) {
+            document.body.style.overflow = "auto";
+            setTimeout(() => {
+                setIsFullScreen(false);
+                setIsCollapsed(false);
+            }, 150);
+        } else {
+            document.body.style.overflow = "hidden";
+            setIsFullScreen(true);
+            if (isCollapsed) setIsCollapsed(false);
         }
     };
 
-    if (!currentFile) return null;
+    const toggleCollapse = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        if (isEditing) return;
+        setIsCollapsed(!isCollapsed);
+        if (isFullScreen) setIsFullScreen(false);
+    };
+
+    const toggleEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsEditing(!isEditing);
+        if (!isEditing) {
+            setIsCollapsed(false);
+        }
+    };
+
+    const handleFormat = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isEditing) return;
+        setFormatTrigger(prev => prev + 1);
+    };
+
+    const handleReset = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isEditing) return;
+        // Reset to original file content
+        const originalFile = files.find(f => f.path === activeFile);
+        if (originalFile) {
+            onChange?.(activeFile, originalFile.content);
+        }
+    };
+
+    const toggleMinimap = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMinimapEnabled(!minimapEnabled);
+    };
+
+    const handleOpenAIModal = (config: AIModalConfig) => {
+        setAiModalConfig(config);
+    };
+
+    const handleCloseAIModal = () => {
+        setAiModalConfig(null);
+    };
+
+    const handleAICodeChange = (newCode: string, version?: number) => {
+        onChange?.(activeFile, newCode);
+    };
+    
+    // Function to detect if code is a complete HTML document
+    const isCompleteHTMLDocument = (htmlCode: string): boolean => {
+        if (!htmlCode || monacoLanguage !== 'html') return false;
+        
+        const trimmedCode = htmlCode.trim();
+        const hasDoctype = /^\s*<!DOCTYPE\s+html/i.test(trimmedCode);
+        const hasHtmlTag = /<html[^>]*>/i.test(trimmedCode) && /<\/html>/i.test(trimmedCode);
+        const hasHead = /<head[^>]*>/i.test(trimmedCode) && /<\/head>/i.test(trimmedCode);
+        const hasBody = /<body[^>]*>/i.test(trimmedCode) && /<\/body>/i.test(trimmedCode);
+        
+        return hasDoctype && hasHtmlTag && hasHead && hasBody;
+    };
+
+    // Function to handle HTML document viewing in canvas
+    const handleViewHTML = async () => {
+        if (!user?.id) {
+            alert('You must be logged in to view HTML pages');
+            return;
+        }
+
+        setIsCreatingPage(true);
+        try {
+            const result = await HTMLPageService.createPage(
+                code,
+                currentFile.name,
+                'Generated from multi-file editor',
+                user.id
+            );
+            
+            openCanvas({
+                type: 'iframe',
+                data: result.url,
+                metadata: { 
+                    title: currentFile.name,
+                }
+            });
+        } catch (error) {
+            console.error('Failed to create HTML page:', error);
+            alert(`Failed to create HTML page: ${error.message}`);
+        } finally {
+            setIsCreatingPage(false);
+        }
+    };
+
+    // Get the language icon from LanguageDisplay
+    const getLanguageIcon = (file: CodeFile, compact = false) => {
+        if (file.icon) return file.icon;
+        
+        const normalizedLang = file.language.toLowerCase();
+        const langInfo = languageMap[normalizedLang] || languageMap['code'];
+        const Icon = langInfo.icon;
+        const size = compact ? 14 : 16;
+        
+        // Handle custom icons like Python that don't need size prop
+        if (langInfo.size === null) {
+            return <Icon className={cn(langInfo.color)} />;
+        }
+        
+        return <Icon size={size} className={cn(langInfo.color)} />;
+    };
 
     return (
-        <div ref={ref} className="flex h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden" style={{ height }}>
+        <div
+            ref={containerRef}
+            className={cn(
+                "w-full rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-300 ease-in-out",
+                isFullScreen &&
+                    "fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[90%] z-50 bg-textured flex flex-col shadow-2xl"
+            )}
+            style={{
+                height: isFullScreen ? undefined : height,
+                opacity: isFullScreen ? 1 : undefined,
+                transform: isFullScreen ? "translate(-50%, -50%) scale(1)" : undefined,
+                transition: "opacity 300ms ease-in-out, transform 300ms ease-in-out, width 300ms ease-in-out, height 300ms ease-in-out",
+            }}
+        >
+            <div ref={ref} className={cn("flex h-full", isFullScreen && "flex-1 overflow-hidden")}>
             {sidebarVisible ? (
                 <ResizablePanelGroup direction="horizontal">
                     {/* File Sidebar */}
@@ -112,7 +376,7 @@ export default function MultiFileCodeEditor({
                                                 : "text-gray-700 dark:text-gray-300"
                                         )}
                                     >
-                                        {getFileIcon(file, true)}
+                                        {getLanguageIcon(file, true)}
                                         <span className="truncate">{file.name}</span>
                                     </button>
                                 ))}
@@ -125,36 +389,68 @@ export default function MultiFileCodeEditor({
                     {/* Editor Area */}
                     <ResizablePanel defaultSize={85}>
                         <div className="h-full flex flex-col">
-                            {/* Active File Tab with Toggle Button */}
-                            <div className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
-                                <div className="flex items-center gap-2">
+                            {/* Custom File Tab with CodeBlock Header */}
+                            <div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700">
+                                {/* Left: Sidebar Toggle + File Info */}
+                                <div className="flex items-center gap-2 min-w-0">
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => setSidebarVisible(false)}
-                                        className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                        className="h-6 w-6 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                                         title="Hide sidebar"
                                     >
                                         <PanelLeftClose className="h-3.5 w-3.5" />
                                     </Button>
-                                    {getFileIcon(currentFile)}
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {getLanguageIcon(currentFile)}
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                                         {currentFile.name}
                                     </span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {currentFile.language}
-                                    </span>
+                                </div>
+                                
+                                {/* Right: Header Controls (without language display) */}
+                                <div className="flex-shrink-0">
+                                    <CodeBlockHeader
+                                        language={currentFile.language}
+                                        linesCount={code.split("\n").length}
+                                        isEditing={isEditing}
+                                        isFullScreen={isFullScreen}
+                                        isCollapsed={isCollapsed}
+                                        code={code}
+                                        handleCopy={handleCopy}
+                                        handleDownload={handleDownload}
+                                        toggleEdit={toggleEdit}
+                                        toggleFullScreen={toggleFullScreen}
+                                        toggleCollapse={toggleCollapse}
+                                        toggleLineNumbers={toggleLineNumbers}
+                                        toggleWrapLines={toggleWrapLines}
+                                        isCopied={isCopied}
+                                        isMobile={isMobile}
+                                        isCompleteHTML={isCompleteHTMLDocument(code)}
+                                        handleViewHTML={handleViewHTML}
+                                        isCreatingPage={isCreatingPage}
+                                        showWrapLines={showWrapLines}
+                                        handleFormat={handleFormat}
+                                        handleReset={handleReset}
+                                        minimapEnabled={minimapEnabled}
+                                        toggleMinimap={toggleMinimap}
+                                        showLineNumbers={lineNumbers}
+                                        onAIEdit={handleOpenAIModal}
+                                        hideLanguageDisplay={true}
+                                    />
                                 </div>
                             </div>
 
                             {/* Monaco Editor - uses path prop for multi-model support */}
                             <div className="w-full">
                                 <SmallCodeEditor
-                                    path={activeFile}
-                                    language={currentFile.language}
+                                    path={editorPath}
+                                    language={monacoLanguage}
+                                    fileExtension={monacoFileExtension}
                                     initialCode={currentFile.content}
                                     onChange={handleContentChange}
                                     runCode={runCode}
+                                    mode={mode}
                                     autoFormat={autoFormatOnOpen}
                                     defaultWordWrap={defaultWordWrap}
                                     showFormatButton={false}
@@ -163,7 +459,10 @@ export default function MultiFileCodeEditor({
                                     showWordWrapToggle={false}
                                     showMinimapToggle={false}
                                     height={editorHeight}
-                                    readOnly={currentFile.readOnly}
+                                    readOnly={!isEditing || currentFile.readOnly}
+                                    formatTrigger={formatTrigger}
+                                    controlledWordWrap={showWrapLines ? "on" : "off"}
+                                    controlledMinimap={minimapEnabled}
                                 />
                             </div>
                         </div>
@@ -172,36 +471,68 @@ export default function MultiFileCodeEditor({
             ) : (
                 /* Editor without Sidebar */
                 <div className="flex-1 flex flex-col">
-                    {/* Active File Tab with Show Button */}
-                    <div className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
-                        <div className="flex items-center gap-2">
+                    {/* Custom File Tab with CodeBlock Header */}
+                    <div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700">
+                        {/* Left: Sidebar Toggle + File Info */}
+                        <div className="flex items-center gap-2 min-w-0">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setSidebarVisible(true)}
-                                className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                className="h-6 w-6 p-0 flex-shrink-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                                 title="Show sidebar"
                             >
                                 <PanelLeft className="h-3.5 w-3.5" />
                             </Button>
-                            {getFileIcon(currentFile)}
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {getLanguageIcon(currentFile)}
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                                 {currentFile.name}
                             </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {currentFile.language}
-                            </span>
+                        </div>
+                        
+                        {/* Right: Header Controls (without language display) */}
+                        <div className="flex-shrink-0">
+                            <CodeBlockHeader
+                                language={currentFile.language}
+                                linesCount={code.split("\n").length}
+                                isEditing={isEditing}
+                                isFullScreen={isFullScreen}
+                                isCollapsed={isCollapsed}
+                                code={code}
+                                handleCopy={handleCopy}
+                                handleDownload={handleDownload}
+                                toggleEdit={toggleEdit}
+                                toggleFullScreen={toggleFullScreen}
+                                toggleCollapse={toggleCollapse}
+                                toggleLineNumbers={toggleLineNumbers}
+                                toggleWrapLines={toggleWrapLines}
+                                isCopied={isCopied}
+                                isMobile={isMobile}
+                                isCompleteHTML={isCompleteHTMLDocument(code)}
+                                handleViewHTML={handleViewHTML}
+                                isCreatingPage={isCreatingPage}
+                                showWrapLines={showWrapLines}
+                                handleFormat={handleFormat}
+                                handleReset={handleReset}
+                                minimapEnabled={minimapEnabled}
+                                toggleMinimap={toggleMinimap}
+                                showLineNumbers={lineNumbers}
+                                onAIEdit={handleOpenAIModal}
+                                hideLanguageDisplay={true}
+                            />
                         </div>
                     </div>
 
                     {/* Monaco Editor - uses path prop for multi-model support */}
                     <div className="w-full">
                         <SmallCodeEditor
-                            path={activeFile}
-                            language={currentFile.language}
+                            path={editorPath}
+                            language={monacoLanguage}
+                            fileExtension={monacoFileExtension}
                             initialCode={currentFile.content}
                             onChange={handleContentChange}
                             runCode={runCode}
+                            mode={mode}
                             autoFormat={autoFormatOnOpen}
                             defaultWordWrap={defaultWordWrap}
                             showFormatButton={false}
@@ -210,10 +541,41 @@ export default function MultiFileCodeEditor({
                             showWordWrapToggle={false}
                             showMinimapToggle={false}
                             height={editorHeight}
-                            readOnly={currentFile.readOnly}
+                            readOnly={!isEditing || currentFile.readOnly}
+                            formatTrigger={formatTrigger}
+                            controlledWordWrap={showWrapLines ? "on" : "off"}
+                            controlledMinimap={minimapEnabled}
                         />
                     </div>
                 </div>
+            )}
+            </div>
+            
+            {/* AI Code Editor Modal V2 */}
+            {aiModalConfig?.version === 'v2' && (
+                <AICodeEditorModalV2
+                    open={true}
+                    onOpenChange={handleCloseAIModal}
+                    currentCode={code}
+                    language={monacoLanguage}
+                    builtinId={aiModalConfig.builtinId}
+                    onCodeChange={handleAICodeChange}
+                    title={aiModalConfig.title}
+                    allowPromptSelection={false}
+                />
+            )}
+            
+            {/* AI Code Editor Modal V3 (Context-Aware) */}
+            {aiModalConfig?.version === 'v3' && (
+                <ContextAwareCodeEditorModal
+                    open={true}
+                    onOpenChange={handleCloseAIModal}
+                    code={code}
+                    language={monacoLanguage}
+                    builtinId={aiModalConfig.builtinId}
+                    onCodeChange={(newCode: string, version: number) => handleAICodeChange(newCode, version)}
+                    title={aiModalConfig.title}
+                />
             )}
         </div>
     );

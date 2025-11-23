@@ -47,6 +47,7 @@ interface CodeBlockHeaderProps {
     toggleMinimap?: (e: React.MouseEvent) => void;
     showLineNumbers?: boolean;
     onAIEdit?: (config: AIModalConfig) => void;
+    hideLanguageDisplay?: boolean;
 }
 
 export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
@@ -75,6 +76,7 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
     toggleMinimap,
     showLineNumbers = false,
     onAIEdit,
+    hideLanguageDisplay = false,
 }) => {
     // Determine if collapse functionality should be available
     const canCollapse = linesCount > 5;
@@ -101,14 +103,16 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                 )}
-                <div className="flex items-center space-x-2">
-                    <LanguageDisplay language={language} isMobile={isMobile} />
-                    {!isMobile && (
-                        <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                            {linesCount} {linesCount === 1 ? "line" : "lines"}
-                        </span>
-                    )}
-                </div>
+                {!hideLanguageDisplay && (
+                    <div className="flex items-center space-x-2">
+                        <LanguageDisplay language={language} isMobile={isMobile} />
+                        {!isMobile && (
+                            <span className="text-xs text-neutral-600 dark:text-neutral-400">
+                                {linesCount} {linesCount === 1 ? "line" : "lines"}
+                            </span>
+                        )}
+                    </div>
+                )}
                 {/* View HTML Button */}
                 {isCompleteHTML && handleViewHTML && !isMobile && (
                     <button
