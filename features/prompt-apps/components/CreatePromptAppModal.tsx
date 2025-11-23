@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import FullScreenOverlay, { TabDefinition } from '@/components/official/FullScreenOverlay';
 import { CreatePromptAppForm } from './CreatePromptAppForm';
+import { AutoCreatePromptAppForm } from './AutoCreatePromptAppForm';
 import { supabase } from '@/utils/supabase/client';
 import { Loader2 } from 'lucide-react';
 
@@ -11,9 +12,11 @@ interface CreatePromptAppModalProps {
   onClose: () => void;
   /** If provided, this prompt will be pre-selected */
   promptId?: string;
+  /** Full prompt object for auto-create functionality */
+  prompt?: any;
 }
 
-export function CreatePromptAppModal({ isOpen, onClose, promptId }: CreatePromptAppModalProps) {
+export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: CreatePromptAppModalProps) {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,10 +38,10 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId }: CreatePrompt
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Fetch prompts
+      // Fetch prompts - get all fields for auto-create
       const { data: promptsData, error: promptsError } = await supabase
         .from('prompts')
-        .select('id, name, description, variable_defaults, settings')
+        .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
@@ -62,8 +65,8 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId }: CreatePrompt
 
   const tabs: TabDefinition[] = [
     {
-      id: 'create',
-      label: 'Create App',
+      id: 'manual',
+      label: 'Create Manually',
       content: isLoading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -86,6 +89,36 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId }: CreatePrompt
             prompts={prompts}
             categories={categories}
             preselectedPromptId={promptId}
+            onSuccess={onClose}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'auto',
+      label: 'Auto Create',
+      content: isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-destructive font-semibold">{error}</p>
+            <button 
+              onClick={loadData}
+              className="mt-4 text-sm text-primary hover:underline"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-6">
+          <AutoCreatePromptAppForm 
+            prompt={prompt || prompts.find(p => p.id === promptId)}
+            prompts={prompts}
+            categories={categories}
             onSuccess={onClose}
           />
         </div>

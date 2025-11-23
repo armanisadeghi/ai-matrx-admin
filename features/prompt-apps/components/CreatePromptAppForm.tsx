@@ -446,9 +446,18 @@ export default function PromptAppComponent({
   };
   
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Success Message */}
-      {success && (
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Heading */}
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold">Create Prompt App Manually</h2>
+        <p className="text-muted-foreground">
+          Full control over every aspect of your app
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Success Message */}
+        {success && (
         <Card className="border-success bg-success/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 text-success">
@@ -770,7 +779,8 @@ export default function PromptAppComponent({
         title="AI Code Editor"
         allowPromptSelection={true}
       />
-    </form>
+      </form>
+    </div>
   );
 }
 

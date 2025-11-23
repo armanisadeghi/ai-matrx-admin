@@ -58,6 +58,7 @@ import {
   Zap,
   FileText,
   Copy,
+  Check,
 } from 'lucide-react';
 import {
   ShortcutCategory,
@@ -151,6 +152,9 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   
   // Confirmation dialog states
   const [deleteConfirmShortcut, setDeleteConfirmShortcut] = useState<{ id: string; label: string } | null>(null);
+  
+  // Copy state
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -186,6 +190,23 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   React.useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Copy ID to clipboard
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      toast({ title: 'Success', description: 'ID copied to clipboard' });
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to copy ID',
+        variant: 'destructive' 
+      });
+    }
+  };
 
   // Calculate available filters from actual data
   const availablePlacements = useMemo(() => {
@@ -260,7 +281,8 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
       filtered = filtered.filter(s =>
         s.label.toLowerCase().includes(query) ||
         s.description?.toLowerCase().includes(query) ||
-        s.keyboard_shortcut?.toLowerCase().includes(query)
+        s.keyboard_shortcut?.toLowerCase().includes(query) ||
+        s.id.toLowerCase().includes(query)
       );
     }
 
@@ -502,10 +524,10 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
           {/* Filters */}
           <div className="flex gap-2 items-center">
             <Input
-              placeholder="Search shortcuts..."
+              placeholder="Search shortcuts (label, description, keyboard, or ID)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-xs"
+              className="max-w-md"
             />
 
             <Select value={placementFilter} onValueChange={setPlacementFilter}>
@@ -573,6 +595,9 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
+                  <TableHead className="w-[280px]">
+                    <span className="font-semibold">ID</span>
+                  </TableHead>
                   <TableHead className="w-[50px]">Status</TableHead>
                   <TableHead className="min-w-[200px]" onClick={() => handleSort('label')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
@@ -628,6 +653,26 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => handleRowClick(shortcut)}
                     >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 gap-2 font-mono text-xs hover:bg-accent w-full justify-start"
+                              onClick={(e) => handleCopyId(shortcut.id, e)}
+                            >
+                              {copiedId === shortcut.id ? (
+                                <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
+                              ) : (
+                                <Copy className="h-3 w-3 flex-shrink-0" />
+                              )}
+                              <span className="truncate">{shortcut.id}</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Click to copy ID</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         {isConnected ? (
                           <Tooltip>

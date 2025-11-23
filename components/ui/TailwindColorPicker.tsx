@@ -98,9 +98,9 @@ export function TailwindColorPicker({
 
   // Size variants for the color square - improved with proper padding and sizing
   const sizeClasses = {
-    sm: 'w-12 h-12 text-xs p-2',
-    md: 'w-18 h-18 text-sm p-2',
-    lg: 'w-20 h-20 text-base p-2'
+    sm: 'w-16 h-16 text-xs p-2',
+    md: 'w-20 h-20 text-sm p-2',
+    lg: 'w-24 h-24 text-base p-2'
   };
 
   const handleColorSelect = (colorName: string) => {
@@ -142,7 +142,7 @@ export function TailwindColorPicker({
           className={cn(
             'flex items-center justify-center rounded-md transition-colors cursor-pointer',
             'hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-150',
-            'aspect-square !w-auto !h-auto p-2', // Force aspect ratio and add default padding
+            'flex-shrink-0', // Prevent shrinking
             customSize ? '' : sizeClasses[size],
             className
           )}
@@ -156,7 +156,7 @@ export function TailwindColorPicker({
         >
           <span 
             className={cn(
-              'font-medium text-center w-full overflow-hidden',
+              'font-medium text-center w-full truncate block',
               selectedColorObj ? getTextColorClass(selectedColorObj.shades['500']) : 'text-white'
             )}
           >
@@ -180,7 +180,7 @@ export function TailwindColorPicker({
             >
               <span 
                 className={cn(
-                  "text-xs font-medium text-center w-full",
+                  "text-xs font-medium text-center w-full truncate block",
                   getTextColorClass(colorGroup.shades['500'])
                 )}
               >

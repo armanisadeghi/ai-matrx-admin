@@ -53,6 +53,8 @@ import {
   Loader2,
   AlertCircle,
   ExternalLink,
+  Copy,
+  Check,
 } from 'lucide-react';
 import type {
   PromptBuiltin,
@@ -103,6 +105,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   // Table state
   const [expandedBuiltinIds, setExpandedBuiltinIds] = useState<Set<string>>(new Set());
   const [sourcePromptNames, setSourcePromptNames] = useState<Record<string, string>>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   // Confirmation dialogs
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -292,6 +295,23 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
     }
   };
 
+  // Copy ID to clipboard
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      toast({ title: 'Success', description: 'ID copied to clipboard' });
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to copy ID',
+        variant: 'destructive' 
+      });
+    }
+  };
+
   // Filter and sort builtins
   const filteredAndSorted = useMemo(() => {
     let filtered = [...builtins];
@@ -301,7 +321,8 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(b =>
         b.name.toLowerCase().includes(query) ||
-        b.description?.toLowerCase().includes(query)
+        b.description?.toLowerCase().includes(query) ||
+        b.id.toLowerCase().includes(query)
       );
     }
 
@@ -497,10 +518,10 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
           {/* Filters */}
           <div className="flex gap-2 items-center">
             <Input
-              placeholder="Search prompt builtins..."
+              placeholder="Search prompt builtins (name, description, or ID)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-xs"
+              className="max-w-md"
             />
 
             <div className="flex gap-2">
@@ -535,6 +556,9 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
+                  <TableHead className="w-[280px]">
+                    <span className="font-semibold">ID</span>
+                  </TableHead>
                   <TableHead className="min-w-[250px]" onClick={() => handleSort('name')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Name</span>
@@ -580,6 +604,26 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => setEditingBuiltinId(builtin.id)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 gap-2 font-mono text-xs hover:bg-accent w-full justify-start"
+                                onClick={(e) => handleCopyId(builtin.id, e)}
+                              >
+                                {copiedId === builtin.id ? (
+                                  <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
+                                ) : (
+                                  <Copy className="h-3 w-3 flex-shrink-0" />
+                                )}
+                                <span className="truncate">{builtin.id}</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Click to copy ID</TooltipContent>
+                          </Tooltip>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {linkedShortcuts.length > 0 ? (
@@ -752,7 +796,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                       
                       return (
                         <TableRow key={`${builtin.id}-${shortcut.id}`} className="bg-muted/30">
-                          <TableCell colSpan={5} className="py-4 pr-4">
+                          <TableCell colSpan={6} className="py-4 pr-4">
                             <div className="ml-10 mr-4 space-y-3">
                               {/* Shortcut Header */}
                               <div className="flex items-center justify-between gap-4">

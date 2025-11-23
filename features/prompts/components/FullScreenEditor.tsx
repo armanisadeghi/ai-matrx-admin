@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
+import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Sparkles, CheckCircle2, AlertTriangle, FileJson, Info, Check, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -18,13 +18,15 @@ import { mapIcon } from "@/utils/icons/icon-mapper";
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from "@/features/prompts/types/core";
 import { HighlightedText } from "./HighlightedText";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 
 type MessageItem =
     | { type: "system"; index: -1 }
     | { type: "message"; index: number }
     | { type: "settings" }
     | { type: "variables" }
-    | { type: "tools" };
+    | { type: "tools" }
+    | { type: "advanced" };
 
 interface FullScreenEditorProps {
     isOpen: boolean;
@@ -99,10 +101,34 @@ export function FullScreenEditor({
     const [editingVariableDefaultValue, setEditingVariableDefaultValue] = useState("");
     const [editingVariableCustomComponent, setEditingVariableCustomComponent] = useState<VariableCustomComponent | undefined>();
 
+    // JSON editing state
+    const [editableJson, setEditableJson] = useState("");
+    const [jsonError, setJsonError] = useState<string | null>(null);
+    const [jsonApplied, setJsonApplied] = useState(false);
+
     // Calculate variable validation
     const variableValidation = useMemo(() => {
         return validateVariables(messages, developerMessage, variableDefaults);
     }, [messages, developerMessage, variableDefaults]);
+
+    // Build the complete prompt object
+    const promptObject = useMemo(() => {
+        return {
+            developerMessage,
+            messages,
+            variableDefaults,
+            model,
+            modelConfig,
+            selectedTools,
+        };
+    }, [developerMessage, messages, variableDefaults, model, modelConfig, selectedTools]);
+
+    // Sync editableJson with promptObject
+    useEffect(() => {
+        setEditableJson(JSON.stringify(promptObject, null, 2));
+        setJsonError(null);
+        setJsonApplied(false);
+    }, [promptObject]);
 
     // Update selected item when initialSelection changes
     useEffect(() => {
@@ -157,6 +183,93 @@ export function FullScreenEditor({
             onDeveloperMessageChange(newContent);
         } else if (selectedItem.type === "message") {
             onMessageContentChange(selectedItem.index, newContent);
+        }
+    };
+
+    const handleApplyJson = () => {
+        try {
+            const parsed = JSON.parse(editableJson);
+
+            // Validate developerMessage
+            if (parsed.developerMessage !== undefined && typeof parsed.developerMessage !== "string") {
+                throw new Error("developerMessage must be a string");
+            }
+
+            // Validate messages structure
+            if (parsed.messages && !Array.isArray(parsed.messages)) {
+                throw new Error("messages must be an array");
+            }
+
+            // Validate each message
+            if (parsed.messages) {
+                for (let i = 0; i < parsed.messages.length; i++) {
+                    const msg = parsed.messages[i];
+                    if (!msg.role || !["system", "user", "assistant"].includes(msg.role)) {
+                        throw new Error(`Message ${i} must have a valid role (system, user, or assistant)`);
+                    }
+                    if (typeof msg.content !== "string") {
+                        throw new Error(`Message ${i} content must be a string`);
+                    }
+                }
+            }
+
+            // Validate variableDefaults structure
+            if (parsed.variableDefaults && !Array.isArray(parsed.variableDefaults)) {
+                throw new Error("variableDefaults must be an array");
+            }
+
+            // Validate selectedTools
+            if (parsed.selectedTools && !Array.isArray(parsed.selectedTools)) {
+                throw new Error("selectedTools must be an array");
+            }
+
+            // Apply changes using provided callbacks
+            if (parsed.developerMessage !== undefined && onDeveloperMessageChange) {
+                onDeveloperMessageChange(parsed.developerMessage);
+            }
+
+            if (parsed.messages && Array.isArray(parsed.messages)) {
+                // Apply message changes
+                parsed.messages.forEach((msg: PromptMessage, index: number) => {
+                    if (index < messages.length) {
+                        onMessageContentChange(index, msg.content);
+                        onMessageRoleChange(index, msg.role);
+                    }
+                });
+            }
+
+            if (parsed.model && onModelChange) {
+                onModelChange(parsed.model);
+            }
+
+            if (parsed.modelConfig && onModelConfigChange) {
+                onModelConfigChange(parsed.modelConfig);
+            }
+
+            if (parsed.selectedTools && Array.isArray(parsed.selectedTools)) {
+                // Remove tools that are no longer selected
+                selectedTools.forEach((tool) => {
+                    if (!parsed.selectedTools.includes(tool) && onRemoveTool) {
+                        onRemoveTool(tool);
+                    }
+                });
+
+                // Add newly selected tools
+                parsed.selectedTools.forEach((tool: string) => {
+                    if (!selectedTools.includes(tool) && onAddTool) {
+                        onAddTool(tool);
+                    }
+                });
+            }
+
+            setJsonError(null);
+            setJsonApplied(true);
+
+            // Auto-hide success message after 3 seconds
+            setTimeout(() => setJsonApplied(false), 3000);
+        } catch (error) {
+            setJsonError(error instanceof Error ? error.message : "Invalid JSON format");
+            setJsonApplied(false);
         }
     };
 
@@ -365,6 +478,24 @@ export function FullScreenEditor({
                                     </p>
                                 </button>
                             )}
+
+                            {/* Advanced Tab */}
+                            <button
+                                onClick={() => setSelectedItem({ type: "advanced" })}
+                                className={`w-full text-left p-2 rounded-md mb-1.5 transition-colors ${
+                                    selectedItem.type === "advanced"
+                                        ? "bg-gray-100 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500"
+                                        : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent"
+                                }`}
+                            >
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <FileJson className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">Advanced</span>
+                                </div>
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1">
+                                    JSON Editor
+                                </p>
+                            </button>
                         </div>
 
                         {/* Add Message Button */}
@@ -398,7 +529,9 @@ export function FullScreenEditor({
                                             ? "Model Settings"
                                             : selectedItem.type === "variables"
                                             ? "Variables"
-                                            : "Tools"}
+                                            : selectedItem.type === "tools"
+                                            ? "Tools"
+                                            : "Advanced"}
                                     </h3>
                                     {(selectedItem.type === "system" || selectedItem.type === "message") && (
                                         <div className="flex items-center gap-3 mt-2">
@@ -483,6 +616,11 @@ export function FullScreenEditor({
                                                     : "Tools not supported by current model"}
                                             </span>
                                         </div>
+                                    )}
+                                    {selectedItem.type === "advanced" && (
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                            Edit the complete prompt configuration as JSON
+                                        </p>
                                     )}
                                 </div>
                                 {(selectedItem.type === "system" || selectedItem.type === "message") && viewMode === "edit" && (
@@ -977,6 +1115,67 @@ export function FullScreenEditor({
                                                     )}
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedItem.type === "advanced" && (
+                                <div className="absolute inset-2 overflow-hidden flex flex-col">
+                                    <div className="flex-1 overflow-hidden flex flex-col bg-textured border border-gray-300 dark:border-gray-700 rounded-lg">
+                                        {/* Header with Apply Button */}
+                                        <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-800">
+                                            <div className="flex items-start gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                                        <p className="text-xs text-gray-700 dark:text-gray-300">
+                                                            Edit the JSON below and click "Apply Changes" to update the prompt. Changes are not saved until you click the main Save button.
+                                                        </p>
+                                                    </div>
+                                                    {jsonError && (
+                                                        <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300">
+                                                            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                                            <span>{jsonError}</span>
+                                                        </div>
+                                                    )}
+                                                    {jsonApplied && !jsonError && (
+                                                        <div className="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-700 dark:text-green-300">
+                                                            <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                                            <span>Changes applied! Switch to other tabs to see updates.</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    size="sm"
+                                                    onClick={handleApplyJson}
+                                                    className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 flex-shrink-0"
+                                                >
+                                                    {jsonApplied ? (
+                                                        <>
+                                                            <Check className="w-3.5 h-3.5 mr-1.5" />
+                                                            Applied!
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                                                            Apply Changes
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* JSON Editor */}
+                                        <div className="flex-1 overflow-y-auto p-4">
+                                            <CodeBlock
+                                                code={editableJson}
+                                                language="json"
+                                                onCodeChange={(newCode) => setEditableJson(newCode)}
+                                                showLineNumbers={true}
+                                                wrapLines={true}
+                                                fontSize={14}
+                                            />
                                         </div>
                                     </div>
                                 </div>
