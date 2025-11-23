@@ -21,11 +21,13 @@ import {
   Layers,
   MessageCircle,
   Type,
-  ListOrdered
+  ListOrdered,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatTitleCase } from '@/utils/text/text-case-converter';
 import { generateBuiltinVariables, FormatType, DisplayMode, ResponseMode } from '../config-instructions';
+import { useAutoCreateApp } from '../hooks/useAutoCreateApp';
 
 interface AutoCreatePromptAppFormProps {
   prompt?: any;
@@ -47,10 +49,23 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   const [accentColor, setAccentColor] = useState<string>('zinc');
   const [additionalComments, setAdditionalComments] = useState('');
   const [describeText, setDescribeText] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   // Track which variables are included in UI (true) vs using defaults (false)
   const [includedVariables, setIncludedVariables] = useState<Record<string, boolean>>({});
   const [includeUserInstructions, setIncludeUserInstructions] = useState(true);
+
+  // Auto-create hook
+  const { createApp, isCreating, progress } = useAutoCreateApp({
+    onSuccess: (appId) => {
+      console.log('[AutoCreatePromptAppForm] App created successfully:', appId);
+      onSuccess?.();
+    },
+    onError: (errorMessage) => {
+      console.error('[AutoCreatePromptAppForm] Error creating app:', errorMessage);
+      setError(errorMessage);
+    },
+  });
 
   // Extract variables from prompt
   const promptVariables = prompt?.variable_defaults || [];
@@ -65,7 +80,9 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
     setIncludedVariables(initialState);
   }, [prompt]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setError(null);
+
     let finalFormat = format;
     let finalDisplayMode = displayMode;
     let finalResponseMode = responseMode;
@@ -93,6 +110,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
 
     // Generate builtin variables from configuration
     const builtinVariables = generateBuiltinVariables({
+      promptObject: prompt,
       format: finalFormat,
       displayMode: finalDisplayMode,
       responseMode: finalResponseMode,
@@ -108,33 +126,14 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
       customInstructions: finalCustomInstructions,
     });
 
-    console.log('Auto Create Submission:', {
-      prompt,
-      creationMode,
-      config: {
-        format: finalFormat,
-        displayMode: finalDisplayMode,
-        responseMode: finalResponseMode,
-        colorMode: finalColorMode,
-        colors: finalColorMode === 'custom' ? {
-          primary: primaryColor,
-          secondary: secondaryColor,
-          accent: accentColor,
-        } : 'auto',
-        includedVariables,
-        includeUserInstructions,
-        additionalComments: finalCustomInstructions,
-      },
-      builtinVariables, // Ready to pass to prompt builtin
-    });
+    console.log('[AutoCreatePromptAppForm] Submitting with builtin variables:', builtinVariables);
 
-    console.log('\n=== Builtin Variables ===');
-    console.log('input_fields_to_include:', builtinVariables.input_fields_to_include);
-    console.log('\npage_layout_format:', builtinVariables.page_layout_format);
-    console.log('\nresponse_display_component:', builtinVariables.response_display_component);
-    console.log('\nresponse_display_mode:', builtinVariables.response_display_mode);
-    console.log('\ncolor_pallet_options:', builtinVariables.color_pallet_options);
-    console.log('\ncustom_instructions:', builtinVariables.custom_instructions);
+    // Create the app using the hook
+    await createApp({
+      prompt,
+      builtinVariables,
+      mode: 'standard', // TODO: Add UI option to test 'lightning' mode
+    });
   };
 
   const isValid = 
@@ -148,6 +147,43 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
       [variableName]: !prev[variableName]
     }));
   };
+
+  // Show loading screen while creating app
+  if (isCreating) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8">
+            <div className="space-y-6">
+              {/* Loading spinner */}
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress text */}
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold">Creating Your App</h3>
+                <p className="text-muted-foreground">{progress}</p>
+              </div>
+
+              {/* Progress indicator */}
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-primary to-secondary animate-pulse" style={{ width: '100%' }} />
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground">
+                This may take up to 30 seconds...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Render initial mode selection
   if (creationMode === 'initial') {
@@ -245,10 +281,20 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
             variant="ghost"
             onClick={() => setCreationMode('initial')}
             className="gap-2"
+            disabled={isCreating}
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
             Back to options
           </Button>
+
+          {/* Error Message */}
+          {error && (
+            <Card className="border-destructive bg-destructive/10">
+              <CardContent className="pt-4">
+                <p className="text-destructive font-semibold">{error}</p>
+              </CardContent>
+            </Card>
+          )}
           <div className="text-center space-y-2">
             <h2 className="text-3xl font-bold">
               Describe Your <span className="text-primary">{promptName}</span> App
@@ -281,7 +327,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
         <div className="flex justify-end pt-4 border-t">
           <Button
             onClick={handleSubmit}
-            disabled={!isValid}
+            disabled={!isValid || isCreating}
             size="lg"
             className="min-w-[200px] gap-2"
           >
@@ -309,10 +355,20 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
             variant="ghost"
             onClick={() => setCreationMode('initial')}
             className="gap-2"
+            disabled={isCreating}
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
             Back to options
           </Button>
+
+          {/* Error Message */}
+          {error && (
+            <Card className="border-destructive bg-destructive/10">
+              <CardContent className="pt-4">
+                <p className="text-destructive font-semibold">{error}</p>
+              </CardContent>
+            </Card>
+          )}
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 mx-auto">
               <Sparkles className="w-10 h-10 text-white" />
@@ -375,6 +431,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
         <div className="flex justify-end pt-4 border-t">
           <Button
             onClick={handleSubmit}
+            disabled={isCreating}
             size="lg"
             className="min-w-[200px] gap-2"
           >
@@ -394,10 +451,20 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
         variant="ghost"
         onClick={() => setCreationMode('initial')}
         className="gap-2"
+        disabled={isCreating}
       >
         <ChevronRight className="w-4 h-4 rotate-180" />
         Back to options
       </Button>
+
+      {/* Error Message */}
+      {error && (
+        <Card className="border-destructive bg-destructive/10">
+          <CardContent className="pt-4">
+            <p className="text-destructive font-semibold">{error}</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Heading with Prompt Name */}
       <div className="text-center space-y-2">
@@ -969,7 +1036,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
       <div className="flex justify-end pt-4 border-t">
         <Button
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || isCreating}
           size="lg"
           className="min-w-[200px] gap-2"
         >

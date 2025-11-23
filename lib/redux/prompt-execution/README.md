@@ -76,7 +76,7 @@ Creates a new execution instance with cache-aware prompt loading. **Supports bot
 ```typescript
 // Execute a custom prompt
 const instanceId = await dispatch(startPromptInstance({
-  promptId: 'text-analyzer',
+  promptId: 'text-analyzer-uuid',
   promptSource: 'prompts', // Optional: defaults to 'prompts'
   executionConfig: {
     auto_run: false,

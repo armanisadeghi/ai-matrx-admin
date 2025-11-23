@@ -10,58 +10,39 @@ export type DisplayMode = 'matrx-format' | 'custom';
 export type ResponseMode = 'stream' | 'loader';
 
 /**
- * App Format Descriptions
+ * App Format Descriptions (page_layout_format)
  */
 export const formatInstructions: Record<FormatType, string> = {
   chat: 
-    "Chat Style Layout: Similar to ChatGPT, with the input field fixed to the bottom of the screen. " +
-    "The conversation flows in the center of the page with messages appearing one by one as they are entered. " +
-    "This creates an interactive, conversational experience where the user can see the history of their interactions. " +
-    "The UI should feel like a messaging app with clear distinction between user messages and AI responses.",
+    "Chat layout with input at bottom, messages flowing up like ChatGPT",
 
   form: 
-    "Form Style Layout: A traditional top-to-bottom flow where input fields are positioned at the top of the page. " +
-    "Users enter text or make selections in these fields, then submit to execute the prompt. " +
-    "Results are displayed below the form, filling down the page. " +
-    "This layout can support follow-up interactions by displaying a new input field after the response, " +
-    "or by providing other interactive elements. The design should feel like a structured application form " +
-    "with clear sections for input and output.",
+    "Form layout with inputs at top, results displayed below",
 
   widget: 
-    "Widget Style Layout: A self-contained, confined widget that is perfect for embedding in other interfaces. " +
-    "The entire interaction happens within a fixed-size container. " +
-    "The flow is: Input → Loading state → Result, all displayed in the same space. " +
-    "The widget should feel compact and efficient, with smooth transitions between states. " +
-    "This format is ideal when you want a focused, single-purpose tool that doesn't need a full page layout."
+    "Compact widget layout, all in one contained space"
 };
 
 /**
- * Display Mode Descriptions
+ * Display Component Descriptions (response_display_component)
  */
 export const displayModeInstructions: Record<DisplayMode, string> = {
   'matrx-format': 
-    "Use EnhancedChatMarkdown for the output.",
+    "EnhancedChatMarkdown",
 
   'custom': 
-    "Custom Display Mode: Instead of using EnhancedChatMarkdown, create a fully custom parser and display for the output." +
-    "Design a fully customized UI that is specifically tailored to the expected output structure." +
-    "Parse the AI response and render it using custom components that are purpose-built for this specific use case. " +
-    "The output should feel like a native app feature rather than generic AI text."
+    "Custom display component - create a fully custom parser and display tailored to the output structure"
 };
 
 /**
- * Response Mode Descriptions
+ * Response Display Mode Descriptions (response_display_mode)
  */
 export const responseModeInstructions: Record<ResponseMode, string> = {
   stream: 
-    "Real-time Streaming Response: Show initial loader and then stream the response.",
+    "Show initial loader and then stream the response",
 
   loader: 
-    "Show All at Once: Display a loading screen or spinner while the AI generates the complete response. " +
-    "Once generation is finished, show the entire result at once. This creates a more traditional application feel, " +
-    "similar to submitting a form and waiting for results. The loading state should be clear and informative, " +
-    "possibly with progress indicators or status messages. This mode makes the experience feel less 'AI-like' " +
-    "and more like a standard web application, which can be preferable for certain use cases."
+    "Show full loading screen, then display complete response all at once"
 };
 
 /**
@@ -73,18 +54,24 @@ export const responseModeInstructions: Record<ResponseMode, string> = {
 
 /**
  * Generate input_fields_to_include variable
+ * Default: "Include all fields, including additional instructions"
  */
 export function generateInputFieldsToInclude(config: {
   includeUserInstructions: boolean;
   includedVariables: Record<string, boolean>;
   variableDefaults: any[];
 }): string {
-  const fields: string[] = [];
-  
   // Get included variables
   const includedVars = config.variableDefaults.filter(v => 
     config.includedVariables[v.name] !== false
   );
+  
+  // If no specific configuration, use default
+  if (Object.keys(config.includedVariables).length === 0) {
+    return "Include all fields, including additional instructions";
+  }
+  
+  const fields: string[] = [];
   
   if (includedVars.length > 0) {
     includedVars.forEach(variable => {
@@ -105,18 +92,22 @@ export function generateInputFieldsToInclude(config: {
   
   // Add user instructions field if enabled
   if (config.includeUserInstructions) {
-    fields.push("Additional Instructions (optional text field for custom user instructions)");
+    fields.push("additional_instructions");
   }
   
   return fields.length > 0 
-    ? fields.join('\n') 
-    : "No input fields required - all variables use default values";
+    ? fields.join(', ') 
+    : "Include all fields, including additional instructions";
 }
 
 /**
  * Generate page_layout_format variable
+ * Default: "Choose the best option for my prompt and purpose"
  */
-export function generatePageLayoutFormat(format: FormatType): string {
+export function generatePageLayoutFormat(format: FormatType | null): string {
+  if (!format) {
+    return "Choose the best option for my prompt and purpose";
+  }
   return formatInstructions[format];
 }
 
@@ -136,6 +127,7 @@ export function generateResponseDisplayMode(responseMode: ResponseMode): string 
 
 /**
  * Generate color_pallet_options variable
+ * Default: "Choose whatever colors will be best for my specific app and make sure they match the vibe of what I'm doing"
  */
 export function generateColorPalletOptions(
   colorMode: 'auto' | 'custom',
@@ -146,24 +138,21 @@ export function generateColorPalletOptions(
   }
 ): string {
   if (colorMode === 'auto') {
-    return "Use the best color palette for this particular app. Choose colors that match the app's purpose, style, and use case. " +
-           "Ensure the selected colors provide good contrast, accessibility, and a cohesive visual design.";
+    return "Choose whatever colors will be best for my specific app and make sure they match the vibe of what I'm doing";
   }
   
   if (!colors) {
-    return "Use the best color palette for this particular app.";
+    return "Choose whatever colors will be best for my specific app and make sure they match the vibe of what I'm doing";
   }
   
-  return `Primary: ${colors.primary} (main buttons, key interactive elements)\n` +
-         `Secondary: ${colors.secondary} (headers, highlights, accents)\n` +
-         `Accent: ${colors.accent} (special elements, subtle effects)\n` +
-         `Ensure consistent application throughout with proper contrast for accessibility.`;
+  return `Use these specific colors:\nPrimary: ${colors.primary}\nSecondary: ${colors.secondary}\nAccent: ${colors.accent}`;
 }
 
 /**
  * Main function to generate all builtin variables
  */
 export function generateBuiltinVariables(config: {
+  promptObject: any;
   format: FormatType;
   displayMode: DisplayMode;
   responseMode: ResponseMode;
@@ -179,6 +168,8 @@ export function generateBuiltinVariables(config: {
   customInstructions?: string;
 }) {
   return {
+    prompt_object: JSON.stringify(config.promptObject || {}),
+    sample_response: "Sample response is not available but easy to determine, based on the prompt object.",
     input_fields_to_include: generateInputFieldsToInclude({
       includeUserInstructions: config.includeUserInstructions,
       includedVariables: config.includedVariables,
