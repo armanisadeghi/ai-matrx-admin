@@ -24,90 +24,90 @@ import {
 } from '../index';
 import { executeMessage } from '../thunks/executeMessageThunk';
 
-export function usePromptInstance(instanceId: string | null) {
+export function usePromptInstance(runId: string | null) {
   const dispatch = useAppDispatch();
 
   // ========== SELECTORS ==========
   const instance = useAppSelector((state) =>
-    instanceId ? selectInstance(state, instanceId) : null
+    runId ? selectInstance(state, runId) : null
   );
 
   const displayMessages = useAppSelector((state) =>
-    instanceId ? selectDisplayMessages(state, instanceId) : []
+    runId ? selectDisplayMessages(state, runId) : []
   );
 
   const variables = useAppSelector((state) =>
-    instanceId ? selectMergedVariables(state, instanceId) : {}
+    runId ? selectMergedVariables(state, runId) : {}
   );
 
   const isReady = useAppSelector((state) =>
-    instanceId ? selectIsReadyToExecute(state, instanceId) : false
+    runId ? selectIsReadyToExecute(state, runId) : false
   );
 
   const streamingText = useAppSelector((state) =>
-    instanceId ? selectStreamingTextForInstance(state, instanceId) : ''
+    runId ? selectStreamingTextForInstance(state, runId) : ''
   );
 
   const stats = useAppSelector((state) =>
-    instanceId ? selectInstanceStats(state, instanceId) : null
+    runId ? selectInstanceStats(state, runId) : null
   );
 
   const liveStats = useAppSelector((state) =>
-    instanceId ? selectLiveStreamingStats(state, instanceId) : null
+    runId ? selectLiveStreamingStats(state, runId) : null
   );
 
   // ========== ACTIONS ==========
   const sendMessage = useCallback(
     async (input?: string) => {
-      if (!instanceId) return;
+      if (!runId) return;
       await dispatch(
-        executeMessage({ instanceId, userInput: input })
+        executeMessage({ runId, userInput: input })
       ).unwrap();
     },
-    [instanceId, dispatch]
+    [runId, dispatch]
   );
 
   const updateVar = useCallback(
     (name: string, value: string) => {
-      if (!instanceId) return;
-      dispatch(updateVariable({ instanceId, variableName: name, value }));
+      if (!runId) return;
+      dispatch(updateVariable({ runId, variableName: name, value }));
     },
-    [instanceId, dispatch]
+    [runId, dispatch]
   );
 
   const updateVars = useCallback(
     (vars: Record<string, string>) => {
-      if (!instanceId) return;
-      dispatch(updateVariables({ instanceId, variables: vars }));
+      if (!runId) return;
+      dispatch(updateVariables({ runId, variables: vars }));
     },
-    [instanceId, dispatch]
+    [runId, dispatch]
   );
 
   const setInput = useCallback(
     (input: string) => {
-      if (!instanceId) return;
-      dispatch(setCurrentInput({ instanceId, input }));
+      if (!runId) return;
+      dispatch(setCurrentInput({ runId, input }));
     },
-    [instanceId, dispatch]
+    [runId, dispatch]
   );
 
   const clearChat = useCallback(() => {
-    if (!instanceId) return;
-    dispatch(clearConversation({ instanceId }));
-  }, [instanceId, dispatch]);
+    if (!runId) return;
+    dispatch(clearConversation({ runId }));
+  }, [runId, dispatch]);
 
   const setExpanded = useCallback(
     (variableName: string | null) => {
-      if (!instanceId) return;
-      dispatch(setExpandedVariable({ instanceId, variableName }));
+      if (!runId) return;
+      dispatch(setExpandedVariable({ runId, variableName }));
     },
-    [instanceId, dispatch]
+    [runId, dispatch]
   );
 
   const toggleVars = useCallback(() => {
-    if (!instanceId) return;
-    dispatch(toggleShowVariables({ instanceId }));
-  }, [instanceId, dispatch]);
+    if (!runId) return;
+    dispatch(toggleShowVariables({ runId }));
+  }, [runId, dispatch]);
 
   // ========== COMPUTED VALUES ==========
   const isExecuting =
@@ -115,7 +115,6 @@ export function usePromptInstance(instanceId: string | null) {
   const isStreaming = instance?.status === 'streaming';
   const hasError = instance?.status === 'error';
   const currentInput = instance?.conversation.currentInput || '';
-  const runId = instance?.runTracking.runId;
 
   return {
     // State

@@ -136,11 +136,8 @@ export interface ExecuteActionContext {
  * Result of action execution
  */
 export interface ActionExecutionResult {
-  /** Instance ID created in Redux execution engine */
-  instanceId: string;
-
-  /** Run ID if tracking is enabled */
-  runId?: string;
+  /** Run ID (serves as both instance identifier and database run ID) */
+  runId: string;
 
   /** Number of variables resolved from brokers */
   brokerResolvedCount: number;

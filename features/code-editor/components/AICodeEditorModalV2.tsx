@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePromptRunner } from '@/features/prompts/hooks/usePromptRunner';
 import { useCanvas } from '@/hooks/useCanvas';
-import { getCodeEditorBuiltinId } from '@/features/code-editor/utils/codeEditorPrompts';
+import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 import { normalizeLanguage } from '@/features/code-editor/utils/languages';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
@@ -31,7 +31,7 @@ export interface AICodeEditorModalV2Props {
     currentCode: string;
     language: string;
     builtinId?: string;
-    promptContext?: 'prompt-app-ui' | 'generic';
+    promptKey?: 'prompt-app-ui-builder' | 'generic-code-editor' | 'code-editor-dynamic-context';
     onCodeChange: (newCode: string) => void;
     selection?: string;
     context?: string;
@@ -47,7 +47,7 @@ export function AICodeEditorModalV2({
     currentCode,
     language: rawLanguage,
     builtinId,
-    promptContext = 'generic',
+    promptKey = 'generic-code-editor',
     onCodeChange,
     selection,
     context,
@@ -61,7 +61,7 @@ export function AICodeEditorModalV2({
     
     const language = normalizeLanguage(rawLanguage);
     const currentCodeRef = useRef(currentCode);
-    const defaultBuiltinId = builtinId || getCodeEditorBuiltinId(promptContext);
+    const defaultBuiltinId = builtinId || getBuiltinId(promptKey);
     
     useEffect(() => {
         currentCodeRef.current = currentCode;

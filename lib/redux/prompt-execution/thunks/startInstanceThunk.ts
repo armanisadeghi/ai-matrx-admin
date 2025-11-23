@@ -5,7 +5,7 @@
  * 1. Checks if prompt is cached, fetches if needed (NO DUPLICATE FETCHES)
  * 2. Fetches scoped variables if not cached
  * 3. Creates execution instance in Redux
- * 4. Returns instanceId for component tracking
+ * 4. Returns runId for component tracking
  * 
  * This is the entry point for ALL prompt executions.
  */
@@ -15,21 +15,14 @@ import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '../../store';
 import type { StartInstancePayload, ExecutionInstance } from '../types';
 import { createInstance, setInstanceStatus } from '../slice';
-import {
-  selectCachedPrompt,
-  selectPromptFetchStatus,
-  cachePrompt,
-  setFetchStatus,
-  type CachedPrompt,
-} from '../../slices/promptCacheSlice';
-import { createClient } from '@/utils/supabase/client';
+import { getPrompt } from '../../thunks/promptSystemThunks';
 
 /**
  * Start a new prompt execution instance
  * 
  * @example
  * ```typescript
- * const instanceId = await dispatch(startPromptInstance({
+ * const runId = await dispatch(startPromptInstance({
  *   promptId: 'text-analyzer',
  *   executionConfig: {
  *     auto_run: true,
@@ -40,7 +33,7 @@ import { createClient } from '@/utils/supabase/client';
  * ```
  */
 export const startPromptInstance = createAsyncThunk<
-  string, // Returns instanceId
+  string, // Returns runId
   StartInstancePayload,
   {
     dispatch: AppDispatch;
@@ -55,59 +48,33 @@ export const startPromptInstance = createAsyncThunk<
       executionConfig = {},
       variables = {},
       initialMessage = '',
-      runId,
+      runId: providedRunId,
     } = payload;
 
-    // Generate instance ID
-    const instanceId = uuidv4();
+    // Use provided runId or generate new one
+    const runId = providedRunId || uuidv4();
 
     try {
-      // ========== STEP 1: Load Prompt (Cache-Aware) ==========
-      const state = getState();
-      let prompt = selectCachedPrompt(state, promptId);
-      
-      if (!prompt) {
-        // Check if already being fetched
-        const fetchStatus = selectPromptFetchStatus(state, promptId);
-        if (fetchStatus === 'loading') {
-          // Wait for ongoing fetch
-          // TODO: Could implement a promise queue here
-          throw new Error(`Prompt ${promptId} is already being fetched. Please try again.`);
-        }
-        
-        // Fetch from database (correct table based on source)
-        dispatch(setFetchStatus({ promptId, status: 'loading' }));
-        
-        // Create fresh client to pick up current auth session
-        const supabase = createClient();
-        const { data: promptData, error } = await supabase
-          .from(promptSource)
-          .select('*')
-          .eq('id', promptId)
-          .single();
-        
-        if (error || !promptData) {
-          dispatch(setFetchStatus({ promptId, status: 'error' }));
-          throw new Error(`Failed to fetch prompt from ${promptSource}: ${promptId}`);
-        }
-        
-        // Cache the prompt
-        const cachedPromptData: CachedPrompt = {
-          id: promptData.id,
-          name: promptData.name,
-          description: promptData.description,
-          messages: promptData.messages || [],
-          variableDefaults: promptData.variable_defaults || [],
-          variable_defaults: promptData.variable_defaults || [],
-          settings: promptData.settings || {},
+      // ========== STEP 1: Load Prompt (Cache-First via centralized system) ==========
+      const { promptData: promptDataObj } = await dispatch(
+        getPrompt({ 
+          promptId, 
           source: promptSource,
-          fetchedAt: Date.now(),
-          status: 'cached',
-        };
-        
-        dispatch(cachePrompt(cachedPromptData));
-        prompt = cachedPromptData;
-      }
+          allowStale: false 
+        })
+      ).unwrap();
+      
+      // Convert to format expected by rest of function
+      const prompt = {
+        id: promptDataObj.id,
+        name: promptDataObj.name,
+        description: promptDataObj.description,
+        messages: promptDataObj.messages,
+        variableDefaults: promptDataObj.variableDefaults || promptDataObj.variable_defaults,
+        variable_defaults: promptDataObj.variable_defaults || promptDataObj.variableDefaults,
+        settings: promptDataObj.settings,
+        source: promptSource,
+      };
       
       // ========== STEP 2: Fetch Scoped Variables (Cache-Aware) ==========
       // TODO: Implement fetchScopedVariablesThunk
@@ -124,7 +91,7 @@ export const startPromptInstance = createAsyncThunk<
       // ========== STEP 4: Create Execution Instance ==========
       const instance: ExecutionInstance = {
         // Identity
-        instanceId,
+        runId,
         promptId,
         promptSource,
         
@@ -168,12 +135,12 @@ export const startPromptInstance = createAsyncThunk<
         
         // Run tracking
         runTracking: {
-          runId: runId || null,
-          sourceType: 'prompt',
+          sourceType: promptSource, // Dynamic: 'prompts' or 'prompt_builtins'
           sourceId: promptId,
           runName: null,
           totalTokens: 0,
           totalCost: 0,
+          savedToDatabase: false, // Will be set to true when saved to DB
         },
         
         // UI state
@@ -187,27 +154,26 @@ export const startPromptInstance = createAsyncThunk<
       dispatch(createInstance(instance));
       
       // If loading existing run, fetch messages
-      if (runId) {
+      if (providedRunId) {
         // TODO: Implement loadRunMessages
-        // await dispatch(loadRunMessages({ instanceId, runId }));
+        // await dispatch(loadRunMessages({ runId }));
       }
       
       console.log('✅ Prompt instance created:', {
-        instanceId,
+        runId,
         promptId,
         promptSource,
         promptName: prompt.name,
-        runId,
       });
       
-      return instanceId;
+      return runId;
       
     } catch (error) {
       console.error('❌ Failed to start prompt instance:', error);
       
       // Update instance status to error if it was created
       dispatch(setInstanceStatus({
-        instanceId,
+        runId,
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error',
       }));

@@ -15,6 +15,7 @@ import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolv
 export interface ExecutePromptDirectPayload {
   promptData: PromptData;
   variables?: Record<string, string>;
+  contextMessage?: string;
   initialMessage?: string;
   modelOverrides?: Record<string, any>;
 }
@@ -32,19 +33,33 @@ export interface ExecutePromptDirectResult {
 export const executePromptDirect = createAsyncThunk(
   'promptExecution/executeDirect',
   async (payload: ExecutePromptDirectPayload, { dispatch, getState }): Promise<ExecutePromptDirectResult> => {
-    const { promptData, variables = {}, initialMessage, modelOverrides } = payload;
+    const { promptData, variables = {}, contextMessage, initialMessage, modelOverrides } = payload;
     const startTime = performance.now();
     
-    // Step 1: Replace variables in messages
+    // Step 1: Replace variables in base messages
     const messagesWithVariables = (promptData.messages || []).map(msg => ({
       ...msg,
       content: replaceVariablesInText(msg.content, variables)
     }));
     
-    // Step 2: Add initial message if provided
-    const finalMessages = initialMessage
-      ? [...messagesWithVariables, { role: 'user' as const, content: initialMessage }]
-      : messagesWithVariables;
+    // Step 2: Build final message array with optional context and initial message
+    let finalMessages = messagesWithVariables;
+    
+    // Add context message before the user's initial message if provided
+    if (contextMessage) {
+      finalMessages = [
+        ...finalMessages,
+        { role: 'user' as const, content: contextMessage }
+      ];
+    }
+    
+    // Add initial message as the final user message if provided
+    if (initialMessage) {
+      finalMessages = [
+        ...finalMessages,
+        { role: 'user' as const, content: initialMessage }
+      ];
+    }
     
     // Step 3: Build chat config
     const chatConfig: Record<string, any> = {

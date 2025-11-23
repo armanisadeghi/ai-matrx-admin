@@ -59,6 +59,9 @@ export interface OpenPromptOptions extends Omit<PromptRunnerModalConfig, 'execut
   /** NEW: Execution configuration with separate flags */
   executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
   
+  /** Display variant for PromptRunner (standard | compact) */
+  displayVariant?: 'standard' | 'compact';
+  
   /** Inline-specific: text manipulation callbacks */
   onTextReplace?: (text: string) => void;
   onTextInsertBefore?: (text: string) => void;

@@ -124,6 +124,7 @@ export const openPrompt = createAsyncThunk<
           variableDefaults: prompt.variable_defaults || [],
           variable_defaults: prompt.variable_defaults || [],
           settings: prompt.settings || {},
+          source: 'prompts',
           fetchedAt: Date.now(),
           status: 'cached',
         };
@@ -207,6 +208,7 @@ export const prefetchPrompt = createAsyncThunk<
         variableDefaults: prompt.variable_defaults || [],
         variable_defaults: prompt.variable_defaults || [],
         settings: prompt.settings || {},
+        source: 'prompts',
         fetchedAt: Date.now(),
         status: 'cached',
       };

@@ -430,6 +430,7 @@ export const OverlayController: React.FC = () => {
           title={promptModalConfig.title}
           runId={promptModalConfig.runId}
           onExecutionComplete={promptModalConfig.onExecutionComplete}
+          displayVariant={promptModalConfig.displayVariant}
         />
       )}
       

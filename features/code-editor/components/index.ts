@@ -13,3 +13,6 @@ export type { AICodeEditorModalV2Props } from '@/features/code-editor/components
 export { ContextAwareCodeEditorModal } from '@/features/code-editor/components/ContextAwareCodeEditorModal';
 export type { ContextAwareCodeEditorModalProps } from '@/features/code-editor/components/ContextAwareCodeEditorModal';
 
+export { ContextAwareCodeEditorCompact } from '@/features/code-editor/components/ContextAwareCodeEditorCompact';
+export type { ContextAwareCodeEditorCompactProps } from '@/features/code-editor/components/ContextAwareCodeEditorCompact';
+

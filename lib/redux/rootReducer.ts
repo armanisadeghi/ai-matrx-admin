@@ -42,16 +42,21 @@ import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSli
 // import brokersSlice from "./app-runner/slices/brokerSlice";
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
-import promptCacheReducer from "./slices/promptCacheSlice";
-import promptRunnerReducer from "./slices/promptRunnerSlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
 import canvasReducer from "./slices/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
+
+
+// Prompt system
+import promptCacheReducer from "./slices/promptCacheSlice";
+import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
+
+
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -135,6 +140,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
 
         broker: brokerSlice, // Concept broker implementation
+
         overlays: overlaySlice,
         promptCache: promptCacheReducer,
         promptRunner: promptRunnerReducer,

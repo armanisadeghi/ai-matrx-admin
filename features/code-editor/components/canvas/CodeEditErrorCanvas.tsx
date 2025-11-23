@@ -121,18 +121,16 @@ export function CodeEditErrorCanvas({
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="px-4 py-3 border-t bg-muted/20 shrink-0">
+      {/* Footer - VS Code style tiny button */}
+      <div className="px-2 py-1 border-t bg-muted/20 shrink-0">
         <div className="flex items-center justify-end">
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             onClick={onClose}
-            className="gap-1.5"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-colors border border-border bg-background hover:bg-muted"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
             Close
-          </Button>
+          </button>
         </div>
       </div>
     </div>

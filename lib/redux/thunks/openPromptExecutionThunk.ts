@@ -32,6 +32,9 @@ export interface OpenPromptExecutionPayload {
   executionConfig: Omit<PromptExecutionConfig, 'result_display'>;
   result_display: ResultDisplay;
   
+  // Display variant for PromptRunner (standard | compact)
+  displayVariant?: 'standard' | 'compact';
+  
   // Variables and initial message
   variables?: Record<string, string>;
   initialMessage?: string;
@@ -60,6 +63,7 @@ export const openPromptExecution = createAsyncThunk(
       promptData: initialPromptData,
       executionConfig,
       result_display,
+      displayVariant,
       variables,
       initialMessage,
       title,
@@ -124,6 +128,7 @@ export const openPromptExecution = createAsyncThunk(
       promptId,
       promptData: finalPromptData,
       executionConfig,
+      displayVariant,
       variables,
       initialMessage,
       title: title || finalPromptData.name,

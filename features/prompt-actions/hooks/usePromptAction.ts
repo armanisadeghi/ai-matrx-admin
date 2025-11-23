@@ -28,7 +28,7 @@ import type { ActionExecutionResult } from '../types';
  *     });
  *     
  *     if (result) {
- *       console.log('Executed:', result.instanceId);
+ *       console.log('Executed:', result.runId);
  *     }
  *   };
  * 

@@ -18,7 +18,6 @@ import { selectCachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { getDiffStats } from '@/features/code-editor/utils/generateDiff';
-import { getCodeEditorBuiltinId } from '@/features/code-editor/utils/codeEditorPrompts';
 import {
     buildSpecialVariables,
     filterOutSpecialVariables,
@@ -28,6 +27,7 @@ import {
 } from '@/features/code-editor/utils/specialVariables';
 import type { Resource } from '@/features/prompts/components/resource-display';
 import { normalizeLanguage } from '@/features/code-editor/utils/languages';
+import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 
 export type EditorState = 'input' | 'processing' | 'review' | 'applying' | 'complete' | 'error';
 
@@ -37,7 +37,7 @@ export interface UseAICodeEditorProps {
     currentCode: string;
     language: string;
     builtinId?: string;
-    promptContext?: 'prompt-app-ui' | 'generic';
+    promptKey?: 'prompt-app-ui-builder' | 'generic-code-editor' | 'code-editor-dynamic-context';
     onCodeChange: (newCode: string) => void;
     selection?: string;
     context?: string;
@@ -49,7 +49,7 @@ export function useAICodeEditor({
     currentCode,
     language: rawLanguage,
     builtinId,
-    promptContext = 'generic',
+    promptKey = 'generic-code-editor',
     onCodeChange,
     selection,
     context,
@@ -64,7 +64,7 @@ export function useAICodeEditor({
     const language = normalizeLanguage(rawLanguage);
 
     // Use explicit builtinId if provided, otherwise use context
-    const defaultBuiltinId = builtinId || getCodeEditorBuiltinId(promptContext);
+    const defaultBuiltinId = builtinId || getBuiltinId(promptKey);
 
     // State for prompt selection
     const [selectedBuiltinId, setSelectedBuiltinId] = useState(defaultBuiltinId);
@@ -73,19 +73,19 @@ export function useAICodeEditor({
     const [submitOnEnter, setSubmitOnEnter] = useState(promptsPreferences.submitOnEnter);
 
     // Redux instance management
-    const [instanceId, setInstanceId] = useState<string | null>(null);
+    const [runId, setInstanceId] = useState<string | null>(null);
     const instance = useAppSelector(state =>
-        instanceId ? selectInstance(state, instanceId) : null
+        runId ? selectInstance(state, runId) : null
     );
     const streamingText = useAppSelector(state =>
-        instanceId ? selectStreamingTextForInstance(state, instanceId) : ''
+        runId ? selectStreamingTextForInstance(state, runId) : ''
     );
     const isResponseEnded = useAppSelector(state =>
-        instanceId ? selectIsResponseEndedForInstance(state, instanceId) : false
+        runId ? selectIsResponseEndedForInstance(state, runId) : false
     );
     // Use shallowEqual to prevent unnecessary re-renders from object reference changes
     const variables = useAppSelector(
-        state => instanceId ? selectMergedVariables(state, instanceId) : {},
+        state => runId ? selectMergedVariables(state, runId) : {},
         shallowEqual
     );
     const cachedPrompt = useAppSelector(state =>
@@ -143,7 +143,7 @@ export function useAICodeEditor({
 
     // Populate special variables when prompt is loaded
     useEffect(() => {
-        if (instanceId && cachedPrompt) {
+        if (runId && cachedPrompt) {
             const promptVariables = cachedPrompt.variableDefaults || [];
             const requiredSpecialVars = getRequiredSpecialVariables(promptVariables);
 
@@ -164,21 +164,21 @@ export function useAICodeEditor({
                 // Update Redux with special variables
                 Object.entries(specialVars).forEach(([name, value]) => {
                     dispatch(updateVariable({
-                        instanceId,
+                        runId,
                         variableName: name,
                         value,
                     }));
                 });
             }
         }
-    }, [instanceId, cachedPrompt, currentCode, selection, context, dispatch]);
+    }, [runId, cachedPrompt, currentCode, selection, context, dispatch]);
 
     // Reset state and cleanup when modal closes
     useEffect(() => {
         if (!open) {
             // Cleanup instance
-            if (instanceId) {
-                dispatch(removeInstance({ instanceId }));
+            if (runId) {
+                dispatch(removeInstance({ runId }));
             }
 
             // Reset all state
@@ -194,7 +194,7 @@ export function useAICodeEditor({
             setSelectedBuiltinId(defaultBuiltinId);
             setSubmitOnEnter(submitOnEnterPreference);
         }
-    }, [open, defaultBuiltinId, submitOnEnterPreference, instanceId, dispatch]);
+    }, [open, defaultBuiltinId, submitOnEnterPreference, runId, dispatch]);
 
     // Update selected builtin when default changes (e.g., when modal reopens with different context)
     useEffect(() => {
@@ -206,7 +206,7 @@ export function useAICodeEditor({
     // Complete execution when streaming ends
     useEffect(() => {
         if (
-            instanceId &&
+            runId &&
             instance &&
             isResponseEnded &&
             streamingText &&
@@ -222,13 +222,13 @@ export function useAICodeEditor({
             const timeToFirstToken = instance.execution.timeToFirstToken;
 
             dispatch(completeExecutionThunk({
-                instanceId,
+                runId,
                 responseText: streamingText,
                 timeToFirstToken,
                 totalTime,
             }));
         }
-    }, [instanceId, instance, isResponseEnded, streamingText, dispatch]);
+    }, [runId, instance, isResponseEnded, streamingText, dispatch]);
 
     // Parse response when streaming completes
     useEffect(() => {
@@ -305,7 +305,7 @@ export function useAICodeEditor({
     }, [rawAIResponse, isExecuting, state, currentCode]);
 
     const handleSubmit = async () => {
-        if (!instanceId || !cachedPrompt) {
+        if (!runId || !cachedPrompt) {
             setErrorMessage('Instance not initialized');
             setState('error');
             return;
@@ -330,7 +330,7 @@ export function useAICodeEditor({
                 // Update each special variable
                 Object.entries(specialVars).forEach(([name, value]) => {
                     dispatch(updateVariable({
-                        instanceId,
+                        runId,
                         variableName: name,
                         value,
                     }));
@@ -366,7 +366,7 @@ export function useAICodeEditor({
             }
 
             await dispatch(executeMessage({
-                instanceId,
+                runId,
                 userInput: finalUserInput || undefined,
             })).unwrap();
         } catch (err) {
@@ -377,21 +377,21 @@ export function useAICodeEditor({
 
     // Handlers for PromptInput
     const handleVariableValueChange = useCallback((variableName: string, value: string) => {
-        if (!instanceId) return;
+        if (!runId) return;
         dispatch(updateVariable({
-            instanceId,
+            runId,
             variableName,
             value,
         }));
-    }, [instanceId, dispatch]);
+    }, [runId, dispatch]);
 
     const handleChatInputChange = useCallback((value: string) => {
-        if (!instanceId) return;
+        if (!runId) return;
         dispatch(setCurrentInput({
-            instanceId,
+            runId,
             input: value,
         }));
-    }, [instanceId, dispatch]);
+    }, [runId, dispatch]);
 
     const handleSubmitOnEnterChange = useCallback((value: boolean) => {
         setSubmitOnEnter(value);

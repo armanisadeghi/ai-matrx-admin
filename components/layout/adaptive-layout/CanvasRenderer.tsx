@@ -41,6 +41,8 @@ import { CodeEditErrorCanvas } from "@/features/code-editor/components/canvas/Co
 interface CanvasRendererProps {
   // Props are now optional - component gets data from Redux
   content?: CanvasContent | null;
+  // Style variant for compact displays
+  variant?: 'default' | 'compact';
 }
 
 /**
@@ -50,7 +52,7 @@ interface CanvasRendererProps {
  * Each block type is rendered with appropriate props and full interactivity.
  * Now supports multiple canvas items with navigation and history.
  */
-export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
+export function CanvasRenderer({ content: propContent, variant = 'default' }: CanvasRendererProps) {
   const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ViewMode>('preview');
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
@@ -141,6 +143,7 @@ export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
         hideSync={!hasSyncSupport}
         onShare={handleShare}
         hideViewToggle={viewMode === 'library'}
+        variant={variant}
         customActions={
           viewMode !== 'library' && (
             <CanvasNavigation

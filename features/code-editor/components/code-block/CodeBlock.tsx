@@ -17,7 +17,6 @@ import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
 import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
-import { CODE_EDITOR_PROMPT_BUILTINS } from "@/features/code-editor/utils/codeEditorPrompts";
 
 // Type assertion to resolve React 19 type incompatibility
 const SyntaxHighlighter = SyntaxHighlighterBase as any;

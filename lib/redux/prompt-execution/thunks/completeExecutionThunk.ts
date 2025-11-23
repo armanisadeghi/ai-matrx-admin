@@ -33,14 +33,14 @@ export const completeExecutionThunk = createAsyncThunk<
 >(
   'promptExecution/completeExecution',
   async (payload, { dispatch, getState }) => {
-    const { instanceId, responseText, timeToFirstToken, totalTime } = payload;
+    const { runId, responseText, timeToFirstToken, totalTime } = payload;
 
     try {
       const state = getState();
-      const instance = selectInstance(state, instanceId);
+      const instance = selectInstance(state, runId);
 
       if (!instance) {
-        throw new Error(`Instance not found: ${instanceId}`);
+        throw new Error(`Instance not found: ${runId}`);
       }
 
       // Calculate stats
@@ -61,10 +61,10 @@ export const completeExecutionThunk = createAsyncThunk<
         metadata: stats,
       };
 
-      dispatch(addMessage({ instanceId, message: assistantMessage }));
+      dispatch(addMessage({ runId, message: assistantMessage }));
 
       // Complete task in database if tracking
-      if (instance.runTracking.runId && instance.execution.currentTaskId) {
+      if (instance.runTracking.savedToDatabase && instance.execution.currentTaskId) {
         try {
           // Create fresh client to pick up current auth session
           const supabase = createClient();
@@ -93,15 +93,14 @@ export const completeExecutionThunk = createAsyncThunk<
               messages: [...instance.conversation.messages, assistantMessage],
               updated_at: new Date().toISOString(),
             })
-            .eq('id', instance.runTracking.runId);
+            .eq('id', runId);
 
           if (updateError) {
             console.error('Error updating run messages:', updateError);
           }
 
           console.log('✅ Execution completed:', {
-            instanceId,
-            runId: instance.runTracking.runId,
+            runId,
             taskId: instance.execution.currentTaskId,
             tokens: tokenCount,
           });
@@ -111,13 +110,13 @@ export const completeExecutionThunk = createAsyncThunk<
       }
 
       // Update instance state
-      dispatch(completeExecution({ instanceId, stats }));
+      dispatch(completeExecution({ runId, stats }));
 
     } catch (error) {
       console.error('❌ Failed to complete execution:', error);
 
       dispatch(setInstanceStatus({
-        instanceId,
+        runId,
         status: 'error',
         error: error instanceof Error ? error.message : 'Completion failed',
       }));

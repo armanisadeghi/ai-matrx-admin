@@ -22,8 +22,7 @@ import type {
 
 const initialState: PromptExecutionState = {
   instances: {},
-  instancesByPromptId: {},
-  instancesByRunId: {},
+  runsByPromptId: {},
   scopedVariables: {
     user: null,
     org: null,
@@ -40,40 +39,36 @@ const promptExecutionSlice = createSlice({
     // ========== INSTANCE MANAGEMENT ==========
     
     /**
-     * Create a new execution instance
+     * Create a new execution instance (run)
      */
     createInstance: (state, action: PayloadAction<ExecutionInstance>) => {
       const instance = action.payload;
-      state.instances[instance.instanceId] = instance;
+      state.instances[instance.runId] = instance;
       
       // Update lookup maps
-      if (!state.instancesByPromptId[instance.promptId]) {
-        state.instancesByPromptId[instance.promptId] = [];
+      if (!state.runsByPromptId[instance.promptId]) {
+        state.runsByPromptId[instance.promptId] = [];
       }
-      state.instancesByPromptId[instance.promptId].push(instance.instanceId);
+      state.runsByPromptId[instance.promptId].push(instance.runId);
     },
     
     /**
      * Remove an instance (cleanup)
      */
-    removeInstance: (state, action: PayloadAction<{ instanceId: string }>) => {
-      const { instanceId } = action.payload;
-      const instance = state.instances[instanceId];
+    removeInstance: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         // Remove from lookup maps
-        const promptInstances = state.instancesByPromptId[instance.promptId];
-        if (promptInstances) {
-          state.instancesByPromptId[instance.promptId] = 
-            promptInstances.filter(id => id !== instanceId);
-        }
-        
-        if (instance.runTracking.runId) {
-          delete state.instancesByRunId[instance.runTracking.runId];
+        const promptRuns = state.runsByPromptId[instance.promptId];
+        if (promptRuns) {
+          state.runsByPromptId[instance.promptId] = 
+            promptRuns.filter(id => id !== runId);
         }
         
         // Remove instance
-        delete state.instances[instanceId];
+        delete state.instances[runId];
       }
     },
     
@@ -82,10 +77,10 @@ const promptExecutionSlice = createSlice({
      */
     setInstanceStatus: (
       state,
-      action: PayloadAction<{ instanceId: string; status: ExecutionStatus; error?: string }>
+      action: PayloadAction<{ runId: string; status: ExecutionStatus; error?: string }>
     ) => {
-      const { instanceId, status, error } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, status, error } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.status = status;
@@ -100,8 +95,8 @@ const promptExecutionSlice = createSlice({
      * Update a single variable value
      */
     updateVariable: (state, action: PayloadAction<UpdateVariablePayload>) => {
-      const { instanceId, variableName, value } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, variableName, value } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.variables.userValues[variableName] = value;
@@ -114,10 +109,10 @@ const promptExecutionSlice = createSlice({
      */
     updateVariables: (
       state,
-      action: PayloadAction<{ instanceId: string; variables: Record<string, string> }>
+      action: PayloadAction<{ runId: string; variables: Record<string, string> }>
     ) => {
-      const { instanceId, variables } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, variables } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.variables.userValues = {
@@ -133,10 +128,10 @@ const promptExecutionSlice = createSlice({
      */
     setComputedVariables: (
       state,
-      action: PayloadAction<{ instanceId: string; variables: Record<string, string> }>
+      action: PayloadAction<{ runId: string; variables: Record<string, string> }>
     ) => {
-      const { instanceId, variables } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, variables } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.variables.computedValues = variables;
@@ -150,8 +145,8 @@ const promptExecutionSlice = createSlice({
      * Set current input (user typing)
      */
     setCurrentInput: (state, action: PayloadAction<SetCurrentInputPayload>) => {
-      const { instanceId, input } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, input } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.conversation.currentInput = input;
@@ -163,10 +158,10 @@ const promptExecutionSlice = createSlice({
      */
     addMessage: (
       state,
-      action: PayloadAction<{ instanceId: string; message: ConversationMessage }>
+      action: PayloadAction<{ runId: string; message: ConversationMessage }>
     ) => {
-      const { instanceId, message } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, message } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.conversation.messages.push(message);
@@ -177,14 +172,15 @@ const promptExecutionSlice = createSlice({
     /**
      * Clear conversation (reset)
      */
-    clearConversation: (state, action: PayloadAction<{ instanceId: string }>) => {
-      const { instanceId } = action.payload;
-      const instance = state.instances[instanceId];
+    clearConversation: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.conversation.messages = [];
         instance.conversation.currentInput = '';
-        instance.runTracking.runId = null;
+        instance.runTracking.runName = null;
+        instance.runTracking.savedToDatabase = false;
         instance.updatedAt = Date.now();
       }
     },
@@ -196,10 +192,10 @@ const promptExecutionSlice = createSlice({
      */
     startExecution: (
       state,
-      action: PayloadAction<{ instanceId: string; taskId: string }>
+      action: PayloadAction<{ runId: string; taskId: string }>
     ) => {
-      const { instanceId, taskId } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, taskId } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.execution.currentTaskId = taskId;
@@ -213,9 +209,9 @@ const promptExecutionSlice = createSlice({
     /**
      * Mark streaming started
      */
-    startStreaming: (state, action: PayloadAction<{ instanceId: string }>) => {
-      const { instanceId } = action.payload;
-      const instance = state.instances[instanceId];
+    startStreaming: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.status = 'streaming';
@@ -237,7 +233,7 @@ const promptExecutionSlice = createSlice({
     completeExecution: (
       state,
       action: PayloadAction<{
-        instanceId: string;
+        runId: string;
         stats: {
           timeToFirstToken?: number;
           totalTime?: number;
@@ -246,8 +242,8 @@ const promptExecutionSlice = createSlice({
         };
       }>
     ) => {
-      const { instanceId, stats } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, stats } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.execution.lastMessageStats = stats;
@@ -273,18 +269,15 @@ const promptExecutionSlice = createSlice({
      */
     setRunId: (
       state,
-      action: PayloadAction<{ instanceId: string; runId: string; runName: string }>
+      action: PayloadAction<{ runId: string; runName: string; savedToDatabase: boolean }>
     ) => {
-      const { instanceId, runId, runName } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, runName, savedToDatabase } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
-        instance.runTracking.runId = runId;
         instance.runTracking.runName = runName;
+        instance.runTracking.savedToDatabase = savedToDatabase;
         instance.updatedAt = Date.now();
-        
-        // Add to lookup map
-        state.instancesByRunId[runId] = instanceId;
       }
     },
     
@@ -341,10 +334,10 @@ const promptExecutionSlice = createSlice({
      */
     setExpandedVariable: (
       state,
-      action: PayloadAction<{ instanceId: string; variableName: string | null }>
+      action: PayloadAction<{ runId: string; variableName: string | null }>
     ) => {
-      const { instanceId, variableName } = action.payload;
-      const instance = state.instances[instanceId];
+      const { runId, variableName } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.ui.expandedVariable = variableName;
@@ -354,9 +347,9 @@ const promptExecutionSlice = createSlice({
     /**
      * Toggle show variables
      */
-    toggleShowVariables: (state, action: PayloadAction<{ instanceId: string }>) => {
-      const { instanceId } = action.payload;
-      const instance = state.instances[instanceId];
+    toggleShowVariables: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      const instance = state.instances[runId];
       
       if (instance) {
         instance.ui.showVariables = !instance.ui.showVariables;
@@ -389,20 +382,19 @@ export const {
 
 // ========== BASIC SELECTORS ==========
 
-export const selectInstance = (state: RootState, instanceId: string) =>
-  state.promptExecution?.instances[instanceId];
+export const selectInstance = (state: RootState, runId: string) =>
+  state.promptExecution?.instances[runId];
 
 export const selectAllInstances = (state: RootState) =>
   state.promptExecution?.instances || {};
 
 export const selectInstancesByPromptId = (state: RootState, promptId: string) => {
-  const instanceIds = state.promptExecution?.instancesByPromptId[promptId] || [];
-  return instanceIds.map(id => state.promptExecution.instances[id]).filter(Boolean);
+  const runIds = state.promptExecution?.runsByPromptId[promptId] || [];
+  return runIds.map(id => state.promptExecution.instances[id]).filter(Boolean);
 };
 
 export const selectInstanceByRunId = (state: RootState, runId: string) => {
-  const instanceId = state.promptExecution?.instancesByRunId[runId];
-  return instanceId ? state.promptExecution.instances[instanceId] : null;
+  return state.promptExecution?.instances[runId] || null;
 };
 
 export const selectScopedVariables = (state: RootState) =>

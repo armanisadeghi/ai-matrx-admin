@@ -50,7 +50,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
         return vars;
     };
     
-    const openWithDisplayType = (resultDisplay: ResultDisplay) => {
+    const openWithDisplayType = (resultDisplay: ResultDisplay, displayVariant?: 'standard' | 'compact') => {
         // For direct, inline, background - open test modal
         if (resultDisplay === 'direct' || resultDisplay === 'inline' || resultDisplay === 'background') {
             setTestModalType(resultDisplay);
@@ -72,6 +72,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
       result_display: resultDisplay,
       executionConfig,
       variables,
+      displayVariant,
     });
   };
     
@@ -84,7 +85,18 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
             resultDisplay: 'modal-full' as ResultDisplay,
             disabled: false,
             ignores: [],
-            note: 'Full modal with all features'
+            note: 'Full modal with all features',
+            displayVariant: 'standard' as const
+        },
+        {
+            name: 'Modal Full Compact',
+            icon: Maximize2,
+            color: 'text-violet-600 dark:text-violet-400',
+            resultDisplay: 'modal-full' as ResultDisplay,
+            disabled: false,
+            ignores: [],
+            note: 'Full modal with compact display variant',
+            displayVariant: 'compact' as const
         },
         {
             name: 'Modal Compact',
@@ -233,7 +245,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                                     key={idx}
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => !display.disabled && openWithDisplayType(display.resultDisplay)}
+                                    onClick={() => !display.disabled && openWithDisplayType(display.resultDisplay, (display as any).displayVariant)}
                                     disabled={display.disabled}
                                     className="w-full justify-start h-8 px-2 text-xs hover:bg-accent disabled:opacity-40"
                                     title={display.note}

@@ -1,15 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
-import { ConversationWithInput, type ConversationMessage } from "@/features/prompts/components/conversation";
+import { type ConversationMessage } from "@/features/prompts/components/conversation";
 import { Button } from "@/components/ui/button";
-import { PanelRightOpen, PanelRightClose, Loader2, AlertCircle, X } from "lucide-react";
-import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
+import { Loader2, AlertCircle } from "lucide-react";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
@@ -23,12 +21,9 @@ import type { Resource } from "../resource-display";
 import { AdditionalInfoModal } from "@/features/prompts/components/results-display/AdditionalInfoModal";
 import { useResourceMessageFormatter } from "@/features/prompts/hooks/useResourceMessageFormatter";
 import { replaceVariablesInText } from "@/features/prompts/utils/variable-resolver";
-
-// Dynamically import CanvasRenderer to avoid SSR issues
-const CanvasRenderer = dynamic(
-    () => import("@/components/layout/adaptive-layout/CanvasRenderer").then(mod => ({ default: mod.CanvasRenderer })),
-    { ssr: false }
-);
+import type { PromptRunnerDisplayProps } from "./PromptRunner.types";
+import { StandardDisplay } from "./displays/StandardDisplay";
+import { CompactDisplay } from "./displays/CompactDisplay";
 
 
 export interface PromptRunnerProps {
@@ -48,6 +43,12 @@ export interface PromptRunnerProps {
     isActive?: boolean; // Used to control initialization/reset
     customMessage?: string; // Optional custom message for AdditionalInfoModal
     countdownSeconds?: number; // Optional countdown override for AdditionalInfoModal
+    
+    /** Display variant to use (default: 'standard') */
+    displayVariant?: 'standard' | 'compact';
+    
+    /** Enable/disable AdditionalInfoModal for hidden-variables mode (default: true) */
+    enableAdditionalInfoModal?: boolean;
 }
 
 /**
@@ -77,6 +78,8 @@ export function PromptRunner({
     isActive = true,
     customMessage,
     countdownSeconds,
+    displayVariant = 'standard',
+    enableAdditionalInfoModal = true,
 }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
@@ -632,6 +635,67 @@ export function PromptRunner({
     const shouldShowVariables = 
         !conversationStarted && showVariables;
     
+    // Prepare display props for variants
+    const displayProps: PromptRunnerDisplayProps = useMemo(() => ({
+        title,
+        className,
+        promptName: promptData?.name || "",
+        displayMessages,
+        isExecutingPrompt,
+        conversationStarted,
+        variableDefaults,
+        shouldShowVariables,
+        expandedVariable,
+        onVariableValueChange: handleVariableValueChange,
+        onExpandedVariableChange: setExpandedVariable,
+        chatInput,
+        onChatInputChange: setChatInput,
+        onSendMessage: handleSendMessage,
+        resources,
+        onResourcesChange: setResources,
+        templateMessages: conversationTemplate,
+        canvasControl: {
+            isCanvasOpen,
+            canvasContent,
+            openCanvas,
+            closeCanvas,
+        },
+        mobileCanvasControl: {
+            isMobile,
+            showCanvasOnMobile,
+            setShowCanvasOnMobile,
+        },
+        autoRun,
+        allowChat,
+        hideInput: autoRun && !allowChat && conversationStarted,
+        onClose,
+    }), [
+        title,
+        className,
+        promptData?.name,
+        displayMessages,
+        isExecutingPrompt,
+        conversationStarted,
+        variableDefaults,
+        shouldShowVariables,
+        expandedVariable,
+        chatInput,
+        resources,
+        conversationTemplate,
+        isCanvasOpen,
+        canvasContent,
+        openCanvas,
+        closeCanvas,
+        isMobile,
+        showCanvasOnMobile,
+        autoRun,
+        allowChat,
+        onClose,
+    ]);
+    
+    // Select display component based on variant
+    const DisplayComponent = displayVariant === 'compact' ? CompactDisplay : StandardDisplay;
+    
     // Render loading state
     if (isLoadingPrompt) {
         return (
@@ -682,6 +746,14 @@ export function PromptRunner({
         }
     };
     
+    // Determine if we should show AdditionalInfoModal first
+    const shouldShowAdditionalInfoModalFirst = 
+        enableAdditionalInfoModal && 
+        !autoRun && 
+        applyVariables && 
+        !showVariables && 
+        !additionalInfoProvided; // Use additionalInfoProvided instead of showAdditionalInfoModal for more reliable check
+    
     // Main render
     return (
         <>
@@ -695,8 +767,8 @@ export function PromptRunner({
                 `
             }} />
             
-            {/* Additional Info Modal for hidden-variables mode */}
-            {!autoRun && applyVariables && !showVariables && (
+            {/* Additional Info Modal for hidden-variables mode (conditionally enabled) */}
+            {shouldShowAdditionalInfoModalFirst && (
                 <AdditionalInfoModal
                     isOpen={showAdditionalInfoModal}
                     onContinue={handleAdditionalInfoContinue}
@@ -706,109 +778,8 @@ export function PromptRunner({
                 />
             )}
             
-            {/* Mobile Canvas Full Screen View */}
-            {isMobile && showCanvasOnMobile && isCanvasOpen ? (
-                <div className={`h-full flex flex-col bg-textured ${className || ''}`}>
-                    {/* Canvas Header */}
-                    <div className="flex-none flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-                        <h3 className="text-sm font-semibold text-foreground">
-                            Canvas
-                        </h3>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowCanvasOnMobile(false)}
-                            className="h-8 w-8 p-0"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
-                    </div>
-                    {/* Canvas Content */}
-                    <div className="flex-1 overflow-hidden">
-                        <CanvasRenderer content={canvasContent} />
-                    </div>
-                </div>
-            ) : (
-                <div className={`h-full flex flex-col ${className || ''}`}>
-                    {/* Header */}
-                    <div className="flex-none flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-                        <h2 className="text-base font-semibold text-foreground truncate flex-1">
-                            {title || promptData.name || "Run Prompt"}
-                        </h2>
-                        <div className="flex items-center gap-2 flex-shrink-0 pr-8">
-                            {/* Only show canvas toggle if canvas has content */}
-                            {canvasContent && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleCanvasToggle}
-                                    className="h-8 w-8 p-0"
-                                    title={isMobile && showCanvasOnMobile ? "Back to conversation" : isCanvasOpen ? "Close canvas" : "Open canvas"}
-                                >
-                                    {isMobile && showCanvasOnMobile ? (
-                                        <X className="w-4 h-4" />
-                                    ) : isCanvasOpen ? (
-                                        <PanelRightClose className="w-5 h-5" />
-                                    ) : (
-                                        <PanelRightOpen className="w-5 h-5" />
-                                    )}
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                    
-                    {/* Main content with AdaptiveLayout */}
-                    <div className="flex-1 overflow-hidden relative">
-                        <AdaptiveLayout
-                            className="h-full bg-textured"
-                            disableAutoCanvas={isMobile}
-                            rightPanel={
-                                <ConversationWithInput
-                                    messages={displayMessages}
-                                    isStreaming={isExecutingPrompt}
-                                    emptyState={
-                                        isExecutingPrompt ? (
-                                            <div className="flex items-start px-6 py-8">
-                                                <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
-                                                    Thinking...
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
-                                                <div className="text-center max-w-2xl">
-                                                    <p className="text-lg font-medium mb-2">
-                                                        Ready to run your prompt
-                                                    </p>
-                                                    <p className="text-sm">
-                                                        {variableDefaults.length > 0 
-                                                            ? shouldShowVariables 
-                                                                ? "Fill in the variables below and send your message"
-                                                                : "Type your message to continue"
-                                                            : "Type your message below to get started"}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                    variableDefaults={variableDefaults}
-                                    onVariableValueChange={handleVariableValueChange}
-                                    expandedVariable={expandedVariable}
-                                    onExpandedVariableChange={setExpandedVariable}
-                                    chatInput={chatInput}
-                                    onChatInputChange={setChatInput}
-                                    onSendMessage={handleSendMessage}
-                                    showVariables={shouldShowVariables}
-                                    templateMessages={conversationTemplate}
-                                    resources={resources}
-                                    onResourcesChange={setResources}
-                                    enablePasteImages={true}
-                                    hideInput={autoRun && !allowChat && conversationStarted}
-                                />
-                            }
-                        />
-                    </div>
-                </div>
-            )}
+            {/* Render selected display variant - ONLY if AdditionalInfoModal phase is complete */}
+            {!shouldShowAdditionalInfoModalFirst && <DisplayComponent {...displayProps} />}
         </>
     );
 }

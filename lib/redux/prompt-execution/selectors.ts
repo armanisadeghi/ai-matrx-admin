@@ -30,10 +30,10 @@ export { selectInstance } from './slice';
  */
 export const selectMergedVariables = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
+    (state: RootState, runId: string) => selectInstance(state, runId),
     (state: RootState) => selectScopedVariables(state),
-    (state: RootState, instanceId: string) => {
-      const instance = selectInstance(state, instanceId);
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
       return instance ? selectCachedPrompt(state, instance.promptId) : null;
     },
   ],
@@ -65,8 +65,8 @@ export const selectMergedVariables = createSelector(
  */
 export const selectTemplateMessages = createSelector(
   [
-    (state: RootState, instanceId: string) => {
-      const instance = selectInstance(state, instanceId);
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
       return instance ? selectCachedPrompt(state, instance.promptId) : null;
     },
   ],
@@ -80,7 +80,7 @@ export const selectTemplateMessages = createSelector(
  */
 export const selectConversationMessages = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
+    (state: RootState, runId: string) => selectInstance(state, runId),
   ],
   (instance) => {
     return instance?.conversation.messages || [];
@@ -98,9 +98,9 @@ export const selectConversationMessages = createSelector(
  */
 export const selectResolvedMessages = createSelector(
   [
-    (state: RootState, instanceId: string) => selectTemplateMessages(state, instanceId),
-    (state: RootState, instanceId: string) => selectConversationMessages(state, instanceId),
-    (state: RootState, instanceId: string) => selectMergedVariables(state, instanceId),
+    (state: RootState, runId: string) => selectTemplateMessages(state, runId),
+    (state: RootState, runId: string) => selectConversationMessages(state, runId),
+    (state: RootState, runId: string) => selectMergedVariables(state, runId),
   ],
   (templateMessages, conversationMessages, variables) => {
     const allMessages = [...templateMessages, ...conversationMessages];
@@ -117,8 +117,8 @@ export const selectResolvedMessages = createSelector(
  */
 export const selectSystemMessage = createSelector(
   [
-    (state: RootState, instanceId: string) => selectTemplateMessages(state, instanceId),
-    (state: RootState, instanceId: string) => selectMergedVariables(state, instanceId),
+    (state: RootState, runId: string) => selectTemplateMessages(state, runId),
+    (state: RootState, runId: string) => selectMergedVariables(state, runId),
   ],
   (templateMessages, variables) => {
     const systemMsg = templateMessages.find(m => m.role === 'system');
@@ -133,7 +133,7 @@ export const selectSystemMessage = createSelector(
  */
 export const selectConversationTemplate = createSelector(
   [
-    (state: RootState, instanceId: string) => selectTemplateMessages(state, instanceId),
+    (state: RootState, runId: string) => selectTemplateMessages(state, runId),
   ],
   (templateMessages) => {
     return templateMessages.filter(m => m.role !== 'system');
@@ -145,11 +145,11 @@ export const selectConversationTemplate = createSelector(
  */
 export const selectStreamingTextForInstance = createSelector(
   [
-    (state: RootState, instanceId: string) => {
-      const instance = selectInstance(state, instanceId);
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
       return instance?.execution.currentTaskId;
     },
-    (state: RootState, _instanceId: string) => state,
+    (state: RootState, _runId: string) => state,
   ],
   (taskId, state) => {
     if (!taskId) return '';
@@ -162,11 +162,11 @@ export const selectStreamingTextForInstance = createSelector(
  */
 export const selectIsResponseEndedForInstance = createSelector(
   [
-    (state: RootState, instanceId: string) => {
-      const instance = selectInstance(state, instanceId);
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
       return instance?.execution.currentTaskId;
     },
-    (state: RootState, _instanceId: string) => state,
+    (state: RootState, _runId: string) => state,
   ],
   (taskId, state) => {
     if (!taskId) return true;
@@ -179,10 +179,10 @@ export const selectIsResponseEndedForInstance = createSelector(
  */
 export const selectDisplayMessages = createSelector(
   [
-    (state: RootState, instanceId: string) => selectConversationMessages(state, instanceId),
-    (state: RootState, instanceId: string) => selectStreamingTextForInstance(state, instanceId),
-    (state: RootState, instanceId: string) => {
-      const instance = selectInstance(state, instanceId);
+    (state: RootState, runId: string) => selectConversationMessages(state, runId),
+    (state: RootState, runId: string) => selectStreamingTextForInstance(state, runId),
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
       return {
         taskId: instance?.execution.currentTaskId,
         isStreaming: instance?.status === 'streaming',
@@ -213,7 +213,7 @@ export const selectDisplayMessages = createSelector(
  */
 export const selectInstanceStats = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
+    (state: RootState, runId: string) => selectInstance(state, runId),
   ],
   (instance) => {
     if (!instance) return null;
@@ -224,7 +224,7 @@ export const selectInstanceStats = createSelector(
       totalCost: instance.runTracking.totalCost,
       lastMessageStats: instance.execution.lastMessageStats,
       status: instance.status,
-      hasRun: !!instance.runTracking.runId,
+      hasRun: instance.runTracking.savedToDatabase,
     };
   }
 );
@@ -234,8 +234,8 @@ export const selectInstanceStats = createSelector(
  */
 export const selectLiveStreamingStats = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
-    (state: RootState, instanceId: string) => selectStreamingTextForInstance(state, instanceId),
+    (state: RootState, runId: string) => selectInstance(state, runId),
+    (state: RootState, runId: string) => selectStreamingTextForInstance(state, runId),
   ],
   (instance, streamingText) => {
     if (
@@ -263,9 +263,9 @@ export const selectLiveStreamingStats = createSelector(
  */
 export const selectIsReadyToExecute = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
-    (state: RootState, instanceId: string) => {
-      const instance = selectInstance(state, instanceId);
+    (state: RootState, runId: string) => selectInstance(state, runId),
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
       return instance ? selectCachedPrompt(state, instance.promptId) : null;
     },
   ],
@@ -289,7 +289,7 @@ export const selectIsReadyToExecute = createSelector(
  */
 export const selectModelConfig = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
+    (state: RootState, runId: string) => selectInstance(state, runId),
   ],
   (instance) => {
     if (!instance) return null;
@@ -308,13 +308,13 @@ export const selectModelConfig = createSelector(
  */
 export const selectHasUnsavedChanges = createSelector(
   [
-    (state: RootState, instanceId: string) => selectInstance(state, instanceId),
+    (state: RootState, runId: string) => selectInstance(state, runId),
   ],
   (instance) => {
     if (!instance) return false;
     
-    // Has messages but no run created
-    if (instance.conversation.messages.length > 0 && !instance.runTracking.runId) {
+    // Has messages but not saved to database
+    if (instance.conversation.messages.length > 0 && !instance.runTracking.savedToDatabase) {
       return true;
     }
     

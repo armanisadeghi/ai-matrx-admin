@@ -12,10 +12,3 @@ export type { ApplyResult } from '@/features/code-editor/utils/applyCodeEdits';
 
 export { generateUnifiedDiff, formatDiff, getDiffStats } from '@/features/code-editor/utils/generateDiff';
 export type { DiffLine, DiffResult } from '@/features/code-editor/utils/generateDiff';
-
-export { 
-  getCodeEditorBuiltinId, 
-  getBuiltinMetadata 
-} from '@/features/code-editor/utils/codeEditorPrompts';
-export type { CodeEditorPrompt } from '@/features/code-editor/utils/codeEditorPrompts';
-

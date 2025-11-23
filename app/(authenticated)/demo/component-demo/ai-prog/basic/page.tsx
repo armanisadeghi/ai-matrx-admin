@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
-import { CODE_EDITOR_PROMPT_BUILTINS } from '@/features/code-editor/utils/codeEditorPrompts';
+import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import { Sparkles, Code2 } from 'lucide-react';
+import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
 
 // Sample code snippets for testing
 const SAMPLE_CODE = {
@@ -89,7 +90,7 @@ export default function AICodeEditorDemoPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSample, setSelectedSample] = useState<keyof typeof SAMPLE_CODE>('react');
   const [currentCode, setCurrentCode] = useState(SAMPLE_CODE.react);
-  const [selectedBuiltinId, setSelectedBuiltinId] = useState<string>(CODE_EDITOR_PROMPT_BUILTINS.GENERIC_CODE.id);
+  const [selectedBuiltinId, setSelectedBuiltinId] = useState<string>(getBuiltinId('generic-code-editor'));
   const [allowPromptSelection, setAllowPromptSelection] = useState(false);
   const [modalTitle, setModalTitle] = useState<string>('AI Code Editor');
   
@@ -156,9 +157,9 @@ export default function AICodeEditorDemoPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.values(CODE_EDITOR_PROMPT_BUILTINS).map((builtin) => (
+                    {Object.values(PROMPT_BUILTINS).map((builtin: PromptBuiltin) => (
                       <SelectItem key={builtin.id} value={builtin.id}>
-                        {builtin.name}
+                        {builtin.name} ({builtin.key}) [{builtin.id}]
                       </SelectItem>
                     ))}
                   </SelectContent>

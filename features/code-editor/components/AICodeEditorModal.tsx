@@ -32,13 +32,13 @@ import {
   File,
   GitCompare,
 } from 'lucide-react';
-import { CODE_EDITOR_PROMPT_BUILTINS } from '@/features/code-editor/utils/codeEditorPrompts';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { DiffView } from './DiffView';
 import { PromptInput } from '@/features/prompts/components/PromptInput';
 import { cn } from '@/lib/utils';
 import { useAICodeEditor, type UseAICodeEditorProps } from '@/features/code-editor/hooks/useAICodeEditor';
+import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
 
 export type AICodeEditorModalProps = UseAICodeEditorProps & {
   title?: string;
@@ -52,7 +52,7 @@ export function AICodeEditorModal({
   currentCode,
   language: rawLanguage,
   builtinId,
-  promptContext = 'generic',
+  promptKey = 'generic-code-editor',
   onCodeChange,
   title = 'AI Code Editor',
   description = '',
@@ -96,14 +96,14 @@ export function AICodeEditorModal({
     currentCode,
     language: rawLanguage,
     builtinId,
-    promptContext,
+    promptKey,
     onCodeChange,
     selection,
     context,
   });
 
   // Get available builtins for the selector
-  const availableBuiltins = Object.values(CODE_EDITOR_PROMPT_BUILTINS);
+  const availableBuiltins = Object.values(PROMPT_BUILTINS) as PromptBuiltin[];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,7 +128,7 @@ export function AICodeEditorModal({
                     <SelectContent>
                       {availableBuiltins.map((builtin) => (
                         <SelectItem key={builtin.id} value={builtin.id} className="text-xs">
-                          {builtin.name}
+                          {builtin.name} ({builtin.key}) [{builtin.id}]
                         </SelectItem>
                       ))}
                     </SelectContent>

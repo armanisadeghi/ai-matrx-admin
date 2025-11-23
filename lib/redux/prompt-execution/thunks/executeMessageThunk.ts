@@ -45,7 +45,7 @@ import { createClient } from '@/utils/supabase/client';
  * @example
  * ```typescript
  * await dispatch(executeMessage({
- *   instanceId: 'abc-123',
+ *   runId: 'abc-123',
  *   userInput: 'Analyze this text', // optional
  * })).unwrap();
  * ```
@@ -60,16 +60,16 @@ export const executeMessage = createAsyncThunk<
 >(
   'promptExecution/executeMessage',
   async (payload, { dispatch, getState }) => {
-    const { instanceId, userInput } = payload;
+    const { runId, userInput } = payload;
 
     try {
       // ========== STEP 1: Get Fresh State ==========
       // CRITICAL: This reads current state, not captured closures!
       const state = getState();
-      const instance = selectInstance(state, instanceId);
+      const instance = selectInstance(state, runId);
       
       if (!instance) {
-        throw new Error(`Instance not found: ${instanceId}`);
+        throw new Error(`Instance not found: ${runId}`);
       }
       
       if (instance.status === 'executing' || instance.status === 'streaming') {
@@ -77,11 +77,11 @@ export const executeMessage = createAsyncThunk<
       }
       
       // Update status
-      dispatch(setInstanceStatus({ instanceId, status: 'executing' }));
+      dispatch(setInstanceStatus({ runId, status: 'executing' }));
       
       // ========== STEP 2: Build User Message ==========
       const isFirstMessage = instance.conversation.messages.length === 0;
-      const conversationTemplate = selectConversationTemplate(state, instanceId);
+      const conversationTemplate = selectConversationTemplate(state, runId);
       const lastTemplateMessage = conversationTemplate[conversationTemplate.length - 1];
       const isLastMessageUser = lastTemplateMessage?.role === 'user';
       
@@ -107,7 +107,7 @@ export const executeMessage = createAsyncThunk<
       // ========== STEP 3: Replace Variables ==========
       // CRITICAL: Gets FRESH merged variables from Redux!
       // No closure over stale state possible!
-      const mergedVariables = selectMergedVariables(state, instanceId);
+      const mergedVariables = selectMergedVariables(state, runId);
       const userMessageWithVariables = replaceVariablesInText(
         userMessageContent,
         mergedVariables
@@ -120,12 +120,10 @@ export const executeMessage = createAsyncThunk<
         timestamp: new Date().toISOString(),
       };
       
-      dispatch(addMessage({ instanceId, message: userMessage }));
+      dispatch(addMessage({ runId, message: userMessage }));
       
-      // ========== STEP 4: Create Run if First Message ==========
-      let currentRunId = instance.runTracking.runId;
-      
-      if (isFirstMessage && !currentRunId && instance.executionConfig.track_in_runs) {
+      // ========== STEP 4: Save Run to Database if First Message ==========
+      if (isFirstMessage && !instance.runTracking.savedToDatabase && instance.executionConfig.track_in_runs) {
         // Generate run name
         const runName = generateRunNameFromVariables(mergedVariables, [])
           || generateRunNameFromMessage(userMessageWithVariables);
@@ -133,10 +131,11 @@ export const executeMessage = createAsyncThunk<
         // Create fresh client to pick up current auth session
         const supabase = createClient();
         
-        // Create run in database
-        const { data: run, error: runError } = await supabase
+        // Save run to database with our runId
+        const { error: runError } = await supabase
           .from('ai_runs')
           .insert({
+            id: runId, // Use the instance runId as the database ID
             user_id: (await supabase.auth.getUser()).data.user?.id,
             source_type: instance.runTracking.sourceType,
             source_id: instance.runTracking.sourceId,
@@ -145,26 +144,24 @@ export const executeMessage = createAsyncThunk<
             variable_values: mergedVariables,
             messages: [userMessage],
             status: 'active',
-          })
-          .select()
-          .single();
+          });
         
-        if (runError || !run) {
-          console.error('Failed to create run:', runError);
-          throw new Error('Failed to create run');
+        if (runError) {
+          console.error('Failed to save run to database:', runError);
+          throw new Error('Failed to save run to database');
         }
         
-        currentRunId = run.id;
-        dispatch(setRunId({ instanceId, runId: run.id, runName }));
+        // Update run tracking
+        dispatch(setRunId({ runId, runName, savedToDatabase: true }));
         
-        console.log('✅ Run created:', run.id, '-', runName);
+        console.log('✅ Run saved to database:', runId, '-', runName);
       }
       
       // ========== STEP 5: Build Messages for API ==========
       // CRITICAL: Uses selector that reads fresh state!
       // Get fresh state again (may have changed after run creation)
       const currentState = getState();
-      const systemMessage = selectSystemMessage(currentState, instanceId);
+      const systemMessage = selectSystemMessage(currentState, runId);
       
       let messagesToSend;
       
@@ -202,7 +199,7 @@ export const executeMessage = createAsyncThunk<
       }));
       
       // ========== STEP 6: Build Chat Config ==========
-      const modelConfig = selectModelConfig(currentState, instanceId);
+      const modelConfig = selectModelConfig(currentState, runId);
       
       if (!modelConfig) {
         throw new Error('Model configuration not found');
@@ -218,14 +215,14 @@ export const executeMessage = createAsyncThunk<
       // ========== STEP 7: Create Task in DB (if tracking) ==========
       const taskId = uuidv4();
       
-      if (currentRunId) {
+      if (instance.runTracking.savedToDatabase) {
         try {
           const supabase = createClient();
           await supabase
             .from('ai_tasks')
             .insert({
               task_id: taskId,
-              run_id: currentRunId,
+              run_id: runId,
               service: 'chat_service',
               task_name: 'direct_chat',
               model_id: modelConfig.modelId,
@@ -240,7 +237,7 @@ export const executeMessage = createAsyncThunk<
       }
       
       // ========== STEP 8: Submit to Socket.IO ==========
-      dispatch(startExecution({ instanceId, taskId }));
+      dispatch(startExecution({ runId, taskId }));
       
       const result = await dispatch(createAndSubmitTask({
         service: 'chat_service',
@@ -252,9 +249,8 @@ export const executeMessage = createAsyncThunk<
       })).unwrap();
       
       console.log('✅ Message execution started:', {
-        instanceId,
+        runId,
         taskId: result.taskId,
-        runId: currentRunId,
       });
       
       return result.taskId;
@@ -263,7 +259,7 @@ export const executeMessage = createAsyncThunk<
       console.error('❌ Failed to execute message:', error);
       
       dispatch(setInstanceStatus({
-        instanceId,
+        runId,
         status: 'error',
         error: error instanceof Error ? error.message : 'Execution failed',
       }));

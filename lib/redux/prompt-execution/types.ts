@@ -48,12 +48,12 @@ export interface ExecutionTracking {
 }
 
 export interface RunTracking {
-  runId: string | null;
   sourceType: string;
   sourceId: string;
   runName: string | null;
   totalTokens: number;
   totalCost: number;
+  savedToDatabase: boolean; // Track if this run has been persisted
 }
 
 export type ExecutionStatus = 
@@ -66,12 +66,13 @@ export type ExecutionStatus =
   | 'error';         // Error occurred
 
 /**
- * Core execution instance
+ * Core execution instance (Run)
  * Represents a single prompt execution session (may have multiple messages)
+ * The runId IS the instance identifier - one concept, one ID
  */
 export interface ExecutionInstance {
   // ========== Identity ==========
-  instanceId: string;       // UUID - created on init
+  runId: string;            // UUID - created on init, used as primary identifier
   promptId: string;         // Reference to cached prompt
   promptSource: 'prompts' | 'prompt_builtins'; // Which table the prompt came from
   
@@ -124,17 +125,14 @@ export interface ScopedVariables {
  * Main slice state
  */
 export interface PromptExecutionState {
-  // All active instances (keyed by instanceId)
+  // All active runs (keyed by runId)
   instances: {
-    [instanceId: string]: ExecutionInstance;
+    [runId: string]: ExecutionInstance;
   };
   
   // Quick lookup maps
-  instancesByPromptId: {
-    [promptId: string]: string[]; // instanceIds
-  };
-  instancesByRunId: {
-    [runId: string]: string; // instanceId
+  runsByPromptId: {
+    [promptId: string]: string[]; // runIds for quick lookup
   };
   
   // Scoped variables cache (fetched once per session)
@@ -155,22 +153,22 @@ export interface StartInstancePayload {
 }
 
 export interface ExecuteMessagePayload {
-  instanceId: string;
+  runId: string;
   userInput?: string;  // Additional input to append
 }
 
 export interface CompleteExecutionPayload {
-  instanceId: string;
+  runId: string;
 }
 
 export interface UpdateVariablePayload {
-  instanceId: string;
+  runId: string;
   variableName: string;
   value: string;
 }
 
 export interface SetCurrentInputPayload {
-  instanceId: string;
+  runId: string;
   input: string;
 }
 

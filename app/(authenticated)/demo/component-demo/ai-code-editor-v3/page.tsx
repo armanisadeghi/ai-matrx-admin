@@ -2,230 +2,15 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ContextAwareCodeEditorModal } from '@/features/code-editor/components/ContextAwareCodeEditorModal';
-import { Sparkles, Code2, FileCode, Wand2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ContextAwareCodeEditorModal } from '@/features/code-editor/components';
+import { Play } from 'lucide-react';
 
-export default function AICodeEditorV3DemoPage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentCode, setCurrentCode] = useState(EXAMPLE_CODE);
-  const [currentVersion, setCurrentVersion] = useState(1);
-  const [language, setLanguage] = useState('typescript');
-  const [builtinId] = useState('970856c5-3b9d-4034-ac9d-8d8a11fb3dba'); // Code Editor (Dynamic Context)
-
-  const handleCodeChange = (newCode: string, version: number) => {
-    console.log(`✅ Code updated to version ${version}`);
-    setCurrentCode(newCode);
-    setCurrentVersion(version);
-  };
-
-  const handleOpenModal = (exampleCode: string, exampleLanguage: string) => {
-    setCurrentCode(exampleCode);
-    setLanguage(exampleLanguage);
-    setIsOpen(true);
-  };
-
-  return (
-    <div className="h-[calc(100dvh-var(--header-height))] overflow-y-auto pb-safe">
-      <div className="container max-w-5xl mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            <h1 className="text-3xl font-bold">AI Code Editor V3 Demo</h1>
-          </div>
-          <p className="text-muted-foreground">
-            Context-Aware editing with version management. Make unlimited edits without context window bloat!
-          </p>
-        </div>
-
-        {/* Key Features */}
-        <Card>
-          <CardHeader>
-            <CardTitle>🚀 Key Features</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-600 dark:text-purple-400 text-xs font-semibold">1</span>
-              </div>
-              <div>
-                <div className="font-medium">Dynamic Context Management</div>
-                <div className="text-sm text-muted-foreground">
-                  The <code className="text-xs bg-muted px-1 py-0.5 rounded">dynamic_context</code> variable is injected before each message with the current version + tombstones
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-600 dark:text-purple-400 text-xs font-semibold">2</span>
-              </div>
-              <div>
-                <div className="font-medium">Version Tombstones</div>
-                <div className="text-sm text-muted-foreground">
-                  Old versions are replaced with compact summaries: "Version X: [CONTENT REMOVED - See current version]"
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-600 dark:text-purple-400 text-xs font-semibold">3</span>
-              </div>
-              <div>
-                <div className="font-medium">Unlimited Iterations</div>
-                <div className="text-sm text-muted-foreground">
-                  Make as many edits as you want - only ONE full version is in the context at any time
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-600 dark:text-purple-400 text-xs font-semibold">4</span>
-              </div>
-              <div>
-                <div className="font-medium">Conversation Flow</div>
-                <div className="text-sm text-muted-foreground">
-                  Continue the conversation naturally - the AI always has the latest code context
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Current Code */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Code (Version {currentVersion})</CardTitle>
-            <CardDescription>This is the code that will be edited</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-              <code>{currentCode}</code>
-            </pre>
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Try It Out</CardTitle>
-            <CardDescription>Open the editor and start making changes</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                onClick={() => handleOpenModal(EXAMPLE_CODE, 'typescript')}
-                className="h-auto py-4 flex flex-col items-start gap-2"
-                variant="outline"
-              >
-                <div className="flex items-center gap-2">
-                  <Code2 className="h-5 w-5" />
-                  <span className="font-semibold">TypeScript Component</span>
-                </div>
-                <span className="text-xs text-muted-foreground text-left">
-                  Edit a React component with TypeScript
-                </span>
-              </Button>
-
-              <Button
-                onClick={() => handleOpenModal(PYTHON_EXAMPLE, 'python')}
-                className="h-auto py-4 flex flex-col items-start gap-2"
-                variant="outline"
-              >
-                <div className="flex items-center gap-2">
-                  <FileCode className="h-5 w-5" />
-                  <span className="font-semibold">Python Script</span>
-                </div>
-                <span className="text-xs text-muted-foreground text-left">
-                  Edit a Python data processing script
-                </span>
-              </Button>
-
-              <Button
-                onClick={() => handleOpenModal(API_EXAMPLE, 'typescript')}
-                className="h-auto py-4 flex flex-col items-start gap-2"
-                variant="outline"
-              >
-                <div className="flex items-center gap-2">
-                  <Wand2 className="h-5 w-5" />
-                  <span className="font-semibold">API Route</span>
-                </div>
-                <span className="text-xs text-muted-foreground text-left">
-                  Edit a Next.js API route handler
-                </span>
-              </Button>
-
-              <Button
-                onClick={() => handleOpenModal(currentCode, language)}
-                className="h-auto py-4 flex flex-col items-start gap-2"
-                variant="default"
-              >
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  <span className="font-semibold">Edit Current Code</span>
-                </div>
-                <span className="text-xs text-muted-foreground text-left">
-                  Continue editing the code shown above
-                </span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Testing Guide */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Testing Guide</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div>
-              <div className="font-medium mb-1">1. Open the editor</div>
-              <div className="text-muted-foreground">Click any button above to open the V3 modal</div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">2. Make your first change</div>
-              <div className="text-muted-foreground">
-                Type something like "Add error handling" and send. The AI will respond with edits.
-              </div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">3. Review & Apply</div>
-              <div className="text-muted-foreground">
-                The canvas will open showing the diff. Click "Apply" to accept.
-              </div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">4. Continue editing</div>
-              <div className="text-muted-foreground">
-                Type another instruction like "Add loading state". The AI now has the UPDATED code (v2).
-                The old version (v1) is replaced with a tombstone.
-              </div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">5. Check the console</div>
-              <div className="text-muted-foreground">
-                Open DevTools console to see version updates and context stats showing how much we're saving!
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Modal */}
-      <ContextAwareCodeEditorModal
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        code={currentCode}
-        language={language}
-        builtinId={builtinId}
-        onCodeChange={handleCodeChange}
-        title="AI Code Editor V3 (Context-Aware)"
-        customMessage="Describe the specific code changes you want to make. Be clear about what functionality to add, modify, or remove."
-        countdownSeconds={10}
-      />
-    </div>
-  );
-}
+type DisplayVariant = 'standard' | 'compact';
+type CodeExample = 'typescript' | 'python' | 'api';
 
 // Example code snippets
 const EXAMPLE_CODE = `interface UserProps {
@@ -289,3 +74,106 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(data);
 }`;
 
+const CODE_EXAMPLES = {
+  typescript: { code: EXAMPLE_CODE, language: 'typescript', label: 'TypeScript Component' },
+  python: { code: PYTHON_EXAMPLE, language: 'python', label: 'Python Script' },
+  api: { code: API_EXAMPLE, language: 'typescript', label: 'Next.js API Route' },
+};
+
+export default function AICodeEditorV3DemoPage() {
+  const [displayVariant, setDisplayVariant] = useState<DisplayVariant>('standard');
+  const [codeExample, setCodeExample] = useState<CodeExample>('typescript');
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentCode, setCurrentCode] = useState(EXAMPLE_CODE);
+  const [currentVersion, setCurrentVersion] = useState(1);
+  const [builtinId] = useState('970856c5-3b9d-4034-ac9d-8d8a11fb3dba');
+
+  const handleCodeChange = (newCode: string, version: number) => {
+    console.log(`Code updated to v${version} | Display: ${displayVariant}`);
+    setCurrentCode(newCode);
+    setCurrentVersion(version);
+  };
+
+  const handleRun = () => {
+    const example = CODE_EXAMPLES[codeExample];
+    setCurrentCode(example.code);
+    setIsOpen(true);
+  };
+
+  const selectedExample = CODE_EXAMPLES[codeExample];
+
+  return (
+    <div className="h-[calc(100dvh-var(--header-height))] overflow-y-auto pb-safe">
+      <div className="container max-w-4xl mx-auto p-6 space-y-4">
+        <h1 className="text-2xl font-bold">Code Editor V3 Tester</h1>
+        
+        {/* Controls */}
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            {/* Display Variant */}
+            <div className="space-y-3">
+              <Label>Display Variant</Label>
+              <RadioGroup value={displayVariant} onValueChange={(v) => setDisplayVariant(v as DisplayVariant)}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="standard" id="standard" />
+                  <Label htmlFor="standard" className="font-normal cursor-pointer">Standard</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="compact" id="compact" />
+                  <Label htmlFor="compact" className="font-normal cursor-pointer">Compact</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Code Example */}
+            <div className="space-y-3">
+              <Label>Code Example</Label>
+              <Select value={codeExample} onValueChange={(v) => setCodeExample(v as CodeExample)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="typescript">{CODE_EXAMPLES.typescript.label}</SelectItem>
+                  <SelectItem value="python">{CODE_EXAMPLES.python.label}</SelectItem>
+                  <SelectItem value="api">{CODE_EXAMPLES.api.label}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Run Button */}
+            <Button onClick={handleRun} className="w-full">
+              <Play className="h-4 w-4 mr-2" />
+              Run Test
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Current Code Preview */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-xs text-muted-foreground mb-2">
+              Version {currentVersion} | {selectedExample.language}
+            </div>
+            <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs">
+              <code>{currentCode}</code>
+            </pre>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modal */}
+      <ContextAwareCodeEditorModal
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        code={currentCode}
+        language={selectedExample.language}
+        builtinId={builtinId}
+        onCodeChange={handleCodeChange}
+        title={`Code Editor (${displayVariant})`}
+        customMessage="Describe the code changes you want."
+        countdownSeconds={5}
+        displayVariant={displayVariant}
+      />
+    </div>
+  );
+}

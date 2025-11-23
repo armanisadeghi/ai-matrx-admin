@@ -68,7 +68,7 @@ export interface StartActionPayload {
  *   }
  * })).unwrap();
  * 
- * console.log('Instance ID:', result.instanceId);
+ * console.log('Instance ID:', result.runId);
  * console.log('Broker resolved:', result.brokerResolvedCount, 'variables');
  * ```
  */
@@ -219,7 +219,7 @@ export const startPromptAction = createAsyncThunk<
       // ========== STEP 6: Execute via Standard Engine ==========
       console.log('🚀 Executing action via prompt instance...');
 
-      const instanceId = await dispatch(
+      const createdRunId = await dispatch(
         startPromptInstance({
           promptId,
           promptSource,
@@ -238,8 +238,7 @@ export const startPromptAction = createAsyncThunk<
 
       // ========== STEP 7: Build Result ==========
       const result: ActionExecutionResult = {
-        instanceId,
-        runId,
+        runId: createdRunId,
         brokerResolvedCount,
         userProvidedCount,
         totalVariableCount,
@@ -249,7 +248,7 @@ export const startPromptAction = createAsyncThunk<
       console.log('✅ Action executed successfully:', {
         actionId,
         actionName: action.name,
-        instanceId,
+        runId: createdRunId,
         brokerResolvedCount,
         totalVariableCount,
         fullyResolved: result.fullyResolved,

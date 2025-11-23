@@ -74,61 +74,58 @@ export function CodePreviewCanvas({
   if (isApplied) {
     return (
       <div className="h-full flex flex-col bg-background">
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-500" />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-3">
+            <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-500" />
           </div>
           
-          <h3 className="text-xl font-semibold mb-2">Changes Applied Successfully!</h3>
+          <h3 className="text-base font-semibold mb-2">Changes Applied Successfully!</h3>
           
-          <p className="text-muted-foreground mb-6 max-w-md">
+          <p className="text-xs text-muted-foreground mb-4 max-w-md">
             Your code has been updated. Close the modal to see the changes, or continue editing to make more modifications.
           </p>
 
           {/* Change Summary */}
           {diffStats && (
-            <div className="flex items-center gap-3 mb-6">
-              <Badge variant="outline" className="text-sm h-7 px-3 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30">
+            <div className="flex items-center gap-2 mb-6">
+              <Badge variant="outline" className="text-[10px] h-5 px-2 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30">
                 +{diffStats.additions} {diffStats.additions === 1 ? 'addition' : 'additions'}
               </Badge>
-              <Badge variant="outline" className="text-sm h-7 px-3 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30">
+              <Badge variant="outline" className="text-[10px] h-5 px-2 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30">
                 -{diffStats.deletions} {diffStats.deletions === 1 ? 'deletion' : 'deletions'}
               </Badge>
             </div>
           )}
 
           {explanation && (
-            <Alert className="mb-6 max-w-md text-left">
-              <Sparkles className="h-4 w-4" />
-              <AlertDescription className="text-sm">
+            <Alert className="mb-4 max-w-md text-left">
+              <Sparkles className="h-3.5 w-3.5" />
+              <AlertDescription className="text-xs">
                 {explanation}
               </AlertDescription>
             </Alert>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-            <Button
-              size="lg"
+          {/* Action Buttons - VS Code style */}
+          <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
+            <button
               onClick={handleCloseAndView}
-              className="flex-1 gap-2"
               disabled={!onCloseModal}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded transition-colors bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-3.5 h-3.5" />
               Close & View Changes
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
+            </button>
+            <button
               onClick={handleContinueEditing}
-              className="flex-1 gap-2"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded transition-colors border border-border bg-background hover:bg-muted"
             >
-              <Edit3 className="w-4 h-4" />
+              <Edit3 className="w-3.5 h-3.5" />
               Continue Editing
-            </Button>
+            </button>
           </div>
 
-          <p className="text-xs text-muted-foreground mt-4">
+          <p className="text-[10px] text-muted-foreground mt-3">
             You can make unlimited edits in a single session
           </p>
         </div>
@@ -198,26 +195,23 @@ export function CodePreviewCanvas({
         </div>
       </Tabs>
 
-      {/* Footer Actions */}
-      <div className="px-4 py-2.5 border-t bg-muted/20 shrink-0">
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+      {/* Footer Actions - VS Code style tiny buttons */}
+      <div className="px-2 py-1 border-t bg-muted/20 shrink-0">
+        <div className="flex items-center justify-end gap-1">
+          <button
             onClick={onDiscard}
-            className="gap-1.5 h-8"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-colors text-foreground hover:bg-muted"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
             Discard
-          </Button>
-          <Button
-            size="sm"
+          </button>
+          <button
             onClick={handleApply}
-            className="bg-green-600 hover:bg-green-700 text-white gap-1.5 h-8"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-colors bg-green-600 hover:bg-green-700 text-white"
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Apply Changes
-          </Button>
+            <CheckCircle2 className="w-3 h-3" />
+            Apply
+          </button>
         </div>
       </div>
     </div>

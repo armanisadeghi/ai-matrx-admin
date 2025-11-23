@@ -47,6 +47,9 @@ export interface PromptRunnerModalProps {
   /** Execution configuration */
   executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
   
+  /** Display variant for PromptRunner (standard | compact) */
+  displayVariant?: 'standard' | 'compact';
+  
   /** Pre-filled variable values */
   variables?: Record<string, string>;
   
@@ -112,6 +115,9 @@ export interface PromptRunnerModalConfig {
   
   /** Execution configuration with separate flags */
   executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
+  
+  /** Display variant for PromptRunner (standard | compact) */
+  displayVariant?: 'standard' | 'compact';
   
   variables?: Record<string, string>;
   initialMessage?: string;
