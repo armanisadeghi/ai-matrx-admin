@@ -141,23 +141,23 @@ export function CodePreviewCanvas({
         <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0 gap-0">
           <TabsTrigger
             value="diff"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1 text-xs gap-1.5 h-7 font-normal"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-0.5 text-[10px] gap-1 h-6 font-normal"
           >
-            <GitCompare className="w-3.5 h-3.5" />
+            <GitCompare className="w-3 h-3" />
             Diff
           </TabsTrigger>
           <TabsTrigger
             value="original"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1 text-xs gap-1.5 h-7 font-normal"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-0.5 text-[10px] gap-1 h-6 font-normal"
           >
-            <File className="w-3.5 h-3.5" />
+            <File className="w-3 h-3" />
             Original
           </TabsTrigger>
           <TabsTrigger
             value="preview"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-3 py-1 text-xs gap-1.5 h-7 font-normal"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground hover:bg-muted/50 px-2 py-0.5 text-[10px] gap-1 h-6 font-normal"
           >
-            <FileCode className="w-3.5 h-3.5" />
+            <FileCode className="w-3 h-3" />
             Preview
           </TabsTrigger>
         </TabsList>
@@ -197,17 +197,17 @@ export function CodePreviewCanvas({
 
       {/* Footer Actions - VS Code style tiny buttons */}
       <div className="px-2 py-1 border-t bg-muted/20 shrink-0">
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-end gap-1 pr-6">
           <button
             onClick={onDiscard}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-colors text-foreground hover:bg-muted"
+            className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded transition-colors text-foreground hover:bg-muted"
           >
             <X className="w-3 h-3" />
             Discard
           </button>
           <button
             onClick={handleApply}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-colors bg-green-600 hover:bg-green-700 text-white"
+            className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded transition-colors bg-blue-600 hover:bg-blue-700 text-white"
           >
             <CheckCircle2 className="w-3 h-3" />
             Apply

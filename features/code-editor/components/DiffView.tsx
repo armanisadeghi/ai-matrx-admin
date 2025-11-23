@@ -39,32 +39,13 @@ export function DiffView({
         ? 'bg-red-900/60 border-l-4 border-red-500'
         : 'bg-red-100 border-l-4 border-red-600';
     }
-    return mode === 'dark' ? 'bg-transparent' : 'bg-transparent';
-  };
-
-  const getDiffLinePrefix = (type: DiffLine['type']) => {
-    if (type === 'added') return '+ ';
-    if (type === 'removed') return '- ';
-    return '  ';
-  };
-
-  const getDiffLinePrefixColor = (type: DiffLine['type']) => {
-    if (type === 'added') {
-      return mode === 'dark' ? 'text-green-400' : 'text-green-700';
-    }
-    if (type === 'removed') {
-      return mode === 'dark' ? 'text-red-400' : 'text-red-700';
-    }
-    return mode === 'dark' ? 'text-gray-500' : 'text-gray-600';
+    return 'bg-textured';
   };
 
   return (
     <div className={cn('h-full overflow-hidden', className)}>
       <div className="h-full overflow-auto">
-        <div className={cn(
-          'font-mono text-xs',
-          mode === 'dark' ? 'bg-zinc-900' : 'bg-white'
-        )}>
+        <div className="font-mono text-xs bg-textured">
           {diff.lines.map((line, index) => (
             <div
               key={index}
@@ -81,32 +62,38 @@ export function DiffView({
                   {line.lineNumber}
                 </div>
               )}
-              <div className={cn('shrink-0 w-4 select-none font-bold', getDiffLinePrefixColor(line.type))}>
-                {getDiffLinePrefix(line.type)}
-              </div>
-              <div className="flex-1 pr-2 overflow-x-auto">
-                <SyntaxHighlighter
-                  language={language}
-                  style={mode === 'dark' ? vscDarkPlus : vs}
-                  PreTag="span"
-                  customStyle={{
-                    margin: 0,
-                    padding: 0,
-                    background: 'transparent',
-                    fontSize: 'inherit',
-                    fontFamily: 'inherit',
-                    lineHeight: '1.2',
-                  }}
-                  codeTagProps={{
-                    style: {
+              <div className="flex-1 px-2 overflow-x-auto">
+                {line.type === 'removed' ? (
+                  <span className={cn(
+                    'whitespace-pre',
+                    mode === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  )}>
+                    {line.content || ' '}
+                  </span>
+                ) : (
+                  <SyntaxHighlighter
+                    language={language}
+                    style={mode === 'dark' ? vscDarkPlus : vs}
+                    PreTag="span"
+                    customStyle={{
+                      margin: 0,
+                      padding: 0,
                       background: 'transparent',
+                      fontSize: 'inherit',
                       fontFamily: 'inherit',
                       lineHeight: '1.2',
-                    }
-                  }}
-                >
-                  {line.content || ' '}
-                </SyntaxHighlighter>
+                    }}
+                    codeTagProps={{
+                      style: {
+                        background: 'transparent',
+                        fontFamily: 'inherit',
+                        lineHeight: '1.2',
+                      }
+                    }}
+                  >
+                    {line.content || ' '}
+                  </SyntaxHighlighter>
+                )}
               </div>
             </div>
           ))}
