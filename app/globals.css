@@ -45,8 +45,8 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --primary-foreground: 0 0% 100%;
 
         /* Secondary - Purple accent */
-        --secondary: 275 65% 80%;
-        --secondary-foreground: 275 35% 20%;
+        --secondary: 275 70% 58%;
+        --secondary-foreground: 0 0% 100%;
         
         /* Muted - Zinc-200 for subtle backgrounds */
         --muted: 240 5% 92%;
@@ -83,12 +83,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
         /* Adjusted hover state colors for more contrast */
         --primary-hover: 240 5.9% 15%;
-        --secondary-hover: 275 65% 75%; /* Consistent with secondary purple theme */
+        --secondary-hover: 275 70% 50%; /* Slightly darker for hover state */
         --accent-hover: 260 35% 88%; /* Slightly darker than accent for hover */
 
         /* Adjusted active state colors */
         --primary-active: 240 5.9% 20%;
-        --secondary-active: 275 65% 70%; /* Consistent with secondary purple theme */
+        --secondary-active: 275 70% 45%; /* Darker than hover for active state */
         --accent-active: 260 40% 85%; /* Darker than hover for active state */
 
         /* Elevation colors for zinc theme */
@@ -170,9 +170,9 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --primary: 221 83% 53%;
         --primary-foreground: 0 0% 100%;
 
-        /* Secondary - Darker purple for dark mode */
-        --secondary: 275 60% 30%;
-        --secondary-foreground: 275 75% 90%;
+        /* Secondary - Brighter purple for dark mode visibility */
+        --secondary: 275 70% 62%;
+        --secondary-foreground: 275 20% 15%;
         
         /* Muted - Zinc-750 for subtle backgrounds */
         --muted: 240 4% 24%;
@@ -209,12 +209,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
         /* Hover state colors */
         --primary-hover: 0 0% 85%;
-        --secondary-hover: 275 50% 35%; /* Consistent with secondary purple theme */
+        --secondary-hover: 275 70% 55%; /* Slightly darker for hover state */
         --accent-hover: 215 25% 30%; /* Slate-tinted, lighter than accent for hover */
 
         /* Active state colors */
         --primary-active: 0 0% 75%;
-        --secondary-active: 275 45% 25%; /* Consistent with secondary purple theme */
+        --secondary-active: 275 70% 50%; /* Darker than hover for active state */
         --accent-active: 215 30% 20%; /* Slate-tinted, darker than hover for active */
 
         /* Elevation colors for zinc theme */

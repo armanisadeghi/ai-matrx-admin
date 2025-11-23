@@ -13,10 +13,24 @@ export interface PromptBuiltin {
   }
   
   export const PROMPT_BUILTINS = {
+    PROMPT_APP_AUTO_CREATE: {
+      id: '4b9563db-7a95-476d-b2c7-b76385d35e9c',
+      name: 'Prompt App Auto Creator',
+      description: 'Specialized for auto creating Prompt Apps',
+      key: 'prompt-app-auto-create',
+      context: false,
+    },
+    PROMPT_APP_AUTO_CREATE_LIGHTNING: {
+      id: 'd7b234d9-72a3-48c9-9c9e-1c6de825221b',
+      name: 'Prompt App Auto Creator (Lightning)',
+      description: 'Specialized for auto creating Prompt Apps lightning fast',
+      key: 'prompt-app-auto-create-lightning',
+      context: false,
+    },
     PROMPT_APP_UI: {
       id: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
       name: 'Prompt App Editor',
-      description: 'Specialized for editing React components for Prompt Apps',
+      description: 'Specialized for editing a Prompt App UI with custom instructions',
       key: 'prompt-app-ui-builder',
       context: false,
     },
