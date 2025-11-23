@@ -6,4 +6,5 @@ export { startPromptInstance } from './startInstanceThunk';
 export { executeMessage } from './executeMessageThunk';
 export { completeExecutionThunk } from './completeExecutionThunk';
 export { fetchScopedVariables } from './fetchScopedVariablesThunk';
+export { executeBuiltinWithCodeExtraction } from './executeBuiltinWithCodeExtractionThunk';
 

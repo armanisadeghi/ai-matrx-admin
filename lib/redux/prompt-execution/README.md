@@ -27,13 +27,10 @@ The Prompt Execution Engine is a Redux slice that manages ALL prompt executions 
 {
   promptExecution: {
     instances: {
-      [instanceId]: ExecutionInstance // Active execution sessions
+      [runId]: ExecutionInstance // Active execution sessions (keyed by runId)
     },
-    instancesByPromptId: {
-      [promptId]: string[] // Quick lookups
-    },
-    instancesByRunId: {
-      [runId]: string // Link runs to instances
+    runsByPromptId: {
+      [promptId]: string[] // runIds for quick lookups
     },
     scopedVariables: {
       user: Record<string, string> | null,
@@ -53,15 +50,17 @@ The Prompt Execution Engine is a Redux slice that manages ALL prompt executions 
 }
 ```
 
-### Core Concept: Execution Instance
+### Core Concept: Execution Instance (Run)
 
-An **instance** represents a single prompt execution session that may contain multiple messages (conversation). Each instance is identified by a unique `instanceId` and tracks:
+An **instance** represents a single prompt execution session that may contain multiple messages (conversation). Each instance is identified by a unique `runId` and tracks:
 
 - Configuration & settings
 - Variables (user, scoped, computed)
 - Conversation messages
 - Execution state
 - Run tracking (links to `ai_runs` table)
+
+**Note:** An instance IS a run - we use `runId` as the primary identifier to align these concepts.
 
 ---
 
@@ -75,7 +74,7 @@ Creates a new execution instance with cache-aware prompt loading. **Supports bot
 
 ```typescript
 // Execute a custom prompt
-const instanceId = await dispatch(startPromptInstance({
+const runId = await dispatch(startPromptInstance({
   promptId: 'text-analyzer-uuid',
   promptSource: 'prompts', // Optional: defaults to 'prompts'
   executionConfig: {
@@ -90,8 +89,18 @@ const instanceId = await dispatch(startPromptInstance({
   runId: 'existing-run-id', // Optional: continue existing run
 })).unwrap();
 
-// Execute a prompt builtin
-const builtinInstanceId = await dispatch(startPromptInstance({
+// Execute a prompt builtin (recommended approach)
+import { createBuiltinConfig } from '@/lib/redux/prompt-execution/builtins';
+
+const builtinRunId = await dispatch(startPromptInstance(
+  createBuiltinConfig('prompt-app-auto-create', {
+    variables: { input: 'value' },
+    executionConfig: { track_in_runs: true },
+  })
+)).unwrap();
+
+// Alternative: Manual configuration
+const builtinRunId = await dispatch(startPromptInstance({
   promptId: 'builtin-uuid',
   promptSource: 'prompt_builtins', // ← Specify builtin source
   variables: { input: 'value' },
@@ -103,11 +112,16 @@ const builtinInstanceId = await dispatch(startPromptInstance({
 1. Fetches prompt from cache or database (supports both `prompts` and `prompt_builtins` tables)
 2. Creates execution instance in Redux
 3. Initializes variables with defaults, user values, and computed values
-4. Returns `instanceId` for tracking
+4. Returns `runId` for tracking
 
 **Note:** The `promptSource` parameter determines which table to query:
 - `'prompts'` (default) - Custom user-created prompts
 - `'prompt_builtins'` - System/built-in prompts
+
+**Prompt ID Format:**
+- For custom prompts: Always use the UUID directly
+- For prompt builtins: Always use the UUID directly (recommended)
+  - Optional: The system includes `resolveBuiltinId()` in `builtins.ts` that can resolve by key or name, but this is not integrated into the execution engine. If needed, the app should resolve to UUID before calling `startPromptInstance`.
 
 ---
 
@@ -116,8 +130,8 @@ const builtinInstanceId = await dispatch(startPromptInstance({
 Executes a message for an instance (core execution engine).
 
 ```typescript
-await dispatch(executeMessage({
-  instanceId: 'abc-123',
+const taskId = await dispatch(executeMessage({
+  runId: 'abc-123',
   userInput: 'Optional additional input', // Appends to current input
 })).unwrap();
 ```
@@ -150,7 +164,7 @@ Finalizes execution when streaming completes.
 
 ```typescript
 await dispatch(completeExecutionThunk({
-  instanceId: 'abc-123',
+  runId: 'abc-123',
   responseText: 'AI response text',
   timeToFirstToken: 250,
   totalTime: 1500,
@@ -184,7 +198,7 @@ const result = await dispatch(startPromptAction({
   runId: 'existing-run-id', // Optional
 })).unwrap();
 
-// result.instanceId, result.brokerResolvedCount, etc.
+// result.runId, result.brokerResolvedCount, etc.
 ```
 
 **What it does:**
@@ -223,29 +237,29 @@ await dispatch(fetchScopedVariables({
 ```typescript
 // Instance management
 dispatch(createInstance(instance));
-dispatch(removeInstance({ instanceId }));
-dispatch(setInstanceStatus({ instanceId, status, error? }));
+dispatch(removeInstance({ runId }));
+dispatch(setInstanceStatus({ runId, status, error? }));
 
 // Variables
-dispatch(updateVariable({ instanceId, variableName, value }));
-dispatch(updateVariables({ instanceId, variables }));
+dispatch(updateVariable({ runId, variableName, value }));
+dispatch(updateVariables({ runId, variables }));
 
 // Conversation
-dispatch(setCurrentInput({ instanceId, input }));
-dispatch(addMessage({ instanceId, message }));
-dispatch(clearConversation({ instanceId }));
+dispatch(setCurrentInput({ runId, input }));
+dispatch(addMessage({ runId, message }));
+dispatch(clearConversation({ runId }));
 
 // Execution tracking
-dispatch(startExecution({ instanceId, taskId }));
-dispatch(startStreaming({ instanceId }));
-dispatch(completeExecution({ instanceId, stats }));
+dispatch(startExecution({ runId, taskId }));
+dispatch(startStreaming({ runId }));
+dispatch(completeExecution({ runId, stats }));
 
 // Run tracking
-dispatch(setRunId({ instanceId, runId, runName }));
+dispatch(setRunId({ runId, runName }));
 
 // UI state
-dispatch(setExpandedVariable({ instanceId, variableName }));
-dispatch(toggleShowVariables({ instanceId }));
+dispatch(setExpandedVariable({ runId, variableName }));
+dispatch(toggleShowVariables({ runId }));
 ```
 
 ---
@@ -255,7 +269,7 @@ dispatch(toggleShowVariables({ instanceId }));
 #### Basic Selectors
 
 ```typescript
-selectInstance(state, instanceId)
+selectInstance(state, runId)
 selectAllInstances(state)
 selectInstancesByPromptId(state, promptId)
 selectInstanceByRunId(state, runId)
@@ -266,35 +280,35 @@ selectScopedVariables(state)
 
 ```typescript
 // Variables
-selectMergedVariables(state, instanceId)
+selectMergedVariables(state, runId)
 // Returns: { ...defaults, ...scoped, ...user, ...computed }
 
 // Messages
-selectTemplateMessages(state, instanceId) // From prompt
-selectConversationMessages(state, instanceId) // User/assistant
-selectResolvedMessages(state, instanceId) // All with vars replaced
-selectSystemMessage(state, instanceId) // System prompt only
-selectDisplayMessages(state, instanceId) // Conversation + streaming
+selectTemplateMessages(state, runId) // From prompt
+selectConversationMessages(state, runId) // User/assistant
+selectResolvedMessages(state, runId) // All with vars replaced
+selectSystemMessage(state, runId) // System prompt only
+selectDisplayMessages(state, runId) // Conversation + streaming
 
 // Streaming
-selectStreamingTextForInstance(state, instanceId)
-selectIsResponseEndedForInstance(state, instanceId)
-selectLiveStreamingStats(state, instanceId)
+selectStreamingTextForInstance(state, runId)
+selectIsResponseEndedForInstance(state, runId)
+selectLiveStreamingStats(state, runId)
 
 // Status
-selectIsReadyToExecute(state, instanceId)
-selectHasUnsavedChanges(state, instanceId)
+selectIsReadyToExecute(state, runId)
+selectHasUnsavedChanges(state, runId)
 
 // Stats
-selectInstanceStats(state, instanceId)
-selectModelConfig(state, instanceId)
+selectInstanceStats(state, runId)
+selectModelConfig(state, runId)
 ```
 
 ---
 
 ### React Hook
 
-#### `usePromptInstance(instanceId)`
+#### `usePromptInstance(runId)`
 
 Convenience hook for components.
 
@@ -322,7 +336,7 @@ const {
   clearConversation,
   setExpandedVariable,
   toggleShowVariables,
-} = usePromptInstance(instanceId);
+} = usePromptInstance(runId);
 ```
 
 ---
@@ -334,8 +348,9 @@ const {
 ```typescript
 interface ExecutionInstance {
   // Identity
-  instanceId: string; // UUID
+  runId: string; // UUID - the instance IS the run, one concept
   promptId: string;
+  promptSource: 'prompts' | 'prompt_builtins'; // Which table the prompt came from
   
   // Status
   status: ExecutionStatus;
@@ -455,7 +470,7 @@ CREATE TABLE project_variables (
 ```typescript
 function QuickAnalyzer({ text }: { text: string }) {
   const dispatch = useAppDispatch();
-  const [instanceId, setInstanceId] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string | null>(null);
   
   const handleAnalyze = async () => {
     // Start instance (custom prompt)
@@ -468,28 +483,30 @@ function QuickAnalyzer({ text }: { text: string }) {
       },
     })).unwrap();
     
-    setInstanceId(id);
+    setRunId(id);
     
     // Execute immediately
-    await dispatch(executeMessage({ instanceId: id })).unwrap();
+    await dispatch(executeMessage({ runId: id })).unwrap();
   };
   
   return <Button onClick={handleAnalyze}>Analyze</Button>;
 }
 
-// Execute a prompt builtin
-function BuiltinExecutor({ builtinId }: { builtinId: string }) {
+// Execute a prompt builtin (recommended)
+import { createBuiltinConfig } from '@/lib/redux/prompt-execution/builtins';
+
+function BuiltinExecutor() {
   const dispatch = useAppDispatch();
   
   const handleExecute = async () => {
-    const id = await dispatch(startPromptInstance({
-      promptId: builtinId,
-      promptSource: 'prompt_builtins', // ← Specify builtin source
-      variables: { input: 'value' },
-      executionConfig: { track_in_runs: true },
-    })).unwrap();
+    const runId = await dispatch(startPromptInstance(
+      createBuiltinConfig('prompt-app-auto-create', {
+        variables: { input: 'value' },
+        executionConfig: { track_in_runs: true },
+      })
+    )).unwrap();
     
-    await dispatch(executeMessage({ instanceId: id })).unwrap();
+    await dispatch(executeMessage({ runId })).unwrap();
   };
   
   return <Button onClick={handleExecute}>Execute Builtin</Button>;
@@ -503,7 +520,7 @@ function BuiltinExecutor({ builtinId }: { builtinId: string }) {
 ```typescript
 function ChatInterface({ promptId }: { promptId: string }) {
   const dispatch = useAppDispatch();
-  const [instanceId, setInstanceId] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string | null>(null);
   
   const {
     displayMessages,
@@ -511,7 +528,7 @@ function ChatInterface({ promptId }: { promptId: string }) {
     currentInput,
     sendMessage,
     setInput,
-  } = usePromptInstance(instanceId);
+  } = usePromptInstance(runId);
   
   useEffect(() => {
     dispatch(startPromptInstance({
@@ -522,7 +539,7 @@ function ChatInterface({ promptId }: { promptId: string }) {
       },
     }))
       .unwrap()
-      .then(setInstanceId);
+      .then(setRunId);
   }, [promptId]);
   
   const handleSend = async () => {
@@ -553,10 +570,10 @@ function ChatInterface({ promptId }: { promptId: string }) {
 ```typescript
 function PromptWithVariables({ promptId }: { promptId: string }) {
   const dispatch = useAppDispatch();
-  const [instanceId, setInstanceId] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string | null>(null);
   
   const { variables, updateVariable, isReady, sendMessage } = 
-    usePromptInstance(instanceId);
+    usePromptInstance(runId);
   
   useEffect(() => {
     dispatch(startPromptInstance({
@@ -568,7 +585,7 @@ function PromptWithVariables({ promptId }: { promptId: string }) {
       },
     }))
       .unwrap()
-      .then(setInstanceId);
+      .then(setRunId);
   }, [promptId]);
   
   return (
@@ -611,12 +628,12 @@ async function executeGenerateBrief(workspaceId: string, projectId: string) {
     // etc.
   })).unwrap();
   
-  console.log('Instance created:', result.instanceId);
+  console.log('Instance created:', result.runId);
   console.log('Broker resolved:', result.brokerResolvedCount, 'variables');
   
   // Execute the prompt
   await dispatch(executeMessage({ 
-    instanceId: result.instanceId 
+    runId: result.runId 
   })).unwrap();
 }
 ```
@@ -674,14 +691,14 @@ setVariables({ text: 'Updated' });
 ```typescript
 // Selector ALWAYS reads fresh state
 export const selectMergedVariables = createSelector(
-  [(state, instanceId) => selectInstance(state, instanceId)],
+  [(state, runId) => selectInstance(state, runId)],
   (instance) => ({
     ...instance.variables.userValues // ✅ ALWAYS CURRENT!
   })
 );
 
 // Thunk gets fresh variables
-const variables = selectMergedVariables(getState(), instanceId);
+const variables = selectMergedVariables(getState(), runId);
 // ✅ No closure over stale state possible!
 ```
 
@@ -752,6 +769,7 @@ lib/redux/prompt-execution/
 ├── actionCacheSlice.ts (action caching)
 ├── selectors.ts (memoized selectors)
 ├── types.ts (TypeScript definitions)
+├── builtins.ts (builtin prompts configuration)
 ├── index.ts (barrel exports)
 ├── ACTIONS_MIGRATION.sql (database migration for actions)
 ├── hooks/
@@ -765,6 +783,118 @@ lib/redux/prompt-execution/
     ├── fetchScopedVariablesThunk.ts
     └── startPromptActionThunk.ts
 ```
+
+---
+
+## Builtin Prompts Configuration
+
+The `builtins.ts` file provides a centralized registry of system prompt builtins with O(1) lookup capabilities.
+
+**What This Provides:**
+- ✅ Metadata/info about builtin prompts (id, name, description, key, context flag)
+- ✅ Fast UUID lookups by key or name
+- ❌ Does NOT contain actual prompt data (messages, variables, settings)
+- 💡 To execute a builtin, pass its UUID to `startPromptInstance` with `promptSource: 'prompt_builtins'`
+
+### Available Builtins
+
+```typescript
+import { PROMPT_BUILTINS } from '@/lib/redux/prompt-execution/builtins';
+
+// Direct UUID access (recommended)
+const autoCreateId = PROMPT_BUILTINS.PROMPT_APP_AUTO_CREATE.id;
+// '4b9563db-7a95-476d-b2c7-b76385d35e9c'
+
+// All builtin properties (metadata only)
+PROMPT_BUILTINS.PROMPT_APP_AUTO_CREATE
+// {
+//   id: '4b9563db-7a95-476d-b2c7-b76385d35e9c',
+//   name: 'Prompt App Auto Creator',
+//   description: 'Specialized for auto creating Prompt Apps',
+//   key: 'prompt-app-auto-create',
+//   context: false,
+// }
+```
+
+### Available Builtins
+
+- `PROMPT_APP_AUTO_CREATE` - Standard prompt app creator
+- `PROMPT_APP_AUTO_CREATE_LIGHTNING` - Fast prompt app creator
+- `PROMPT_APP_UI` - Prompt app UI editor
+- `GENERIC_CODE` - General-purpose code editor
+- `CODE_EDITOR_DYNAMIC_CONTEXT` - Code editor with context management
+
+### Utility Functions
+
+#### Recommended: `createBuiltinConfig()`
+
+**The easiest way to execute builtin prompts** - ensures correct configuration:
+
+```typescript
+import { createBuiltinConfig } from '@/lib/redux/prompt-execution/builtins';
+
+// Simple execution
+await dispatch(startPromptInstance(
+  createBuiltinConfig('prompt-app-auto-create')
+)).unwrap();
+
+// With variables
+await dispatch(startPromptInstance(
+  createBuiltinConfig('prompt-app-auto-create', {
+    variables: { 
+      name: 'My App',
+      description: 'A cool app' 
+    }
+  })
+)).unwrap();
+
+// With full configuration
+await dispatch(startPromptInstance(
+  createBuiltinConfig('prompt-app-auto-create', {
+    variables: { name: 'My App' },
+    executionConfig: { 
+      track_in_runs: true,
+      allow_chat: false 
+    },
+    initialMessage: 'Custom instructions'
+  })
+)).unwrap();
+```
+
+#### Other Helper Functions
+
+```typescript
+import { 
+  getBuiltinId,           // Returns: UUID string
+  getBuiltinInfoById,     // Returns: PromptBuiltin info object
+  getBuiltinInfoByKey,    // Returns: PromptBuiltin info object
+  resolveBuiltinId        // Returns: UUID string
+} from '@/lib/redux/prompt-execution/builtins';
+
+// Get UUID by key (O(1))
+const id = getBuiltinId('prompt-app-auto-create');
+// → '4b9563db-7a95-476d-b2c7-b76385d35e9c'
+
+// Get builtin metadata/info by key (O(1))
+const info = getBuiltinInfoByKey('prompt-app-auto-create');
+// → { id: '...', name: '...', description: '...', key: '...', context: false }
+
+// Get builtin metadata/info by UUID (O(1))
+const info = getBuiltinInfoById('4b9563db-7a95-476d-b2c7-b76385d35e9c');
+// → { id: '...', name: '...', description: '...', key: '...', context: false }
+
+// Resolve any identifier (UUID, key, or name) to UUID (O(1))
+const id = resolveBuiltinId('Prompt App Auto Creator'); // by name
+const id = resolveBuiltinId('prompt-app-auto-create');  // by key
+const id = resolveBuiltinId('4b9563db-7a95-476d-b2c7-b76385d35e9c'); // by UUID
+```
+
+**Important Distinction:**
+- `getBuiltinId()` and `resolveBuiltinId()` return **UUID strings** only
+- `getBuiltinInfoById()` and `getBuiltinInfoByKey()` return **metadata objects** (id, name, description, key, context)
+- ⚠️ **None of these return actual prompt data from the database** - use `startPromptInstance` thunk for that
+
+**Best Practice:** Use `createBuiltinConfig()` for executing builtins - it's the cleanest, safest, and most maintainable approach.
 
 ---
 

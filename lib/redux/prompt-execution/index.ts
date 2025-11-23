@@ -59,6 +59,7 @@ export { executeMessage } from './thunks/executeMessageThunk';
 export { completeExecutionThunk } from './thunks/completeExecutionThunk';
 export { fetchScopedVariables } from './thunks/fetchScopedVariablesThunk';
 export { startPromptAction } from './thunks/startPromptActionThunk';
+export { executeBuiltinWithCodeExtraction } from './thunks/executeBuiltinWithCodeExtractionThunk';
 export type { StartActionPayload } from './thunks/startPromptActionThunk';
 
 // Types
@@ -79,4 +80,15 @@ export type {
   SetCurrentInputPayload,
   FetchScopedVariablesPayload,
 } from './types';
+
+// Builtin Helpers
+export {
+  PROMPT_BUILTINS,
+  createBuiltinConfig,
+  getBuiltinId,
+  getBuiltinInfoById,
+  getBuiltinInfoByKey,
+  resolveBuiltinId,
+} from './builtins';
+export type { PromptBuiltin } from './builtins';
 
