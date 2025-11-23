@@ -85,7 +85,7 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       if (data.prompt?.variable_defaults && Array.isArray(data.prompt.variable_defaults)) {
         variableSchema = data.prompt.variable_defaults.map((v: any) => ({
           name: v.name,
-          type: 'text',
+          type: 'string', // JavaScript type for validation (not 'text')
           label: v.name.split('_').map((w: string) => 
             w.charAt(0).toUpperCase() + w.slice(1)
           ).join(' '),

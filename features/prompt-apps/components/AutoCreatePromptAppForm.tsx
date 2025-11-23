@@ -27,7 +27,9 @@ import {
 import { cn } from '@/lib/utils';
 import { formatTitleCase } from '@/utils/text/text-case-converter';
 import { generateBuiltinVariables, FormatType, DisplayMode, ResponseMode } from '../config-instructions';
-import { useAutoCreateApp } from '../hooks/useAutoCreateApp';
+import { useAutoCreateApp, type AutoCreateMode } from '../hooks/useAutoCreateApp';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 
 interface AutoCreatePromptAppFormProps {
   prompt?: any;
@@ -50,10 +52,14 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   const [additionalComments, setAdditionalComments] = useState('');
   const [describeText, setDescribeText] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [useLightningMode, setUseLightningMode] = useState(false);
 
   // Track which variables are included in UI (true) vs using defaults (false)
   const [includedVariables, setIncludedVariables] = useState<Record<string, boolean>>({});
   const [includeUserInstructions, setIncludeUserInstructions] = useState(true);
+
+  // Debug mode selector
+  const isDebugMode = useAppSelector(selectIsDebugMode);
 
   // Auto-create hook
   const { createApp, isCreating, progress } = useAutoCreateApp({
@@ -132,7 +138,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
     await createApp({
       prompt,
       builtinVariables,
-      mode: 'standard', // TODO: Add UI option to test 'lightning' mode
+      mode: useLightningMode ? 'lightning' : 'standard',
     });
   };
 
@@ -323,6 +329,29 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
           </CardContent>
         </Card>
 
+        {/* Debug: Lightning Mode Toggle */}
+        {isDebugMode && (
+          <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div>
+                <Label htmlFor="lightning-toggle-describe" className="text-sm font-semibold text-amber-900 dark:text-amber-100 cursor-pointer">
+                  Lightning Mode (Debug)
+                </Label>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                  Uses faster AI model for testing (less accurate)
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="lightning-toggle-describe"
+              checked={useLightningMode}
+              onCheckedChange={setUseLightningMode}
+              disabled={isCreating}
+            />
+          </div>
+        )}
+
         {/* Submit */}
         <div className="flex justify-end pt-4 border-t">
           <Button
@@ -426,6 +455,29 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
             </div>
           </CardContent>
         </Card>
+
+        {/* Debug: Lightning Mode Toggle */}
+        {isDebugMode && (
+          <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div>
+                <Label htmlFor="lightning-toggle-auto" className="text-sm font-semibold text-amber-900 dark:text-amber-100 cursor-pointer">
+                  Lightning Mode (Debug)
+                </Label>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                  Uses faster AI model for testing (less accurate)
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="lightning-toggle-auto"
+              checked={useLightningMode}
+              onCheckedChange={setUseLightningMode}
+              disabled={isCreating}
+            />
+          </div>
+        )}
 
         {/* Submit */}
         <div className="flex justify-end pt-4 border-t">
@@ -1031,6 +1083,29 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
           style={{ fontSize: '16px' }}
         />
       </div>
+
+      {/* Debug: Lightning Mode Toggle */}
+      {isDebugMode && (
+        <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div className="flex items-center gap-3">
+            <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <div>
+              <Label htmlFor="lightning-toggle" className="text-sm font-semibold text-amber-900 dark:text-amber-100 cursor-pointer">
+                Lightning Mode (Debug)
+              </Label>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                Uses faster AI model for testing (less accurate)
+              </p>
+            </div>
+          </div>
+          <Switch
+            id="lightning-toggle"
+            checked={useLightningMode}
+            onCheckedChange={setUseLightningMode}
+            disabled={isCreating}
+          />
+        </div>
+      )}
 
       {/* Submit Button */}
       <div className="flex justify-end pt-4 border-t">
