@@ -5,6 +5,7 @@ import { File, FileCode, FileType, Folder, PanelLeftClose, PanelLeft } from "luc
 import { cn } from "@/lib/utils";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
+import { useMeasure } from "@uidotdev/usehooks";
 
 export interface CodeFile {
     name: string;
@@ -36,10 +37,14 @@ export default function MultiFileCodeEditor({
     showSidebar: initialShowSidebar = true,
     height = "600px"
 }: MultiFileCodeEditorProps) {
+    const [ref, { height: measuredHeight }] = useMeasure();
     const [activeFile, setActiveFile] = useState<string>(files[0]?.path || "");
     const [sidebarVisible, setSidebarVisible] = useState(initialShowSidebar);
 
     const currentFile = files.find(f => f.path === activeFile);
+    
+    // Calculate editor height: use measured height if available, subtract tab header height (44px)
+    const editorHeight = measuredHeight ? `${measuredHeight - 44}px` : "500px";
 
     const handleFileSelect = useCallback((path: string) => {
         setActiveFile(path);
@@ -80,7 +85,7 @@ export default function MultiFileCodeEditor({
     if (!currentFile) return null;
 
     return (
-        <div className="flex h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden" style={{ height }}>
+        <div ref={ref} className="flex h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden" style={{ height }}>
             {sidebarVisible ? (
                 <ResizablePanelGroup direction="horizontal">
                     {/* File Sidebar */}
@@ -143,7 +148,7 @@ export default function MultiFileCodeEditor({
                             </div>
 
                             {/* Monaco Editor - uses path prop for multi-model support */}
-                            <div className="flex-1">
+                            <div className="w-full">
                                 <SmallCodeEditor
                                     path={activeFile}
                                     language={currentFile.language}
@@ -152,12 +157,12 @@ export default function MultiFileCodeEditor({
                                     runCode={runCode}
                                     autoFormat={autoFormatOnOpen}
                                     defaultWordWrap={defaultWordWrap}
-                                    showFormatButton={true}
-                                    showCopyButton={true}
-                                    showResetButton={true}
-                                    showWordWrapToggle={true}
+                                    showFormatButton={false}
+                                    showCopyButton={false}
+                                    showResetButton={false}
+                                    showWordWrapToggle={false}
                                     showMinimapToggle={false}
-                                    height="100%"
+                                    height={editorHeight}
                                     readOnly={currentFile.readOnly}
                                 />
                             </div>
@@ -190,7 +195,7 @@ export default function MultiFileCodeEditor({
                     </div>
 
                     {/* Monaco Editor - uses path prop for multi-model support */}
-                    <div className="flex-1">
+                    <div className="w-full">
                         <SmallCodeEditor
                             path={activeFile}
                             language={currentFile.language}
@@ -199,12 +204,12 @@ export default function MultiFileCodeEditor({
                             runCode={runCode}
                             autoFormat={autoFormatOnOpen}
                             defaultWordWrap={defaultWordWrap}
-                            showFormatButton={true}
-                            showCopyButton={true}
-                            showResetButton={true}
-                            showWordWrapToggle={true}
+                            showFormatButton={false}
+                            showCopyButton={false}
+                            showResetButton={false}
+                            showWordWrapToggle={false}
                             showMinimapToggle={false}
-                            height="100%"
+                            height={editorHeight}
                             readOnly={currentFile.readOnly}
                         />
                     </div>

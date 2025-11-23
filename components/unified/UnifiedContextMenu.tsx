@@ -70,6 +70,8 @@ interface UnifiedContextMenuProps {
   className?: string;
 }
 
+const DEBUG = false;
+
 export function UnifiedContextMenu({
   children,
   editorId,
@@ -92,11 +94,13 @@ export function UnifiedContextMenu({
   // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(p => p !== 'quick-action');
 
-  console.log('[UnifiedContextMenu] Config:', {
-    enabledPlacements,
-    dbPlacementTypes,
-    PLACEMENT_TYPES,
-  });
+  if (DEBUG) {
+    console.log('[UnifiedContextMenu] Config:', {
+      enabledPlacements,
+      dbPlacementTypes,
+      PLACEMENT_TYPES,
+    });
+  }
 
   // Load ALL menu items (shortcuts + content blocks) from unified view 
   // Extract contextFilter from contextData if provided
@@ -174,7 +178,9 @@ export function UnifiedContextMenu({
     setSelectedText(text);
     setSelectionRange({ start, end, element });
 
-    console.log('[UnifiedContextMenu] Selection captured:', { text, start, end });
+    if (DEBUG) {
+      console.log('[UnifiedContextMenu] Selection captured:', { text, start, end });
+    }
   };
 
   // Handle shortcut execution
@@ -311,19 +317,21 @@ export function UnifiedContextMenu({
       groups[placementType].push(group);
     });
 
-    console.log('[UnifiedContextMenu] Grouped by placement:', {
-      totalGroups: categoryGroups.length,
-      placementTypes: Object.keys(groups),
-      details: Object.entries(groups).map(([type, grps]) => ({
-        type,
-        categoryCount: grps.length,
-        categories: grps.map(g => ({
-          label: g.category.label,
-          itemCount: g.items.length,
-          itemTypes: [...new Set(g.items.map(i => i.type))],
+    if (DEBUG) {
+      console.log('[UnifiedContextMenu] Grouped by placement:', {
+        totalGroups: categoryGroups.length,
+        placementTypes: Object.keys(groups),
+        details: Object.entries(groups).map(([type, grps]) => ({
+          type,
+          categoryCount: grps.length,
+          categories: grps.map(g => ({
+            label: g.category.label,
+            itemCount: g.items.length,
+            itemTypes: [...new Set(g.items.map(i => i.type))],
+          })),
         })),
-      })),
-    });
+      });
+    }
 
     return groups;
   }, [categoryGroups]);

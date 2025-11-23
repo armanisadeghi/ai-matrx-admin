@@ -14,7 +14,6 @@ import { Globe, Loader2 } from "lucide-react";
 import { useCanvas } from "@/hooks/useCanvas";
 import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
 import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
 
@@ -22,7 +21,7 @@ import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/C
 const SyntaxHighlighter = SyntaxHighlighterBase as any;
 
 type AIModalConfig = {
-    version: 'v1' | 'v2' | 'v3';
+    version: 'v2' | 'v3';
     builtinId: string;
     title: string;
 };
@@ -385,7 +384,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         setAiModalConfig(null);
     };
 
-    const handleAICodeChange = (newCode: string) => {
+    const handleAICodeChange = (newCode: string, version?: number) => {
+        console.log('AI Code Change:', { version, codeLength: newCode.length });
         setEditedCode(newCode);
         onCodeChange?.(newCode);
     };
@@ -542,20 +542,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 )}
             </div>
 
-            {/* AI Code Editor Modal V1 */}
-            {aiModalConfig?.version === 'v1' && (
-                <AICodeEditorModal
-                    open={true}
-                    onOpenChange={handleCloseAIModal}
-                    currentCode={code}
-                    language={monacoLanguage}
-                    builtinId={aiModalConfig.builtinId}
-                    onCodeChange={handleAICodeChange}
-                    title={aiModalConfig.title}
-                    allowPromptSelection={false}
-                />
-            )}
-
             {/* AI Code Editor Modal V2 */}
             {aiModalConfig?.version === 'v2' && (
                 <AICodeEditorModalV2
@@ -578,7 +564,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                     code={code}
                     language={monacoLanguage}
                     builtinId={aiModalConfig.builtinId}
-                    onCodeChange={(newCode: string) => handleAICodeChange(newCode)}
+                    onCodeChange={(newCode: string, version: number) => handleAICodeChange(newCode, version)}
                     title={aiModalConfig.title}
                 />
             )}

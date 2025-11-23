@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState }  from "react";
+import React, { useState } from "react";
 import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, ChevronDown, ChevronUp, Globe, Loader2, Wand2, RotateCcw, WrapText, Maximize2, ListOrdered, FileText, Sparkles } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "@/features/code-editor/components/code-block/LanguageDisplay";
@@ -13,9 +13,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { PROMPT_BUILTINS } from "@/lib/redux/prompt-execution/builtins";
 
 type AIModalConfig = {
-    version: 'v1' | 'v2' | 'v3';
+    version: 'v2' | 'v3';
     builtinId: string;
     title: string;
 };
@@ -226,12 +227,12 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                 <IconButton
                     icon={isCollapsed ? ChevronDown : ChevronUp}
                     tooltip={
-                        !canCollapse 
-                            ? "Too few lines to collapse" 
-                            : isEditing 
-                                ? "Cannot collapse in edit mode" 
-                                : isCollapsed 
-                                    ? "Expand code" 
+                        !canCollapse
+                            ? "Too few lines to collapse"
+                            : isEditing
+                                ? "Cannot collapse in edit mode"
+                                : isCollapsed
+                                    ? "Expand code"
                                     : "Collapse code"
                     }
                     size="sm"
@@ -260,10 +261,10 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                 <IconButton
                     icon={Maximize2}
                     tooltip={
-                        !isEditing 
-                            ? "Minimap only available in edit mode" 
-                            : minimapEnabled 
-                                ? "Hide minimap" 
+                        !isEditing
+                            ? "Minimap only available in edit mode"
+                            : minimapEnabled
+                                ? "Hide minimap"
                                 : "Show minimap"
                     }
                     size="sm"
@@ -365,7 +366,7 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* AI Edit - Available in both modes with dropdown for V1/V2 */}
+            {/* AI Edit - Available in both modes with dropdown for V2/V3 */}
             {onAIEdit && !isMobile && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -386,43 +387,29 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onAIEdit({
-                                    version: 'v1',
-                                    builtinId: '87efa869-9c11-43cf-b3a8-5b7c775ee415',
-                                    title: 'Master Code Editor (V1)',
-                                });
-                            }}
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            <span>V1 - Classic Editor</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAIEdit({
                                     version: 'v2',
-                                    builtinId: '87efa869-9c11-43cf-b3a8-5b7c775ee415',
-                                    title: 'Master Code Editor (V2)',
+                                    builtinId: PROMPT_BUILTINS.GENERIC_CODE.id,
+                                    title: PROMPT_BUILTINS.GENERIC_CODE.name,
                                 });
                             }}
                             className="flex items-center gap-2 cursor-pointer"
                         >
                             <Sparkles className="h-4 w-4" />
-                            <span>V2 - Conversational</span>
+                            <span>Conversational</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onAIEdit({
                                     version: 'v3',
-                                    builtinId: '87efa869-9c11-43cf-b3a8-5b7c775ee415',
-                                    title: 'Master Code Editor (V3 - Context-Aware)',
+                                    builtinId: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.id,
+                                    title: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.name,
                                 });
                             }}
                             className="flex items-center gap-2 cursor-pointer"
                         >
                             <Sparkles className="h-4 w-4" />
-                            <span>V3 - Context-Aware 🚀</span>
+                            <span>Context-Aware 🚀</span>
                         </DropdownMenuItem>
                         
                         <DropdownMenuSeparator />
@@ -432,43 +419,29 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onAIEdit({
-                                    version: 'v1',
-                                    builtinId: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
-                                    title: 'Prompt App Editor (V1)',
-                                });
-                            }}
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            <span>V1 - Classic Editor</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAIEdit({
                                     version: 'v2',
-                                    builtinId: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
-                                    title: 'Prompt App Editor (V2)',
+                                    builtinId: PROMPT_BUILTINS.PROMPT_APP_UI.id,
+                                    title: PROMPT_BUILTINS.PROMPT_APP_UI.name,
                                 });
                             }}
                             className="flex items-center gap-2 cursor-pointer"
                         >
                             <Sparkles className="h-4 w-4" />
-                            <span>V2 - Conversational</span>
+                            <span>Conversational</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onAIEdit({
                                     version: 'v3',
-                                    builtinId: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
-                                    title: 'Prompt App Editor (V3 - Context-Aware)',
+                                    builtinId: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.id,
+                                    title: PROMPT_BUILTINS.PROMPT_APP_UI.name,
                                 });
                             }}
                             className="flex items-center gap-2 cursor-pointer"
                         >
                             <Sparkles className="h-4 w-4" />
-                            <span>V3 - Context-Aware 🚀</span>
+                            <span>Context-Aware 🚀</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

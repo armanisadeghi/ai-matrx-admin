@@ -9,6 +9,7 @@ export interface PromptBuiltin {
     name: string;
     description: string;
     key: string;
+    context: boolean;
   }
   
   export const PROMPT_BUILTINS = {
@@ -17,18 +18,21 @@ export interface PromptBuiltin {
       name: 'Prompt App Editor',
       description: 'Specialized for editing React components for Prompt Apps',
       key: 'prompt-app-ui-builder',
+      context: false,
     },
     GENERIC_CODE: {
       id: '87efa869-9c11-43cf-b3a8-5b7c775ee415',
       name: 'Master Code Editor',
       description: 'General-purpose code editor for any programming language',
       key: 'generic-code-editor',
+      context: false,
     },
     CODE_EDITOR_DYNAMIC_CONTEXT: {
       id: '970856c5-3b9d-4034-ac9d-8d8a11fb3dba',
       name: 'Code Editor (Dynamic Context)',
       description: 'Code editor with dynamic context version management',
       key: 'code-editor-dynamic-context',
+      context: true,
     },
   } as const;
   
