@@ -367,8 +367,11 @@ function validateVariables(
             const value = providedVariables[name];
             const actualType = Array.isArray(value) ? 'array' : typeof value;
 
-            if (type && actualType !== type) {
-                errors.push(`Variable ${name} should be ${type} but got ${actualType}`);
+            // Normalize 'text' to 'string' for backward compatibility
+            const normalizedType = type === 'text' ? 'string' : type;
+
+            if (normalizedType && actualType !== normalizedType) {
+                errors.push(`Variable ${name} should be ${normalizedType} but got ${actualType}`);
             } else {
                 valid[name] = value;
             }

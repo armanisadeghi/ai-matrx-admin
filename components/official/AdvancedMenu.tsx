@@ -305,13 +305,13 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
         position: 'fixed',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 1500
+        zIndex: 9999
       }}
     >
       {/* Backdrop Overlay */}
       {showBackdrop && (
         <div
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: 'auto', zIndex: 1 }}
           className={cn(
             "fixed inset-0 bg-black/20 dark:bg-black/40",
             backdropBlur && "backdrop-blur-[2px]"
@@ -327,7 +327,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           minWidth: width, 
           maxWidth,
           maxHeight: maxMenuHeight,
-          zIndex: 1,
+          zIndex: 2,
           pointerEvents: 'auto',
           position: 'fixed',
           ...getPositionStyles()
