@@ -73,7 +73,7 @@ export class MarkdownErrorBoundary extends React.Component<
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error("[EnhancedChatMarkdown] Error caught by boundary:", error, errorInfo);
+        console.error("[MarkdownStream] Error caught by boundary:", error, errorInfo);
         this.props.onError?.(error, errorInfo);
     }
 
@@ -110,7 +110,7 @@ const SafeBlockRenderer: React.FC<{
             </MarkdownErrorBoundary>
         );
     } catch (error) {
-        console.error("[EnhancedChatMarkdown] Error rendering block:", error);
+        console.error("[MarkdownStream] Error rendering block:", error);
         return (
             <div className="py-2 px-3 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
                 {props.block.content || "[Block rendering failed]"}
@@ -158,7 +158,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 setCurrentContent(content);
             }
         } catch (error) {
-            console.error("[EnhancedChatMarkdown] Error updating content:", error);
+            console.error("[MarkdownStream] Error updating content:", error);
             setHasError(true);
         }
     }, [content, currentContent]);
@@ -173,7 +173,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
             
             return Array.isArray(result) ? result : [];
         } catch (error) {
-            console.error("[EnhancedChatMarkdown] Error splitting content into blocks:", error);
+            console.error("[MarkdownStream] Error splitting content into blocks:", error);
             setHasError(true);
             // Return a single text block with the original content as fallback
             return [{ type: "text" as const, content: currentContent, startLine: 0, endLine: 0 }];
@@ -191,7 +191,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 setCurrentContent(updatedContent);
                 onContentChange?.(updatedContent);
             } catch (error) {
-                console.error("[EnhancedChatMarkdown] Error in handleCodeChange:", error);
+                console.error("[MarkdownStream] Error in handleCodeChange:", error);
                 // Don't crash - just log the error
             }
         },
@@ -211,7 +211,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                     onContentChange(updatedContent);
                 }
             } catch (error) {
-                console.error("[EnhancedChatMarkdown] Error updating table content:", error);
+                console.error("[MarkdownStream] Error updating table content:", error);
                 // Don't crash - just log the error
             }
         },
@@ -225,7 +225,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 setCurrentContent(updatedContent);
                 onContentChange?.(updatedContent);
             } catch (error) {
-                console.error("[EnhancedChatMarkdown] Error in handleMatrxBrokerChange:", error);
+                console.error("[MarkdownStream] Error in handleMatrxBrokerChange:", error);
                 // Don't crash - just log the error
             }
         },
@@ -237,7 +237,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
             if (isStreamActive) return;
             setIsEditorOpen(true);
         } catch (error) {
-            console.error("[EnhancedChatMarkdown] Error opening editor:", error);
+            console.error("[MarkdownStream] Error opening editor:", error);
         }
     }, [isStreamActive]);
 
@@ -245,7 +245,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         try {
             setIsEditorOpen(false);
         } catch (error) {
-            console.error("[EnhancedChatMarkdown] Error canceling edit:", error);
+            console.error("[MarkdownStream] Error canceling edit:", error);
         }
     }, []);
 
@@ -256,7 +256,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 onContentChange?.(newContent);
                 setIsEditorOpen(false);
             } catch (error) {
-                console.error("[EnhancedChatMarkdown] Error saving edit:", error);
+                console.error("[MarkdownStream] Error saving edit:", error);
             }
         },
         [onContentChange]
@@ -267,7 +267,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         (block: ContentBlock, index: number) => {
             try {
                 if (!block || typeof block !== "object") {
-                    console.warn("[EnhancedChatMarkdown] Invalid block at index:", index);
+                    console.warn("[MarkdownStream] Invalid block at index:", index);
                     return null;
                 }
 
@@ -286,7 +286,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                     />
                 );
             } catch (error) {
-                console.error("[EnhancedChatMarkdown] Error in renderBlock at index:", index, error);
+                console.error("[MarkdownStream] Error in renderBlock at index:", index, error);
                 return (
                     <div key={index} className="py-2 px-3 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20">
                         {block?.content || "[Render error]"}
@@ -335,7 +335,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 </div>
             );
         } catch (error) {
-            console.error("[EnhancedChatMarkdown] Error rendering loading state:", error);
+            console.error("[MarkdownStream] Error rendering loading state:", error);
             return <PlainTextFallback content="Loading..." className={className} role={role} type={type} />;
         }
     }
@@ -347,7 +347,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 {toolUpdates.length > 0 && (
                     <MarkdownErrorBoundary
                         fallback={null}
-                        onError={(error) => console.error("[EnhancedChatMarkdown] ToolCallVisualization error:", error)}
+                        onError={(error) => console.error("[MarkdownStream] ToolCallVisualization error:", error)}
                     >
                         <ToolCallVisualization 
                             toolUpdates={toolUpdates} 
@@ -364,7 +364,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 {!hideCopyButton && (
                     <MarkdownErrorBoundary
                         fallback={null}
-                        onError={(error) => console.error("[EnhancedChatMarkdown] CopyButton error:", error)}
+                        onError={(error) => console.error("[MarkdownStream] CopyButton error:", error)}
                     >
                         <InlineCopyButton 
                             markdownContent={currentContent} 
@@ -378,7 +378,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 {allowFullScreenEditor && (
                     <MarkdownErrorBoundary
                         fallback={null}
-                        onError={(error) => console.error("[EnhancedChatMarkdown] FullScreenEditor error:", error)}
+                        onError={(error) => console.error("[MarkdownStream] FullScreenEditor error:", error)}
                     >
                         <FullScreenMarkdownEditor
                             isOpen={isEditorOpen}
@@ -393,7 +393,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
             </div>
         );
     } catch (error) {
-        console.error("[EnhancedChatMarkdown] Critical error in render:", error);
+        console.error("[MarkdownStream] Critical error in render:", error);
         return <PlainTextFallback content={currentContent} className={className} role={role} type={type} />;
     }
 };
