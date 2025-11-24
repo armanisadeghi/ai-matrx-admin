@@ -4,7 +4,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 
 interface AutoCreateDebugViewProps {
   codeTaskId: string | null;
@@ -43,7 +43,7 @@ export function AutoCreateDebugView({ codeTaskId, metadataTaskId, progress }: Au
           </CardHeader>
           <CardContent className="max-h-[600px] overflow-auto">
             {codeResponse ? (
-              <EnhancedChatMarkdown content={codeResponse} />
+              <MarkdownStream content={codeResponse} />
             ) : (
               <p className="text-sm text-muted-foreground">Waiting for response...</p>
             )}
@@ -64,7 +64,7 @@ export function AutoCreateDebugView({ codeTaskId, metadataTaskId, progress }: Au
           </CardHeader>
           <CardContent className="max-h-[600px] overflow-auto">
             {metadataResponse ? (
-              <EnhancedChatMarkdown content={metadataResponse} />
+              <MarkdownStream content={metadataResponse} />
             ) : (
               <p className="text-sm text-muted-foreground">Waiting for response...</p>
             )}

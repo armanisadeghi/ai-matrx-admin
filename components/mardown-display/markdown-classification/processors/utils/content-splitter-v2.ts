@@ -2,7 +2,7 @@
  * Content Splitter V2 - PRODUCTION Parser
  * 
  * A streamlined, registry-based markdown parser optimized for streaming content.
- * This is the current production parser used by EnhancedChatMarkdown.
+ * This is the current production parser used by MarkdownStream.
  * 
  * Key improvements over V1:
  * - Registry-based architecture for block types (easy to extend)

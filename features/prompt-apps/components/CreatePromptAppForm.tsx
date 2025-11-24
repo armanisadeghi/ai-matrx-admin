@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Code, Settings, Sparkles, Plus, X, Loader2, CheckCircle } from 'lucide-react';
 import { supabase } from '@/utils/supabase/client';
 import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
+import { getDefaultImportsForNewApps } from '../utils/allowed-imports';
 import getSamplePromptAppCode from '../sample-app-code';
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
@@ -39,17 +40,7 @@ interface CreatePromptAppFormProps {
   onSuccess?: () => void;
 }
 
-const DEFAULT_ALLOWED_IMPORTS = [
-  'react',
-  'lucide-react',
-  '@/components/ui/button',
-  '@/components/ui/input',
-  '@/components/ui/textarea',
-  '@/components/ui/card',
-  '@/components/ui/label',
-  '@/components/ui/select',
-  '@/components/ui/slider',
-];
+const DEFAULT_ALLOWED_IMPORTS = getDefaultImportsForNewApps();
 
 export function CreatePromptAppForm({ prompts, categories, preselectedPromptId, onSuccess }: CreatePromptAppFormProps) {
   const router = useRouter();

@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X, Tag, PanelLeft, Columns2 } from "lucide-react";
 import { MessageRole } from "@/features/content-templates/types/content-templates-db";
 import { useIsMobile } from "@/hooks/use-mobile";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import { createTemplate, clearTemplateCache } from "@/features/content-templates/services/content-templates-service";
 import { useToast } from "@/components/ui/use-toast";
 import { PromptEditorContextMenu } from "@/features/prompts/components/PromptEditorContextMenu";
@@ -279,7 +279,7 @@ export function SaveTemplateModal({
                     {/* Preview */}
                     <div className="flex-1 p-3 bg-muted/30 overflow-y-auto">
                         <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <EnhancedChatMarkdown 
+                            <MarkdownStream 
                                 content={content || ''} 
                             />
                         </div>

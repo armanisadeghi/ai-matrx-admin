@@ -7,7 +7,7 @@
 "use client";
 
 import React from 'react';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 
 interface HighlightedMessageContentProps {
   content: string;
@@ -57,7 +57,7 @@ export function HighlightedMessageContent({
   // If no variables found, render as plain markdown
   if (parts.length === 0 || (parts.length === 1 && parts[0].type === 'text')) {
     return (
-      <EnhancedChatMarkdown
+      <MarkdownStream
         content={content}
         isStreamActive={isStreamActive}
         hideCopyButton={true}
@@ -109,7 +109,7 @@ export function HighlightedMessageContentMarkdown({
   );
 
   return (
-    <EnhancedChatMarkdown
+    <MarkdownStream
       content={highlightedContent}
       isStreamActive={isStreamActive}
       hideCopyButton={true}

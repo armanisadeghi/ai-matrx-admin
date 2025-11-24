@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
 import { AudioTestModal } from '@/components/admin/AudioTestModal';
 import { 
@@ -250,7 +250,7 @@ Right-click for content block templates!"
                     </TabsList>
 
                     <TabsContent value="enhanced-markdown" className="flex-1 overflow-auto m-0 p-3 mt-0">
-                      <EnhancedChatMarkdown
+                      <MarkdownStream
                         content={renderedContent}
                         className="bg-textured"
                         type="message"

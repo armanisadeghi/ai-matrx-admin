@@ -14,7 +14,7 @@ import {
     SelectValue 
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import type { ContentEditorProps, EditorMode, EditorModeConfig } from './types';
 import type { TuiEditorContentRef } from '@/components/mardown-display/chat-markdown/tui/TuiEditorContent';
 import { CopyDropdownButton } from './CopyDropdownButton';
@@ -388,7 +388,7 @@ export function ContentEditor({
                     <div className="w-full p-6 bg-textured overflow-visible">
                         {localContent.trim() ? (
                             <div className="overflow-visible">
-                                <EnhancedChatMarkdown content={localContent} />
+                                <MarkdownStream content={localContent} />
                             </div>
                         ) : (
                             <div className="text-center py-12 text-zinc-400 dark:text-zinc-500">

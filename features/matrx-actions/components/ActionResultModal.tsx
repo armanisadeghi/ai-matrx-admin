@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { useAppSelector } from '@/lib/redux';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 
@@ -81,7 +81,7 @@ export function ActionResultModal({
 
         <ScrollArea className="flex-1 w-full rounded-md border bg-textured">
           <div className="p-4">
-            <EnhancedChatMarkdown
+            <MarkdownStream
               content={content}
               taskId={taskId}
               isStreamActive={isStreaming}

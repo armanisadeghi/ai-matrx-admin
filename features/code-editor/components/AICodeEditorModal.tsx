@@ -33,7 +33,7 @@ import {
   GitCompare,
 } from 'lucide-react';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { DiffView } from './DiffView';
 import { PromptInput } from '@/features/prompts/components/PromptInput';
 import { cn } from '@/lib/utils';
@@ -269,7 +269,7 @@ export function AICodeEditorModal({
 
                     <TabsContent value="response" className="h-full m-0 p-0 overflow-hidden">
                       <div className="h-full overflow-auto p-3">
-                        <EnhancedChatMarkdown
+                        <MarkdownStream
                           content={rawAIResponse}
                           type="message"
                           role="assistant"

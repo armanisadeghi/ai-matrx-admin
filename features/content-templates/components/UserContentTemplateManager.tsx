@@ -40,7 +40,7 @@ import {
     getAllTags,
     clearTemplateCache
 } from '@/features/content-templates/services/content-templates-service';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { createClient } from '@/utils/supabase/client';
 
@@ -645,7 +645,7 @@ export function UserContentTemplateManager({ className }: UserContentTemplateMan
                     </DialogHeader>
                     <ScrollArea className="flex-1">
                         <div className="p-4">
-                            <EnhancedChatMarkdown 
+                            <MarkdownStream 
                                 content={selectedTemplate?.content || ''} 
                             />
                         </div>

@@ -12,7 +12,7 @@ import { selectFirstPrimaryResponseDataByTaskId, selectTaskFirstListenerId } fro
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
 import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 
 interface ResultPanelProps {
     id: string;
@@ -157,7 +157,7 @@ export function ResultPanel({
                 return (
                     <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin relative">
                         <div className="max-w-[750px] w-full min-h-full">
-                            <EnhancedChatMarkdown
+                            <MarkdownStream
                                 content={streamingText}
                                 taskId={taskId}
                                 type="message"

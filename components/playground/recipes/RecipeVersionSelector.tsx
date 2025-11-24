@@ -4,7 +4,7 @@ import { useCompiledRecipeWithFetch } from "@/lib/redux/entity/hooks/entityMainH
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -112,20 +112,13 @@ export const RecipeVersionSelector: React.FC<RecipeVersionSelectorProps> = ({
             if (data.success && data.promptId) {
                 const promptUrl = `/ai/prompts/edit/${data.promptId}`;
                 
-                toast.success(
-                    "Recipe converted to prompt successfully!",
-                    {
-                        action: {
-                            label: "Open Prompt",
-                            onClick: () => {
-                                window.open(promptUrl, '_blank');
-                            }
-                        }
-                    }
-                );
-
+                toast.success("Recipe converted to prompt successfully!");
                 onConversionSuccess?.(data.promptId);
                 onOpenChange(false);
+
+                // Suggest opening the new prompt via an in-app notification (action Toast not supported by toast.success)
+                // Consider using a custom component if you want actionable notifications,
+                // or leverage a dialog/modal for cross-page navigation.
             } else {
                 throw new Error("Conversion succeeded but no prompt ID returned");
             }
@@ -232,7 +225,7 @@ export const RecipeVersionSelector: React.FC<RecipeVersionSelectorProps> = ({
                                 {message.role}
                             </Badge>
                         </div>
-                        <EnhancedChatMarkdown
+                        <MarkdownStream
                             content={message.content}
                             type="message"
                             role={message.role}

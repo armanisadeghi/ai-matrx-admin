@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { VoiceInputButton } from '@/features/audio';
 import { Badge } from '@/components/ui/badge';
@@ -424,7 +424,7 @@ export function GeneratePromptForBuiltinModal({
                   </div>
                   <div className="flex-1 overflow-y-auto p-2">
                     {streamingText ? (
-                      <EnhancedChatMarkdown
+                      <MarkdownStream
                         content={streamingText}
                         isStreamActive={true}
                         hideCopyButton={true}
@@ -453,7 +453,7 @@ export function GeneratePromptForBuiltinModal({
                   )}
                   
                   <div className="flex-1 overflow-y-auto p-2">
-                    <EnhancedChatMarkdown
+                    <MarkdownStream
                       content={streamingText}
                       isStreamActive={false}
                       hideCopyButton={false}

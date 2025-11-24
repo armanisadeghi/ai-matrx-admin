@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 
@@ -281,7 +281,7 @@ export function FullPromptOptimizer({
                         <p className="text-xs text-gray-600 dark:text-gray-400">Live Response:</p>
                       </div>
                       <div className="flex-1 overflow-y-auto p-4">
-                        <EnhancedChatMarkdown
+                        <MarkdownStream
                           content={streamingText}
                           isStreamActive={true}
                           hideCopyButton={true}
@@ -330,7 +330,7 @@ export function FullPromptOptimizer({
                   
                   {/* Always show the full raw response */}
                   <div className="flex-1 overflow-y-auto p-4 bg-white/50 dark:bg-gray-900/50">
-                    <EnhancedChatMarkdown
+                    <MarkdownStream
                       content={streamingText}
                       isStreamActive={false}
                       hideCopyButton={false}

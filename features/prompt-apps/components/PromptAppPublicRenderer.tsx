@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { transform } from '@babel/standalone';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { AlertCircle } from 'lucide-react';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
 import { useGuestLimit } from '@/hooks/useGuestLimit';
 import { GuestLimitWarning } from '@/components/guest/GuestLimitWarning';
 import { SignupConversionModal } from '@/components/guest/SignupConversionModal';
+import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
 import type { PromptApp } from '../types';
 
 interface ExecuteAppResponse {
@@ -428,58 +428,11 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 code = code.replace(/^export\s+\{[^}]+\}\s*;?\s*$/gm, '');
             }
             
-            const React = require('react');
-            const { useState, useEffect, useMemo, useCallback } = React;
-            const lucideReact = require('lucide-react');
-            
-            // Build scope with only valid JS identifiers (no special chars)
-            const scope: Record<string, any> = {
-                React,
-                useState,
-                useEffect,
-                useMemo,
-                useCallback,
-                EnhancedChatMarkdown,
-            };
-            
-            // Add all Lucide icons directly to scope
-            if (app.allowed_imports.includes('lucide-react')) {
-                Object.assign(scope, lucideReact);
-            }
-            
-            // Add UI components
-            if (app.allowed_imports.includes('@/components/ui/button')) {
-                const { Button } = require('@/components/ui/button');
-                scope.Button = Button;
-            }
-            if (app.allowed_imports.includes('@/components/ui/input')) {
-                const { Input } = require('@/components/ui/input');
-                scope.Input = Input;
-            }
-            if (app.allowed_imports.includes('@/components/ui/textarea')) {
-                const { Textarea } = require('@/components/ui/textarea');
-                scope.Textarea = Textarea;
-            }
-            if (app.allowed_imports.includes('@/components/ui/card')) {
-                const cardExports = require('@/components/ui/card');
-                Object.assign(scope, cardExports);
-            }
-            if (app.allowed_imports.includes('@/components/ui/label')) {
-                const { Label } = require('@/components/ui/label');
-                scope.Label = Label;
-            }
-            if (app.allowed_imports.includes('@/components/ui/select')) {
-                const selectExports = require('@/components/ui/select');
-                Object.assign(scope, selectExports);
-            }
-            if (app.allowed_imports.includes('@/components/ui/slider')) {
-                const { Slider } = require('@/components/ui/slider');
-                scope.Slider = Slider;
-            }
+            // Build component scope using centralized import resolver
+            const scope = buildComponentScope(app.allowed_imports);
             
             // Get valid parameter names (filter out invalid JS identifiers)
-            const paramNames = Object.keys(scope).filter(key => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key));
-            const paramValues = paramNames.map(key => scope[key]);
+            const { paramNames, paramValues } = getScopeFunctionParameters(scope);
             
             // Code now starts with 'return function...' so it will return the component directly
             const componentFunction = new Function(

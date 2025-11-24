@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { Edit, MoreHorizontal, Copy, Check } from "lucide-react";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
@@ -107,7 +107,7 @@ export function PromptAssistantMessage({
                 <PromptErrorMessage message={content.replace("Error: ", "")} />
             ) : (
                 <>
-                    <EnhancedChatMarkdown
+                    <MarkdownStream
                         content={content}
                         taskId={taskId}
                         type="message"

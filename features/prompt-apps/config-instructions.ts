@@ -28,7 +28,7 @@ export const formatInstructions: Record<FormatType, string> = {
  */
 export const displayModeInstructions: Record<DisplayMode, string> = {
   'matrx-format': 
-    "EnhancedChatMarkdown",
+    "MarkdownStream",
 
   'custom': 
     "Custom display component - create a fully custom parser and display tailored to the output structure"

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import type { MarkdownTabProps } from "../types";
 
 export function MarkdownPreviewTab({ state, analysisData, messageId }: MarkdownTabProps) {
@@ -9,7 +9,7 @@ export function MarkdownPreviewTab({ state, analysisData, messageId }: MarkdownT
         <div className="w-full h-full overflow-auto bg-background dark:bg-background">
             <div className="flex justify-center min-h-full">
                 <div className="max-w-[750px] w-full p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm min-h-full">
-                    <EnhancedChatMarkdown
+                    <MarkdownStream
                         content={state.currentMarkdown}
                         type="message"
                         role="assistant"

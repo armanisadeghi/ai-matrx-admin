@@ -15,7 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Code, Eye, Plus, FileText } from 'lucide-react';
 import { ContentBlock } from '@/features/rich-text-editor/config/contentBlocks';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { cn } from '@/lib/utils';
 
 interface TemplatePreviewDialogProps {
@@ -96,7 +96,7 @@ export function TemplatePreviewDialog({
                     <TabsContent value="preview" className="flex-1 overflow-hidden mt-4">
                         <ScrollArea className="h-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                             <div className="p-6">
-                                <EnhancedChatMarkdown
+                                <MarkdownStream
                                     content={template.template}
                                     type="message"
                                     role="assistant"

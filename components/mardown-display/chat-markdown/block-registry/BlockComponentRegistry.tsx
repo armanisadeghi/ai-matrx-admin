@@ -68,7 +68,7 @@ const LazyBlockWrapper: React.FC<LazyBlockWrapperProps> = ({ children, fallback 
 );
 
 /**
- * Export wrapped components for use in EnhancedChatMarkdown
+ * Export wrapped components for use in MarkdownStream
  */
 export const BlockComponents = {
     // Lightweight components

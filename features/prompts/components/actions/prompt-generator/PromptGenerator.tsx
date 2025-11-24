@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
 import { VoiceTextarea } from '@/features/audio';
@@ -527,7 +527,7 @@ function StreamingResponseDisplay({
   if (!hasJsonBlock) {
     // No JSON block, render as normal markdown
     return (
-      <EnhancedChatMarkdown
+      <MarkdownStream
         content={content}
         isStreamActive={isStreamActive}
         hideCopyButton={true}
@@ -542,7 +542,7 @@ function StreamingResponseDisplay({
     <div className="space-y-4">
       {/* Before JSON content */}
       {before && (
-        <EnhancedChatMarkdown
+        <MarkdownStream
           content={before}
           isStreamActive={false}
           hideCopyButton={true}
@@ -557,7 +557,7 @@ function StreamingResponseDisplay({
       
       {/* After JSON content */}
       {after && (
-        <EnhancedChatMarkdown
+        <MarkdownStream
           content={after}
           isStreamActive={false}
           hideCopyButton={true}

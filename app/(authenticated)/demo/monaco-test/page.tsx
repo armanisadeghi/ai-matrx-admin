@@ -4,6 +4,8 @@ import SmallCodeEditor from '@/features/code-editor/components/code-block/SmallC
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import getSamplePromptAppCode from '@/features/prompt-apps/sample-app-code';
+
 
 const SAMPLE_JS = `// JavaScript with IntelliSense
 function calculateFactorial(n) {
@@ -136,6 +138,9 @@ class Calculator:
     def multiply(a, b):
         return a * b`;
 
+const samplePromptAppCode = getSamplePromptAppCode('simple');
+
+
 export default function MonacoTestPage() {
   const [jsCode, setJsCode] = useState(SAMPLE_JS);
   const [tsCode, setTsCode] = useState(SAMPLE_TS);
@@ -143,6 +148,7 @@ export default function MonacoTestPage() {
   const [jsonCode, setJsonCode] = useState(SAMPLE_JSON);
   const [cssCode, setCssCode] = useState(SAMPLE_CSS);
   const [pythonCode, setPythonCode] = useState(SAMPLE_PYTHON);
+  const [promptAppCode, setPromptAppCode] = useState(samplePromptAppCode);
 
   return (
     <div className="h-[calc(100dvh-var(--header-height))] overflow-y-auto pb-safe">
@@ -158,10 +164,11 @@ export default function MonacoTestPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="javascript" className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="javascript">JavaScript</TabsTrigger>
                   <TabsTrigger value="typescript">TypeScript</TabsTrigger>
                   <TabsTrigger value="tsx">TSX/React</TabsTrigger>
+                  <TabsTrigger value="prompt-app-tsx">Prompt App</TabsTrigger>
                   <TabsTrigger value="json">JSON</TabsTrigger>
                   <TabsTrigger value="css">CSS</TabsTrigger>
                   <TabsTrigger value="python">Python</TabsTrigger>
@@ -214,6 +221,25 @@ export default function MonacoTestPage() {
                       fileExtension=".tsx"
                       initialCode={tsxCode}
                       onChange={setTsxCode}
+                      height="500px"
+                      showFormatButton={true}
+                      showCopyButton={true}
+                      showResetButton={true}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="prompt-app-tsx" className="mt-4">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Prompt App Editor</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Should show Prompt App syntax highlighting and IntelliSense
+                    </p>
+                    <SmallCodeEditor
+                      language="typescript"
+                      fileExtension=".tsx"
+                      initialCode={promptAppCode}
+                      onChange={setPromptAppCode}
                       height="500px"
                       showFormatButton={true}
                       showCopyButton={true}

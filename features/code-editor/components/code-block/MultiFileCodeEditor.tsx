@@ -2,7 +2,7 @@
 import { useState, useCallback, useRef } from "react";
 import SmallCodeEditor from "./SmallCodeEditor";
 import CodeBlockHeader from "@/features/code-editor/components/code-block/CodeBlockHeader";
-import LanguageDisplay, { languageMap } from "@/features/code-editor/components/code-block/LanguageDisplay";
+import { languageMap } from "@/features/code-editor/components/code-block/LanguageDisplay";
 import { Folder, PanelLeftClose, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";

@@ -10,7 +10,7 @@ import SectionViewerWithSidebar from "./analyzer/analyzer-options/SectionViewerW
 import SectionsViewer from "./analyzer/analyzer-options/sections-viewer";
 import LinesViewer from "./analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import TuiEditorContent, { type TuiEditorContentRef } from "./tui/TuiEditorContent";
 
 interface FullScreenMarkdownEditorProps {
@@ -139,7 +139,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                 <div className="w-full h-full overflow-auto bg-textured">
                     <div className="flex justify-center min-h-full">
                         <div className="max-w-[750px] w-full p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm min-h-full">
-                            <EnhancedChatMarkdown
+                            <MarkdownStream
                                 content={editedContent}
                                 type="message"
                                 role="assistant"

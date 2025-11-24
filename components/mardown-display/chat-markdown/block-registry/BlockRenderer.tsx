@@ -19,7 +19,7 @@ interface BlockRendererProps {
 
 /**
  * Renders individual content blocks with lazy-loaded components
- * Extracted from EnhancedChatMarkdown for better code splitting
+ * Extracted from MarkdownStream for better code splitting
  */
 export const BlockRenderer: React.FC<BlockRendererProps> = ({
     block,

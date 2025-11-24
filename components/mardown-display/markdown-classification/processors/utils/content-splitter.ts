@@ -6,7 +6,7 @@
  * 
  * Current production parser: content-splitter-v2.ts
  * 
- * To rollback to V1, set useV2Parser={false} in EnhancedChatMarkdown props.
+ * To rollback to V1, set useV2Parser={false} in MarkdownStream props.
  */
 
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";

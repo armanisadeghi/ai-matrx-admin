@@ -116,7 +116,7 @@ export const adminCategories = [
             {
                 title: "Markdown Content Tester",
                 description:
-                    "Test and debug EnhancedChatMarkdown rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
+                    "Test and debug MarkdownStream rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
                 icon: <IconCode />,
                 link: "/administration/markdown-tester",
             },

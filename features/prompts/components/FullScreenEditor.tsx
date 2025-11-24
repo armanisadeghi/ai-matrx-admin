@@ -17,7 +17,7 @@ import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from "@/features/prompts/types/core";
 import { HighlightedText } from "./HighlightedText";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 
 type MessageItem =
@@ -673,7 +673,7 @@ export function FullScreenEditor({
                                         {viewMode === "pretty" && (
                                             <div className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 overflow-y-auto">
                                                 {getCurrentContent() ? (
-                                                    <EnhancedChatMarkdown
+                                                    <MarkdownStream
                                                         content={getCurrentContent()}
                                                         hideCopyButton={false}
                                                         allowFullScreenEditor={false}

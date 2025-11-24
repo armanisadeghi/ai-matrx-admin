@@ -8,10 +8,10 @@ import {
     selectPrimaryResponseTextByTaskId,
     selectPrimaryResponseEndedByTaskId
 } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
+import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
 import type { PromptApp, ExecuteAppResponse, RateLimitInfo, ExecutionErrorType } from '../types';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface PromptAppRendererProps {
     app: PromptApp;
@@ -122,73 +122,11 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 code = code.replace(/^export\s+\{[^}]+\}\s*;?\s*$/gm, '');
             }
             
-            // Create safe imports object with only allowed dependencies
-            const React = require('react');
-            const { useState, useEffect, useMemo, useCallback } = React;
-            const lucideReact = require('lucide-react');
-            
-            const allowedImports: Record<string, any> = {
-                'react': React,
-                'lucide-react': lucideReact,
-            };
-            
-            // Add all Lucide icons to scope if allowed
-            if (app.allowed_imports.includes('lucide-react')) {
-                Object.assign(allowedImports, lucideReact);
-            }
-            
-            // Add UI components if allowed
-            if (app.allowed_imports.includes('@/components/ui/button')) {
-                const { Button } = require('@/components/ui/button');
-                allowedImports['Button'] = Button;
-                allowedImports['@/components/ui/button'] = { Button };
-            }
-            if (app.allowed_imports.includes('@/components/ui/input')) {
-                const { Input } = require('@/components/ui/input');
-                allowedImports['Input'] = Input;
-                allowedImports['@/components/ui/input'] = { Input };
-            }
-            if (app.allowed_imports.includes('@/components/ui/textarea')) {
-                const { Textarea } = require('@/components/ui/textarea');
-                allowedImports['Textarea'] = Textarea;
-                allowedImports['@/components/ui/textarea'] = { Textarea };
-            }
-            if (app.allowed_imports.includes('@/components/ui/card')) {
-                const cardExports = require('@/components/ui/card');
-                Object.assign(allowedImports, cardExports);
-                allowedImports['@/components/ui/card'] = cardExports;
-            }
-            if (app.allowed_imports.includes('@/components/ui/label')) {
-                const { Label } = require('@/components/ui/label');
-                allowedImports['Label'] = Label;
-                allowedImports['@/components/ui/label'] = { Label };
-            }
-            if (app.allowed_imports.includes('@/components/ui/select')) {
-                const selectExports = require('@/components/ui/select');
-                Object.assign(allowedImports, selectExports);
-                allowedImports['@/components/ui/select'] = selectExports;
-            }
-            if (app.allowed_imports.includes('@/components/ui/slider')) {
-                const { Slider } = require('@/components/ui/slider');
-                allowedImports['Slider'] = Slider;
-                allowedImports['@/components/ui/slider'] = { Slider };
-            }
-            
-            // Create component function with controlled scope
-            // Build scope with only valid JS identifiers
-            const scope: Record<string, any> = {
-                React,
-                useState,
-                useEffect,
-                useMemo,
-                useCallback,
-                EnhancedChatMarkdown,
-                ...allowedImports
-            };
+            // Build component scope using centralized import resolver
+            const scope = buildComponentScope(app.allowed_imports);
             
             // Get valid parameter names (filter out invalid JS identifiers)
-            const paramNames = Object.keys(scope).filter(key => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key));
-            const paramValues = paramNames.map(key => scope[key]);
+            const { paramNames, paramValues } = getScopeFunctionParameters(scope);
             
             // Code now starts with 'return function...' so it will return the component directly
             const componentFunction = new Function(

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, Edit, Share2 } from "lucide-react";
 import MessageOptionsMenu from "./MessageOptionsMenu";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
@@ -153,7 +153,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
         setIsEditorOpen(false);
     };
 
-    // Handler for EnhancedChatMarkdown content changes
+    // Handler for MarkdownStream content changes
     const handleMarkdownContentChange = (newContent: string) => {
         if (onContentUpdate) {
             onContentUpdate(newContent);
@@ -163,7 +163,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     return (
         <div className={`flex ${isAppearing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
             <div className="max-w-full w-full relative">
-                <EnhancedChatMarkdown
+                <MarkdownStream
                     content={content}
                     taskId={taskId}
                     type="message"

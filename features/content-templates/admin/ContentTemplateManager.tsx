@@ -43,7 +43,7 @@ import {
     getAllTags,
     clearTemplateCache
 } from '@/features/content-templates/services/content-templates-service';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 
 interface ContentTemplateManagerProps {
@@ -709,7 +709,7 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                                         PREVIEW
                                                     </div>
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                        <EnhancedChatMarkdown 
+                                                        <MarkdownStream 
                                                             content={editData.content || ''} 
                                                         />
                                                     </div>

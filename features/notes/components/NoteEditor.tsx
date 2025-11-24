@@ -19,7 +19,7 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { UnifiedContextMenu } from '@/components/unified';
 
 // Dynamic imports for heavy components (only load when needed)
@@ -600,7 +600,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                         <ScrollArea className="absolute inset-0 w-full h-full">
                             <div className="p-6 bg-textured">
                                 {localContent.trim() ? (
-                                    <EnhancedChatMarkdown content={localContent} />
+                                    <MarkdownStream content={localContent} />
                                 ) : (
                                     <div className="text-center py-12 text-muted-foreground">
                                         No content to preview

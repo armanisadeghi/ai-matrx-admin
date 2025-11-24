@@ -1,5 +1,6 @@
 const sampleSimplePromptAppCode = `import React, { useState, useMemo } from 'react';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import MarkdownStream from '@/components/Markdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -195,7 +196,7 @@ export default function PromptAppComponent({
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <EnhancedChatMarkdown content={response} />
+            <MarkdownStream content={response} />
             {isStreaming && (
               <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />

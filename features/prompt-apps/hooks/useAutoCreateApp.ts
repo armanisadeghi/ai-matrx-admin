@@ -10,6 +10,7 @@ import { useAppDispatch } from '@/lib/redux/hooks';
 import { supabase } from '@/utils/supabase/client';
 import { executeBuiltinWithCodeExtraction, executeBuiltinWithJsonExtraction } from '@/lib/redux/prompt-execution';
 import { validateSlugsInBatch } from '../services/slug-service';
+import { getDefaultImportsForNewApps } from '../utils/allowed-imports';
 import type { AppMetadata } from '../types';
 
 export type AutoCreateMode = 'standard' | 'lightning';
@@ -142,19 +143,7 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
           component_code: codeResult.code!,
           component_language: 'tsx',
           variable_schema: variableSchema,
-          allowed_imports: [
-            'react',
-            'lucide-react',
-            '@/components/ui/button',
-            '@/components/ui/input',
-            '@/components/ui/textarea',
-            '@/components/ui/card',
-            '@/components/ui/label',
-            '@/components/ui/select',
-            '@/components/ui/slider',
-            '@/components/ui/switch',
-            '@/components/ui/tabs',
-          ],
+          allowed_imports: getDefaultImportsForNewApps(),
           rate_limit_per_ip: 10,
           rate_limit_window_hours: 24,
           status: 'draft',

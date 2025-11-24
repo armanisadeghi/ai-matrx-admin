@@ -15,7 +15,7 @@ import { MessageRole, ContentTemplateDB } from "@/features/content-templates/typ
 import { fetchContentTemplates, getAllTags } from "@/features/content-templates/services/content-templates-service";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 
 interface TemplateBrowserModalProps {
     isOpen: boolean;
@@ -284,7 +284,7 @@ export function TemplateBrowserModal({
                         </div>
                         <ScrollArea className="flex-1 p-4">
                             <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <EnhancedChatMarkdown 
+                                <MarkdownStream 
                                     content={selectedTemplate.content || ''} 
                                 />
                             </div>

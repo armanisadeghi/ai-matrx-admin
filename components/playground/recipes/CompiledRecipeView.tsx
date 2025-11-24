@@ -3,7 +3,7 @@ import { InitialTableSchema } from "@/utils/schema/initialSchemas";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import MarkdownStream from "@/components/Markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -129,7 +129,7 @@ export const CompiledRecipeView = ({ recipeId }: { recipeId: string }) => {
                                 {message.role}
                             </Badge>
                         </div>
-                        <EnhancedChatMarkdown
+                        <MarkdownStream
                             content={message.content}
                             type="message"
                             role={message.role}

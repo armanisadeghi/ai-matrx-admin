@@ -50,7 +50,7 @@ import {
     CategoryWithSubcategories
 } from '@/types/content-blocks-db';
 import { createClient } from '@/utils/supabase/client';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 
 interface ContentBlocksManagerProps {
@@ -989,7 +989,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                             {previewMode === 'preview' && (
                                                 <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                        <EnhancedChatMarkdown
+                                                        <MarkdownStream
                                                             content={editData.template || ''}
                                                         />
                                                     </div>

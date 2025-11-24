@@ -14,7 +14,7 @@ import { ContentBlockDB } from '@/types/content-blocks-db';
 import { ShortcutCategory } from '../types/core';
 import { updateContentBlock, deleteContentBlock } from '../services/admin-service';
 import { Save, X, Trash2, Columns2, PanelLeft, FileText } from 'lucide-react';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MarkdownStream from '@/components/Markdown';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ContentBlockEditModalProps {
@@ -378,7 +378,7 @@ export function ContentBlockEditModal({
                   {previewMode === 'preview' && (
                     <div className="flex-1 min-w-0 min-h-[250px] border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-textured overflow-auto">
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <EnhancedChatMarkdown content={editData.template || ''} />
+                        <MarkdownStream content={editData.template || ''} />
                       </div>
                     </div>
                   )}
