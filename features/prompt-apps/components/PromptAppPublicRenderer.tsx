@@ -60,7 +60,8 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
         if (!fingerprint) return;
         // This caches the guest limit status for instant checking during execution
         guestLimit.refresh();
-    }, [fingerprint, guestLimit]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fingerprint]); // Only run when fingerprint changes, not when guestLimit object changes
     
     // Pre-establish socket connection on mount (after fingerprint is ready)
     useEffect(() => {
