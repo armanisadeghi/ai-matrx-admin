@@ -14,7 +14,7 @@ export default async function PromptAppPreviewPage({ params }: PreviewPageProps)
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    redirect('/sign-in');
+    redirect('/login');
   }
 
   // Fetch app (by ID or slug)

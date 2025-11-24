@@ -99,7 +99,7 @@ export function CanvasDiscovery() {
                                 Explore interactive content created by our community
                             </p>
                         </div>
-                        <Link href="/sign-in">
+                        <Link href="/login">
                             <Button 
                                 size="sm"
                                 className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white hidden sm:flex"

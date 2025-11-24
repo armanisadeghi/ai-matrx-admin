@@ -64,9 +64,7 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
             const SOCKET_NAMESPACE = '/UserSession';
             const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000001';
-            
-            console.log('🔌 Connecting to Socket.IO:', { BACKEND_URL, SOCKET_NAMESPACE });
-            
+                        
             // Try to get auth token if user is logged in
             let authToken: string | null = null;
             let isAuthenticated = false;

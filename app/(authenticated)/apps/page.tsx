@@ -14,7 +14,7 @@ export default async function AppsListPage() {
   const { data: { user }, error } = await supabase.auth.getUser();
   
   if (error || !user) {
-    redirect('/sign-in');
+    redirect('/login');
   }
   
   // Fetch user's apps

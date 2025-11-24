@@ -72,7 +72,7 @@ export function PublicHeader() {
                     )}
 
                     {/* Sign In Button */}
-                    <Link href="/sign-in">
+                    <Link href="/login">
                         <Button 
                             size="sm"
                             className="h-7 gap-1.5 px-2 text-xs bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
