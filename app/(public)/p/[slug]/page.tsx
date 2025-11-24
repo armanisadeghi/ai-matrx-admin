@@ -63,19 +63,34 @@ export default async function PromptAppPage({
 
     // Determine if we're searching by ID or slug
     const isId = isUUID(slug);
-    const column = isId ? 'id' : 'slug';
 
-    // Fetch app with component code
-    const { data: app, error } = await supabase
-        .from('prompt_apps')
-        .select('*')
-        .eq(column, slug)
-        .eq('status', 'published')
+    // OPTIMIZATION: Fetch app + prompt in a single optimized query
+    const { data: appWithPromptRaw, error } = await supabase
+        .rpc('get_published_app_with_prompt', {
+            p_slug: !isId ? slug : null,
+            p_app_id: isId ? slug : null
+        })
         .single();
 
-    if (error || !app) {
+    if (error || !appWithPromptRaw) {
         notFound();
     }
+
+    // Transform database response to match PromptApp type
+    const appWithPrompt = appWithPromptRaw as any;
+    const app = {
+        ...appWithPrompt,
+        prompt: {
+            messages: appWithPrompt.prompt_messages,
+            settings: appWithPrompt.prompt_settings,
+            variable_defaults: appWithPrompt.prompt_variable_defaults
+        }
+    };
+
+    // Remove the raw fields (keep the data clean)
+    delete app.prompt_messages;
+    delete app.prompt_settings;
+    delete app.prompt_variable_defaults;
 
     return (
         <PromptAppPublicRenderer

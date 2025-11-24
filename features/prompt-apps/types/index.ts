@@ -112,6 +112,17 @@ export interface PromptApp {
   updated_at: string;
   published_at?: string;
   last_execution_at?: string;
+  
+  // OPTIMIZATION: Embedded prompt data (from get_published_app_with_prompt function)
+  // This allows client-side variable resolution and config building
+  prompt?: {
+    messages: any[];
+    settings: {
+      model_id: string;
+      [key: string]: any;
+    };
+    variable_defaults?: Record<string, any>;
+  };
 }
 
 export interface VariableSchemaItem {
