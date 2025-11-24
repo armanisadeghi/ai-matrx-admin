@@ -11,7 +11,7 @@ import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import { BlockRenderer } from "./block-registry/BlockRenderer";
 
 
-interface ChatMarkdownDisplayProps {
+export interface ChatMarkdownDisplayProps {
     content: string;
     taskId?: string;
     type?: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
@@ -27,7 +27,7 @@ interface ChatMarkdownDisplayProps {
 }
 
 // Fallback component that renders plain text with basic formatting
-const PlainTextFallback: React.FC<{ content: string; className?: string; role?: string; type?: string }> = ({ 
+export const PlainTextFallback: React.FC<{ content: string; className?: string; role?: string; type?: string }> = ({ 
     content, 
     className, 
     role,
@@ -55,7 +55,7 @@ const PlainTextFallback: React.FC<{ content: string; className?: string; role?: 
 };
 
 // Error boundary component for catching React errors
-class MarkdownErrorBoundary extends React.Component<
+export class MarkdownErrorBoundary extends React.Component<
     { 
         children: React.ReactNode; 
         fallback: React.ReactNode;
@@ -119,7 +119,7 @@ const SafeBlockRenderer: React.FC<{
     }
 };
 
-const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
+export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
     content,
     taskId,
     type = "message",
@@ -397,26 +397,3 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
         return <PlainTextFallback content={currentContent} className={className} role={role} type={type} />;
     }
 };
-
-// Main export with top-level error boundary
-const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = (props) => {
-    return (
-        <MarkdownErrorBoundary
-            fallback={
-                <PlainTextFallback 
-                    content={props.content} 
-                    className={props.className} 
-                    role={props.role}
-                    type={props.type}
-                />
-            }
-            onError={(error, errorInfo) => {
-                console.error("[EnhancedChatMarkdown] Top-level error boundary caught:", error, errorInfo);
-            }}
-        >
-            <EnhancedChatMarkdownInternal {...props} />
-        </MarkdownErrorBoundary>
-    );
-};
-
-export default EnhancedChatMarkdown;

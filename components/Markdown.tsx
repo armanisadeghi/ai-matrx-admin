@@ -1,10 +1,40 @@
-import type { ComponentProps } from 'react';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+"use client";
+import React from 'react';
+import { 
+    EnhancedChatMarkdownInternal,
+    PlainTextFallback,
+    MarkdownErrorBoundary,
+} from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 
 /**
- * Props for the MarkdownStream component - inferred from the original component
+ * Props for the MarkdownStream component
  */
-export type MarkdownStreamProps = ComponentProps<typeof EnhancedChatMarkdown>;
+export interface MarkdownStreamProps {
+    /** Markdown content to render */
+    content: string;
+    /** Optional task ID for streaming updates */
+    taskId?: string;
+    /** Content type (flashcard, message, text, etc.) */
+    type?: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
+    /** Message role (user, assistant, system, tool) */
+    role?: "user" | "assistant" | "system" | "tool" | string;
+    /** Additional CSS classes */
+    className?: string;
+    /** Whether streaming is currently active */
+    isStreamActive?: boolean;
+    /** Callback for content changes */
+    onContentChange?: (newContent: string) => void;
+    /** Additional analysis data */
+    analysisData?: any;
+    /** Message ID for identification */
+    messageId?: string;
+    /** Allow full-screen editor mode */
+    allowFullScreenEditor?: boolean;
+    /** Hide the copy button */
+    hideCopyButton?: boolean;
+    /** Use V2 parser (default: true) */
+    useV2Parser?: boolean;
+}
 
 /**
  * MarkdownStream - Streaming Markdown Renderer
@@ -18,8 +48,6 @@ export type MarkdownStreamProps = ComponentProps<typeof EnhancedChatMarkdown>;
  * - Full-screen editing mode
  * - Content copying
  * 
- * Simple re-export of EnhancedChatMarkdown with a cleaner import path.
- * 
  * @example
  * ```tsx
  * import MarkdownStream from '@/components/MarkdownStream';
@@ -29,7 +57,25 @@ export type MarkdownStreamProps = ComponentProps<typeof EnhancedChatMarkdown>;
  * <MarkdownStream content={content} allowFullScreenEditor />
  * ```
  */
-const MarkdownStream = EnhancedChatMarkdown;
+const MarkdownStream: React.FC<MarkdownStreamProps> = (props) => {
+    return (
+        <MarkdownErrorBoundary
+            fallback={
+                <PlainTextFallback 
+                    content={props.content} 
+                    className={props.className} 
+                    role={props.role}
+                    type={props.type}
+                />
+            }
+            onError={(error, errorInfo) => {
+                console.error("[MarkdownStream] Top-level error boundary caught:", error, errorInfo);
+            }}
+        >
+            <EnhancedChatMarkdownInternal {...props} />
+        </MarkdownErrorBoundary>
+    );
+};
 
 export default MarkdownStream;
 
