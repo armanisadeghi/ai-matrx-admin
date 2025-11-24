@@ -37,7 +37,7 @@ export interface PromptBuiltin {
       context: false,
     },
     PROMPT_APP_AUTO_CREATE_LIGHTNING: {
-      id: 'd7b234d9-72a3-48c9-9c9e-1c6de825221b',
+      id: 'aa1cf55b-a8ab-4be1-b0c2-6ab1f9347913',
       name: 'Prompt App Auto Creator (Lightning)',
       description: 'Specialized for auto creating Prompt Apps lightning fast',
       key: 'prompt-app-auto-create-lightning',

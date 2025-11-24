@@ -30,6 +30,7 @@ import { generateBuiltinVariables, FormatType, DisplayMode, ResponseMode } from 
 import { useAutoCreateApp, type AutoCreateMode } from '../hooks/useAutoCreateApp';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
+import { AutoCreateDebugView } from './AutoCreateDebugView';
 
 interface AutoCreatePromptAppFormProps {
   prompt?: any;
@@ -80,7 +81,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   }
 
   // Auto-create hook
-  const { createApp, isCreating, progress } = useAutoCreateApp({
+  const { createApp, isCreating, progress, codeTaskId, metadataTaskId } = useAutoCreateApp({
     onSuccess: (appId) => {
       console.log('[AutoCreatePromptAppForm] App created successfully:', appId);
       onSuccess?.();
@@ -180,6 +181,12 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
 
   // Show loading screen while creating app
   if (isCreating) {
+    // Debug mode: show live streaming
+    if (isDebugMode && (codeTaskId || metadataTaskId)) {
+      return <AutoCreateDebugView codeTaskId={codeTaskId} metadataTaskId={metadataTaskId} progress={progress} />;
+    }
+
+    // Normal mode: show spinner
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="w-full max-w-md">

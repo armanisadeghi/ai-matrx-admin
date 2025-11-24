@@ -17,6 +17,8 @@ interface ExecuteBuiltinWithJsonExtractionResult<T = any> {
   data?: T;
   fullResponse?: string;
   error?: string;
+  taskId?: string;
+  runId?: string;
 }
 
 /**
@@ -76,7 +78,6 @@ export const executeBuiltinWithJsonExtraction = createAsyncThunk<
 
       // 2. Execute the message (no user input, just trigger the prompt)
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
-      console.log(`[executeBuiltinWithJsonExtraction] Task created: ${taskId}`);
 
       // 3. Wait for completion and get full response
       const startTime = Date.now();
@@ -102,20 +103,25 @@ export const executeBuiltinWithJsonExtraction = createAsyncThunk<
           success: false,
           fullResponse,
           error: 'No valid JSON found in AI response. Full response provided for debugging.',
+          taskId,
+          runId,
         };
       }
 
-      return { success: true, data, fullResponse };
+      return { success: true, data, fullResponse, taskId, runId };
 
     } catch (error: any) {
-      console.error(`[executeBuiltinWithJsonExtraction] Error:`, error);
       const state = getState();
       const fullResponse = runId ? selectStreamingTextForInstance(state, runId) : '';
+      const instance = runId ? state.promptExecution?.instances?.[runId] : null;
+      const taskId = instance?.execution?.currentTaskId || undefined;
 
       return {
         success: false,
         fullResponse,
         error: error.message || 'An unknown error occurred during AI JSON generation.',
+        taskId,
+        runId: runId || undefined,
       };
     } finally {
       // Clean up the instance from Redux store

@@ -42,6 +42,7 @@ interface ExecuteBuiltinWithCodeExtractionResult {
   fullResponse?: string;
   error?: string;
   runId?: string;
+  taskId?: string;
 }
 
 /**
@@ -87,7 +88,7 @@ async function waitForCompletion(
         clearInterval(checkInterval);
         reject(new Error('Timeout waiting for response'));
       }
-    }, 100); // Check every 100ms
+    }, 100);
   });
 }
 
@@ -129,11 +130,6 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
       // Resolve builtin ID (accepts key or UUID)
       const builtinId = getBuiltinId(builtinKey);
       
-      console.log(`[executeBuiltinWithCodeExtraction] Starting builtin: ${builtinKey}`, {
-        builtinId,
-        variableCount: Object.keys(variables).length
-      });
-
       // Start the prompt instance
       runId = await dispatch(startPromptInstance({
         promptId: builtinId,
@@ -149,42 +145,34 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
         },
       })).unwrap();
 
-      console.log('[executeBuiltinWithCodeExtraction] Instance created:', runId);
-
       // Execute the message
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
 
-      console.log('[executeBuiltinWithCodeExtraction] Execution started:', taskId);
-
       // Wait for response to complete
       const fullResponse = await waitForCompletion(runId, getState, timeoutMs);
-      
-      console.log('[executeBuiltinWithCodeExtraction] Response received, length:', fullResponse.length);
 
       // Extract code from response
       const code = extractCodeFromResponse(fullResponse);
       
       if (!code) {
-        console.warn('[executeBuiltinWithCodeExtraction] No code block found in response');
         return {
           success: false,
           fullResponse,
           error: 'No code block found in response',
-          runId
+          runId,
+          taskId
         };
       }
-
-      console.log('[executeBuiltinWithCodeExtraction] Code extracted, length:', code.length);
 
       return {
         success: true,
         code,
         fullResponse,
-        runId
+        runId,
+        taskId
       };
 
     } catch (error: any) {
-      console.error('[executeBuiltinWithCodeExtraction] Error:', error);
       return {
         success: false,
         error: error.message || 'Unknown error occurred',

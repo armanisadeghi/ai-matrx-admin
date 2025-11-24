@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { supabase } from '@/utils/supabase/client';
-import { openPromptModal } from '@/lib/redux/slices/promptRunnerSlice';
 import { executeBuiltinWithCodeExtraction, executeBuiltinWithJsonExtraction } from '@/lib/redux/prompt-execution';
 import { validateSlugsInBatch } from '../services/slug-service';
 import type { AppMetadata } from '../types';
@@ -40,43 +39,57 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [progress, setProgress] = useState<string>('');
+  const [codeTaskId, setCodeTaskId] = useState<string | null>(null);
+  const [metadataTaskId, setMetadataTaskId] = useState<string | null>(null);
 
   const createApp = async (data: AutoCreateAppData) => {
     setIsCreating(true);
     setProgress('Initializing AI generation...');
 
-    // Store all debug info for error modal
-    let codeGenerationResult: any = null;
-    let metadataGenerationResult: any = null;
-    let slugValidationResult: any = null;
-    let databaseResult: any = null;
-
     try {
-      // ========== STEP 1: START CODE GENERATION (FIRST - SLOWEST) ==========
-      setProgress('Generating app code with AI...');
-      console.log('[useAutoCreateApp] Starting code generation (slowest task)...');
+      // Generate metadata first (fast)
+      setProgress('Generating metadata...');
+      
+      const metadataResult = await dispatch(executeBuiltinWithJsonExtraction({
+        builtinKey: 'prompt-app-metadata-generator',
+        variables: {
+          prompt_config: data.builtinVariables.prompt_object,
+        },
+        timeoutMs: 180000,
+      })).unwrap();
+      
+      if (metadataResult.taskId) {
+        setMetadataTaskId(metadataResult.taskId);
+      }
+      
+      if (!metadataResult.success) {
+        throw new Error(`Metadata generation failed: ${metadataResult.error}`);
+      }
+
+      const metadata: AppMetadata = metadataResult.data;
+      
+      // Generate code second (slow)
+      setProgress('Generating code...');
       
       const codeBuiltinKey = data.mode === 'lightning' 
         ? 'prompt-app-auto-create-lightning'
         : 'prompt-app-auto-create';
       
-      const codeGenerationPromise = dispatch(executeBuiltinWithCodeExtraction({
+      const codeResult = await dispatch(executeBuiltinWithCodeExtraction({
         builtinKey: codeBuiltinKey,
         variables: data.builtinVariables,
+        timeoutMs: 300000,
       })).unwrap();
-
-      // ========== STEP 2: START METADATA GENERATION (IMMEDIATELY AFTER) ==========
-      setProgress('Generating app metadata with AI...');
-      console.log('[useAutoCreateApp] Starting metadata generation...');
       
-      const metadataGenerationPromise = dispatch(executeBuiltinWithJsonExtraction({
-        builtinKey: 'prompt-app-metadata-generator',
-        variables: {
-          prompt_object: data.builtinVariables.prompt_object,
-        },
-      })).unwrap();
+      if (codeResult.taskId) {
+        setCodeTaskId(codeResult.taskId);
+      }
+      
+      if (!codeResult.success) {
+        throw new Error(`Code generation failed: ${codeResult.error}`);
+      }
 
-      // ========== STEP 3: PREPARE VARIABLE SCHEMA (SYNCHRONOUS - FAST) ==========
+      // Prepare variable schema
       let variableSchema: any[] = [];
       if (data.prompt?.variable_defaults && Array.isArray(data.prompt.variable_defaults)) {
         variableSchema = data.prompt.variable_defaults.map((v: any) => ({
@@ -90,44 +103,24 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
         }));
       }
 
-      // ========== STEP 4: WAIT FOR METADATA, THEN VALIDATE SLUGS ==========
-      setProgress('Waiting for metadata...');
-      metadataGenerationResult = await metadataGenerationPromise;
-
-      if (!metadataGenerationResult.success) {
-        throw new Error(`Metadata generation failed: ${metadataGenerationResult.error}`);
-      }
-
-      const metadata: AppMetadata = metadataGenerationResult.data;
-      console.log('[useAutoCreateApp] Metadata received:', metadata);
-
-      // Add random fallback slug to the options
-      const randomSlug = `${metadata.slug_options[0]}-${Math.floor(Math.random() * 900) + 100}`;
-      const allSlugOptions = [...metadata.slug_options, randomSlug];
-
       // Validate slugs
       setProgress('Validating slug availability...');
-      slugValidationResult = await validateSlugsInBatch(allSlugOptions);
       
-      const selectedSlug = slugValidationResult.available.length > 0 
-        ? slugValidationResult.available[0] 
-        : randomSlug;
+      let selectedSlug: string;
       
-      console.log('[useAutoCreateApp] Slug selected:', selectedSlug);
-
-      // ========== STEP 5: WAIT FOR CODE GENERATION ==========
-      setProgress('Waiting for code generation to complete...');
-      codeGenerationResult = await codeGenerationPromise;
-
-      if (!codeGenerationResult.success) {
-        throw new Error(`Code generation failed: ${codeGenerationResult.error}`);
+      try {
+        const slugValidation = await validateSlugsInBatch(metadata.slug_options);
+        
+        if (slugValidation.available && slugValidation.available.length > 0) {
+          selectedSlug = slugValidation.available[0];
+        } else {
+          selectedSlug = `${metadata.slug_options[0]}-${Math.floor(Math.random() * 900) + 100}`;
+        }
+      } catch (slugError: any) {
+        selectedSlug = `${metadata.slug_options[0]}-${Math.floor(Math.random() * 900) + 100}`;
       }
 
-      console.log('[useAutoCreateApp] Code generation complete:', {
-        codeLength: codeGenerationResult.code?.length,
-      });
-
-      // ========== STEP 6: SAVE TO DATABASE ==========
+      // Save to database
       setProgress('Saving app to database...');
       
       const { data: { user } } = await supabase.auth.getUser();
@@ -146,7 +139,7 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
           description: metadata.description,
           category: metadata.category,
           tags: metadata.tags,
-          component_code: codeGenerationResult.code!,
+          component_code: codeResult.code!,
           component_language: 'tsx',
           variable_schema: variableSchema,
           allowed_imports: [
@@ -169,8 +162,6 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
         .select()
         .single();
 
-      databaseResult = { data: appData, error: insertError };
-
       if (insertError) {
         throw new Error(insertError.message || 'Failed to save app');
       }
@@ -179,9 +170,7 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
         throw new Error('No data returned from database');
       }
 
-      // ========== SUCCESS! ==========
       setProgress('App created successfully!');
-      console.log('[useAutoCreateApp] App created:', appData);
       
       options.onSuccess?.(appData.id);
       
@@ -193,56 +182,10 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       return appData;
 
     } catch (error: any) {
-      console.error('[useAutoCreateApp] Error:', error);
-      
-      // ========== COMPREHENSIVE ERROR MODAL ==========
-      // Show ALL debug information in a modal
-      const debugInfo = {
-        error: error.message || 'Unknown error',
-        codeGeneration: {
-          success: codeGenerationResult?.success ?? null,
-          error: codeGenerationResult?.error ?? null,
-          codeLength: codeGenerationResult?.code?.length ?? 0,
-          fullResponse: codeGenerationResult?.fullResponse ?? null,
-        },
-        metadataGeneration: {
-          success: metadataGenerationResult?.success ?? null,
-          error: metadataGenerationResult?.error ?? null,
-          data: metadataGenerationResult?.data ?? null,
-          fullResponse: metadataGenerationResult?.fullResponse ?? null,
-        },
-        slugValidation: {
-          available: slugValidationResult?.available ?? null,
-          unavailable: slugValidationResult?.unavailable ?? null,
-        },
-        database: {
-          data: databaseResult?.data ?? null,
-          error: databaseResult?.error ?? null,
-        },
-      };
-
-      // Format debug info as JSON for display
-      const debugJson = JSON.stringify(debugInfo, null, 2);
-      
-      dispatch(openPromptModal({
-        title: '🐛 Auto-Create Debug Information',
-        description: 'Something went wrong. Here is all the debug information:',
-        initialMessages: [{
-          role: 'assistant',
-          content: `## Error Details\n\n**Error Message:** ${error.message}\n\n## Full Debug Information\n\n\`\`\`json\n${debugJson}\n\`\`\`\n\n---\n\n### Code Generation Response\n${codeGenerationResult?.fullResponse ? `\n\`\`\`\n${codeGenerationResult.fullResponse}\n\`\`\`\n` : 'No response available'}\n\n---\n\n### Metadata Generation Response\n${metadataGenerationResult?.fullResponse ? `\n\`\`\`\n${metadataGenerationResult.fullResponse}\n\`\`\`\n` : 'No response available'}`,
-        }],
-        executionConfig: {
-          auto_run: false,
-          allow_chat: false,
-          show_variables: false,
-          apply_variables: false,
-          track_in_runs: false,
-        },
-      }));
-
       const errorMessage = error.message || 'An unexpected error occurred';
       options.onError?.(errorMessage);
       setIsCreating(false);
+      setProgress('');
       return null;
     }
   };
@@ -251,6 +194,8 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
     createApp,
     isCreating,
     progress,
+    codeTaskId,
+    metadataTaskId,
   };
 }
 
