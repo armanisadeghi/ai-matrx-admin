@@ -363,16 +363,28 @@ function validateVariables(
                 errors.push(`Missing required variable: ${name}`);
             }
         } else if (name in providedVariables) {
-            // Basic type validation
+            // Convert value to expected type (or string by default)
             const value = providedVariables[name];
-            const actualType = Array.isArray(value) ? 'array' : typeof value;
-
+            
             // Normalize 'text' to 'string' for backward compatibility
             const normalizedType = type === 'text' ? 'string' : type;
 
-            if (normalizedType && actualType !== normalizedType) {
-                errors.push(`Variable ${name} should be ${normalizedType} but got ${actualType}`);
+            // Convert to the expected type - no rejection, just conversion
+            if (normalizedType === 'string' || !normalizedType) {
+                // Convert everything to string (default behavior for AI prompts)
+                valid[name] = String(value);
+            } else if (normalizedType === 'number') {
+                // Convert to number if schema expects number
+                const numValue = typeof value === 'number' ? value : Number(value);
+                valid[name] = isNaN(numValue) ? 0 : numValue;
+            } else if (normalizedType === 'boolean') {
+                // Convert to boolean if schema expects boolean
+                valid[name] = Boolean(value);
+            } else if (normalizedType === 'array') {
+                // Ensure it's an array
+                valid[name] = Array.isArray(value) ? value : [value];
             } else {
+                // For any other type, just pass it through
                 valid[name] = value;
             }
         } else if (defaultValue !== undefined) {

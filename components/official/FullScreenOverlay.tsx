@@ -134,24 +134,24 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                     {/* Tabs - below title on mobile, inline on desktop */}
                     <Tabs value={activeTab} onValueChange={handleTabChange} className={cn(
                         "overflow-x-auto overflow-y-hidden scrollbar-none",
-                        isMobile ? "w-full" : "mx-auto py-1"
+                        isMobile ? "w-full" : "mx-auto"
                     )}>
                         <TabsList className={cn(
-                            "rounded-3xl space-x-2",
+                            "rounded-3xl space-x-0.5",
                             isMobile ? "w-full flex justify-start" : ""
                         )}>
                             {tabs.map((tab, index) => {
                                 // Determine tab position styling
-                                let positionClass = "";
+                                let positionClass = "rounded-none";
                                 if (tabs.length === 1) {
                                     // If only one tab, it gets both rounded corners
-                                    positionClass = "rounded-l-3xl rounded-r-3xl";
+                                    positionClass = "rounded-l-full rounded-r-full";
                                 } else if (index === 0) {
                                     // First tab always gets left rounded corners
-                                    positionClass = "rounded-l-3xl";
+                                    positionClass = "rounded-l-full rounded-r-none";
                                 } else if (index === tabs.length - 1) {
                                     // Last tab always gets right rounded corners
-                                    positionClass = "rounded-r-3xl";
+                                    positionClass = "rounded-l-none rounded-r-full";
                                 }
                                 
                                 return (
@@ -160,7 +160,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                                         className={cn(
                                             positionClass,
                                             "border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700",
-                                            isMobile ? "px-6 py-3 text-base min-h-[44px]" : "px-4 py-2"
+                                            isMobile ? "px-6 py-3 text-base min-h-[44px]" : "text-xs px-2 py-0.5"
                                         )}
                                         value={tab.id}
                                     >
@@ -223,8 +223,8 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                 
                 {(showSaveButton || showCancelButton || additionalButtons || footerContent) && (
                     <DialogFooter className={cn(
-                        "border-t flex justify-end flex-shrink-0",
-                        isMobile ? "p-3 pb-safe gap-2 flex-col sm:flex-row" : "p-4"
+                        "border-t flex justify-end flex-shrink-0 p-1 pr-3",
+                        isMobile ? "pb-safe gap-2 flex-col sm:flex-row" : ""
                     )}>
                         {additionalButtons}
                         {footerContent}

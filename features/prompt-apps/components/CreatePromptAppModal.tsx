@@ -64,36 +64,7 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
   };
 
   const tabs: TabDefinition[] = [
-    {
-      id: 'manual',
-      label: 'Create Manually',
-      content: isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : error ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-destructive font-semibold">{error}</p>
-            <button 
-              onClick={loadData}
-              className="mt-4 text-sm text-primary hover:underline"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="p-6">
-          <CreatePromptAppForm 
-            prompts={prompts}
-            categories={categories}
-            preselectedPromptId={promptId}
-            onSuccess={onClose}
-          />
-        </div>
-      ),
-    },
+
     {
       id: 'auto',
       label: 'Auto Create',
@@ -124,13 +95,43 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
         </div>
       ),
     },
+    {
+      id: 'manual',
+      label: 'Create Manually',
+      content: isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-destructive font-semibold">{error}</p>
+            <button 
+              onClick={loadData}
+              className="mt-4 text-sm text-primary hover:underline"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-6">
+          <CreatePromptAppForm 
+            prompts={prompts}
+            categories={categories}
+            preselectedPromptId={promptId}
+            onSuccess={onClose}
+          />
+        </div>
+      ),
+    },
   ];
 
   return (
     <FullScreenOverlay
       isOpen={isOpen}
       onClose={onClose}
-      title="Create Prompt App"
+      title=""
       description="Turn your prompt into a shareable web app"
       tabs={tabs}
       showCancelButton
