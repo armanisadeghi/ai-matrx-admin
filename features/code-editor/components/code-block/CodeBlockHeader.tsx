@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from "react";
-import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, ChevronDown, ChevronUp, Globe, Loader2, Wand2, RotateCcw, WrapText, Maximize2, ListOrdered, FileText, Sparkles } from "lucide-react";
+import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, ChevronDown, ChevronUp, Globe, Loader2, Wand2, RotateCcw, WrapText, Maximize2, ListOrdered, FileText, Sparkles, Rocket, Zap, Paintbrush, Code2, Brain } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "@/features/code-editor/components/code-block/LanguageDisplay";
 import IconButton from "@/components/official/IconButton";
@@ -13,7 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { PROMPT_BUILTINS, getBuiltinInfoByKey } from "@/lib/redux/prompt-execution/builtins";
+import { getBuiltinInfoByKey } from "@/lib/redux/prompt-execution/builtins";
 
 type AIModalConfig = {
     version: 'v2' | 'v3';
@@ -197,6 +198,21 @@ interface CodeBlockButtonsProps {
     customBuiltinKeys?: string[];
 }
 
+// Icon mapping for dynamic icon rendering
+const ICON_MAP: Record<string, LucideIcon> = {
+    Rocket,
+    Zap,
+    Paintbrush,
+    Code2,
+    Brain,
+    FileText,
+    Sparkles,
+};
+
+const getIconComponent = (iconName: string): LucideIcon => {
+    return ICON_MAP[iconName] || Sparkles;
+};
+
 const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     isEditing,
     isFullScreen,
@@ -222,6 +238,16 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     customBuiltinKeys = [],
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Merge default keys with custom keys and make unique
+    const defaultKeys = ['generic-code-editor', 'code-editor-dynamic-context'];
+    const allKeys = [...defaultKeys, ...customBuiltinKeys];
+    const uniqueKeys = Array.from(new Set(allKeys));
+
+    // Get builtin info for all unique keys
+    const builtins = uniqueKeys
+        .map(key => getBuiltinInfoByKey(key))
+        .filter((b): b is NonNullable<typeof b> => b !== undefined);
     return (
         <div className="flex items-center gap-0.5 pr-5">
             {/* Fullscreen - Always visible on desktop */}
@@ -396,117 +422,48 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="z-[9999] w-56">
-                        {/* Custom Builtins - Featured at top */}
-                        {customBuiltinKeys.length > 0 && (
-                            <>
-                                {customBuiltinKeys.map((key) => {
-                                    const builtin = getBuiltinInfoByKey(key);
-                                    if (!builtin) return null;
+                        {builtins.map((builtin, index) => {
+                            const IconComponent = getIconComponent(builtin.icon);
+                            return (
+                                <React.Fragment key={builtin.key}>
+                                    {/* Conversational mode - always available */}
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onAIEdit({
+                                                version: 'v2',
+                                                builtinId: builtin.id,
+                                                title: builtin.name,
+                                            });
+                                        }}
+                                        className="flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <IconComponent className="h-4 w-4" />
+                                        <span>{builtin.name}</span>
+                                    </DropdownMenuItem>
                                     
-                                    // Get the context-aware builtin info for v3
-                                    const contextAwareBuiltin = getBuiltinInfoByKey('code-editor-dynamic-context');
+                                    {/* Context-Aware mode - only if builtin supports it */}
+                                    {builtin.context && (
+                                        <DropdownMenuItem
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onAIEdit({
+                                                    version: 'v3',
+                                                    builtinId: builtin.id,
+                                                    title: `${builtin.name} (Context)`,
+                                                });
+                                            }}
+                                            className="flex items-center gap-2 cursor-pointer"
+                                        >
+                                            <IconComponent className="h-4 w-4" />
+                                            <span>{builtin.name} (Context)</span>
+                                        </DropdownMenuItem>
+                                    )}
                                     
-                                    return (
-                                        <div key={key}>
-                                            <DropdownMenuLabel className="text-xs font-semibold">{builtin.name}</DropdownMenuLabel>
-                                            <DropdownMenuItem
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onAIEdit({
-                                                        version: 'v2',
-                                                        builtinId: builtin.id,
-                                                        title: builtin.name,
-                                                    });
-                                                }}
-                                                className="flex items-center gap-2 cursor-pointer"
-                                            >
-                                                <Sparkles className="h-4 w-4 text-primary" />
-                                                <span>Conversational</span>
-                                            </DropdownMenuItem>
-                                            {contextAwareBuiltin && (
-                                                <DropdownMenuItem
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onAIEdit({
-                                                            version: 'v3',
-                                                            builtinId: contextAwareBuiltin.id,
-                                                            title: contextAwareBuiltin.name,
-                                                        });
-                                                    }}
-                                                    className="flex items-center gap-2 cursor-pointer"
-                                                >
-                                                    <Sparkles className="h-4 w-4 text-primary" />
-                                                    <span>Context-Aware 🚀</span>
-                                                </DropdownMenuItem>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                <DropdownMenuSeparator />
-                            </>
-                        )}
-                        
-                        <DropdownMenuLabel className="text-xs font-semibold">Master Code Editor</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAIEdit({
-                                    version: 'v2',
-                                    builtinId: PROMPT_BUILTINS.GENERIC_CODE.id,
-                                    title: PROMPT_BUILTINS.GENERIC_CODE.name,
-                                });
-                            }}
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            <span>Conversational</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAIEdit({
-                                    version: 'v3',
-                                    builtinId: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.id,
-                                    title: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.name,
-                                });
-                            }}
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            <span>Context-Aware 🚀</span>
-                        </DropdownMenuItem>
-                        
-                        <DropdownMenuSeparator />
-                        
-                        <DropdownMenuLabel className="text-xs font-semibold">Prompt App Editor</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAIEdit({
-                                    version: 'v2',
-                                    builtinId: PROMPT_BUILTINS.PROMPT_APP_UI.id,
-                                    title: PROMPT_BUILTINS.PROMPT_APP_UI.name,
-                                });
-                            }}
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            <span>Conversational</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onAIEdit({
-                                    version: 'v3',
-                                    builtinId: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.id,
-                                    title: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.name,
-                                });
-                            }}
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            <span>Context-Aware 🚀</span>
-                        </DropdownMenuItem>
+                                    {index < builtins.length - 1 && <DropdownMenuSeparator />}
+                                </React.Fragment>
+                            );
+                        })}
                     </DropdownMenuContent>
                 </DropdownMenu>
             )}

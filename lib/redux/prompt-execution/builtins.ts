@@ -25,7 +25,8 @@ export interface PromptBuiltin {
     name: string;         // Display name
     description: string;  // What this builtin does
     key: string;          // Unique key for lookups
-    context: boolean;     // Whether this builtin uses context
+    context: boolean;     // Whether this builtin can be used in the context-aware system
+    icon: string;         // Lucide icon name for display
   }
   
   export const PROMPT_BUILTINS = {
@@ -35,6 +36,7 @@ export interface PromptBuiltin {
       description: 'Specialized for auto creating Prompt Apps',
       key: 'prompt-app-auto-create',
       context: false,
+      icon: 'Rocket',
     },
     PROMPT_APP_AUTO_CREATE_LIGHTNING: {
       id: 'aa1cf55b-a8ab-4be1-b0c2-6ab1f9347913',
@@ -42,13 +44,15 @@ export interface PromptBuiltin {
       description: 'Specialized for auto creating Prompt Apps lightning fast',
       key: 'prompt-app-auto-create-lightning',
       context: false,
+      icon: 'Zap',
     },
-    PROMPT_APP_UI: {
+    PROMPT_APP_UI_EDITOR: {
       id: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
-      name: 'Prompt App Editor',
+      name: 'Prompt App UI Editor',
       description: 'Specialized for editing a Prompt App UI with custom instructions',
       key: 'prompt-app-ui-editor',
       context: false,
+      icon: 'Paintbrush',
     },
     GENERIC_CODE: {
       id: '87efa869-9c11-43cf-b3a8-5b7c775ee415',
@@ -56,13 +60,15 @@ export interface PromptBuiltin {
       description: 'General-purpose code editor for any programming language',
       key: 'generic-code-editor',
       context: false,
+      icon: 'Code2',
     },
     CODE_EDITOR_DYNAMIC_CONTEXT: {
       id: '970856c5-3b9d-4034-ac9d-8d8a11fb3dba',
-      name: 'Code Editor (Dynamic Context)',
+      name: 'Code Editor',
       description: 'Code editor with dynamic context version management',
       key: 'code-editor-dynamic-context',
       context: true,
+      icon: 'Brain',
     },
     PROMPT_APP_METADATA_GENERATOR: {
       id: 'a2919657-8572-441c-8355-840185f8447c',
@@ -70,6 +76,7 @@ export interface PromptBuiltin {
       description: 'Generate metadata for a prompt app using the prompt object. Provides everything, other than the component code.',
       key: 'prompt-app-metadata-generator',
       context: false,
+      icon: 'FileText',
     },
   } as const;
   

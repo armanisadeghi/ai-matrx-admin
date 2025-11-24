@@ -365,7 +365,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
             <Tabs defaultValue="details" className="space-y-4">
               <TabsList className="bg-muted/50 p-1 h-auto">
                 <TabsTrigger value="details" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  Details
+                  Basic Information
                 </TabsTrigger>
                 <TabsTrigger value="code" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   Component Code
@@ -374,15 +374,12 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   Variables
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                  Settings
+                  Additional Configuration
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="details" className="space-y-4 animate-in fade-in-50 duration-300">
                 <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Basic Information</CardTitle>
-                  </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
@@ -391,13 +388,20 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slug</label>
-                        <p className="text-muted-foreground font-mono text-sm">aimatrx.com/p/{app.slug}</p>
+                        <a 
+                          href={`https://aimatrx.com/p/${app.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary font-mono text-sm underline decoration-muted-foreground/50 hover:decoration-primary transition-colors block"
+                        >
+                          aimatrx.com/p/{app.slug}
+                        </a>
                       </div>
                     </div>
                     {app.description && (
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</label>
-                        <p className="text-foreground whitespace-pre-wrap leading-relaxed">{app.description}</p>
+                        <p className="text-foreground text-sm whitespace-pre-wrap leading-relaxed">{app.description}</p>
                       </div>
                     )}
                     {app.tags && app.tags.length > 0 && (
