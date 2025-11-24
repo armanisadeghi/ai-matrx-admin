@@ -13,7 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { PROMPT_BUILTINS } from "@/lib/redux/prompt-execution/builtins";
+import { PROMPT_BUILTINS, getBuiltinInfoByKey } from "@/lib/redux/prompt-execution/builtins";
 
 type AIModalConfig = {
     version: 'v2' | 'v3';
@@ -48,6 +48,8 @@ interface CodeBlockHeaderProps {
     showLineNumbers?: boolean;
     onAIEdit?: (config: AIModalConfig) => void;
     hideLanguageDisplay?: boolean;
+    allowEdit?: boolean;
+    customBuiltinKeys?: string[];
 }
 
 export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
@@ -77,6 +79,8 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
     showLineNumbers = false,
     onAIEdit,
     hideLanguageDisplay = false,
+    allowEdit = true,
+    customBuiltinKeys = [],
 }) => {
     // Determine if collapse functionality should be available
     const canCollapse = linesCount > 5;
@@ -159,6 +163,8 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                 toggleMinimap={toggleMinimap}
                 showLineNumbers={showLineNumbers}
                 onAIEdit={onAIEdit}
+                allowEdit={allowEdit}
+                customBuiltinKeys={customBuiltinKeys}
             />
         </div>
     );
@@ -187,6 +193,8 @@ interface CodeBlockButtonsProps {
     toggleMinimap?: (e: React.MouseEvent) => void;
     showLineNumbers?: boolean;
     onAIEdit?: (config: AIModalConfig) => void;
+    allowEdit?: boolean;
+    customBuiltinKeys?: string[];
 }
 
 const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
@@ -210,6 +218,8 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     toggleMinimap,
     showLineNumbers = false,
     onAIEdit,
+    allowEdit = true,
+    customBuiltinKeys = [],
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     return (
@@ -370,8 +380,8 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* AI Edit - Available in both modes with dropdown for V2/V3 */}
-            {onAIEdit && !isMobile && (
+            {/* AI Edit - Available in both modes with dropdown for V2/V3 - Only if editing is allowed */}
+            {onAIEdit && !isMobile && allowEdit && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div>
@@ -386,6 +396,56 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="z-[9999] w-56">
+                        {/* Custom Builtins - Featured at top */}
+                        {customBuiltinKeys.length > 0 && (
+                            <>
+                                {customBuiltinKeys.map((key) => {
+                                    const builtin = getBuiltinInfoByKey(key);
+                                    if (!builtin) return null;
+                                    
+                                    // Get the context-aware builtin info for v3
+                                    const contextAwareBuiltin = getBuiltinInfoByKey('code-editor-dynamic-context');
+                                    
+                                    return (
+                                        <div key={key}>
+                                            <DropdownMenuLabel className="text-xs font-semibold">{builtin.name}</DropdownMenuLabel>
+                                            <DropdownMenuItem
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onAIEdit({
+                                                        version: 'v2',
+                                                        builtinId: builtin.id,
+                                                        title: builtin.name,
+                                                    });
+                                                }}
+                                                className="flex items-center gap-2 cursor-pointer"
+                                            >
+                                                <Sparkles className="h-4 w-4 text-primary" />
+                                                <span>Conversational</span>
+                                            </DropdownMenuItem>
+                                            {contextAwareBuiltin && (
+                                                <DropdownMenuItem
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onAIEdit({
+                                                            version: 'v3',
+                                                            builtinId: contextAwareBuiltin.id,
+                                                            title: contextAwareBuiltin.name,
+                                                        });
+                                                    }}
+                                                    className="flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <Sparkles className="h-4 w-4 text-primary" />
+                                                    <span>Context-Aware 🚀</span>
+                                                </DropdownMenuItem>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                <DropdownMenuSeparator />
+                            </>
+                        )}
+                        
                         <DropdownMenuLabel className="text-xs font-semibold">Master Code Editor</DropdownMenuLabel>
                         <DropdownMenuItem
                             onClick={(e) => {
@@ -439,7 +499,7 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                                 onAIEdit({
                                     version: 'v3',
                                     builtinId: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.id,
-                                    title: PROMPT_BUILTINS.PROMPT_APP_UI.name,
+                                    title: PROMPT_BUILTINS.CODE_EDITOR_DYNAMIC_CONTEXT.name,
                                 });
                             }}
                             className="flex items-center gap-2 cursor-pointer"
@@ -451,8 +511,8 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                 </DropdownMenu>
             )}
 
-            {/* Edit/View Toggle - Always visible on desktop, icon switches based on mode */}
-            {toggleEdit && !isMobile && (
+            {/* Edit/View Toggle - Always visible on desktop, icon switches based on mode - Only if editing is allowed */}
+            {toggleEdit && !isMobile && allowEdit && (
                 <IconButton
                     icon={isEditing ? Eye : Edit2}
                     tooltip={isEditing ? "Exit edit mode" : "Edit code"}

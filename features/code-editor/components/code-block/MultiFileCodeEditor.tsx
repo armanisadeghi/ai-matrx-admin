@@ -16,70 +16,12 @@ import { useCanvas } from "@/hooks/useCanvas";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
+import { mapLanguageForMonaco, getMonacoFileExtension } from "@/features/code-editor/config/languages";
 
 type AIModalConfig = {
     version: 'v2' | 'v3';
     builtinId: string;
     title: string;
-};
-
-/**
- * Map language identifiers to Monaco Editor-compatible language names
- * (Identical to CodeBlock.tsx for consistency)
- */
-const mapLanguageForMonaco = (lang: string): string => {
-    // Defensive: Handle undefined, null, empty, or non-string values
-    if (!lang || typeof lang !== 'string') {
-        return 'plaintext';
-    }
-
-    const languageMap: Record<string, string> = {
-        'react': 'typescript',  // React components → TypeScript (Monaco uses 'typescript' for TSX)
-        'jsx': 'javascript',    // JavaScript JSX → Monaco uses 'javascript' for JSX
-        'tsx': 'typescript',    // TypeScript JSX → Monaco uses 'typescript' for TSX
-        'typescript': 'typescript',
-        'javascript': 'javascript',
-        'js': 'javascript',
-        'ts': 'typescript',
-        'html': 'html',
-        'css': 'css',
-        'scss': 'scss',
-        'json': 'json',
-        'markdown': 'markdown',
-        'md': 'markdown',
-        'bash': 'shell',
-        'shell': 'shell',
-        'sh': 'shell',
-        'sql': 'sql',
-        'python': 'python',
-        'py': 'python',
-        'diff': 'diff',
-        'java': 'java',
-        'csharp': 'csharp',
-        'cs': 'csharp',
-        'php': 'php',
-        'ruby': 'ruby',
-        'go': 'go',
-        'rust': 'rust',
-        'yaml': 'yaml',
-        'yml': 'yaml',
-        'xml': 'xml',
-        'text': 'plaintext',
-        'plaintext': 'plaintext',
-    };
-    
-    const normalizedLang = lang.trim().toLowerCase();
-    return languageMap[normalizedLang] || normalizedLang || 'plaintext';
-};
-
-/**
- * Get Monaco file extension for JSX/TSX support
- */
-const getMonacoFileExtension = (lang: string): string | undefined => {
-    const normalized = lang.trim().toLowerCase();
-    if (normalized === 'tsx' || normalized === 'react') return '.tsx';
-    if (normalized === 'jsx') return '.jsx';
-    return undefined;
 };
 
 export interface CodeFile {

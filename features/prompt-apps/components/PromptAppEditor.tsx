@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -9,12 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2 } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
 import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
 import type { PromptApp } from '../types';
+import { cn } from '@/lib/utils';
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
 const CodeBlock = lazy(() => import('@/features/code-editor/components/code-block/CodeBlock'));
@@ -167,37 +168,43 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-5">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
               <Link href="/prompt-apps">
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="shrink-0 hover:bg-primary/10 transition-colors">
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
               </Link>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-foreground">{app.name}</h1>
-                  <Badge variant={
-                    app.status === 'published' ? 'default' :
-                    app.status === 'draft' ? 'secondary' :
-                    'outline'
-                  }>
-                    {app.status}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">{app.name}</h1>
+                  <Badge 
+                    variant={app.status === 'published' ? 'default' : 'secondary'}
+                    className={cn(
+                      "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors",
+                      app.status === 'published' && "bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
+                    )}
+                  >
+                    {app.status === 'published' ? '● Published' : '○ Draft'}
                   </Badge>
                 </div>
                 {app.tagline && (
-                  <p className="text-muted-foreground mt-1">{app.tagline}</p>
+                  <p className="text-sm md:text-base text-muted-foreground mt-1 line-clamp-2">{app.tagline}</p>
                 )}
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0 w-full sm:w-auto">
               {mode === 'edit' ? (
                 <>
-                  <Button onClick={handleSave} disabled={isSaving}>
-                    <Save className="w-4 h-4 mr-2" />
+                  <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
                     {isSaving ? 'Saving...' : 'Save Changes'}
                   </Button>
                   <Button variant="outline" onClick={handleCancelEdit}>
@@ -207,25 +214,26 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               ) : (
                 <>
                   {app.status === 'published' && (
-                    <Link href={`/p/${app.slug}`} target="_blank">
-                      <Button variant="outline">
+                    <Link href={`/p/${app.slug}`} target="_blank" className="flex-1 sm:flex-initial">
+                      <Button variant="outline" className="w-full">
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        View Public
+                        <span className="hidden sm:inline">View Public</span>
+                        <span className="sm:hidden">Public</span>
                       </Button>
                     </Link>
                   )}
                   {app.status === 'published' ? (
-                    <Button variant="outline" onClick={handleUnpublish}>
+                    <Button variant="outline" onClick={handleUnpublish} className="flex-1 sm:flex-initial">
                       Unpublish
                     </Button>
                   ) : (
-                    <Button onClick={handlePublish}>
-                      Publish App
+                    <Button onClick={handlePublish} className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Publish
                     </Button>
                   )}
-                  <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                  <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} size="icon" className="shrink-0">
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </>
               )}
@@ -233,25 +241,40 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           </div>
 
           {/* Mode Switcher */}
-          <div className="flex gap-2">
+          <div className="inline-flex p-1 rounded-lg bg-muted/50 border border-border/50 gap-1">
             <Button
-              variant={mode === 'view' ? 'default' : 'outline'}
+              variant={mode === 'view' ? 'default' : 'ghost'}
+              size="sm"
               onClick={() => setMode('view')}
+              className={cn(
+                "transition-all",
+                mode === 'view' && "shadow-sm"
+              )}
             >
               <Eye className="w-4 h-4 mr-2" />
               View
             </Button>
             <Button
-              variant={mode === 'edit' ? 'default' : 'outline'}
+              variant={mode === 'edit' ? 'default' : 'ghost'}
+              size="sm"
               onClick={() => setMode('edit')}
               disabled={isSaving}
+              className={cn(
+                "transition-all",
+                mode === 'edit' && "shadow-sm"
+              )}
             >
               <Code2 className="w-4 h-4 mr-2" />
               Edit
             </Button>
             <Button
-              variant={mode === 'run' ? 'default' : 'outline'}
+              variant={mode === 'run' ? 'default' : 'ghost'}
+              size="sm"
               onClick={() => setMode('run')}
+              className={cn(
+                "transition-all",
+                mode === 'run' && "shadow-sm"
+              )}
             >
               <Play className="w-4 h-4 mr-2" />
               Run
@@ -259,69 +282,132 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{app.total_executions}</div>
-                <p className="text-xs text-muted-foreground">Total Runs</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{app.unique_users_count}</div>
-                <p className="text-xs text-muted-foreground">Unique Users</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{Math.round(app.success_rate * 100)}%</div>
-                <p className="text-xs text-muted-foreground">Success Rate</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{app.avg_execution_time_ms || 0}ms</div>
-                <p className="text-xs text-muted-foreground">Avg Time</p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Total Runs */}
+            <div className="group relative overflow-hidden rounded-lg border bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20 dark:to-background transition-all hover:shadow-md hover:scale-[1.02]">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150" />
+              <div className="relative p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-blue-500/10">
+                    <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-blue-200 dark:border-blue-800">
+                    Total
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-0.5">
+                  {app.total_executions.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Total Runs</p>
+              </div>
+            </div>
+
+            {/* Unique Users */}
+            <div className="group relative overflow-hidden rounded-lg border bg-gradient-to-br from-purple-50/50 to-background dark:from-purple-950/20 dark:to-background transition-all hover:shadow-md hover:scale-[1.02]">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150" />
+              <div className="relative p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-purple-200 dark:border-purple-800">
+                    Unique
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-0.5">
+                  {app.unique_users_count.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Unique Users</p>
+              </div>
+            </div>
+
+            {/* Success Rate */}
+            <div className="group relative overflow-hidden rounded-lg border bg-gradient-to-br from-green-50/50 to-background dark:from-green-950/20 dark:to-background transition-all hover:shadow-md hover:scale-[1.02]">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150" />
+              <div className="relative p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-green-500/10">
+                    <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-green-200 dark:border-green-800">
+                    Rate
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-0.5">
+                  {app.total_executions === 0 ? '—' : `${Math.round((app.success_rate || 0) * 100)}%`}
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Success Rate</p>
+              </div>
+            </div>
+
+            {/* Avg Time */}
+            <div className="group relative overflow-hidden rounded-lg border bg-gradient-to-br from-orange-50/50 to-background dark:from-orange-950/20 dark:to-background transition-all hover:shadow-md hover:scale-[1.02]">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150" />
+              <div className="relative p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-lg bg-orange-500/10">
+                    <Clock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-orange-200 dark:border-orange-800">
+                    Avg
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-0.5">
+                  {app.avg_execution_time_ms ? `${Math.round(app.avg_execution_time_ms)}ms` : '—'}
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Avg Time</p>
+              </div>
+            </div>
           </div>
 
           {/* Mode Content */}
           {mode === 'view' && (
-            <Tabs defaultValue="details" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="code">Component Code</TabsTrigger>
-                <TabsTrigger value="variables">Variables</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+            <Tabs defaultValue="details" className="space-y-4">
+              <TabsList className="bg-muted/50 p-1 h-auto">
+                <TabsTrigger value="details" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Details
+                </TabsTrigger>
+                <TabsTrigger value="code" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Component Code
+                </TabsTrigger>
+                <TabsTrigger value="variables" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Variables
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Settings
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="details" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
+              <TabsContent value="details" className="space-y-4 animate-in fade-in-50 duration-300">
+                <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Basic Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Name</label>
-                      <p className="text-foreground">{app.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Slug</label>
-                      <p className="text-muted-foreground font-mono">aimatrx.com/p/{app.slug}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</label>
+                        <p className="text-foreground font-medium">{app.name}</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slug</label>
+                        <p className="text-muted-foreground font-mono text-sm">aimatrx.com/p/{app.slug}</p>
+                      </div>
                     </div>
                     {app.description && (
-                      <div>
-                        <label className="text-sm font-medium">Description</label>
-                        <p className="text-foreground whitespace-pre-wrap">{app.description}</p>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</label>
+                        <p className="text-foreground whitespace-pre-wrap leading-relaxed">{app.description}</p>
                       </div>
                     )}
                     {app.tags && app.tags.length > 0 && (
-                      <div>
-                        <label className="text-sm font-medium">Tags</label>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tags</label>
+                        <div className="flex flex-wrap gap-2">
                           {app.tags.map(tag => (
-                            <Badge key={tag} variant="outline">{tag}</Badge>
+                            <Badge key={tag} variant="secondary" className="rounded-full px-3 py-1">
+                              {tag}
+                            </Badge>
                           ))}
                         </div>
                       </div>
@@ -330,69 +416,80 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="code">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Component Code</CardTitle>
+              <TabsContent value="code" className="animate-in fade-in-50 duration-300">
+                <Card className="border-border/50 shadow-sm overflow-hidden">
+                  <CardHeader className="pb-3 bg-muted/30">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Code2 className="w-5 h-5 text-primary" />
+                      Component Code
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-0">
                     <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
                       <CodeBlock
                         code={app.component_code}
                         language={app.component_language || 'tsx'}
                         showLineNumbers={true}
+                        allowEdit={false}
                       />
                     </Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="variables">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Variable Schema</CardTitle>
+              <TabsContent value="variables" className="animate-in fade-in-50 duration-300">
+                <Card className="border-border/50 shadow-sm overflow-hidden">
+                  <CardHeader className="pb-3 bg-muted/30">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-primary" />
+                      Variable Schema
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-0">
                     <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
                       <CodeBlock
                         code={JSON.stringify(app.variable_schema, null, 2)}
                         language="json"
                         showLineNumbers={true}
+                        allowEdit={false}
                       />
                     </Suspense>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="settings" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Rate Limiting</CardTitle>
+              <TabsContent value="settings" className="space-y-4 animate-in fade-in-50 duration-300">
+                <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Rate Limiting</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div>
-                      <label className="text-sm font-medium">Executions per IP</label>
-                      <p className="text-foreground">{app.rate_limit_per_ip}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Window (hours)</label>
-                      <p className="text-foreground">{app.rate_limit_window_hours}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Authenticated users</label>
-                      <p className="text-foreground">{app.rate_limit_authenticated} per window</p>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Executions per IP</label>
+                        <p className="text-xl font-bold text-foreground">{app.rate_limit_per_ip}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Window (hours)</label>
+                        <p className="text-xl font-bold text-foreground">{app.rate_limit_window_hours}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Authenticated users</label>
+                        <p className="text-xl font-bold text-foreground">{app.rate_limit_authenticated}</p>
+                        <p className="text-[10px] text-muted-foreground">per window</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Allowed Imports</CardTitle>
+                <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Allowed Imports</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {(app.allowed_imports as string[] || []).map((imp: string) => (
-                        <Badge key={imp} variant="outline" className="font-mono text-xs">
+                        <Badge key={imp} variant="outline" className="font-mono text-xs rounded-md px-2.5 py-1">
                           {imp}
                         </Badge>
                       ))}
@@ -404,124 +501,153 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           )}
 
           {mode === 'edit' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Basic Information</CardTitle>
+            <div className="space-y-4 animate-in fade-in-50 duration-300">
+              <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Basic Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                      id="name"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      placeholder="My Awesome App"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="slug">Slug *</Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">aimatrx.com/p/</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Name <span className="text-destructive">*</span>
+                      </Label>
                       <Input
-                        id="slug"
-                        value={editSlug}
-                        onChange={(e) => setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                        placeholder="my-awesome-app"
-                        className="flex-1"
+                        id="name"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="My Awesome App"
+                        className="transition-all focus:ring-2 focus:ring-primary/20"
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="slug" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Slug <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground shrink-0">aimatrx.com/p/</span>
+                        <Input
+                          id="slug"
+                          value={editSlug}
+                          onChange={(e) => setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                          placeholder="my-awesome-app"
+                          className="flex-1 font-mono text-sm transition-all focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tagline">Tagline</Label>
+                    <Label htmlFor="tagline" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Tagline
+                    </Label>
                     <Input
                       id="tagline"
                       value={editTagline}
                       onChange={(e) => setEditTagline(e.target.value)}
                       placeholder="Short description of your app"
+                      className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Description
+                    </Label>
                     <Textarea
                       id="description"
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
                       placeholder="Detailed description of what your app does"
                       rows={4}
+                      className="resize-none transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tags">Tags (comma-separated)</Label>
+                    <Label htmlFor="tags" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Tags (comma-separated)
+                    </Label>
                     <Input
                       id="tags"
                       value={editTags}
                       onChange={(e) => setEditTags(e.target.value)}
                       placeholder="ai, productivity, writing"
+                      className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle>Component Code</CardTitle>
+              <Card className="border-border/50 shadow-sm overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-gradient-to-r from-primary/5 to-transparent">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Code2 className="w-5 h-5 text-primary" />
+                    Component Code
+                  </CardTitle>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowAIEditor(true)}
-                    className="ml-auto"
+                    className="ml-auto hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     AI Edit
                   </Button>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
                     <CodeBlock
                       code={editComponentCode}
                       language={app.component_language || 'tsx'}
                       showLineNumbers={true}
                       onCodeChange={(newCode) => setEditComponentCode(newCode)}
+                      customBuiltinKeys={['prompt-app-ui-editor']}
                     />
                   </Suspense>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Rate Limiting</CardTitle>
+              <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Rate Limiting</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="rate_limit_ip">Executions per IP</Label>
+                    <Label htmlFor="rate_limit_ip" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Executions per IP
+                    </Label>
                     <Input
                       id="rate_limit_ip"
                       type="number"
                       value={editRateLimitPerIp}
                       onChange={(e) => setEditRateLimitPerIp(e.target.value)}
+                      className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rate_limit_window">Window (hours)</Label>
+                    <Label htmlFor="rate_limit_window" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Window (hours)
+                    </Label>
                     <Input
                       id="rate_limit_window"
                       type="number"
                       value={editRateLimitWindowHours}
                       onChange={(e) => setEditRateLimitWindowHours(e.target.value)}
+                      className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rate_limit_auth">Authenticated Users</Label>
+                    <Label htmlFor="rate_limit_auth" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Authenticated Users
+                    </Label>
                     <Input
                       id="rate_limit_auth"
                       type="number"
                       value={editRateLimitAuthenticated}
                       onChange={(e) => setEditRateLimitAuthenticated(e.target.value)}
+                      className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </CardContent>
@@ -530,12 +656,15 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           )}
 
           {mode === 'run' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Preview App</CardTitle>
+            <Card className="border-border/50 shadow-sm animate-in fade-in-50 duration-300">
+              <CardHeader className="pb-3 bg-gradient-to-r from-green-500/5 to-transparent">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Play className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  Preview App
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg p-6 bg-background">
+              <CardContent className="p-4">
+                <div className="border rounded-lg overflow-hidden bg-background shadow-inner">
                   <iframe
                     src={`/preview/${app.id}`}
                     className="w-full h-[600px] border-0"
@@ -554,7 +683,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         onOpenChange={setShowAIEditor}
         currentCode={editComponentCode}
         language={app.component_language || 'tsx'}
-        promptContext="prompt-app-ui"
+        promptKey="prompt-app-ui-editor"
         onCodeChange={(newCode) => setEditComponentCode(newCode)}
         title="AI Code Editor"
         allowPromptSelection={true}

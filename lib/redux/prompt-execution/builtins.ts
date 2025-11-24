@@ -47,7 +47,7 @@ export interface PromptBuiltin {
       id: 'c1c1f092-ba0d-4d6c-b352-b22fe6c48272',
       name: 'Prompt App Editor',
       description: 'Specialized for editing a Prompt App UI with custom instructions',
-      key: 'prompt-app-ui-builder',
+      key: 'prompt-app-ui-editor',
       context: false,
     },
     GENERIC_CODE: {

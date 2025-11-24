@@ -11,6 +11,7 @@ import CodeEditorLoading from "./CodeEditorLoading";
 import type { editor } from "monaco-editor";
 import { configureMonaco } from "../../config/monaco-config";
 import { CodeEditorContextMenu } from "../CodeEditorContextMenu";
+import { getFileExtension } from "@/features/code-editor/config/languages";
 
 interface CodeEditorProps {
     language?: string;
@@ -74,42 +75,18 @@ const SmallCodeEditor = ({
 
     // Generate a unique file path with extension based on language
     // This helps Monaco recognize TypeScript/TSX files correctly
-    const getFileExtension = (lang: string): string => {
+    const getLanguageFileExtension = (lang: string): string => {
         // Use explicit fileExtension if provided
         if (fileExtension) {
             return fileExtension.startsWith('.') ? fileExtension : `.${fileExtension}`;
         }
-
-        const extensionMap: Record<string, string> = {
-            'typescript': '.ts',
-            'javascript': '.js',
-            'json': '.json',
-            'html': '.html',
-            'css': '.css',
-            'python': '.py',
-            'java': '.java',
-            'cpp': '.cpp',
-            'c': '.c',
-            'csharp': '.cs',
-            'php': '.php',
-            'ruby': '.rb',
-            'go': '.go',
-            'rust': '.rs',
-            'swift': '.swift',
-            'kotlin': '.kt',
-            'sql': '.sql',
-            'shell': '.sh',
-            'yaml': '.yaml',
-            'xml': '.xml',
-            'markdown': '.md',
-        };
-        return extensionMap[lang] || '.txt';
+        return getFileExtension(lang);
     };
 
     // Use provided path or generate a unique one with proper extension
     // Use a ref to maintain stable path across re-renders to avoid duplicate models
     const modelPathRef = useRef<string>(
-        path || `inmemory://model-${Date.now()}-${Math.random().toString(36).substr(2, 9)}${getFileExtension(language)}`
+        path || `inmemory://model-${Date.now()}-${Math.random().toString(36).substr(2, 9)}${getLanguageFileExtension(language)}`
     );
     const modelPath = modelPathRef.current;
 

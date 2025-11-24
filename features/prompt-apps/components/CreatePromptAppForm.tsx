@@ -564,7 +564,7 @@ export function CreatePromptAppForm({ prompts, categories, preselectedPromptId, 
         onOpenChange={setShowAIEditor}
         currentCode={componentCode}
         language="tsx"
-        promptKey="prompt-app-ui-builder"
+        promptKey="prompt-app-ui-editor"
         onCodeChange={(newCode) => setComponentCode(newCode)}
         title="AI Code Editor"
         allowPromptSelection={true}

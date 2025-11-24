@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePromptRunner } from '@/features/prompts/hooks/usePromptRunner';
 import { useCanvas } from '@/hooks/useCanvas';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
-import { normalizeLanguage } from '@/features/code-editor/utils/languages';
+import { normalizeLanguage } from '@/features/code-editor/config/languages';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { supabase } from '@/utils/supabase/client';
@@ -31,7 +31,7 @@ export interface AICodeEditorModalV2Props {
     currentCode: string;
     language: string;
     builtinId?: string;
-    promptKey?: 'prompt-app-ui-builder' | 'generic-code-editor' | 'code-editor-dynamic-context';
+    promptKey?: 'prompt-app-ui-editor' | 'generic-code-editor' | 'code-editor-dynamic-context';
     onCodeChange: (newCode: string) => void;
     selection?: string;
     context?: string;

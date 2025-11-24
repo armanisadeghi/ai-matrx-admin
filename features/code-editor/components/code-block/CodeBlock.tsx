@@ -16,6 +16,7 @@ import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
+import { mapLanguageForPrism, mapLanguageForMonaco, getMonacoFileExtension } from "@/features/code-editor/config/languages";
 
 // Type assertion to resolve React 19 type incompatibility
 const SyntaxHighlighter = SyntaxHighlighterBase as any;
@@ -36,118 +37,26 @@ interface CodeBlockProps {
     onCodeChange?: (newCode: string) => void;
     inline?: boolean;
     isStreamActive?: boolean;
+    allowEdit?: boolean;
+    customBuiltinKeys?: string[];
 }
-
-/**
- * Map language identifiers to Prism.js-compatible language names
- * @param lang - The language identifier (may be undefined, null, or invalid)
- * @returns A valid Prism.js language name, defaulting to 'text' if invalid
- */
-const mapLanguageForPrism = (lang: string): string => {
-    // Defensive: Handle undefined, null, empty, or non-string values
-    if (!lang || typeof lang !== 'string') {
-        return 'text';
-    }
-
-    const languageMap: Record<string, string> = {
-        'react': 'tsx',          // React components → TypeScript JSX
-        'jsx': 'jsx',            // JavaScript JSX
-        'tsx': 'tsx',            // TypeScript JSX
-        'typescript': 'typescript',
-        'javascript': 'javascript',
-        'js': 'javascript',
-        'ts': 'typescript',
-        'html': 'html',
-        'css': 'css',
-        'json': 'json',
-        'markdown': 'markdown',
-        'md': 'markdown',
-        'bash': 'bash',
-        'shell': 'bash',
-        'sql': 'sql',
-        'python': 'python',
-        'py': 'python',
-        'diff': 'diff',
-        'text': 'text',
-        'plaintext': 'text',
-    };
-    
-    const normalizedLang = lang.trim().toLowerCase();
-    return languageMap[normalizedLang] || normalizedLang || 'text';
-};
-
-/**
- * Map language identifiers to Monaco Editor-compatible language names
- * @param lang - The language identifier (may be undefined, null, or invalid)
- * @returns A valid Monaco language name, defaulting to 'plaintext' if invalid
- */
-const mapLanguageForMonaco = (lang: string): string => {
-    // Defensive: Handle undefined, null, empty, or non-string values
-    if (!lang || typeof lang !== 'string') {
-        return 'plaintext';
-    }
-
-    const languageMap: Record<string, string> = {
-        'react': 'typescript',  // React components → TypeScript (Monaco uses 'typescript' for TSX)
-        'jsx': 'javascript',    // JavaScript JSX → Monaco uses 'javascript' for JSX
-        'tsx': 'typescript',    // TypeScript JSX → Monaco uses 'typescript' for TSX
-        'typescript': 'typescript',
-        'javascript': 'javascript',
-        'js': 'javascript',
-        'ts': 'typescript',
-        'html': 'html',
-        'css': 'css',
-        'scss': 'scss',
-        'json': 'json',
-        'markdown': 'markdown',
-        'md': 'markdown',
-        'bash': 'shell',
-        'shell': 'shell',
-        'sh': 'shell',
-        'sql': 'sql',
-        'python': 'python',
-        'py': 'python',
-        'diff': 'diff',
-        'java': 'java',
-        'csharp': 'csharp',
-        'cs': 'csharp',
-        'php': 'php',
-        'ruby': 'ruby',
-        'go': 'go',
-        'rust': 'rust',
-        'yaml': 'yaml',
-        'yml': 'yaml',
-        'xml': 'xml',
-        'text': 'plaintext',
-        'plaintext': 'plaintext',
-    };
-    
-    const normalizedLang = lang.trim().toLowerCase();
-    return languageMap[normalizedLang] || normalizedLang || 'plaintext';
-};
 
 const CodeBlock: React.FC<CodeBlockProps> = ({
     code: initialCode,
     language: rawLanguage = 'text',
-    fontSize = 16,
+    fontSize = 12,
     showLineNumbers = false,
     wrapLines = true,
     className,
     onCodeChange,
     inline = false,
     isStreamActive = false,
+    allowEdit = true,
+    customBuiltinKeys = [],
 }) => {
     // Map language for respective editors (with additional safety checks)
     const prismLanguage = mapLanguageForPrism(rawLanguage);
     const monacoLanguage = mapLanguageForMonaco(rawLanguage);
-    
-    // Determine file extension for Monaco to enable JSX/TSX support
-    const getMonacoFileExtension = (raw: string): string | undefined => {
-        const normalized = raw.trim().toLowerCase();
-        if (normalized === 'tsx' || normalized === 'react') return '.tsx';
-        if (normalized === 'jsx') return '.jsx';
-        return undefined; // Let Monaco infer from language
-    };
     const monacoFileExtension = getMonacoFileExtension(rawLanguage);
     
     const [editedCode, setEditedCode] = useState<string | null>(null);
@@ -431,6 +340,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 toggleMinimap={toggleMinimap}
                 showLineNumbers={lineNumbers}
                 onAIEdit={handleOpenAIModal}
+                allowEdit={allowEdit}
+                customBuiltinKeys={customBuiltinKeys}
             />
             {showStickyButtons && (
                 <StickyButtons

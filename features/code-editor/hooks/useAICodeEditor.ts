@@ -26,7 +26,7 @@ import {
     type CodeEditorContext
 } from '@/features/code-editor/utils/specialVariables';
 import type { Resource } from '@/features/prompts/components/resource-display';
-import { normalizeLanguage } from '@/features/code-editor/utils/languages';
+import { normalizeLanguage } from '@/features/code-editor/config/languages';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 
 export type EditorState = 'input' | 'processing' | 'review' | 'applying' | 'complete' | 'error';
@@ -37,7 +37,7 @@ export interface UseAICodeEditorProps {
     currentCode: string;
     language: string;
     builtinId?: string;
-    promptKey?: 'prompt-app-ui-builder' | 'generic-code-editor' | 'code-editor-dynamic-context';
+    promptKey?: 'prompt-app-ui-editor' | 'generic-code-editor' | 'code-editor-dynamic-context';
     onCodeChange: (newCode: string) => void;
     selection?: string;
     context?: string;
