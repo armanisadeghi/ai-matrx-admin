@@ -31,25 +31,45 @@ import {
  * ```
  */
 export function useCanvas() {
-  const dispatch = useAppDispatch();
-  const isOpen = useAppSelector(selectCanvasIsOpen);
-  const content = useAppSelector(selectCanvasContent);
+  // Gracefully handle missing Redux provider (e.g., in public app context)
+  let dispatch: any;
+  let isOpen = false;
+  let content: CanvasContent | null = null;
+  let hasProvider = true;
+
+  try {
+    dispatch = useAppDispatch();
+    isOpen = useAppSelector(selectCanvasIsOpen);
+    content = useAppSelector(selectCanvasContent);
+  } catch (error) {
+    // Expected in public context without Redux provider - not critical
+    hasProvider = false;
+    console.warn('[useCanvas] Redux provider not found, canvas features disabled');
+  }
 
   const open = useCallback((canvasContent: CanvasContent) => {
-    dispatch(openCanvas(canvasContent));
-  }, [dispatch]);
+    if (hasProvider && dispatch) {
+      dispatch(openCanvas(canvasContent));
+    }
+  }, [dispatch, hasProvider]);
 
   const close = useCallback(() => {
-    dispatch(closeCanvas());
-  }, [dispatch]);
+    if (hasProvider && dispatch) {
+      dispatch(closeCanvas());
+    }
+  }, [dispatch, hasProvider]);
 
   const clear = useCallback(() => {
-    dispatch(clearCanvas());
-  }, [dispatch]);
+    if (hasProvider && dispatch) {
+      dispatch(clearCanvas());
+    }
+  }, [dispatch, hasProvider]);
 
   const update = useCallback((canvasContent: CanvasContent) => {
-    dispatch(updateCanvasContent({ content: canvasContent }));
-  }, [dispatch]);
+    if (hasProvider && dispatch) {
+      dispatch(updateCanvasContent({ content: canvasContent }));
+    }
+  }, [dispatch, hasProvider]);
 
   return {
     open,

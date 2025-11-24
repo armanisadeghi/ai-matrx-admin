@@ -140,12 +140,14 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
     // Check if we should show loading state (taskId exists but no content yet)
     const isWaitingForContent = taskId && !content.trim();
 
-    // Safe selector usage with error handling
+    // Safe selector usage with error handling (gracefully handles missing Redux provider)
     let toolUpdates: any[] = [];
+    let hasReduxProvider = true;
     try {
         toolUpdates = useAppSelector(selectPrimaryResponseToolUpdatesByTaskId(taskId)) || [];
     } catch (error) {
-        console.error("[EnhancedChatMarkdown] Error fetching tool updates:", error);
+        // Expected in public context without Redux provider - not critical
+        hasReduxProvider = false;
         toolUpdates = [];
     }
 

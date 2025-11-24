@@ -73,7 +73,16 @@ export const ThemeProvider: React.FC<{
 export const useTheme = () => {
     const context = useContext(ThemeContext);
     if (!context) {
-        throw new Error('useTheme must be used within a ThemeProvider');
+        // Gracefully handle missing ThemeProvider (e.g., in public app context)
+        // Return safe defaults instead of throwing
+        console.warn('[useTheme] ThemeProvider not found, using default light mode');
+        return {
+            mode: 'light' as const,
+            setMode: () => {},
+            theme: {
+                // Add basic theme defaults if needed
+            }
+        };
     }
     return context;
 };

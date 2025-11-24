@@ -31,8 +31,18 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     const [includeBulletStyles, setIncludeBulletStyles] = useState(true);
     const [includeDecorativeLineBreaks, setIncludeDecorativeLineBreaks] = useState(true);
     
-    // HTML Pages system
-    const user = useAppSelector(selectUser);
+    // HTML Pages system (gracefully handle missing Redux provider)
+    let user: any = null;
+    let hasReduxProvider = true;
+    try {
+        user = useAppSelector(selectUser);
+    } catch (error) {
+        // Expected in public context without Redux provider
+        hasReduxProvider = false;
+        console.warn('[HtmlPreviewModal] Redux provider not found, HTML page features disabled');
+    }
+    
+    // useHTMLPages doesn't use Redux, so it's safe to call unconditionally
     const { createHTMLPage, isCreating, error, clearError } = useHTMLPages(user?.id);
     const [savedPage, setSavedPage] = useState<any>(null);
     const [pageTitle, setPageTitle] = useState<string>("");
