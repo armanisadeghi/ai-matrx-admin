@@ -113,7 +113,7 @@ export function useContextMenuShortcuts(
           scope_mappings: row.scope_mappings,
           available_scopes: row.available_scopes,
           // Execution Configuration (Boolean-based)
-          result_display: row.result_display || 'modal',
+          result_display: row.result_display || 'modal-full', // FIXED: was 'modal', now 'modal-full'
           auto_run: row.auto_run ?? true,
           allow_chat: row.allow_chat ?? true,
           show_variables: row.show_variables ?? false,

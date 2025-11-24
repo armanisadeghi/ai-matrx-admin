@@ -290,7 +290,7 @@ export function PromptBuiltinEditPanel({
             <div className="flex items-center gap-3">
               <Label className="text-xs flex-shrink-0 w-28">Display</Label>
               <Select
-                value={editShortcutData.result_display || 'modal'}
+                value={editShortcutData.result_display || 'modal-full'}
                 onValueChange={(value: ResultDisplay) => onShortcutChange('result_display', value)}
               >
                 <SelectTrigger className="h-7 text-xs flex-1">

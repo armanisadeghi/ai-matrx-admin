@@ -59,6 +59,7 @@ import {
   FileText,
   Copy,
   Check,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   ShortcutCategory,
@@ -90,7 +91,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getUserFriendlyError } from '../utils/error-handler';
 
-type SortField = 'label' | 'category' | 'status' | 'connection' | 'placement';
+type SortField = 'label' | 'category' | 'status' | 'connection' | 'placement' | 'display' | 'auto_run' | 'allow_chat' | 'show_variables' | 'apply_variables';
 type SortDirection = 'asc' | 'desc';
 
 interface ShortcutWithRelations extends PromptShortcut {
@@ -103,15 +104,13 @@ interface ShortcutsTableManagerProps {
 }
 
 /**
- * Safely get result display metadata with proper fallback
- * Prevents crashes from invalid or legacy display values
+ * Get result display metadata WITHOUT masking invalid values
+ * Returns null for invalid values so we can show warnings
  */
-function getResultDisplayMeta(display: string | null | undefined) {
-  const DEFAULT_DISPLAY: ResultDisplay = 'modal-full';
-  
+function getResultDisplayMeta(display: string | null | undefined): { label: string; description?: string; icon?: string; useCases?: readonly string[] } | null {
   // Handle null/undefined
   if (!display) {
-    return RESULT_DISPLAY_META[DEFAULT_DISPLAY];
+    return null;
   }
   
   // Check if the display value exists in our metadata
@@ -119,9 +118,8 @@ function getResultDisplayMeta(display: string | null | undefined) {
     return RESULT_DISPLAY_META[display as ResultDisplay];
   }
   
-  // Fallback for invalid values
-  console.warn(`Invalid result_display value: "${display}". Using default: "${DEFAULT_DISPLAY}"`);
-  return RESULT_DISPLAY_META[DEFAULT_DISPLAY];
+  // Return null for invalid values - DO NOT MASK THE BUG
+  return null;
 }
 
 export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps) {
@@ -140,6 +138,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const [statusFilter, setStatusFilter] = useState<'all' | 'connected' | 'unconnected'>('all');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [placementFilter, setPlacementFilter] = useState<string>('all');
+  const [displayFilter, setDisplayFilter] = useState<string>('all');
 
   // Modals
   const [editingShortcut, setEditingShortcut] = useState<ShortcutWithRelations | null>(null);
@@ -217,6 +216,14 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
       }
     });
     return Array.from(placements);
+  }, [shortcuts]);
+
+  const availableDisplays = useMemo(() => {
+    const displays = new Set<string>();
+    shortcuts.forEach(s => {
+      displays.add(s.result_display || 'modal-full');
+    });
+    return Array.from(displays).sort();
   }, [shortcuts]);
 
   const availableCategories = useMemo(() => {
@@ -310,6 +317,11 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
       filtered = filtered.filter(s => !s.is_active);
     }
 
+    // Display filter
+    if (displayFilter !== 'all') {
+      filtered = filtered.filter(s => (s.result_display || 'modal-full') === displayFilter);
+    }
+
     // Sort
     filtered.sort((a, b) => {
       let aVal: any, bVal: any;
@@ -335,6 +347,26 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
           aVal = a.category?.placement_type || '';
           bVal = b.category?.placement_type || '';
           break;
+        case 'display':
+          aVal = a.result_display || 'modal-full';
+          bVal = b.result_display || 'modal-full';
+          break;
+        case 'auto_run':
+          aVal = a.auto_run ?? true ? 1 : 0;
+          bVal = b.auto_run ?? true ? 1 : 0;
+          break;
+        case 'allow_chat':
+          aVal = a.allow_chat ?? true ? 1 : 0;
+          bVal = b.allow_chat ?? true ? 1 : 0;
+          break;
+        case 'show_variables':
+          aVal = a.show_variables ?? false ? 1 : 0;
+          bVal = b.show_variables ?? false ? 1 : 0;
+          break;
+        case 'apply_variables':
+          aVal = a.apply_variables ?? true ? 1 : 0;
+          bVal = b.apply_variables ?? true ? 1 : 0;
+          break;
         default:
           return 0;
       }
@@ -345,7 +377,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     });
 
     return filtered;
-  }, [shortcuts, searchQuery, categoryFilter, placementFilter, statusFilter, activeFilter, sortField, sortDirection]);
+  }, [shortcuts, searchQuery, categoryFilter, placementFilter, statusFilter, activeFilter, displayFilter, sortField, sortDirection]);
 
   // Stats
   const stats = useMemo(() => {
@@ -447,9 +479,10 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     setPlacementFilter('all');
     setStatusFilter('all');
     setActiveFilter('all');
+    setDisplayFilter('all');
   };
 
-  const hasActiveFilters = searchQuery || categoryFilter !== 'all' || placementFilter !== 'all' || statusFilter !== 'all' || activeFilter !== 'all';
+  const hasActiveFilters = searchQuery || categoryFilter !== 'all' || placementFilter !== 'all' || statusFilter !== 'all' || activeFilter !== 'all' || displayFilter !== 'all';
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
@@ -586,6 +619,29 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                 <SelectItem value="inactive">Inactive Only</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={displayFilter} onValueChange={setDisplayFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Displays</SelectItem>
+                {availableDisplays.map((display) => {
+                  const meta = getResultDisplayMeta(display);
+                  const isInvalid = !meta;
+                  return (
+                    <SelectItem key={display} value={display}>
+                      <div className="flex items-center gap-2">
+                        {isInvalid && <AlertTriangle className="h-3 w-3 text-destructive" />}
+                        <span className={isInvalid ? 'text-destructive font-semibold' : ''}>
+                          {isInvalid ? `⚠️ ${display}` : meta.label}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -620,11 +676,41 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       <SortIcon field="category" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[100px]">Display</TableHead>
-                  <TableHead className="w-[70px] text-center">Auto</TableHead>
-                  <TableHead className="w-[70px] text-center">Chat</TableHead>
-                  <TableHead className="w-[70px] text-center">Show Vars</TableHead>
-                  <TableHead className="w-[70px] text-center">Apply Vars</TableHead>
+                  <TableHead className="min-w-[100px]" onClick={() => handleSort('display')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      <span className="font-semibold">Display</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="display" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[70px]" onClick={() => handleSort('auto_run')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      <span className="font-semibold">Auto</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="auto_run" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[70px]" onClick={() => handleSort('allow_chat')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      <span className="font-semibold">Chat</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="allow_chat" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[70px]" onClick={() => handleSort('show_variables')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      <span className="font-semibold">Show Vars</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="show_variables" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[70px]" onClick={() => handleSort('apply_variables')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      <span className="font-semibold">Apply Vars</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="apply_variables" />
+                    </div>
+                  </TableHead>
                   <TableHead className="min-w-[120px]">Keyboard</TableHead>
                   <TableHead className="min-w-[140px]" onClick={() => handleSort('connection')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
@@ -745,25 +831,56 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                         />
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Select
-                          value={shortcut.result_display || 'modal-full'}
-                          onValueChange={(value: any) => {
-                            optimisticUpdate(shortcut.id, { result_display: value }, 'Display updated');
-                          }}
-                        >
-                          <SelectTrigger className="h-7 text-xs">
-                            <SelectValue>
-                              {getResultDisplayMeta(shortcut.result_display).label}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(RESULT_DISPLAY_META).map(([key, value]) => (
-                              <SelectItem key={key} value={key} className="text-xs">
-                                {value.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {(() => {
+                          const displayValue = shortcut.result_display || null;
+                          const meta = getResultDisplayMeta(displayValue);
+                          const isInvalid = !meta;
+
+                          return (
+                            <div className="flex items-center gap-1">
+                              {isInvalid && (
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-destructive text-destructive-foreground">
+                                    <div className="space-y-1">
+                                      <p className="font-semibold">⚠️ INVALID VALUE</p>
+                                      <p className="text-xs">Database contains: <code className="bg-background/20 px-1 rounded">{displayValue || 'null'}</code></p>
+                                      <p className="text-xs">This value is not recognized and will cause bugs!</p>
+                                      <p className="text-xs font-semibold mt-2">→ Select a valid value to fix</p>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              <Select
+                                value={isInvalid ? '' : (displayValue || 'modal-full')}
+                                onValueChange={(value: any) => {
+                                  optimisticUpdate(shortcut.id, { result_display: value }, 'Display updated');
+                                }}
+                              >
+                                <SelectTrigger className={`h-7 text-xs ${isInvalid ? 'border-destructive text-destructive' : ''}`}>
+                                  <SelectValue>
+                                    {isInvalid ? (
+                                      <span className="text-destructive font-semibold">
+                                        INVALID: {displayValue || 'null'}
+                                      </span>
+                                    ) : (
+                                      meta?.label || 'Select...'
+                                    )}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(RESULT_DISPLAY_META).map(([key, value]) => (
+                                    <SelectItem key={key} value={key} className="text-xs">
+                                      {value.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                         <Checkbox

@@ -63,6 +63,7 @@ import type {
 } from '../types';
 import {
   fetchPromptBuiltins,
+  fetchPromptBuiltinsWithSource,
   fetchPromptShortcuts,
   fetchShortcutCategories,
 } from '../services/admin-service';
@@ -75,7 +76,7 @@ import { BuiltinEditor } from '@/features/prompts/components/universal-editor';
 import { updatePromptShortcut } from '../services/admin-service';
 import type { ScopeMapping } from '../types/core';
 
-type SortField = 'name' | 'variables' | 'usage' | 'source';
+type SortField = 'name' | 'variables' | 'usage' | 'source' | 'active';
 type SortDirection = 'asc' | 'desc';
 
 interface PromptBuiltinsTableManagerProps {
@@ -95,6 +96,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSource, setFilterSource] = useState<'all' | 'converted' | 'generated'>('all');
+  const [filterActive, setFilterActive] = useState<'all' | 'active' | 'inactive'>('active');
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -127,7 +129,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
     try {
       setLoading(true);
       const [builtinsData, shortcutsData, categoriesData, modelsResponse, toolsResponse] = await Promise.all([
-        fetchPromptBuiltins({ is_active: true }),
+        fetchPromptBuiltinsWithSource({}), // ✅ OPTIMIZED: Single query with JOIN instead of N+1
         fetchPromptShortcuts(),
         fetchShortcutCategories(),
         fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
@@ -140,28 +142,19 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       setModels(modelsResponse?.models || []);
       setAvailableTools(toolsResponse?.tools || []);
       
-      // Fetch source prompt names for builtins with source_prompt_id
-      const sourcePromptIds = builtinsData
-        .filter(b => b.source_prompt_id)
-        .map(b => b.source_prompt_id as string);
+      // ✅ OPTIMIZED: Source prompt names are now included in builtinsData!
+      // Build the prompt names map from the already-loaded data
+      const promptNames: Record<string, string> = {};
+      builtinsData.forEach(builtin => {
+        if (builtin.source_prompt_id && builtin.source_prompt_name) {
+          promptNames[builtin.source_prompt_id] = builtin.source_prompt_name;
+        }
+      });
+      setSourcePromptNames(promptNames);
       
-      if (sourcePromptIds.length > 0) {
-        const promptNames: Record<string, string> = {};
-        await Promise.all(
-          sourcePromptIds.map(async (promptId) => {
-            try {
-              const response = await fetch(`/api/prompts/${promptId}`);
-              if (response.ok) {
-                const prompt = await response.json();
-                promptNames[promptId] = prompt.name;
-              }
-            } catch (err) {
-              console.error(`Failed to fetch prompt ${promptId}:`, err);
-            }
-          })
-        );
-        setSourcePromptNames(promptNames);
-      }
+      // 🎉 ELIMINATED N+1 QUERY PROBLEM!
+      // Before: 1 query for builtins + N queries for prompt names = 25+ API calls
+      // After: 1 query with JOIN = 1 database query total!
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -333,6 +326,13 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       filtered = filtered.filter(b => !b.source_prompt_id);
     }
 
+    // Active filter
+    if (filterActive === 'active') {
+      filtered = filtered.filter(b => b.is_active);
+    } else if (filterActive === 'inactive') {
+      filtered = filtered.filter(b => !b.is_active);
+    }
+
     // Sort
     filtered.sort((a, b) => {
       let aVal: any, bVal: any;
@@ -354,6 +354,10 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
           aVal = a.source_prompt_id ? 1 : 0;
           bVal = b.source_prompt_id ? 1 : 0;
           break;
+        case 'active':
+          aVal = a.is_active ? 1 : 0;
+          bVal = b.is_active ? 1 : 0;
+          break;
         default:
           return 0;
       }
@@ -364,16 +368,16 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
     });
 
     return filtered;
-  }, [builtins, searchQuery, filterSource, sortField, sortDirection, shortcuts]);
+  }, [builtins, searchQuery, filterSource, filterActive, sortField, sortDirection, shortcuts]);
 
   // Stats
   const stats = useMemo(() => {
     const total = builtins.length;
+    const active = builtins.filter(b => b.is_active).length;
     const converted = builtins.filter(b => b.source_prompt_id).length;
-    const generated = total - converted;
     const inUse = builtins.filter(b => getUsageCount(b.id) > 0).length;
 
-    return { total, converted, generated, inUse };
+    return { total, active, converted, inUse };
   }, [builtins, shortcuts]);
 
   const handleSort = (field: SortField) => {
@@ -441,9 +445,10 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   const clearFilters = () => {
     setSearchQuery('');
     setFilterSource('all');
+    setFilterActive('active');
   };
 
-  const hasActiveFilters = searchQuery || filterSource !== 'all';
+  const hasActiveFilters = searchQuery || filterSource !== 'all' || filterActive !== 'active';
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
@@ -497,14 +502,14 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
             </Card>
             <Card>
               <CardContent className="p-2">
-                <div className="text-xl font-bold text-blue-600">{stats.converted}</div>
-                <div className="text-xs text-muted-foreground">Converted</div>
+                <div className="text-xl font-bold text-blue-600">{stats.active}</div>
+                <div className="text-xs text-muted-foreground">Active</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-2">
-                <div className="text-xl font-bold text-purple-600">{stats.generated}</div>
-                <div className="text-xs text-muted-foreground">Generated</div>
+                <div className="text-xl font-bold text-purple-600">{stats.converted}</div>
+                <div className="text-xs text-muted-foreground">Converted</div>
               </CardContent>
             </Card>
             <Card>
@@ -530,7 +535,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                 size="sm"
                 onClick={() => setFilterSource('all')}
               >
-                All
+                All Sources
               </Button>
               <Button
                 variant={filterSource === 'converted' ? 'default' : 'outline'}
@@ -545,6 +550,30 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                 onClick={() => setFilterSource('generated')}
               >
                 Generated
+              </Button>
+            </div>
+
+            <div className="flex gap-2 ml-2 pl-2 border-l">
+              <Button
+                variant={filterActive === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterActive('all')}
+              >
+                All Status
+              </Button>
+              <Button
+                variant={filterActive === 'active' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterActive('active')}
+              >
+                Active
+              </Button>
+              <Button
+                variant={filterActive === 'inactive' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterActive('inactive')}
+              >
+                Inactive
               </Button>
             </div>
           </div>
@@ -585,6 +614,13 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                       <span className="font-semibold">Source</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="source" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[80px]" onClick={() => handleSort('active')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      <span className="font-semibold">Active</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="active" />
                     </div>
                   </TableHead>
                   <TableHead className="text-right w-[140px]">Actions</TableHead>
@@ -746,6 +782,11 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                           </Badge>
                         )}
                       </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Badge variant={builtin.is_active ? "default" : "outline"}>
+                          {builtin.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <Tooltip>
@@ -796,7 +837,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                       
                       return (
                         <TableRow key={`${builtin.id}-${shortcut.id}`} className="bg-muted/30">
-                          <TableCell colSpan={6} className="py-4 pr-4">
+                          <TableCell colSpan={7} className="py-4 pr-4">
                             <div className="ml-10 mr-4 space-y-3">
                               {/* Shortcut Header */}
                               <div className="flex items-center justify-between gap-4">

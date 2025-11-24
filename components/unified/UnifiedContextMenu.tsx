@@ -42,16 +42,19 @@ import {
   Clipboard,
   Type,
   Search,
+  Bug,
 } from 'lucide-react';
 import { useUnifiedContextMenu } from '@/features/prompt-builtins/hooks';
 import { useShortcutExecution } from '@/features/prompt-builtins/hooks';
 import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '@/features/prompt-builtins/constants';
 import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt-builtins/types/menu';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
+import { FindReplaceModal } from '@/components/modals/FindReplaceModal';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
 import { useAppSelector } from '@/lib/redux';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
+import { ContextDebugModal } from '@/components/debug/ContextDebugModal';
 import { getIconComponent } from '@/components/official/IconResolver';
 
 interface UnifiedContextMenuProps {
@@ -162,16 +165,28 @@ export function UnifiedContextMenu({
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const [debugModalOpen, setDebugModalOpen] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
+  const [contextDebugOpen, setContextDebugOpen] = useState(false);
 
   // Selection tracking
   const [selectedText, setSelectedText] = useState<string>('');
-  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
+  const [selectionRange, setSelectionRange] = useState<{
+    type: 'editable' | 'non-editable';
+    // For editable elements
+    element: HTMLElement | null;
+    start: number;
+    end: number;
+    // For non-editable elements
+    range?: Range | null;
+    containerElement?: HTMLElement | null;
+  } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [highlightBox, setHighlightBox] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
   // Text result modal
   const [textResultModalOpen, setTextResultModalOpen] = useState(false);
   const [textResultData, setTextResultData] = useState<{ original: string; result: string; promptName: string } | null>(null);
+
+  // Find/Replace modal
+  const [findReplaceOpen, setFindReplaceOpen] = useState(false);
 
   // Track selection
   React.useEffect(() => {
@@ -187,74 +202,118 @@ export function UnifiedContextMenu({
 
   const handleContextMenu = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    let text = '';
-    let start = 0;
-    let end = 0;
-    let element: HTMLElement | null = null;
-    let highlightRect = null;
-
-    // For textareas and inputs, get selection directly from the element
+    
+    // EDITABLE PATH: textareas and inputs
     if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
-      start = target.selectionStart || 0;
-      end = target.selectionEnd || 0;
-      element = target;
-      // Get the actual selected text from the textarea value
-      text = target.value.substring(start, end).trim();
+      const start = target.selectionStart || 0;
+      const end = target.selectionEnd || 0;
+      const text = target.value.substring(start, end);
       
-      // For textareas, we'll use a CSS-based approach with the selection still active
-      // Keep the selection active by not calling anything that clears it
+      setSelectedText(text);
+      setSelectionRange({
+        type: 'editable',
+        element: target,
+        start,
+        end,
+        range: null,
+        containerElement: null,
+      });
+      setMenuOpen(true);
+
+      if (DEBUG) {
+        console.log('[UnifiedContextMenu] EDITABLE selection captured:', { 
+          text, 
+          start, 
+          end, 
+          hasText: text.length > 0,
+          elementType: target.tagName
+        });
+      }
     } else {
-      // For contenteditable elements, use window selection
+      // NON-EDITABLE PATH: regular elements with text selection
       const selection = window.getSelection();
-      text = selection?.toString().trim() || '';
+      const text = selection?.toString() || '';
+      let range: Range | null = null;
       
       if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        start = range.startOffset;
-        end = range.endOffset;
-        element = target;
-        
-        // Get the visual bounds of the selection for highlighting
-        try {
-          const rects = range.getBoundingClientRect();
-          const parentRect = target.getBoundingClientRect();
-          highlightRect = {
-            top: rects.top - parentRect.top,
-            left: rects.left - parentRect.left,
-            width: rects.width,
-            height: rects.height,
-          };
-        } catch (err) {
-          // Ignore if we can't get bounds
+        // Clone the range so we can restore it later
+        range = selection.getRangeAt(0).cloneRange();
+      }
+      
+      // Find the closest context menu container
+      let containerElement = e.currentTarget as HTMLElement;
+      if (containerElement.hasAttribute('data-radix-context-menu-trigger')) {
+        // Already the trigger
+      } else {
+        // Search for the trigger within currentTarget
+        const trigger = containerElement.querySelector('[data-radix-context-menu-trigger]');
+        if (trigger instanceof HTMLElement) {
+          containerElement = trigger;
         }
       }
-    }
+      
+      setSelectedText(text);
+      setSelectionRange({
+        type: 'non-editable',
+        element: null,
+        start: 0,
+        end: 0,
+        range,
+        containerElement,
+      });
+      setMenuOpen(true);
 
-    // Store the selection immediately, before the menu opens and selection is cleared
-    setSelectedText(text);
-    setSelectionRange({ start, end, element });
-    setHighlightBox(highlightRect);
-    setMenuOpen(true);
-
-    if (DEBUG) {
-      console.log('[UnifiedContextMenu] Selection captured:', { text, start, end, highlightRect });
+      if (DEBUG) {
+        console.log('[UnifiedContextMenu] NON-EDITABLE selection captured:', { 
+          text,
+          hasRange: !!range,
+          hasText: text.length > 0,
+          containerElement: containerElement.tagName
+        });
+      }
     }
   };
 
   // Restore selection when menu closes
   const handleMenuClose = () => {
     setMenuOpen(false);
-    setHighlightBox(null);
     
-    // Restore selection if we have it stored
-    if (selectionRange && selectionRange.element) {
-      setTimeout(() => {
-        const { element, start, end } = selectionRange;
-        if (element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement) {
+    if (!selectionRange) return;
+    
+    if (selectionRange.type === 'editable') {
+      // EDITABLE PATH: Restore textarea/input selection
+      const { element, start, end } = selectionRange;
+      if (element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement) {
+        // Longer delay to wait for menu animation to complete
+        setTimeout(() => {
           element.focus();
           element.setSelectionRange(start, end);
-        }
-      }, 0);
+          
+          if (DEBUG) {
+            console.log('[UnifiedContextMenu] Restored EDITABLE selection:', { start, end });
+          }
+        }, 150); // Increased delay for reliable restoration
+      }
+    } else {
+      // NON-EDITABLE PATH: Restore DOM selection using Range
+      const { range } = selectionRange;
+      if (range) {
+        setTimeout(() => {
+          try {
+            const selection = window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(range);
+              
+              if (DEBUG) {
+                console.log('[UnifiedContextMenu] Restored NON-EDITABLE selection');
+              }
+            }
+          } catch (error) {
+            console.error('[UnifiedContextMenu] Failed to restore selection:', error);
+          }
+        }, 50); // Shorter delay for non-editable since no focus needed
+      }
     }
   };
 
@@ -262,12 +321,15 @@ export function UnifiedContextMenu({
   const handleCut = () => {
     if (selectionRange?.element) {
       document.execCommand('cut');
+      // Clear stored selection after cut
+      setSelectionRange(null);
     }
   };
 
   const handleCopy = () => {
     if (selectedText) {
       navigator.clipboard.writeText(selectedText);
+      // Don't clear selection for copy - we want to keep it
     }
   };
 
@@ -299,19 +361,54 @@ export function UnifiedContextMenu({
   };
 
   const handleSelectAll = () => {
-    if (selectionRange?.element) {
-      const element = selectionRange.element;
+    if (!selectionRange) return;
+    
+    // Clear the stored selection so handleMenuClose doesn't restore the old one
+    const selectionToUse = selectionRange;
+    setSelectionRange(null);
+    
+    if (selectionToUse.type === 'editable') {
+      // EDITABLE PATH: Use element.select()
+      const element = selectionToUse.element;
       if (element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement) {
-        element.select();
-      } else {
-        document.execCommand('selectAll');
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+          element.focus();
+          element.select();
+          
+          if (DEBUG) {
+            console.log('[UnifiedContextMenu] Select All - EDITABLE');
+          }
+        });
+      }
+    } else {
+      // NON-EDITABLE PATH: Create Range for container content only
+      const container = selectionToUse.containerElement;
+      if (container) {
+        requestAnimationFrame(() => {
+          try {
+            const range = document.createRange();
+            range.selectNodeContents(container);
+            
+            const selection = window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(range);
+              
+              if (DEBUG) {
+                console.log('[UnifiedContextMenu] Select All - NON-EDITABLE');
+              }
+            }
+          } catch (error) {
+            console.error('[UnifiedContextMenu] Select all failed:', error);
+          }
+        });
       }
     }
   };
 
   const handleFind = () => {
-    // Trigger browser's native find (Ctrl+F / Cmd+F)
-    document.execCommand('find');
+    setFindReplaceOpen(true);
   };
 
   // Handle shortcut execution
@@ -494,7 +591,7 @@ export function UnifiedContextMenu({
     return (
       <React.Fragment key={category.id}>
         <ContextMenuSub>
-          <ContextMenuSubTrigger>
+          <ContextMenuSubTrigger className={!hasContent ? 'opacity-50 cursor-not-allowed' : ''}>
             <CategoryIcon
               className="h-4 w-4 mr-2"
               style={{ color: category.color || 'currentColor' }}
@@ -552,21 +649,7 @@ export function UnifiedContextMenu({
     <>
       <ContextMenu onOpenChange={(open) => !open && handleMenuClose()}>
         <ContextMenuTrigger asChild onContextMenu={handleContextMenu}>
-          <div className={menuOpen ? 'relative' : ''}>
-            {children}
-            {/* Visual selection highlight overlay when menu is open */}
-            {menuOpen && highlightBox && (
-              <div
-                className="absolute pointer-events-none bg-primary/20 rounded"
-                style={{
-                  top: `${highlightBox.top}px`,
-                  left: `${highlightBox.left}px`,
-                  width: `${highlightBox.width}px`,
-                  height: `${highlightBox.height}px`,
-                }}
-              />
-            )}
-          </div>
+          {children}
         </ContextMenuTrigger>
 
         <ContextMenuContent className={`w-64 ${className}`}>
@@ -574,59 +657,82 @@ export function UnifiedContextMenu({
             <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
           )}
 
-          {/* Browser Actions - Show when applicable */}
-          {(selectedText || isEditable) && (
+          {/* Selection Indicator - Show when editable element has selected text */}
+          {selectionRange?.type === 'editable' && selectedText && (
             <>
-              {selectedText && (
-                <>
-                  <ContextMenuItem onSelect={handleCopy}>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy
-                  </ContextMenuItem>
-                  {isEditable && (
-                    <ContextMenuItem onSelect={handleCut}>
-                      <Scissors className="h-4 w-4 mr-2" />
-                      Cut
-                    </ContextMenuItem>
-                  )}
-                </>
-              )}
-              {isEditable && (
-                <ContextMenuItem onSelect={handlePaste}>
-                  <Clipboard className="h-4 w-4 mr-2" />
-                  Paste
-                </ContextMenuItem>
-              )}
-              <ContextMenuItem onSelect={handleSelectAll}>
-                <Type className="h-4 w-4 mr-2" />
-                Select All
-              </ContextMenuItem>
-              <ContextMenuItem onSelect={handleFind}>
-                <Search className="h-4 w-4 mr-2" />
-                Find...
-              </ContextMenuItem>
-              <ContextMenuSeparator />
+              <div className="px-2 py-2 border-b border-border bg-primary/5">
+                <div className="flex items-start gap-2">
+                  <Type className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-primary mb-0.5">
+                      Selected ({selectedText.length} char{selectedText.length !== 1 ? 's' : ''})
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono break-all leading-tight">
+                      {selectedText.length <= 50 
+                        ? `"${selectedText}"`
+                        : `"${selectedText.substring(0, 20)}...${selectedText.substring(selectedText.length - 20)}"`
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
             </>
           )}
 
-          {/* Dynamically render placement type sections */}
-          {Object.entries(groupedByPlacement).map(([placementType, groups], index) => {
-            if (!shouldShowPlacement(placementType)) return null;
+          {/* Browser Actions - Always show, but disable when not applicable */}
+          <ContextMenuItem onSelect={handleCopy} disabled={!selectedText}>
+            <Copy className="h-4 w-4 mr-2" />
+            Copy
+          </ContextMenuItem>
+          <ContextMenuItem onSelect={handleCut} disabled={!selectedText || !isEditable}>
+            <Scissors className="h-4 w-4 mr-2" />
+            Cut
+          </ContextMenuItem>
+          <ContextMenuItem onSelect={handlePaste} disabled={!isEditable}>
+            <Clipboard className="h-4 w-4 mr-2" />
+            Paste
+          </ContextMenuItem>
+          <ContextMenuItem onSelect={handleSelectAll}>
+            <Type className="h-4 w-4 mr-2" />
+            Select All
+          </ContextMenuItem>
+          <ContextMenuItem onSelect={handleFind}>
+            <Search className="h-4 w-4 mr-2" />
+            Find...
+          </ContextMenuItem>
+          <ContextMenuSeparator />
 
+          {/* Dynamically render placement type sections - Always show, disable if empty */}
+          {enabledPlacements.filter(p => p !== 'quick-action').map((placementType) => {
+            const groups = groupedByPlacement[placementType] || [];
+            
+            // Recursively check if any group or its children have items
+            const hasItemsRecursive = (group: typeof groups[0]): boolean => {
+              if (group.items.length > 0) return true;
+              if (group.children && group.children.length > 0) {
+                return group.children.some(child => hasItemsRecursive(child));
+              }
+              return false;
+            };
+            
+            const hasItems = groups.length > 0 && groups.some(g => hasItemsRecursive(g));
+            
             const PlacementIcon = getPlacementIcon(placementType);
             const placementMeta = PLACEMENT_TYPE_META[placementType as keyof typeof PLACEMENT_TYPE_META];
             const label = placementMeta?.label || placementType;
 
             return (
               <React.Fragment key={placementType}>
-
                 <ContextMenuSub>
-                  <ContextMenuSubTrigger>
+                  <ContextMenuSubTrigger 
+                    disabled={!hasItems}
+                    className={!hasItems ? 'opacity-50 cursor-not-allowed' : ''}
+                  >
                     <PlacementIcon className="h-4 w-4 mr-2" />
                     {label}
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent className="w-64">
-                    {groups.length === 0 ? (
+                    {groups.length === 0 || !hasItems ? (
                       <div className="px-2 py-6 text-center">
                         <p className="text-sm text-muted-foreground">No {label}</p>
                       </div>
@@ -642,11 +748,9 @@ export function UnifiedContextMenu({
             );
           })}
 
-          {/* Quick Actions Section (Hard-coded for now) */}
+          {/* Quick Actions Section - Always show if enabled */}
           {shouldShowPlacement('quick-action') && (
             <>
-              {Object.keys(groupedByPlacement).length > 0 && <ContextMenuSeparator />}
-
               <ContextMenuSub>
                 <ContextMenuSubTrigger>
                   <Zap className="h-4 w-4 mr-2" />
@@ -696,6 +800,20 @@ export function UnifiedContextMenu({
               </ContextMenuSub>
             </>
           )}
+
+          {/* Debug: Context Inspector */}
+          {isDebugMode && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem 
+                onSelect={() => setContextDebugOpen(true)}
+                className="text-amber-600 dark:text-amber-400"
+              >
+                <Bug className="h-4 w-4 mr-2" />
+                Debug: Inspect Context
+              </ContextMenuItem>
+            </>
+          )}
         </ContextMenuContent>
       </ContextMenu>
 
@@ -705,6 +823,20 @@ export function UnifiedContextMenu({
           isOpen={debugModalOpen}
           onClose={() => setDebugModalOpen(false)}
           debugData={debugData}
+        />
+      )}
+
+      {/* Context Debug Modal */}
+      {isDebugMode && (
+        <ContextDebugModal
+          isOpen={contextDebugOpen}
+          onClose={() => setContextDebugOpen(false)}
+          contextData={{
+            selection: selectedText,
+            content: contextData?.content || '',
+            context: contextData?.context || '',
+            ...contextData, // Include all custom variables
+          }}
         />
       )}
 
@@ -741,6 +873,14 @@ export function UnifiedContextMenu({
           }}
         />
       )}
+
+      {/* Find/Replace Modal */}
+      <FindReplaceModal
+        isOpen={findReplaceOpen}
+        onClose={() => setFindReplaceOpen(false)}
+        targetElement={selectionRange?.element as HTMLTextAreaElement | HTMLInputElement | null}
+        onReplace={onTextReplace}
+      />
     </>
   );
 }

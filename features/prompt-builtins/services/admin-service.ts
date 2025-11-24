@@ -305,6 +305,48 @@ export async function fetchPromptBuiltins(filters?: {
   return (data || []).map(transformBuiltinFromDB);
 }
 
+/**
+ * Fetch prompt builtins with source prompt information (OPTIMIZED)
+ * Uses prompt_builtins_with_source_view to eliminate N+1 query problem
+ * Returns builtins with source_prompt_name included - no additional API calls needed!
+ */
+export async function fetchPromptBuiltinsWithSource(filters?: {
+  is_active?: boolean;
+  search?: string;
+  limit?: number;
+}): Promise<Array<PromptBuiltin & { source_prompt_name?: string }>> {
+  const supabase = getClient();
+  let query = supabase
+    .from('prompt_builtins_with_source_view')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (filters?.is_active !== undefined) {
+    query = query.eq('is_active', filters.is_active);
+  }
+
+  if (filters?.search) {
+    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+  }
+
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    logDetailedError('fetchPromptBuiltinsWithSource', error);
+    throw new Error(`Failed to fetch prompt builtins with source: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
+  }
+
+  // Transform from DB format to UI format, preserving source_prompt_name
+  return (data || []).map(row => ({
+    ...transformBuiltinFromDB(row),
+    source_prompt_name: row.source_prompt_name || undefined
+  }));
+}
+
 export async function getPromptBuiltinById(id: string): Promise<PromptBuiltin | null> {
   const supabase = getClient();
   const { data, error } = await supabase
@@ -544,7 +586,7 @@ export async function createPromptShortcut(input: CreatePromptShortcutInput): Pr
     scope_mappings: input.scope_mappings ?? null,
     available_scopes: input.available_scopes ?? null,
     // Execution Configuration
-    result_display: input.result_display ?? 'modal',
+    result_display: input.result_display ?? 'modal-full', // FIXED: was 'modal', now 'modal-full'
     auto_run: input.auto_run ?? true,
     allow_chat: input.allow_chat ?? true,
     show_variables: input.show_variables ?? false,
