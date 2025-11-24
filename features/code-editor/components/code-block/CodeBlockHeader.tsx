@@ -12,7 +12,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
-    DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { getBuiltinInfoByKey } from "@/lib/redux/prompt-execution/builtins";
 
@@ -426,7 +425,7 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                             const IconComponent = getIconComponent(builtin.icon);
                             return (
                                 <React.Fragment key={builtin.key}>
-                                    {/* Conversational mode - always available */}
+                                    {/* Non-Context Aware mode (now using AICodeEditorModal instead of V2) */}
                                     <DropdownMenuItem
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -441,8 +440,8 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                                         <IconComponent className="h-4 w-4" />
                                         <span>{builtin.name}</span>
                                     </DropdownMenuItem>
-                                    
-                                    {/* Context-Aware mode - only if builtin supports it */}
+
+                                    {/* Context-Aware mode - KEEP THIS! IT WORKS BEAUTIFULLY! */}
                                     {builtin.context && (
                                         <DropdownMenuItem
                                             onClick={(e) => {
@@ -459,7 +458,7 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                                             <span>{builtin.name} (Context)</span>
                                         </DropdownMenuItem>
                                     )}
-                                    
+
                                     {index < builtins.length - 1 && <DropdownMenuSeparator />}
                                 </React.Fragment>
                             );

@@ -14,7 +14,7 @@ import { Globe, Loader2 } from "lucide-react";
 import { useCanvas } from "@/hooks/useCanvas";
 import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
+import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
 import { mapLanguageForPrism, mapLanguageForMonaco, getMonacoFileExtension } from "@/features/code-editor/config/languages";
 
@@ -453,21 +453,23 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 )}
             </div>
 
-            {/* AI Code Editor Modal V2 */}
+            {/* AI Code Editor Modal V2 - Non-Context Aware (using AICodeEditorModal) */}
             {aiModalConfig?.version === 'v2' && (
-                <AICodeEditorModalV2
+                <AICodeEditorModal
                     open={true}
-                    onOpenChange={handleCloseAIModal}
+                    onOpenChange={(open) => {
+                        if (!open) handleCloseAIModal();
+                    }}
                     currentCode={code}
                     language={monacoLanguage}
                     builtinId={aiModalConfig.builtinId}
-                    onCodeChange={handleAICodeChange}
+                    onCodeChange={(newCode) => handleAICodeChange(newCode)}
                     title={aiModalConfig.title}
                     allowPromptSelection={false}
                 />
             )}
             
-            {/* AI Code Editor Modal V3 (Context-Aware) */}
+            {/* AI Code Editor Modal V3 (Context-Aware) - KEEP THIS! IT WORKS! */}
             {aiModalConfig?.version === 'v3' && (
                 <ContextAwareCodeEditorModal
                     open={true}
