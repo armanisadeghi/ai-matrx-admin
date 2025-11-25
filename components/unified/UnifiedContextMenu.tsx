@@ -194,6 +194,8 @@ export function UnifiedContextMenu({
 
   // Find/Replace modal
   const [findReplaceOpen, setFindReplaceOpen] = useState(false);
+  const [skipSelectionRestore, setSkipSelectionRestore] = useState(false);
+  const findReplaceOpenRef = React.useRef(false);
 
   // Track selection
   React.useEffect(() => {
@@ -206,6 +208,11 @@ export function UnifiedContextMenu({
     document.addEventListener('selectionchange', handleSelection);
     return () => document.removeEventListener('selectionchange', handleSelection);
   }, []);
+
+  // Keep ref in sync with state for reliable closure access
+  React.useEffect(() => {
+    findReplaceOpenRef.current = findReplaceOpen;
+  }, [findReplaceOpen]);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -285,6 +292,17 @@ export function UnifiedContextMenu({
   const handleMenuClose = () => {
     setMenuOpen(false);
     
+    // Skip restoration if a modal is opening (like Find/Replace)
+    if (skipSelectionRestore) {
+      setSkipSelectionRestore(false);
+      return;
+    }
+    
+    // Also skip if Find/Replace modal is open
+    if (findReplaceOpen) {
+      return;
+    }
+    
     if (!selectionRange) return;
     
     if (selectionRange.type === 'editable') {
@@ -293,6 +311,9 @@ export function UnifiedContextMenu({
       if (element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement) {
         // Longer delay to wait for menu animation to complete
         setTimeout(() => {
+          // Double-check that Find modal isn't open (use ref for reliable closure access)
+          if (findReplaceOpenRef.current) return;
+          
           element.focus();
           element.setSelectionRange(start, end);
           
@@ -449,7 +470,10 @@ export function UnifiedContextMenu({
   };
 
   const handleFind = () => {
+    // Prevent selection restoration when opening Find modal
+    setSkipSelectionRestore(true);
     setFindReplaceOpen(true);
+    findReplaceOpenRef.current = true; // Set ref immediately for reliable access
   };
 
   // Handle shortcut execution
@@ -964,7 +988,10 @@ export function UnifiedContextMenu({
       {/* Find/Replace Modal */}
       <FindReplaceModal
         isOpen={findReplaceOpen}
-        onClose={() => setFindReplaceOpen(false)}
+        onClose={() => {
+          setFindReplaceOpen(false);
+          findReplaceOpenRef.current = false;
+        }}
         targetElement={selectionRange?.element as HTMLTextAreaElement | HTMLInputElement | null}
         onReplace={onTextReplace}
       />
