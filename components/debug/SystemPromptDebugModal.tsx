@@ -13,23 +13,36 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Code2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
+export interface DebugData {
+  /** Name/label of the prompt or shortcut */
+  promptName: string;
+  /** Placement type (e.g., 'context-menu', 'ai-action') */
+  placementType: string;
+  /** Selected text by user */
+  selectedText?: string;
+  /** Available context/scopes provided to the prompt */
+  availableContext: Record<string, any>;
+  /** Variables that were successfully resolved */
+  resolvedVariables: Record<string, any>;
+  /** Resolution status */
+  canResolve: {
+    canResolve: boolean;
+    missingVariables: string[];
+    resolvedVariables: string[];
+  };
+  /** Additional metadata */
+  metadata?: {
+    functionalityId?: string;
+    scopeMappings?: any;
+    availableScopes?: string[];
+    promptSnapshot?: any;
+  };
+}
+
 interface SystemPromptDebugModalProps {
   isOpen: boolean;
   onClose: () => void;
-  debugData: {
-    systemPromptName: string;
-    functionalityId: string;
-    placementType: string;
-    uiContext: Record<string, any>;
-    resolvedVariables: Record<string, any>;
-    canResolve: {
-      canResolve: boolean;
-      missingVariables: string[];
-      resolvedVariables: string[];
-    };
-    promptSnapshot?: any;
-    selectedText?: string;
-  } | null;
+  debugData: DebugData | null;
 }
 
 export function SystemPromptDebugModal({
@@ -40,14 +53,13 @@ export function SystemPromptDebugModal({
   if (!debugData) return null;
 
   const {
-    systemPromptName,
-    functionalityId,
+    promptName,
     placementType,
-    uiContext,
+    selectedText,
+    availableContext,
     resolvedVariables,
     canResolve,
-    promptSnapshot,
-    selectedText,
+    metadata = {},
   } = debugData;
 
   return (
@@ -56,7 +68,7 @@ export function SystemPromptDebugModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Code2 className="h-5 w-5" />
-            System Prompt Debug: {systemPromptName}
+            Prompt Debug: {promptName}
           </DialogTitle>
           <DialogDescription>
             Real-time variable resolution and context inspection
@@ -93,12 +105,14 @@ export function SystemPromptDebugModal({
             <div>
               <h3 className="text-sm font-semibold mb-2">Metadata</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Functionality ID:</span>
-                  <code className="ml-2 bg-muted px-1 py-0.5 rounded text-xs">
-                    {functionalityId}
-                  </code>
-                </div>
+                {metadata.functionalityId && (
+                  <div>
+                    <span className="text-muted-foreground">Functionality ID:</span>
+                    <code className="ml-2 bg-muted px-1 py-0.5 rounded text-xs">
+                      {metadata.functionalityId}
+                    </code>
+                  </div>
+                )}
                 <div>
                   <span className="text-muted-foreground">Placement Type:</span>
                   <Badge variant="outline" className="ml-2">
@@ -126,12 +140,12 @@ export function SystemPromptDebugModal({
               </>
             )}
 
-            {/* UI Context */}
+            {/* Available Context */}
             <div>
-              <h3 className="text-sm font-semibold mb-2">UI Context (Available Data)</h3>
+              <h3 className="text-sm font-semibold mb-2">Available Context</h3>
               <div className="bg-muted p-3 rounded-lg">
                 <pre className="text-xs font-mono overflow-x-auto">
-                  {JSON.stringify(uiContext, null, 2)}
+                  {JSON.stringify(availableContext, null, 2)}
                 </pre>
               </div>
             </div>
@@ -192,29 +206,63 @@ export function SystemPromptDebugModal({
               </>
             )}
 
-            {/* Prompt Snapshot Info */}
-            {promptSnapshot && (
+            {/* Scope Mappings */}
+            {metadata.scopeMappings && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Scope Mappings</h3>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <pre className="text-xs font-mono overflow-x-auto">
+                      {JSON.stringify(metadata.scopeMappings, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Available Scopes */}
+            {metadata.availableScopes && metadata.availableScopes.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Available Scopes</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {metadata.availableScopes.map((scope: string) => (
+                      <Badge key={scope} variant="secondary">
+                        {scope}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Prompt Snapshot */}
+            {metadata.promptSnapshot && (
               <>
                 <Separator />
                 <div>
                   <h3 className="text-sm font-semibold mb-2">Prompt Snapshot</h3>
                   <div className="bg-muted p-3 rounded-lg">
                     <div className="space-y-2 text-xs">
-                      <div>
-                        <span className="text-muted-foreground">Variables:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {promptSnapshot.variables?.map((v: string) => (
-                            <Badge key={v} variant="secondary" className="text-xs">
-                              {'{{' + v + '}}'}
-                            </Badge>
-                          ))}
+                      {metadata.promptSnapshot.variables && (
+                        <div>
+                          <span className="text-muted-foreground">Variables:</span>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {metadata.promptSnapshot.variables.map((v: string) => (
+                              <Badge key={v} variant="secondary" className="text-xs">
+                                {'{{' + v + '}}'}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                      {promptSnapshot.variableDefaults && (
+                      )}
+                      {metadata.promptSnapshot.variableDefaults && (
                         <div>
                           <span className="text-muted-foreground">Defaults:</span>
                           <pre className="mt-1 text-xs overflow-x-auto">
-                            {JSON.stringify(promptSnapshot.variableDefaults, null, 2)}
+                            {JSON.stringify(metadata.promptSnapshot.variableDefaults, null, 2)}
                           </pre>
                         </div>
                       )}

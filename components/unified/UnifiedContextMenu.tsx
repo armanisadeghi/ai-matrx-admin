@@ -43,6 +43,10 @@ import {
   Type,
   Search,
   Bug,
+  Eye,
+  EyeOff,
+  Settings,
+  Shield,
 } from 'lucide-react';
 import { useUnifiedContextMenu } from '@/features/prompt-builtins/hooks';
 import { useShortcutExecution } from '@/features/prompt-builtins/hooks';
@@ -51,9 +55,11 @@ import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { FindReplaceModal } from '@/components/modals/FindReplaceModal';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
-import { useAppSelector } from '@/lib/redux';
-import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
-import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
+import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { selectIsDebugMode, toggleDebugMode } from '@/lib/redux/slices/adminDebugSlice';
+import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
+import { selectIsOverlayOpen, toggleOverlay } from '@/lib/redux/slices/overlaySlice';
+import { DebugIndicator } from '@/components/debug/DebugIndicator';
 import { ContextDebugModal } from '@/components/debug/ContextDebugModal';
 import { getIconComponent } from '@/components/official/IconResolver';
 
@@ -161,8 +167,12 @@ export function UnifiedContextMenu({
     openQuickFiles,
   } = useQuickActions();
 
-  // Debug mode
+  // Admin features
+  const dispatch = useAppDispatch();
+  const isAdmin = useAppSelector(selectIsAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
+  const isAdminIndicatorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+  
   const [debugModalOpen, setDebugModalOpen] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
   const [contextDebugOpen, setContextDebugOpen] = useState(false);
@@ -318,28 +328,62 @@ export function UnifiedContextMenu({
   };
 
   // Browser action handlers
-  const handleCut = () => {
-    if (selectionRange?.element) {
-      document.execCommand('cut');
-      // Clear stored selection after cut
-      setSelectionRange(null);
+  const handleCut = async () => {
+    if (!selectionRange) return;
+    
+    if (selectionRange.type === 'editable') {
+      const element = selectionRange.element;
+      if (element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement) {
+        const { start, end } = selectionRange;
+        const cutText = element.value.substring(start, end);
+        
+        try {
+          // Modern Clipboard API
+          await navigator.clipboard.writeText(cutText);
+          
+          // Remove the selected text
+          const newValue = 
+            element.value.substring(0, start) +
+            element.value.substring(end);
+          
+          // Update via callback if available, otherwise direct
+          if (onTextReplace) {
+            onTextReplace(newValue);
+          } else {
+            element.value = newValue;
+            element.setSelectionRange(start, start);
+          }
+          
+          // Clear stored selection after cut
+          setSelectionRange(null);
+        } catch (err) {
+          console.error('Failed to cut:', err);
+        }
+      }
     }
+    // Note: Cut doesn't make sense for non-editable content
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (selectedText) {
-      navigator.clipboard.writeText(selectedText);
-      // Don't clear selection for copy - we want to keep it
+      try {
+        await navigator.clipboard.writeText(selectedText);
+        // Don't clear selection for copy - we want to keep it
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
     }
   };
 
   const handlePaste = async () => {
-    if (selectionRange?.element && isEditable) {
-      try {
-        const text = await navigator.clipboard.readText();
-        const element = selectionRange.element;
-        
-        if (element instanceof HTMLTextAreaElement) {
+    if (!selectionRange || !isEditable) return;
+    
+    if (selectionRange.type === 'editable') {
+      const element = selectionRange.element;
+      if (element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement) {
+        try {
+          // Modern Clipboard API
+          const text = await navigator.clipboard.readText();
           const { start, end } = selectionRange;
           const before = element.value.substring(0, start);
           const after = element.value.substring(end);
@@ -353,9 +397,9 @@ export function UnifiedContextMenu({
             element.value = newValue;
             element.setSelectionRange(start + text.length, start + text.length);
           }
+        } catch (err) {
+          console.error('Failed to paste:', err);
         }
-      } catch (err) {
-        console.error('Failed to paste:', err);
       }
     }
   };
@@ -436,12 +480,20 @@ export function UnifiedContextMenu({
 
       if (isDebugMode) {
         setDebugData({
-          shortcutLabel: shortcut.label,
+          promptName: shortcut.label,
           placementType,
-          scopes,
-          scopeMappings: shortcut.scope_mappings,
-          availableScopes: shortcut.available_scopes,
-          builtinVariables: shortcut.prompt_builtin?.variableDefaults,
+          selectedText: selectedText,
+          availableContext: scopes,
+          resolvedVariables: shortcut.prompt_builtin?.variableDefaults || {},
+          canResolve: {
+            canResolve: true, // Assume true for now - shortcuts handle their own validation
+            missingVariables: [],
+            resolvedVariables: Object.keys(scopes),
+          },
+          metadata: {
+            scopeMappings: shortcut.scope_mappings,
+            availableScopes: shortcut.available_scopes,
+          },
         });
         setDebugModalOpen(true);
       }
@@ -657,8 +709,8 @@ export function UnifiedContextMenu({
             <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
           )}
 
-          {/* Selection Indicator - Show when editable element has selected text */}
-          {selectionRange?.type === 'editable' && selectedText && (
+          {/* Selection Indicator - Show whenever text is selected */}
+          {selectedText && (
             <>
               <div className="px-2 py-2 border-b border-border bg-primary/5">
                 <div className="flex items-start gap-2">
@@ -801,28 +853,78 @@ export function UnifiedContextMenu({
             </>
           )}
 
-          {/* Debug: Context Inspector */}
-          {isDebugMode && (
+          {/* Admin Section */}
+          {isAdmin && (
             <>
               <ContextMenuSeparator />
-              <ContextMenuItem 
-                onSelect={() => setContextDebugOpen(true)}
-                className="text-amber-600 dark:text-amber-400"
-              >
-                <Bug className="h-4 w-4 mr-2" />
-                Debug: Inspect Context
-              </ContextMenuItem>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Admin Tools
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="w-56">
+                  {/* Toggle Debug Mode */}
+                  <ContextMenuItem onSelect={() => dispatch(toggleDebugMode())}>
+                    {isDebugMode ? (
+                      <EyeOff className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 mr-2" />
+                    )}
+                    <div className="flex flex-col">
+                      <span>{isDebugMode ? "Disable" : "Enable"} Debug Mode</span>
+                      <span className="text-xs text-muted-foreground">
+                        {isDebugMode ? "Hide debug info" : "Show debug info"}
+                      </span>
+                    </div>
+                  </ContextMenuItem>
+
+                  {/* Inspect Context (only when debug mode is on) */}
+                  {isDebugMode && (
+                    <ContextMenuItem 
+                      onSelect={() => setContextDebugOpen(true)}
+                      className="text-amber-600 dark:text-amber-400"
+                    >
+                      <Bug className="h-4 w-4 mr-2" />
+                      <div className="flex flex-col">
+                        <span>Inspect Context</span>
+                        <span className="text-xs text-muted-foreground">View available data</span>
+                      </div>
+                    </ContextMenuItem>
+                  )}
+
+                  <ContextMenuSeparator />
+
+                  {/* Toggle Admin Indicator */}
+                  <ContextMenuItem 
+                    onSelect={() => dispatch(toggleOverlay({ overlayId: "adminIndicator" }))}
+                  >
+                    {isAdminIndicatorOpen ? (
+                      <Eye className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 mr-2" />
+                    )}
+                    <div className="flex flex-col">
+                      <span>{isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator</span>
+                      <span className="text-xs text-muted-foreground">
+                        {isAdminIndicatorOpen ? "Hide overlay" : "Show overlay"}
+                      </span>
+                    </div>
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
             </>
           )}
         </ContextMenuContent>
       </ContextMenu>
 
-      {/* Debug Modal */}
-      {isDebugMode && (
-        <SystemPromptDebugModal
-          isOpen={debugModalOpen}
-          onClose={() => setDebugModalOpen(false)}
+      {/* Debug Indicator */}
+      {isDebugMode && debugModalOpen && debugData && (
+        <DebugIndicator
           debugData={debugData}
+          onClose={() => {
+            setDebugModalOpen(false);
+            setDebugData(null);
+          }}
         />
       )}
 

@@ -22,7 +22,7 @@ import {
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
 import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
-import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
+import { DebugIndicator } from '@/components/debug/DebugIndicator';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
 import { useAppSelector } from '@/lib/redux';
@@ -201,14 +201,16 @@ export function DynamicContextMenu({
       // Show debug modal if debug mode is enabled
       if (isDebugMode) {
         setDebugData({
-          systemPromptName: systemPrompt.name,
-          functionalityId: systemPrompt.functionality_id,
+          promptName: systemPrompt.name,
           placementType: 'context-menu',
-          uiContext: contextWithSelection,
+          selectedText,
+          availableContext: contextWithSelection,
           resolvedVariables: variables,
           canResolve,
-          promptSnapshot: systemPrompt.prompt_snapshot,
-          selectedText,
+          metadata: {
+            functionalityId: systemPrompt.functionality_id,
+            promptSnapshot: systemPrompt.prompt_snapshot,
+          },
         });
         setDebugModalOpen(true);
       }
@@ -467,16 +469,16 @@ export function DynamicContextMenu({
       />
     ) : null}
 
-    {/* Debug Modal */}
-    {isDebugMode && (
-      <SystemPromptDebugModal
-        isOpen={debugModalOpen}
+    {/* Debug Indicator */}
+    {isDebugMode && debugModalOpen && debugData && (
+      <DebugIndicator
+        debugData={debugData}
         onClose={() => {
           setDebugModalOpen(false);
-          // Keep selection when closing debug modal (don't clear it)
+          setDebugData(null);
+          // Keep selection when closing debug indicator (don't clear it)
           // User might want to proceed with the action
         }}
-        debugData={debugData}
       />
     )}
 
