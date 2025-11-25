@@ -8,11 +8,11 @@ import { formatText } from "@/utils/text/text-case-converter";
 import { VariableInputComponent } from "./variable-inputs";
 import { PromptInputButton } from "./PromptInputButton";
 import { ResourcePickerButton } from "./resource-picker";
-import { ResourceChips, type Resource, ResourcePreviewSheet, ResourceDebugModal } from "./resource-display";
+import { ResourceChips, type Resource, ResourcePreviewSheet } from "./resource-display";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { selectIsDebugMode, showResourceDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useRecordAndTranscribe } from '@/features/audio';
 import { TranscriptionLoader } from '@/features/audio';
 import { toast } from 'sonner';
@@ -84,8 +84,20 @@ export function PromptInput({
 
     const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const dispatch = useAppDispatch();
     const isDebugMode = useAppSelector(selectIsDebugMode);
     const pendingVoiceSubmitRef = useRef(false);
+    
+    // Show resource debug indicator when debug mode is on and resources exist
+    useEffect(() => {
+        if (isDebugMode && resources.length > 0) {
+            dispatch(showResourceDebugIndicator({ 
+                resources, 
+                chatInput, 
+                variableDefaults 
+            }));
+        }
+    }, [isDebugMode, resources, chatInput, variableDefaults, dispatch]);
 
     // File upload hook for paste support
     const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
@@ -444,14 +456,6 @@ export function PromptInput({
                     resource={previewResource.resource}
                 />
             )}
-
-            {/* Debug Modal */}
-            <ResourceDebugModal
-                resources={resources}
-                isVisible={isDebugMode}
-                chatInput={chatInput}
-                variableDefaults={variableDefaults}
-            />
         </div>
     );
 }

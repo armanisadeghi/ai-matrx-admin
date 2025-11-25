@@ -7,11 +7,26 @@ export interface AdminDebugState {
     
     // Debug data - store anything here
     debugData: Record<string, any>;
+    
+    // Debug indicators
+    indicators: {
+        promptDebug?: {
+            isOpen: boolean;
+            data: any;
+        };
+        resourceDebug?: {
+            isOpen: boolean;
+            resources: any[];
+            chatInput?: string;
+            variableDefaults?: any[];
+        };
+    };
 }
 
 const initialState: AdminDebugState = {
     isDebugMode: false,
     debugData: {},
+    indicators: {},
 };
 
 const adminDebugSlice = createSlice({
@@ -55,6 +70,26 @@ const adminDebugSlice = createSlice({
         
         // Reset all debug settings
         resetDebugState: () => initialState,
+        
+        // Indicator management
+        showPromptDebugIndicator: (state, action: PayloadAction<any>) => {
+            state.indicators.promptDebug = {
+                isOpen: true,
+                data: action.payload,
+            };
+        },
+        hidePromptDebugIndicator: (state) => {
+            state.indicators.promptDebug = undefined;
+        },
+        showResourceDebugIndicator: (state, action: PayloadAction<{ resources: any[]; chatInput?: string; variableDefaults?: any[] }>) => {
+            state.indicators.resourceDebug = {
+                isOpen: true,
+                ...action.payload,
+            };
+        },
+        hideResourceDebugIndicator: (state) => {
+            state.indicators.resourceDebug = undefined;
+        },
     },
 });
 
@@ -68,6 +103,10 @@ export const {
     removeDebugKey,
     clearDebugData,
     resetDebugState,
+    showPromptDebugIndicator,
+    hidePromptDebugIndicator,
+    showResourceDebugIndicator,
+    hideResourceDebugIndicator,
 } = adminDebugSlice.actions;
 
 // Selectors
@@ -75,6 +114,9 @@ export const selectAdminDebug = (state: RootState) => state.adminDebug;
 export const selectIsDebugMode = (state: RootState) => state.adminDebug.isDebugMode;
 export const selectDebugData = (state: RootState) => state.adminDebug.debugData;
 export const selectDebugKey = (key: string) => (state: RootState) => state.adminDebug.debugData[key];
+export const selectDebugIndicators = (state: RootState) => state.adminDebug.indicators;
+export const selectPromptDebugIndicator = (state: RootState) => state.adminDebug.indicators.promptDebug;
+export const selectResourceDebugIndicator = (state: RootState) => state.adminDebug.indicators.resourceDebug;
 
 export default adminDebugSlice.reducer;
 

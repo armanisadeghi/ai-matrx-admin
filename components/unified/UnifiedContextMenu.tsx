@@ -56,10 +56,9 @@ import { TextActionResultModal } from '@/components/modals/TextActionResultModal
 import { FindReplaceModal } from '@/components/modals/FindReplaceModal';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
 import { useAppSelector, useAppDispatch } from '@/lib/redux';
-import { selectIsDebugMode, toggleDebugMode } from '@/lib/redux/slices/adminDebugSlice';
+import { selectIsDebugMode, toggleDebugMode, showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { selectIsOverlayOpen, toggleOverlay } from '@/lib/redux/slices/overlaySlice';
-import { DebugIndicator } from '@/components/debug/DebugIndicator';
 import { ContextDebugModal } from '@/components/debug/ContextDebugModal';
 import { getIconComponent } from '@/components/official/IconResolver';
 
@@ -173,8 +172,6 @@ export function UnifiedContextMenu({
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const isAdminIndicatorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
   
-  const [debugModalOpen, setDebugModalOpen] = useState(false);
-  const [debugData, setDebugData] = useState<any>(null);
   const [contextDebugOpen, setContextDebugOpen] = useState(false);
 
   // Selection tracking
@@ -479,7 +476,7 @@ export function UnifiedContextMenu({
       console.log('[UnifiedContextMenu] Executing with scopes:', JSON.stringify(scopes, null, 2));
 
       if (isDebugMode) {
-        setDebugData({
+        dispatch(showPromptDebugIndicator({
           promptName: shortcut.label,
           placementType,
           selectedText: selectedText,
@@ -494,8 +491,7 @@ export function UnifiedContextMenu({
             scopeMappings: shortcut.scope_mappings,
             availableScopes: shortcut.available_scopes,
           },
-        });
-        setDebugModalOpen(true);
+        }));
       }
 
       // Check if builtin is connected
@@ -916,17 +912,6 @@ export function UnifiedContextMenu({
           )}
         </ContextMenuContent>
       </ContextMenu>
-
-      {/* Debug Indicator */}
-      {isDebugMode && debugModalOpen && debugData && (
-        <DebugIndicator
-          debugData={debugData}
-          onClose={() => {
-            setDebugModalOpen(false);
-            setDebugData(null);
-          }}
-        />
-      )}
 
       {/* Context Debug Modal */}
       {isDebugMode && (

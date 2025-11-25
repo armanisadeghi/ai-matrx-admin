@@ -22,11 +22,11 @@ import {
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
 import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
-import { DebugIndicator } from '@/components/debug/DebugIndicator';
+import { showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
-import { useAppSelector } from '@/lib/redux';
-import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
+import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { selectIsDebugMode, showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -69,13 +69,12 @@ export function DynamicContextMenu({
   isEditable = false,
 }: DynamicContextMenuProps) {
   const { systemPrompts, loading } = useContextMenuPrompts(category, subcategory);
+  const dispatch = useAppDispatch();
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<any>(null);
-  const [debugModalOpen, setDebugModalOpen] = useState(false);
-  const [debugData, setDebugData] = useState<any>(null);
   const [textResultModalOpen, setTextResultModalOpen] = useState(false);
   const [textResultData, setTextResultData] = useState<{ original: string; result: string; promptName: string } | null>(null);
   const isDebugMode = useAppSelector(selectIsDebugMode);
@@ -200,7 +199,7 @@ export function DynamicContextMenu({
 
       // Show debug modal if debug mode is enabled
       if (isDebugMode) {
-        setDebugData({
+        dispatch(showPromptDebugIndicator({
           promptName: systemPrompt.name,
           placementType: 'context-menu',
           selectedText,
@@ -211,8 +210,7 @@ export function DynamicContextMenu({
             functionalityId: systemPrompt.functionality_id,
             promptSnapshot: systemPrompt.prompt_snapshot,
           },
-        });
-        setDebugModalOpen(true);
+        }));
       }
 
       if (!canResolve.canResolve) {
@@ -468,19 +466,6 @@ export function DynamicContextMenu({
         initialMessage={modalConfig.initialMessage}
       />
     ) : null}
-
-    {/* Debug Indicator */}
-    {isDebugMode && debugModalOpen && debugData && (
-      <DebugIndicator
-        debugData={debugData}
-        onClose={() => {
-          setDebugModalOpen(false);
-          setDebugData(null);
-          // Keep selection when closing debug indicator (don't clear it)
-          // User might want to proceed with the action
-        }}
-      />
-    )}
 
     {/* Text Action Result Modal (for text editors with replace/insert) */}
     {textResultModalOpen && textResultData && (

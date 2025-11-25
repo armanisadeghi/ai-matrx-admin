@@ -67,7 +67,7 @@ function TestScenario({
           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Live Data</div>
           <div className="space-y-2">
             {config && <JsonDisplay title="Configuration" data={config} />}
-            {fetchedData && <JsonDisplay title="Fetched Data" data={fetchedData} defaultExpanded />}
+            {fetchedData && <JsonDisplay title="Fetched Data" data={fetchedData} />}
           </div>
         </div>
       </div>

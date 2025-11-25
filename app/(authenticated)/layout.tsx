@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import SocketInitializer from "@/lib/redux/socket-io/connection/SocketInitializer";
 import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
+import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
@@ -96,6 +97,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
                 <NavigationLoader />
                 {children}
                 <AdminIndicatorWrapper />
+                <DebugIndicatorManager />
             </ResponsiveLayout>
         </Providers>
     );
