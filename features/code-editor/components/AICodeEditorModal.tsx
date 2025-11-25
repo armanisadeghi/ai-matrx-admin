@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useCallback, useRef, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Code2,
-  Eye,
   FileCode,
   FileText,
   Copy,
@@ -84,9 +84,9 @@ export function AICodeEditorModal({
     displayVariables,
     language,
     streamingText,
+    messages,
     handleSubmit,
     handleVariableValueChange,
-    handleChatInputChange,
     handleSubmitOnEnterChange,
     handleCopyResponse,
     handleApplyChanges,
@@ -102,8 +102,58 @@ export function AICodeEditorModal({
     context,
   });
 
+  // ========== INPUT HANDLING - LOCAL STATE ==========
+  // Chat input is managed locally - only passed to Redux on submit
+  // This eliminates Redux dispatch on every keystroke
+  const [chatInput, setChatInput] = useState('');
+  
+  // Use ref to avoid recreating handleSendMessage on every keystroke
+  const chatInputRef = useRef(chatInput);
+  chatInputRef.current = chatInput;
+
+  const handleChatInputChange = useCallback((value: string) => {
+    setChatInput(value);
+  }, []);
+
+  // STABLE callback - reads chatInput from ref at call time, doesn't depend on chatInput value
+  const handleSendMessage = useCallback(() => {
+    handleSubmit(chatInputRef.current);
+    setChatInput(''); // Clear input after sending
+  }, [handleSubmit]);
+
   // Get available builtins for the selector
   const availableBuiltins = Object.values(PROMPT_BUILTINS) as PromptBuiltin[];
+
+  // Memoize these to prevent PromptInput from re-rendering unnecessarily
+  const variablesWithValues = useMemo(() => 
+    displayVariables.map(v => ({
+      ...v,
+      defaultValue: variables[v.name] || v.defaultValue || ''
+    })),
+    [displayVariables, variables]
+  );
+
+  const attachmentCapabilities = useMemo(() => ({
+    supportsImageUrls: true,
+    supportsFileUrls: true,
+    supportsYoutubeVideos: true,
+  }), []);
+
+  // Memoize CodeBlock to prevent re-rendering on every keystroke
+  const memoizedCodeDisplay = useMemo(() => (
+    <>
+      <div className="px-2 py-1 flex items-center justify-between shrink-0">
+        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Current Code</span>
+      </div>
+      <div className="flex-1 overflow-auto relative">
+        <CodeBlock
+          code={currentCode}
+          language={language}
+          showLineNumbers={true}
+        />
+      </div>
+    </>
+  ), [currentCode, language]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,34 +195,25 @@ export function AICodeEditorModal({
           <div className="flex-1 flex flex-col min-h-0 gap-2">
             {/* Code Display (input/processing states) */}
             {(state === 'input' || state === 'processing') && (
-              <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
-                <div className="px-2 py-1 flex items-center justify-between shrink-0">
-                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Current Code</span>
-                </div>
-                <div className="flex-1 overflow-auto relative">
-                  <CodeBlock
-                    code={currentCode}
-                    language={language}
-                    showLineNumbers={true}
-                  />
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-background relative">
+                {memoizedCodeDisplay}
 
-                  {/* Processing Overlay - Compact */}
-                  {state === 'processing' && (
-                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-                      <Loader2 className="w-10 h-10 animate-spin text-primary mb-3" />
-                      <p className="text-sm font-medium">AI is responding...</p>
+                {/* Processing Overlay - Compact */}
+                {state === 'processing' && (
+                  <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+                    <Loader2 className="w-10 h-10 animate-spin text-primary mb-3" />
+                    <p className="text-sm font-medium">AI is responding...</p>
 
-                      {streamingText && (
-                        <div className="mt-4 w-full max-w-xl px-4">
-                          <div className="bg-muted/50 rounded border p-2 max-h-[150px] overflow-y-auto font-mono text-[10px]">
-                            <p className="text-muted-foreground mb-1 text-[9px] uppercase tracking-wider font-semibold">Live Response</p>
-                            <pre className="whitespace-pre-wrap break-words">{streamingText}</pre>
-                          </div>
+                    {streamingText && (
+                      <div className="mt-4 w-full max-w-xl px-4">
+                        <div className="bg-muted/50 rounded border p-2 max-h-[150px] overflow-y-auto font-mono text-[10px]">
+                          <p className="text-muted-foreground mb-1 text-[9px] uppercase tracking-wider font-semibold">Live Response</p>
+                          <pre className="whitespace-pre-wrap break-words">{streamingText}</pre>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -354,13 +395,13 @@ export function AICodeEditorModal({
           </div>
 
           {/* Right: Persistent Conversation Panel */}
-          {instance?.conversation.messages && instance.conversation.messages.length > 0 && (
+          {messages && messages.length > 0 && (
             <div className="w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-background shrink-0">
               <div className="px-2 py-1 border-b bg-muted/20 shrink-0">
                 <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Conversation</span>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                {instance.conversation.messages.map((msg, idx) => (
+                {messages.map((msg, idx) => (
                   <div key={idx} className={cn(
                     "p-2 rounded text-xs",
                     msg.role === 'user' ? 'bg-primary/10 ml-4' : 'bg-muted mr-4'
@@ -422,42 +463,29 @@ export function AICodeEditorModal({
                   </div>
                 ) : cachedPrompt && instance ? (
                   <div className="w-full">
-                    {(() => {
-                      const variablesWithValues = displayVariables.map(v => ({
-                        ...v,
-                        defaultValue: variables[v.name] || v.defaultValue || ''
-                      }));
-
-                      return (
-                        <PromptInput
-                          variableDefaults={variablesWithValues}
-                          onVariableValueChange={handleVariableValueChange}
-                          expandedVariable={expandedVariable}
-                          onExpandedVariableChange={setExpandedVariable}
-                          chatInput={instance.conversation.currentInput}
-                          onChatInputChange={handleChatInputChange}
-                          onSendMessage={handleSubmit}
-                          isTestingPrompt={isExecuting}
-                          submitOnEnter={submitOnEnter}
-                          onSubmitOnEnterChange={handleSubmitOnEnterChange}
-                          messages={instance?.conversation.messages || []}
-                          showVariables={variablesWithValues.length > 0}
-                          showAttachments={true}
-                          attachmentCapabilities={{
-                            supportsImageUrls: true,
-                            supportsFileUrls: true,
-                            supportsYoutubeVideos: true,
-                          }}
-                          placeholder="Describe the changes you want to make..."
-                          sendButtonVariant="default"
-                          resources={resources}
-                          onResourcesChange={setResources}
-                          enablePasteImages={true}
-                          uploadBucket="userContent"
-                          uploadPath="code-editor-attachments"
-                        />
-                      );
-                    })()}
+                    <PromptInput
+                      variableDefaults={variablesWithValues}
+                      onVariableValueChange={handleVariableValueChange}
+                      expandedVariable={expandedVariable}
+                      onExpandedVariableChange={setExpandedVariable}
+                      chatInput={chatInput}
+                      onChatInputChange={handleChatInputChange}
+                      onSendMessage={handleSendMessage}
+                      isTestingPrompt={isExecuting}
+                      submitOnEnter={submitOnEnter}
+                      onSubmitOnEnterChange={handleSubmitOnEnterChange}
+                      messages={messages}
+                      showVariables={variablesWithValues.length > 0}
+                      showAttachments={true}
+                      attachmentCapabilities={attachmentCapabilities}
+                      placeholder="Describe the changes you want to make..."
+                      sendButtonVariant="default"
+                      resources={resources}
+                      onResourcesChange={setResources}
+                      enablePasteImages={true}
+                      uploadBucket="userContent"
+                      uploadPath="code-editor-attachments"
+                    />
                   </div>
                 ) : null}
               </>

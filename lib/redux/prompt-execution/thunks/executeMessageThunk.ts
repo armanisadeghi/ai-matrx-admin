@@ -14,6 +14,10 @@
  * CRITICAL: All variable resolution happens through Redux selectors,
  * which always read fresh state. This eliminates the closure bug that
  * caused variables to use stale values.
+ * 
+ * NOTE: Uses isolated state maps:
+ * - currentInputs[runId] for user's typed input
+ * - messages array directly on instance (not nested)
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -25,11 +29,12 @@ import {
   startExecution,
   setRunId,
   setInstanceStatus,
+  clearCurrentInput,
 } from '../slice';
 import {
   selectInstance,
+  selectCurrentInput,
   selectMergedVariables,
-  selectResolvedMessages,
   selectSystemMessage,
   selectConversationTemplate,
   selectModelConfig,
@@ -46,7 +51,7 @@ import { createClient } from '@/utils/supabase/client';
  * ```typescript
  * await dispatch(executeMessage({
  *   runId: 'abc-123',
- *   userInput: 'Analyze this text', // optional
+ *   userInput: 'Analyze this text', // optional - uses currentInput from state if not provided
  * })).unwrap();
  * ```
  */
@@ -80,7 +85,10 @@ export const executeMessage = createAsyncThunk<
       dispatch(setInstanceStatus({ runId, status: 'executing' }));
       
       // ========== STEP 2: Build User Message ==========
-      const isFirstMessage = instance.conversation.messages.length === 0;
+      // Get current input from ISOLATED state map
+      const currentInput = selectCurrentInput(state, runId);
+      
+      const isFirstMessage = instance.messages.length === 0;
       const conversationTemplate = selectConversationTemplate(state, runId);
       const lastTemplateMessage = conversationTemplate[conversationTemplate.length - 1];
       const isLastMessageUser = lastTemplateMessage?.role === 'user';
@@ -90,14 +98,14 @@ export const executeMessage = createAsyncThunk<
       if (isFirstMessage && isLastMessageUser) {
         // First message: Combine template with current input
         const templateContent = lastTemplateMessage.content;
-        const currentInput = userInput || instance.conversation.currentInput;
+        const inputToUse = userInput || currentInput;
         
-        userMessageContent = currentInput.trim()
-          ? `${templateContent}\n${currentInput}`
+        userMessageContent = inputToUse.trim()
+          ? `${templateContent}\n${inputToUse}`
           : templateContent;
       } else {
         // Subsequent messages: Just use input
-        userMessageContent = userInput || instance.conversation.currentInput;
+        userMessageContent = userInput || currentInput;
       }
       
       if (!userMessageContent.trim()) {
@@ -121,6 +129,9 @@ export const executeMessage = createAsyncThunk<
       };
       
       dispatch(addMessage({ runId, message: userMessage }));
+      
+      // Clear the input field (isolated state map)
+      dispatch(clearCurrentInput({ runId }));
       
       // ========== STEP 4: Save Run to Database if First Message ==========
       if (isFirstMessage && !instance.runTracking.savedToDatabase && instance.executionConfig.track_in_runs) {
@@ -179,8 +190,8 @@ export const executeMessage = createAsyncThunk<
           { role: 'user' as const, content: userMessageContent },
         ];
       } else {
-        // Use conversation history
-        messagesToSend = instance.conversation.messages.map(m => ({
+        // Use conversation history (from instance.messages directly)
+        messagesToSend = instance.messages.map(m => ({
           role: m.role,
           content: m.content,
         }));
@@ -268,4 +279,3 @@ export const executeMessage = createAsyncThunk<
     }
   }
 );
-
