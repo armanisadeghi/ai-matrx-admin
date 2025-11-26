@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -35,14 +35,13 @@ import {
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import MarkdownStream from '@/components/Markdown';
 import { DiffView } from './DiffView';
-import { PromptInput } from '@/features/prompts/components/PromptInput';
+import { SmartPromptInput } from '@/features/prompts/components/smart';
 import { cn } from '@/lib/utils';
 import { useAICodeEditor, type UseAICodeEditorProps } from '@/features/code-editor/hooks/useAICodeEditor';
 import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
 
 export type AICodeEditorModalProps = UseAICodeEditorProps & {
   title?: string;
-  description?: string;
   allowPromptSelection?: boolean;
 };
 
@@ -55,7 +54,6 @@ export function AICodeEditorModal({
   promptKey = 'generic-code-editor',
   onCodeChange,
   title = 'AI Code Editor',
-  description = '',
   allowPromptSelection = false,
   selection,
   context,
@@ -66,10 +64,7 @@ export function AICodeEditorModal({
     instance,
     cachedPrompt,
     variables,
-    resources,
-    setResources,
-    expandedVariable,
-    setExpandedVariable,
+    // resources and expandedVariable removed - managed by Redux via SmartPromptInput
     parsedEdits,
     modifiedCode,
     errorMessage,
@@ -85,11 +80,12 @@ export function AICodeEditorModal({
     language,
     streamingText,
     messages,
-    handleSubmit,
+    // handleSubmit removed - SmartPromptInput handles execution
     handleVariableValueChange,
     handleSubmitOnEnterChange,
     handleCopyResponse,
     handleApplyChanges,
+    runId,
   } = useAICodeEditor({
     open,
     onOpenChange,
@@ -102,44 +98,14 @@ export function AICodeEditorModal({
     context,
   });
 
-  // ========== INPUT HANDLING - LOCAL STATE ==========
-  // Chat input is managed locally - only passed to Redux on submit
-  // This eliminates Redux dispatch on every keystroke
-  const [chatInput, setChatInput] = useState('');
-  
-  // Use ref to avoid recreating handleSendMessage on every keystroke
-  const chatInputRef = useRef(chatInput);
-  chatInputRef.current = chatInput;
-
-  const handleChatInputChange = useCallback((value: string) => {
-    setChatInput(value);
-  }, []);
-
-  // STABLE callback - reads chatInput from ref at call time, doesn't depend on chatInput value
-  const handleSendMessage = useCallback(() => {
-    handleSubmit(chatInputRef.current);
-    setChatInput(''); // Clear input after sending
-  }, [handleSubmit]);
+  // ========== INPUT HANDLING - REMOVED ==========
+  // SmartPromptInput manages chatInput, resources, and expandedVariable via Redux
+  // No local state needed!
 
   // Get available builtins for the selector
   const availableBuiltins = Object.values(PROMPT_BUILTINS) as PromptBuiltin[];
 
-  // Memoize these to prevent PromptInput from re-rendering unnecessarily
-  const variablesWithValues = useMemo(() => 
-    displayVariables.map(v => ({
-      ...v,
-      defaultValue: variables[v.name] || v.defaultValue || ''
-    })),
-    [displayVariables, variables]
-  );
-
-  const attachmentCapabilities = useMemo(() => ({
-    supportsImageUrls: true,
-    supportsFileUrls: true,
-    supportsYoutubeVideos: true,
-  }), []);
-
-  // Memoize CodeBlock to prevent re-rendering on every keystroke
+  // Memoize CodeBlock to prevent re-rendering
   const memoizedCodeDisplay = useMemo(() => (
     <>
       <div className="px-2 py-1 flex items-center justify-between shrink-0">
@@ -455,36 +421,21 @@ export function AICodeEditorModal({
                 </Button>
               </div>
             ) : (
-              /* Input State - Show PromptInput */
+              /* Input State - Show SmartPromptInput */
               <>
                 {isLoadingPrompt ? (
                   <div className="h-[50px] flex items-center justify-center text-muted-foreground text-sm">
                     Initializing editor...
                   </div>
-                ) : cachedPrompt && instance ? (
+                ) : runId ? (
                   <div className="w-full">
-                    <PromptInput
-                      variableDefaults={variablesWithValues}
-                      onVariableValueChange={handleVariableValueChange}
-                      expandedVariable={expandedVariable}
-                      onExpandedVariableChange={setExpandedVariable}
-                      chatInput={chatInput}
-                      onChatInputChange={handleChatInputChange}
-                      onSendMessage={handleSendMessage}
-                      isTestingPrompt={isExecuting}
-                      submitOnEnter={submitOnEnter}
-                      onSubmitOnEnterChange={handleSubmitOnEnterChange}
-                      messages={messages}
-                      showVariables={variablesWithValues.length > 0}
-                      showAttachments={true}
-                      attachmentCapabilities={attachmentCapabilities}
+                    <SmartPromptInput
+                      runId={runId}
                       placeholder="Describe the changes you want to make..."
                       sendButtonVariant="default"
-                      resources={resources}
-                      onResourcesChange={setResources}
-                      enablePasteImages={true}
                       uploadBucket="userContent"
                       uploadPath="code-editor-attachments"
+                      enablePasteImages={true}
                     />
                   </div>
                 ) : null}

@@ -11,9 +11,11 @@ import {
     selectStreamingTextForInstance,
     selectIsResponseEndedForInstance,
     selectMergedVariables,
+    selectResources,
     // Stable empty references
     EMPTY_MESSAGES,
     EMPTY_OBJECT,
+    EMPTY_ARRAY,
 } from '@/lib/redux/prompt-execution';
 import { completeExecutionThunk } from '@/lib/redux/prompt-execution/thunks/completeExecutionThunk';
 import { selectPromptsPreferences } from '@/lib/redux/selectors/userPreferenceSelectors';
@@ -28,7 +30,6 @@ import {
     logSpecialVariablesUsage,
     type CodeEditorContext
 } from '@/features/code-editor/utils/specialVariables';
-import type { Resource } from '@/features/prompts/components/resource-display';
 import { normalizeLanguage } from '@/features/code-editor/config/languages';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 
@@ -111,12 +112,9 @@ export function useAICodeEditor({
         runId ? selectMessages(state, runId) : EMPTY_MESSAGES
     );
 
-    // NOTE: currentInput is NOT managed here - handle it in the component directly
-    // to avoid re-renders on every keystroke
-
-    // Resources
-    const [resources, setResources] = useState<Resource[]>([]);
-    const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
+    // NOTE: currentInput and resources are NOT managed here - they're managed by Redux
+    // accessed directly via selectors. expandedVariable also managed by Redux.
+    // This eliminates local state management entirely.
 
     const [state, setState] = useState<EditorState>('input');
     const [parsedEdits, setParsedEdits] = useState<ReturnType<typeof parseCodeEdits> | null>(null);
@@ -193,8 +191,7 @@ export function useAICodeEditor({
             }
 
             setRunId(null);
-            setResources([]);
-            setExpandedVariable(null);
+            // Resources and expandedVariable are managed by Redux, automatically cleaned up with removeInstance
             setState('input');
             setParsedEdits(null);
             setModifiedCode('');
@@ -300,21 +297,10 @@ export function useAICodeEditor({
         }
     }, [rawAIResponse, isExecuting, state, currentCode]);
 
-    /**
-     * Submit handler - accepts userInput as parameter
-     * This is called from the component with the current input value
-     */
-    const handleSubmit = useCallback(async (userInput: string = '') => {
-        if (!runId || !cachedPrompt) {
-            setErrorMessage('Instance not initialized');
-            setState('error');
-            return;
-        }
-
-        setState('processing');
-
-        try {
-            // Update special variables with latest values before execution
+    // Update special variables whenever they change or before execution
+    // This ensures code context is always up-to-date
+    useEffect(() => {
+        if (runId && cachedPrompt && instance?.status === 'ready') {
             const promptVariables = cachedPrompt.variableDefaults || [];
             const requiredSpecialVars = getRequiredSpecialVariables(promptVariables);
 
@@ -328,49 +314,28 @@ export function useAICodeEditor({
                 const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
 
                 Object.entries(specialVars).forEach(([name, value]) => {
-                    dispatch(updateVariable({
-                        runId,
-                        variableName: name,
-                        value,
-                    }));
+                    const currentValue = variables[name];
+                    // Only update if value changed
+                    if (currentValue !== value) {
+                        dispatch(updateVariable({
+                            runId,
+                            variableName: name,
+                            value,
+                        }));
+                    }
                 });
             }
-
-            // Prepare user input with resources if any
-            let finalUserInput = userInput.trim();
-
-            if (resources.length > 0) {
-                const resourceContext = resources.map((resource, index) => {
-                    if (resource.type === 'file') {
-                        const filename = resource.data.filename || resource.data.details?.filename || 'file';
-                        return `[Attachment ${index + 1}: ${filename}]`;
-                    } else if (resource.type === 'image_url') {
-                        return `[Image ${index + 1}: ${resource.data.url}]`;
-                    } else if (resource.type === 'file_url') {
-                        const filename = resource.data.filename || 'file';
-                        return `[File URL ${index + 1}: ${filename}]`;
-                    } else if (resource.type === 'webpage') {
-                        return `[Webpage ${index + 1}: ${resource.data.title || resource.data.url}]`;
-                    } else if (resource.type === 'youtube') {
-                        return `[YouTube ${index + 1}: ${resource.data.title || resource.data.videoId}]`;
-                    }
-                    return `[Resource ${index + 1}]`;
-                }).filter(Boolean).join('\n');
-
-                if (resourceContext) {
-                    finalUserInput = resourceContext + (finalUserInput ? '\n\n' + finalUserInput : '');
-                }
-            }
-
-            await dispatch(executeMessage({
-                runId,
-                userInput: finalUserInput || undefined,
-            })).unwrap();
-        } catch (err) {
-            setState('error');
-            setErrorMessage(err instanceof Error ? err.message : 'Unknown error');
         }
-    }, [runId, cachedPrompt, currentCode, selection, context, resources, dispatch]);
+    }, [runId, cachedPrompt, instance?.status, currentCode, selection, context, variables, dispatch]);
+
+    // Watch for execution start and update local state
+    useEffect(() => {
+        if (instance?.status === 'executing' || instance?.status === 'streaming') {
+            if (state !== 'processing') {
+                setState('processing');
+            }
+        }
+    }, [instance?.status, state]);
 
     // Handlers for PromptInput
     const handleVariableValueChange = useCallback((variableName: string, value: string) => {
@@ -421,10 +386,7 @@ export function useAICodeEditor({
         instance,
         cachedPrompt,
         variables,
-        resources,
-        setResources,
-        expandedVariable,
-        setExpandedVariable,
+        // resources and expandedVariable removed - managed by Redux
         parsedEdits,
         modifiedCode,
         errorMessage,
@@ -441,16 +403,16 @@ export function useAICodeEditor({
         streamingText,
         messages,
         
-        // runId exposed so component can use it for input selectors
+        // runId exposed so SmartPromptInput can use it
         runId,
         
         // Handlers
-        handleSubmit,           // Now accepts userInput as parameter
         handleVariableValueChange,
         handleSubmitOnEnterChange,
         handleCopyResponse,
         handleApplyChanges,
         
-        // NOTE: handleChatInputChange removed - manage input directly in component
+        // NOTE: handleSubmit, handleChatInputChange, resources, expandedVariable removed
+        // SmartPromptInput handles all input/resource/execution management
     };
 }

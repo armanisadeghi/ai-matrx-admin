@@ -1,6 +1,7 @@
 export type PromptMessageRole = "system" | "user" | "assistant";
 
 export interface PromptSettings {
+    model_id?: string;
     output_format?: string;
     tool_choice?: string;
     temperature?: number;
@@ -41,8 +42,14 @@ export interface MessageResourceReference {
  * Message metadata structure - extensible for future additions
  */
 export interface MessageMetadata {
+    taskId?: string;
     files?: MessageFileReference[];
     resources?: MessageResourceReference[];
+    timestamp?: string;
+    timeToFirstToken?: number;
+    totalTime?: number;
+    tokens?: number;
+    cost?: number;
     [key: string]: unknown; // Allow additional metadata properties
 }
 

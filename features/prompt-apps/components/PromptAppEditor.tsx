@@ -45,6 +45,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [editRateLimitPerIp, setEditRateLimitPerIp] = useState(app.rate_limit_per_ip.toString());
   const [editRateLimitWindowHours, setEditRateLimitWindowHours] = useState(app.rate_limit_window_hours.toString());
   const [editRateLimitAuthenticated, setEditRateLimitAuthenticated] = useState(app.rate_limit_authenticated.toString());
+  const [isIframeLoading, setIsIframeLoading] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -270,7 +271,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
             <Button
               variant={mode === 'run' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setMode('run')}
+              onClick={() => {
+                setMode('run');
+                setIsIframeLoading(true);
+              }}
               className={cn(
                 "transition-all",
                 mode === 'run' && "shadow-sm"
@@ -668,11 +672,20 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
-                <div className="border rounded-lg overflow-hidden bg-background shadow-inner">
+                <div className="border rounded-lg overflow-hidden bg-background shadow-inner relative">
+                  {isIframeLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground font-medium">Loading preview...</p>
+                      </div>
+                    </div>
+                  )}
                   <iframe
                     src={`/preview/${app.id}`}
                     className="w-full h-[600px] border-0"
                     title="App Preview"
+                    onLoad={() => setIsIframeLoading(false)}
                   />
                 </div>
               </CardContent>

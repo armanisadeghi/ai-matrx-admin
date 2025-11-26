@@ -26,6 +26,7 @@ import type {
   SetCurrentInputPayload,
   InstanceUIState,
 } from './types';
+import type { Resource } from '@/features/prompts/types/resources';
 
 // ========== EMPTY STABLE REFERENCES ==========
 // Used by selectors to return stable references for missing data
@@ -152,7 +153,7 @@ const promptExecutionSlice = createSlice({
      */
     setResources: (
       state,
-      action: PayloadAction<{ runId: string; resources: any[] }>
+      action: PayloadAction<{ runId: string; resources: Resource[] }>
     ) => {
       const { runId, resources } = action.payload;
       if (state.instances[runId]) {
@@ -165,7 +166,7 @@ const promptExecutionSlice = createSlice({
      */
     addResource: (
       state,
-      action: PayloadAction<{ runId: string; resource: any }>
+      action: PayloadAction<{ runId: string; resource: Resource }>
     ) => {
       const { runId, resource } = action.payload;
       if (state.instances[runId]) {

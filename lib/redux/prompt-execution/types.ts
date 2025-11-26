@@ -6,6 +6,8 @@
  * - High-frequency update data (currentInput, resources, uiState) live in separate top-level maps
  * - This separation prevents re-renders when typing in input fields
  */
+import { PromptSettings } from '@/features/prompts/types/core';
+import type { Resource } from '@/features/prompts/types/resources';
 
 export interface ExecutionConfig {
   auto_run: boolean;
@@ -100,7 +102,7 @@ export interface ExecutionInstance {
   updatedAt: number;
   
   // ========== Configuration ==========
-  settings: Record<string, any>;
+  settings: PromptSettings;
   executionConfig: ExecutionConfig;
   
   // ========== Variables ==========
@@ -158,7 +160,7 @@ export interface PromptExecutionState {
   };
   
   resources: {
-    [runId: string]: any[];
+    [runId: string]: Resource[];
   };
   
   uiState: {

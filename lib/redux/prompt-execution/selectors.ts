@@ -34,6 +34,7 @@ import {
 } from '../socket-io/selectors/socket-response-selectors';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import type { ConversationMessage } from './types';
+import type { PromptVariable } from '@/features/prompts/types/core';
 
 // NOTE: Stable empty references imported from ./slice
 
@@ -49,6 +50,62 @@ export {
   selectExecutionTracking,
   selectRunTracking,
 } from './slice';
+
+/**
+ * Get variable definitions from cached prompt
+ * Returns array of variable definitions (name, defaultValue, customComponent)
+ */
+export const selectVariableDefinitions = createSelector(
+  [
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
+      return instance ? selectCachedPrompt(state, instance.promptId) : null;
+    },
+  ],
+  (prompt): PromptVariable[] => {
+    if (!prompt) return EMPTY_ARRAY as PromptVariable[];
+    // Handle both variableDefaults and variable_defaults (DB naming)
+    return (prompt.variableDefaults || prompt.variable_defaults || EMPTY_ARRAY) as PromptVariable[];
+  }
+);
+
+/**
+ * Get attachment capabilities from prompt settings
+ */
+export const selectAttachmentCapabilities = createSelector(
+  [
+    (state: RootState, runId: string) => selectInstance(state, runId),
+  ],
+  (instance) => {
+    if (!instance) {
+      return {
+        supportsImageUrls: false,
+        supportsFileUrls: false,
+        supportsYoutubeVideos: false,
+      };
+    }
+    
+    return {
+      supportsImageUrls: instance.settings?.image_urls ?? false,
+      supportsFileUrls: instance.settings?.file_urls ?? false,
+      supportsYoutubeVideos: instance.settings?.youtube_videos ?? false,
+    };
+  }
+);
+
+/**
+ * Check if last message in conversation is from user
+ * Used to determine if send button should be disabled
+ */
+export const selectIsLastMessageUser = createSelector(
+  [
+    (state: RootState, runId: string) => selectMessages(state, runId),
+  ],
+  (messages) => {
+    if (messages.length === 0) return false;
+    return messages[messages.length - 1].role === 'user';
+  }
+);
 
 /**
  * Get merged variables for an instance
