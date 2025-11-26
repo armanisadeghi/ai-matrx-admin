@@ -207,11 +207,13 @@ export function InlineCopyButton({
     className = "",
     tooltipText = "Copy to clipboard",
     isMarkdown = false,
+    constrainToParent = false,
 }) {
     const [copied, setCopied] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState("below");
+    const [dropdownHorizontalAlign, setDropdownHorizontalAlign] = useState("right");
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const [htmlContent, setHtmlContent] = useState("");
     const [htmlTitle, setHtmlTitle] = useState("");
@@ -220,19 +222,47 @@ export function InlineCopyButton({
     // Close dropdown when clicking outside
     const inlineDropdownRef = useOnClickOutside<HTMLDivElement>(() => setShowOptions(false));
     
-    // Check viewport constraints when showing options
+    // Check viewport and parent constraints when showing options
     useEffect(() => {
         if (showOptions && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
             const spaceBelow = window.innerHeight - rect.bottom;
-            // If space below is less than 100px, show dropdown above
+            
+            // Vertical positioning: If space below is less than 100px, show dropdown above
             if (spaceBelow < 100) {
                 setDropdownPosition("above");
             } else {
                 setDropdownPosition("below");
             }
+            
+            // Horizontal positioning: Check if we need to constrain to parent
+            if (constrainToParent) {
+                // Find the closest parent with a defined boundary (usually the markdown container)
+                const parent = buttonRef.current.closest('.space-y-4') || buttonRef.current.parentElement;
+                if (parent) {
+                    const parentRect = parent.getBoundingClientRect();
+                    const dropdownWidth = 224; // min-w-56 = 14rem = 224px
+                    
+                    // Calculate available space on both sides
+                    const spaceOnRight = parentRect.right - rect.right;
+                    const spaceOnLeft = rect.left - parentRect.left;
+                    
+                    // Determine best alignment based on available space
+                    if (spaceOnRight >= dropdownWidth) {
+                        setDropdownHorizontalAlign("right");
+                    } else if (spaceOnLeft >= dropdownWidth) {
+                        setDropdownHorizontalAlign("left");
+                    } else {
+                        // If dropdown doesn't fit on either side, align to the side with more space
+                        setDropdownHorizontalAlign(spaceOnRight >= spaceOnLeft ? "right" : "left");
+                    }
+                }
+            } else {
+                // Default behavior: align to right
+                setDropdownHorizontalAlign("right");
+            }
         }
-    }, [showOptions]);
+    }, [showOptions, constrainToParent]);
 
     // Size mapping
     const sizeClasses = {
@@ -366,7 +396,11 @@ export function InlineCopyButton({
                         dropdownPosition === "above" 
                             ? "bottom-full mb-1" 
                             : "top-full mt-1"
-                    } min-w-56 right-0 bg-textured border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                    } ${
+                        dropdownHorizontalAlign === "left"
+                            ? "left-0"
+                            : "right-0"
+                    } min-w-56 bg-textured border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
                 >
                     <button
                         onClick={handleRegularCopy}

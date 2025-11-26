@@ -370,7 +370,8 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                             markdownContent={currentContent} 
                             size="xs" 
                             position="center-right" 
-                            isMarkdown={true} 
+                            isMarkdown={true}
+                            constrainToParent={true}
                         />
                     </MarkdownErrorBoundary>
                 )}
