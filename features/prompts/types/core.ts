@@ -1,6 +1,7 @@
 export type PromptMessageRole = "system" | "user" | "assistant";
 
 export interface PromptSettings {
+    model_id?: string;
     output_format?: string;
     tool_choice?: string;
     temperature?: number;
@@ -92,8 +93,8 @@ export type PromptsData = {
 export interface PromptsBatchData {
     prompts: PromptsData[];
     overwriteExisting?: boolean; // If true, prompts with matching IDs will be updated
-  }
-  
+}
+
 
 export type SimplePromptsData = {
     id?: string;

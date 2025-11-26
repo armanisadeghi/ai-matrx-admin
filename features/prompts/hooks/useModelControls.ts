@@ -26,22 +26,22 @@ export interface NormalizedControls {
     stop_sequences?: ControlDefinition;
     output_format?: ControlDefinition;
     tool_choice?: ControlDefinition;
-    
+
     // Boolean/toggle controls
     store?: ControlDefinition;
     stream?: ControlDefinition;
     parallel_tool_calls?: ControlDefinition;
-    
+
     // Feature flags (allowed property)
     tools?: ControlDefinition;
     image_urls?: ControlDefinition;
     file_urls?: ControlDefinition;
     internal_web_search?: ControlDefinition;
     youtube_videos?: ControlDefinition;
-    
+
     // Raw controls for debugging
     rawControls: Record<string, any>;
-    
+
     // Unmapped controls that we couldn't resolve
     unmappedControls: Record<string, any>;
 }
@@ -50,15 +50,27 @@ export interface NormalizedControls {
  * Parse and normalize controls from a model's controls object
  */
 export function useModelControls(models: any[], selectedModelId: string) {
+    // If no ID provided, just return empty state without error
+    if (!selectedModelId) {
+        return {
+            normalizedControls: null,
+            selectedModel: null,
+            error: null,
+        };
+    }
+
     // Find the selected model by ID (UUID)
     const selectedModel = models.find((m) => m.id === selectedModelId);
-    
+
     if (!selectedModel) {
-        console.error('Model not found:', {
-            selectedModelId,
-            availableModelIds: models.map(m => m.id),
-            models
-        });
+        // Only log error if we have models loaded but still can't find the ID
+        if (models.length > 0) {
+            console.error('Model not found:', {
+                selectedModelId,
+                availableModelIds: models.map(m => m.id),
+                models
+            });
+        }
         return {
             normalizedControls: null,
             selectedModel: null,
@@ -86,9 +98,9 @@ export function useModelControls(models: any[], selectedModelId: string) {
 
     // Known control keys we handle
     const knownKeys = new Set([
-        'temperature', 'max_tokens', 'max_output_tokens', 'top_p', 'top_k', 
+        'temperature', 'max_tokens', 'max_output_tokens', 'top_p', 'top_k',
         'reasoning_effort', 'verbosity', 'reasoning_summary', 'output_format', 'tool_choice',
-        'stop_sequences', 'tools', 'stream', 'store', 
+        'stop_sequences', 'tools', 'stream', 'store',
         'file_urls', 'image_urls', 'internal_web_search', 'parallel_tool_calls', 'youtube_videos'
     ]);
 
@@ -166,7 +178,7 @@ export function getModelDefaults(model: any) {
     Object.entries(controls).forEach(([key, value]: [string, any]) => {
         // Normalize key
         const normalizedKey = key === 'max_output_tokens' ? 'max_tokens' : key;
-        
+
         // Skip UI-only capability flags - these should be managed separately
         // Tools should be initialized as empty array, not boolean
         if (uiOnlyKeys.has(normalizedKey)) {
@@ -176,7 +188,7 @@ export function getModelDefaults(model: any) {
             }
             return;
         }
-        
+
         // Extract default value for actual submission parameters
         if (value.default !== undefined) {
             defaults[normalizedKey] = value.default;
