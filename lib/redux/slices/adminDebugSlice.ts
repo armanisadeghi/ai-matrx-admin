@@ -18,6 +18,10 @@ export interface AdminDebugState {
             isOpen: boolean;
             runId: string; // The ONLY thing we need - everything else comes from Redux selectors
         };
+        executionStateDebug?: {
+            isOpen: boolean;
+            runId: string; // Complete visibility into execution state
+        };
     };
 }
 
@@ -88,6 +92,15 @@ const adminDebugSlice = createSlice({
         hideResourceDebugIndicator: (state) => {
             state.indicators.resourceDebug = undefined;
         },
+        showExecutionStateDebug: (state, action: PayloadAction<{ runId: string }>) => {
+            state.indicators.executionStateDebug = {
+                isOpen: true,
+                runId: action.payload.runId,
+            };
+        },
+        hideExecutionStateDebug: (state) => {
+            state.indicators.executionStateDebug = undefined;
+        },
     },
 });
 
@@ -105,6 +118,8 @@ export const {
     hidePromptDebugIndicator,
     showResourceDebugIndicator,
     hideResourceDebugIndicator,
+    showExecutionStateDebug,
+    hideExecutionStateDebug,
 } = adminDebugSlice.actions;
 
 // Selectors
@@ -115,6 +130,7 @@ export const selectDebugKey = (key: string) => (state: RootState) => state.admin
 export const selectDebugIndicators = (state: RootState) => state.adminDebug.indicators;
 export const selectPromptDebugIndicator = (state: RootState) => state.adminDebug.indicators.promptDebug;
 export const selectResourceDebugIndicator = (state: RootState) => state.adminDebug.indicators.resourceDebug;
+export const selectExecutionStateDebug = (state: RootState) => state.adminDebug.indicators.executionStateDebug;
 
 export default adminDebugSlice.reducer;
 

@@ -28,11 +28,14 @@ import {
  * Automatically detects which special variables are needed by the prompt
  * and populates them from the provided context.
  * 
+ * Code is automatically wrapped in markdown code blocks with the appropriate
+ * language for better AI model comprehension (unless already wrapped).
+ * 
  * Special variables include:
- * - `current_code`: The full current file content
- * - `content`: Alias for current_code
- * - `selection`: Currently selected/highlighted text
- * - `context`: Additional context from other files
+ * - `current_code`: The full current file content (wrapped in code block)
+ * - `content`: Alias for current_code (wrapped in code block)
+ * - `selection`: Currently selected/highlighted text (wrapped in code block)
+ * - `context`: Additional context from other files (wrapped in code block)
  * 
  * @example
  * ```typescript
@@ -42,7 +45,8 @@ import {
  *   codeContext: {
  *     currentCode: fileContent,
  *     selection: selectedText,
- *     context: relatedFiles
+ *     context: relatedFiles,
+ *     language: 'typescript' // Optional: for proper code block wrapping
  *   }
  * })).unwrap();
  * ```
@@ -54,7 +58,7 @@ import {
  *   if (runId && currentCode) {
  *     dispatch(populateSpecialVariables({
  *       runId,
- *       codeContext: { currentCode, selection, context }
+ *       codeContext: { currentCode, selection, context, language: 'typescript' }
  *     }));
  *   }
  * }, [runId, currentCode, selection, context, dispatch]);
@@ -101,7 +105,7 @@ export const populateSpecialVariables = createAsyncThunk<
       }
       
       // Build special variable values from context
-      const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
+      const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars, codeContext.language);
       
       // Log for debugging
       logSpecialVariablesUsage(cachedPrompt.name, specialVars);
@@ -183,7 +187,7 @@ export const updateSpecialVariablesIfChanged = createAsyncThunk<
       }
       
       // Build new values
-      const newSpecialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
+      const newSpecialVars = buildSpecialVariables(codeContext, requiredSpecialVars, codeContext.language);
       
       // Check if any values actually changed
       const currentVars = instance.variables.userValues;

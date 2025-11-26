@@ -167,9 +167,10 @@ export function useAICodeEditor({
                     currentCode,
                     selection,
                     context,
+                    language,
                 };
 
-                const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
+                const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars, language);
                 logSpecialVariablesUsage(cachedPrompt.name, specialVars);
 
                 Object.entries(specialVars).forEach(([name, value]) => {
@@ -181,7 +182,7 @@ export function useAICodeEditor({
                 });
             }
         }
-    }, [runId, cachedPrompt, currentCode, selection, context, dispatch]);
+    }, [runId, cachedPrompt, currentCode, selection, context, language, dispatch]);
 
     // Reset state and cleanup when modal closes
     useEffect(() => {
@@ -309,9 +310,10 @@ export function useAICodeEditor({
                     currentCode,
                     selection,
                     context,
+                    language,
                 };
 
-                const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars);
+                const specialVars = buildSpecialVariables(codeContext, requiredSpecialVars, language);
 
                 Object.entries(specialVars).forEach(([name, value]) => {
                     const currentValue = variables[name];
@@ -326,7 +328,7 @@ export function useAICodeEditor({
                 });
             }
         }
-    }, [runId, cachedPrompt, instance?.status, currentCode, selection, context, variables, dispatch]);
+    }, [runId, cachedPrompt, instance?.status, currentCode, selection, context, language, variables, dispatch]);
 
     // Watch for execution start and update local state
     useEffect(() => {

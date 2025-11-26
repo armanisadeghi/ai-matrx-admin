@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight } from "lucide-react";
+import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,7 +11,7 @@ import { PromptInputButton } from "../PromptInputButton";
 import { ResourceChips, type Resource, ResourcePreviewSheet } from "../resource-display";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import { selectIsDebugMode, showResourceDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
+import { selectIsDebugMode, showResourceDebugIndicator, showExecutionStateDebug } from '@/lib/redux/slices/adminDebugSlice';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useRecordAndTranscribe } from '@/features/audio';
 import { TranscriptionLoader } from '@/features/audio';
@@ -318,7 +318,33 @@ export function SmartPromptInput({
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
+    <div className="relative bg-white dark:bg-zinc-900 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
+      {/* Debug Toolbar - Only shown in debug mode */}
+      {isDebugMode && runId && (
+        <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800">
+          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Debug:</span>
+          <button
+            onClick={() => dispatch(showExecutionStateDebug({ runId }))}
+            className="flex items-center gap-1 px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
+            title="See complete state and API payload"
+          >
+            <Database className="w-3 h-3" />
+            <span>State & API</span>
+          </button>
+          
+          {resources.length > 0 && (
+            <button
+              onClick={() => dispatch(showResourceDebugIndicator({ runId }))}
+              className="flex items-center gap-1 px-2 py-0.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded transition-colors"
+              title="Preview message with resources"
+            >
+              <Database className="w-3 h-3" />
+              <span>Resources ({resources.length})</span>
+            </button>
+          )}
+        </div>
+      )}
+      
       {/* Variable Inputs - Only shown when showVariables is true */}
       {showVariablesFromRedux && variableDefaults.length > 0 && (
         <div className="border-b border-gray-200 dark:border-gray-800">

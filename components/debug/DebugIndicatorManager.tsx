@@ -6,11 +6,14 @@ import {
   selectIsDebugMode,
   selectPromptDebugIndicator,
   selectResourceDebugIndicator,
+  selectExecutionStateDebug,
   hidePromptDebugIndicator,
   hideResourceDebugIndicator,
+  hideExecutionStateDebug,
 } from '@/lib/redux/slices/adminDebugSlice';
 import { DebugIndicator } from './DebugIndicator';
 import { ResourceDebugIndicator } from './ResourceDebugIndicator';
+import { PromptExecutionDebugPanel } from './PromptExecutionDebugPanel';
 
 /**
  * Centralized manager for all debug indicators
@@ -21,6 +24,7 @@ export function DebugIndicatorManager() {
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const promptDebug = useAppSelector(selectPromptDebugIndicator);
   const resourceDebug = useAppSelector(selectResourceDebugIndicator);
+  const executionStateDebug = useAppSelector(selectExecutionStateDebug);
 
   // Only render if debug mode is enabled
   if (!isDebugMode) return null;
@@ -40,6 +44,14 @@ export function DebugIndicatorManager() {
         <ResourceDebugIndicator
           runId={resourceDebug.runId}
           onClose={() => dispatch(hideResourceDebugIndicator())}
+        />
+      )}
+
+      {/* Execution State Debug Panel */}
+      {executionStateDebug?.isOpen && executionStateDebug.runId && (
+        <PromptExecutionDebugPanel
+          runId={executionStateDebug.runId}
+          onClose={() => dispatch(hideExecutionStateDebug())}
         />
       )}
     </>

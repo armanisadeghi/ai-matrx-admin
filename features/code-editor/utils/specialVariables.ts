@@ -13,6 +13,8 @@ export interface CodeEditorContext {
   selection?: string;
   /** Additional context from other files (when available) */
   context?: string;
+  /** Programming language of the code */
+  language?: string;
 }
 
 /**
@@ -33,33 +35,74 @@ export function isSpecialVariable(variableName: string): boolean {
 }
 
 /**
+ * Detect if code is already wrapped in a markdown code block
+ */
+function isWrappedInCodeBlock(code: string): boolean {
+  const trimmed = code.trim();
+  // Check if it starts with ``` and ends with ```
+  return trimmed.startsWith('```') && trimmed.endsWith('```') && trimmed.split('```').length >= 3;
+}
+
+/**
+ * Wrap code in a markdown code block with the appropriate language
+ * If code is already wrapped, returns it as-is
+ */
+function wrapInCodeBlock(code: string, language?: string): string {
+  // If already wrapped, return as-is
+  if (isWrappedInCodeBlock(code)) {
+    return code;
+  }
+  
+  // Use the provided language or default to a generic marker
+  const lang = language || 'code';
+  
+  return `\`\`\`${lang}\n${code}\n\`\`\``;
+}
+
+/**
  * Build special variables object based on what's needed
  * Only includes variables that are actually defined in the prompt
+ * Automatically wraps code in markdown code blocks for the AI model
  */
 export function buildSpecialVariables(
   codeContext: CodeEditorContext,
-  requiredVariables: string[]
+  requiredVariables: string[],
+  language?: string
 ): Record<string, string> {
   const specialVars: Record<string, string> = {};
   
   // current_code - the full current file
   if (requiredVariables.includes(SPECIAL_VARIABLE_NAMES.CURRENT_CODE)) {
-    specialVars[SPECIAL_VARIABLE_NAMES.CURRENT_CODE] = codeContext.currentCode;
+    specialVars[SPECIAL_VARIABLE_NAMES.CURRENT_CODE] = wrapInCodeBlock(
+      codeContext.currentCode,
+      language || codeContext.language
+    );
   }
   
   // content - alias for current_code (for consistency with different prompt styles)
   if (requiredVariables.includes(SPECIAL_VARIABLE_NAMES.CONTENT)) {
-    specialVars[SPECIAL_VARIABLE_NAMES.CONTENT] = codeContext.currentCode;
+    specialVars[SPECIAL_VARIABLE_NAMES.CONTENT] = wrapInCodeBlock(
+      codeContext.currentCode,
+      language || codeContext.language
+    );
   }
   
   // selection - highlighted text (if available)
   if (requiredVariables.includes(SPECIAL_VARIABLE_NAMES.SELECTION)) {
-    specialVars[SPECIAL_VARIABLE_NAMES.SELECTION] = codeContext.selection || codeContext.currentCode;
+    const selectionCode = codeContext.selection || codeContext.currentCode;
+    specialVars[SPECIAL_VARIABLE_NAMES.SELECTION] = wrapInCodeBlock(
+      selectionCode,
+      language || codeContext.language
+    );
   }
   
   // context - multi-file context (if available, otherwise falls back to current code)
   if (requiredVariables.includes(SPECIAL_VARIABLE_NAMES.CONTEXT)) {
-    specialVars[SPECIAL_VARIABLE_NAMES.CONTEXT] = codeContext.context || codeContext.currentCode;
+    const contextCode = codeContext.context || codeContext.currentCode;
+    specialVars[SPECIAL_VARIABLE_NAMES.CONTEXT] = wrapInCodeBlock(
+      contextCode,
+      language || codeContext.language
+    );
   }
   
   return specialVars;

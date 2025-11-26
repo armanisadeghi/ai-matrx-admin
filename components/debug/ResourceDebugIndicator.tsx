@@ -256,19 +256,34 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
             <div className="p-4 space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-semibold">Complete Message</h4>
+                  <h4 className="text-sm font-semibold">Complete Message to Model</h4>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigator.clipboard.writeText(previewData.fullMessage)}
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(previewData.fullMessage);
+                      setCopiedIndex(-2); // Special index for full message
+                      setTimeout(() => setCopiedIndex(null), 2000);
+                    }}
                   >
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copy
+                    {copiedIndex === -2 ? (
+                      <>
+                        <Check className="w-3 h-3 mr-1 text-green-500" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 mr-1" />
+                        Copy
+                      </>
+                    )}
                   </Button>
                 </div>
-                <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto max-h-64 overflow-y-auto">
-                  {previewData.fullMessage}
-                </pre>
+                <div className="text-xs bg-muted p-3 rounded-lg max-h-[50vh] overflow-y-auto">
+                  <pre className="whitespace-pre-wrap break-words font-mono">
+                    {previewData.fullMessage}
+                  </pre>
+                </div>
               </div>
             </div>
           </ScrollArea>

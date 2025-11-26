@@ -315,6 +315,91 @@ Variables are replaced in the **complete final message** (template + input + res
 
 ---
 
+## 🔄 Additional Improvements (Mode Transition & UX)
+
+### Issue #6: Resources Not Cleared After Sending
+**Problem:** Resources were staying in the input after sending a message.
+
+**Why This Was Wrong:**
+- Resources are **per-message**, not per-conversation
+- Each message can have different attached resources
+- Keeping old resources would confuse users
+
+**Fix:**
+```typescript
+// After EVERY message send:
+dispatch(clearResources({ runId }));
+```
+
+---
+
+### Issue #7: Variables Shown After First Message
+**Problem:** Variables UI remained visible after the first message was sent.
+
+**Why This Was Wrong:**
+- Variables are only for the initial template (Mode 1)
+- After first message, conversation is dynamic (Mode 2)
+- Template variables cannot apply to subsequent messages
+
+**Fix:**
+```typescript
+// After first message with template:
+if (isFirstMessage && isLastMessageUser) {
+  dispatch(setShowVariables({ runId, show: false }));
+}
+```
+
+---
+
+### Issue #8: Message Preview UI Issues
+**Problem:** 
+- Preview content ran off the page (no wrapping)
+- Copy button didn't show feedback
+- Hard to read long messages
+
+**Fix:**
+```typescript
+// Better text wrapping and copy feedback:
+<pre className="whitespace-pre-wrap break-words font-mono">
+  {previewData.fullMessage}
+</pre>
+
+// Copy with visual feedback:
+{copiedIndex === -2 ? (
+  <><Check className="text-green-500" /> Copied!</>
+) : (
+  <><Copy /> Copy</>
+)}
+```
+
+---
+
+## 🏗️ Mode Transition Architecture
+
+The system now properly handles two distinct modes:
+
+**Mode 1: Templated First Message**
+- ✅ Variables UI visible
+- ✅ User fills variables + adds additional input
+- ✅ Template + Input + Resources → Final Message
+- ✅ **After Send:** Clear resources, hide variables, save to DB
+
+**Mode 2: Ongoing Conversation**
+- ✅ Variables hidden (no longer relevant)
+- ✅ Uses `instance.messages[]` (conversation history)
+- ✅ Input + Resources → Append to Conversation
+- ✅ **After Send:** Clear resources, append to history
+
+**Complete Architecture:** See `/MODE_TRANSITION_ARCHITECTURE.md` for detailed explanation of:
+- How modes work
+- State transitions
+- Message construction differences
+- Variable replacement strategy
+- Resource handling per-message
+- Common pitfalls avoided
+
+---
+
 ## ✨ Summary
 
 **Before:**
@@ -343,4 +428,75 @@ The most important fix is the **architectural change** to how the debug componen
 - No component coupling or prop drilling
 
 **This ensures that what you see in the debug preview is EXACTLY what the model receives, guaranteed by reading from the same Redux state.**
+
+---
+
+## 🔄 Additional Improvements (Mode Transition)
+
+### Issue #6: Resources Not Cleared After Sending
+**Problem:** Resources were staying in the input after sending a message.
+
+**Why This Was Wrong:**
+- Resources are **per-message**, not per-conversation
+- Each message can have different attached resources
+- Keeping old resources would confuse users
+
+**Fix:**
+```typescript
+// After EVERY message send:
+dispatch(clearResources({ runId }));
+```
+
+---
+
+### Issue #7: Variables Shown After First Message
+**Problem:** Variables UI remained visible after the first message was sent.
+
+**Why This Was Wrong:**
+- Variables are only for the initial template (Mode 1)
+- After first message, conversation is dynamic (Mode 2)
+- Template variables cannot apply to subsequent messages
+
+**Fix:**
+```typescript
+// After first message with template:
+if (isFirstMessage && isLastMessageUser) {
+  dispatch(setShowVariables({ runId, show: false }));
+}
+```
+
+---
+
+### Issue #8: Message Preview UI Issues
+**Problem:** 
+- Preview content ran off the page (no wrapping)
+- Copy button didn't show feedback
+
+**Fix:**
+```typescript
+// Better text wrapping and copy feedback
+<pre className="whitespace-pre-wrap break-words font-mono">
+  {previewData.fullMessage}
+</pre>
+```
+
+---
+
+## 🏗️ Mode Transition Architecture
+
+The system now properly handles two distinct modes:
+
+**Mode 1: Templated First Message**
+- Variables UI visible
+- User fills variables + adds additional input
+- Template + Input + Resources → Final Message
+- **After Send:** Clear resources, hide variables, save to DB
+
+**Mode 2: Ongoing Conversation**
+- Variables hidden (no longer relevant)
+- Uses `instance.messages[]` (conversation history)
+- Input + Resources → Append to Conversation
+- **After Send:** Clear resources, append to history
+
+**See `/MODE_TRANSITION_ARCHITECTURE.md` for complete details.**
 

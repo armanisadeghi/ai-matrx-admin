@@ -30,6 +30,8 @@ import {
   setRunId,
   setInstanceStatus,
   clearCurrentInput,
+  clearResources,
+  setShowVariables,
 } from '../slice';
 import {
   selectInstance,
@@ -141,8 +143,15 @@ export const executeMessage = createAsyncThunk<
       
       dispatch(addMessage({ runId, message: userMessage }));
       
-      // Clear the input field (isolated state map)
+      // Clear the input field and resources (isolated state maps)
+      // Resources are per-message, not per-conversation
       dispatch(clearCurrentInput({ runId }));
+      dispatch(clearResources({ runId }));
+      
+      // After first message, hide variables (no longer relevant for subsequent messages)
+      if (isFirstMessage && isLastMessageUser) {
+        dispatch(setShowVariables({ runId, show: false }));
+      }
       
       // ========== STEP 5: Save Run to Database if First Message ==========
       if (isFirstMessage && !instance.runTracking.savedToDatabase && instance.executionConfig.track_in_runs) {

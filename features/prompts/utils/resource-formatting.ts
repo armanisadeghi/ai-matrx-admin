@@ -344,12 +344,12 @@ function escapeXml(text: string): string {
 }
 
 /**
- * Format metadata as XML attributes
+ * Format metadata as XML attributes with proper indentation
  */
-function formatMetadataXml(metadata: Record<string, string>): string {
+function formatMetadataXml(metadata: Record<string, string>, indent: string = '        '): string {
     return Object.entries(metadata)
-        .map(([key, value]) => `<${key}>${escapeXml(value)}</${key}>`)
-        .join('');
+        .map(([key, value]) => `${indent}<${key}>${escapeXml(value)}</${key}>`)
+        .join('\n');
 }
 
 // ===========================
@@ -375,7 +375,7 @@ function getResourceId(resource: Resource): string {
 }
 
 /**
- * Format a single resource to XML
+ * Format a single resource to XML with proper indentation
  */
 export function formatResourceToXml(resource: Resource): string {
     const config = RESOURCE_FORMAT_CONFIG[resource.type];
@@ -389,30 +389,30 @@ export function formatResourceToXml(resource: Resource): string {
     const instructions = config.instructions;
     const resourceId = getResourceId(resource);
     
-    // Build XML structure
+    // Build XML structure with proper indentation
     const lines: string[] = [];
-    lines.push(`<resource type="${resource.type}" id="${resourceId}">`);
+    lines.push(`    <resource type="${resource.type}" id="${resourceId}">`);
     
     // Add metadata
     if (Object.keys(metadata).length > 0) {
-        lines.push('<metadata>');
-        lines.push(formatMetadataXml(metadata));
-        lines.push('</metadata>');
+        lines.push('        <metadata>');
+        lines.push(formatMetadataXml(metadata, '            '));
+        lines.push('        </metadata>');
     }
     
     // Add instructions
-    lines.push('<instructions>');
-    lines.push(escapeXml(instructions));
-    lines.push('</instructions>');
+    lines.push('        <instructions>');
+    lines.push('            ' + escapeXml(instructions));
+    lines.push('        </instructions>');
     
     // Add content
     if (content) {
-        lines.push('<content>');
-        lines.push(escapeXml(content));
-        lines.push('</content>');
+        lines.push('        <content>');
+        lines.push('            ' + escapeXml(content));
+        lines.push('        </content>');
     }
     
-    lines.push('</resource>');
+    lines.push('    </resource>');
     
     return lines.join('\n');
 }
@@ -437,7 +437,7 @@ export function formatResourcesToXml(resources: Resource[]): string {
         return '';
     }
     
-    return `<attached_resources>\n${formattedResources.join('\n\n')}\n</attached_resources>`;
+    return `<attached_resources>\n\n${formattedResources.join('\n\n')}\n\n</attached_resources>`;
 }
 
 /**
