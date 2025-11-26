@@ -99,8 +99,8 @@ export type PromptsData = {
 export interface PromptsBatchData {
     prompts: PromptsData[];
     overwriteExisting?: boolean; // If true, prompts with matching IDs will be updated
-  }
-  
+}
+
 
 export type SimplePromptsData = {
     id?: string;

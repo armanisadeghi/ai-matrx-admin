@@ -18,8 +18,11 @@ import { setAccessToken, setTokenExpiry } from '@/lib/redux/slices/userSlice';
  */
 
 const TOKEN_EXPIRY_KEY = 'supabase_token_expiry';
-const TOKEN_REFRESH_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+// Refresh if token expires in less than 5 days (assuming 7 day token life)
+// This ensures we refresh early and often, keeping the session "fresh" even if user visits sporadically
+const TOKEN_REFRESH_THRESHOLD_MS = 5 * 24 * 60 * 60 * 1000;
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // Check every 5 minutes
+const LOCAL_DEBUG = true;
 
 interface TokenInfo {
   expiresAt: number; // Unix timestamp (seconds)
@@ -57,7 +60,9 @@ export class TokenRefreshManager {
     // Stop any existing interval
     this.stop();
 
-    console.log('[TokenRefreshManager] Starting token refresh monitoring');
+    if (LOCAL_DEBUG) {
+      console.log('[TokenRefreshManager] Starting token refresh monitoring');
+    }
 
     // Initial check
     this.checkAndRefreshToken();
@@ -84,13 +89,15 @@ export class TokenRefreshManager {
    */
   private async checkAndRefreshToken(): Promise<void> {
     if (this.isRefreshing) {
-      console.log('[TokenRefreshManager] Refresh already in progress, skipping');
+      if (LOCAL_DEBUG) {
+        console.log('[TokenRefreshManager] Refresh already in progress, skipping');
+      }
       return;
     }
 
     try {
       const supabase = createClient();
-      
+
       // Get current session
       const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -106,7 +113,7 @@ export class TokenRefreshManager {
       }
 
       const expiresAt = session.expires_at; // Unix timestamp in seconds
-      
+
       if (!expiresAt) {
         console.warn('[TokenRefreshManager] Session has no expiry time');
         return;
@@ -119,11 +126,15 @@ export class TokenRefreshManager {
       const needsRefresh = this.shouldRefreshToken(expiresAt);
 
       if (needsRefresh) {
-        console.log('[TokenRefreshManager] Token expiring soon, refreshing...');
+        if (LOCAL_DEBUG) {
+          console.log('[TokenRefreshManager] Token expiring soon, refreshing...');
+        }
         await this.refreshToken();
       } else {
         const timeUntilExpiry = this.getTimeUntilExpiry(expiresAt);
-        console.log(`[TokenRefreshManager] Token is fresh. Expires in ${this.formatDuration(timeUntilExpiry)}`);
+        if (LOCAL_DEBUG) {
+          console.log(`[TokenRefreshManager] Token is fresh. Expires in ${this.formatDuration(timeUntilExpiry)}`);
+        }
       }
 
     } catch (error) {
@@ -145,106 +156,143 @@ export class TokenRefreshManager {
 
   /**
    * Refresh the token silently in the background
+   * Uses Web Locks API to coordinate across tabs/windows
    */
   private async refreshToken(): Promise<void> {
     if (this.isRefreshing) {
-      console.log('[TokenRefreshManager] Refresh already in progress, skipping to avoid race condition');
+      if (LOCAL_DEBUG) {
+        console.log('[TokenRefreshManager] Refresh already in progress in this tab, skipping');
+      }
+      return;
+    }
+
+    // Safety check for server-side or environments without navigator
+    if (typeof window === 'undefined' || !navigator?.locks) {
+      console.warn('[TokenRefreshManager] Web Locks API not available, proceeding without cross-tab locking');
+      await this.performRefresh();
       return;
     }
 
     this.isRefreshing = true;
 
     try {
+      // Request a lock to ensure only one tab refreshes at a time
+      // 'ifAvailable: true' is NOT used because we want to wait if another tab is refreshing
+      await navigator.locks.request('supabase_auth_token_refresh', async () => {
+        if (LOCAL_DEBUG) {
+          console.log('[TokenRefreshManager] Acquired refresh lock');
+        }
+        await this.performRefresh();
+      });
+    } catch (error) {
+      console.error('[TokenRefreshManager] Error acquiring refresh lock:', error);
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  /**
+   * Actual refresh logic, to be called within a lock
+   */
+  private async performRefresh(): Promise<void> {
+    try {
       const supabase = createClient();
-      
-      // First, get the current session to check if we even need to refresh
+
+      // 1. Check current session state BEFORE refreshing
+      // Another tab might have just finished refreshing while we were waiting for the lock
       const { data: currentSession } = await supabase.auth.getSession();
-      
+
       if (!currentSession.session) {
         console.warn('[TokenRefreshManager] No active session to refresh');
-        this.isRefreshing = false;
         return;
       }
-      
-      // Check if the current token is still valid
+
+      // Check if the current token is actually expiring soon
       const expiresAt = currentSession.session.expires_at;
       if (expiresAt) {
         const timeUntilExpiry = this.getTimeUntilExpiry(expiresAt);
+        // If token has more than the threshold remaining, it was likely just refreshed by another tab
         if (timeUntilExpiry > TOKEN_REFRESH_THRESHOLD_MS) {
-          console.log('[TokenRefreshManager] Token was already refreshed recently, skipping');
-          this.isRefreshing = false;
+          if (LOCAL_DEBUG) {
+            console.log('[TokenRefreshManager] Token appears to have been refreshed by another tab. Skipping.');
+          }
+
+          // Update our local state to match the new token
+          this.updateLocalState(currentSession.session);
           return;
         }
       }
-      
-      console.log('[TokenRefreshManager] Refreshing session...');
-      
-      // Use refreshSession to get a new token
+
+      if (LOCAL_DEBUG) {
+        console.log('[TokenRefreshManager] Refreshing session...');
+      }
+
+      // 2. Attempt refresh
       const { data, error } = await supabase.auth.refreshSession();
 
       if (error) {
-        console.error('[TokenRefreshManager] Error refreshing session:', error);
-        
-        // Handle specific error cases
-        if (error.message?.includes('Revoked by Newer Login') || error.message?.includes('Session Expired')) {
-          console.warn('[TokenRefreshManager] ⚠️ Token was already refreshed by another process (middleware/tab). Getting latest session...');
-          // Try to get the current (already refreshed) session
-          const { data: latestSession } = await supabase.auth.getSession();
-          if (latestSession.session) {
-            console.log('[TokenRefreshManager] ✅ Using already-refreshed session');
-            const newAccessToken = latestSession.session.access_token;
-            const newExpiresAt = latestSession.session.expires_at;
-            
-            // Update our state with the already-refreshed token
-            const reduxStore = getStore();
-            if (reduxStore) {
-              reduxStore.dispatch(setAccessToken(newAccessToken));
-              if (newExpiresAt) {
-                reduxStore.dispatch(setTokenExpiry(newExpiresAt));
-                this.storeTokenExpiry(newExpiresAt);
-              }
+        // Handle "Token Revoked" specifically - this often happens if we lost the race despite our best efforts
+        if (error.message?.includes('Revoked') || error.message?.includes('Session Expired')) {
+          console.warn('[TokenRefreshManager] Refresh failed (Revoked/Expired). Checking if valid session exists...');
+
+          // One last check - maybe another tab refreshed it moments ago and invalidated ours
+          const { data: recoverSession } = await supabase.auth.getSession();
+          if (recoverSession.session) {
+            if (LOCAL_DEBUG) {
+              console.log('[TokenRefreshManager] ✅ Recovered valid session from store');
             }
+            this.updateLocalState(recoverSession.session);
+            return;
           }
-          return;
         }
-        
-        // If refresh fails for other reasons, user might need to re-authenticate
+
+        console.error('[TokenRefreshManager] Error refreshing session:', error);
+
+        // If it's a fatal error, we might want to clear state
         if (error.message?.includes('refresh_token') || error.message?.includes('invalid')) {
-          console.error('[TokenRefreshManager] Refresh token invalid, user needs to re-authenticate');
-          // Clear stored data
+          console.error('[TokenRefreshManager] Fatal refresh error, clearing local expiry tracking');
           this.clearStoredExpiry();
         }
         return;
       }
 
       if (data.session) {
-        const newAccessToken = data.session.access_token;
-        const newExpiresAt = data.session.expires_at;
-
         console.log('[TokenRefreshManager] ✅ Token refreshed successfully');
-        console.log(`[TokenRefreshManager] New expiry: ${new Date(newExpiresAt! * 1000).toLocaleString()}`);
-
-        // Update Redux store with new token and expiry
-        const reduxStore = getStore();
-        if (reduxStore) {
-          reduxStore.dispatch(setAccessToken(newAccessToken));
-          if (newExpiresAt) {
-            reduxStore.dispatch(setTokenExpiry(newExpiresAt));
-          }
-        }
-
-        // Store new expiry time in localStorage
-        if (newExpiresAt) {
-          this.storeTokenExpiry(newExpiresAt);
-        }
+        this.updateLocalState(data.session);
       } else {
         console.warn('[TokenRefreshManager] No session returned from refresh');
       }
 
     } catch (error) {
       console.error('[TokenRefreshManager] Unexpected error during token refresh:', error);
-    } finally {
-      this.isRefreshing = false;
+    }
+  }
+
+  /**
+   * Helper to update Redux and local storage with new session data
+   */
+  private updateLocalState(session: any): void {
+    const newAccessToken = session.access_token;
+    const newExpiresAt = session.expires_at;
+
+    if (newExpiresAt) {
+      if (LOCAL_DEBUG) {
+        console.log(`[TokenRefreshManager] Token expiry: ${new Date(newExpiresAt * 1000).toLocaleString()}`);
+      }
+    }
+
+    // Update Redux store
+    const reduxStore = getStore();
+    if (reduxStore) {
+      reduxStore.dispatch(setAccessToken(newAccessToken));
+      if (newExpiresAt) {
+        reduxStore.dispatch(setTokenExpiry(newExpiresAt));
+      }
+    }
+
+    // Store new expiry time in localStorage
+    if (newExpiresAt) {
+      this.storeTokenExpiry(newExpiresAt);
     }
   }
 
@@ -362,11 +410,15 @@ export class TokenRefreshManager {
    * Manually trigger a token refresh (for testing or force refresh)
    */
   public async forceRefresh(): Promise<boolean> {
-    console.log('[TokenRefreshManager] Force refresh requested...');
-    
+    if (LOCAL_DEBUG) {
+      console.log('[TokenRefreshManager] Force refresh requested...');
+    }
+
     // Wait a bit if already refreshing to avoid conflicts
     if (this.isRefreshing) {
-      console.log('[TokenRefreshManager] Waiting for existing refresh to complete...');
+      if (LOCAL_DEBUG) {
+        console.log('[TokenRefreshManager] Waiting for existing refresh to complete...');
+      }
       let attempts = 0;
       while (this.isRefreshing && attempts < 10) {
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -377,7 +429,7 @@ export class TokenRefreshManager {
         return false;
       }
     }
-    
+
     await this.refreshToken();
     return !this.isRefreshing; // Returns true if refresh completed
   }

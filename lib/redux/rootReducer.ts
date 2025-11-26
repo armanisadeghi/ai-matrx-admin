@@ -55,6 +55,8 @@ import promptCacheReducer from "./slices/promptCacheSlice";
 import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
+import promptEditorReducer from "./slices/promptEditorSlice";
+import modelRegistryReducer from "./slices/modelRegistrySlice";
 
 
 
@@ -123,7 +125,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         messages: messagesReducer,
         newMessage: newMessageReducer,
         chatDisplay: chatDisplayReducer,
-        
+
         socketConnections: socketConnectionReducer,
         socketResponse: socketResponseReducer,
         socketTasks: socketTasksReducer,
@@ -158,11 +160,14 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         textDiff: textDiffReducer,
         noteVersions: noteVersionsReducer,
 
+        // Prompt Editor (Redux)
+        promptEditor: promptEditorReducer,
+        modelRegistry: modelRegistryReducer,
     });
 };
 
 
-        // buttonBuilder: buttonBuilderSlice.reducer,
-        // brokerMapping: brokerMappingSlice.reducer,
-        // recipeBuilder: recipeBuilderSlice.reducer,
-        // workflowBuilder: workflowBuilderSlice.reducer,
+// buttonBuilder: buttonBuilderSlice.reducer,
+// brokerMapping: brokerMappingSlice.reducer,
+// recipeBuilder: recipeBuilderSlice.reducer,
+// workflowBuilder: workflowBuilderSlice.reducer,
