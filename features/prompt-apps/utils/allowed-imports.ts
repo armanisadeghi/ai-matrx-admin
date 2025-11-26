@@ -28,7 +28,7 @@ export const ALLOWED_IMPORTS_CONFIG: AllowedImportConfig[] = [
     path: 'react',
     loader: () => require('react'),
     scopeStrategy: 'named',
-    exports: ['useState', 'useEffect', 'useMemo', 'useCallback'],
+    exports: ['useState', 'useEffect', 'useMemo', 'useCallback', 'useRef'],
     exportMap: {
       'default': 'React'
     }
@@ -139,12 +139,13 @@ export function buildComponentScope(allowedImports: string[]): Record<string, an
 
   // Always include React core (it's required)
   const React = require('react');
-  const { useState, useEffect, useMemo, useCallback } = React;
+  const { useState, useEffect, useMemo, useCallback, useRef } = React;
   scope.React = React;
   scope.useState = useState;
   scope.useEffect = useEffect;
   scope.useMemo = useMemo;
   scope.useCallback = useCallback;
+  scope.useRef = useRef;
 
   // Process each allowed import
   for (const importPath of allowedImports) {
@@ -215,7 +216,7 @@ export function isImportAllowed(importPath: string): boolean {
  */
 export function getImportDescription(importPath: string): string {
   const descriptions: Record<string, string> = {
-    'react': 'React core (useState, useEffect, useMemo, useCallback)',
+    'react': 'React core (useState, useEffect, useMemo, useCallback, useRef)',
     'lucide-react': 'Lucide icons (all icons available)',
     '@/components/Markdown': 'MarkdownStream component for rendering markdown',
     '@/components/ui/button': 'Button component',

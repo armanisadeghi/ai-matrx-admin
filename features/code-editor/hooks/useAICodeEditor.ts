@@ -361,14 +361,21 @@ export function useAICodeEditor({
         }
     }, [rawAIResponse]);
 
-    const handleApplyChanges = useCallback(() => {
+    const handleApplyChanges = useCallback(async () => {
         setState('applying');
+        
+        // Small delay to show applying state
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Apply the code changes
         onCodeChange(modifiedCode);
+        
+        // Show success state briefly
         setState('complete');
-
-        setTimeout(() => {
-            onOpenChange(false);
-        }, 1500);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Close the modal
+        onOpenChange(false);
     }, [modifiedCode, onCodeChange, onOpenChange]);
 
     const diffStats = modifiedCode ? getDiffStats(currentCode, modifiedCode) : null;

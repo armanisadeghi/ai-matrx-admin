@@ -226,6 +226,17 @@ export function SmartPromptInput({
     }
   }, [chatInput]);
 
+  // Auto-focus textarea when runId becomes available (component becomes active)
+  useEffect(() => {
+    if (runId && textareaRef.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [runId]);
+
   // Check if all variables already have values (for visible vars mode with pre-filled values)
   const allVariablesHaveValues = variableDefaults.every(v => {
     const value = variableValues[v.name];

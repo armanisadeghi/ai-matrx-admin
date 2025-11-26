@@ -158,7 +158,10 @@ export function AICodeEditorModal({
         {/* Main Content - Two-column layout */}
         <div className="flex-1 overflow-hidden min-h-0 flex gap-2 p-2">
           {/* Left: Main Content Area (changes based on state) */}
-          <div className="flex-1 flex flex-col min-h-0 gap-2">
+          <div className={cn(
+            "flex flex-col min-h-0 gap-2",
+            messages && messages.length > 0 ? "flex-[2] min-w-0" : "flex-1"
+          )}>
             {/* Code Display (input/processing states) */}
             {(state === 'input' || state === 'processing') && (
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-background relative">
@@ -172,9 +175,9 @@ export function AICodeEditorModal({
 
                     {streamingText && (
                       <div className="mt-4 w-full max-w-xl px-4">
-                        <div className="bg-muted/50 rounded border p-2 max-h-[150px] overflow-y-auto font-mono text-[10px]">
+                        <div className="bg-muted/50 rounded border p-2 max-h-[450px] overflow-y-auto font-mono text-[10px]">
                           <p className="text-muted-foreground mb-1 text-[9px] uppercase tracking-wider font-semibold">Live Response</p>
-                          <pre className="whitespace-pre-wrap break-words">{streamingText}</pre>
+                          <MarkdownStream content={streamingText} type="message" role="assistant" />
                         </div>
                       </div>
                     )}
@@ -362,7 +365,7 @@ export function AICodeEditorModal({
 
           {/* Right: Persistent Conversation Panel */}
           {messages && messages.length > 0 && (
-            <div className="w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-background shrink-0">
+            <div className="flex-1 min-w-[280px] max-w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-background">
               <div className="px-2 py-1 border-b bg-muted/20 shrink-0">
                 <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Conversation</span>
               </div>
