@@ -110,15 +110,12 @@ export function SmartPromptInput({
   const variableValues = useAppSelector(state => runId ? selectUserVariables(state, runId) : {});
 
   // Show resource debug indicator when debug mode is on and resources exist
+  // Debug component reads everything from Redux - it just needs the runId
   useEffect(() => {
     if (isDebugMode && resources.length > 0 && runId) {
-      dispatch(showResourceDebugIndicator({ 
-        resources, 
-        chatInput, 
-        variableDefaults 
-      }));
+      dispatch(showResourceDebugIndicator({ runId }));
     }
-  }, [isDebugMode, resources, chatInput, variableDefaults, dispatch, runId]);
+  }, [isDebugMode, resources.length, dispatch, runId]);
 
   // File upload hook for paste support
   const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);

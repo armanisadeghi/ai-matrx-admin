@@ -36,11 +36,9 @@ export function DebugIndicatorManager() {
       )}
 
       {/* Resource Debug Indicator */}
-      {resourceDebug?.isOpen && resourceDebug.resources && (
+      {resourceDebug?.isOpen && resourceDebug.runId && (
         <ResourceDebugIndicator
-          resources={resourceDebug.resources}
-          chatInput={resourceDebug.chatInput}
-          variableDefaults={resourceDebug.variableDefaults}
+          runId={resourceDebug.runId}
           onClose={() => dispatch(hideResourceDebugIndicator())}
         />
       )}

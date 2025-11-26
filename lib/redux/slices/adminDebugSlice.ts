@@ -16,9 +16,7 @@ export interface AdminDebugState {
         };
         resourceDebug?: {
             isOpen: boolean;
-            resources: any[];
-            chatInput?: string;
-            variableDefaults?: any[];
+            runId: string; // The ONLY thing we need - everything else comes from Redux selectors
         };
     };
 }
@@ -81,10 +79,10 @@ const adminDebugSlice = createSlice({
         hidePromptDebugIndicator: (state) => {
             state.indicators.promptDebug = undefined;
         },
-        showResourceDebugIndicator: (state, action: PayloadAction<{ resources: any[]; chatInput?: string; variableDefaults?: any[] }>) => {
+        showResourceDebugIndicator: (state, action: PayloadAction<{ runId: string }>) => {
             state.indicators.resourceDebug = {
                 isOpen: true,
-                ...action.payload,
+                runId: action.payload.runId,
             };
         },
         hideResourceDebugIndicator: (state) => {

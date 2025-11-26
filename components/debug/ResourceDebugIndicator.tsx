@@ -5,15 +5,19 @@ import { Database, ChevronRight, Copy, Check, Eye, Loader2, ChevronDown, X } fro
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Resource } from '@/features/prompts/types/resources';
-import { fetchResourcesData } from '@/features/prompts/utils/resource-data-fetcher';
-import { formatResourcesToXml, extractSettingsAttachments, appendResourcesToMessage, extractMessageMetadata } from '@/features/prompts/utils/resource-formatting';
-import type { PromptVariable } from '@/features/prompts/types/core';
+import { extractSettingsAttachments, extractMessageMetadata } from '@/features/prompts/utils/resource-formatting';
+import { buildFinalMessage } from '@/lib/redux/prompt-execution/utils/message-builder';
+import { useAppSelector } from '@/lib/redux/hooks';
+import {
+  selectResources,
+  selectCurrentInput,
+  selectMergedVariables,
+  selectConversationTemplate,
+  selectMessages,
+} from '@/lib/redux/prompt-execution/selectors';
 
 interface ResourceDebugIndicatorProps {
-  resources: Resource[];
-  chatInput?: string;
-  variableDefaults?: PromptVariable[];
+  runId: string; // The ONLY prop needed - everything else comes from Redux
   onClose: () => void;
 }
 
@@ -25,11 +29,22 @@ interface Position {
 }
 
 export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
-  resources,
-  chatInput = '',
-  variableDefaults = [],
+  runId,
   onClose,
 }) => {
+  // ========== READ EVERYTHING FROM REDUX ==========
+  // This ensures debug shows EXACTLY what Redux knows
+  // Same selectors that executeMessageThunk uses
+  const resources = useAppSelector(state => selectResources(state, runId));
+  const chatInput = useAppSelector(state => selectCurrentInput(state, runId));
+  const variables = useAppSelector(state => selectMergedVariables(state, runId));
+  const conversationTemplate = useAppSelector(state => selectConversationTemplate(state, runId));
+  const messages = useAppSelector(state => selectMessages(state, runId));
+  
+  // Derive context from Redux state (same logic as executeMessageThunk)
+  const isFirstMessage = messages.length === 0;
+  const lastTemplateMessage = conversationTemplate[conversationTemplate.length - 1];
+  const isLastTemplateMessageUser = lastTemplateMessage?.role === 'user';
   const [size, setSize] = useState<IndicatorSize>('small');
   const [position, setPosition] = useState<Position>({ x: 50, y: 85 }); // Below debug indicator
   const [isDragging, setIsDragging] = useState(false);
@@ -116,29 +131,27 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
     }
   };
 
-  const replaceVariables = (content: string): string => {
-    let result = content;
-    variableDefaults.forEach(({ name, defaultValue }) => {
-      const regex = new RegExp(`\\{\\{${name}\\}\\}`, 'g');
-      result = result.replace(regex, defaultValue || '');
-    });
-    return result;
-  };
-
   const generateMessagePreview = async () => {
     setIsGeneratingPreview(true);
     try {
-      const enrichedResources = await fetchResourcesData(resources);
-      const formattedXml = formatResourcesToXml(enrichedResources);
-      const settingsAttachments = extractSettingsAttachments(enrichedResources);
-      const metadata = await extractMessageMetadata(enrichedResources);
-      const baseMessage = chatInput.trim() || 'Here are the resources I want to discuss:';
-      const messageWithVariablesReplaced = replaceVariables(baseMessage);
-      const fullMessage = appendResourcesToMessage(messageWithVariablesReplaced, formattedXml);
+      // Use the EXACT SAME message building logic as executeMessageThunk
+      // Reading from the SAME Redux state via selectors
+      const messageResult = await buildFinalMessage({
+        isFirstMessage,
+        isLastTemplateMessageUser,
+        lastTemplateMessage,
+        userInput: chatInput,
+        resources,
+        variables,
+      });
+      
+      // Extract settings attachments and metadata
+      const settingsAttachments = extractSettingsAttachments(resources);
+      const metadata = extractMessageMetadata(resources);
 
       setPreviewData({
-        formattedXml,
-        fullMessage,
+        formattedXml: messageResult.resourcesXml,
+        fullMessage: messageResult.finalContent,
         settingsAttachments,
         metadata,
       });

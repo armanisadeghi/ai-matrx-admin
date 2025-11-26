@@ -38,11 +38,13 @@ import {
   selectSystemMessage,
   selectConversationTemplate,
   selectModelConfig,
+  selectResources,
 } from '../selectors';
 import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import { generateRunNameFromVariables, generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
 import { createClient } from '@/utils/supabase/client';
+import { buildFinalMessage } from '../utils/message-builder';
 
 /**
  * Execute a message for a prompt instance
@@ -87,39 +89,48 @@ export const executeMessage = createAsyncThunk<
       // ========== STEP 2: Build User Message ==========
       // Get current input from ISOLATED state map
       const currentInput = selectCurrentInput(state, runId);
+      const inputToUse = userInput || currentInput;
+      
+      if (!inputToUse.trim() && instance.messages.length > 0) {
+        throw new Error('No message content to send');
+      }
       
       const isFirstMessage = instance.messages.length === 0;
       const conversationTemplate = selectConversationTemplate(state, runId);
       const lastTemplateMessage = conversationTemplate[conversationTemplate.length - 1];
       const isLastMessageUser = lastTemplateMessage?.role === 'user';
       
-      let userMessageContent: string;
-      
-      if (isFirstMessage && isLastMessageUser) {
-        // First message: Combine template with current input
-        const templateContent = lastTemplateMessage.content;
-        const inputToUse = userInput || currentInput;
-        
-        userMessageContent = inputToUse.trim()
-          ? `${templateContent}\n${inputToUse}`
-          : templateContent;
-      } else {
-        // Subsequent messages: Just use input
-        userMessageContent = userInput || currentInput;
-      }
-      
-      if (!userMessageContent.trim()) {
-        throw new Error('No message content to send');
-      }
-      
-      // ========== STEP 3: Replace Variables ==========
-      // CRITICAL: Gets FRESH merged variables from Redux!
-      // No closure over stale state possible!
+      // Get resources and variables from state
+      const resources = selectResources(state, runId);
       const mergedVariables = selectMergedVariables(state, runId);
-      const userMessageWithVariables = replaceVariablesInText(
-        userMessageContent,
-        mergedVariables
-      );
+      
+      // Build the final message using shared utility
+      // This ensures debug component shows EXACTLY what will be sent
+      console.log('🔨 Building message:', {
+        isFirstMessage,
+        isLastMessageUser,
+        hasTemplate: !!lastTemplateMessage,
+        resourceCount: resources.length,
+        variableCount: Object.keys(mergedVariables).length,
+      });
+      
+      const messageResult = await buildFinalMessage({
+        isFirstMessage,
+        isLastTemplateMessageUser: isLastMessageUser,
+        lastTemplateMessage,
+        userInput: inputToUse,
+        resources,
+        variables: mergedVariables,
+      });
+      
+      const userMessageWithVariables = messageResult.finalContent;
+      
+      console.log('✅ Message built:', {
+        finalLength: userMessageWithVariables.length,
+        baseLength: messageResult.baseContent.length,
+        hasResources: messageResult.hasResources,
+        resourceXmlLength: messageResult.resourcesXml.length,
+      });
       
       // Add user message to conversation
       const userMessage: ConversationMessage = {
@@ -133,7 +144,7 @@ export const executeMessage = createAsyncThunk<
       // Clear the input field (isolated state map)
       dispatch(clearCurrentInput({ runId }));
       
-      // ========== STEP 4: Save Run to Database if First Message ==========
+      // ========== STEP 5: Save Run to Database if First Message ==========
       if (isFirstMessage && !instance.runTracking.savedToDatabase && instance.executionConfig.track_in_runs) {
         // Generate run name
         const runName = generateRunNameFromVariables(mergedVariables, [])
@@ -168,7 +179,7 @@ export const executeMessage = createAsyncThunk<
         console.log('✅ Run saved to database:', runId, '-', runName);
       }
       
-      // ========== STEP 5: Build Messages for API ==========
+      // ========== STEP 6: Build Messages for API ==========
       // CRITICAL: Uses selector that reads fresh state!
       // Get fresh state again (may have changed after run creation)
       const currentState = getState();
@@ -177,39 +188,63 @@ export const executeMessage = createAsyncThunk<
       let messagesToSend;
       
       if (isFirstMessage && isLastMessageUser) {
-        // Replace last template message with combined content
+        // Replace last template message with combined content (with variables already replaced)
         const templatesWithoutLast = conversationTemplate.slice(0, -1);
         messagesToSend = [
           ...templatesWithoutLast,
-          { role: 'user' as const, content: userMessageContent },
+          { role: 'user' as const, content: userMessageWithVariables },
         ];
       } else if (isFirstMessage) {
-        // Append user message to templates
+        // Append user message to templates (with variables already replaced)
         messagesToSend = [
           ...conversationTemplate,
-          { role: 'user' as const, content: userMessageContent },
+          { role: 'user' as const, content: userMessageWithVariables },
         ];
       } else {
         // Use conversation history (from instance.messages directly)
+        // The user message with variables is already added to instance.messages above
         messagesToSend = instance.messages.map(m => ({
           role: m.role,
           content: m.content,
         }));
       }
       
-      // Add system message and replace variables in ALL messages
+      // Add system message and replace variables in template messages only
+      // Note: User message already has variables replaced (userMessageWithVariables)
       const allMessages = [
         { role: 'system' as const, content: systemMessage },
         ...messagesToSend,
       ];
       
-      // CRITICAL: Replace variables using FRESH state!
-      const messagesWithVariablesReplaced = allMessages.map(msg => ({
-        ...msg,
-        content: replaceVariablesInText(msg.content, mergedVariables),
-      }));
+      // CRITICAL: Replace variables in template messages only!
+      // User messages in messagesToSend already have variables replaced
+      const messagesWithVariablesReplaced = allMessages.map((msg, index) => {
+        // System message always needs variable replacement
+        if (msg.role === 'system') {
+          return {
+            ...msg,
+            content: replaceVariablesInText(msg.content, mergedVariables),
+          };
+        }
+        
+        // For first message scenarios, the last message is the user message with variables already replaced
+        if (isFirstMessage && index === allMessages.length - 1 && msg.role === 'user') {
+          return msg; // Already has variables replaced
+        }
+        
+        // For subsequent messages, messages from instance.messages already have variables replaced
+        if (!isFirstMessage) {
+          return msg; // Already has variables replaced
+        }
+        
+        // Template messages (assistant prompts, etc.) need variable replacement
+        return {
+          ...msg,
+          content: replaceVariablesInText(msg.content, mergedVariables),
+        };
+      });
       
-      // ========== STEP 6: Build Chat Config ==========
+      // ========== STEP 7: Build Chat Config ==========
       const modelConfig = selectModelConfig(currentState, runId);
       
       if (!modelConfig) {
@@ -223,7 +258,7 @@ export const executeMessage = createAsyncThunk<
         ...modelConfig.config,
       };
       
-      // ========== STEP 7: Create Task in DB (if tracking) ==========
+      // ========== STEP 8: Create Task in DB (if tracking) ==========
       const taskId = uuidv4();
       
       if (instance.runTracking.savedToDatabase) {
@@ -247,7 +282,7 @@ export const executeMessage = createAsyncThunk<
         }
       }
       
-      // ========== STEP 8: Submit to Socket.IO ==========
+      // ========== STEP 9: Submit to Socket.IO ==========
       dispatch(startExecution({ runId, taskId }));
       
       const result = await dispatch(createAndSubmitTask({

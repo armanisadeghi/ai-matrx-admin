@@ -159,7 +159,7 @@ export default function AICodeEditorDemoPage() {
                   <SelectContent>
                     {Object.values(PROMPT_BUILTINS).map((builtin: PromptBuiltin) => (
                       <SelectItem key={builtin.id} value={builtin.id}>
-                        {builtin.name} ({builtin.key}) [{builtin.id}]
+                        {builtin.name} ({builtin.key})
                       </SelectItem>
                     ))}
                   </SelectContent>
