@@ -8,13 +8,18 @@
  * 4. Returns runId for component tracking
  * 
  * This is the entry point for ALL prompt executions.
+ * 
+ * NOTE: The slice's createInstance action automatically initializes:
+ * - currentInputs[runId] = ''
+ * - resources[runId] = []
+ * - uiState[runId] = { expandedVariable: null, showVariables: config.show_variables }
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '../../store';
 import type { StartInstancePayload, ExecutionInstance } from '../types';
-import { createInstance, setInstanceStatus } from '../slice';
+import { createInstance, setInstanceStatus, setCurrentInput } from '../slice';
 import { getPrompt } from '../../thunks/promptSystemThunks';
 
 /**
@@ -89,6 +94,7 @@ export const startPromptInstance = createAsyncThunk<
       };
       
       // ========== STEP 4: Create Execution Instance ==========
+      const now = Date.now();
       const instance: ExecutionInstance = {
         // Identity
         runId,
@@ -98,8 +104,10 @@ export const startPromptInstance = createAsyncThunk<
         // Status
         status: 'ready',
         error: null,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        
+        // Timestamps
+        createdAt: now,
+        updatedAt: now, // Only updated on execution completion
         
         // Configuration
         settings: prompt.settings,
@@ -113,17 +121,13 @@ export const startPromptInstance = createAsyncThunk<
         
         // Variables
         variables: {
-          userValues: { ...variables }, // User-provided values
+          userValues: { ...variables },
           scopedValues: {}, // TODO: Fill from fetchScopedVariables
           computedValues: computedVariables,
         },
         
-        // Conversation
-        conversation: {
-          messages: [],
-          currentInput: initialMessage,
-          resources: [],
-        },
+        // Messages (empty array - no longer nested in conversation)
+        messages: [],
         
         // Execution tracking
         execution: {
@@ -135,23 +139,25 @@ export const startPromptInstance = createAsyncThunk<
         
         // Run tracking
         runTracking: {
-          sourceType: promptSource, // Dynamic: 'prompts' or 'prompt_builtins'
+          sourceType: promptSource,
           sourceId: promptId,
           runName: null,
           totalTokens: 0,
           totalCost: 0,
-          savedToDatabase: false, // Will be set to true when saved to DB
+          savedToDatabase: false,
         },
         
-        // UI state
-        ui: {
-          expandedVariable: null,
-          showVariables: executionConfig.show_variables ?? false,
-        },
+        // NOTE: ui state is now in isolated uiState map
+        // It's initialized by createInstance action based on executionConfig.show_variables
       };
       
-      // Add instance to Redux
+      // Add instance to Redux (this also initializes isolated state maps)
       dispatch(createInstance(instance));
+      
+      // Set initial message if provided (uses isolated currentInputs map)
+      if (initialMessage) {
+        dispatch(setCurrentInput({ runId, input: initialMessage }));
+      }
       
       // If loading existing run, fetch messages
       if (providedRunId) {
@@ -182,4 +188,3 @@ export const startPromptInstance = createAsyncThunk<
     }
   }
 );
-

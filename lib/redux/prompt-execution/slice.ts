@@ -2,11 +2,17 @@
  * Prompt Execution Slice
  * 
  * Central Redux slice managing ALL prompt execution instances.
- * Eliminates closure bugs and provides single source of truth for:
- * - Variable management
- * - Execution state
- * - Conversation history
- * - Run tracking
+ * 
+ * ARCHITECTURE:
+ * - instances: Stable core data (identity, config, messages, execution tracking)
+ * - currentInputs: Isolated map for user typing (high-frequency updates)
+ * - resources: Isolated map for attachments
+ * - uiState: Isolated map for UI controls
+ * 
+ * This separation eliminates re-renders when:
+ * - User types in input field (only currentInputs changes)
+ * - User toggles UI controls (only uiState changes)
+ * - User adds/removes attachments (only resources changes)
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
@@ -18,10 +24,26 @@ import type {
   ConversationMessage,
   UpdateVariablePayload,
   SetCurrentInputPayload,
+  InstanceUIState,
 } from './types';
+
+// ========== EMPTY STABLE REFERENCES ==========
+// Used by selectors to return stable references for missing data
+// EXPORTED so hooks can use them instead of creating new references
+// Note: These are frozen at runtime but typed as mutable for compatibility
+export const EMPTY_ARRAY: any[] = [];
+export const EMPTY_MESSAGES: ConversationMessage[] = [];
+export const EMPTY_OBJECT: Record<string, any> = {};
+export const DEFAULT_UI_STATE: InstanceUIState = {
+  expandedVariable: null,
+  showVariables: false,
+};
 
 const initialState: PromptExecutionState = {
   instances: {},
+  currentInputs: {},
+  resources: {},
+  uiState: {},
   runsByPromptId: {},
   scopedVariables: {
     user: null,
@@ -45,6 +67,14 @@ const promptExecutionSlice = createSlice({
       const instance = action.payload;
       state.instances[instance.runId] = instance;
       
+      // Initialize isolated state maps
+      state.currentInputs[instance.runId] = '';
+      state.resources[instance.runId] = [];
+      state.uiState[instance.runId] = {
+        expandedVariable: null,
+        showVariables: instance.executionConfig.show_variables ?? false,
+      };
+      
       // Update lookup maps
       if (!state.runsByPromptId[instance.promptId]) {
         state.runsByPromptId[instance.promptId] = [];
@@ -67,8 +97,11 @@ const promptExecutionSlice = createSlice({
             promptRuns.filter(id => id !== runId);
         }
         
-        // Remove instance
+        // Remove instance and isolated state
         delete state.instances[runId];
+        delete state.currentInputs[runId];
+        delete state.resources[runId];
+        delete state.uiState[runId];
       }
     },
     
@@ -85,7 +118,122 @@ const promptExecutionSlice = createSlice({
       if (instance) {
         instance.status = status;
         instance.error = error || null;
-        instance.updatedAt = Date.now();
+        // Note: updatedAt is NOT changed here - only on execution completion
+      }
+    },
+    
+    // ========== CURRENT INPUT (ISOLATED) ==========
+    
+    /**
+     * Set current input (user typing) - ISOLATED from instance
+     */
+    setCurrentInput: (state, action: PayloadAction<SetCurrentInputPayload>) => {
+      const { runId, input } = action.payload;
+      // Only update if instance exists
+      if (state.instances[runId]) {
+        state.currentInputs[runId] = input;
+      }
+    },
+    
+    /**
+     * Clear current input
+     */
+    clearCurrentInput: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      if (state.instances[runId]) {
+        state.currentInputs[runId] = '';
+      }
+    },
+    
+    // ========== RESOURCES (ISOLATED) ==========
+    
+    /**
+     * Set resources for an instance
+     */
+    setResources: (
+      state,
+      action: PayloadAction<{ runId: string; resources: any[] }>
+    ) => {
+      const { runId, resources } = action.payload;
+      if (state.instances[runId]) {
+        state.resources[runId] = resources;
+      }
+    },
+    
+    /**
+     * Add a resource
+     */
+    addResource: (
+      state,
+      action: PayloadAction<{ runId: string; resource: any }>
+    ) => {
+      const { runId, resource } = action.payload;
+      if (state.instances[runId]) {
+        if (!state.resources[runId]) {
+          state.resources[runId] = [];
+        }
+        state.resources[runId].push(resource);
+      }
+    },
+    
+    /**
+     * Remove a resource by index
+     */
+    removeResource: (
+      state,
+      action: PayloadAction<{ runId: string; index: number }>
+    ) => {
+      const { runId, index } = action.payload;
+      if (state.resources[runId]) {
+        state.resources[runId].splice(index, 1);
+      }
+    },
+    
+    /**
+     * Clear all resources
+     */
+    clearResources: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      if (state.instances[runId]) {
+        state.resources[runId] = [];
+      }
+    },
+    
+    // ========== UI STATE (ISOLATED) ==========
+    
+    /**
+     * Set expanded variable
+     */
+    setExpandedVariable: (
+      state,
+      action: PayloadAction<{ runId: string; variableName: string | null }>
+    ) => {
+      const { runId, variableName } = action.payload;
+      if (state.uiState[runId]) {
+        state.uiState[runId].expandedVariable = variableName;
+      }
+    },
+    
+    /**
+     * Toggle show variables
+     */
+    toggleShowVariables: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      if (state.uiState[runId]) {
+        state.uiState[runId].showVariables = !state.uiState[runId].showVariables;
+      }
+    },
+    
+    /**
+     * Set show variables explicitly
+     */
+    setShowVariables: (
+      state,
+      action: PayloadAction<{ runId: string; show: boolean }>
+    ) => {
+      const { runId, show } = action.payload;
+      if (state.uiState[runId]) {
+        state.uiState[runId].showVariables = show;
       }
     },
     
@@ -100,7 +248,7 @@ const promptExecutionSlice = createSlice({
       
       if (instance) {
         instance.variables.userValues[variableName] = value;
-        instance.updatedAt = Date.now();
+        // Note: updatedAt is NOT changed - variables are not "execution"
       }
     },
     
@@ -119,7 +267,6 @@ const promptExecutionSlice = createSlice({
           ...instance.variables.userValues,
           ...variables,
         };
-        instance.updatedAt = Date.now();
       }
     },
     
@@ -135,26 +282,14 @@ const promptExecutionSlice = createSlice({
       
       if (instance) {
         instance.variables.computedValues = variables;
-        instance.updatedAt = Date.now();
       }
     },
     
-    // ========== CONVERSATION MANAGEMENT ==========
+    // ========== MESSAGE MANAGEMENT ==========
     
     /**
-     * Set current input (user typing)
-     */
-    setCurrentInput: (state, action: PayloadAction<SetCurrentInputPayload>) => {
-      const { runId, input } = action.payload;
-      const instance = state.instances[runId];
-      
-      if (instance) {
-        instance.conversation.currentInput = input;
-      }
-    },
-    
-    /**
-     * Add a message to conversation
+     * Add a message to conversation history
+     * This DOES update updatedAt since it's part of execution
      */
     addMessage: (
       state,
@@ -164,24 +299,24 @@ const promptExecutionSlice = createSlice({
       const instance = state.instances[runId];
       
       if (instance) {
-        instance.conversation.messages.push(message);
+        instance.messages.push(message);
         instance.updatedAt = Date.now();
       }
     },
     
     /**
-     * Clear conversation (reset)
+     * Clear conversation (reset messages)
      */
     clearConversation: (state, action: PayloadAction<{ runId: string }>) => {
       const { runId } = action.payload;
       const instance = state.instances[runId];
       
       if (instance) {
-        instance.conversation.messages = [];
-        instance.conversation.currentInput = '';
+        instance.messages = [];
         instance.runTracking.runName = null;
         instance.runTracking.savedToDatabase = false;
-        instance.updatedAt = Date.now();
+        // Clear input as well
+        state.currentInputs[runId] = '';
       }
     },
     
@@ -202,7 +337,7 @@ const promptExecutionSlice = createSlice({
         instance.execution.messageStartTime = Date.now();
         instance.execution.timeToFirstToken = undefined;
         instance.status = 'executing';
-        instance.updatedAt = Date.now();
+        // Note: updatedAt not changed - execution hasn't completed yet
       }
     },
     
@@ -229,6 +364,7 @@ const promptExecutionSlice = createSlice({
     
     /**
      * Complete execution (store final stats)
+     * This DOES update updatedAt since execution is complete
      */
     completeExecution: (
       state,
@@ -250,7 +386,7 @@ const promptExecutionSlice = createSlice({
         instance.execution.currentTaskId = null;
         instance.execution.messageStartTime = null;
         instance.status = 'completed';
-        instance.updatedAt = Date.now();
+        instance.updatedAt = Date.now(); // Only here: execution completed
         
         // Update run totals
         if (stats.tokens) {
@@ -265,7 +401,7 @@ const promptExecutionSlice = createSlice({
     // ========== RUN TRACKING ==========
     
     /**
-     * Set run ID (when run created in DB)
+     * Set run tracking info (when run created in DB)
      */
     setRunId: (
       state,
@@ -277,7 +413,6 @@ const promptExecutionSlice = createSlice({
       if (instance) {
         instance.runTracking.runName = runName;
         instance.runTracking.savedToDatabase = savedToDatabase;
-        instance.updatedAt = Date.now();
       }
     },
     
@@ -326,35 +461,6 @@ const promptExecutionSlice = createSlice({
         status: 'idle',
       };
     },
-    
-    // ========== UI STATE ==========
-    
-    /**
-     * Set expanded variable
-     */
-    setExpandedVariable: (
-      state,
-      action: PayloadAction<{ runId: string; variableName: string | null }>
-    ) => {
-      const { runId, variableName } = action.payload;
-      const instance = state.instances[runId];
-      
-      if (instance) {
-        instance.ui.expandedVariable = variableName;
-      }
-    },
-    
-    /**
-     * Toggle show variables
-     */
-    toggleShowVariables: (state, action: PayloadAction<{ runId: string }>) => {
-      const { runId } = action.payload;
-      const instance = state.instances[runId];
-      
-      if (instance) {
-        instance.ui.showVariables = !instance.ui.showVariables;
-      }
-    },
   },
 });
 
@@ -363,10 +469,18 @@ export const {
   createInstance,
   removeInstance,
   setInstanceStatus,
+  setCurrentInput,
+  clearCurrentInput,
+  setResources,
+  addResource,
+  removeResource,
+  clearResources,
+  setExpandedVariable,
+  toggleShowVariables,
+  setShowVariables,
   updateVariable,
   updateVariables,
   setComputedVariables,
-  setCurrentInput,
   addMessage,
   clearConversation,
   startExecution,
@@ -376,29 +490,104 @@ export const {
   setScopedVariablesStatus,
   setScopedVariables,
   clearScopedVariables,
-  setExpandedVariable,
-  toggleShowVariables,
 } = promptExecutionSlice.actions;
 
 // ========== BASIC SELECTORS ==========
+// These return primitives or stable references for null/undefined cases
 
-export const selectInstance = (state: RootState, runId: string) =>
-  state.promptExecution?.instances[runId];
+/**
+ * Select instance by runId
+ * Returns null if not found (stable reference)
+ */
+export const selectInstance = (state: RootState, runId: string): ExecutionInstance | null =>
+  state.promptExecution?.instances[runId] ?? null;
 
+/**
+ * Select all instances
+ */
 export const selectAllInstances = (state: RootState) =>
-  state.promptExecution?.instances || {};
+  state.promptExecution?.instances ?? EMPTY_OBJECT;
 
+/**
+ * Select instances for a prompt
+ */
 export const selectInstancesByPromptId = (state: RootState, promptId: string) => {
-  const runIds = state.promptExecution?.runsByPromptId[promptId] || [];
-  return runIds.map(id => state.promptExecution.instances[id]).filter(Boolean);
+  const runIds = state.promptExecution?.runsByPromptId[promptId] ?? EMPTY_ARRAY;
+  return runIds
+    .map(id => state.promptExecution.instances[id])
+    .filter(Boolean) as ExecutionInstance[];
 };
 
-export const selectInstanceByRunId = (state: RootState, runId: string) => {
-  return state.promptExecution?.instances[runId] || null;
-};
+/**
+ * Select current input (ISOLATED)
+ * Returns empty string if not found (stable primitive)
+ */
+export const selectCurrentInput = (state: RootState, runId: string): string =>
+  state.promptExecution?.currentInputs[runId] ?? '';
 
+/**
+ * Select resources (ISOLATED)
+ * Returns stable empty array if not found
+ */
+export const selectResources = (state: RootState, runId: string): any[] =>
+  state.promptExecution?.resources[runId] ?? EMPTY_ARRAY;
+
+/**
+ * Select UI state (ISOLATED)
+ * Returns stable default if not found
+ */
+export const selectUIState = (state: RootState, runId: string): InstanceUIState =>
+  state.promptExecution?.uiState[runId] ?? DEFAULT_UI_STATE;
+
+/**
+ * Select messages from instance
+ * Returns stable empty array if not found
+ */
+export const selectMessages = (state: RootState, runId: string): ConversationMessage[] =>
+  state.promptExecution?.instances[runId]?.messages ?? EMPTY_MESSAGES;
+
+/**
+ * Select instance status
+ * Returns null if not found (stable primitive)
+ */
+export const selectInstanceStatus = (state: RootState, runId: string): ExecutionStatus | null =>
+  state.promptExecution?.instances[runId]?.status ?? null;
+
+/**
+ * Select instance error
+ */
+export const selectInstanceError = (state: RootState, runId: string): string | null =>
+  state.promptExecution?.instances[runId]?.error ?? null;
+
+/**
+ * Select user variables
+ * Returns stable empty object if not found
+ */
+export const selectUserVariables = (state: RootState, runId: string): Record<string, string> =>
+  state.promptExecution?.instances[runId]?.variables.userValues ?? EMPTY_OBJECT;
+
+/**
+ * Select execution tracking
+ */
+export const selectExecutionTracking = (state: RootState, runId: string) =>
+  state.promptExecution?.instances[runId]?.execution ?? null;
+
+/**
+ * Select run tracking
+ */
+export const selectRunTracking = (state: RootState, runId: string) =>
+  state.promptExecution?.instances[runId]?.runTracking ?? null;
+
+/**
+ * Select execution config
+ */
+export const selectExecutionConfig = (state: RootState, runId: string) =>
+  state.promptExecution?.instances[runId]?.executionConfig ?? null;
+
+/**
+ * Select scoped variables
+ */
 export const selectScopedVariables = (state: RootState) =>
-  state.promptExecution?.scopedVariables;
+  state.promptExecution?.scopedVariables ?? null;
 
 export default promptExecutionSlice.reducer;
-

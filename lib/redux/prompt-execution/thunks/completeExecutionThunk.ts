@@ -6,6 +6,8 @@
  * 2. Completes task in ai_tasks table
  * 3. Adds message to ai_runs table
  * 4. Updates instance state with final stats
+ * 
+ * NOTE: Uses instance.messages directly (not nested in conversation)
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -87,11 +89,12 @@ export const completeExecutionThunk = createAsyncThunk<
           }
 
           // Add assistant message to run
+          // Note: instance.messages is the direct array now, not nested
           const { error: updateError } = await supabase
             .from('ai_runs')
             .update({
-              messages: [...instance.conversation.messages, assistantMessage],
-              updated_at: new Date().toISOString(),
+              messages: [...instance.messages, assistantMessage],
+              updated_at: new Date().toISOString(), // DB updated_at is set here
             })
             .eq('id', runId);
 
@@ -110,6 +113,7 @@ export const completeExecutionThunk = createAsyncThunk<
       }
 
       // Update instance state
+      // Note: completeExecution action updates updatedAt since execution is complete
       dispatch(completeExecution({ runId, stats }));
 
     } catch (error) {
@@ -125,4 +129,3 @@ export const completeExecutionThunk = createAsyncThunk<
     }
   }
 );
-

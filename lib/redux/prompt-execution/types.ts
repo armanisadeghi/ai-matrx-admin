@@ -1,5 +1,10 @@
 /**
  * Prompt Execution Engine - Type Definitions
+ * 
+ * ARCHITECTURE NOTES:
+ * - ExecutionInstance contains stable data that rarely changes after creation
+ * - High-frequency update data (currentInput, resources, uiState) live in separate top-level maps
+ * - This separation prevents re-renders when typing in input fields
  */
 
 export interface ExecutionConfig {
@@ -53,7 +58,7 @@ export interface RunTracking {
   runName: string | null;
   totalTokens: number;
   totalCost: number;
-  savedToDatabase: boolean; // Track if this run has been persisted
+  savedToDatabase: boolean;
 }
 
 export type ExecutionStatus = 
@@ -67,46 +72,57 @@ export type ExecutionStatus =
 
 /**
  * Core execution instance (Run)
- * Represents a single prompt execution session (may have multiple messages)
- * The runId IS the instance identifier - one concept, one ID
+ * 
+ * Contains STABLE data that changes infrequently:
+ * - Identity and configuration
+ * - Message history (only changes during execution)
+ * - Execution tracking
+ * 
+ * HIGH-FREQUENCY data lives in separate top-level maps:
+ * - currentInputs[runId] - User typing
+ * - resources[runId] - Attachments
+ * - uiState[runId] - UI controls
  */
 export interface ExecutionInstance {
   // ========== Identity ==========
-  runId: string;            // UUID - created on init, used as primary identifier
-  promptId: string;         // Reference to cached prompt
-  promptSource: 'prompts' | 'prompt_builtins'; // Which table the prompt came from
+  runId: string;
+  promptId: string;
+  promptSource: 'prompts' | 'prompt_builtins';
   
   // ========== Status ==========
   status: ExecutionStatus;
   error: string | null;
+  
+  // ========== Timestamps ==========
+  /** Set once when instance is created */
   createdAt: number;
+  /** Only updated when execution completes (message added to history) */
   updatedAt: number;
   
   // ========== Configuration ==========
-  settings: Record<string, any>;     // Model config from prompt
+  settings: Record<string, any>;
   executionConfig: ExecutionConfig;
   
   // ========== Variables ==========
   variables: ExecutionVariables;
   
-  // ========== Conversation ==========
-  conversation: {
-    messages: ConversationMessage[];
-    currentInput: string;          // User's current message being composed
-    resources: any[];              // Attachments/files
-  };
+  // ========== Messages ==========
+  /** Conversation history - only changes during execution */
+  messages: ConversationMessage[];
   
   // ========== Execution Tracking ==========
   execution: ExecutionTracking;
   
   // ========== Run Tracking (DB) ==========
   runTracking: RunTracking;
-  
-  // ========== UI State (optional) ==========
-  ui: {
-    expandedVariable: string | null;
-    showVariables: boolean;
-  };
+}
+
+/**
+ * UI state for an instance (isolated for performance)
+ */
+export interface InstanceUIState {
+  expandedVariable: string | null;
+  showVariables: boolean;
 }
 
 /**
@@ -123,38 +139,55 @@ export interface ScopedVariables {
 
 /**
  * Main slice state
+ * 
+ * ARCHITECTURE:
+ * - instances: Stable core data, changes only during execution
+ * - currentInputs: Isolated input state, changes on every keystroke
+ * - resources: Isolated attachments, changes on user interaction
+ * - uiState: Isolated UI controls, changes on user interaction
  */
 export interface PromptExecutionState {
-  // All active runs (keyed by runId)
+  // Core instances (stable after creation)
   instances: {
     [runId: string]: ExecutionInstance;
   };
   
+  // High-frequency update maps (isolated from instances)
+  currentInputs: {
+    [runId: string]: string;
+  };
+  
+  resources: {
+    [runId: string]: any[];
+  };
+  
+  uiState: {
+    [runId: string]: InstanceUIState;
+  };
+  
   // Quick lookup maps
   runsByPromptId: {
-    [promptId: string]: string[]; // runIds for quick lookup
+    [promptId: string]: string[];
   };
   
   // Scoped variables cache (fetched once per session)
   scopedVariables: ScopedVariables;
 }
 
-/**
- * Thunk payloads
- */
+// ========== Thunk Payloads ==========
 
 export interface StartInstancePayload {
   promptId: string;
-  promptSource?: 'prompts' | 'prompt_builtins'; // Optional: defaults to 'prompts'
+  promptSource?: 'prompts' | 'prompt_builtins';
   executionConfig?: Partial<ExecutionConfig>;
   variables?: Record<string, string>;
   initialMessage?: string;
-  runId?: string; // Optional: for loading existing run
+  runId?: string;
 }
 
 export interface ExecuteMessagePayload {
   runId: string;
-  userInput?: string;  // Additional input to append
+  userInput?: string;
 }
 
 export interface CompleteExecutionPayload {
@@ -176,6 +209,5 @@ export interface FetchScopedVariablesPayload {
   userId: string;
   orgId?: string;
   projectId?: string;
-  force?: boolean; // Force refetch even if cached
+  force?: boolean;
 }
-

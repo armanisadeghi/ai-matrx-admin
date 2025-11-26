@@ -2,14 +2,30 @@
  * Prompt Execution Selectors
  * 
  * Memoized selectors for computed values.
- * These prevent closure bugs by deriving values from fresh Redux state.
+ * 
+ * ARCHITECTURE:
+ * - Basic selectors (in slice.ts) return primitives or stable references
+ * - Memoized selectors (here) compute derived values efficiently
+ * - All selectors handle null/undefined gracefully with stable returns
  */
 
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import {
   selectInstance,
+  selectMessages,
+  selectCurrentInput,
+  selectResources,
+  selectUIState,
+  selectUserVariables,
   selectScopedVariables,
+  selectInstanceStatus,
+  selectExecutionTracking,
+  selectRunTracking,
+  // Import stable references from slice (single source of truth)
+  EMPTY_ARRAY,
+  EMPTY_MESSAGES,
+  EMPTY_OBJECT,
 } from './slice';
 import { selectCachedPrompt } from '../slices/promptCacheSlice';
 import {
@@ -17,16 +33,28 @@ import {
   selectPrimaryResponseEndedByTaskId,
 } from '../socket-io/selectors/socket-response-selectors';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
+import type { ConversationMessage } from './types';
 
-// Re-export selectInstance for convenience
-export { selectInstance } from './slice';
+// NOTE: Stable empty references imported from ./slice
+
+// Re-export basic selectors for convenience
+export {
+  selectInstance,
+  selectMessages,
+  selectCurrentInput,
+  selectResources,
+  selectUIState,
+  selectUserVariables,
+  selectInstanceStatus,
+  selectExecutionTracking,
+  selectRunTracking,
+} from './slice';
 
 /**
  * Get merged variables for an instance
  * Priority: computedValues > userValues > scopedValues > promptDefaults
  * 
  * This is the SINGLE SOURCE OF TRUTH for variable values.
- * No closure bugs possible - always derived from current state.
  */
 export const selectMergedVariables = createSelector(
   [
@@ -38,7 +66,7 @@ export const selectMergedVariables = createSelector(
     },
   ],
   (instance, scopedVariables, prompt) => {
-    if (!instance) return {};
+    if (!instance) return EMPTY_OBJECT;
     
     // Start with prompt defaults
     const defaults: Record<string, string> = {};
@@ -51,9 +79,9 @@ export const selectMergedVariables = createSelector(
     // Merge in priority order
     return {
       ...defaults,
-      ...(scopedVariables.user || {}),
-      ...(scopedVariables.org || {}),
-      ...(scopedVariables.project || {}),
+      ...(scopedVariables?.user || {}),
+      ...(scopedVariables?.org || {}),
+      ...(scopedVariables?.project || {}),
       ...instance.variables.userValues,
       ...instance.variables.computedValues,
     };
@@ -71,35 +99,29 @@ export const selectTemplateMessages = createSelector(
     },
   ],
   (prompt) => {
-    return prompt?.messages || [];
+    return prompt?.messages ?? EMPTY_MESSAGES;
   }
 );
 
 /**
- * Get conversation messages (user/assistant exchange)
+ * Get conversation messages (renamed from selectConversationMessages for clarity)
+ * Uses the new isolated messages array
  */
 export const selectConversationMessages = createSelector(
   [
-    (state: RootState, runId: string) => selectInstance(state, runId),
+    (state: RootState, runId: string) => selectMessages(state, runId),
   ],
-  (instance) => {
-    return instance?.conversation.messages || [];
-  }
+  (messages) => messages
 );
 
 /**
  * Get ALL messages with variables replaced
  * This is what gets sent to the API
- * 
- * CRITICAL: This selector eliminates the closure bug because:
- * 1. It's a pure function of Redux state
- * 2. It recomputes when dependencies change
- * 3. No captured closures over stale state
  */
 export const selectResolvedMessages = createSelector(
   [
     (state: RootState, runId: string) => selectTemplateMessages(state, runId),
-    (state: RootState, runId: string) => selectConversationMessages(state, runId),
+    (state: RootState, runId: string) => selectMessages(state, runId),
     (state: RootState, runId: string) => selectMergedVariables(state, runId),
   ],
   (templateMessages, conversationMessages, variables) => {
@@ -147,9 +169,9 @@ export const selectStreamingTextForInstance = createSelector(
   [
     (state: RootState, runId: string) => {
       const instance = selectInstance(state, runId);
-      return instance?.execution.currentTaskId;
+      return instance?.execution.currentTaskId ?? null;
     },
-    (state: RootState, _runId: string) => state,
+    (state: RootState) => state,
   ],
   (taskId, state) => {
     if (!taskId) return '';
@@ -164,9 +186,9 @@ export const selectIsResponseEndedForInstance = createSelector(
   [
     (state: RootState, runId: string) => {
       const instance = selectInstance(state, runId);
-      return instance?.execution.currentTaskId;
+      return instance?.execution.currentTaskId ?? null;
     },
-    (state: RootState, _runId: string) => state,
+    (state: RootState) => state,
   ],
   (taskId, state) => {
     if (!taskId) return true;
@@ -179,14 +201,14 @@ export const selectIsResponseEndedForInstance = createSelector(
  */
 export const selectDisplayMessages = createSelector(
   [
-    (state: RootState, runId: string) => selectConversationMessages(state, runId),
+    (state: RootState, runId: string) => selectMessages(state, runId),
     (state: RootState, runId: string) => selectStreamingTextForInstance(state, runId),
     (state: RootState, runId: string) => {
       const instance = selectInstance(state, runId);
       return {
-        taskId: instance?.execution.currentTaskId,
+        taskId: instance?.execution.currentTaskId ?? null,
         isStreaming: instance?.status === 'streaming',
-        messageStartTime: instance?.execution.messageStartTime,
+        messageStartTime: instance?.execution.messageStartTime ?? null,
       };
     },
   ],
@@ -213,18 +235,21 @@ export const selectDisplayMessages = createSelector(
  */
 export const selectInstanceStats = createSelector(
   [
-    (state: RootState, runId: string) => selectInstance(state, runId),
+    (state: RootState, runId: string) => selectMessages(state, runId),
+    (state: RootState, runId: string) => selectRunTracking(state, runId),
+    (state: RootState, runId: string) => selectExecutionTracking(state, runId),
+    (state: RootState, runId: string) => selectInstanceStatus(state, runId),
   ],
-  (instance) => {
-    if (!instance) return null;
+  (messages, runTracking, executionTracking, status) => {
+    if (!runTracking || !executionTracking) return null;
     
     return {
-      messageCount: instance.conversation.messages.length,
-      totalTokens: instance.runTracking.totalTokens,
-      totalCost: instance.runTracking.totalCost,
-      lastMessageStats: instance.execution.lastMessageStats,
-      status: instance.status,
-      hasRun: instance.runTracking.savedToDatabase,
+      messageCount: messages.length,
+      totalTokens: runTracking.totalTokens,
+      totalCost: runTracking.totalCost,
+      lastMessageStats: executionTracking.lastMessageStats,
+      status,
+      hasRun: runTracking.savedToDatabase,
     };
   }
 );
@@ -234,24 +259,24 @@ export const selectInstanceStats = createSelector(
  */
 export const selectLiveStreamingStats = createSelector(
   [
-    (state: RootState, runId: string) => selectInstance(state, runId),
+    (state: RootState, runId: string) => selectInstanceStatus(state, runId),
+    (state: RootState, runId: string) => selectExecutionTracking(state, runId),
     (state: RootState, runId: string) => selectStreamingTextForInstance(state, runId),
   ],
-  (instance, streamingText) => {
+  (status, executionTracking, streamingText) => {
     if (
-      !instance ||
-      instance.status !== 'streaming' ||
-      !instance.execution.messageStartTime
+      status !== 'streaming' ||
+      !executionTracking?.messageStartTime
     ) {
       return null;
     }
     
     const currentTime = Date.now();
-    const elapsedTime = currentTime - instance.execution.messageStartTime;
+    const elapsedTime = currentTime - executionTracking.messageStartTime;
     const tokenCount = Math.round(streamingText.length / 4);
     
     return {
-      timeToFirstToken: instance.execution.timeToFirstToken,
+      timeToFirstToken: executionTracking.timeToFirstToken,
       elapsedTime,
       tokens: tokenCount,
     };
@@ -305,21 +330,24 @@ export const selectModelConfig = createSelector(
 
 /**
  * Check if instance has unsaved changes
+ * Uses isolated currentInput for efficient checking
  */
 export const selectHasUnsavedChanges = createSelector(
   [
-    (state: RootState, runId: string) => selectInstance(state, runId),
+    (state: RootState, runId: string) => selectMessages(state, runId),
+    (state: RootState, runId: string) => selectRunTracking(state, runId),
+    (state: RootState, runId: string) => selectCurrentInput(state, runId),
   ],
-  (instance) => {
-    if (!instance) return false;
+  (messages, runTracking, currentInput) => {
+    if (!runTracking) return false;
     
     // Has messages but not saved to database
-    if (instance.conversation.messages.length > 0 && !instance.runTracking.savedToDatabase) {
+    if (messages.length > 0 && !runTracking.savedToDatabase) {
       return true;
     }
     
     // Has input being typed
-    if (instance.conversation.currentInput.trim()) {
+    if (currentInput.trim()) {
       return true;
     }
     
@@ -327,3 +355,52 @@ export const selectHasUnsavedChanges = createSelector(
   }
 );
 
+/**
+ * Check if instance is executing or streaming
+ */
+export const selectIsExecuting = createSelector(
+  [
+    (state: RootState, runId: string) => selectInstanceStatus(state, runId),
+  ],
+  (status) => status === 'executing' || status === 'streaming'
+);
+
+/**
+ * Check if instance is streaming
+ */
+export const selectIsStreaming = createSelector(
+  [
+    (state: RootState, runId: string) => selectInstanceStatus(state, runId),
+  ],
+  (status) => status === 'streaming'
+);
+
+/**
+ * Check if instance has error
+ */
+export const selectHasError = createSelector(
+  [
+    (state: RootState, runId: string) => selectInstanceStatus(state, runId),
+  ],
+  (status) => status === 'error'
+);
+
+/**
+ * Get expanded variable from UI state
+ */
+export const selectExpandedVariable = createSelector(
+  [
+    (state: RootState, runId: string) => selectUIState(state, runId),
+  ],
+  (uiState) => uiState.expandedVariable
+);
+
+/**
+ * Get show variables from UI state
+ */
+export const selectShowVariables = createSelector(
+  [
+    (state: RootState, runId: string) => selectUIState(state, runId),
+  ],
+  (uiState) => uiState.showVariables
+);
