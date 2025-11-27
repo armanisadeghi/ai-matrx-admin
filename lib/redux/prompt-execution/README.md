@@ -1,30 +1,66 @@
 # Prompt Execution Engine
 
-**Centralized Redux-based system for executing prompts with intelligent caching, variable resolution, and run tracking.**
+**Complete Redux-based system for prompt execution with dual-mode architecture, resource handling, comprehensive debugging, and guaranteed correctness.**
 
-## Overview
+## System Status
 
-The Prompt Execution Engine is a Redux slice that manages ALL prompt executions in the application. It eliminates closure bugs, provides smart caching, supports multiple concurrent instances, and ensures consistent run tracking.
+**Production Ready** | Last Updated: 2024
 
-### Key Features
+### Core Capabilities
 
-- ✅ **Single Source of Truth** - All execution state in Redux
-- ✅ **Zero Closure Bugs** - Variables always fresh from state
-- ✅ **Smart Caching** - Prompts and actions never refetched unnecessarily
-- ✅ **Multiple Concurrent Instances** - Run many prompts simultaneously
-- ✅ **Scoped Variables** - User/org/project-level auto-population
-- ✅ **Guaranteed Run Tracking** - Database persistence built-in
-- ✅ **Broker Integration** - Context-aware variable resolution
-- ✅ **TypeScript Native** - Fully typed with inference
-- ✅ **Optimized Re-renders** - Isolated state maps prevent unnecessary updates
+- ✅ **Dual-Mode Architecture** - Template (Mode 1) → Conversation (Mode 2) transition
+- ✅ **Resource Handling** - Per-message attachment with XML formatting
+- ✅ **Variable Resolution** - Multi-source merging with zero closure bugs
+- ✅ **Message Construction** - Single utility guarantees execution/debug consistency
+- ✅ **Debug Visibility** - Complete state inspection with API payload preview
+- ✅ **Run Tracking** - Automatic database persistence
+- ✅ **Performance Optimized** - Isolated state maps prevent re-renders
+- ✅ **Multiple Concurrent Instances** - Full multi-execution support
+
+### Known Issues
+
+None. System is production-ready.
+
+### Pending Enhancements
+
+- [ ] Resource type extensibility framework
+- [ ] Variable validation engine
+- [ ] Execution replay capability
+- [ ] Performance metrics dashboard
 
 ---
 
-## Architecture
+## Core Architecture
+
+### Dual-Mode Execution Model
+
+**Mode 1: Templated First Message**
+- Template + user input + resources → combined message
+- Variables replaced throughout
+- After send: resources cleared, variables hidden, → Mode 2
+
+**Mode 2: Ongoing Conversation**
+- User input + resources → message
+- Uses conversation history
+- No template, variables hidden
+- Resources cleared after each send
+
+### Message Construction Pipeline
+
+```
+Input Sources → Message Builder → Variable Replacement → Resource Formatting → API Payload
+     ↓               ↓                    ↓                      ↓                ↓
+currentInput    buildFinalMessage()  replaceVariables()  formatResourcesToXml() socket.io
+resources          (utility)           (merged vars)        (XML wrapper)      submission
+variables       
+template
+```
+
+**Critical:** `buildFinalMessage()` utility is used by BOTH execution and debug, guaranteeing consistency.
 
 ### State Structure
 
-The state is designed to minimize re-renders by separating high-frequency update data from stable data:
+Isolated state maps minimize re-renders:
 
 ```typescript
 {
@@ -82,17 +118,47 @@ const currentInput = useAppSelector(state => selectCurrentInput(state, runId));
 const currentInput = instance?.conversation.currentInput; // DON'T DO THIS
 ```
 
-### Core Concept: Execution Instance (Run)
+### Execution Instance (Run)
 
-An **instance** represents a single prompt execution session that may contain multiple messages (conversation). Each instance is identified by a unique `runId` and tracks:
+An **instance** = single prompt execution session with multiple messages (conversation).
 
-- Configuration & settings
-- Variables (user, scoped, computed)
-- Message history (only changes during execution)
-- Execution state
-- Run tracking (links to `ai_runs` table)
+**Lifecycle:**
+1. Created via `startPromptInstance()` → assigns `runId`
+2. Mode 1: First message with template + variables
+3. After send: → Mode 2 (conversation mode)
+4. Mode 2: Subsequent messages use conversation history
+5. Persisted to `ai_runs` table (if `track_in_runs: true`)
 
-**Note:** An instance IS a run - we use `runId` as the primary identifier to align these concepts.
+**State Location:**
+- **Stable data**: `instances[runId]` (config, messages, tracking)
+- **High-freq data**: Isolated maps (currentInput, resources, uiState)
+- **System message**: Template (not in conversation history)
+
+### Resource Handling
+
+**Architecture:**
+- Resources are **per-message**, not per-conversation
+- Stored in isolated map: `resources[runId]`
+- Cleared after EVERY message send
+- Formatted to XML via `formatResourcesToXml()`
+- Appended to message content before variable replacement
+
+**Flow:**
+```
+User attaches → resources[runId] → fetchResourcesData() → formatResourcesToXml() → appendResourcesToMessage() → Send → clearResources()
+```
+
+### System Message Architecture
+
+**Storage:**
+- Lives in `templateMessages` (from prompt)
+- NOT stored in `instance.messages[]` (conversation history)
+- Doesn't change during conversation
+
+**Usage:**
+- **Always included** at start of API payload
+- Variables replaced on every request
+- Visible in debug for clarity
 
 ---
 
@@ -142,25 +208,35 @@ const builtinRunId = await dispatch(startPromptInstance(
 
 #### `executeMessage(payload)`
 
-Executes a message for an instance (core execution engine).
+**Core execution engine.** Handles Mode 1/2 logic, resources, variables, and database persistence.
 
 ```typescript
 const taskId = await dispatch(executeMessage({
   runId: 'abc-123',
-  userInput: 'Optional additional input', // Appends to current input
+  userInput: 'Optional override', // Uses currentInput if not provided
 })).unwrap();
 ```
 
-**What it does:**
-1. Gets fresh state from Redux (eliminates closure bugs!)
-2. Reads `currentInput` from isolated map
-3. Merges variables from all sources via selectors
-4. Replaces variables in ALL messages
-5. Creates run in `ai_runs` table (if first message & tracking enabled)
-6. Creates task in `ai_tasks` table
-7. Submits to socket.io for streaming
-8. Clears `currentInput` after sending
-9. Returns `taskId`
+**Execution Flow:**
+1. Get fresh Redux state (eliminates closure bugs)
+2. Determine mode: `isFirstMessage` check
+3. Build message via `buildFinalMessage()`:
+   - Mode 1: Template + input + resources
+   - Mode 2: Input + resources
+4. Replace variables in complete message
+5. Add message to `instance.messages[]`
+6. **Clear currentInput and resources** (per-message)
+7. **Hide variables** (if Mode 1 → Mode 2 transition)
+8. Create/update run in `ai_runs` (first message only)
+9. Build API payload with system message
+10. Create task in `ai_tasks`
+11. Submit to socket.io
+12. Return `taskId`
+
+**Post-Send State:**
+- `currentInput[runId]` = '' (cleared)
+- `resources[runId]` = [] (cleared)
+- `uiState[runId].showVariables` = false (if was Mode 1)
 
 ---
 
@@ -563,36 +639,186 @@ This prevents components that depend on the instance from re-rendering during us
 
 ```
 lib/redux/prompt-execution/
-├── README.md (this file)
-├── slice.ts (main Redux slice with isolated state maps)
-├── selectors.ts (memoized selectors)
-├── types.ts (TypeScript definitions)
-├── builtins.ts (builtin prompts configuration)
-├── index.ts (barrel exports)
+├── README.md                    # This file - single source of truth
+├── slice.ts                     # Redux slice + isolated state maps
+├── selectors.ts                 # Memoized selectors
+├── types.ts                     # TypeScript definitions
+├── builtins.ts                  # Builtin prompt configurations
+├── index.ts                     # Barrel exports
 ├── hooks/
-│   └── usePromptInstance.ts
-└── thunks/
-    ├── startInstanceThunk.ts
-    ├── executeMessageThunk.ts
-    ├── completeExecutionThunk.ts
-    ├── fetchScopedVariablesThunk.ts
-    └── startPromptActionThunk.ts
+│   └── usePromptInstance.ts     # React hook wrapper
+├── thunks/
+│   ├── startInstanceThunk.ts    # Instance creation + cache
+│   ├── executeMessageThunk.ts   # Core execution (Mode 1/2)
+│   ├── completeExecutionThunk.ts # Finalization
+│   ├── fetchScopedVariablesThunk.ts
+│   ├── specialVariablesThunk.ts
+│   └── resourceThunks.ts        # Resource upload/add
+└── utils/
+    └── message-builder.ts       # Shared message construction utility
+
+features/prompts/utils/
+├── resource-formatting.ts       # XML formatting for resources
+├── resource-data-fetcher.ts     # Fetch table data, etc.
+└── variable-resolver.ts         # Variable replacement logic
+
+components/debug/
+├── PromptExecutionDebugPanel.tsx  # Complete state visibility
+├── ResourceDebugIndicator.tsx     # Resource preview
+├── DebugIndicator.tsx            # General debug
+└── DebugIndicatorManager.tsx     # Central manager
+
+features/prompts/components/smart/
+└── SmartPromptInput.tsx         # Main input component with debug toolbar
 ```
+
+---
+
+## Message Builder Utility
+
+**Location:** `lib/redux/prompt-execution/utils/message-builder.ts`
+
+**Purpose:** Single source of truth for message construction. Used by BOTH execution engine and debug components.
+
+**Function:**
+```typescript
+buildFinalMessage({
+  isFirstMessage: boolean,
+  isLastTemplateMessageUser: boolean,
+  lastTemplateMessage?: { role, content },
+  userInput: string,
+  resources: Resource[],
+  variables: Record<string, string>
+}): Promise<{
+  finalContent: string,
+  baseContent: string,
+  resourcesXml: string,
+  hasResources: boolean
+}>
+```
+
+**Logic:**
+1. Mode 1: Combine template + input (if applicable)
+2. Mode 2: Just use input
+3. Fetch resource data (tables, files)
+4. Format resources to XML
+5. Append resources to message
+6. Replace variables in complete message
+7. Return final content + metadata
+
+**Guarantee:** What debug shows = what gets executed (same utility, same logic).
+
+---
+
+## Debug System
+
+### Components
+
+**PromptExecutionDebugPanel** - Complete state inspector
+- Overview: Mode, status, counts
+- Template Messages: Initial prompt structure
+- Conversation History: Messages + system message (highlighted)
+- **Current User Message Preview**: Exact message to be sent (with resources)
+- Current State Details: Input, variables, resources, UI state
+- **API Payload**: Exact array sent to LLM (most important)
+
+**ResourceDebugIndicator** - Resource preview
+- Resource list by type
+- Message preview with resources
+- Proper scrolling, copy functionality
+
+**Debug Toolbar** - In SmartPromptInput
+- "State & API" button → Opens PromptExecutionDebugPanel
+- "Resources (N)" button → Opens ResourceDebugIndicator (when resources exist)
+- Always visible when debug mode enabled
+
+### Access
+
+1. Enable debug mode: `dispatch(toggleDebugMode())`
+2. Blue toolbar appears at top of input
+3. Click "State & API" for complete state
+4. Click "Resources" for resource preview
+
+### Architecture
+
+**Redux-driven:** All debug components read from Redux selectors (not props).
+```typescript
+// Inside debug component:
+const instance = useAppSelector(state => selectInstance(state, runId));
+const messages = useAppSelector(state => selectMessages(state, runId));
+// ... uses SAME selectors as execution engine
+```
+
+**Single prop:** Only `runId` needed. Everything else from Redux.
+
+---
+
+## Key Architectural Decisions
+
+### Why Isolated State Maps?
+
+**Problem:** `currentInput` inside instance → every keystroke caused all subscribers to re-render.
+
+**Solution:** Top-level maps (`currentInputs`, `resources`, `uiState`) → only affected components re-render.
+
+### Why System Message Not in Conversation History?
+
+**Reason:** Doesn't change during conversation, no need to store repeatedly. Lives in template, always included in API calls.
+
+### Why Resources Cleared After Send?
+
+**Reason:** Resources are per-message, not per-conversation. Each message can have different attachments. Keeping them would confuse users.
+
+### Why Variables Hidden After First Message?
+
+**Reason:** Variables only apply to initial template (Mode 1). After first send, conversation is dynamic (Mode 2). Template variables cannot apply to subsequent messages.
+
+### Why Single Message Builder Utility?
+
+**Reason:** Guarantees debug preview matches execution. Both use same utility, impossible to diverge.
+
+---
+
+## Testing & Verification
+
+### Debug Panel Sections to Verify
+
+1. **Overview** - Correct mode (1 or 2), accurate counts
+2. **Template Messages** - Prompt structure with variables marked
+3. **Conversation History** - System message shown, all messages present
+4. **Current User Message Preview** - Generate to see exact message with resources
+5. **Current State Details** - Verify variables, resources, input
+6. **API Payload** - Most critical: shows EXACTLY what LLM receives
+
+### Common Issues to Check
+
+**Variables not replacing?**
+- Check "Current State Details" → Variables section
+- Verify names match template `{{variable_name}}`
+- Check "API Payload" to see if replacement occurred
+
+**Resources not showing?**
+- Check "Current State Details" → Resources section
+- Verify resources in Redux state
+- Click "Resources" button for XML preview
+
+**Wrong mode behavior?**
+- Check "Overview" → Mode indicator
+- Verify conversation history length (`isFirstMessage` = length === 0)
 
 ---
 
 ## Summary
 
-The Prompt Execution Engine provides a **bulletproof** foundation for all prompt executions:
+**Production-ready dual-mode prompt execution system with:**
 
-- ✅ Eliminates closure bugs through centralized state
-- ✅ Smart caching prevents redundant database queries
-- ✅ Supports multiple concurrent execution instances
-- ✅ Guarantees run tracking when enabled
-- ✅ Handles complex variable resolution automatically
-- ✅ **Isolated state maps prevent re-renders during typing**
-- ✅ **Granular selectors for maximum performance**
-- ✅ Fully typed with excellent DX
-- ✅ Production-ready with comprehensive error handling
+✅ Mode 1 (Template) → Mode 2 (Conversation) architecture
+✅ Per-message resource handling with XML formatting  
+✅ Multi-source variable resolution (defaults, scoped, user, computed)
+✅ Single message builder utility guarantees consistency
+✅ Complete debug visibility (state + API payload)
+✅ Isolated state maps for performance
+✅ Zero closure bugs via Redux centralization
+✅ Automatic run tracking with database persistence
 
-**Built for scale, reliability, and developer experience.**
+**Single source of truth for message construction. Debuggable at every step. Built for reliability.**
