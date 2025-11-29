@@ -19,7 +19,7 @@ import type {
  * Usage:
  * ```tsx
  * const { runs, loadMore, setFilters, refresh } = useAiRunsList({
- *   source_type: 'prompt',
+ *   source_type: 'prompts',
  *   source_id: promptId,
  *   limit: 20
  * });

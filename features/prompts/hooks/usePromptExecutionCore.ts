@@ -260,7 +260,7 @@ export function usePromptExecutionCore({
         });
         
         currentRun = await createRun({
-          source_type: 'prompt',
+          source_type: 'prompts',
           source_id: promptData.id,
           name: runName,
           settings: settings,

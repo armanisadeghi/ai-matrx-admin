@@ -8,7 +8,9 @@
 // Enums
 // ----------------------------------------------------------------------------
 
-export type SourceType = 'prompt' | 'chat' | 'applet' | 'cockpit' | 'workflow' | 'custom';
+// SourceType must match Redux prompt-execution types exactly
+// 'prompts' = custom user prompts, 'prompt_builtins' = built-in system prompts
+export type SourceType = 'prompts' | 'prompt_builtins' | 'chat' | 'applet' | 'cockpit' | 'workflow' | 'custom';
 
 export type RunStatus = 'active' | 'archived' | 'deleted';
 

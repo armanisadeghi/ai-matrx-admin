@@ -40,7 +40,10 @@ async function saveRunToDBAsync(
   runId: string,
   runName: string,
   messages: ConversationMessage[],
-  variables: Record<string, string>
+  variables: Record<string, string>,
+  sourceType: string,
+  sourceId: string,
+  settings: Record<string, any>
 ) {
   try {
     const supabase = createClient();
@@ -49,10 +52,11 @@ async function saveRunToDBAsync(
     await supabase.from('ai_runs').insert({
       id: runId,
       user_id: user?.id,
-      source_type: 'prompts',
-      source_id: runId, // Will need to track actual source if needed
+      source_type: sourceType,
+      source_id: sourceId,
       name: runName,
       messages,
+      settings,
       variable_values: variables,
       status: 'active',
     });
@@ -216,11 +220,18 @@ export const executeMessage = createAsyncThunk<
 
         runName = runName || 'New Conversation';
 
-        // Fire and forget
-        saveRunToDBAsync(runId, runName, freshInstance.messages, mergedVariables)
-          .then(() => {
-            dispatch(setRunId({ runId, runName, savedToDatabase: true }));
-          });
+        // Fire and forget - use runTracking values for correct source_type and source_id
+        saveRunToDBAsync(
+          runId,
+          runName,
+          freshInstance.messages,
+          mergedVariables,
+          instance.runTracking.sourceType,
+          instance.runTracking.sourceId,
+          instance.settings
+        ).then(() => {
+          dispatch(setRunId({ runId, runName, savedToDatabase: true }));
+        });
 
       } else if (instance.runTracking.savedToDatabase) {
         // Subsequent message: update run

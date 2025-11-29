@@ -15,12 +15,15 @@ import {
     selectShowCreatorDebug,
     selectShowSystemMessage,
     selectShowTemplateMessages,
+    selectIsAdminUser,
 } from "@/lib/redux/prompt-execution/selectors";
 import {
     setCreatorDebug,
     setShowSystemMessage,
     setShowTemplateMessages,
 } from "@/lib/redux/prompt-execution/slice";
+import { toggleDebugMode, selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
+import { Separator } from "@/components/ui/separator";
 
 interface CreatorOptionsModalProps {
     runId: string;
@@ -35,6 +38,8 @@ export function CreatorOptionsModal({
 }: CreatorOptionsModalProps) {
     const dispatch = useAppDispatch();
 
+    const isAdmin = useAppSelector(selectIsAdminUser);
+    const isDebugMode = useAppSelector(selectIsDebugMode);
     const showCreatorDebug = useAppSelector(state => selectShowCreatorDebug(state, runId));
     const showSystemMessage = useAppSelector(state => selectShowSystemMessage(state, runId));
     const showTemplateMessages = useAppSelector(state => selectShowTemplateMessages(state, runId));
@@ -56,13 +61,34 @@ export function CreatorOptionsModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Creator Options</DialogTitle>
+                    <DialogTitle>{isAdmin ? "Admin & Creator Options" : "Creator Options"}</DialogTitle>
                     <DialogDescription>
                         Debug and control prompt execution visibility.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
+                    {/* Admin-only Global Debug Mode */}
+                    {isAdmin && (
+                        <>
+                            <div className="flex items-center justify-between space-x-2 bg-red-50 dark:bg-red-950/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                                <Label htmlFor="global-debug" className="flex flex-col space-y-1">
+                                    <span className="text-red-700 dark:text-red-300 font-semibold">Global Debug Mode</span>
+                                    <span className="font-normal text-xs text-red-600 dark:text-red-400">
+                                        Enable system-wide debug features and indicators
+                                    </span>
+                                </Label>
+                                <Switch
+                                    id="global-debug"
+                                    checked={isDebugMode}
+                                    onCheckedChange={() => dispatch(toggleDebugMode())}
+                                />
+                            </div>
+                            <Separator className="my-2" />
+                        </>
+                    )}
+
+                    {/* Creator Debug Mode */}
                     <div className="flex items-center justify-between space-x-2">
                         <Label htmlFor="creator-debug" className="flex flex-col space-y-1">
                             <span>Creator Debug Mode</span>

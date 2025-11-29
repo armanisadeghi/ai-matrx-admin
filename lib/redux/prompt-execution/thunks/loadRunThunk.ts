@@ -52,7 +52,7 @@ export const loadRun = createAsyncThunk<
             // Fetch prompt data to get defaults and settings if needed
             // We use the source_id from the run to fetch the prompt
             let fetchedPromptData = null as PromptDb | null;
-            if (run.source_type === 'prompt' && run.source_id) {
+            if (run.source_type === 'prompts' && run.source_id) {
                 const { data: prompt } = await supabase
                     .from('prompts')
                     .select('*')
@@ -60,13 +60,20 @@ export const loadRun = createAsyncThunk<
                     .single();
                 fetchedPromptData = prompt;
             }
+            // TODO: Add support for prompt_builtins if needed
 
             // Prepare instance data
             const now = Date.now();
+            
+            // Ensure promptSource is valid type ('prompts' or 'prompt_builtins')
+            const validSource = (run.source_type === 'prompts' || run.source_type === 'prompt_builtins') 
+                ? run.source_type 
+                : 'prompts'; // Default fallback
+            
             const instance: ExecutionInstance = {
                 runId: run.id,
                 promptId: run.source_id || 'unknown',
-                promptSource: run.source_type || 'prompt',
+                promptSource: validSource,
                 status: 'ready', // Or 'completed' if run is done? For now 'ready' allows continuing
                 error: null,
                 createdAt: new Date(run.created_at).getTime(),
@@ -103,7 +110,7 @@ export const loadRun = createAsyncThunk<
                 },
 
                 runTracking: {
-                    sourceType: run.source_type || 'prompt',
+                    sourceType: validSource, // Use same validated source
                     sourceId: run.source_id || 'unknown',
                     runName: run.name,
                     totalTokens: 0, // Could calculate from messages if needed

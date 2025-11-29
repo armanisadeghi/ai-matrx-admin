@@ -114,6 +114,7 @@ export {
   selectHasError,
   selectExpandedVariable,
   selectShowVariables,
+  selectRequiresVariableReplacement,
 } from './selectors';
 
 // ========== THUNKS ==========

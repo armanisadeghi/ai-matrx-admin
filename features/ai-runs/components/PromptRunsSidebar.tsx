@@ -69,7 +69,7 @@ export function PromptRunsSidebar({
   }, []);
 
   // Always show runs for current prompt
-  const filters = { source_type: 'prompt' as const, source_id: promptId, limit: 20 };
+  const filters = { source_type: 'prompts' as const, source_id: promptId, limit: 20 };
 
   const handleRunStar = async (runId: string) => {
     try {

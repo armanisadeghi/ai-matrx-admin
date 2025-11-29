@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, ChevronRight, Copy, Check, Eye, Database } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,13 +13,11 @@ import {
   selectMergedVariables,
   selectTemplateMessages,
   selectMessages,
-  selectSystemMessage,
-  selectConversationTemplate,
   selectUIState,
   selectPromptSettings,
+  selectRequiresVariableReplacement,
 } from '@/lib/redux/prompt-execution/selectors';
-import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
-import { buildFinalMessage } from '@/lib/redux/prompt-execution/utils/message-builder';
+import { buildAPIPayload, type APIPayloadResult } from '@/lib/redux/prompt-execution/utils/api-payload-builder';
 
 interface PromptExecutionDebugPanelProps {
   runId: string;
@@ -34,8 +32,8 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
 }) => {
   const [expandedSection, setExpandedSection] = useState<Section>('overview');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  const [userMessagePreview, setUserMessagePreview] = useState<string>('');
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [apiPayload, setApiPayload] = useState<APIPayloadResult | null>(null);
+  const [isLoadingPayload, setIsLoadingPayload] = useState(false);
 
   // Read EVERYTHING from Redux
   const instance = useAppSelector(state => selectInstance(state, runId));
@@ -44,86 +42,57 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
   const variables = useAppSelector(state => selectMergedVariables(state, runId));
   const templateMessages = useAppSelector(state => selectTemplateMessages(state, runId));
   const conversationMessages = useAppSelector(state => selectMessages(state, runId));
-  const systemMessage = useAppSelector(state => selectSystemMessage(state, runId));
-  const conversationTemplate = useAppSelector(state => selectConversationTemplate(state, runId));
   const uiState = useAppSelector(state => selectUIState(state, runId));
   const promptSettings = useAppSelector(state => selectPromptSettings(state, runId));
+  const requiresVariableReplacement = useAppSelector(state => selectRequiresVariableReplacement(state, runId));
 
   if (!instance) {
     return null;
   }
 
   // Determine mode
-  const isFirstMessage = conversationMessages.length === 0;
-  const lastTemplateMessage = conversationTemplate[conversationTemplate.length - 1];
-  const isLastTemplateMessageUser = lastTemplateMessage?.role === 'user';
+  const isFirstMessage = requiresVariableReplacement;
   const currentMode = isFirstMessage ? 'Mode 1: Templated First Message' : 'Mode 2: Ongoing Conversation';
 
-  // Build what would be sent to API (simulated)
-  const buildAPIPayload = () => {
-    const systemWithVars = replaceVariablesInText(systemMessage, variables);
-    
-    if (isFirstMessage && isLastTemplateMessageUser) {
-      // Mode 1: Replace last template message
-      const templatesWithoutLast = conversationTemplate.slice(0, -1).map(msg => ({
-        role: msg.role,
-        content: replaceVariablesInText(msg.content, variables),
-      }));
-      
-      return [
-        { role: 'system', content: systemWithVars },
-        ...templatesWithoutLast,
-        { role: 'user', content: '[WOULD BE BUILT FROM: template + input + resources]' },
-      ];
-    } else if (isFirstMessage) {
-      // Mode 1: Append to templates
-      const templatesWithVars = conversationTemplate.map(msg => ({
-        role: msg.role,
-        content: replaceVariablesInText(msg.content, variables),
-      }));
-      
-      return [
-        { role: 'system', content: systemWithVars },
-        ...templatesWithVars,
-        { role: 'user', content: '[WOULD BE BUILT FROM: input + resources]' },
-      ];
-    } else {
-      // Mode 2: Use conversation history
-      return [
-        { role: 'system', content: systemWithVars },
-        ...conversationMessages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
-      ];
+  // Auto-load API payload when section is expanded or data changes
+  useEffect(() => {
+    if (expandedSection === 'api-payload' && !apiPayload) {
+      loadAPIPayload();
     }
-  };
+  }, [expandedSection]);
 
-  const apiPayload = buildAPIPayload();
-
-  // Build current user message preview
-  const buildUserMessagePreview = async () => {
-    if (!currentInput.trim() && resources.length === 0) {
-      return '(No input or resources)';
+  // Reload payload when inputs change
+  useEffect(() => {
+    if (apiPayload) {
+      // Debounce reload
+      const timer = setTimeout(() => {
+        loadAPIPayload();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-    
-    setIsLoadingPreview(true);
+  }, [currentInput, resources.length, variables]);
+
+  // Build accurate API payload
+  const loadAPIPayload = async () => {
+    setIsLoadingPayload(true);
     try {
-      const result = await buildFinalMessage({
-        isFirstMessage,
-        isLastTemplateMessageUser,
-        lastTemplateMessage,
-        userInput: currentInput,
+      const payload = await buildAPIPayload({
+        requiresVariableReplacement,
+        messages: conversationMessages,
+        currentInput,
         resources,
         variables,
       });
-      setUserMessagePreview(result.finalContent);
-      return result.finalContent;
+      setApiPayload(payload);
     } catch (error) {
-      console.error('Failed to build preview:', error);
-      return 'Error building preview';
+      console.error('Failed to build API payload:', error);
+      setApiPayload({
+        messages: [],
+        isSimulation: isFirstMessage,
+        error: 'Failed to build payload',
+      });
     } finally {
-      setIsLoadingPreview(false);
+      setIsLoadingPayload(false);
     }
   };
 
@@ -246,6 +215,10 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
                 <p className="font-medium capitalize">{instance.status}</p>
               </div>
               <div>
+                <span className="text-gray-600 dark:text-gray-400">Requires Var Replacement:</span>
+                <p className="font-medium">{requiresVariableReplacement ? 'Yes' : 'No'}</p>
+              </div>
+              <div>
                 <span className="text-gray-600 dark:text-gray-400">Messages:</span>
                 <p className="font-medium">{conversationMessages.length} total</p>
               </div>
@@ -268,6 +241,10 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
               <div>
                 <span className="text-gray-600 dark:text-gray-400">Model:</span>
                 <p className="font-medium text-xs">{promptSettings?.modelId || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Run Saved to DB:</span>
+                <p className="font-medium">{instance.runTracking.savedToDatabase ? 'Yes' : 'No'}</p>
               </div>
             </div>
           </div>
@@ -314,48 +291,42 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
             </div>
           </Section>
 
-          <Section id="conversation" title="Conversation History" icon={Database}>
+          <Section id="conversation" title="Stored Messages (instance.messages)" icon={Database}>
             <div className="space-y-4">
               <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded p-3">
                 <p className="text-xs text-blue-800 dark:text-blue-200">
-                  <strong>📝 Note:</strong> This shows the conversation messages (user/assistant exchanges). 
-                  The <strong>system message is always included</strong> when sent to the API (see API Payload section). 
-                  It's not stored here because it doesn't change.
+                  <strong>📝 What is this:</strong> These are the messages stored in Redux state (<code>instance.messages</code>).
+                </p>
+                <p className="text-xs text-blue-800 dark:text-blue-200 mt-2">
+                  <strong>Before first execution:</strong> Contains template messages (system, user, assistant) with variables NOT replaced yet.<br />
+                  <strong>After first execution:</strong> Templates are processed (variables replaced) and stored here. This becomes the conversation history.<br />
+                  <strong>During chat:</strong> New messages are appended here. This is what gets sent to the API (see API Payload section).
                 </p>
               </div>
               
-              {/* Always show system message at top for clarity */}
-              {systemMessage && (
-                <div className="border-2 border-purple-300 dark:border-purple-700 rounded p-3 bg-purple-50 dark:bg-purple-950/30">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold px-2 py-1 rounded bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200">
-                      SYSTEM
-                    </span>
-                    <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">
-                      (Always included in API calls - from template)
-                    </span>
-                  </div>
-                  <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-2 rounded max-h-32 overflow-y-auto">
-                    {replaceVariablesInText(systemMessage, variables)}
-                  </pre>
-                </div>
-              )}
-              
               {conversationMessages.length === 0 ? (
-                <p className="text-xs text-gray-500">No conversation messages yet (Mode 1 - first message not sent)</p>
+                <p className="text-xs text-gray-500">No messages stored (should not happen - check initialization)</p>
               ) : (
                 <div className="space-y-3">
                   {conversationMessages.map((msg, idx) => (
                     <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                          msg.role === 'system' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
                           msg.role === 'assistant' 
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
                             : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                         }`}>
                           {msg.role}
                         </span>
-                        <span className="text-xs text-gray-500">{new Date(msg.timestamp).toLocaleString()}</span>
+                        {msg.timestamp && (
+                          <span className="text-xs text-gray-500">{new Date(msg.timestamp).toLocaleString()}</span>
+                        )}
+                        {!msg.timestamp && requiresVariableReplacement && (
+                          <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                            (Template - will be processed on first execution)
+                          </span>
+                        )}
                       </div>
                       <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-2 rounded max-h-48 overflow-y-auto">
                         {msg.content}
@@ -367,119 +338,49 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
               
               <CodeBlock 
                 content={JSON.stringify(conversationMessages, null, 2)}
-                label="Conversation Messages Only (JSON)"
+                label="Stored Messages (JSON)"
               />
             </div>
           </Section>
 
-          <Section id="user-message" title="Current User Message Preview" icon={Eye}>
+          <Section id="user-message" title="Current Input Preview" icon={Eye}>
             <div className="space-y-4">
               <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded p-3">
                 <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                  <strong>📝 Preview:</strong> This shows exactly what will be sent when you click Send.
-                  {isFirstMessage 
-                    ? ' Includes template + your input + resources with variables replaced.'
-                    : ' Includes your input + resources (no template in Mode 2).'
-                  }
+                  <strong>📝 What you're typing:</strong> This shows your current input and attached resources.
+                  To see what will ACTUALLY be sent to the API, check the "API Payload" section below.
                 </p>
               </div>
               
-              {!currentInput && resources.length === 0 ? (
-                <p className="text-xs text-gray-500">No input or resources yet. Start typing or attach resources to see preview.</p>
-              ) : (
-                <>
+              <div>
+                <h5 className="text-xs font-semibold mb-2">Current Input</h5>
+                <CodeBlock 
+                  content={currentInput || '(empty)'}
+                  label="Current Input Text"
+                />
+              </div>
+              
+              <div>
+                <h5 className="text-xs font-semibold mb-2">Resources ({resources.length})</h5>
+                {resources.length === 0 ? (
+                  <p className="text-xs text-gray-500">No resources attached</p>
+                ) : (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Message Preview (Click to generate)
-                      </span>
-                      <button
-                        onClick={buildUserMessagePreview}
-                        disabled={isLoadingPreview}
-                        className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-50"
-                      >
-                        {isLoadingPreview ? 'Building...' : 'Generate Preview'}
-                      </button>
-                    </div>
-                    
-                    {userMessagePreview && (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Final Message</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2"
-                            onClick={() => copyToClipboard(userMessagePreview, 'User Message Preview')}
-                          >
-                            {copiedSection === 'User Message Preview' ? (
-                              <>
-                                <Check className="w-3 h-3 mr-1 text-green-500" />
-                                <span className="text-xs">Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 mr-1" />
-                                <span className="text-xs">Copy</span>
-                              </>
-                            )}
-                          </Button>
+                    {resources.map((resource, idx) => (
+                      <div key={idx} className="text-xs border border-gray-200 dark:border-gray-700 rounded p-2">
+                        <div className="font-medium">{resource.type}</div>
+                        <div className="text-gray-500 text-[10px] mt-1">
+                          {JSON.stringify(resource.data).substring(0, 100)}...
                         </div>
-                        <div className="border-2 border-blue-300 dark:border-blue-700 rounded p-3 bg-blue-50 dark:bg-blue-950/30">
-                          <pre className="text-xs whitespace-pre-wrap break-words font-mono max-h-96 overflow-y-auto">
-                            {userMessagePreview}
-                          </pre>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="bg-muted p-2 rounded">
-                            <span className="text-gray-600 dark:text-gray-400">Characters:</span>
-                            <p className="font-medium">{userMessagePreview.length}</p>
-                          </div>
-                          <div className="bg-muted p-2 rounded">
-                            <span className="text-gray-600 dark:text-gray-400">Lines:</span>
-                            <p className="font-medium">{userMessagePreview.split('\n').length}</p>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                      </div>
+                    ))}
+                    <CodeBlock 
+                      content={JSON.stringify(resources, null, 2)}
+                      label="Resources (Full JSON)"
+                    />
                   </div>
-                  
-                  <div className="pt-3 border-t space-y-2">
-                    <h5 className="text-xs font-semibold">Components:</h5>
-                    <div className="space-y-1 text-xs">
-                      {isFirstMessage && isLastTemplateMessageUser && (
-                        <div className="flex items-start gap-2 text-purple-700 dark:text-purple-300">
-                          <span className="font-medium">1.</span>
-                          <span>Template message from prompt</span>
-                        </div>
-                      )}
-                      {currentInput && (
-                        <div className="flex items-start gap-2 text-blue-700 dark:text-blue-300">
-                          <span className="font-medium">{isFirstMessage && isLastTemplateMessageUser ? '2' : '1'}.</span>
-                          <span>Your input ({currentInput.length} chars)</span>
-                        </div>
-                      )}
-                      {resources.length > 0 && (
-                        <div className="flex items-start gap-2 text-green-700 dark:text-green-300">
-                          <span className="font-medium">{
-                            isFirstMessage && isLastTemplateMessageUser 
-                              ? (currentInput ? '3' : '2')
-                              : (currentInput ? '2' : '1')
-                          }.</span>
-                          <span>{resources.length} resource{resources.length !== 1 ? 's' : ''} (formatted as XML)</span>
-                        </div>
-                      )}
-                      {Object.keys(variables).length > 0 && (
-                        <div className="flex items-start gap-2 text-orange-700 dark:text-orange-300">
-                          <span className="font-medium">+</span>
-                          <span>Variables replaced throughout</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </Section>
 
@@ -537,50 +438,93 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
             </div>
           </Section>
 
-          <Section id="api-payload" title="API Payload (What LLM Sees)" icon={Eye}>
+          <Section id="api-payload" title="🎯 EXACT API Payload (What Gets Sent)" icon={Eye}>
             <div className="space-y-4">
-              <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded p-3">
-                <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                  <strong>⚠️ Important:</strong> This shows the messages array that will be sent to the API.
-                  {isFirstMessage 
-                    ? ' In Mode 1, the last user message will be built from: template + current input + resources.'
-                    : ' In Mode 2, this is the exact conversation history sent to the model.'
+              <div className="bg-red-50 dark:bg-red-950/30 border-2 border-red-400 dark:border-red-600 rounded p-3">
+                <p className="text-xs text-red-900 dark:text-red-200 font-semibold">
+                  ⚡ THIS IS THE ACTUAL API PAYLOAD ⚡
+                </p>
+                <p className="text-xs text-red-800 dark:text-red-200 mt-2">
+                  This is built using the EXACT SAME LOGIC as executeMessageThunk.ts.
+                  {apiPayload?.isSimulation 
+                    ? ' Since you haven\'t sent the message yet, this is a simulation of what WILL be sent.'
+                    : ' This shows the exact messages that are currently being sent or will be sent.'
                   }
                 </p>
               </div>
-              
-              <div className="space-y-3">
-                {apiPayload.map((msg, idx) => (
-                  <div key={idx} className="border-2 border-gray-300 dark:border-gray-600 rounded p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${
-                        msg.role === 'system' ? 'bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200' :
-                        msg.role === 'assistant' ? 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200' :
-                        'bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200'
-                      }`}>
-                        {msg.role.toUpperCase()}
-                      </span>
-                      <span className="text-xs text-gray-500">Message {idx + 1}/{apiPayload.length}</span>
-                    </div>
-                    <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-3 rounded border border-gray-200 dark:border-gray-700 max-h-64 overflow-y-auto">
-                      {msg.content}
-                    </pre>
+
+              {isLoadingPayload ? (
+                <div className="text-center py-8">
+                  <div className="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">Building accurate payload...</p>
+                </div>
+              ) : apiPayload?.error ? (
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-700 rounded p-3">
+                  <p className="text-xs text-red-800 dark:text-red-200">
+                    <strong>Error:</strong> {apiPayload.error}
+                  </p>
+                </div>
+              ) : !apiPayload ? (
+                <div className="text-center py-8">
+                  <button
+                    onClick={loadAPIPayload}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded font-medium"
+                  >
+                    Load API Payload
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {apiPayload.messages.map((msg, idx) => (
+                      <div key={idx} className="border-2 border-gray-300 dark:border-gray-600 rounded p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${
+                            msg.role === 'system' ? 'bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200' :
+                            msg.role === 'assistant' ? 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200' :
+                            'bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200'
+                          }`}>
+                            {msg.role.toUpperCase()}
+                          </span>
+                          <span className="text-xs text-gray-500">Message {idx + 1}/{apiPayload.messages.length}</span>
+                        </div>
+                        <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-3 rounded border border-gray-200 dark:border-gray-700 max-h-64 overflow-y-auto">
+                          {msg.content}
+                        </pre>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              
-              <CodeBlock 
-                content={JSON.stringify(apiPayload, null, 2)}
-                label="Complete API Payload (JSON)"
-              />
-              
-              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded p-3">
-                <p className="text-xs text-blue-800 dark:text-blue-200">
-                  <strong>Total Messages:</strong> {apiPayload.length}<br />
-                  <strong>Total Characters:</strong> {JSON.stringify(apiPayload).length.toLocaleString()}<br />
-                  <strong>Model:</strong> {promptSettings?.modelId || 'N/A'}
-                </p>
-              </div>
+                  
+                  <CodeBlock 
+                    content={JSON.stringify(apiPayload.messages, null, 2)}
+                    label="Complete API Payload (JSON)"
+                  />
+                  
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded p-3">
+                    <p className="text-xs text-blue-800 dark:text-blue-200">
+                      <strong>Total Messages:</strong> {apiPayload.messages.length}<br />
+                      <strong>Total Characters:</strong> {JSON.stringify(apiPayload.messages).length.toLocaleString()}<br />
+                      <strong>Model:</strong> {promptSettings?.modelId || 'N/A'}<br />
+                      <strong>Payload Type:</strong> {apiPayload.isSimulation ? 'Simulation (will be sent)' : 'Actual (sent/sending)'}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={loadAPIPayload}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-medium"
+                    >
+                      🔄 Refresh Payload
+                    </button>
+                    <button
+                      onClick={() => copyToClipboard(JSON.stringify(apiPayload.messages, null, 2), 'API Payload')}
+                      className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded font-medium"
+                    >
+                      {copiedSection === 'API Payload' ? '✓ Copied' : '📋 Copy JSON'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </Section>
         </ScrollArea>
