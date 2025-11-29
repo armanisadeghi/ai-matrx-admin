@@ -7,7 +7,7 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import { createAndSubmitTask } from '../socket-io/thunks/submitTaskThunk';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '../socket-io/selectors/socket-response-selectors';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';

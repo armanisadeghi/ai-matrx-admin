@@ -11,12 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Textarea, CopyTextarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Upload, 
-  CheckCircle2, 
-  XCircle, 
-  Loader2, 
-  Copy, 
+import {
+  Upload,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Copy,
   Download,
   FileJson,
   AlertCircle,
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { importPrompt, importPromptBatch } from '../../services/prompt-import-service';
 import type { PromptImportResult } from '../../types/prompt-json';
-import { PromptsData, PromptsBatchData } from '@/features/prompts/types/core';
+import { PromptData, PromptsBatchData } from '@/features/prompts/types/core';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -61,7 +61,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
         // Batch import
         const batchResult = await importPromptBatch(parsed as PromptsBatchData);
         setResults(batchResult.results);
-        
+
         if (batchResult.success) {
           toast.success(`Successfully imported ${batchResult.totalImported} prompt(s)`);
         } else {
@@ -69,9 +69,9 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
         }
       } else {
         // Single prompt import
-        const result = await importPrompt(parsed as PromptsData);
+        const result = await importPrompt(parsed as PromptData);
         setResults([result]);
-        
+
         if (result.success) {
           toast.success(`Prompt "${result.promptName}" imported successfully`);
           onImportSuccess?.(result.promptId);
@@ -101,7 +101,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
     handleClose();
   };
 
-  const singlePromptStructure: PromptsData = {
+  const singlePromptStructure: PromptData = {
     name: "Prompt Name",
     description: "Brief description",
     messages: [

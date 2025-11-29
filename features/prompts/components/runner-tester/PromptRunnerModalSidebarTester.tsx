@@ -7,40 +7,41 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { usePromptRunner } from '../../hooks/usePromptRunner';
 import PromptExecutionTestModal from './PromptExecutionTestModal';
-import type { PromptData } from '../../types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
-import { 
-  ChevronDown, Zap, Eye, Settings, TestTube2, Play, TestTube,
-  Square, RectangleVertical, FileEdit, PanelRight, BellRing, ArrowRight, Loader,
-  Maximize2
+import {
+    ChevronDown, Zap, Eye, Settings, TestTube2, Play, TestTube,
+    Square, RectangleVertical, FileEdit, PanelRight, BellRing, ArrowRight, Loader,
+    Maximize2
 } from 'lucide-react';
 
 interface PromptRunnerModalSidebarTesterProps {
     promptData: PromptData;
+    runId?: string;
 }
 
 /**
  * Comprehensive testing component for ALL 7 ResultDisplay types
  * Mix-and-match execution config with display types to test robustness
  */
-export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModalSidebarTesterProps) {
+export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunnerModalSidebarTesterProps) {
     const { openPrompt } = usePromptRunner();
     const [isOpen, setIsOpen] = useState(false);
     const [testModalOpen, setTestModalOpen] = useState(false);
     const [testModalType, setTestModalType] = useState<'direct' | 'inline' | 'background'>('direct');
-    
-  // Execution config toggles (user controls)
-  const [autoRun, setAutoRun] = useState(true);
-  const [allowChat, setAllowChat] = useState(true);
-  const [showVariables, setShowVariables] = useState(false);
-  const [applyVariables, setApplyVariables] = useState(true);
-    
+
+    // Execution config toggles (user controls)
+    const [autoRun, setAutoRun] = useState(true);
+    const [allowChat, setAllowChat] = useState(true);
+    const [showVariables, setShowVariables] = useState(false);
+    const [applyVariables, setApplyVariables] = useState(true);
+
     // Generate test variables with defaults
     const getTestVariables = () => {
         const vars: Record<string, string> = {};
@@ -49,7 +50,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
         });
         return vars;
     };
-    
+
     const openWithDisplayType = (resultDisplay: ResultDisplay, displayVariant?: 'standard' | 'compact') => {
         // For direct, inline, background - open test modal
         if (resultDisplay === 'direct' || resultDisplay === 'inline' || resultDisplay === 'background') {
@@ -57,25 +58,26 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
             setTestModalOpen(true);
             return;
         }
-        
+
         const executionConfig: Omit<PromptExecutionConfig, 'result_display'> = {
             auto_run: autoRun,
             allow_chat: allowChat,
             show_variables: showVariables,
             apply_variables: applyVariables,
         };
-        
+
         const variables = applyVariables ? getTestVariables() : {};
-        
-    openPrompt({
-      promptData,
-      result_display: resultDisplay,
-      executionConfig,
-      variables,
-      displayVariant,
-    });
-  };
-    
+
+        openPrompt({
+            promptData,
+            result_display: resultDisplay,
+            executionConfig,
+            variables,
+            displayVariant,
+            runId, // Pass the current runId to share state
+        });
+    };
+
     // ResultDisplay types with their characteristics
     const displayTypes = [
         {
@@ -165,7 +167,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
             testMode: true
         },
     ];
-    
+
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <div className="p-2 space-y-2">
@@ -182,7 +184,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                         <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </Button>
                 </CollapsibleTrigger>
-                
+
                 <CollapsibleContent className="space-y-2">
                     {/* Execution Config Toggles */}
                     <div className="space-y-2 pr-2 pl-4">
@@ -197,7 +199,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                                 onCheckedChange={setAutoRun}
                             />
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                             <Label htmlFor="allow-chat" className="flex items-center gap-1.5 text-xs cursor-pointer">
                                 <Zap className="w-3.5 h-3.5" />
@@ -209,7 +211,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                                 onCheckedChange={setAllowChat}
                             />
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                             <Label htmlFor="show-variables" className="flex items-center gap-1.5 text-xs cursor-pointer">
                                 <Eye className="w-3.5 h-3.5" />
@@ -221,7 +223,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                                 onCheckedChange={setShowVariables}
                             />
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                             <Label htmlFor="apply-variables" className="flex items-center gap-1.5 text-xs cursor-pointer">
                                 <Settings className="w-3.5 h-3.5" />
@@ -234,11 +236,11 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                             />
                         </div>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     {/* Display Type Buttons */}
-                    <div className="space-y-1">                        
+                    <div className="space-y-1">
                         <div className="space-y-0 px-1">
                             {displayTypes.map((display, idx) => (
                                 <Button
@@ -264,7 +266,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
 
                 </CollapsibleContent>
             </div>
-            
+
             {/* Test Modal for Direct/Inline/Background */}
             <PromptExecutionTestModal
                 isOpen={testModalOpen}

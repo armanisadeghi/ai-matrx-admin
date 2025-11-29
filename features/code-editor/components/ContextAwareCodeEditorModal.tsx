@@ -14,7 +14,7 @@ import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/pars
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { getDiffStats } from '@/features/code-editor/utils/generateDiff';
 import { DYNAMIC_CONTEXT_VARIABLE } from '@/features/code-editor/utils/ContextVersionManager';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 
 export interface ContextAwareCodeEditorModalProps {
     open: boolean;
@@ -91,7 +91,7 @@ export function ContextAwareCodeEditorModal({
             name: cached.name,
             description: cached.description,
             messages: cached.messages,
-            variableDefaults: cached.variableDefaults || cached.variable_defaults,
+            variableDefaults: cached.variableDefaults,
             settings: cached.settings,
         } as PromptData;
     });

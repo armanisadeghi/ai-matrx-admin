@@ -2,7 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import type { PromptData } from '../../types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 
 const FloatingSheet = dynamic(

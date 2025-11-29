@@ -8,7 +8,7 @@ import { normalizeLanguage } from '@/features/code-editor/config/languages';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
 import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { supabase } from '@/utils/supabase/client';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 
 /**
  * AICodeEditorModalV2

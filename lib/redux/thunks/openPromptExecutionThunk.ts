@@ -8,7 +8,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData, PromptDb } from '@/features/prompts/types/core';
 import {
   openPromptModal,
   openCompactModal,
@@ -100,13 +100,14 @@ export const openPromptExecution = createAsyncThunk(
         }
 
         // Normalize and cache
-        const fetchedPrompt: PromptData = {
-          id: prompt.id,
-          name: prompt.name,
-          description: prompt.description,
+        const fetchedPrompt = {
+          id: prompt.id || '',
+          name: prompt.name || '',
+          description: prompt.description || '',
           messages: prompt.messages || [],
           variableDefaults: prompt.variable_defaults || [],
           settings: prompt.settings || {},
+          userId: prompt.user_id,
         };
 
         dispatch(cachePrompt({

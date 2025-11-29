@@ -11,7 +11,7 @@ import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { getDiffStats } from '@/features/code-editor/utils/generateDiff';
 import { supabase } from '@/utils/supabase/client';
 import { DYNAMIC_CONTEXT_VARIABLE } from '@/features/code-editor/utils/ContextVersionManager';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 
 export interface ContextAwareCodeEditorCompactProps {
     open: boolean;

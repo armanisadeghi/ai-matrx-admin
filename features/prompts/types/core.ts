@@ -81,23 +81,37 @@ export interface PromptVariable {
     name: string;
     defaultValue: string;
     customComponent?: VariableCustomComponent;
+    required?: boolean;
 }
 
-export type PromptsData = {
+export interface PromptDb {
+  id: string;
+  created_at: string;
+  updated_at: string | null;
+  name: string | null;
+  messages: unknown | null; // or define a specific type if you know the structure
+  variable_defaults: PromptVariable[] | null; // or more specific type
+  tools: unknown | null; // or define a specific type if you know the structure
+  user_id: string | null;
+  settings: PromptSettings | null; // or more specific type
+  description: string | null;
+}
+
+export type PromptData = {
     id?: string;
     createdAt?: Date;
     updatedAt?: Date;
     name?: string;
     description?: string;
     userId?: string;
-    tools?: Record<string, unknown>;
+    tools?: string[];
     messages?: PromptMessage[];
     variableDefaults?: PromptVariable[]; // Array of { name, defaultValue, customComponent? }
     settings?: PromptSettings;
 };
 
 export interface PromptsBatchData {
-    prompts: PromptsData[];
+    prompts: PromptData[];
     overwriteExisting?: boolean; // If true, prompts with matching IDs will be updated
 }
 

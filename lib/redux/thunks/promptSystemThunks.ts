@@ -32,7 +32,7 @@ import {
   selectPrimaryResponseEndedByTaskId,
 } from '../socket-io/selectors/socket-response-selectors';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -132,7 +132,7 @@ export const fetchPromptFromTable = createAsyncThunk<
             name: cachedPrompt.name,
             description: cachedPrompt.description,
             messages: cachedPrompt.messages,
-            variableDefaults: cachedPrompt.variableDefaults || cachedPrompt.variable_defaults,
+            variableDefaults: cachedPrompt.variableDefaults,
             settings: cachedPrompt.settings,
           },
           source: cachedPrompt.source,
@@ -167,8 +167,8 @@ export const fetchPromptFromTable = createAsyncThunk<
         description: prompt.description,
         messages: prompt.messages || [],
         variableDefaults: prompt.variable_defaults || [],
-        variable_defaults: prompt.variable_defaults || [],
         settings: prompt.settings || {},
+        userId: prompt.user_id,
         source,
         fetchedAt: Date.now(),
         status: 'cached',
@@ -186,6 +186,7 @@ export const fetchPromptFromTable = createAsyncThunk<
           messages: cachedPromptData.messages,
           variableDefaults: cachedPromptData.variableDefaults,
           settings: cachedPromptData.settings,
+          userId: cachedPromptData.userId,
         },
         source,
         fromCache: false,
@@ -281,7 +282,7 @@ export const getPrompt = createAsyncThunk<
               name: cachedPrompt.name,
               description: cachedPrompt.description,
               messages: cachedPrompt.messages,
-              variableDefaults: cachedPrompt.variableDefaults || cachedPrompt.variable_defaults,
+              variableDefaults: cachedPrompt.variableDefaults,
               settings: cachedPrompt.settings,
             },
             source: cachedPrompt.source,

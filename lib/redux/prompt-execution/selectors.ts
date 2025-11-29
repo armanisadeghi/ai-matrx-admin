@@ -65,7 +65,7 @@ export const selectVariableDefinitions = createSelector(
   (prompt): PromptVariable[] => {
     if (!prompt) return EMPTY_ARRAY as PromptVariable[];
     // Handle both variableDefaults and variable_defaults (DB naming)
-    return (prompt.variableDefaults || prompt.variable_defaults || EMPTY_ARRAY) as PromptVariable[];
+    return (prompt.variableDefaults || EMPTY_ARRAY) as PromptVariable[];
   }
 );
 
@@ -84,7 +84,7 @@ export const selectAttachmentCapabilities = createSelector(
         supportsYoutubeVideos: false,
       };
     }
-    
+
     return {
       supportsImageUrls: instance.settings?.image_urls ?? false,
       supportsFileUrls: instance.settings?.file_urls ?? false,
@@ -124,7 +124,7 @@ export const selectMergedVariables = createSelector(
   ],
   (instance, scopedVariables, prompt) => {
     if (!instance) return EMPTY_OBJECT;
-    
+
     // Start with prompt defaults
     const defaults: Record<string, string> = {};
     if (prompt?.variableDefaults) {
@@ -132,7 +132,7 @@ export const selectMergedVariables = createSelector(
         defaults[v.name] = v.defaultValue || '';
       });
     }
-    
+
     // Merge in priority order
     return {
       ...defaults,
@@ -183,7 +183,7 @@ export const selectResolvedMessages = createSelector(
   ],
   (templateMessages, conversationMessages, variables) => {
     const allMessages = [...templateMessages, ...conversationMessages];
-    
+
     return allMessages.map(msg => ({
       ...msg,
       content: replaceVariablesInText(msg.content, variables),
@@ -202,7 +202,7 @@ export const selectSystemMessage = createSelector(
   (templateMessages, variables) => {
     const systemMsg = templateMessages.find(m => m.role === 'system');
     if (!systemMsg) return '';
-    
+
     return replaceVariablesInText(systemMsg.content, variables);
   }
 );
@@ -277,7 +277,7 @@ export const selectDisplayMessages = createSelector(
           role: 'assistant' as const,
           content: streamingText,
           taskId: execution.taskId,
-          timestamp: execution.messageStartTime 
+          timestamp: execution.messageStartTime
             ? new Date(execution.messageStartTime).toISOString()
             : new Date().toISOString(),
         },
@@ -299,7 +299,7 @@ export const selectInstanceStats = createSelector(
   ],
   (messages, runTracking, executionTracking, status) => {
     if (!runTracking || !executionTracking) return null;
-    
+
     return {
       messageCount: messages.length,
       totalTokens: runTracking.totalTokens,
@@ -327,11 +327,11 @@ export const selectLiveStreamingStats = createSelector(
     ) {
       return null;
     }
-    
+
     const currentTime = Date.now();
     const elapsedTime = currentTime - executionTracking.messageStartTime;
     const tokenCount = Math.round(streamingText.length / 4);
-    
+
     return {
       timeToFirstToken: executionTracking.timeToFirstToken,
       elapsedTime,
@@ -354,11 +354,11 @@ export const selectIsReadyToExecute = createSelector(
   (instance, prompt) => {
     if (!instance || !prompt) return false;
     if (instance.status === 'executing' || instance.status === 'streaming') return false;
-    
+
     // Check if required variables are filled
     const requiredVars = prompt.variableDefaults?.filter(v => v.required) || [];
     const mergedVars = { ...instance.variables.userValues };
-    
+
     return requiredVars.every(v => {
       const value = mergedVars[v.name];
       return value !== undefined && value !== null && value.trim() !== '';
@@ -375,9 +375,9 @@ export const selectModelConfig = createSelector(
   ],
   (instance) => {
     if (!instance) return null;
-    
+
     const { model_id, ...config } = instance.settings;
-    
+
     return {
       modelId: model_id,
       config,
@@ -397,17 +397,17 @@ export const selectHasUnsavedChanges = createSelector(
   ],
   (messages, runTracking, currentInput) => {
     if (!runTracking) return false;
-    
+
     // Has messages but not saved to database
     if (messages.length > 0 && !runTracking.savedToDatabase) {
       return true;
     }
-    
+
     // Has input being typed
     if (currentInput.trim()) {
       return true;
     }
-    
+
     return false;
   }
 );
@@ -460,4 +460,81 @@ export const selectShowVariables = createSelector(
     (state: RootState, runId: string) => selectUIState(state, runId),
   ],
   (uiState) => uiState.showVariables
+);
+
+// ========== CREATOR DEBUG SELECTORS ==========
+
+import { selectUser, selectIsAdmin } from '../slices/userSlice';
+
+// ========== CREATOR DEBUG SELECTORS ==========
+
+/**
+ * Check if user is creator of the prompt
+ */
+export const selectIsCreator = createSelector(
+  [
+    (state: RootState, runId: string) => selectUIState(state, runId),
+    (state: RootState) => selectUser(state),
+    (state: RootState, runId: string) => {
+      const instance = selectInstance(state, runId);
+      return instance ? selectCachedPrompt(state, instance.promptId) : null;
+    },
+  ],
+  (uiState, user, prompt) => {
+    // If manually set in UI state (e.g. for testing), use that
+    if (uiState.isCreator !== undefined) return uiState.isCreator;
+
+    // Otherwise check user ID match
+    if (user?.id && prompt?.userId) {
+      return user.id === prompt.userId;
+    }
+
+    return false;
+  }
+);
+
+/**
+ * Check if user is admin
+ */
+export const selectIsAdminUser = (state: RootState) => selectIsAdmin(state);
+
+
+/**
+ * Check if creator debug mode is enabled
+ */
+export const selectShowCreatorDebug = createSelector(
+  [
+    (state: RootState, runId: string) => selectUIState(state, runId),
+  ],
+  (uiState) => uiState.showCreatorDebug
+);
+
+/**
+ * Check if system message should be shown
+ */
+export const selectShowSystemMessage = createSelector(
+  [
+    (state: RootState, runId: string) => selectUIState(state, runId),
+  ],
+  (uiState) => uiState.showSystemMessage
+);
+
+/**
+ * Check if template messages should be shown
+ */
+export const selectShowTemplateMessages = createSelector(
+  [
+    (state: RootState, runId: string) => selectUIState(state, runId),
+  ],
+  (uiState) => uiState.showTemplateMessages
+);
+
+/**
+ * Check if instance requires variable replacement (first execution)
+ */
+export const selectRequiresVariableReplacement = createSelector(
+  [
+    (state: RootState, runId: string) => selectInstance(state, runId),
+  ],
+  (instance) => instance?.requiresVariableReplacement ?? false
 );

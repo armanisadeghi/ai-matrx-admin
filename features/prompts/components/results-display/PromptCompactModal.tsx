@@ -7,7 +7,7 @@ import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId }
 import { usePromptExecutionCore } from '../../hooks/usePromptExecutionCore';
 import { PromptRunnerInput } from '../PromptRunnerInput';
 import { ConversationDisplay, type ConversationMessage } from '../conversation';
-import type { PromptData } from '../../types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import type { Resource } from '../resource-display';
 

@@ -6,7 +6,7 @@
  * - High-frequency update data (currentInput, resources, uiState) live in separate top-level maps
  * - This separation prevents re-renders when typing in input fields
  */
-import { PromptSettings } from '@/features/prompts/types/core';
+import { PromptSettings, PromptVariable } from '@/features/prompts/types/core';
 import type { Resource } from '@/features/prompts/types/resources';
 
 export interface ExecutionConfig {
@@ -20,10 +20,10 @@ export interface ExecutionConfig {
 export interface ExecutionVariables {
   // User-provided values (from UI)
   userValues: Record<string, string>;
-  
+
   // Scoped variables (fetched from DB - user/org/project level)
   scopedValues: Record<string, string>;
-  
+
   // Runtime computed variables (e.g., current_date, user_timezone)
   computedValues: Record<string, string>;
 }
@@ -63,7 +63,7 @@ export interface RunTracking {
   savedToDatabase: boolean;
 }
 
-export type ExecutionStatus = 
+export type ExecutionStatus =
   | 'idle'           // Created but not started
   | 'initializing'   // Loading prompt/variables
   | 'ready'          // Ready to execute
@@ -90,31 +90,39 @@ export interface ExecutionInstance {
   runId: string;
   promptId: string;
   promptSource: 'prompts' | 'prompt_builtins';
-  
+
   // ========== Status ==========
   status: ExecutionStatus;
   error: string | null;
-  
+
   // ========== Timestamps ==========
   /** Set once when instance is created */
   createdAt: number;
   /** Only updated when execution completes (message added to history) */
   updatedAt: number;
-  
+
   // ========== Configuration ==========
   settings: PromptSettings;
   executionConfig: ExecutionConfig;
-  
+
   // ========== Variables ==========
   variables: ExecutionVariables;
-  
+  variableDefaults: PromptVariable[];
+
   // ========== Messages ==========
   /** Conversation history - only changes during execution */
   messages: ConversationMessage[];
-  
+
+  // ========== First Execution Flag ==========
+  /** 
+   * If true, indicates templates need variable replacement on first execution.
+   * Set to false after first message is processed.
+   */
+  requiresVariableReplacement: boolean;
+
   // ========== Execution Tracking ==========
   execution: ExecutionTracking;
-  
+
   // ========== Run Tracking (DB) ==========
   runTracking: RunTracking;
 }
@@ -125,6 +133,28 @@ export interface ExecutionInstance {
 export interface InstanceUIState {
   expandedVariable: string | null;
   showVariables: boolean;
+
+  // Creator/Debug controls
+  /** 
+   * Indicates if the current user is the creator of this prompt.
+   * undefined = unknown, true = is creator, false = not creator
+   */
+  isCreator?: boolean;
+
+  /**
+   * When true, shows debug information for creators (system messages, template variables, etc.)
+   */
+  showCreatorDebug: boolean;
+
+  /**
+   * Show system message in conversation (creator option)
+   */
+  showSystemMessage: boolean;
+
+  /**
+   * Show template messages before first submission (creator option)
+   */
+  showTemplateMessages: boolean;
 }
 
 /**
@@ -153,25 +183,25 @@ export interface PromptExecutionState {
   instances: {
     [runId: string]: ExecutionInstance;
   };
-  
+
   // High-frequency update maps (isolated from instances)
   currentInputs: {
     [runId: string]: string;
   };
-  
+
   resources: {
     [runId: string]: Resource[];
   };
-  
+
   uiState: {
     [runId: string]: InstanceUIState;
   };
-  
+
   // Quick lookup maps
   runsByPromptId: {
     [promptId: string]: string[];
   };
-  
+
   // Scoped variables cache (fetched once per session)
   scopedVariables: ScopedVariables;
 }

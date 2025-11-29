@@ -4,7 +4,7 @@
  * Helper functions for AI assistants to generate prompt JSON
  */
 
-import { PromptMessage, PromptVariable, PromptsData  } from '@/features/prompts/types/core';
+import { PromptMessage, PromptVariable, PromptData } from '@/features/prompts/types/core';
 import { PromptSettings } from '../types/core';
 
 /**
@@ -19,7 +19,7 @@ export function createPromptJSON(
     variableDefaults?: PromptVariable[];
     settings?: PromptSettings;
   }
-): PromptsData {
+): PromptData {
   return {
     id: options?.id,
     name,
@@ -72,14 +72,14 @@ export function defaultSettings(overrides?: Partial<PromptSettings>): PromptSett
 /**
  * Format prompt JSON as a string
  */
-export function formatPromptJSON(prompt: PromptsData, pretty: boolean = true): string {
+export function formatPromptJSON(prompt: PromptData, pretty: boolean = true): string {
   return JSON.stringify(prompt, null, pretty ? 2 : 0);
 }
 
 /**
  * Create a batch import JSON
  */
-export function createBatchJSON(prompts: PromptsData[], overwriteExisting: boolean = false) {
+export function createBatchJSON(prompts: PromptData[], overwriteExisting: boolean = false) {
   return {
     prompts,
     overwriteExisting
@@ -97,7 +97,7 @@ export function quickPrompt(
     description?: string;
     settings?: PromptSettings;
   }
-): PromptsData {
+): PromptData {
   return createPromptJSON(
     name,
     [systemMessage(systemContent), userMessage(userContent)],

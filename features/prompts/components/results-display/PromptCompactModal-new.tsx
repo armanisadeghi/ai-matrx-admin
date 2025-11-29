@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Check, GripVertical, X, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { PromptRunner } from './PromptRunner';
-import type { PromptData } from '../../types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import { useCanvas } from '@/hooks/useCanvas';
 

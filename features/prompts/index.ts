@@ -41,7 +41,6 @@ export type {
 // Modal Types
 export type {
   PromptRunnerModalProps,
-  PromptData,
   ExecutionResult as ModalExecutionResult,
   UsePromptRunnerModalReturn,
   PromptRunnerModalConfig,
@@ -61,6 +60,8 @@ export {
 // Core Types
 export type {
   PromptVariable,
+  PromptData,
+  PromptDb,
   PromptMessage,
   PromptMessageRole,
   PromptSettings as PromptModelConfig,

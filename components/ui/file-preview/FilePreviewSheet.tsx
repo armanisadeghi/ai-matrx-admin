@@ -1,6 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
-import { Download, ExternalLink, Info, X, Maximize, Minimize, Edit, Copy, FileInput, Link, Share2, Trash2 } from "lucide-react";
+import { Download, ExternalLink, Info, X, Maximize, Minimize, Edit, Copy, FileInput, Link, Share2, Trash2, MinusCircle } from "lucide-react";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
 import { fetchWithUrlRefresh, createUrlMetadata } from "@/utils/file-operations/urlRefreshUtils";
 import FloatingSheet from "@/components/official/FloatingSheet";
@@ -26,9 +26,10 @@ interface FilePreviewSheetProps {
         type: string;
         details?: EnhancedFileDetails;
     };
+    onRemove?: () => void;
 }
 
-const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, file }) => {
+const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, file, onRemove }) => {
     const [fileBlob, setFileBlob] = useState<Blob | null>(null);
     const [fileUrl, setFileUrl] = useState<string>(file.url);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -44,7 +45,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
         const fetchFile = async () => {
             setIsLoading(true);
             setError(null);
-            
+
             // First, try to get from local storage (instant access)
             if (file.details?.localId) {
                 try {
@@ -62,7 +63,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     console.debug('Local file not found, fetching from remote');
                 }
             }
-            
+
             // If no local file, fetch from remote URL with automatic refresh
             try {
                 // Create URL metadata for automatic refresh handling
@@ -92,22 +93,22 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                 const errorMessage = err instanceof Error ? err.message : String(err);
                 setError(errorMessage);
                 setIsLoading(false);
-                
+
                 // Show user-friendly toast notification
                 toast({
                     title: "Failed to load file",
-                    description: file.details?.bucket && file.details?.path 
+                    description: file.details?.bucket && file.details?.path
                         ? `Could not load file after multiple attempts. Please try again.`
                         : `Could not load file: ${errorMessage}. The file may be private or inaccessible.`,
                     variant: "destructive"
                 });
             }
         };
-        
+
         if (isOpen && file.url) {
             fetchFile();
         }
-        
+
         return () => {
             // Clean up object URLs when component unmounts
             if (fileUrl && fileUrl.startsWith("blob:")) {
@@ -183,40 +184,40 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     // Handle rename
     const handleRename = useCallback(async () => {
         if (!newFileName.trim() || !file.details?.bucket || !file.details?.path) return;
-        
+
         try {
             const fileSystemManager = FileSystemManager.getInstance();
             const oldPath = file.details.path;
             const pathParts = oldPath.split('/');
             const oldFileName = pathParts[pathParts.length - 1];
-            
+
             // Parse extensions
             const oldExtension = oldFileName.includes('.') ? oldFileName.split('.').pop() : '';
             const newNameTrimmed = newFileName.trim();
             const newExtension = newNameTrimmed.includes('.') ? newNameTrimmed.split('.').pop() : '';
-            
+
             // If user didn't include extension, preserve the original extension
             let finalFileName = newNameTrimmed;
             if (oldExtension && !newExtension) {
                 finalFileName = `${newNameTrimmed}.${oldExtension}`;
             }
-            
+
             pathParts[pathParts.length - 1] = finalFileName;
             const newPath = pathParts.join('/');
-            
+
             const success = await fileSystemManager.renameFile(
                 file.details.bucket,
                 oldPath,
                 newPath
             );
-            
+
             if (success) {
                 toast({
                     title: "Success",
                     description: "File renamed successfully"
                 });
                 setIsRenaming(false);
-                
+
                 // Refresh the file tree by reloading bucket structure
                 await fileSystemManager.loadBucketStructure(file.details.bucket, true);
             } else {
@@ -236,7 +237,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     const renderTitle = () => {
         const fileName = file.details?.filename || "File";
         const Icon = file.details?.icon;
-        
+
         if (isRenaming) {
             return (
                 <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -264,7 +265,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                 </div>
             );
         }
-        
+
         return (
             <div className="flex items-center gap-2 min-w-0">
                 {Icon && <Icon className={`flex-shrink-0 w-[18px] h-[18px] ${file.details?.color ? `${file.details.color}` : ""}`} />}
@@ -278,7 +279,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                                     onClick={() => {
                                         // Get filename without extension for editing
                                         const extension = fileName.includes('.') ? fileName.split('.').pop() : '';
-                                        const nameWithoutExt = extension && fileName.endsWith(`.${extension}`) 
+                                        const nameWithoutExt = extension && fileName.endsWith(`.${extension}`)
                                             ? fileName.substring(0, fileName.length - extension.length - 1)
                                             : fileName;
                                         setNewFileName(nameWithoutExt);
@@ -316,7 +317,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     // Handle copy public link
     const handleCopyLink = useCallback(async () => {
         if (!file.details?.bucket || !file.details?.path) return;
-        
+
         try {
             const fileSystemManager = FileSystemManager.getInstance();
             const urlResult = await fileSystemManager.getFileUrl(
@@ -324,7 +325,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                 file.details.path,
                 { expiresIn: 3600 }
             );
-            
+
             await navigator.clipboard.writeText(urlResult.url);
             toast({
                 title: "Success",
@@ -343,7 +344,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     // Handle duplicate
     const handleDuplicate = useCallback(async () => {
         if (!file.details?.bucket || !file.details?.path) return;
-        
+
         try {
             const fileSystemManager = FileSystemManager.getInstance();
             const oldPath = file.details.path;
@@ -354,13 +355,13 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
             const newFileName = extension ? `${nameWithoutExt}_copy.${extension}` : `${nameWithoutExt}_copy`;
             pathParts[pathParts.length - 1] = newFileName;
             const newPath = pathParts.join('/');
-            
+
             const success = await fileSystemManager.copyFile(
                 file.details.bucket,
                 oldPath,
                 newPath
             );
-            
+
             if (success) {
                 toast({
                     title: "Success",
@@ -382,17 +383,17 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     // Handle delete
     const handleDelete = useCallback(async () => {
         if (!file.details?.bucket || !file.details?.path) return;
-        
+
         const confirmed = window.confirm(`Are you sure you want to delete ${file.details.filename}?`);
         if (!confirmed) return;
-        
+
         try {
             const fileSystemManager = FileSystemManager.getInstance();
             const success = await fileSystemManager.deleteFile(
                 file.details.bucket,
                 file.details.path
             );
-            
+
             if (success) {
                 toast({
                     title: "Success",
@@ -459,7 +460,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     // Action buttons for the file
     const renderActionButtons = () => {
         const hasFileOperations = file.details?.bucket && file.details?.path;
-        
+
         return (
             <div className="flex items-center gap-1 flex-wrap">
                 {/* View/Display Controls */}
@@ -503,9 +504,8 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                                    !fileBlob ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
+                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${!fileBlob ? "opacity-50 cursor-not-allowed" : ""
+                                    }`}
                                 onClick={fileBlob ? handleDownload : undefined}
                                 aria-label="Download file"
                             >
@@ -521,9 +521,8 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                                    !hasFileOperations ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
+                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${!hasFileOperations ? "opacity-50 cursor-not-allowed" : ""
+                                    }`}
                                 onClick={hasFileOperations ? handleCopyLink : undefined}
                                 aria-label="Copy link"
                             >
@@ -539,9 +538,8 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                                    !fileUrl ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
+                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${!fileUrl ? "opacity-50 cursor-not-allowed" : ""
+                                    }`}
                                 onClick={fileUrl ? () => window.open(fileUrl, "_blank") : undefined}
                                 aria-label="Open in new tab"
                             >
@@ -561,9 +559,8 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                                    !hasFileOperations ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
+                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${!hasFileOperations ? "opacity-50 cursor-not-allowed" : ""
+                                    }`}
                                 onClick={hasFileOperations ? handleDuplicate : undefined}
                                 aria-label="Duplicate file"
                             >
@@ -583,9 +580,8 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-1.5 rounded cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors ${
-                                    !hasFileOperations ? "opacity-50 cursor-not-allowed" : "text-destructive"
-                                }`}
+                                className={`p-1.5 rounded cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors ${!hasFileOperations ? "opacity-50 cursor-not-allowed" : "text-destructive"
+                                    }`}
                                 onClick={hasFileOperations ? handleDelete : undefined}
                                 aria-label="Delete file"
                             >
@@ -599,6 +595,32 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                 </TooltipProvider>
 
                 <div className="h-5 w-px bg-border mx-1" />
+
+                {/* Remove from Prompt */}
+                {onRemove && (
+                    <>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div
+                                        className="p-1.5 rounded cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors text-orange-600 dark:text-orange-400"
+                                        onClick={() => {
+                                            onRemove();
+                                            onClose();
+                                        }}
+                                        aria-label="Remove from prompt"
+                                    >
+                                        <MinusCircle size={18} />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Remove from prompt
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <div className="h-5 w-px bg-border mx-1" />
+                    </>
+                )}
 
                 {/* Close */}
                 <TooltipProvider>

@@ -2,6 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
+import { PromptMessage, PromptSettings, PromptVariable } from '@/features/prompts/types/core';
 
 /**
  * Prompt Cache Slice
@@ -20,10 +21,10 @@ export interface CachedPrompt {
   id: string;
   name: string;
   description?: string;
-  messages: any[];
-  variableDefaults?: any[];
-  variable_defaults?: any[]; // Alternative naming from DB
-  settings: Record<string, any>;
+  messages: PromptMessage[];
+  variableDefaults?: PromptVariable[];
+  settings: PromptSettings;
+  userId: string;
   source: 'prompts' | 'prompt_builtins'; // Which table this came from
   fetchedAt: number; // Timestamp when fetched
   status: 'cached' | 'stale'; // For future cache invalidation

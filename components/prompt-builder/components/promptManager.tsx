@@ -3,17 +3,17 @@
 import React, { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
-import { PromptMessage, PromptsData } from "@/features/prompts/types/core";
+import { PromptMessage, PromptData } from "@/features/prompts/types/core";
 import PromptOverlayWrapper from "@/components/prompt-builder/components/PromptOverlayWrapper";
 import CompactPromptsList from "@/components/prompt-builder/components/CompactPromptsList";
 
 // Demo component to show usage
 export default function PromptManager() {
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-    const [currentPrompt, setCurrentPrompt] = useState<PromptsData | null>(null);
+    const [currentPrompt, setCurrentPrompt] = useState<PromptData | null>(null);
     const [originalPromptData, setOriginalPromptData] = useState<any>(null);
     const { promptsRecords, createPrompt, updatePrompt } = usePromptsWithFetch();
-    
+
     // Calculate dirty state
     const isDirty = useMemo(() => {
         if (!isOverlayOpen) return false;
@@ -36,7 +36,7 @@ export default function PromptManager() {
             })
         );
     }, [isOverlayOpen, currentPrompt, originalPromptData]);
-    
+
     const handleSave = async (promptData: {
         name: string;
         messages: PromptMessage[];
@@ -65,8 +65,8 @@ export default function PromptManager() {
             console.error("Error saving prompt:", error);
         }
     };
-    
-    const handleEditPrompt = (prompt: PromptsData) => {
+
+    const handleEditPrompt = (prompt: PromptData) => {
         setCurrentPrompt(prompt);
         setOriginalPromptData({
             name: prompt.name,
@@ -75,13 +75,13 @@ export default function PromptManager() {
         });
         setIsOverlayOpen(true);
     };
-    
+
     const handleCreateNew = () => {
         setCurrentPrompt(null);
         setOriginalPromptData(null);
         setIsOverlayOpen(true);
     };
-    
+
     const handleCreateWithTemplate = () => {
         setCurrentPrompt(null);
         setOriginalPromptData({
@@ -89,13 +89,13 @@ export default function PromptManager() {
         });
         setIsOverlayOpen(true);
     };
-    
+
     const handleCloseOverlay = () => {
         setIsOverlayOpen(false);
         setCurrentPrompt(null);
         setOriginalPromptData(null);
     };
-    
+
     const initialMessages = [
         {
             role: "system",
@@ -106,9 +106,9 @@ export default function PromptManager() {
             content: "Please help me with {{task}} using the following context:\n\n{{context}}",
         },
     ];
-    
+
     const promptsList = Object.values(promptsRecords);
-    
+
     return (
         <div className="p-8 min-h-screen bg-gray-100 dark:bg-gray-900">
             <div className="max-w-4xl mx-auto space-y-6">
@@ -130,20 +130,20 @@ export default function PromptManager() {
                         </button>
                     </div>
                 </div>
-                
+
                 {/* Compact Prompts List */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Saved Prompts ({promptsList.length})
                     </h2>
-                    <CompactPromptsList 
+                    <CompactPromptsList
                         prompts={promptsList}
                         onEditPrompt={handleEditPrompt}
                         onCreateNew={handleCreateNew}
                     />
                 </div>
             </div>
-            
+
             <PromptOverlayWrapper
                 isOpen={isOverlayOpen}
                 onClose={handleCloseOverlay}

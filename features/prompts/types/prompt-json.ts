@@ -5,12 +5,12 @@
  * This allows AI assistants to generate prompts that can be imported.
  */
 
-import { PromptsData } from '@/features/prompts/types/core';
+import { PromptData } from '@/features/prompts/types/core';
 /**
  * Batch import format for creating multiple prompts at once
  */
 export interface PromptBatchJSON {
-  prompts: PromptsData[];
+  prompts: PromptData[];
   overwriteExisting?: boolean; // If true, prompts with matching IDs will be updated
 }
 

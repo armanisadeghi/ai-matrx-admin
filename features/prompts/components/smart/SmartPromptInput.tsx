@@ -1,7 +1,6 @@
 "use client";
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight, Database } from "lucide-react";
+import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight, Database, Crown, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -26,16 +25,21 @@ import {
   selectAttachmentCapabilities,
   selectShowVariables,
   selectUserVariables,
+  selectIsCreator,
+  selectIsAdminUser,
+  selectShowCreatorDebug,
 } from '@/lib/redux/prompt-execution/selectors';
 import {
   setCurrentInput,
   updateVariable,
   removeResource,
   setExpandedVariable,
+  setCreatorDebug,
 } from '@/lib/redux/prompt-execution/slice';
 import { executeMessage } from '@/lib/redux/prompt-execution/thunks/executeMessageThunk';
 import { selectPromptsPreferences } from '@/lib/redux/selectors/userPreferenceSelectors';
 import { SmartResourcePickerButton } from './SmartResourcePickerButton';
+import { CreatorOptionsModal } from "../builder/CreatorOptionsModal";
 
 interface SmartPromptInputProps {
   /** 
@@ -43,15 +47,12 @@ interface SmartPromptInputProps {
    * Component works without it but waits for it to become active
    */
   runId?: string;
-
   /** Optional UI customization props */
   placeholder?: string;
   sendButtonVariant?: 'gray' | 'blue' | 'default';
   showShiftEnterHint?: boolean;
-
   /** Optional display control */
   showSubmitOnEnterToggle?: boolean; // Controls visibility of submit on enter toggle
-
   /** Upload configuration (with defaults) */
   uploadBucket?: string;
   uploadPath?: string;
@@ -80,7 +81,7 @@ export function SmartPromptInput({
   enablePasteImages = true,
 }: SmartPromptInputProps) {
   if (sendButtonVariant === 'default') sendButtonVariant = 'gray';
-
+  
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pendingVoiceSubmitRef = useRef(false);
@@ -88,11 +89,18 @@ export function SmartPromptInput({
   // ========== LOCAL STATE (UI-only) ==========
   const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
   const [submitOnEnter, setSubmitOnEnter] = useState(true); // Local state for now, could come from user prefs
+  const [isCreatorModalOpen, setIsCreatorModalOpen] = useState(false);
 
   // ========== REDUX STATE (Conditional on runId) ==========
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const userPreferences = useAppSelector(selectPromptsPreferences);
-  
+
+  // Creator/Admin selectors
+  // We need to handle runId being undefined
+  const isCreator = useAppSelector(state => runId ? selectIsCreator(state, runId) : false);
+  const isAdmin = useAppSelector(selectIsAdminUser);
+  const showCreatorDebug = useAppSelector(state => runId ? selectShowCreatorDebug(state, runId) : false);
+
   // Use user preference for submitOnEnter
   useEffect(() => {
     setSubmitOnEnter(userPreferences.submitOnEnter);
@@ -105,7 +113,6 @@ export function SmartPromptInput({
   const expandedVariable = useAppSelector(state => runId ? selectExpandedVariable(state, runId) : null);
   const isTestingPrompt = useAppSelector(state => runId ? selectIsExecuting(state, runId) : false);
   const isLastMessageUser = useAppSelector(state => runId ? selectIsLastMessageUser(state, runId) : false);
-
   const showVariablesFromRedux = useAppSelector(state => runId ? selectShowVariables(state, runId) : false);
   const variableValues = useAppSelector(state => runId ? selectUserVariables(state, runId) : {});
 
@@ -133,10 +140,8 @@ export function SmartPromptInput({
       if (result.success && result.text && runId) {
         // Append transcribed text to existing input
         const newText = chatInput ? `${chatInput}\n${result.text}` : result.text;
-
         // Set flag to submit after state update
         pendingVoiceSubmitRef.current = true;
-
         // Update the input value in Redux
         dispatch(setCurrentInput({ runId, input: newText }));
       }
@@ -153,7 +158,6 @@ export function SmartPromptInput({
   useEffect(() => {
     if (pendingVoiceSubmitRef.current && chatInput.trim() && runId) {
       pendingVoiceSubmitRef.current = false;
-
       // Small delay to ensure Redux state is updated
       setTimeout(() => {
         handleSendMessage();
@@ -185,7 +189,7 @@ export function SmartPromptInput({
   // Handle pasted images
   const handlePasteImage = useCallback(async (file: File) => {
     if (!runId) return;
-    
+
     try {
       const results = await uploadMultipleToPrivateUserAssets([file]);
       if (results && results.length > 0) {
@@ -268,7 +272,7 @@ export function SmartPromptInput({
   const handleSendMessage = useCallback(() => {
     if (!runId || isSendDisabled) return;
 
-    dispatch(executeMessage({ 
+    dispatch(executeMessage({
       runId,
       userInput: chatInput,
     }));
@@ -331,7 +335,6 @@ export function SmartPromptInput({
             <Database className="w-3 h-3" />
             <span>State & API</span>
           </button>
-          
           {resources.length > 0 && (
             <button
               onClick={() => dispatch(showResourceDebugIndicator({ runId }))}
@@ -344,7 +347,7 @@ export function SmartPromptInput({
           )}
         </div>
       )}
-      
+
       {/* Variable Inputs - Only shown when showVariables is true */}
       {showVariablesFromRedux && variableDefaults.length > 0 && (
         <div className="border-b border-gray-200 dark:border-gray-800">
@@ -472,19 +475,9 @@ export function SmartPromptInput({
               <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
             </div>
           ) : isRecording ? (
-            <div className="flex items-center gap-1 px-1">
-              {/* Audio level indicator - pulsing dot that grows with audio */}
-              <div className="relative flex items-center justify-center w-5 h-5">
-                <div
-                  className="absolute rounded-full bg-blue-500 dark:bg-blue-400 transition-transform duration-75"
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    transform: `scale(${1 + (audioLevel / 150)})`,
-                  }}
-                />
-                <div className="absolute w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-ping" />
-              </div>
+            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-md px-2 py-1 animate-pulse">
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Recording...</span>
               <Button
                 type="button"
                 size="sm"
@@ -497,26 +490,40 @@ export function SmartPromptInput({
               </Button>
             </div>
           ) : (
-            <PromptInputButton
-              icon={Mic}
-              tooltip="Record voice message"
-              onClick={handleMicClick}
-              active={false}
-            />
-          )}
+            <>
+              {/* Creator/Admin Debug Controls */}
+              {(isCreator || isAdmin) && (
+                <PromptInputButton
+                  icon={isAdmin ? Bug : Crown}
+                  tooltip={isAdmin ? "Admin Debug Options" : "Creator Options"}
+                  onClick={() => setIsCreatorModalOpen(true)}
+                  active={showCreatorDebug}
+                  className={isAdmin ? "text-red-500 hover:text-red-600" : "text-amber-500 hover:text-amber-600"}
+                />
+              )}
 
-          {/* Resource Picker */}
-          <SmartResourcePickerButton
-            runId={runId}
-            uploadBucket={uploadBucket}
-            uploadPath={uploadPath}
-          />
+              {/* Voice Input */}
+              <PromptInputButton
+                icon={Mic}
+                tooltip="Record voice message"
+                onClick={handleMicClick}
+                active={false}
+              />
 
-          {/* Shift+Enter hint text (alternative to buttons) */}
-          {showShiftEnterHint && (
-            <div className="text-[11px] text-gray-500 dark:text-gray-400">
-              {submitOnEnter ? "Shift+Enter for new line" : "Enter for new line"}
-            </div>
+              {/* Resource Picker */}
+              <SmartResourcePickerButton
+                runId={runId}
+                uploadBucket={uploadBucket}
+                uploadPath={uploadPath}
+              />
+
+              {/* Shift+Enter hint text (alternative to buttons) */}
+              {showShiftEnterHint && (
+                <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                  {submitOnEnter ? "Shift+Enter for new line" : "Enter for new line"}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -548,14 +555,26 @@ export function SmartPromptInput({
       </div>
 
       {/* Resource Preview Sheet */}
-      {previewResource && (
-        <ResourcePreviewSheet
-          isOpen={!!previewResource}
-          onClose={() => setPreviewResource(null)}
-          resource={previewResource.resource}
+      <ResourcePreviewSheet
+        resource={previewResource?.resource || null}
+        isOpen={!!previewResource}
+        onClose={() => setPreviewResource(null)}
+        onRemove={() => {
+          if (previewResource && runId) {
+            dispatch(removeResource({ runId, index: previewResource.index }));
+            setPreviewResource(null);
+          }
+        }}
+      />
+
+      {/* Creator Options Modal */}
+      {runId && (
+        <CreatorOptionsModal
+          runId={runId}
+          isOpen={isCreatorModalOpen}
+          onClose={() => setIsCreatorModalOpen(false)}
         />
       )}
     </div>
   );
 }
-

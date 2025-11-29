@@ -9,7 +9,7 @@ import { generateRunNameFromMessage } from '@/features/ai-runs/utils/name-genera
 import { replaceVariablesInText } from '../utils/variable-resolver';
 import { useResourceMessageFormatter } from './useResourceMessageFormatter';
 import { v4 as uuidv4 } from 'uuid';
-import type { PromptData } from '../types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptMessage, PromptVariable } from '../types/core';
 import type { Resource } from '../components/resource-display';
 

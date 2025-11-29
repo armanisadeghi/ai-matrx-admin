@@ -6,15 +6,15 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { v4 as uuidv4 } from "uuid";
 import { useCallbackManager } from "@/hooks/useCallbackManager";
-import { PromptsData } from "@/features/prompts/types/core";
+import { PromptData } from "@/features/prompts/types/core";
 
 
 
 type UsePromptsWithFetchReturn = {
     promptsSelectors: EntitySelectors<"prompts">;
     promptsActions: EntityActions<"prompts">;
-    promptsRecords: Record<MatrxRecordId, PromptsData>;
-    promptsUnsavedRecords: Record<MatrxRecordId, Partial<PromptsData>>;
+    promptsRecords: Record<MatrxRecordId, PromptData>;
+    promptsUnsavedRecords: Record<MatrxRecordId, Partial<PromptData>>;
     promptsSelectedRecordIds: MatrxRecordId[];
     promptsIsLoading: boolean;
     promptsIsError: boolean;
@@ -35,8 +35,8 @@ type UsePromptsWithFetchReturn = {
     fetchPromptsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchPromptsAll: () => void;
     fetchPromptsPaginated: (page: number, pageSize: number) => void;
-    createPrompt: (data: Partial<PromptsData>) => Promise<{ matrxRecordId: MatrxRecordId, id: string }>;
-    updatePrompt: (matrxRecordId: MatrxRecordId, data: Partial<PromptsData>) => void;
+    createPrompt: (data: Partial<PromptData>) => Promise<{ matrxRecordId: MatrxRecordId, id: string }>;
+    updatePrompt: (matrxRecordId: MatrxRecordId, data: Partial<PromptData>) => void;
 };
 
 interface CustomPromise extends Promise<any> {
@@ -84,7 +84,7 @@ export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
     const createCallback = useCallbackManager();
 
     const createPrompt = useCallback(
-        async (data: Partial<PromptsData>): Promise<{ matrxRecordId: MatrxRecordId, id: string }> => {
+        async (data: Partial<PromptData>): Promise<{ matrxRecordId: MatrxRecordId, id: string }> => {
             try {
                 const id = uuidv4();
                 const matrxRecordId = `id:${id}`;
@@ -113,7 +113,7 @@ export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
         [dispatch, promptsActions, createCallback, entityToasts]
     );
 
-    const updatePrompt = (id: string, data: Partial<PromptsData>) => {
+    const updatePrompt = (id: string, data: Partial<PromptData>) => {
         const payload = {
             matrxRecordId: `id:${id}`,
             data,
@@ -125,8 +125,8 @@ export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
     return {
         promptsSelectors,
         promptsActions,
-        promptsRecords: promptsRecords as unknown as Record<MatrxRecordId, PromptsData>,
-        promptsUnsavedRecords: promptsUnsavedRecords as unknown as Record<MatrxRecordId, Partial<PromptsData>>,
+        promptsRecords: promptsRecords as unknown as Record<MatrxRecordId, PromptData>,
+        promptsUnsavedRecords: promptsUnsavedRecords as unknown as Record<MatrxRecordId, Partial<PromptData>>,
         promptsSelectedRecordIds,
         promptsIsLoading,
         promptsIsError,

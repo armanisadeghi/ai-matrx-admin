@@ -7,7 +7,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/utils/supabase/client';
 import type { PromptImportResult, PromptBatchImportResult } from '../types/prompt-json';
-import { PromptsData, PromptsBatchData } from '@/features/prompts/types/core';
+import { PromptData, PromptsBatchData } from '@/features/prompts/types/core';
 
 /**
  * Extract variable names from messages
@@ -38,7 +38,7 @@ function normalizeVariableSyntax(content: string): string {
 /**
  * Validate prompt JSON
  */
-function validatePromptJSON(prompt: PromptsData): { valid: boolean; error?: string } {
+function validatePromptJSON(prompt: PromptData): { valid: boolean; error?: string } {
   if (!prompt.name || prompt.name.trim() === '') {
     return { valid: false, error: 'Prompt name is required' };
   }
@@ -63,7 +63,7 @@ function validatePromptJSON(prompt: PromptsData): { valid: boolean; error?: stri
 /**
  * Import a single prompt from JSON
  */
-export async function importPrompt(promptData: PromptsData): Promise<PromptImportResult> {
+export async function importPrompt(promptData: PromptData): Promise<PromptImportResult> {
   try {
     // Validate input
     const validation = validatePromptJSON(promptData);
@@ -98,7 +98,7 @@ export async function importPrompt(promptData: PromptsData): Promise<PromptImpor
 
     // Extract variables from normalized messages
     const extractedVariables = extractVariablesFromMessages(normalizedMessages);
-    
+
     // Build variable defaults array, preserving customComponent
     const variableDefaults = extractedVariables.map(varName => {
       const provided = promptData.variableDefaults?.find(v => v.name === varName);
@@ -175,7 +175,7 @@ export async function importPrompt(promptData: PromptsData): Promise<PromptImpor
  */
 export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<PromptBatchImportResult> {
   const results: PromptImportResult[] = [];
-  
+
   for (const promptData of batchJSON.prompts) {
     const result = await importPrompt(promptData);
     results.push(result);
@@ -196,9 +196,9 @@ export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<Pr
  * Export a prompt as JSON
  * Includes all variable data including customComponent configurations
  */
-export async function exportPromptAsJSON(promptId: string): Promise<PromptsData | null> {
+export async function exportPromptAsJSON(promptId: string): Promise<PromptData | null> {
   try {
-    
+
     const { data: prompt, error } = await supabase
       .from('prompts')
       .select('*')

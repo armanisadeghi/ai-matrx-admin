@@ -38,6 +38,10 @@ export const EMPTY_OBJECT: Record<string, any> = {};
 export const DEFAULT_UI_STATE: InstanceUIState = {
   expandedVariable: null,
   showVariables: false,
+  isCreator: undefined,
+  showCreatorDebug: false,
+  showSystemMessage: false,
+  showTemplateMessages: false,
 };
 
 const initialState: PromptExecutionState = {
@@ -60,44 +64,48 @@ const promptExecutionSlice = createSlice({
   initialState,
   reducers: {
     // ========== INSTANCE MANAGEMENT ==========
-    
+
     /**
      * Create a new execution instance (run)
      */
     createInstance: (state, action: PayloadAction<ExecutionInstance>) => {
       const instance = action.payload;
       state.instances[instance.runId] = instance;
-      
+
       // Initialize isolated state maps
       state.currentInputs[instance.runId] = '';
       state.resources[instance.runId] = [];
       state.uiState[instance.runId] = {
         expandedVariable: null,
         showVariables: instance.executionConfig.show_variables ?? false,
+        isCreator: true, // Default to true for now, will be determined later
+        showCreatorDebug: false,
+        showSystemMessage: false,
+        showTemplateMessages: false,
       };
-      
+
       // Update lookup maps
       if (!state.runsByPromptId[instance.promptId]) {
         state.runsByPromptId[instance.promptId] = [];
       }
       state.runsByPromptId[instance.promptId].push(instance.runId);
     },
-    
+
     /**
      * Remove an instance (cleanup)
      */
     removeInstance: (state, action: PayloadAction<{ runId: string }>) => {
       const { runId } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         // Remove from lookup maps
         const promptRuns = state.runsByPromptId[instance.promptId];
         if (promptRuns) {
-          state.runsByPromptId[instance.promptId] = 
+          state.runsByPromptId[instance.promptId] =
             promptRuns.filter(id => id !== runId);
         }
-        
+
         // Remove instance and isolated state
         delete state.instances[runId];
         delete state.currentInputs[runId];
@@ -105,7 +113,7 @@ const promptExecutionSlice = createSlice({
         delete state.uiState[runId];
       }
     },
-    
+
     /**
      * Update instance status
      */
@@ -115,16 +123,16 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, status, error } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.status = status;
         instance.error = error || null;
         // Note: updatedAt is NOT changed here - only on execution completion
       }
     },
-    
+
     // ========== CURRENT INPUT (ISOLATED) ==========
-    
+
     /**
      * Set current input (user typing) - ISOLATED from instance
      */
@@ -135,7 +143,7 @@ const promptExecutionSlice = createSlice({
         state.currentInputs[runId] = input;
       }
     },
-    
+
     /**
      * Clear current input
      */
@@ -145,9 +153,9 @@ const promptExecutionSlice = createSlice({
         state.currentInputs[runId] = '';
       }
     },
-    
+
     // ========== RESOURCES (ISOLATED) ==========
-    
+
     /**
      * Set resources for an instance
      */
@@ -160,7 +168,7 @@ const promptExecutionSlice = createSlice({
         state.resources[runId] = resources;
       }
     },
-    
+
     /**
      * Add a resource
      */
@@ -176,7 +184,7 @@ const promptExecutionSlice = createSlice({
         state.resources[runId].push(resource);
       }
     },
-    
+
     /**
      * Remove a resource by index
      */
@@ -189,7 +197,7 @@ const promptExecutionSlice = createSlice({
         state.resources[runId].splice(index, 1);
       }
     },
-    
+
     /**
      * Clear all resources
      */
@@ -199,9 +207,9 @@ const promptExecutionSlice = createSlice({
         state.resources[runId] = [];
       }
     },
-    
+
     // ========== UI STATE (ISOLATED) ==========
-    
+
     /**
      * Set expanded variable
      */
@@ -214,7 +222,7 @@ const promptExecutionSlice = createSlice({
         state.uiState[runId].expandedVariable = variableName;
       }
     },
-    
+
     /**
      * Toggle show variables
      */
@@ -224,7 +232,7 @@ const promptExecutionSlice = createSlice({
         state.uiState[runId].showVariables = !state.uiState[runId].showVariables;
       }
     },
-    
+
     /**
      * Set show variables explicitly
      */
@@ -237,22 +245,61 @@ const promptExecutionSlice = createSlice({
         state.uiState[runId].showVariables = show;
       }
     },
-    
+
+    /**
+     * Set creator debug mode
+     */
+    setCreatorDebug: (
+      state,
+      action: PayloadAction<{ runId: string; enabled: boolean }>
+    ) => {
+      const { runId, enabled } = action.payload;
+      if (state.uiState[runId]) {
+        state.uiState[runId].showCreatorDebug = enabled;
+      }
+    },
+
+    /**
+     * Set show system message
+     */
+    setShowSystemMessage: (
+      state,
+      action: PayloadAction<{ runId: string; show: boolean }>
+    ) => {
+      const { runId, show } = action.payload;
+      if (state.uiState[runId]) {
+        state.uiState[runId].showSystemMessage = show;
+      }
+    },
+
+    /**
+     * Set show template messages
+     */
+    setShowTemplateMessages: (
+      state,
+      action: PayloadAction<{ runId: string; show: boolean }>
+    ) => {
+      const { runId, show } = action.payload;
+      if (state.uiState[runId]) {
+        state.uiState[runId].showTemplateMessages = show;
+      }
+    },
+
     // ========== VARIABLE MANAGEMENT ==========
-    
+
     /**
      * Update a single variable value
      */
     updateVariable: (state, action: PayloadAction<UpdateVariablePayload>) => {
       const { runId, variableName, value } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.variables.userValues[variableName] = value;
         // Note: updatedAt is NOT changed - variables are not "execution"
       }
     },
-    
+
     /**
      * Update multiple variables at once
      */
@@ -262,7 +309,7 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, variables } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.variables.userValues = {
           ...instance.variables.userValues,
@@ -270,7 +317,7 @@ const promptExecutionSlice = createSlice({
         };
       }
     },
-    
+
     /**
      * Set computed variables (runtime values)
      */
@@ -280,14 +327,14 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, variables } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.variables.computedValues = variables;
       }
     },
-    
+
     // ========== MESSAGE MANAGEMENT ==========
-    
+
     /**
      * Add a message to conversation history
      * This DOES update updatedAt since it's part of execution
@@ -298,20 +345,47 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, message } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.messages.push(message);
         instance.updatedAt = Date.now();
       }
     },
-    
+
+    /**
+     * Clear all messages (used when replacing templates with processed versions)
+     */
+    clearMessages: (state, action: PayloadAction<{ runId: string }>) => {
+      const { runId } = action.payload;
+      const instance = state.instances[runId];
+
+      if (instance) {
+        instance.messages = [];
+      }
+    },
+
+    /**
+     * Set the variable replacement flag (used after first execution)
+     */
+    setRequiresVariableReplacement: (
+      state,
+      action: PayloadAction<{ runId: string; value: boolean }>
+    ) => {
+      const { runId, value } = action.payload;
+      const instance = state.instances[runId];
+
+      if (instance) {
+        instance.requiresVariableReplacement = value;
+      }
+    },
+
     /**
      * Clear conversation (reset messages)
      */
     clearConversation: (state, action: PayloadAction<{ runId: string }>) => {
       const { runId } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.messages = [];
         instance.runTracking.runName = null;
@@ -320,9 +394,9 @@ const promptExecutionSlice = createSlice({
         state.currentInputs[runId] = '';
       }
     },
-    
+
     // ========== EXECUTION TRACKING ==========
-    
+
     /**
      * Start execution (set taskId and start time)
      */
@@ -332,7 +406,7 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, taskId } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.execution.currentTaskId = taskId;
         instance.execution.messageStartTime = Date.now();
@@ -341,28 +415,28 @@ const promptExecutionSlice = createSlice({
         // Note: updatedAt not changed - execution hasn't completed yet
       }
     },
-    
+
     /**
      * Mark streaming started
      */
     startStreaming: (state, action: PayloadAction<{ runId: string }>) => {
       const { runId } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.status = 'streaming';
-        
+
         // Record time to first token if not set
         if (
           instance.execution.messageStartTime &&
           instance.execution.timeToFirstToken === undefined
         ) {
-          instance.execution.timeToFirstToken = 
+          instance.execution.timeToFirstToken =
             Date.now() - instance.execution.messageStartTime;
         }
       }
     },
-    
+
     /**
      * Complete execution (store final stats)
      * This DOES update updatedAt since execution is complete
@@ -381,14 +455,14 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, stats } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.execution.lastMessageStats = stats;
         instance.execution.currentTaskId = null;
         instance.execution.messageStartTime = null;
         instance.status = 'completed';
         instance.updatedAt = Date.now(); // Only here: execution completed
-        
+
         // Update run totals
         if (stats.tokens) {
           instance.runTracking.totalTokens += stats.tokens;
@@ -398,9 +472,9 @@ const promptExecutionSlice = createSlice({
         }
       }
     },
-    
+
     // ========== RUN TRACKING ==========
-    
+
     /**
      * Set run tracking info (when run created in DB)
      */
@@ -410,15 +484,15 @@ const promptExecutionSlice = createSlice({
     ) => {
       const { runId, runName, savedToDatabase } = action.payload;
       const instance = state.instances[runId];
-      
+
       if (instance) {
         instance.runTracking.runName = runName;
         instance.runTracking.savedToDatabase = savedToDatabase;
       }
     },
-    
+
     // ========== SCOPED VARIABLES ==========
-    
+
     /**
      * Set scoped variables status
      */
@@ -428,7 +502,7 @@ const promptExecutionSlice = createSlice({
     ) => {
       state.scopedVariables.status = action.payload;
     },
-    
+
     /**
      * Set scoped variables (from DB)
      */
@@ -441,15 +515,15 @@ const promptExecutionSlice = createSlice({
       }>
     ) => {
       const { user, org, project } = action.payload;
-      
+
       if (user) state.scopedVariables.user = user;
       if (org) state.scopedVariables.org = org;
       if (project) state.scopedVariables.project = project;
-      
+
       state.scopedVariables.fetchedAt = Date.now();
       state.scopedVariables.status = 'loaded';
     },
-    
+
     /**
      * Clear scoped variables (logout)
      */
@@ -479,10 +553,15 @@ export const {
   setExpandedVariable,
   toggleShowVariables,
   setShowVariables,
+  setCreatorDebug,
+  setShowSystemMessage,
+  setShowTemplateMessages,
   updateVariable,
   updateVariables,
   setComputedVariables,
   addMessage,
+  clearMessages,
+  setRequiresVariableReplacement,
   clearConversation,
   startExecution,
   startStreaming,

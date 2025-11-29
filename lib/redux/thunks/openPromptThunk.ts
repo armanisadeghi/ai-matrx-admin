@@ -87,7 +87,7 @@ export const openPrompt = createAsyncThunk<
             name: cachedPrompt.name,
             description: cachedPrompt.description,
             messages: cachedPrompt.messages,
-            variableDefaults: cachedPrompt.variableDefaults || cachedPrompt.variable_defaults,
+            variableDefaults: cachedPrompt.variableDefaults,
             settings: cachedPrompt.settings,
           };
           dispatch(openPromptModal(resolvedConfig));
@@ -122,11 +122,11 @@ export const openPrompt = createAsyncThunk<
           description: prompt.description,
           messages: prompt.messages || [],
           variableDefaults: prompt.variable_defaults || [],
-          variable_defaults: prompt.variable_defaults || [],
           settings: prompt.settings || {},
+          userId: prompt.user_id,
           source: 'prompts',
           fetchedAt: Date.now(),
-          status: 'cached',
+          status: 'cached', 
         };
 
         dispatch(cachePrompt(cachedPromptData));
@@ -139,6 +139,7 @@ export const openPrompt = createAsyncThunk<
           messages: cachedPromptData.messages,
           variableDefaults: cachedPromptData.variableDefaults,
           settings: cachedPromptData.settings,
+          userId: cachedPromptData.userId,
         };
 
         dispatch(openPromptModal(resolvedConfig));
@@ -206,8 +207,8 @@ export const prefetchPrompt = createAsyncThunk<
         description: prompt.description,
         messages: prompt.messages || [],
         variableDefaults: prompt.variable_defaults || [],
-        variable_defaults: prompt.variable_defaults || [],
         settings: prompt.settings || {},
+        userId: prompt.user_id,
         source: 'prompts',
         fetchedAt: Date.now(),
         status: 'cached',

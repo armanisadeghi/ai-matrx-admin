@@ -1,22 +1,22 @@
 "use client";
 import React from "react";
 import { Edit2, MessageSquare, Eye, Trash2, Copy } from "lucide-react";
-import { PromptsData } from "@/features/prompts/types/core";
+import { PromptData } from "@/features/prompts/types/core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CompactPromptsListProps {
-  prompts: PromptsData[];
-  onEditPrompt: (prompt: PromptsData) => void;
+  prompts: PromptData[];
+  onEditPrompt: (prompt: PromptData) => void;
   onCreateNew?: () => void;
-  onViewPrompt?: (prompt: PromptsData) => void;
-  onDeletePrompt?: (prompt: PromptsData) => void;
-  onDuplicatePrompt?: (prompt: PromptsData) => void;
+  onViewPrompt?: (prompt: PromptData) => void;
+  onDeletePrompt?: (prompt: PromptData) => void;
+  onDuplicatePrompt?: (prompt: PromptData) => void;
 }
 
-export default function CompactPromptsList({ 
-  prompts, 
-  onEditPrompt, 
+export default function CompactPromptsList({
+  prompts,
+  onEditPrompt,
   onCreateNew,
   onViewPrompt,
   onDeletePrompt,
@@ -49,9 +49,9 @@ export default function CompactPromptsList({
         const messageCount = prompt.messages?.length || 0;
         const variableCount = prompt.variableDefaults ? Object.keys(prompt.variableDefaults).length : 0;
         const hasContent = prompt.messages?.some(msg => msg.content.trim());
-        
+
         return (
-          <Card 
+          <Card
             key={prompt.id}
             className="bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 group cursor-pointer"
             onClick={() => onEditPrompt(prompt)}
@@ -77,7 +77,7 @@ export default function CompactPromptsList({
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 mb-3">
                     {!hasContent && (
                       <span className="px-2 py-1 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-full text-xs">

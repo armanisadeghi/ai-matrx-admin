@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { createClient } from '@/utils/supabase/client';
-import { PromptMessage, PromptVariable, PromptSettings, PromptsData } from '@/features/prompts/types/core';
+import { PromptMessage, PromptVariable, PromptSettings, PromptData } from '@/features/prompts/types/core';
 import { getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { RootState } from '../store';
 import { selectModelById } from './modelRegistrySlice';

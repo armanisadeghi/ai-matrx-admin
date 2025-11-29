@@ -62,29 +62,28 @@ export const startPromptInstance = createAsyncThunk<
     try {
       // ========== STEP 1: Load Prompt (Cache-First via centralized system) ==========
       const { promptData: promptDataObj } = await dispatch(
-        getPrompt({ 
-          promptId, 
+        getPrompt({
+          promptId,
           source: promptSource,
-          allowStale: false 
+          allowStale: false
         })
       ).unwrap();
-      
+
       // Convert to format expected by rest of function
       const prompt = {
         id: promptDataObj.id,
         name: promptDataObj.name,
         description: promptDataObj.description,
         messages: promptDataObj.messages,
-        variableDefaults: promptDataObj.variableDefaults || promptDataObj.variable_defaults,
-        variable_defaults: promptDataObj.variable_defaults || promptDataObj.variableDefaults,
+        variableDefaults: promptDataObj.variableDefaults,
         settings: promptDataObj.settings,
         source: promptSource,
       };
-      
+
       // ========== STEP 2: Fetch Scoped Variables (Cache-Aware) ==========
       // TODO: Implement fetchScopedVariablesThunk
       // const scopedVars = await dispatch(fetchScopedVariables({ userId, orgId, projectId }));
-      
+
       // ========== STEP 3: Compute Runtime Variables ==========
       const computedVariables: Record<string, string> = {
         current_date: new Date().toISOString().split('T')[0],
@@ -92,7 +91,7 @@ export const startPromptInstance = createAsyncThunk<
         current_datetime: new Date().toISOString(),
         // Add more runtime variables as needed
       };
-      
+
       // ========== STEP 4: Create Execution Instance ==========
       const now = Date.now();
       const instance: ExecutionInstance = {
@@ -100,15 +99,15 @@ export const startPromptInstance = createAsyncThunk<
         runId,
         promptId,
         promptSource,
-        
+
         // Status
         status: 'ready',
         error: null,
-        
+
         // Timestamps
         createdAt: now,
         updatedAt: now, // Only updated on execution completion
-        
+
         // Configuration
         settings: prompt.settings,
         executionConfig: {
@@ -118,17 +117,25 @@ export const startPromptInstance = createAsyncThunk<
           apply_variables: executionConfig.apply_variables ?? true,
           track_in_runs: executionConfig.track_in_runs ?? true,
         },
-        
+
         // Variables
         variables: {
           userValues: { ...variables },
           scopedValues: {}, // TODO: Fill from fetchScopedVariables
           computedValues: computedVariables,
         },
-        
-        // Messages (empty array - no longer nested in conversation)
-        messages: [],
-        
+        variableDefaults: prompt.variableDefaults || [],
+
+        // Messages: Store template messages directly (NOT variable replaced yet)
+        messages: prompt.messages.map(msg => ({
+          role: msg.role as 'system' | 'user' | 'assistant',
+          content: msg.content,
+          timestamp: '', // Will be set during first execution
+        })),
+
+        // First execution flag: templates need variable replacement
+        requiresVariableReplacement: true,
+
         // Execution tracking
         execution: {
           currentTaskId: null,
@@ -136,7 +143,7 @@ export const startPromptInstance = createAsyncThunk<
           timeToFirstToken: undefined,
           lastMessageStats: null,
         },
-        
+
         // Run tracking
         runTracking: {
           sourceType: promptSource,
@@ -146,44 +153,50 @@ export const startPromptInstance = createAsyncThunk<
           totalCost: 0,
           savedToDatabase: false,
         },
-        
+
         // NOTE: ui state is now in isolated uiState map
         // It's initialized by createInstance action based on executionConfig.show_variables
       };
-      
+
       // Add instance to Redux (this also initializes isolated state maps)
       dispatch(createInstance(instance));
-      
+
       // Set initial message if provided (uses isolated currentInputs map)
       if (initialMessage) {
         dispatch(setCurrentInput({ runId, input: initialMessage }));
       }
-      
+
       // If loading existing run, fetch messages
       if (providedRunId) {
-        // TODO: Implement loadRunMessages
-        // await dispatch(loadRunMessages({ runId }));
+        // Dynamically import to avoid circular dependency if possible, or just use the imported action
+        // We need to import loadRun. Since it's in the same directory structure, we can import it at top level if no circular dep.
+        // But loadRun imports createInstance from slice, and startInstance imports createInstance from slice.
+        // They don't import each other directly.
+
+        // However, we need to dispatch it.
+        const { loadRun } = await import('./loadRunThunk');
+        await dispatch(loadRun({ runId: providedRunId }));
       }
-      
+
       console.log('✅ Prompt instance created:', {
         runId,
         promptId,
         promptSource,
         promptName: prompt.name,
       });
-      
+
       return runId;
-      
+
     } catch (error) {
       console.error('❌ Failed to start prompt instance:', error);
-      
+
       // Update instance status to error if it was created
       dispatch(setInstanceStatus({
         runId,
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error',
       }));
-      
+
       throw error;
     }
   }

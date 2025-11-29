@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { executePromptDirect } from '@/lib/redux/thunks/executePromptDirectThunk';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 
 interface PromptExecutionTestModalProps {

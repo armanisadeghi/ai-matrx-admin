@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import PromptCompactModal from "./PromptCompactModal-new";
 import { ContextVersionManager, DYNAMIC_CONTEXT_VARIABLE } from "@/features/code-editor/utils/ContextVersionManager";
-import type { PromptData } from '@/features/prompts/types/modal';
+import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 
 export interface ContextAwarePromptCompactModalProps {

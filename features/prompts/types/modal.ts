@@ -4,6 +4,7 @@
  * Type definitions for the modal-based prompt runner system
  */
 
+import type { PromptData } from '@/features/prompts/types/core';
 import { PromptVariable, PromptMessage } from "@/features/prompts/types/core";
 import type { 
   PromptExecutionConfig as NewExecutionConfig,
@@ -67,19 +68,6 @@ export interface PromptRunnerModalProps {
   
   /** Optional custom message for AdditionalInfoModal */
   customMessage?: string;
-}
-
-/**
- * Prompt data structure (matches database schema)
- */
-export interface PromptData {
-  id: string;
-  name: string;
-  description?: string;
-  messages: PromptMessage[];
-  variableDefaults?: PromptVariable[];
-  variable_defaults?: PromptVariable[]; // Alternative naming from DB
-  settings: Record<string, any>;
 }
 
 /**

@@ -5,7 +5,7 @@
  * from anywhere in the application with flexible input and output handling.
  */
 
-import { PromptMessage, PromptsData } from "@/features/prompts/types/core";
+import { PromptMessage, PromptData } from "@/features/prompts/types/core";
 
 // ============================================================================
 // Variable Input Sources
@@ -14,7 +14,7 @@ import { PromptMessage, PromptsData } from "@/features/prompts/types/core";
 /**
  * Defines where a variable's value comes from
  */
-export type VariableSource = 
+export type VariableSource =
   | { type: 'hardcoded'; value: string }
   | { type: 'runtime'; getValue: () => string | Promise<string> }
   | { type: 'function'; fn: (context?: any) => string | Promise<string> }
@@ -56,22 +56,22 @@ export type OutputHandler =
 export interface PromptExecutionConfig {
   /** ID of the prompt to execute (will fetch from database) */
   promptId?: string;
-  
+
   /** Full prompt data object (skips fetch if provided) - accepts PromptsData or PromptExecutionData */
-  promptData?: PromptsData | PromptExecutionData;
-  
+  promptData?: PromptData | PromptExecutionData;
+
   /** Variable value sources */
   variables?: VariableSourceMap;
-  
+
   /** Optional user input content (not required) */
   userInput?: string | (() => string | Promise<string>);
-  
+
   /** How to handle the output */
   output?: OutputHandler;
-  
+
   /** Optional context data available to functions and resolvers */
   context?: any;
-  
+
   /** Model overrides */
   modelConfig?: {
     modelId?: string;
@@ -81,19 +81,19 @@ export interface PromptExecutionConfig {
     max_tokens?: number;
     [key: string]: any;
   };
-  
+
   /** Whether to track in AI runs (default: true) */
   trackInRuns?: boolean;
-  
+
   /** Optional name for the run */
   runName?: string;
-  
+
   /** Whether to show loading UI (default: true) */
   showLoading?: boolean;
-  
+
   /** Callback for execution progress */
   onProgress?: (progress: ExecutionProgress) => void;
-  
+
   /** Callback for errors */
   onError?: (error: ExecutionError) => void;
 }
@@ -127,13 +127,13 @@ export interface ExecutionError {
 export interface ExecutionResult {
   /** Whether execution was successful */
   success: boolean;
-  
+
   /** The full response text */
   text: string;
-  
+
   /** Parsed data if output type was 'json' */
   data?: any;
-  
+
   /** Execution metadata */
   metadata: {
     promptId: string;
@@ -146,10 +146,10 @@ export interface ExecutionResult {
     model?: string;
     timeToFirstToken?: number;
   };
-  
+
   /** Any errors that occurred */
   error?: ExecutionError;
-  
+
   /** Resolved variable values used */
   resolvedVariables: Record<string, string>;
 }
@@ -164,34 +164,34 @@ export interface ExecutionResult {
 export interface PromptExecutionButtonProps {
   /** Prompt execution configuration */
   config: PromptExecutionConfig;
-  
+
   /** Button label */
   label?: string;
-  
+
   /** Button variant */
   variant?: 'default' | 'outline' | 'ghost' | 'link';
-  
+
   /** Button size */
   size?: 'default' | 'sm' | 'lg' | 'icon';
-  
+
   /** Optional icon (Lucide React component) */
   icon?: React.ComponentType<{ className?: string }>;
-  
+
   /** Whether button should be full width */
   fullWidth?: boolean;
-  
+
   /** Custom className */
   className?: string;
-  
+
   /** Whether to disable button */
   disabled?: boolean;
-  
+
   /** Tooltip text */
   tooltip?: string;
-  
+
   /** Callback when execution starts */
   onExecutionStart?: () => void;
-  
+
   /** Callback when execution completes */
   onExecutionComplete?: (result: ExecutionResult) => void;
 }
@@ -206,16 +206,16 @@ export interface PromptExecutionButtonProps {
 export interface ContextMenuPromptOption {
   /** Display label */
   label: string;
-  
+
   /** Optional icon */
   icon?: React.ComponentType<{ className?: string }>;
-  
+
   /** Prompt configuration */
   config: Omit<PromptExecutionConfig, 'context'>;
-  
+
   /** Whether to show in context menu (can be function for dynamic visibility) */
   visible?: boolean | ((context: any) => boolean);
-  
+
   /** Optional grouping */
   group?: string;
 }
@@ -226,13 +226,13 @@ export interface ContextMenuPromptOption {
 export interface PromptContextMenuProps {
   /** Available prompt options */
   options: ContextMenuPromptOption[];
-  
+
   /** Context data to pass to prompts */
   context: any;
-  
+
   /** Children to wrap with context menu */
   children: React.ReactNode;
-  
+
   /** Custom menu className */
   className?: string;
 }
@@ -247,31 +247,31 @@ export interface PromptContextMenuProps {
 export interface UsePromptExecutionReturn {
   /** Execute a prompt with the given configuration */
   execute: (config: PromptExecutionConfig) => Promise<ExecutionResult>;
-  
+
   /** Current execution state */
   isExecuting: boolean;
-  
+
   /** Streaming text from current execution */
   streamingText: string;
-  
+
   /** Current task ID */
   currentTaskId: string | null;
-  
+
   /** Whether the response has ended */
   isResponseEnded: boolean;
-  
+
   /** Current progress */
   progress?: ExecutionProgress | null;
-  
+
   /** Latest result */
   result?: ExecutionResult | null;
-  
+
   /** Latest error */
   error: string | null;
-  
+
   /** Reset state */
   reset: () => void;
-  
+
   /** Cancel current execution */
   cancel?: () => void;
 }

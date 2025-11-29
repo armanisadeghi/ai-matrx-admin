@@ -3,7 +3,7 @@
 import React from "react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { PromptRunner } from "./PromptRunner";
-import { PromptData } from "../../types/modal";
+import type { PromptData } from '@/features/prompts/types/core';
 import { PromptExecutionConfig } from "@/features/prompt-builtins/types/execution-modes";
 
 interface PromptFlexiblePanelProps {
