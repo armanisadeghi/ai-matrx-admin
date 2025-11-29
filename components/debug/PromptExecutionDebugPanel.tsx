@@ -16,7 +16,7 @@ import {
   selectSystemMessage,
   selectConversationTemplate,
   selectUIState,
-  selectModelConfig,
+  selectPromptSettings,
 } from '@/lib/redux/prompt-execution/selectors';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import { buildFinalMessage } from '@/lib/redux/prompt-execution/utils/message-builder';
@@ -47,7 +47,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
   const systemMessage = useAppSelector(state => selectSystemMessage(state, runId));
   const conversationTemplate = useAppSelector(state => selectConversationTemplate(state, runId));
   const uiState = useAppSelector(state => selectUIState(state, runId));
-  const modelConfig = useAppSelector(state => selectModelConfig(state, runId));
+  const promptSettings = useAppSelector(state => selectPromptSettings(state, runId));
 
   if (!instance) {
     return null;
@@ -267,7 +267,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
               </div>
               <div>
                 <span className="text-gray-600 dark:text-gray-400">Model:</span>
-                <p className="font-medium text-xs">{modelConfig?.modelId || 'N/A'}</p>
+                <p className="font-medium text-xs">{promptSettings?.modelId || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -578,7 +578,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
                 <p className="text-xs text-blue-800 dark:text-blue-200">
                   <strong>Total Messages:</strong> {apiPayload.length}<br />
                   <strong>Total Characters:</strong> {JSON.stringify(apiPayload).length.toLocaleString()}<br />
-                  <strong>Model:</strong> {modelConfig?.modelId || 'N/A'}
+                  <strong>Model:</strong> {promptSettings?.modelId || 'N/A'}
                 </p>
               </div>
             </div>

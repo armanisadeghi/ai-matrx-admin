@@ -367,9 +367,10 @@ export const selectIsReadyToExecute = createSelector(
 );
 
 /**
- * Get model configuration for execution
+ * Get prompt settings for execution
+ * Returns the chosen settings (temperature, max_tokens, etc.) for this prompt instance
  */
-export const selectModelConfig = createSelector(
+export const selectPromptSettings = createSelector(
   [
     (state: RootState, runId: string) => selectInstance(state, runId),
   ],

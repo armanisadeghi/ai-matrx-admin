@@ -26,7 +26,7 @@ import {
   selectInstance,
   selectCurrentInput,
   selectMergedVariables,
-  selectModelConfig,
+  selectPromptSettings,
 } from '../selectors';
 import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
@@ -173,16 +173,16 @@ export const executeMessage = createAsyncThunk<
         content: m.content,
       }));
 
-      const modelConfig = selectModelConfig(freshState, runId);
-      if (!modelConfig) {
-        throw new Error('Model configuration not found');
+      const promptSettings = selectPromptSettings(freshState, runId);
+      if (!promptSettings) {
+        throw new Error('Prompt settings not found');
       }
 
       const chatConfig = {
-        model_id: modelConfig.modelId,
+        model_id: promptSettings.modelId,
         messages: messagesToSend,
         stream: true,
-        ...modelConfig.config,
+        ...promptSettings.config,
       };
 
       const taskId = uuidv4();

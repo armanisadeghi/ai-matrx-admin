@@ -107,7 +107,7 @@ export {
   selectInstanceStats,
   selectLiveStreamingStats,
   selectIsReadyToExecute,
-  selectModelConfig,
+  selectPromptSettings,
   selectHasUnsavedChanges,
   selectIsExecuting,
   selectIsStreaming,

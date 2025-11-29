@@ -363,7 +363,7 @@ selectShowVariables(state, runId)      // boolean
 
 // Stats
 selectInstanceStats(state, runId)
-selectModelConfig(state, runId)
+selectPromptSettings(state, runId)  // Returns prompt settings (temperature, max_tokens, etc.)
 ```
 
 ---
