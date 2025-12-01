@@ -45,7 +45,7 @@ import overlaySlice from "./slices/overlaySlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
-import canvasReducer from "./slices/canvasSlice";
+import canvasReducer from "../../features/canvas/redux/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 

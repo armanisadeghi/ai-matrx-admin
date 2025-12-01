@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { CanvasItem } from "@/lib/redux/slices/canvasSlice";
+import { CanvasItem } from "@/features/canvas/redux/canvasSlice";
 import {
   Tooltip,
   TooltipContent,
@@ -66,7 +66,7 @@ export function CanvasNavigation({
   const getItemLabel = (item: CanvasItem, index: number): string => {
     const title = item.content.metadata?.title;
     const type = item.content.type;
-    return title || `${type} ${index + 1}`;
+    return title ? String(title) : `${type} ${index + 1}`;
   };
   
   const getItemSubtitle = (item: CanvasItem): string => {

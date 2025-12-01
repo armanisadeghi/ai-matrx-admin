@@ -12,11 +12,11 @@ import {
   selectCurrentItemId,
   type CanvasItem,
   type CanvasContent,
-} from "@/lib/redux/slices/canvasSlice";
+} from "@/features/canvas/redux/canvasSlice";
 import { CanvasHeader, ViewMode } from "./CanvasHeader";
 import { CanvasNavigation } from "./CanvasNavigation";
-import { SavedCanvasItems } from "@/components/canvas/SavedCanvasItems";
-import { CanvasShareSheet } from "@/components/canvas/social/CanvasShareSheet";
+import { SavedCanvasItems } from "./SavedCanvasItems";
+import { CanvasShareSheet } from "@/features/canvas/social/CanvasShareSheet";
 import type { CanvasType } from "@/types/canvas-social";
 import { isValidElement } from "react";
 
@@ -35,8 +35,8 @@ import InteractiveDiagramBlock from "@/components/mardown-display/blocks/diagram
 import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
 import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 import MathProblem from "@/features/math/components/MathProblem";
-import { CodePreviewCanvas } from "@/features/code-editor/components/canvas/CodePreviewCanvas";
-import { CodeEditErrorCanvas } from "@/features/code-editor/components/canvas/CodeEditErrorCanvas";
+import { CodePreviewCanvas } from "@/features/canvas/custom-components/CodePreviewCanvas";
+import { CodeEditErrorCanvas } from "@/features/canvas/custom-components/CodeEditErrorCanvas";
 
 interface CanvasRendererProps {
   // Props are now optional - component gets data from Redux
@@ -103,8 +103,8 @@ export function CanvasRenderer({ content: propContent, variant = 'default' }: Ca
     setIsSyncing(true);
     
     // Import the service dynamically to avoid circular dependencies
-    const { canvasItemsService } = await import('@/services/canvasItemsService');
-    const { markItemSynced } = await import('@/lib/redux/slices/canvasSlice');
+    const { canvasItemsService } = await import('@/features/canvas/services/canvasItemsService');
+    const { markItemSynced } = await import('@/features/canvas/redux/canvasSlice');
     
     const { data, isDuplicate, error } = await canvasItemsService.save({
       content,

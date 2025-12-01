@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useCanvasItems } from "@/hooks/useCanvasItems";
+import { useCanvasItems } from "@/features/canvas/hooks/useCanvasItems";
 import { useAppDispatch } from "@/lib/redux";
-import { openCanvas } from "@/lib/redux/slices/canvasSlice";
+import { openCanvas } from "@/features/canvas/redux/canvasSlice";
 import { 
   Star, 
   Archive, 
@@ -27,7 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import type { CanvasItemRow } from "@/services/canvasItemsService";
+import type { CanvasItemRow } from "@/features/canvas/services/canvasItemsService";
 
 interface SavedCanvasItemsProps {
   showArchived?: boolean;

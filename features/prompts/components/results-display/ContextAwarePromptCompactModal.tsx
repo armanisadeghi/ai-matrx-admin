@@ -1,15 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback } from "react";
 import PromptCompactModal from "./PromptCompactModal-new";
-import { ContextVersionManager, DYNAMIC_CONTEXT_VARIABLE } from "@/features/code-editor/utils/ContextVersionManager";
 import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
+import { openPromptExecution } from '@/lib/redux/thunks/openPromptExecutionThunk';
+import { useDynamicContexts } from '@/features/prompts/hooks/useDynamicContexts';
 
 export interface ContextAwarePromptCompactModalProps {
   isOpen: boolean;
   onClose: () => void;
   promptData?: PromptData;
+  promptId?: string;
   executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
   title?: string;
   customMessage?: string;
@@ -18,9 +22,14 @@ export interface ContextAwarePromptCompactModalProps {
   /** Initial context content */
   initialContext: string;
   
+  /** Context ID (defaults to 'primary_context') */
+  contextId?: string;
+  
   /** Context metadata */
   contextType?: 'code' | 'text' | 'json' | 'markdown' | 'other';
   contextLanguage?: string;
+  contextFilename?: string;
+  contextLabel?: string;
   
   /** Callback when context is updated (after applying changes) */
   onContextChange?: (newContent: string, version: number) => void;
@@ -39,90 +48,139 @@ export interface ContextAwarePromptCompactModalProps {
  * ContextAwarePromptCompactModal
  * 
  * Compact, draggable modal with dynamic context version management.
- * Wraps PromptCompactModal to add V3 context-aware features.
+ * NOW POWERED BY REDUX! Uses the unified execution system with dynamic contexts.
  * 
  * Perfect for code editing while viewing the source!
+ * 
+ * Note: Uses startPromptInstance directly to support initialContexts parameter.
  */
 export function ContextAwarePromptCompactModal({
   isOpen,
   onClose,
   promptData,
-  executionConfig,
+  promptId: providedPromptId,
+  executionConfig = {
+    auto_run: true,
+    allow_chat: true,
+    show_variables: false,
+    apply_variables: true,
+    track_in_runs: false,
+  },
   title,
   customMessage,
   countdownSeconds,
   initialContext,
+  contextId = 'primary_context',
   contextType = 'code',
   contextLanguage,
+  contextFilename,
+  contextLabel,
   onContextChange,
   onResponseComplete,
   onContextUpdateReady,
   staticVariables = {},
 }: ContextAwarePromptCompactModalProps) {
-  const contextManagerRef = useRef<ContextVersionManager | null>(null);
-  const [dynamicVariables, setDynamicVariables] = useState<Record<string, string>>({});
+  const dispatch = useAppDispatch();
+  const [currentRunId, setCurrentRunId] = React.useState<string | null>(null);
+  const { updateContext, getContext } = useDynamicContexts(currentRunId || '');
   
-  // Initialize context manager
+  // Determine promptId to use
+  const promptId = providedPromptId || promptData?.id;
+  
+  // Initialize execution with context when modal opens
   useEffect(() => {
-    if (!contextManagerRef.current) {
-      contextManagerRef.current = new ContextVersionManager(
-        contextType,
-        contextLanguage
-      );
-      contextManagerRef.current.initialize(initialContext);
-      
-      // Provide initial dynamic_context
-      const contextWithTombstones = contextManagerRef.current.buildContextString();
-      setDynamicVariables({
-        [DYNAMIC_CONTEXT_VARIABLE]: contextWithTombstones,
-      });
-      
-      // Provide updateContext function to parent
-      if (onContextUpdateReady) {
-        const updateFn = (content: string, summary?: string) => {
-          if (contextManagerRef.current) {
-            const newVersion = contextManagerRef.current.addVersion(content, summary);
-            const newContext = contextManagerRef.current.buildContextString();
-            
-            // Update dynamic variables for next message
-            setDynamicVariables({
-              [DYNAMIC_CONTEXT_VARIABLE]: newContext,
-            });
-            
-            // Notify parent of version change
-            if (onContextChange) {
-              onContextChange(content, newVersion.version);
-            }
+    if (isOpen && !currentRunId && promptId) {
+      // Start execution with initial context using startPromptInstance + openPromptExecution
+      (async () => {
+        try {
+          // Create instance with contexts
+          const newRunId = await dispatch(startPromptInstance({
+            promptId,
+            executionConfig: {
+              auto_run: false, // Don't auto-run until modal is opened
+              allow_chat: true,
+              show_variables: false,
+              apply_variables: true,
+              track_in_runs: false,
+              ...executionConfig,
+            },
+            variables: staticVariables,
+            initialMessage: customMessage,
+            initialContexts: [
+              {
+                contextId,
+                content: initialContext,
+                metadata: {
+                  type: contextType,
+                  language: contextLanguage,
+                  filename: contextFilename,
+                  label: contextLabel,
+                },
+              },
+            ],
+          })).unwrap();
+          
+          setCurrentRunId(newRunId);
+          
+          // Open in compact modal with auto-run
+          await dispatch(openPromptExecution({
+            promptId,
+            runId: newRunId,
+            result_display: 'modal-compact',
+            executionConfig: {
+              ...executionConfig,
+              auto_run: true, // Now auto-run
+            },
+            title,
+          })).unwrap();
+        } catch (error) {
+          console.error('Failed to start execution with context:', error);
+        }
+      })();
+    }
+  }, [isOpen, currentRunId, promptId, executionConfig, staticVariables, initialContext, contextId, contextType, contextLanguage, contextFilename, contextLabel, customMessage, title, dispatch]);
+  
+  // Provide updateContext function to parent
+  useEffect(() => {
+    if (onContextUpdateReady && currentRunId) {
+      const updateFn = async (content: string, summary?: string) => {
+        try {
+          await updateContext(contextId, content, summary);
+          
+          // Get updated context to notify parent
+          const context = getContext(contextId);
+          if (context && onContextChange) {
+            onContextChange(content, context.currentVersion);
           }
-        };
-        onContextUpdateReady(updateFn);
-      }
+        } catch (error) {
+          console.error('Failed to update context:', error);
+        }
+      };
+      
+      onContextUpdateReady(updateFn);
     }
-  }, [initialContext, contextType, contextLanguage, onContextChange, onContextUpdateReady]);
+  }, [onContextUpdateReady, currentRunId, contextId, updateContext, getContext, onContextChange]);
   
-  // Update dynamic context before each message (in case it was modified externally)
-  const handleBeforeSend = useCallback(() => {
-    if (contextManagerRef.current) {
-      const contextWithTombstones = contextManagerRef.current.buildContextString();
-      setDynamicVariables({
-        [DYNAMIC_CONTEXT_VARIABLE]: contextWithTombstones,
-      });
+  // Reset runId when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentRunId(null);
     }
-  }, []);
+  }, [isOpen]);
   
-  // Merge static and dynamic variables
-  const allVariables = {
-    ...staticVariables,
-    ...dynamicVariables,
-  };
+  if (!currentRunId) {
+    // Don't render until execution is started
+    return null;
+  }
   
   return (
     <PromptCompactModal
       isOpen={isOpen}
       onClose={onClose}
+      promptId={promptId}
       promptData={promptData}
       executionConfig={executionConfig}
-      variables={allVariables}
+      variables={staticVariables}
       title={title}
       onExecutionComplete={onResponseComplete}
       customMessage={customMessage}

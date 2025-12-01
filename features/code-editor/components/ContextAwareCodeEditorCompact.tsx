@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ContextAwarePromptCompactModal } from '@/features/prompts/components/results-display/ContextAwarePromptCompactModal';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 import { normalizeLanguage } from '@/features/code-editor/config/languages';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';
@@ -280,6 +280,7 @@ export function ContextAwareCodeEditorCompact({
                 allow_chat: true,
                 show_variables: false,
                 apply_variables: true,
+                track_in_runs: true,
             }}
             initialContext={code}
             contextType="code"

@@ -114,7 +114,8 @@ export function PromptExecutionCard({
                     auto_run: true,
                     allow_chat: allowChat,
                     show_variables: false,
-                    apply_variables: true
+                    apply_variables: true,
+                    track_in_runs: true,
                 }}
                 variables={{
                     title,

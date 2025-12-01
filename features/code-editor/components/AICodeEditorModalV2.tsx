@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePromptRunner } from '@/features/prompts/hooks/usePromptRunner';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 import { normalizeLanguage } from '@/features/code-editor/config/languages';
 import { parseCodeEdits, validateEdits } from '@/features/code-editor/utils/parseCodeEdits';

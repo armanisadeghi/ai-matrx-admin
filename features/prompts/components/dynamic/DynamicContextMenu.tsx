@@ -22,7 +22,6 @@ import {
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
 import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
-import { showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
 import { useAppSelector, useAppDispatch } from '@/lib/redux';

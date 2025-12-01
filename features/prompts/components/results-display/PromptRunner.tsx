@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { Loader2, AlertCircle } from "lucide-react";
-import { useCanvas } from "@/hooks/useCanvas";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Button } from "@/components/ui/button";
 import {
     resolveExecutionConfig,
@@ -40,9 +40,6 @@ export interface PromptRunnerProps {
     customMessage?: string; // Optional custom message for AdditionalInfoModal
     countdownSeconds?: number; // Optional countdown override for AdditionalInfoModal
 
-    /** Display variant to use (default: 'standard') */
-    displayVariant?: 'standard' | 'compact';
-
     /** Enable/disable AdditionalInfoModal for hidden-variables mode (default: true) */
     enableAdditionalInfoModal?: boolean;
 
@@ -69,7 +66,6 @@ export function PromptRunner({
     onClose,
     className,
     isActive = true,
-    displayVariant = 'standard',
     showSystemMessage = true,
 }: PromptRunnerProps) {
     const dispatch = useAppDispatch();

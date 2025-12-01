@@ -6,7 +6,7 @@ import {
   ArrowRight, Play, Pause, RotateCcw,
   ChevronDown, ChevronRight, Expand, ExternalLink, Upload
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertTimelineToTasks } from '@/features/tasks/utils/importConverters';
 

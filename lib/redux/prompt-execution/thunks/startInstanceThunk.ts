@@ -17,10 +17,10 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
-import type { RootState, AppDispatch } from '../../store';
+import type { RootState, AppDispatch } from '@/lib/redux/store';
 import type { StartInstancePayload, ExecutionInstance } from '../types';
-import { createInstance, setInstanceStatus, setCurrentInput, setResources } from '../slice';
-import { getPrompt } from '../../thunks/promptSystemThunks';
+import { createInstance, setInstanceStatus, setCurrentInput, setResources, initializeDynamicContext } from '../slice';
+import { getPrompt } from '@/lib/redux/thunks/promptSystemThunks';
 
 /**
  * Start a new prompt execution instance
@@ -55,6 +55,7 @@ export const startPromptInstance = createAsyncThunk<
       initialMessage = '',
       runId: providedRunId,
       resources = [],
+      initialContexts = [],
     } = payload;
 
     // Use provided runId or generate new one
@@ -165,6 +166,18 @@ export const startPromptInstance = createAsyncThunk<
       // Set resources if provided (uses isolated resources map)
       if (resources && resources.length > 0) {
         dispatch(setResources({ runId, resources }));
+      }
+
+      // Initialize dynamic contexts if provided (uses isolated dynamicContexts map)
+      if (initialContexts && initialContexts.length > 0) {
+        initialContexts.forEach(ctx => {
+          dispatch(initializeDynamicContext({
+            runId,
+            contextId: ctx.contextId,
+            content: ctx.content,
+            metadata: ctx.metadata,
+          }));
+        });
       }
 
       // If loading existing run, fetch messages

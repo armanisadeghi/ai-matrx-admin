@@ -16,7 +16,7 @@ import {
     Filter,
     Grid3x3
 } from 'lucide-react';
-import { CanvasCard } from '@/components/canvas/discovery/CanvasCard';
+import { CanvasCard } from '@/features/canvas/discovery/CanvasCard';
 import { cn } from '@/lib/utils';
 import type { SharedCanvasItem, CanvasType } from '@/types/canvas-social';
 import Link from 'next/link';

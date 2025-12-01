@@ -12,7 +12,7 @@ import { useTheme } from "@/styles/themes/ThemeProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { useCanvas } from "@/hooks/useCanvas";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { AICodeEditorModalV2 } from "@/features/code-editor/components/AICodeEditorModalV2";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";

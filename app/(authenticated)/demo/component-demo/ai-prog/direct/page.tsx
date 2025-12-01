@@ -18,53 +18,23 @@ import { Code2, Bug } from 'lucide-react';
 import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { toggleDebugMode, selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
-
-const SAMPLE_CODE = `interface User {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: Date;
-  role: 'admin' | 'user' | 'guest';
-}
-
-interface UserResponse {
-  data: User | null;
-  error?: string;
-}
-
-export async function fetchUser(userId: string): Promise<UserResponse> {
-  try {
-    const response = await fetch(\`/api/users/\${userId}\`);
-    
-    if (!response.ok) {
-      return {
-        data: null,
-        error: 'Failed to fetch user'
-      };
-    }
-    
-    const data = await response.json();
-    return { data };
-  } catch (error) {
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
-  }
-}
-
-export function validateUser(user: User): boolean {
-  return !!(user.id && user.name && user.email);
-}`;
+import { CODE_FILES, type CodeFile } from '../sample-data';
 
 export default function AICodeEditorDirectDemoPage() {
   const dispatch = useAppDispatch();
   const isDebugMode = useAppSelector(selectIsDebugMode);
   
-  const [currentCode, setCurrentCode] = useState(SAMPLE_CODE);
+  const [selectedFile, setSelectedFile] = useState<CodeFile>('types');
+  const [currentCode, setCurrentCode] = useState(CODE_FILES.types.code);
   const [selectedBuiltinId, setSelectedBuiltinId] = useState<string>(getBuiltinId('generic-code-editor'));
   const [allowPromptSelection, setAllowPromptSelection] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+
+  // Update current code when file selection changes
+  const handleFileChange = (file: CodeFile) => {
+    setSelectedFile(file);
+    setCurrentCode(CODE_FILES[file].code);
+  };
 
   const handleCodeChange = (newCode: string) => {
     setCurrentCode(newCode);
@@ -85,6 +55,23 @@ export default function AICodeEditorDirectDemoPage() {
           </h2>
           
           <div className="space-y-4">
+            {/* File Selection */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">Code File</Label>
+              <Select value={selectedFile} onValueChange={(v) => handleFileChange(v as CodeFile)}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CODE_FILES).map(([key, { label }]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Builtin Selection */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">AI Prompt Mode</Label>
@@ -171,7 +158,7 @@ export default function AICodeEditorDirectDemoPage() {
           open={true}
           onOpenChange={() => {}}
           currentCode={currentCode}
-          language="typescript"
+          language={CODE_FILES[selectedFile].language}
           builtinId={selectedBuiltinId}
           onCodeChange={handleCodeChange}
           allowPromptSelection={allowPromptSelection}

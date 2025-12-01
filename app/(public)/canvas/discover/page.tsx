@@ -1,5 +1,5 @@
 import React from 'react';
-import { CanvasDiscovery } from '@/components/canvas/discovery/CanvasDiscovery';
+import { CanvasDiscovery } from '@/features/canvas/discovery/CanvasDiscovery';
 
 export const metadata = {
     title: 'Discover Canvases - AI Matrix',

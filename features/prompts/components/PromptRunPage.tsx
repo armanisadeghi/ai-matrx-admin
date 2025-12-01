@@ -9,7 +9,7 @@ import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayo
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
-import { useCanvas } from "@/hooks/useCanvas";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PromptRunnerModalSidebarTester } from "./runner-tester/PromptRunnerModalSidebarTester";
@@ -22,7 +22,7 @@ import { cachePrompt } from "@/lib/redux/slices/promptCacheSlice";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
-    () => import("@/components/layout/adaptive-layout/CanvasRenderer").then(mod => ({ default: mod.CanvasRenderer })),
+    () => import("@/features/canvas/core/CanvasRenderer").then(mod => ({ default: mod.CanvasRenderer })),
     { ssr: false }
 );
 

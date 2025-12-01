@@ -76,7 +76,8 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                         auto_run: false,
                         allow_chat: true,
                         show_variables: true,
-                        apply_variables: true
+                        apply_variables: true,
+                        track_in_runs: true,
                     }}
                     isActive={true}
                     className="h-full"

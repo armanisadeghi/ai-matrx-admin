@@ -1,7 +1,7 @@
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
-import { CanvasContent } from '@/lib/redux/slices/canvasSlice';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+import { CanvasContent } from '@/features/canvas/redux/canvasSlice';
 
 interface CanvasButtonProps {
   content: CanvasContent;

@@ -6,7 +6,7 @@ import {
   Target, Lightbulb, AlertCircle, Info, Zap, Star,
   ChevronRight, ChevronDown, PlayCircle, StopCircle, Clock, ExternalLink
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface DecisionNode {
   id: string;

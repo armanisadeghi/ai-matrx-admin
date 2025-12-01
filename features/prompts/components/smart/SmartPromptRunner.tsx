@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { Loader2, AlertCircle } from "lucide-react";
-import { useCanvas } from "@/hooks/useCanvas";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Button } from "@/components/ui/button";
 import {
     resolveExecutionConfig,

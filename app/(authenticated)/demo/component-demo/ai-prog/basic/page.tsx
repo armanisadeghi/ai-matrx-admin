@@ -18,78 +18,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import { Sparkles, Code2 } from 'lucide-react';
 import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
-
-// Sample code snippets for testing
-const SAMPLE_CODE = {
-  react: `import { useState } from 'react';
-
-export function Counter() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Counter: {count}</h1>
-      <button onClick={() => setCount(count + 1)}>
-        Increment
-      </button>
-    </div>
-  );
-}`,
-  
-  typescript: `interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-export async function fetchUser(userId: string): Promise<User | null> {
-  const response = await fetch(\`/api/users/\${userId}\`);
-  if (!response.ok) {
-    return null;
-  }
-  return response.json();
-}`,
-  
-  python: `def calculate_fibonacci(n):
-    if n <= 1:
-        return n
-    return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)
-
-def main():
-    result = calculate_fibonacci(10)
-    print(f"Fibonacci(10) = {result}")
-
-if __name__ == "__main__":
-    main()`,
-  
-  javascript: `function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-const handleSearch = debounce((query) => {
-  console.log('Searching for:', query);
-}, 300);`,
-};
-
-const LANGUAGES = [
-  { value: 'react', label: 'React (TSX)', language: 'tsx' },
-  { value: 'typescript', label: 'TypeScript', language: 'typescript' },
-  { value: 'python', label: 'Python', language: 'python' },
-  { value: 'javascript', label: 'JavaScript', language: 'javascript' },
-] as const;
+import { CODE_FILES, type CodeFile } from '../sample-data';
 
 export default function AICodeEditorDemoPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSample, setSelectedSample] = useState<keyof typeof SAMPLE_CODE>('react');
-  const [currentCode, setCurrentCode] = useState(SAMPLE_CODE.react);
+  const [selectedFile, setSelectedFile] = useState<CodeFile>('types');
+  const [currentCode, setCurrentCode] = useState(CODE_FILES.types.code);
   const [selectedBuiltinId, setSelectedBuiltinId] = useState<string>(getBuiltinId('generic-code-editor'));
   const [allowPromptSelection, setAllowPromptSelection] = useState(false);
   const [modalTitle, setModalTitle] = useState<string>('AI Code Editor');
@@ -98,9 +32,9 @@ export default function AICodeEditorDemoPage() {
   const [selectedText] = useState<string | undefined>(undefined);
   const [multiFileContext] = useState<string | undefined>(undefined);
 
-  const handleSampleChange = (value: keyof typeof SAMPLE_CODE) => {
-    setSelectedSample(value);
-    setCurrentCode(SAMPLE_CODE[value]);
+  const handleFileChange = (value: CodeFile) => {
+    setSelectedFile(value);
+    setCurrentCode(CODE_FILES[value].code);
   };
 
   const handleOpenModal = () => {
@@ -111,7 +45,7 @@ export default function AICodeEditorDemoPage() {
     setCurrentCode(newCode);
   };
 
-  const selectedLanguage = LANGUAGES.find(l => l.value === selectedSample)?.language || 'typescript';
+  const selectedFileData = CODE_FILES[selectedFile];
 
   return (
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
@@ -134,15 +68,15 @@ export default function AICodeEditorDemoPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Sample Code Selection */}
               <div className="space-y-2">
-                <Label>Sample Code</Label>
-                <Select value={selectedSample} onValueChange={handleSampleChange}>
+                <Label>Code File</Label>
+                <Select value={selectedFile} onValueChange={(v) => handleFileChange(v as CodeFile)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
+                    {Object.entries(CODE_FILES).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -215,7 +149,7 @@ export default function AICodeEditorDemoPage() {
                 <div className="border rounded-lg overflow-hidden">
                   <CodeBlock
                     code={currentCode}
-                    language={selectedLanguage}
+                    language={selectedFileData.language}
                     showLineNumbers={true}
                     onCodeChange={handleCodeChange}
                   />
@@ -237,7 +171,7 @@ export default function AICodeEditorDemoPage() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         currentCode={currentCode}
-        language={selectedLanguage}
+        language={selectedFileData.language}
         builtinId={selectedBuiltinId}
         onCodeChange={handleCodeChange}
         title={modalTitle}

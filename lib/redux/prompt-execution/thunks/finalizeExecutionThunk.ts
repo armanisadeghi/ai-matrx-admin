@@ -2,8 +2,9 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../../store';
 import { selectPrimaryResponseTextByTaskId } from '../../socket-io/selectors/socket-response-selectors';
 import { addMessage, setInstanceStatus } from '../slice';
-import { selectInstance } from '../selectors';
+import { selectInstance, selectDynamicContexts, selectHasDynamicContexts } from '../selectors';
 import { createClient } from '@/utils/supabase/client';
+import { detectAndUpdateContextsFromResponse } from './detectContextUpdatesThunk';
 
 interface FinalizeExecutionPayload {
     runId: string;
@@ -30,7 +31,22 @@ export const finalizeExecution = createAsyncThunk<
             // Even if empty, we should probably finish the state to avoid sticking in 'executing'
         }
 
-        // 2. Add the Assistant Message to Redux
+        // 2. Auto-detect context updates from AI response (if enabled and contexts exist)
+        const hasContexts = selectHasDynamicContexts(state, runId);
+        if (hasContexts && finalText) {
+            try {
+                await dispatch(detectAndUpdateContextsFromResponse({
+                    runId,
+                    responseContent: finalText,
+                    autoUpdateEnabled: true, // Could make this configurable via execution config
+                })).unwrap();
+            } catch (error) {
+                console.warn('Context auto-detection failed:', error);
+                // Continue with finalization even if context detection fails
+            }
+        }
+
+        // 3. Add the Assistant Message to Redux
         // This updates the instance.messages array, restoring conversation history
         dispatch(addMessage({
             runId,
@@ -45,45 +61,30 @@ export const finalizeExecution = createAsyncThunk<
             }
         }));
 
-        // 3. Update the Run in the Database
+        // 4. Update the Run in the Database
         const instance = selectInstance(state, runId);
         if (instance && instance.runTracking.savedToDatabase) {
             const supabase = createClient();
 
-            // We need to fetch the current messages from DB or just append?
-            // Usually we append. But Supabase JSONB arrays are tricky to append to atomically without a function.
-            // For now, we'll read the latest state from Redux (which now has the new message) and update the whole array.
-            // Or better, just append the new message.
-
-            // Let's use the full message list from the instance (after the dispatch above processes)
-            // Wait, dispatch is synchronous for reducers, so getState() again should have it?
-            // Actually, we can just construct the message object and append it.
-
-            const newMessage = {
-                role: 'assistant',
-                content: finalText || '',
-                timestamp: new Date().toISOString()
-            };
-
-            // We can use a Postgres function if available, or just fetch-update.
-            // Given the user's previous code, they likely did a full update or an RPC.
-            // We'll try a simple update of the messages column by appending.
-
-            // Fetch current run to get current messages? 
-            // Or just trust Redux state? Redux state is the source of truth for the session.
-            // Let's update with the full Redux message list.
-
-            // Get fresh state
+            // Get fresh state (after context detection and message addition)
             const freshState = getState();
             const freshInstance = selectInstance(freshState, runId);
+            const dynamicContexts = selectDynamicContexts(freshState, runId);
 
             if (freshInstance) {
+                const updateData: Record<string, any> = {
+                    messages: freshInstance.messages, // Update with full history
+                    status: 'active', // Keep active
+                };
+
+                // Include dynamic contexts if they exist
+                if (Object.keys(dynamicContexts).length > 0) {
+                    updateData.dynamic_contexts = dynamicContexts;
+                }
+
                 const { error } = await supabase
                     .from('ai_runs')
-                    .update({
-                        messages: freshInstance.messages, // Update with full history
-                        status: 'active' // Keep active
-                    })
+                    .update(updateData)
                     .eq('id', runId);
 
                 if (error) {
@@ -92,7 +93,7 @@ export const finalizeExecution = createAsyncThunk<
             }
         }
 
-        // 4. Set Status to Ready
+        // 5. Set Status to Ready
         dispatch(setInstanceStatus({ runId, status: 'ready' }));
 
         console.log('✅ Execution finalized for run:', runId);

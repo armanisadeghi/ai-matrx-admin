@@ -27,6 +27,15 @@ import type {
   InstanceUIState,
 } from './types';
 import type { Resource } from '@/features/prompts/types/resources';
+import type {
+  DynamicContextState,
+  DynamicContextsMap,
+  InitializeDynamicContextPayload,
+  UpdateDynamicContextPayload,
+  SetDynamicContextsPayload,
+  RemoveDynamicContextPayload,
+  ClearDynamicContextsPayload,
+} from './types/dynamic-context';
 
 // ========== EMPTY STABLE REFERENCES ==========
 // Used by selectors to return stable references for missing data
@@ -49,6 +58,7 @@ const initialState: PromptExecutionState = {
   currentInputs: {},
   resources: {},
   uiState: {},
+  dynamicContexts: {},
   runsByPromptId: {},
   scopedVariables: {
     user: null,
@@ -75,6 +85,7 @@ const promptExecutionSlice = createSlice({
       // Initialize isolated state maps
       state.currentInputs[instance.runId] = '';
       state.resources[instance.runId] = [];
+      state.dynamicContexts[instance.runId] = {};
       state.uiState[instance.runId] = {
         expandedVariable: null,
         showVariables: instance.executionConfig.show_variables ?? false,
@@ -110,6 +121,7 @@ const promptExecutionSlice = createSlice({
         delete state.instances[runId];
         delete state.currentInputs[runId];
         delete state.resources[runId];
+        delete state.dynamicContexts[runId];
         delete state.uiState[runId];
       }
     },
@@ -205,6 +217,112 @@ const promptExecutionSlice = createSlice({
       const { runId } = action.payload;
       if (state.instances[runId]) {
         state.resources[runId] = [];
+      }
+    },
+
+    // ========== DYNAMIC CONTEXTS (ISOLATED) ==========
+
+    /**
+     * Initialize a new dynamic context
+     */
+    initializeDynamicContext: (
+      state,
+      action: PayloadAction<InitializeDynamicContextPayload>
+    ) => {
+      const { runId, contextId, content, metadata } = action.payload;
+      
+      if (state.instances[runId]) {
+        if (!state.dynamicContexts[runId]) {
+          state.dynamicContexts[runId] = {};
+        }
+
+        const now = new Date().toISOString();
+        const contextState: DynamicContextState = {
+          contextId,
+          currentVersion: 1,
+          currentContent: content,
+          versions: [
+            {
+              version: 1,
+              content,
+              timestamp: now,
+            },
+          ],
+          metadata,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        state.dynamicContexts[runId][contextId] = contextState;
+      }
+    },
+
+    /**
+     * Update a dynamic context with a new version
+     */
+    updateDynamicContext: (
+      state,
+      action: PayloadAction<UpdateDynamicContextPayload>
+    ) => {
+      const { runId, contextId, content, summary } = action.payload;
+      
+      const context = state.dynamicContexts[runId]?.[contextId];
+      if (context) {
+        const newVersion = context.currentVersion + 1;
+        const now = new Date().toISOString();
+
+        context.currentVersion = newVersion;
+        context.currentContent = content;
+        context.updatedAt = now;
+        
+        context.versions.push({
+          version: newVersion,
+          content,
+          timestamp: now,
+          changesSummary: summary,
+        });
+      }
+    },
+
+    /**
+     * Set all dynamic contexts for a run (bulk operation, e.g., from DB)
+     */
+    setDynamicContexts: (
+      state,
+      action: PayloadAction<SetDynamicContextsPayload>
+    ) => {
+      const { runId, contexts } = action.payload;
+      
+      if (state.instances[runId]) {
+        state.dynamicContexts[runId] = contexts;
+      }
+    },
+
+    /**
+     * Remove a dynamic context
+     */
+    removeDynamicContext: (
+      state,
+      action: PayloadAction<RemoveDynamicContextPayload>
+    ) => {
+      const { runId, contextId } = action.payload;
+      
+      if (state.dynamicContexts[runId]) {
+        delete state.dynamicContexts[runId][contextId];
+      }
+    },
+
+    /**
+     * Clear all dynamic contexts for a run
+     */
+    clearDynamicContexts: (
+      state,
+      action: PayloadAction<ClearDynamicContextsPayload>
+    ) => {
+      const { runId } = action.payload;
+      
+      if (state.instances[runId]) {
+        state.dynamicContexts[runId] = {};
       }
     },
 
@@ -550,6 +668,11 @@ export const {
   addResource,
   removeResource,
   clearResources,
+  initializeDynamicContext,
+  updateDynamicContext,
+  setDynamicContexts,
+  removeDynamicContext,
+  clearDynamicContexts,
   setExpandedVariable,
   toggleShowVariables,
   setShowVariables,

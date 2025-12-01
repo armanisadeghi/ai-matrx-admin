@@ -6,7 +6,8 @@ import {
     addMessage,
     updateVariables,
     setRunId,
-    setInstanceStatus
+    setInstanceStatus,
+    setDynamicContexts
 } from '../slice';
 import type { ExecutionInstance, ConversationMessage } from '../types';
 import { PromptDb } from '@/features/prompts';
@@ -145,6 +146,15 @@ export const loadRun = createAsyncThunk<
                     };
                     dispatch(addMessage({ runId, message }));
                 });
+            }
+
+            // Restore dynamic contexts if they were saved
+            if (run.dynamic_contexts && typeof run.dynamic_contexts === 'object') {
+                dispatch(setDynamicContexts({
+                    runId,
+                    contexts: run.dynamic_contexts
+                }));
+                console.log('✅ Dynamic contexts restored:', Object.keys(run.dynamic_contexts));
             }
 
             // Set run ID tracking

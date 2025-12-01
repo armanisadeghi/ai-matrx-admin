@@ -10,7 +10,7 @@ import {
   selectCanvasIsOpen,
   selectCanvasContent,
   CanvasContent,
-} from '@/lib/redux/slices/canvasSlice';
+} from '@/features/canvas/redux/canvasSlice';
 
 /**
  * useCanvas - Simple hook for canvas interactions

@@ -571,3 +571,97 @@ export const selectExecutionConfig = createSelector(
   ],
   (instance) => instance?.executionConfig ?? null
 );
+
+// ========== DYNAMIC CONTEXT SELECTORS ==========
+
+/**
+ * Select all dynamic contexts for a run (ISOLATED)
+ * Returns stable empty object if not found
+ */
+export const selectDynamicContexts = (state: RootState, runId: string) =>
+  state.promptExecution?.dynamicContexts[runId] ?? EMPTY_OBJECT;
+
+/**
+ * Select a specific dynamic context by contextId
+ */
+export const selectDynamicContext = createSelector(
+  [
+    (state: RootState, runId: string) => selectDynamicContexts(state, runId),
+    (_state: RootState, _runId: string, contextId: string) => contextId,
+  ],
+  (contexts, contextId) => contexts[contextId] ?? null
+);
+
+/**
+ * Get current content for a specific context
+ */
+export const selectCurrentContextContent = createSelector(
+  [
+    (state: RootState, runId: string, contextId: string) => 
+      selectDynamicContext(state, runId, contextId),
+  ],
+  (context) => context?.currentContent ?? ''
+);
+
+/**
+ * Check if a run has any dynamic contexts
+ */
+export const selectHasDynamicContexts = createSelector(
+  [
+    (state: RootState, runId: string) => selectDynamicContexts(state, runId),
+  ],
+  (contexts) => Object.keys(contexts).length > 0
+);
+
+/**
+ * Get count of dynamic contexts for a run
+ */
+export const selectDynamicContextCount = createSelector(
+  [
+    (state: RootState, runId: string) => selectDynamicContexts(state, runId),
+  ],
+  (contexts) => Object.keys(contexts).length
+);
+
+/**
+ * Get all context IDs for a run
+ */
+export const selectDynamicContextIds = createSelector(
+  [
+    (state: RootState, runId: string) => selectDynamicContexts(state, runId),
+  ],
+  (contexts) => Object.keys(contexts)
+);
+
+/**
+ * Get version history for a specific context
+ */
+export const selectContextVersionHistory = createSelector(
+  [
+    (state: RootState, runId: string, contextId: string) => 
+      selectDynamicContext(state, runId, contextId),
+  ],
+  (context) => context?.versions ?? EMPTY_ARRAY
+);
+
+/**
+ * Get current version number for a specific context
+ */
+export const selectContextCurrentVersion = createSelector(
+  [
+    (state: RootState, runId: string, contextId: string) => 
+      selectDynamicContext(state, runId, contextId),
+  ],
+  (context) => context?.currentVersion ?? 0
+);
+
+/**
+ * Get metadata for a specific context
+ */
+export const selectContextMetadata = createSelector(
+  [
+    (state: RootState, runId: string, contextId: string) => 
+      selectDynamicContext(state, runId, contextId),
+  ],
+  (context) => context?.metadata ?? null
+);

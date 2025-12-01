@@ -10,9 +10,17 @@
 
 import type { Resource } from '@/features/prompts/types/resources';
 import type { ConversationMessage } from '../types';
+import type { DynamicContextsMap } from '../types/dynamic-context';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import { fetchResourcesData } from '@/features/prompts/utils/resource-data-fetcher';
 import { formatResourcesToXml, appendResourcesToMessage } from '@/features/prompts/utils/resource-formatting';
+import {
+  buildContextSection,
+  hasContextXml,
+  extractContextsFromXml,
+  removeContextsFromContent,
+  createContextArchiveMetadata,
+} from './context-formatter';
 
 // ========================================
 // NEW: Centralized Message Processing
@@ -43,6 +51,11 @@ export interface ProcessMessagesOptions {
    * Variables to replace in messages
    */
   variables: Record<string, string>;
+  
+  /**
+   * Dynamic contexts to inject into the final message
+   */
+  dynamicContexts?: DynamicContextsMap;
 }
 
 export interface ProcessMessagesResult {
@@ -96,6 +109,7 @@ export async function processMessagesForExecution(
     userInput,
     resources,
     variables,
+    dynamicContexts = {},
   } = options;
    
   const timestamp = new Date().toISOString();
@@ -138,7 +152,11 @@ export async function processMessagesForExecution(
     throw new Error('No message content to build');
   }
   
-  // ========== STEP 3: Fetch and Format Resources ==========
+  // ========== STEP 3: Build Dynamic Contexts XML ==========
+  const contextsXml = buildContextSection(dynamicContexts);
+  const hasContexts = Object.keys(dynamicContexts).length > 0;
+  
+  // ========== STEP 4: Fetch and Format Resources ==========
   let resourcesXml = '';
   const hasResources = resources.length > 0;
   
@@ -147,19 +165,46 @@ export async function processMessagesForExecution(
     resourcesXml = formatResourcesToXml(enrichedResources);
   }
   
-  // ========== STEP 4: Append Resources ==========
-  const messageWithResources = appendResourcesToMessage(
-    baseContent,
-    resourcesXml
-  );
+  // ========== STEP 5: Combine Base Content + Contexts + Resources ==========
+  let messageWithAdditions = baseContent;
   
-  // ========== STEP 5: Replace Variables in Final Message ==========
+  // Add contexts first (they're the primary focus for iteration)
+  if (contextsXml) {
+    messageWithAdditions = `${messageWithAdditions}${contextsXml}`;
+  }
+  
+  // Then add resources
+  if (resourcesXml) {
+    messageWithAdditions = appendResourcesToMessage(messageWithAdditions, resourcesXml);
+  }
+  
+  // ========== STEP 6: Replace Variables in Final Message ==========
   const finalUserMessageContent = replaceVariablesInText(
-    messageWithResources,
+    messageWithAdditions,
     variables
   );
   
-  // ========== STEP 6: Update or Add Final User Message ==========
+  // ========== STEP 7: Archive Contexts in Previous Messages ==========
+  // For all messages except the last one, move context XML from content to metadata
+  if (hasContexts) {
+    const archiveMetadata = createContextArchiveMetadata(dynamicContexts);
+    
+    processedMessages.forEach((msg, idx) => {
+      // Skip the last message (which will be the current one with latest contexts)
+      if (idx < processedMessages.length - 1 && hasContextXml(msg.content)) {
+        // Remove context XML from content
+        msg.content = removeContextsFromContent(msg.content);
+        
+        // Add to metadata
+        if (!msg.metadata) {
+          msg.metadata = {};
+        }
+        msg.metadata.archivedContexts = archiveMetadata;
+      }
+    });
+  }
+  
+  // ========== STEP 8: Update or Add Final User Message ==========
   if (isFirstExecution && isLastTemplateMessageUser && lastMsg) {
     // Replace the last template message with our combined message
     // Preserve existing metadata (including fromTemplate marker)

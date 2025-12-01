@@ -5,7 +5,7 @@ import { Copy, Check, GripVertical, X, PanelRightOpen, PanelRightClose } from 'l
 import { PromptRunner } from './PromptRunner';
 import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface PromptCompactModalProps {
   isOpen: boolean;

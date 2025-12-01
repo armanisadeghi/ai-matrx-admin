@@ -368,6 +368,229 @@ All display components that show message history automatically support template 
 
 ---
 
+---
+
+## Dynamic Context System ✅
+
+**Date**: 2025-12-01  
+**Status**: ✅ **COMPLETE** - Redux-integrated versioned context management
+
+### Overview
+
+The Dynamic Context System allows iterative editing workflows where context (e.g., code being edited) is:
+- **Versioned**: Full history of changes maintained
+- **Token-optimized**: Only latest version in message content, history in metadata
+- **Redux-integrated**: Part of unified execution system
+- **Auto-detected**: Can extract updates from AI responses
+- **DB-persisted**: Full state saved/restored with runs
+
+### Architecture
+
+**Key Components**:
+- `lib/redux/prompt-execution/types/dynamic-context.ts` - Type definitions
+- `lib/redux/prompt-execution/slice.ts` - Redux actions (init, update, set, remove, clear)
+- `lib/redux/prompt-execution/selectors.ts` - Context selectors
+- `lib/redux/prompt-execution/utils/context-formatter.ts` - XML formatting/parsing
+- `lib/redux/prompt-execution/thunks/updateDynamicContextThunk.ts` - Manual updates
+- `lib/redux/prompt-execution/thunks/detectContextUpdatesThunk.ts` - Auto-detection
+- `features/prompts/hooks/useDynamicContexts.ts` - React hook
+
+**Storage Pattern**: Separate top-level map `dynamicContexts[runId][contextId]` (like resources)
+
+### Context XML Format
+
+Contexts are formatted as XML for model consumption:
+
+```xml
+<context id="file_1" version="3" type="code" language="typescript" filename="app.ts">
+// Content here
+export function example() {
+  return "Hello";
+}
+</context>
+```
+
+### Token Optimization
+
+**Current Message**: Contains full context XML
+**Previous Messages**: Context moved to `metadata.archivedContexts`
+
+```typescript
+{
+  role: 'user',
+  content: 'Original message content',
+  metadata: {
+    archivedContexts: {
+      file_1: {
+        version: 2,
+        summary: 'Added error handling',
+        metadata: { type: 'code', language: 'typescript' }
+      }
+    }
+  }
+}
+```
+
+### Usage Patterns
+
+#### Pattern 1: Programmatic with initialContexts
+
+```typescript
+import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
+
+// Start execution with initial context
+const runId = await dispatch(startPromptInstance({
+  promptId: 'code-helper',
+  executionConfig: { auto_run: true, allow_chat: true, ... },
+  variables: { task: 'Add error handling' },
+  initialContexts: [
+    {
+      contextId: 'main_file',
+      content: originalCode,
+      metadata: {
+        type: 'code',
+        language: 'typescript',
+        filename: 'app.ts'
+      }
+    }
+  ]
+})).unwrap();
+```
+
+#### Pattern 2: Hook-based Updates
+
+```typescript
+import { useDynamicContexts } from '@/features/prompts/hooks/useDynamicContexts';
+
+function MyComponent({ runId }: { runId: string }) {
+  const { contexts, updateContext, hasContexts } = useDynamicContexts(runId);
+  
+  const handleApplyEdit = async (newCode: string) => {
+    await updateContext('main_file', newCode, 'Applied user edit');
+  };
+  
+  return (
+    <div>
+      {hasContexts && <p>Tracking {Object.keys(contexts).length} contexts</p>}
+    </div>
+  );
+}
+```
+
+#### Pattern 3: Auto-Detection from AI Responses
+
+Automatically enabled in `finalizeExecutionThunk`:
+
+```typescript
+// Detects updated context XML in AI responses
+// Extracts and updates contexts automatically
+await dispatch(detectAndUpdateContextsFromResponse({
+  runId,
+  responseContent: aiResponse,
+  autoUpdateEnabled: true
+}));
+```
+
+### Database Schema
+
+**Column**: `dynamic_contexts` (JSONB)
+
+**Structure**:
+```json
+{
+  "file_1": {
+    "contextId": "file_1",
+    "currentVersion": 3,
+    "currentContent": "...",
+    "versions": [
+      {
+        "version": 1,
+        "content": "...",
+        "timestamp": "2025-12-01T...",
+      },
+      {
+        "version": 2,
+        "content": "...",
+        "timestamp": "2025-12-01T...",
+        "changesSummary": "Added function"
+      }
+    ],
+    "metadata": {
+      "type": "code",
+      "language": "typescript",
+      "filename": "app.ts"
+    },
+    "createdAt": "2025-12-01T...",
+    "updatedAt": "2025-12-01T..."
+  }
+}
+```
+
+### Component Integration
+
+**ContextAwarePromptCompactModal** ✅ - Migrated to Redux system
+
+```typescript
+<ContextAwarePromptCompactModal
+  isOpen={isOpen}
+  onClose={onClose}
+  promptId="code-helper"
+  initialContext={codeContent}
+  contextType="code"
+  contextLanguage="typescript"
+  onContextChange={(newContent, version) => {
+    console.log(`Context updated to v${version}`);
+  }}
+  onContextUpdateReady={(updateFn) => {
+    // Store updateFn to call when user makes changes
+    contextUpdateRef.current = updateFn;
+  }}
+/>
+```
+
+### Key Files
+
+```
+lib/redux/prompt-execution/
+├── types/dynamic-context.ts           # Type definitions
+├── slice.ts                           # Actions (init, update, set, remove, clear)
+├── selectors.ts                       # Context selectors
+├── utils/context-formatter.ts         # XML formatting/parsing
+└── thunks/
+    ├── startInstanceThunk.ts          # Accepts initialContexts
+    ├── executeMessageThunk.ts         # Injects contexts
+    ├── updateDynamicContextThunk.ts   # Manual updates
+    ├── detectContextUpdatesThunk.ts   # Auto-detection
+    ├── finalizeExecutionThunk.ts      # Auto-detect + save
+    └── loadRunThunk.ts                # Restore contexts
+
+features/prompts/hooks/
+└── useDynamicContexts.ts              # React integration
+
+features/prompts/components/results-display/
+└── ContextAwarePromptCompactModal.tsx # Example usage
+```
+
+### Benefits
+
+1. **Token Optimization**: Only current version in content, history in metadata
+2. **Version Tracking**: Complete history of changes
+3. **Auto-Detection**: Can extract updates from AI responses
+4. **DB Persistence**: Full state saved with runs
+5. **Redux Integration**: Part of unified execution system
+6. **Multiple Contexts**: Support for tracking multiple files/contexts per run
+7. **Type Safety**: Full TypeScript support
+
+### Future Enhancements
+
+- Diff visualization in UI
+- Context merge/conflict resolution
+- Context templates
+- Multi-file project tracking
+- Unified with editable resources
+
+---
+
 ## Next Steps
 
 ### Apply Gold Standard to Remaining Components

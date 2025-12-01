@@ -5,7 +5,7 @@ import {
   type CreateCanvasItemInput,
   type UpdateCanvasItemInput,
   type CanvasItemFilters,
-} from '@/services/canvasItemsService';
+} from '@/features/canvas/services/canvasItemsService';
 import { toast } from 'sonner';
 
 /**

@@ -27,7 +27,7 @@ import {
   CheckCircle2, XCircle, GitBranch, Users, Database, Server, Globe, 
   Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle, Camera, ExternalLink
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout, getOrgChartLayout } from './layout-utils';
 import { getOrgChartRoleIcon, formatDiagramType } from './ui-utils';
 

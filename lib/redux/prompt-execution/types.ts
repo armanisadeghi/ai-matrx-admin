@@ -8,6 +8,7 @@
  */
 import { PromptSettings, PromptVariable } from '@/features/prompts/types/core';
 import type { Resource } from '@/features/prompts/types/resources';
+import type { ArchivedContextsMap } from './types/dynamic-context';
 
 export interface ExecutionConfig {
   auto_run: boolean;
@@ -39,6 +40,12 @@ export interface ConversationMessage {
     totalTime?: number;
     tokens?: number;
     cost?: number;
+    /** 
+     * Archived contexts for non-current messages.
+     * Used to track which context versions existed at this point in the conversation
+     * without including their full content (for token optimization).
+     */
+    archivedContexts?: ArchivedContextsMap;
     [key: string]: any;
   };
 }
@@ -178,6 +185,7 @@ export interface ScopedVariables {
  * - currentInputs: Isolated input state, changes on every keystroke
  * - resources: Isolated attachments, changes on user interaction
  * - uiState: Isolated UI controls, changes on user interaction
+ * - dynamicContexts: Isolated versioned contexts, changes on context updates
  */
 export interface PromptExecutionState {
   // Core instances (stable after creation)
@@ -196,6 +204,13 @@ export interface PromptExecutionState {
 
   uiState: {
     [runId: string]: InstanceUIState;
+  };
+
+  // Dynamic contexts (versioned content that updates during execution)
+  dynamicContexts: {
+    [runId: string]: {
+      [contextId: string]: import('./types/dynamic-context').DynamicContextState;
+    };
   };
 
   // Quick lookup maps
@@ -217,6 +232,11 @@ export interface StartInstancePayload {
   initialMessage?: string;
   runId?: string;
   resources?: Resource[];
+  initialContexts?: Array<{
+    contextId: string;
+    content: string;
+    metadata: import('./types/dynamic-context').ContextMetadata;
+  }>;
 }
 
 export interface ExecuteMessagePayload {

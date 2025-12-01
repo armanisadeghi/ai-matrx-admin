@@ -6,7 +6,7 @@ import {
   TrendingUp, TrendingDown, Minus, Plus, Eye, EyeOff, Sparkles,
   Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ComparisonCriterion {
   name: string;

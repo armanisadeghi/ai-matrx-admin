@@ -26,7 +26,6 @@ export function PromptRunnerModal({
     title,
     runId,
     customMessage,
-    displayVariant = 'standard',
 }: PromptRunnerModalProps) {
     // Shared PromptRunner props
     const promptRunnerProps = {
@@ -41,13 +40,7 @@ export function PromptRunnerModal({
         onClose,
         isActive: isOpen,
         customMessage,
-        displayVariant,
     };
-
-    // Compact display renders its own backdrop and positioning - no Dialog wrapper needed
-    if (displayVariant === 'compact') {
-        return isOpen ? <PromptRunner {...promptRunnerProps} /> : null;
-    }
 
     // Standard display needs Dialog wrapper with fixed dimensions
     return (

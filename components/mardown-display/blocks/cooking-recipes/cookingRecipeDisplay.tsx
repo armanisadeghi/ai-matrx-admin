@@ -4,7 +4,7 @@ import {
   Maximize2, Minimize2, Timer, Flame, UtensilsCrossed,
   AlertCircle, Sparkles, Plus, Minus, ExternalLink
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface Ingredient {
   amount: string;

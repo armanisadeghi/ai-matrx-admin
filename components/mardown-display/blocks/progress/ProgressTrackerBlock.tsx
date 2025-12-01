@@ -7,7 +7,7 @@ import {
   BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles,
   ExternalLink, Upload
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertProgressToTasks } from '@/features/tasks/utils/importConverters';
 

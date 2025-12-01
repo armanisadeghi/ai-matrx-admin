@@ -3,8 +3,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectCanvasIsOpen, selectCanvasContent, setCanvasAvailable } from "@/lib/redux/slices/canvasSlice";
-import { CanvasRenderer } from "./CanvasRenderer";
+import { selectCanvasIsOpen, selectCanvasContent, setCanvasAvailable } from "@/features/canvas/redux/canvasSlice";
+import { CanvasRenderer } from "../../../features/canvas/core/CanvasRenderer";
 
 interface AdaptiveLayoutProps {
     header?: React.ReactNode;

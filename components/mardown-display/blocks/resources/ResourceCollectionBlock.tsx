@@ -6,7 +6,7 @@ import {
   Award, Bookmark, Eye, Play, Download, Globe, Code, 
   Users, Zap, Target, TrendingUp, Heart
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ResourceItem {
   id: string;

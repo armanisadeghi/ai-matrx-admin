@@ -6,7 +6,7 @@ import {
   Bug, Wrench, Zap, Clock, Star, Copy, Check, ArrowRight,
   AlertCircle, Info, Target, BookOpen, Users, MessageSquare, Upload
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
 import { convertTroubleshootingToTasks } from '@/features/tasks/utils/importConverters';
 

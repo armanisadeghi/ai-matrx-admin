@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ContextAwarePromptRunner } from '@/features/prompts/components/results-display/ContextAwarePromptRunner';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { getBuiltinPrompt } from '@/lib/redux/thunks/promptSystemThunks';
 import { selectCachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
@@ -66,26 +66,26 @@ export function ContextAwareCodeEditorModal({
     selection,
     context,
     title = 'AI Code Editor (Context-Aware)',
-    customMessage="Describe the specific code changes you want to make.",
+    customMessage = "Describe the specific code changes you want to make.",
     countdownSeconds,
     displayVariant = 'standard',
 }: ContextAwareCodeEditorModalProps) {
     const dispatch = useAppDispatch();
     const { open: openCanvas, close: closeCanvas } = useCanvas();
-    
+
     const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
-    
+
     const language = normalizeLanguage(rawLanguage);
     const currentCodeRef = useRef(code);
     const currentVersionRef = useRef(1);
     const updateContextRef = useRef<((content: string, summary?: string) => void) | null>(null);
     const defaultBuiltinId = builtinId || getBuiltinId(promptKey);
-    
+
     // Use centralized prompt cache
     const promptData = useAppSelector(state => {
         const cached = selectCachedPrompt(state, defaultBuiltinId);
         if (!cached) return null;
-        
+
         return {
             id: cached.id,
             name: cached.name,
@@ -95,16 +95,16 @@ export function ContextAwareCodeEditorModal({
             settings: cached.settings,
         } as PromptData;
     });
-    
+
     useEffect(() => {
         currentCodeRef.current = code;
     }, [code]);
-    
+
     // Fetch builtin prompt using centralized system
     useEffect(() => {
         if (open && !promptData) {
             setIsLoadingPrompt(true);
-            
+
             dispatch(getBuiltinPrompt({ promptId: defaultBuiltinId }))
                 .unwrap()
                 .then(({ promptData: fetchedPrompt }) => {
@@ -112,7 +112,7 @@ export function ContextAwareCodeEditorModal({
                     const hasDynamicContext = fetchedPrompt.variableDefaults?.some(
                         v => v.name === DYNAMIC_CONTEXT_VARIABLE
                     );
-                    
+
                     if (!hasDynamicContext) {
                         console.warn(
                             `⚠️  Prompt "${fetchedPrompt.name}" doesn't have "${DYNAMIC_CONTEXT_VARIABLE}" variable.`,
@@ -128,30 +128,30 @@ export function ContextAwareCodeEditorModal({
                 });
         }
     }, [open, defaultBuiltinId, promptData, dispatch]);
-    
+
     // Reset when modal closes
     useEffect(() => {
         if (!open) {
             closeCanvas();
         }
     }, [open, closeCanvas]);
-    
+
     const handleResponseComplete = useCallback((result: any) => {
         const { response } = result;
-        
+
         if (!response) return;
-        
+
         // Try to parse code edits from the response
         const parsed = parseCodeEdits(response);
-        
+
         // No edits found - just continue the conversation
         if (!parsed.success || parsed.edits.length === 0) {
             return;
         }
-        
+
         // Validate edits against current code
         const validation = validateEdits(currentCodeRef.current, parsed.edits);
-        
+
         if (!validation.valid) {
             // Show validation errors in canvas
             openCanvas({
@@ -168,10 +168,10 @@ export function ContextAwareCodeEditorModal({
             });
             return;
         }
-        
+
         // Apply edits to generate preview
         const result_apply = applyCodeEdits(currentCodeRef.current, parsed.edits);
-        
+
         if (!result_apply.success) {
             // Show application errors in canvas
             openCanvas({
@@ -188,12 +188,12 @@ export function ContextAwareCodeEditorModal({
             });
             return;
         }
-        
+
         const newCode = result_apply.code || '';
-        
+
         // Get diff stats for the title
         const diffStats = getDiffStats(currentCodeRef.current, newCode);
-        
+
         // Build rich title with badges and colors
         const editsCount = parsed.edits.length;
         const titleNode = (
@@ -216,7 +216,7 @@ export function ContextAwareCodeEditorModal({
                 )}
             </>
         );
-        
+
         // Success! Open canvas with code preview
         openCanvas({
             type: 'code_preview',
@@ -230,18 +230,18 @@ export function ContextAwareCodeEditorModal({
                     // Increment version BEFORE calling onCodeChange
                     const nextVersion = currentVersionRef.current + 1;
                     currentVersionRef.current = nextVersion;
-                    
+
                     // Call the context update function to add tombstone for old version
                     if (updateContextRef.current) {
                         updateContextRef.current(newCode, parsed.explanation || 'Applied code edits');
                     }
-                    
+
                     // Update our ref so next edits work on the new code
                     currentCodeRef.current = newCode;
-                    
+
                     // Update the code in parent component with the NEW version
                     onCodeChange(newCode, nextVersion);
-                    
+
                     // Canvas will now show success state with options to close or continue
                 },
                 onDiscard: () => {
@@ -259,67 +259,68 @@ export function ContextAwareCodeEditorModal({
             },
         });
     }, [language, openCanvas, closeCanvas, onCodeChange]);
-    
+
     // Handle context version changes (for logging/verification)
     const handleContextChange = useCallback((newContent: string, version: number) => {
         // Note: We manage version in onApply, this is just for logging
         // and verifying the ContextVersionManager is in sync
     }, []);
-    
+
     // Receive the updateContext function from ContextAwarePromptRunner
     const handleContextUpdateReady = useCallback((updateFn: (content: string, summary?: string) => void) => {
         updateContextRef.current = updateFn;
         console.log('✅ Context update function ready');
     }, []);
-    
+
     if (!open) return null;
-    
+
     // Shared content component
     const content = isLoadingPrompt ? (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="text-center">
-                            <div className="text-muted-foreground">Loading prompt...</div>
-                        </div>
-                    </div>
-                ) : promptData ? (
-                    <ContextAwarePromptRunner
-                        initialContext={code}
-                        contextType="code"
-                        contextLanguage={language}
-                        promptData={promptData}
-                        staticVariables={{
-                            ...(selection && { selection }),
-                            ...(context && { context }),
-                        }}
-                        executionConfig={{
-                            auto_run: false,
-                            allow_chat: true,
-                            show_variables: false,
-                            apply_variables: true,
-                        }}
-                        onResponseComplete={handleResponseComplete}
-                        onContextChange={handleContextChange}
-                        onContextUpdateReady={handleContextUpdateReady}
-                        title={title}
-                        onClose={() => onOpenChange(false)}
-                        isActive={open}
-                        customMessage={customMessage}
-                        countdownSeconds={countdownSeconds}
+        <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+                <div className="text-muted-foreground">Loading prompt...</div>
+            </div>
+        </div>
+    ) : promptData ? (
+        <ContextAwarePromptRunner
+            initialContext={code}
+            contextType="code"
+            contextLanguage={language}
+            promptData={promptData}
+            staticVariables={{
+                ...(selection && { selection }),
+                ...(context && { context }),
+            }}
+            executionConfig={{
+                auto_run: false,
+                allow_chat: true,
+                show_variables: false,
+                apply_variables: true,
+                track_in_runs: true,
+            }}
+            onResponseComplete={handleResponseComplete}
+            onContextChange={handleContextChange}
+            onContextUpdateReady={handleContextUpdateReady}
+            title={title}
+            onClose={() => onOpenChange(false)}
+            isActive={open}
+            customMessage={customMessage}
+            countdownSeconds={countdownSeconds}
             displayVariant={displayVariant}
-                    />
-                ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="text-center text-muted-foreground">
-                            Failed to load prompt
-                        </div>
-                    </div>
+        />
+    ) : (
+        <div className="flex items-center justify-center h-full">
+            <div className="text-center text-muted-foreground">
+                Failed to load prompt
+            </div>
+        </div>
     );
-    
+
     // Compact display renders its own backdrop and positioning - no Dialog wrapper
     if (displayVariant === 'compact') {
         return content;
     }
-    
+
     // Standard display needs Dialog wrapper
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

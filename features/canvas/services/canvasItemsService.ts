@@ -1,4 +1,4 @@
-import { CanvasContent } from '@/lib/redux/slices/canvasSlice';
+import { CanvasContent } from '@/features/canvas/redux/canvasSlice';
 import { supabase } from '@/utils/supabase/client';
 
 export interface CanvasItemRow {
@@ -73,7 +73,7 @@ async function generateContentHash(content: CanvasContent): Promise<string> {
  */
 function extractTitle(content: CanvasContent, index?: number): string {
   if (content.metadata?.title) {
-    return content.metadata.title;
+    return String(content.metadata.title);
   }
   
   const typeLabel = content.type.charAt(0).toUpperCase() + content.type.slice(1);

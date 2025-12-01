@@ -28,6 +28,7 @@ import {
   selectMergedVariables,
   selectPromptSettings,
   selectResources,
+  selectDynamicContexts,
 } from '../selectors';
 import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
 import { generateRunNameFromVariables, generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
@@ -44,13 +45,14 @@ async function saveRunToDBAsync(
   variables: Record<string, string>,
   sourceType: string,
   sourceId: string,
-  settings: Record<string, any>
+  settings: Record<string, any>,
+  dynamicContexts?: Record<string, any>
 ) {
   try {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    await supabase.from('ai_runs').insert({
+    const insertData: Record<string, any> = {
       id: runId,
       user_id: user?.id,
       source_type: sourceType,
@@ -60,9 +62,16 @@ async function saveRunToDBAsync(
       settings,
       variable_values: variables,
       status: 'active',
-    });
+    };
 
-    console.log('✅ Run saved to DB');
+    // Include dynamic contexts if they exist
+    if (dynamicContexts && Object.keys(dynamicContexts).length > 0) {
+      insertData.dynamic_contexts = dynamicContexts;
+    }
+
+    await supabase.from('ai_runs').insert(insertData);
+
+    console.log('✅ Run saved to DB', dynamicContexts ? `(with ${Object.keys(dynamicContexts).length} contexts)` : '');
   } catch (err) {
     console.error('❌ DB save failed:', err);
   }
@@ -73,15 +82,27 @@ async function saveRunToDBAsync(
  */
 async function updateRunMessagesInDBAsync(
   runId: string,
-  messages: ConversationMessage[]
+  messages: ConversationMessage[],
+  dynamicContexts?: Record<string, any>
 ) {
   try {
     const supabase = createClient();
+    
+    const updateData: Record<string, any> = {
+      messages,
+      status: 'active',
+    };
+
+    // Include dynamic contexts if they exist
+    if (dynamicContexts !== undefined) {
+      updateData.dynamic_contexts = dynamicContexts;
+    }
+
     await supabase.from('ai_runs')
-      .update({ messages, status: 'active' })
+      .update(updateData)
       .eq('id', runId);
 
-    console.log('✅ Run updated in DB');
+    console.log('✅ Run updated in DB', dynamicContexts ? `(with ${Object.keys(dynamicContexts).length} contexts)` : '');
   } catch (err) {
     console.error('❌ DB update failed:', err);
   }
@@ -121,8 +142,9 @@ export const executeMessage = createAsyncThunk<
 
       dispatch(setInstanceStatus({ runId, status: 'executing' }));
 
-      // ========== GET RESOURCES BEFORE CLEARING ==========
+      // ========== GET RESOURCES AND CONTEXTS BEFORE CLEARING ==========
       const resources = selectResources(state, runId);
+      const dynamicContexts = selectDynamicContexts(state, runId);
       const mergedVariables = selectMergedVariables(state, runId);
 
       // ========== PROCESS MESSAGES (CENTRALIZED) ==========
@@ -133,6 +155,7 @@ export const executeMessage = createAsyncThunk<
         userInput: inputToUse.trim(),
         resources,
         variables: mergedVariables,
+        dynamicContexts,
       });
 
       // Replace instance messages with processed versions
@@ -191,6 +214,7 @@ export const executeMessage = createAsyncThunk<
       if (instance.requiresVariableReplacement && instance.executionConfig.track_in_runs) {
         // First message: create run in DB
         const mergedVariables = selectMergedVariables(getState(), runId);
+        const contextsToSave = selectDynamicContexts(getState(), runId);
 
         // Try to generate name from variables first
         let runName = generateRunNameFromVariables(mergedVariables, instance.variableDefaults);
@@ -213,14 +237,16 @@ export const executeMessage = createAsyncThunk<
           mergedVariables,
           instance.runTracking.sourceType,
           instance.runTracking.sourceId,
-          instance.settings
+          instance.settings,
+          contextsToSave
         ).then(() => {
           dispatch(setRunId({ runId, runName, savedToDatabase: true }));
         });
 
       } else if (instance.runTracking.savedToDatabase) {
         // Subsequent message: update run
-        updateRunMessagesInDBAsync(runId, freshInstance.messages);
+        const contextsToSave = selectDynamicContexts(getState(), runId);
+        updateRunMessagesInDBAsync(runId, freshInstance.messages, contextsToSave);
       }
 
       // Return API promise

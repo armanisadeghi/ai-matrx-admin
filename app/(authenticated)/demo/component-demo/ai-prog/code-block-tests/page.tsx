@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import MultiFileCodeEditor, { type CodeFile as MultiCodeFile } from '@/features/code-editor/components/code-block/MultiFileCodeEditor';
-import { CODE_FILES, type CodeFile } from './constants';
+import { CODE_FILES, type CodeFile } from '../sample-data';
 
 export default function CodeBlockTestPage() {
     const [selectedFile, setSelectedFile] = useState<CodeFile>('types');

@@ -1,5 +1,5 @@
 import React from 'react';
-import { SharedCanvasView } from '@/components/canvas/shared/SharedCanvasView';
+import { SharedCanvasView } from '@/features/canvas/shared/SharedCanvasView';
 
 export const metadata = {
     title: 'Shared Canvas',

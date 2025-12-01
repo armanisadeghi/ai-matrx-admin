@@ -11,7 +11,7 @@ import { HTMLPageService } from "@/features/html-pages/services/htmlPageService"
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { Globe, Loader2 } from "lucide-react";
-import { useCanvas } from "@/hooks/useCanvas";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";

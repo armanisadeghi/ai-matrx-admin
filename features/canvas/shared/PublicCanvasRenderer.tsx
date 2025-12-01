@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { CanvasContent } from '@/lib/redux/slices/canvasSlice';
+import type { CanvasContent } from '@/features/canvas/redux/canvasSlice';
 
 // Import all interactive blocks
 import MultipleChoiceQuiz from '@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz';

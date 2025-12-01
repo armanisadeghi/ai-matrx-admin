@@ -6,7 +6,7 @@ import {
   CheckCircle2, Target, Lightbulb, Award, Eye, Filter,
   BarChart3, Users, Briefcase, Scale, Clock, Star
 } from 'lucide-react';
-import { useCanvas } from '@/hooks/useCanvas';
+import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface ResearchFinding {
   id: string;

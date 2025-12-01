@@ -6,7 +6,7 @@ import FlashcardItem from "./FlashcardItem";
 import { parseFlashcards } from "./flashcard-parser";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/styles/themes/utils";
-import { useCanvas } from "@/hooks/useCanvas";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 
 interface FlashcardsBlockProps {
     content: string;
