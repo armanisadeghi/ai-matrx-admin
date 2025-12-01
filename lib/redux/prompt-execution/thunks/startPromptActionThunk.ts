@@ -68,8 +68,6 @@ export interface StartActionPayload {
  *   }
  * })).unwrap();
  * 
- * console.log('Instance ID:', result.runId);
- * console.log('Broker resolved:', result.brokerResolvedCount, 'variables');
  * ```
  */
 export const startPromptAction = createAsyncThunk<
@@ -102,7 +100,6 @@ export const startPromptAction = createAsyncThunk<
           throw new Error('Action is already being fetched. Please try again.');
         }
 
-        console.log('📥 Fetching action from database:', actionId);
         dispatch(setFetchStatus({ actionId, status: 'loading' }));
 
         const actionData = await getAction(actionId);
@@ -209,15 +206,8 @@ export const startPromptAction = createAsyncThunk<
       const userProvidedCount = Object.keys(userProvidedVariables).length;
       const totalVariableCount = Object.keys(finalVariables).length;
 
-      console.log('🎯 Final variables:', {
-        total: totalVariableCount,
-        fromBrokers: Object.keys(resolvedVariables).length,
-        hardcoded: Object.keys(action.hardcoded_values).length,
-        userProvided: userProvidedCount,
-      });
 
       // ========== STEP 6: Execute via Standard Engine ==========
-      console.log('🚀 Executing action via prompt instance...');
 
       const createdRunId = await dispatch(
         startPromptInstance({
@@ -245,14 +235,6 @@ export const startPromptAction = createAsyncThunk<
         fullyResolved: brokerResolvedCount === brokerIds.length,
       };
 
-      console.log('✅ Action executed successfully:', {
-        actionId,
-        actionName: action.name,
-        runId: createdRunId,
-        brokerResolvedCount,
-        totalVariableCount,
-        fullyResolved: result.fullyResolved,
-      });
 
       return result;
     } catch (error) {

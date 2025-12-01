@@ -112,7 +112,6 @@ export const openPromptExecution = createAsyncThunk<
       resources: resources || [], // Pass resources to startPromptInstance
     })).unwrap();
 
-    console.log(`✅ Created execution instance: ${createdRunId} for display: ${result_display}`);
 
     // Get prompt data from the created instance (it's now cached)
     const state = getState() as RootState;

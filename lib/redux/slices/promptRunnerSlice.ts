@@ -18,7 +18,7 @@ export interface PromptRunnerState {
   activeModal: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
-    runId: string | null; // ⭐ Added runId for unified system
+    runId: string | null; // Added runId for unified system
     taskId: string | null;
     openedAt: number | null;
   };
@@ -27,7 +27,7 @@ export interface PromptRunnerState {
   compactModal: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
-    runId: string | null; // ⭐ Added runId for unified system
+    runId: string | null; // Added runId for unified system
     taskId: string | null;
     openedAt: number | null;
   };
@@ -36,7 +36,7 @@ export interface PromptRunnerState {
   inlineOverlay: {
     isOpen: boolean;
     result: string | null;
-    runId: string | null; // ⭐ Added runId for unified system
+    runId: string | null; // Added runId for unified system
     taskId: string | null;
     originalText: string | null;
     promptName: string | null;
@@ -52,7 +52,7 @@ export interface PromptRunnerState {
   sidebarResult: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
-    runId: string | null; // ⭐ Added runId for unified system
+    runId: string | null; // Added runId for unified system
     taskId: string | null;
     position: 'left' | 'right';
     size: 'sm' | 'md' | 'lg';
@@ -63,7 +63,7 @@ export interface PromptRunnerState {
   flexiblePanel: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
-    runId: string | null; // ⭐ Added runId for unified system
+    runId: string | null; // Added runId for unified system
     taskId: string | null;
     position: 'left' | 'right' | 'top' | 'bottom';
     openedAt: number | null;
@@ -78,7 +78,7 @@ export interface PromptRunnerState {
     createdAt: number;
     promptData?: any;
     executionConfig?: any;
-    runId?: string; // ⭐ Added runId for unified system
+    runId?: string; // Added runId for unified system
     taskId?: string;
     isStreaming?: boolean;
   }>;
@@ -138,7 +138,7 @@ const promptRunnerSlice = createSlice({
       state.activeModal = {
         isOpen: true,
         config: action.payload,
-        runId: action.payload.runId || null, // ⭐ Extract runId from config
+        runId: action.payload.runId || null, // Extract runId from config
         taskId: null,
         openedAt: Date.now(),
       };
@@ -153,7 +153,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.activeModal.config.promptData?.name || state.activeModal.config.title || 'Unknown Prompt',
           displayType: 'modal-full' as const,
           timestamp: state.activeModal.openedAt,
-          runId: state.activeModal.runId, // ⭐ Include runId for reference
+          runId: state.activeModal.runId, // Include runId for reference
           taskId: state.activeModal.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -202,7 +202,7 @@ const promptRunnerSlice = createSlice({
       state.compactModal = {
         isOpen: true,
         config: action.payload,
-        runId: action.payload.runId || null, // ⭐ Extract runId from config
+        runId: action.payload.runId || null, // Extract runId from config
         taskId: (action.payload as any).taskId || null,
         openedAt: Date.now(),
       };
@@ -217,7 +217,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.compactModal.config.promptData?.name || state.compactModal.config.title || 'Unknown Prompt',
           displayType: 'modal-compact' as const,
           timestamp: state.compactModal.openedAt,
-          runId: state.compactModal.runId, // ⭐ Include runId for reference
+          runId: state.compactModal.runId, // Include runId for reference
           taskId: state.compactModal.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -270,7 +270,7 @@ const promptRunnerSlice = createSlice({
       state.inlineOverlay = {
         isOpen: true,
         result: action.payload.result || null,
-        runId: action.payload.runId || null, // ⭐ Extract runId
+        runId: action.payload.runId || null, // Extract runId
         taskId: action.payload.taskId || null,
         originalText: action.payload.originalText,
         promptName: action.payload.promptName,
@@ -310,7 +310,7 @@ const promptRunnerSlice = createSlice({
       state.sidebarResult = {
         isOpen: true,
         config: action.payload.config,
-        runId: action.payload.config.runId || null, // ⭐ Extract runId from config
+        runId: action.payload.config.runId || null, // Extract runId from config
         taskId: null,
         position: action.payload.position || 'right',
         size: action.payload.size || 'md',
@@ -327,7 +327,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.sidebarResult.config.promptData?.name || state.sidebarResult.config.title || 'Unknown Prompt',
           displayType: 'sidebar' as const,
           timestamp: state.sidebarResult.openedAt,
-          runId: state.sidebarResult.runId, // ⭐ Include runId for reference
+          runId: state.sidebarResult.runId, // Include runId for reference
           taskId: state.sidebarResult.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -383,7 +383,7 @@ const promptRunnerSlice = createSlice({
       state.flexiblePanel = {
         isOpen: true,
         config: action.payload.config,
-        runId: action.payload.config.runId || null, // ⭐ Extract runId from config
+        runId: action.payload.config.runId || null, // Extract runId from config
         taskId: null,
         position: action.payload.position || 'right',
         openedAt: Date.now(),
@@ -399,7 +399,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.flexiblePanel.config.promptData?.name || state.flexiblePanel.config.title || 'Unknown Prompt',
           displayType: 'flexible-panel' as const,
           timestamp: state.flexiblePanel.openedAt,
-          runId: state.flexiblePanel.runId, // ⭐ Include runId for reference
+          runId: state.flexiblePanel.runId, // Include runId for reference
           taskId: state.flexiblePanel.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -460,7 +460,7 @@ const promptRunnerSlice = createSlice({
         createdAt: Date.now(),
         promptData: action.payload.promptData,
         executionConfig: action.payload.executionConfig,
-        runId: action.payload.runId, // ⭐ Store runId
+        runId: action.payload.runId, // Store runId
         taskId: action.payload.taskId,
         isStreaming: action.payload.isStreaming,
       });

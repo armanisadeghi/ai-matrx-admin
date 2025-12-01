@@ -20,7 +20,7 @@ import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 import MarkdownStream from '@/components/Markdown';
-import { UnifiedContextMenu } from '@/components/unified';
+import { UnifiedContextMenu } from '@/features/context-menu';
 
 // Dynamic imports for heavy components (only load when needed)
 const TuiEditorContent = dynamic(

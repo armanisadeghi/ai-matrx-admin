@@ -49,7 +49,7 @@ export const startPromptInstance = createAsyncThunk<
   async (payload, { dispatch, getState }) => {
     const {
       promptId,
-      promptSource = 'prompts',
+      promptSource,
       executionConfig,
       variables = {},
       initialMessage = '',
@@ -126,6 +126,7 @@ export const startPromptInstance = createAsyncThunk<
           role: msg.role as 'system' | 'user' | 'assistant',
           content: msg.content,
           timestamp: '', // Will be set during first execution
+          metadata: { fromTemplate: true }, // Mark as originating from template
         })),
 
         // First execution flag: templates need variable replacement

@@ -539,3 +539,35 @@ export const selectRequiresVariableReplacement = createSelector(
   ],
   (instance) => instance?.requiresVariableReplacement ?? false
 );
+
+// ========== TEMPLATE MESSAGE METADATA SELECTORS ==========
+
+/**
+ * Select only messages that originated from templates (have metadata.fromTemplate)
+ */
+export const selectMessagesFromTemplate = createSelector(
+  [
+    (state: RootState, runId: string) => selectMessages(state, runId),
+  ],
+  (messages) => messages.filter(msg => msg.metadata?.fromTemplate)
+);
+
+/**
+ * Select only user-created messages (NOT from templates)
+ */
+export const selectUserCreatedMessages = createSelector(
+  [
+    (state: RootState, runId: string) => selectMessages(state, runId),
+  ],
+  (messages) => messages.filter(msg => !msg.metadata?.fromTemplate)
+);
+
+/**
+ * Get execution config for an instance
+ */
+export const selectExecutionConfig = createSelector(
+  [
+    (state: RootState, runId: string) => selectInstance(state, runId),
+  ],
+  (instance) => instance?.executionConfig ?? null
+);

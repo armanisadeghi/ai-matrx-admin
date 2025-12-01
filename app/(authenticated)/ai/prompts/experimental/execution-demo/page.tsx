@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UnifiedContextMenu } from "@/components/unified";
+import { UnifiedContextMenu } from "@/features/context-menu";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useUnifiedContextMenu } from "@/features/prompt-builtins/hooks";
 import { PLACEMENT_TYPES } from "@/features/prompt-builtins/constants";

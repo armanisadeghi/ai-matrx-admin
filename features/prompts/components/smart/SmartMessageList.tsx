@@ -6,8 +6,7 @@ import {
     selectMessages,
     selectInstance,
     selectShowSystemMessage,
-    selectShowTemplateMessages,
-    selectRequiresVariableReplacement
+    selectShowTemplateMessages
 } from "@/lib/redux/prompt-execution/selectors";
 import { PromptUserMessage } from "../builder/PromptUserMessage";
 import { PromptAssistantMessage } from "../builder/PromptAssistantMessage";
@@ -39,7 +38,9 @@ export function SmartMessageList({
     const instance = useAppSelector(state => selectInstance(state, runId));
     const showSystemMessage = useAppSelector(state => selectShowSystemMessage(state, runId));
     const showTemplateMessages = useAppSelector(state => selectShowTemplateMessages(state, runId));
-    const requiresVariableReplacement = useAppSelector(state => selectRequiresVariableReplacement(state, runId));
+    
+    const executionConfig = instance?.executionConfig;
+    const requiresVariableReplacement = instance?.requiresVariableReplacement ?? false;
 
     const currentTaskId = instance?.execution?.currentTaskId;
     // Select ONLY the completion status, NOT the text
@@ -50,20 +51,48 @@ export function SmartMessageList({
     // Only streaming if we have a taskId AND response hasn't ended
     const isStreaming = !!currentTaskId && !isResponseEnded;
 
+    // Filter messages based on multiple criteria
+    const visibleMessages = messages.filter(msg => {
+        // Hide system messages if showSystemMessage is false
+        if (msg.role === 'system' && !showSystemMessage) return false;
+        
+        // Application-level: Hide template messages AFTER execution if show_variables is false
+        // (template messages contain variable placeholders we don't want users to see)
+        if (!requiresVariableReplacement && msg.metadata?.fromTemplate && executionConfig?.show_variables === false) {
+            return false;
+        }
+        
+        return true;
+    });
+
+    // Determine if we should show ANY messages before first execution
+    // Admin/Creator debug: only show if showTemplateMessages toggle is on
+    const shouldShowMessagesBeforeExecution = !requiresVariableReplacement || showTemplateMessages;
+
     // Auto-scroll to bottom when messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, isStreaming]);
-
-    // Logic to determine if we should show messages
-    // If it's the first run (requires replacement) and we aren't showing templates, hide everything
-    const shouldShowMessages = !requiresVariableReplacement || showTemplateMessages;
+    }, [visibleMessages, isStreaming]);
 
     if (!instance) {
         return null; // Or loading state
     }
 
-    if ((messages.length === 0 || !shouldShowMessages) && !isStreaming) {
+    // Before first execution: respect admin/creator debug toggle
+    if (!shouldShowMessagesBeforeExecution && !isStreaming) {
+        return (
+            <div className={`flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground ${className}`}>
+                <MessageSquare className="w-16 h-16 mb-4" />
+                <p className="text-lg font-medium">{emptyStateMessage}</p>
+                <p className="text-sm mt-2 text-center px-6">
+                    Type your message below to get started
+                </p>
+            </div>
+        );
+    }
+
+    // After first execution: show filtered messages
+    if (visibleMessages.length === 0 && !isStreaming) {
         return (
             <div className={`flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground ${className}`}>
                 <MessageSquare className="w-16 h-16 mb-4" />
@@ -82,12 +111,7 @@ export function SmartMessageList({
 
     return (
         <div className={`${spacingClasses} ${className}`}>
-            {shouldShowMessages && messages.map((msg, idx) => {
-                // Skip system messages if showSystemMessage is false
-                if (msg.role === "system" && !showSystemMessage) {
-                    return null;
-                }
-
+            {visibleMessages.map((msg, idx) => {
                 return (
                     <div key={idx}>
                         {msg.role === "user" ? (
@@ -124,7 +148,7 @@ export function SmartMessageList({
                 <div>
                     <StreamingAssistantMessage
                         taskId={currentTaskId}
-                        messageIndex={messages.length}
+                        messageIndex={visibleMessages.length}
                         compact={compact}
                     />
                 </div>

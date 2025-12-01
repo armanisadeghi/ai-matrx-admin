@@ -97,7 +97,7 @@ export async function processMessagesForExecution(
     resources,
     variables,
   } = options;
-  
+   
   const timestamp = new Date().toISOString();
   
   // ========== STEP 1: Process Template Messages ==========
@@ -109,6 +109,7 @@ export async function processMessagesForExecution(
       role: msg.role,
       content: replaceVariablesInText(msg.content, variables),
       timestamp,
+      metadata: (msg as any).metadata, // Preserve existing metadata (including fromTemplate)
     }));
   } else {
     // Not first execution - no template processing needed
@@ -161,13 +162,16 @@ export async function processMessagesForExecution(
   // ========== STEP 6: Update or Add Final User Message ==========
   if (isFirstExecution && isLastTemplateMessageUser && lastMsg) {
     // Replace the last template message with our combined message
+    // Preserve existing metadata (including fromTemplate marker)
     lastMsg.content = finalUserMessageContent;
+    // metadata already preserved from step 1
   } else {
-    // Add new user message
+    // Add new user message (NOT from template)
     processedMessages.push({
       role: 'user',
       content: finalUserMessageContent,
       timestamp,
+      // No fromTemplate marker for user-created messages
     });
   }
   

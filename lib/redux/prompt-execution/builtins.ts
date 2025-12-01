@@ -16,6 +16,8 @@
  * ```
  */
 
+import type { StartInstancePayload, ExecutionConfig } from './types';
+
 /**
  * PromptBuiltin interface - Metadata/info about a builtin prompt
  * This is NOT the actual prompt data from the database
@@ -180,21 +182,29 @@ export interface PromptBuiltin {
   export function createBuiltinConfig(
     key: string,
     config?: {
-      executionConfig?: Partial<{
-        auto_run: boolean;
-        allow_chat: boolean;
-        show_variables: boolean;
-        apply_variables: boolean;
-        track_in_runs: boolean;
-      }>;
+      executionConfig?: Partial<ExecutionConfig>;
       variables?: Record<string, string>;
       initialMessage?: string;
       runId?: string;
     }
-  ) {
+  ): StartInstancePayload {
+    const defaultExecutionConfig: ExecutionConfig = {
+      auto_run: false,
+      allow_chat: false,
+      show_variables: false,
+      apply_variables: true,
+      track_in_runs: true,
+    };
+
     return {
       promptId: getBuiltinId(key),
       promptSource: 'prompt_builtins' as const,
-      ...config,
+      variables: config?.variables,
+      initialMessage: config?.initialMessage,
+      runId: config?.runId,
+      executionConfig: {
+        ...defaultExecutionConfig,
+        ...config?.executionConfig,
+      },
     };
   }

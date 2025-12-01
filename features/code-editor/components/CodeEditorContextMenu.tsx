@@ -14,7 +14,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { UnifiedContextMenu } from '@/components/unified/UnifiedContextMenu';
+import { UnifiedContextMenu } from '@/features/context-menu/UnifiedContextMenu';
 import { PLACEMENT_TYPES } from '@/features/prompt-builtins/constants';
 import type { editor } from 'monaco-editor';
 

@@ -158,6 +158,7 @@ export function useProgrammaticPromptExecution(): UseProgrammaticPromptExecution
       promptSource,
       executionConfig: executionBehavior,
       variables,
+      resources,
       initialMessage,
       result_display,
       title,
