@@ -27,11 +27,12 @@ import {
   selectCurrentInput,
   selectMergedVariables,
   selectPromptSettings,
+  selectResources,
 } from '../selectors';
 import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
-import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import { generateRunNameFromVariables, generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
 import { createClient } from '@/utils/supabase/client';
+import { processMessagesForExecution } from '../utils/message-builder';
 
 /**
  * Async DB save (non-blocking)
@@ -120,47 +121,31 @@ export const executeMessage = createAsyncThunk<
 
       dispatch(setInstanceStatus({ runId, status: 'executing' }));
 
-      // ========== PROCESS MESSAGES ==========
+      // ========== GET RESOURCES BEFORE CLEARING ==========
+      const resources = selectResources(state, runId);
+      const mergedVariables = selectMergedVariables(state, runId);
+
+      // ========== PROCESS MESSAGES (CENTRALIZED) ==========
+      // All message processing logic is now centralized in processMessagesForExecution
+      const messageResult = await processMessagesForExecution({
+        templateMessages: instance.messages,
+        isFirstExecution: instance.requiresVariableReplacement,
+        userInput: inputToUse.trim(),
+        resources,
+        variables: mergedVariables,
+      });
+
+      // Replace instance messages with processed versions
+      dispatch(clearMessages({ runId }));
+      messageResult.messages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
+      
+      // Mark first execution as complete
       if (instance.requiresVariableReplacement) {
-        // **FIRST EXECUTION**: Apply variables to templates
-        const mergedVariables = selectMergedVariables(state, runId);
-
-        const processedMessages = instance.messages.map(msg => ({
-          role: msg.role,
-          content: replaceVariablesInText(msg.content, mergedVariables),
-          timestamp: new Date().toISOString(), // Add timestamp NOW
-        }));
-
-        // Handle last message (append user input if it's a user message)
-        const lastMsg = processedMessages[processedMessages.length - 1];
-        if (lastMsg?.role === 'user') {
-          lastMsg.content = lastMsg.content + '\n\n' + inputToUse.trim();
-        } else {
-          // Add new user message
-          processedMessages.push({
-            role: 'user',
-            content: inputToUse.trim(),
-            timestamp: new Date().toISOString(),
-          });
-        }
-
-        // Replace instance.messages with processed versions
-        dispatch(clearMessages({ runId }));
-        processedMessages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
         dispatch(setRequiresVariableReplacement({ runId, value: false }));
         dispatch(setShowVariables({ runId, show: false }));
-
-      } else {
-        // **SUBSEQUENT EXECUTIONS**: Simple append
-        const userMessage: ConversationMessage = {
-          role: 'user',
-          content: inputToUse.trim(),
-          timestamp: new Date().toISOString(),
-        };
-        dispatch(addMessage({ runId, message: userMessage }));
       }
 
-      // Clear input
+      // Clear input and resources AFTER building the message
       dispatch(clearCurrentInput({ runId }));
       dispatch(clearResources({ runId }));
 

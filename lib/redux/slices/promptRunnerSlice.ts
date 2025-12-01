@@ -18,6 +18,7 @@ export interface PromptRunnerState {
   activeModal: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
+    runId: string | null; // ⭐ Added runId for unified system
     taskId: string | null;
     openedAt: number | null;
   };
@@ -26,6 +27,7 @@ export interface PromptRunnerState {
   compactModal: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
+    runId: string | null; // ⭐ Added runId for unified system
     taskId: string | null;
     openedAt: number | null;
   };
@@ -34,6 +36,7 @@ export interface PromptRunnerState {
   inlineOverlay: {
     isOpen: boolean;
     result: string | null;
+    runId: string | null; // ⭐ Added runId for unified system
     taskId: string | null;
     originalText: string | null;
     promptName: string | null;
@@ -49,6 +52,7 @@ export interface PromptRunnerState {
   sidebarResult: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
+    runId: string | null; // ⭐ Added runId for unified system
     taskId: string | null;
     position: 'left' | 'right';
     size: 'sm' | 'md' | 'lg';
@@ -59,6 +63,7 @@ export interface PromptRunnerState {
   flexiblePanel: {
     isOpen: boolean;
     config: PromptRunnerModalConfig | null;
+    runId: string | null; // ⭐ Added runId for unified system
     taskId: string | null;
     position: 'left' | 'right' | 'top' | 'bottom';
     openedAt: number | null;
@@ -73,6 +78,7 @@ export interface PromptRunnerState {
     createdAt: number;
     promptData?: any;
     executionConfig?: any;
+    runId?: string; // ⭐ Added runId for unified system
     taskId?: string;
     isStreaming?: boolean;
   }>;
@@ -82,18 +88,21 @@ const initialState: PromptRunnerState = {
   activeModal: {
     isOpen: false,
     config: null,
+    runId: null,
     taskId: null,
     openedAt: null,
   },
   compactModal: {
     isOpen: false,
     config: null,
+    runId: null,
     taskId: null,
     openedAt: null,
   },
   inlineOverlay: {
     isOpen: false,
     result: null,
+    runId: null,
     taskId: null,
     originalText: null,
     promptName: null,
@@ -103,6 +112,7 @@ const initialState: PromptRunnerState = {
   sidebarResult: {
     isOpen: false,
     config: null,
+    runId: null,
     taskId: null,
     position: 'right',
     size: 'md',
@@ -111,6 +121,7 @@ const initialState: PromptRunnerState = {
   flexiblePanel: {
     isOpen: false,
     config: null,
+    runId: null,
     taskId: null,
     position: 'right',
     openedAt: null,
@@ -127,6 +138,7 @@ const promptRunnerSlice = createSlice({
       state.activeModal = {
         isOpen: true,
         config: action.payload,
+        runId: action.payload.runId || null, // ⭐ Extract runId from config
         taskId: null,
         openedAt: Date.now(),
       };
@@ -141,6 +153,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.activeModal.config.promptData?.name || state.activeModal.config.title || 'Unknown Prompt',
           displayType: 'modal-full' as const,
           timestamp: state.activeModal.openedAt,
+          runId: state.activeModal.runId, // ⭐ Include runId for reference
           taskId: state.activeModal.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -165,6 +178,7 @@ const promptRunnerSlice = createSlice({
       state.activeModal = {
         isOpen: false,
         config: null,
+        runId: null,
         taskId: null,
         openedAt: null,
       };
@@ -188,6 +202,7 @@ const promptRunnerSlice = createSlice({
       state.compactModal = {
         isOpen: true,
         config: action.payload,
+        runId: action.payload.runId || null, // ⭐ Extract runId from config
         taskId: (action.payload as any).taskId || null,
         openedAt: Date.now(),
       };
@@ -202,6 +217,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.compactModal.config.promptData?.name || state.compactModal.config.title || 'Unknown Prompt',
           displayType: 'modal-compact' as const,
           timestamp: state.compactModal.openedAt,
+          runId: state.compactModal.runId, // ⭐ Include runId for reference
           taskId: state.compactModal.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -226,6 +242,7 @@ const promptRunnerSlice = createSlice({
       state.compactModal = {
         isOpen: false,
         config: null,
+        runId: null,
         taskId: null,
         openedAt: null,
       };
@@ -239,6 +256,7 @@ const promptRunnerSlice = createSlice({
     // ========== INLINE OVERLAY ==========
     openInlineOverlay: (state, action: PayloadAction<{
       result?: string;
+      runId?: string;
       taskId?: string;
       originalText: string;
       promptName: string | null;
@@ -252,6 +270,7 @@ const promptRunnerSlice = createSlice({
       state.inlineOverlay = {
         isOpen: true,
         result: action.payload.result || null,
+        runId: action.payload.runId || null, // ⭐ Extract runId
         taskId: action.payload.taskId || null,
         originalText: action.payload.originalText,
         promptName: action.payload.promptName,
@@ -263,6 +282,7 @@ const promptRunnerSlice = createSlice({
       state.inlineOverlay = {
         isOpen: false,
         result: null,
+        runId: null,
         taskId: null,
         originalText: null,
         promptName: null,
@@ -290,6 +310,7 @@ const promptRunnerSlice = createSlice({
       state.sidebarResult = {
         isOpen: true,
         config: action.payload.config,
+        runId: action.payload.config.runId || null, // ⭐ Extract runId from config
         taskId: null,
         position: action.payload.position || 'right',
         size: action.payload.size || 'md',
@@ -306,6 +327,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.sidebarResult.config.promptData?.name || state.sidebarResult.config.title || 'Unknown Prompt',
           displayType: 'sidebar' as const,
           timestamp: state.sidebarResult.openedAt,
+          runId: state.sidebarResult.runId, // ⭐ Include runId for reference
           taskId: state.sidebarResult.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -330,6 +352,7 @@ const promptRunnerSlice = createSlice({
       state.sidebarResult = {
         isOpen: false,
         config: null,
+        runId: null,
         taskId: null,
         position: 'right',
         size: 'md',
@@ -360,6 +383,7 @@ const promptRunnerSlice = createSlice({
       state.flexiblePanel = {
         isOpen: true,
         config: action.payload.config,
+        runId: action.payload.config.runId || null, // ⭐ Extract runId from config
         taskId: null,
         position: action.payload.position || 'right',
         openedAt: Date.now(),
@@ -375,6 +399,7 @@ const promptRunnerSlice = createSlice({
           promptName: state.flexiblePanel.config.promptData?.name || state.flexiblePanel.config.title || 'Unknown Prompt',
           displayType: 'flexible-panel' as const,
           timestamp: state.flexiblePanel.openedAt,
+          runId: state.flexiblePanel.runId, // ⭐ Include runId for reference
           taskId: state.flexiblePanel.taskId, // Keep taskId for reference
           responseText, // CRITICAL: Save actual response text for restore
           config: {
@@ -399,6 +424,7 @@ const promptRunnerSlice = createSlice({
       state.flexiblePanel = {
         isOpen: false,
         config: null,
+        runId: null,
         taskId: null,
         position: 'right',
         openedAt: null,
@@ -422,6 +448,7 @@ const promptRunnerSlice = createSlice({
       duration?: number;
       promptData?: any;
       executionConfig?: any;
+      runId?: string;
       taskId?: string;
       isStreaming?: boolean;
     }>) => {
@@ -433,6 +460,7 @@ const promptRunnerSlice = createSlice({
         createdAt: Date.now(),
         promptData: action.payload.promptData,
         executionConfig: action.payload.executionConfig,
+        runId: action.payload.runId, // ⭐ Store runId
         taskId: action.payload.taskId,
         isStreaming: action.payload.isStreaming,
       });
@@ -453,6 +481,8 @@ export const selectIsPromptModalOpen = (state: RootState) =>
   state.promptRunner?.activeModal?.isOpen || false;
 export const selectPromptModalConfig = (state: RootState) =>
   state.promptRunner?.activeModal?.config || null;
+export const selectPromptModalRunId = (state: RootState) =>
+  state.promptRunner?.activeModal?.runId || null;
 export const selectPromptModalTaskId = (state: RootState) =>
   state.promptRunner?.activeModal?.taskId || null;
 export const selectActivePromptModal = (state: RootState) =>
@@ -463,6 +493,8 @@ export const selectIsCompactModalOpen = (state: RootState) =>
   state.promptRunner?.compactModal?.isOpen || false;
 export const selectCompactModalConfig = (state: RootState) =>
   state.promptRunner?.compactModal?.config || null;
+export const selectCompactModalRunId = (state: RootState) =>
+  state.promptRunner?.compactModal?.runId || null;
 export const selectCompactModalTaskId = (state: RootState) =>
   state.promptRunner?.compactModal?.taskId || null;
 
@@ -471,6 +503,8 @@ export const selectIsInlineOverlayOpen = (state: RootState) =>
   state.promptRunner?.inlineOverlay?.isOpen || false;
 export const selectInlineOverlayData = (state: RootState) =>
   state.promptRunner?.inlineOverlay || null;
+export const selectInlineOverlayRunId = (state: RootState) =>
+  state.promptRunner?.inlineOverlay?.runId || null;
 export const selectInlineResult = (state: RootState) =>
   state.promptRunner?.inlineOverlay?.result || null;
 export const selectInlineIsStreaming = (state: RootState) =>
@@ -481,6 +515,8 @@ export const selectIsSidebarResultOpen = (state: RootState) =>
   state.promptRunner?.sidebarResult?.isOpen || false;
 export const selectSidebarResultConfig = (state: RootState) =>
   state.promptRunner?.sidebarResult?.config || null;
+export const selectSidebarResultRunId = (state: RootState) =>
+  state.promptRunner?.sidebarResult?.runId || null;
 export const selectSidebarPosition = (state: RootState) =>
   state.promptRunner?.sidebarResult?.position || 'right';
 export const selectSidebarSize = (state: RootState) =>
@@ -493,6 +529,8 @@ export const selectIsFlexiblePanelOpen = (state: RootState) =>
   state.promptRunner?.flexiblePanel?.isOpen || false;
 export const selectFlexiblePanelConfig = (state: RootState) =>
   state.promptRunner?.flexiblePanel?.config || null;
+export const selectFlexiblePanelRunId = (state: RootState) =>
+  state.promptRunner?.flexiblePanel?.runId || null;
 export const selectFlexiblePanelPosition = (state: RootState) =>
   state.promptRunner?.flexiblePanel?.position || 'right';
 export const selectFlexiblePanelTaskId = (state: RootState) =>

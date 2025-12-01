@@ -276,6 +276,7 @@ export const getPrompt = createAsyncThunk<
 
         // Return cache if not stale or if stale is allowed
         if (!isStale || allowStale) {
+          console.log(`✅ Using cached prompt data (no fetch):`, promptId);
           return {
             promptData: {
               id: cachedPrompt.id,
@@ -295,6 +296,7 @@ export const getPrompt = createAsyncThunk<
       }
 
       // Not cached or stale - fetch from database
+      console.log(`🔄 Fetching prompt from database:`, promptId);
       return dispatch(fetchPromptFromTable({ promptId, source, forceFetch: true })).unwrap();
     } catch (error) {
       console.error(`[getPrompt] Error getting prompt ${promptId}:`, error);

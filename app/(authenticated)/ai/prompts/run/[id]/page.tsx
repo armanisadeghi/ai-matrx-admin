@@ -4,7 +4,6 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { PromptRunPage } from "@/features/prompts/components/PromptRunPage";
 import { Suspense } from "react";
 
@@ -50,13 +49,12 @@ export default async function RunPromptPage({
     const { id } = await params;
     const supabase = await createClient();
 
-    // Fetch prompt by ID (RLS handles access control) and AI models in parallel
-    const [promptResult, aiModels] = await Promise.all([
+    // Fetch prompt by ID (RLS handles access control)
+    const [promptResult] = await Promise.all([
         supabase.from("prompts").select("*").eq("id", id).single(),
-        fetchAIModels()
     ]);
 
-    const { data: prompt, error } = promptResult;
+    const { data: prompt, error } = await promptResult;
 
     // Handle not found or access denied
     if (error || !prompt) {
@@ -86,13 +84,15 @@ export default async function RunPromptPage({
         );
     }
 
-    // Prepare prompt data for PromptRunner
+    // Prepare prompt data for PromptRunner (include all fields for caching)
     const promptData = {
         id: prompt.id,
-        name: prompt.name,
-        messages: prompt.messages,
+        name: prompt.name || '',
+        description: prompt.description || '',
+        messages: prompt.messages || [],
         variableDefaults: prompt.variable_defaults || [],
         settings: prompt.settings || {},
+        userId: prompt.user_id || '',
     };
 
     return (
@@ -104,7 +104,7 @@ export default async function RunPromptPage({
                 </div>
             </div>
         }>
-            <PromptRunPage models={aiModels} promptData={promptData} />
+            <PromptRunPage promptData={promptData} />
         </Suspense>
     );
 }

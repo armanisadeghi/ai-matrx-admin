@@ -25,6 +25,7 @@ interface PromptSidebarRunnerProps {
   executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
   variables?: Record<string, string>;
   title?: string;
+  runId?: string; // ⭐ Execution instance runId
   customMessage?: string;
 }
 

@@ -58,7 +58,6 @@ export type { PlacementType, ScopeLevel } from './constants';
 export {
   useContextMenuShortcuts,
   useShortcutsByPlacement,
-  useShortcutExecution,
 } from './hooks';
 
 // Utils

@@ -53,7 +53,7 @@ export function PromptRunnerModal({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent 
-                className="w-full max-w-3xl h-[95vh] p-0 gap-0 overflow-hidden"
+                className="w-full max-w-3xl h-[95vh] p-2 gap-0 overflow-hidden"
             >
                 <PromptRunner {...promptRunnerProps} />
             </DialogContent>

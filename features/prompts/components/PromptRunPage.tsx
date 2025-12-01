@@ -17,7 +17,8 @@ import { PromptModeNavigation } from "./PromptModeNavigation";
 import { loadRun } from "@/lib/redux/prompt-execution/thunks/loadRunThunk";
 import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startInstanceThunk";
 import { PromptRunner } from "./results-display/PromptRunner";
-import { selectInstance, selectRequiresVariableReplacement } from "@/lib/redux/prompt-execution/selectors";
+import { selectRequiresVariableReplacement } from "@/lib/redux/prompt-execution/selectors";
+import { cachePrompt } from "@/lib/redux/slices/promptCacheSlice";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -26,21 +27,38 @@ const CanvasRenderer = dynamic(
 );
 
 interface PromptRunnerProps {
-    models: any[];
     promptData: {
         id: string;
         name: string;
+        description?: string | null;
         messages: PromptMessage[];
         variableDefaults: PromptVariable[];
         settings: Record<string, any>;
+        userId?: string | null;
     };
 }
 
-export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
+export function PromptRunPage({ promptData }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
+
+    // Pre-populate Redux cache with server-fetched prompt data to avoid duplicate fetches
+    useEffect(() => {
+        dispatch(cachePrompt({
+            id: promptData.id,
+            name: promptData.name,
+            description: promptData.description,
+            messages: promptData.messages,
+            variableDefaults: promptData.variableDefaults,
+            settings: promptData.settings,
+            userId: promptData.userId,
+            source: 'prompts',
+            fetchedAt: Date.now(),
+            status: 'cached',
+        }));
+    }, [dispatch, promptData]);
 
     // Get runId from URL query parameter
     const urlRunId = searchParams.get('runId');
@@ -143,7 +161,6 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
 
     // Handle run selection from sidebar
     const handleRunSelect = useCallback((runId: string) => {
-        console.log('🔄 Switching to run:', runId);
         const url = new URL(window.location.href);
         url.searchParams.set('runId', runId);
         router.push(url.pathname + url.search);
@@ -247,7 +264,6 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
                                 onNewRun={handleClearConversation}
                                 footer={
                                     <PromptRunnerModalSidebarTester
-                                        promptData={promptData}
                                         runId={activeRunId || undefined}
                                     />
                                 }

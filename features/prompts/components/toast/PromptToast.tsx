@@ -13,6 +13,7 @@ interface PromptToastProps {
   promptName: string;
   promptData?: any;
   executionConfig?: any;
+  runId?: string; // ⭐ Execution instance runId
   taskId?: string; // Socket.io task ID for loading full result
   isStreaming?: boolean; // Whether the response is currently streaming
   onDismiss: (toastId: string) => void;

@@ -6,14 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { extractSettingsAttachments, extractMessageMetadata } from '@/features/prompts/utils/resource-formatting';
-import { buildFinalMessage } from '@/lib/redux/prompt-execution/utils/message-builder';
+import { processMessagesForExecution } from '@/lib/redux/prompt-execution/utils/message-builder';
 import { useAppSelector } from '@/lib/redux/hooks';
 import {
   selectResources,
   selectCurrentInput,
   selectMergedVariables,
-  selectConversationTemplate,
-  selectMessages,
+  selectInstance,
 } from '@/lib/redux/prompt-execution/selectors';
 
 interface ResourceDebugIndicatorProps {
@@ -35,16 +34,10 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
   // ========== READ EVERYTHING FROM REDUX ==========
   // This ensures debug shows EXACTLY what Redux knows
   // Same selectors that executeMessageThunk uses
+  const instance = useAppSelector(state => selectInstance(state, runId));
   const resources = useAppSelector(state => selectResources(state, runId));
   const chatInput = useAppSelector(state => selectCurrentInput(state, runId));
   const variables = useAppSelector(state => selectMergedVariables(state, runId));
-  const conversationTemplate = useAppSelector(state => selectConversationTemplate(state, runId));
-  const messages = useAppSelector(state => selectMessages(state, runId));
-  
-  // Derive context from Redux state (same logic as executeMessageThunk)
-  const isFirstMessage = messages.length === 0;
-  const lastTemplateMessage = conversationTemplate[conversationTemplate.length - 1];
-  const isLastTemplateMessageUser = lastTemplateMessage?.role === 'user';
   const [size, setSize] = useState<IndicatorSize>('small');
   const [position, setPosition] = useState<Position>({ x: 50, y: 85 }); // Below debug indicator
   const [isDragging, setIsDragging] = useState(false);
@@ -132,14 +125,17 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
   };
 
   const generateMessagePreview = async () => {
+    if (!instance) {
+      console.error('Instance not found');
+      return;
+    }
+
     setIsGeneratingPreview(true);
     try {
-      // Use the EXACT SAME message building logic as executeMessageThunk
-      // Reading from the SAME Redux state via selectors
-      const messageResult = await buildFinalMessage({
-        isFirstMessage,
-        isLastTemplateMessageUser,
-        lastTemplateMessage,
+      // Use the EXACT SAME centralized logic as executeMessageThunk
+      const result = await processMessagesForExecution({
+        templateMessages: instance.messages,
+        isFirstExecution: instance.requiresVariableReplacement,
         userInput: chatInput,
         resources,
         variables,
@@ -150,8 +146,8 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
       const metadata = extractMessageMetadata(resources);
 
       setPreviewData({
-        formattedXml: messageResult.resourcesXml,
-        fullMessage: messageResult.finalContent,
+        formattedXml: result.resourcesXml,
+        fullMessage: result.finalUserMessageContent,
         settingsAttachments,
         metadata,
       });

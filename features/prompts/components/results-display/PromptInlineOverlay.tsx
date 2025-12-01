@@ -13,6 +13,7 @@ interface PromptInlineOverlayProps {
   result: string;
   originalText: string;
   promptName: string;
+  runId?: string; // ⭐ Execution instance runId
   taskId?: string;
   isStreaming: boolean;
   onReplace?: (text: string) => void;

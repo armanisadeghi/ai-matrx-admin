@@ -22,6 +22,8 @@ interface PromptSystemMessageProps {
         totalTime?: number;
         tokens?: number;
     };
+    /** Compact mode: minimal header, reduced spacing */
+    compact?: boolean;
 }
 
 export function PromptSystemMessage({
@@ -30,7 +32,8 @@ export function PromptSystemMessage({
     messageIndex,
     isStreamActive = false,
     onContentChange,
-    metadata
+    metadata,
+    compact = false
 }: PromptSystemMessageProps) {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -93,12 +96,21 @@ export function PromptSystemMessage({
     // Check if this is an error message
     const isError = content.startsWith("Error:");
 
+    // Adjust styling based on compact mode - keep ALL functionality
+    const headerMargin = compact ? "mb-0" : "mb-0.5";
+    const headerGap = compact ? "gap-1" : "gap-1.5";
+    const iconSize = compact ? "w-3 h-3" : "w-3.5 h-3.5";
+    const markdownClassName = compact 
+        ? "text-xs bg-amber-500/5 border-l border-amber-500/30 px-1.5 py-1" 
+        : "bg-amber-500/5 border-l-2 border-amber-500/30 p-2";
+    const buttonMargin = compact ? "mt-0.5" : "mt-1";
+    
     return (
         <div >
-            <div className="text-xs font-semibold mb-0.5 text-muted-foreground flex items-center gap-1.5">
-                <Settings className="w-3.5 h-3.5" />
+            <div className={`text-xs font-semibold ${headerMargin} text-muted-foreground flex items-center ${headerGap}`}>
+                <Settings className={iconSize} />
                 System
-                {metadata && metadata.totalTime && (
+                {!compact && metadata && metadata.totalTime && (
                     <span className="ml-2 text-muted-foreground font-normal">
                         ({Math.round(metadata.totalTime / 1000)}s)
                     </span>
@@ -115,12 +127,12 @@ export function PromptSystemMessage({
                         role="assistant"
                         isStreamActive={isStreamActive}
                         hideCopyButton={true}
-                        allowFullScreenEditor={true}
-                        className="bg-amber-500/5 border-l-2 border-amber-500/30 p-2"
+                        allowFullScreenEditor={!compact}
+                        className={markdownClassName}
                         onContentChange={handleContentChange}
                     />
                     {!isStreamActive && (
-                        <div className="flex items-center gap-1 mt-1">
+                        <div className={`flex items-center gap-1 ${buttonMargin}`}>
                             <Button
                                 variant="ghost"
                                 size="sm"

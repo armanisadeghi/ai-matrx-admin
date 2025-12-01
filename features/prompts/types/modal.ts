@@ -175,6 +175,7 @@ export function resolveExecutionConfig(
       allow_chat: individualFlags.allowChat ?? true,
       show_variables: individualFlags.showVariables ?? false,
       apply_variables: individualFlags.applyVariables ?? true,
+      track_in_runs: true,
     };
   }
   
@@ -184,6 +185,7 @@ export function resolveExecutionConfig(
     allow_chat: true,
     show_variables: false,
     apply_variables: true,
+    track_in_runs: true,
   };
 }
 

@@ -1,10 +1,10 @@
 /**
  * Message Builder Utility
  * 
- * Shared logic for building the final message content that will be sent to the model.
- * This ensures the debug component shows EXACTLY what will be sent.
+ * SINGLE SOURCE OF TRUTH for message construction.
+ * Centralizes ALL logic for building messages that will be sent to the model.
+ * This ensures debug components show EXACTLY what will be sent.
  * 
- * CRITICAL: This is the SINGLE SOURCE OF TRUTH for message construction.
  * Both executeMessageThunk and debug components MUST use this.
  */
 
@@ -13,6 +13,176 @@ import type { ConversationMessage } from '../types';
 import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
 import { fetchResourcesData } from '@/features/prompts/utils/resource-data-fetcher';
 import { formatResourcesToXml, appendResourcesToMessage } from '@/features/prompts/utils/resource-formatting';
+
+// ========================================
+// NEW: Centralized Message Processing
+// ========================================
+
+export interface ProcessMessagesOptions {
+  /**
+   * The template messages (may contain variables to be replaced)
+   */
+  templateMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+  
+  /**
+   * Is this the first execution? (requires variable replacement in templates)
+   */
+  isFirstExecution: boolean;
+  
+  /**
+   * The user's additional input/message
+   */
+  userInput: string;
+  
+  /**
+   * Resources to attach to the final user message
+   */
+  resources: Resource[];
+  
+  /**
+   * Variables to replace in messages
+   */
+  variables: Record<string, string>;
+}
+
+export interface ProcessMessagesResult {
+  /**
+   * The complete processed messages array ready to send to the model
+   */
+  messages: ConversationMessage[];
+  
+  /**
+   * Debug info: The final user message content
+   */
+  finalUserMessageContent: string;
+  
+  /**
+   * Debug info: Base content before resources
+   */
+  baseContent: string;
+  
+  /**
+   * Debug info: Formatted resources XML
+   */
+  resourcesXml: string;
+  
+  /**
+   * Debug info: Whether resources were included
+   */
+  hasResources: boolean;
+}
+
+/**
+ * Process messages for execution - CENTRALIZED LOGIC
+ * 
+ * This function handles the complete message processing pipeline:
+ * 1. First execution: Apply variables to template messages
+ * 2. Determine if last template message is user message
+ * 3. Fetch and format resources
+ * 4. Combine template + user input (if needed) OR just use input
+ * 5. Append resources to final user message
+ * 6. Replace variables in final message
+ * 7. Return complete messages array with timestamps
+ * 
+ * @param options - Message processing options
+ * @returns Complete processed messages array ready to send
+ */
+export async function processMessagesForExecution(
+  options: ProcessMessagesOptions
+): Promise<ProcessMessagesResult> {
+  const {
+    templateMessages,
+    isFirstExecution,
+    userInput,
+    resources,
+    variables,
+  } = options;
+  
+  const timestamp = new Date().toISOString();
+  
+  // ========== STEP 1: Process Template Messages ==========
+  let processedMessages: ConversationMessage[] = [];
+  
+  if (isFirstExecution) {
+    // Apply variables to all template messages
+    processedMessages = templateMessages.map(msg => ({
+      role: msg.role,
+      content: replaceVariablesInText(msg.content, variables),
+      timestamp,
+    }));
+  } else {
+    // Not first execution - no template processing needed
+    // We'll just add the new user message
+    processedMessages = [];
+  }
+  
+  // ========== STEP 2: Build Final User Message ==========
+  const lastMsg = processedMessages[processedMessages.length - 1];
+  const isLastTemplateMessageUser = lastMsg?.role === 'user';
+  
+  // Build the base content
+  let baseContent: string;
+  
+  if (isFirstExecution && isLastTemplateMessageUser && lastMsg) {
+    // Combine template's last user message with additional input
+    baseContent = userInput.trim()
+      ? `${lastMsg.content}\n\n${userInput}`
+      : lastMsg.content;
+  } else {
+    // Just use the user input
+    baseContent = userInput;
+  }
+  
+  if (!baseContent.trim()) {
+    throw new Error('No message content to build');
+  }
+  
+  // ========== STEP 3: Fetch and Format Resources ==========
+  let resourcesXml = '';
+  const hasResources = resources.length > 0;
+  
+  if (hasResources) {
+    const enrichedResources = await fetchResourcesData(resources);
+    resourcesXml = formatResourcesToXml(enrichedResources);
+  }
+  
+  // ========== STEP 4: Append Resources ==========
+  const messageWithResources = appendResourcesToMessage(
+    baseContent,
+    resourcesXml
+  );
+  
+  // ========== STEP 5: Replace Variables in Final Message ==========
+  const finalUserMessageContent = replaceVariablesInText(
+    messageWithResources,
+    variables
+  );
+  
+  // ========== STEP 6: Update or Add Final User Message ==========
+  if (isFirstExecution && isLastTemplateMessageUser && lastMsg) {
+    // Replace the last template message with our combined message
+    lastMsg.content = finalUserMessageContent;
+  } else {
+    // Add new user message
+    processedMessages.push({
+      role: 'user',
+      content: finalUserMessageContent,
+      timestamp,
+    });
+  }
+  
+  return {
+    messages: processedMessages,
+    finalUserMessageContent,
+    baseContent,
+    resourcesXml,
+    hasResources,
+  };
+}
+
+// ========================================
+// LEGACY: Kept for backwards compatibility
+// ========================================
 
 export interface BuildMessageOptions {
   /**

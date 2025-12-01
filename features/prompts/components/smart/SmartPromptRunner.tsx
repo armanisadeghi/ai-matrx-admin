@@ -9,10 +9,9 @@ import {
     resolveExecutionConfig,
     type NewExecutionConfig
 } from "@/features/prompts/types/modal";
-import type { PromptData } from '@/features/prompts/types/core';
 
-import { SmartPromptInput } from "../smart/SmartPromptInput";
-import { SmartMessageList } from "../smart/SmartMessageList";
+import { SmartPromptInput } from "./SmartPromptInput";
+import { SmartMessageList } from "./SmartMessageList";
 import {
     selectInstance,
     selectExecutionConfig,
@@ -22,11 +21,8 @@ import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startIn
 import { finalizeExecution } from "@/lib/redux/prompt-execution/thunks/finalizeExecutionThunk";
 import { selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
-export interface PromptRunnerProps {
+export interface SmartPromptRunnerProps {
     promptId?: string;
-    promptData?: PromptData | null;
-
-    /** Execution configuration */
     executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
 
     variables?: Record<string, string>;
@@ -40,10 +36,6 @@ export interface PromptRunnerProps {
     customMessage?: string; // Optional custom message for AdditionalInfoModal
     countdownSeconds?: number; // Optional countdown override for AdditionalInfoModal
 
-    /** Display variant to use (default: 'standard') */
-    displayVariant?: 'standard' | 'compact';
-
-    /** Enable/disable AdditionalInfoModal for hidden-variables mode (default: true) */
     enableAdditionalInfoModal?: boolean;
 
     /** Show/hide system messages in the message list (default: false) */
@@ -57,9 +49,8 @@ export interface PromptRunnerProps {
  * It initializes the run if needed, but primarily acts as a view layer
  * connecting SmartPromptInput and SmartMessageList.
  */
-export function PromptRunner({
+export function SmartPromptRunner({
     promptId,
-    promptData: initialPromptData,
     executionConfig,
     variables: initialVariables,
     initialMessage,
@@ -69,9 +60,8 @@ export function PromptRunner({
     onClose,
     className,
     isActive = true,
-    displayVariant = 'standard',
     showSystemMessage = true,
-}: PromptRunnerProps) {
+}: SmartPromptRunnerProps) {
     const dispatch = useAppDispatch();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
@@ -90,17 +80,17 @@ export function PromptRunner({
 
     // Initialize run if needed (and if we have a runId but no instance yet)
     useEffect(() => {
-        if (isActive && runId && !instance && (promptId || initialPromptData)) {
+        if (isActive && runId && !instance && promptId) {
             dispatch(startPromptInstance({
                 runId,
-                promptId: promptId || initialPromptData?.id || 'unknown',
+                promptId,
                 executionConfig: resolvedConfig,
                 variables: initialVariables,
                 initialMessage,
                 promptSource: 'prompts' // Default
             }));
         }
-    }, [isActive, runId, instance, promptId, initialPromptData, resolvedConfig, initialVariables, initialMessage, dispatch]);
+    }, [isActive, runId, instance, promptId, resolvedConfig, initialVariables, initialMessage, dispatch]);
 
     // Handle auto-run logic
     useEffect(() => {
@@ -180,6 +170,26 @@ export function PromptRunner({
             {title && (
                 <div className="flex items-center justify-between px-4 py-2 border-b">
                     <h2 className="text-lg font-semibold">{title}</h2>
+                    {onClose && (
+                        <Button variant="ghost" size="icon" onClick={onClose}>
+                            <span className="sr-only">Close</span>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                            >
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                        </Button>
+                    )}
                 </div>
             )}
 

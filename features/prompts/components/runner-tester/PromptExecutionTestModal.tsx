@@ -6,19 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Code, FileText, Database, Check, Loader2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { executePromptDirect } from '@/lib/redux/thunks/executePromptDirectThunk';
+import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
+import { executeMessage } from '@/lib/redux/prompt-execution/thunks/executeMessageThunk';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
-import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 
 interface PromptExecutionTestModalProps {
   isOpen: boolean;
   onClose: () => void;
   testType: 'direct' | 'inline' | 'background';
-  promptData: PromptData;
-  executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
+  promptId: string;
+  promptSource?: 'prompts' | 'prompt_builtins';
+  executionConfig: PromptExecutionConfig;
   variables?: Record<string, string>;
+  resources?: any[];
+  initialMessage?: string;
 }
 
 /**
@@ -33,9 +36,12 @@ export default function PromptExecutionTestModal({
   isOpen,
   onClose,
   testType,
-  promptData,
+  promptId,
+  promptSource = 'prompts',
   executionConfig,
   variables = {},
+  resources = [],
+  initialMessage = '',
 }: PromptExecutionTestModalProps) {
   const dispatch = useAppDispatch();
   
@@ -80,16 +86,25 @@ export default function PromptExecutionTestModal({
     setDirectTaskId(null);
     
     try {
-      const result = await dispatch(executePromptDirect({
-        promptData,
-        variables,
-        initialMessage: '',
-        modelOverrides: {},
+      // ⭐ Use unified Redux system with resources
+      const runId = await dispatch(startPromptInstance({
+        promptId,
+        promptSource,
+        executionConfig: {
+          ...executionConfig,
+          track_in_runs: false, // Don't track test executions
+        },
+        variables: variables || {},
+        resources: resources || [],
+        initialMessage: initialMessage || '',
       })).unwrap();
       
+      // Execute via unified system
+      const taskId = await dispatch(executeMessage({ runId })).unwrap();
+      
       // Set taskId for real-time streaming
-      setDirectTaskId(result.taskId);
-      setDirectMetadata(result.metadata);
+      setDirectTaskId(taskId);
+      setDirectMetadata({ runId }); // Store runId for reference
     } catch (error: any) {
       setDirectResult(`Error: ${error.message}`);
       setDirectLoading(false);
@@ -114,14 +129,41 @@ export default function PromptExecutionTestModal({
     
     try {
       const selectedText = editorText.substring(start, end);
-      const result = await dispatch(executePromptDirect({
-        promptData,
+      
+      // ⭐ Use unified Redux system with resources
+      const runId = await dispatch(startPromptInstance({
+        promptId,
+        promptSource,
+        executionConfig: {
+          ...executionConfig,
+          track_in_runs: false,
+        },
         variables: { ...variables, selected_text: selectedText },
+        resources: resources || [],
         initialMessage: selectedText,
-        modelOverrides: {},
       })).unwrap();
       
-      setInlineResult(result.response);
+      const taskId = await dispatch(executeMessage({ runId })).unwrap();
+      
+      // Wait for completion via selector
+      // Note: In a real scenario, we'd use a proper async selector or callback
+      // For testing, we'll poll the state
+      let attempts = 0;
+      const maxAttempts = 300; // 30 seconds
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const currentState = (window as any).__REDUX_STORE__?.getState();
+        if (currentState) {
+          const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(currentState);
+          if (isEnded) {
+            const response = selectPrimaryResponseTextByTaskId(taskId)(currentState);
+            setInlineResult(response || '');
+            break;
+          }
+        }
+        attempts++;
+      }
     } catch (error: any) {
       setInlineResult(`Error: ${error.message}`);
     } finally {
@@ -165,18 +207,44 @@ export default function PromptExecutionTestModal({
     setBackgroundLoading(true);
     
     try {
-      const result = await dispatch(executePromptDirect({
-        promptData,
-        variables,
-        initialMessage: '',
-        modelOverrides: {},
+      // ⭐ Use unified Redux system with resources
+      const runId = await dispatch(startPromptInstance({
+        promptId,
+        promptSource,
+        executionConfig: {
+          ...executionConfig,
+          track_in_runs: false,
+        },
+        variables: variables || {},
+        resources: resources || [],
+        initialMessage: initialMessage || '',
       })).unwrap();
+      
+      const taskId = await dispatch(executeMessage({ runId })).unwrap();
+      
+      // Wait for completion
+      let attempts = 0;
+      const maxAttempts = 300;
+      let response = '';
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const currentState = (window as any).__REDUX_STORE__?.getState();
+        if (currentState) {
+          const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(currentState);
+          if (isEnded) {
+            response = selectPrimaryResponseTextByTaskId(taskId)(currentState) || '';
+            break;
+          }
+        }
+        attempts++;
+      }
       
       // Simulate storing in database/state
       const newTask = {
-        id: result.taskId,
-        name: promptData.name,
-        result: result.response,
+        id: taskId,
+        name: `Prompt ${promptId}`,
+        result: response,
         timestamp: new Date().toLocaleString(),
       };
       

@@ -15,8 +15,6 @@ export type {
   CanvasControl,
   MobileCanvasControl
 } from './PromptRunner.types';
-export { StandardDisplay } from './displays/StandardDisplay';
-export { CompactDisplay } from './displays/CompactDisplay';
 
 export { PromptRunnerModal } from './PromptRunnerModal';
 

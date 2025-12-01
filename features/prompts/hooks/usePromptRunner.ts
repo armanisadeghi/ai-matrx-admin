@@ -56,6 +56,9 @@ export interface OpenPromptOptions extends Omit<PromptRunnerModalConfig, 'execut
   /** NEW: Specify which UI to show (defaults to 'modal-full') */
   result_display?: ResultDisplay;
   
+  /** NEW: Which table to fetch prompt from (defaults to 'prompts') */
+  promptSource?: 'prompts' | 'prompt_builtins';
+  
   /** NEW: Execution configuration with separate flags */
   executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
   
@@ -107,6 +110,7 @@ export function usePromptRunner(): UsePromptRunnerReturn {
         allow_chat: true,
         show_variables: false,
         apply_variables: true,
+        track_in_runs: true,
       },
       ...restOptions
     } = options;
@@ -146,6 +150,7 @@ export function openPromptImperative(
       allow_chat: true,
       show_variables: false,
       apply_variables: true,
+      track_in_runs: true,
     },
     ...restOptions
   } = options;

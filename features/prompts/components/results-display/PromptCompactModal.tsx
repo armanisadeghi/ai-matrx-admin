@@ -1,103 +1,99 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy, Check, MessageSquare, GripVertical, X, ChevronsUp, ChevronsDown } from 'lucide-react';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { usePromptExecutionCore } from '../../hooks/usePromptExecutionCore';
-import { PromptRunnerInput } from '../PromptRunnerInput';
-import { ConversationDisplay, type ConversationMessage } from '../conversation';
-import type { PromptData } from '@/features/prompts/types/core';
-import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
-import type { Resource } from '../resource-display';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import {
+  selectInstance,
+  selectMessages,
+  selectIsExecuting,
+} from '@/lib/redux/prompt-execution/selectors';
+import { selectExecutionConfig } from '@/lib/redux/prompt-execution/slice';
+import { selectCachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
+import { selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
+import { finalizeExecution } from '@/lib/redux/prompt-execution/thunks/finalizeExecutionThunk';
+import { SmartPromptInput } from '../smart/SmartPromptInput';
+import { SmartMessageList } from '../smart/SmartMessageList';
 
 interface PromptCompactModalProps {
+  /** Whether modal is open */
   isOpen: boolean;
+  /** Close handler */
   onClose: () => void;
-  promptId?: string;
-  promptData?: PromptData;
-  executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
-  variables?: Record<string, string>;
-  title?: string;
-  preloadedResult?: string; // If provided, skip execution and show this result
-  taskId?: string; // If provided, load result from Redux state by taskId
+  /** Execution instance runId - everything else comes from Redux */
+  runId: string;
 }
 
 /**
- * PromptCompactModal - iOS-style minimal modal for quick AI responses
- * Inspired by VS Code Copilot's compact overlay
+ * PromptCompactModal - Gold Standard for Redux-Driven Display Components
  * 
- * Supports three loading modes:
- * 1. taskId: Load completed result from Redux state (for toasts)
- * 2. preloadedResult: Display provided result without execution
- * 3. promptData: Execute prompt using centralized hook
+ * ARCHITECTURE:
+ * - Only receives runId as data prop
+ * - Reads ALL state from Redux using selectors
+ * - Respects ALL execution config settings
+ * - Self-contained and fully functional
  * 
- * Renders markdown using BasicMarkdownContent
+ * EXECUTION CONFIG RESPECT:
+ * - auto_run: Handled by execution thunks before modal opens
+ * - allow_chat: Shows/hides chat input based on config
+ * - show_variables: Passed to SmartPromptInput
+ * - apply_variables: Handled by execution engine
+ * - track_in_runs: Handled by execution engine
+ * 
+ * This component serves as the MODEL for all other display components.
  */
 export default function PromptCompactModal({
   isOpen,
   onClose,
-  promptData,
-  executionConfig,
-  variables = {},
-  title,
-  preloadedResult,
-  taskId,
+  runId,
 }: PromptCompactModalProps) {
+  const dispatch = useAppDispatch();
   const [copied, setCopied] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showChat, setShowChat] = useState(false);
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
   
-  // Load from Redux state if taskId provided
-  const stateResponse = useAppSelector((state) => 
-    taskId ? selectPrimaryResponseTextByTaskId(taskId)(state) : null
+  // ========== REDUX STATE (Single Source of Truth) ==========
+  const instance = useAppSelector((state) => selectInstance(state, runId));
+  const executionConfig = useAppSelector((state) => selectExecutionConfig(state, runId));
+  const messages = useAppSelector((state) => selectMessages(state, runId));
+  const isExecuting = useAppSelector((state) => selectIsExecuting(state, runId));
+  const prompt = useAppSelector((state) => 
+    instance ? selectCachedPrompt(state, instance.promptId) : null
   );
-  const stateResponseEnded = useAppSelector((state) =>
-    taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : true
+  
+  // Get current task for streaming finalization
+  const currentTaskId = instance?.execution?.currentTaskId;
+  const isResponseEnded = useAppSelector((state) =>
+    currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
   );
-
-  // SAFETY: Warn if taskId provided but no data found (result may have expired)
+  
+  // Derive title from prompt name
+  const title = prompt?.name || 'AI Response';
+  
+  // Get last assistant message for display
+  const latestResponse = messages
+    .filter(m => m.role === 'assistant')
+    .slice(-1)[0]?.content || '';
+  
+  // Respect execution config: show chat input if allow_chat is enabled
+  const allowChat = executionConfig?.allow_chat ?? true;
+  const shouldShowChatInput = showChat && allowChat;
+  
+  // Return null if instance doesn't exist
+  if (!instance || !executionConfig) {
+    console.warn('[PromptCompactModal] No instance found for runId:', runId);
+    return null;
+  }
+  
+  // ========== STREAMING FINALIZATION ==========
+  // When streaming ends, finalize execution to save message to Redux and DB
   useEffect(() => {
-    if (taskId && !stateResponse && stateResponseEnded && !preloadedResult) {
-      console.warn(`[PromptCompactModal] TaskId ${taskId} provided but result not found in state. Result may have expired. Use auto_run: true to re-execute if needed.`);
+    if (runId && currentTaskId && isResponseEnded) {
+      dispatch(finalizeExecution({ runId, taskId: currentTaskId }));
     }
-  }, [taskId, stateResponse, stateResponseEnded, preloadedResult]);
-  
-  // Only use execution hook if we don't have a preloaded result or taskId
-  const executionHook = usePromptExecutionCore({
-    promptData: promptData || { id: '', name: '', messages: [], variableDefaults: [], settings: {} },
-    executionConfig: (preloadedResult || taskId) ? { ...executionConfig, auto_run: false, allow_chat: true } : { ...executionConfig, allow_chat: true },
-    variables,
-  });
-
-  // Priority: taskId from state > preloadedResult > execution hook
-  const latestResponse = 
-    taskId ? (stateResponse || '') :
-    preloadedResult ? preloadedResult :
-    (executionHook.displayMessages
-      .filter(msg => msg.role === 'assistant')
-      .slice(-1)[0]?.content || executionHook.streamingText);
-  
-  const isExecuting = taskId 
-    ? !stateResponseEnded 
-    : (preloadedResult ? false : executionHook.isExecuting);
-  
-  // Show chat input only if user explicitly enabled it
-  const shouldShowChatInput = showChat;
-  
-  // Convert messages for preloaded/taskId scenario
-  const preloadedMessages = useMemo<ConversationMessage[]>(() => {
-    if (!latestResponse || !(preloadedResult || taskId)) return [];
-    return [{
-      role: 'assistant',
-      content: latestResponse,
-      taskId: taskId,
-    }];
-  }, [latestResponse, preloadedResult, taskId]);
+  }, [runId, currentTaskId, isResponseEnded, dispatch]);
 
   const handleCopy = () => {
     if (latestResponse) {
@@ -143,9 +139,6 @@ export default function PromptCompactModal({
   }, [isDragging, dragOffset]);
 
   if (!isOpen) return null;
-  
-  // Allow rendering with taskId even without promptData
-  if (!promptData && !taskId && !preloadedResult) return null;
 
   return (
     <>
@@ -200,67 +193,26 @@ export default function PromptCompactModal({
             </div>
           )}
           
-          {/* Content - Conversation History */}
+          {/* Content - Message Display */}
           <div className="px-2 py-3 min-h-[200px] max-h-[70vh] overflow-y-auto bg-textured">
-            {preloadedResult || taskId ? (
-              // Simple display for preloaded/taskId results
-              <ConversationDisplay
-                messages={preloadedMessages}
-                isStreaming={isExecuting && !!latestResponse}
-                variant="inline"
-                className="min-h-[200px]"
-                emptyState={
-                  isExecuting && !latestResponse ? (
-                    <div className="flex items-start px-4 py-8">
-                      <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
-                        Thinking...
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground italic text-center py-8">No response</div>
-                  )
-                }
-              />
-            ) : (
-              // Full conversation display
-              <ConversationDisplay
-                messages={executionHook.displayMessages}
-                isStreaming={isExecuting}
-                variant="inline"
-                className="min-h-[200px]"
-                emptyState={
-                  isExecuting && executionHook.streamingText?.length === 0 ? (
-                    <div className="flex items-start px-4 py-8">
-                      <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
-                        Thinking...
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground italic text-center py-8">Start a conversation...</div>
-                  )
-                }
-              />
-            )}
+            <SmartMessageList 
+              runId={runId} 
+              showSystemMessage={false}
+              emptyStateMessage="Ready to process"
+              compact={true}
+            />
           </div>
           
-          {/* Chat Input - Only show if toggled on */}
+          {/* Chat Input - Only show if toggled on AND allow_chat is enabled */}
           {shouldShowChatInput && (
             <div className="border-t border-[#3e3e42] dark:border-[#3e3e42] bg-textured">
               <div className="px-2 py-2 max-w-[800px] mx-auto">
-                <PromptRunnerInput
-                  variableDefaults={executionHook.variableDefaults}
-                  onVariableValueChange={executionHook.handleVariableChange}
-                  expandedVariable={expandedVariable}
-                  onExpandedVariableChange={setExpandedVariable}
-                  chatInput={executionHook.chatInput}
-                  onChatInputChange={executionHook.setChatInput}
-                  onSendMessage={executionHook.executeMessage}
-                  isTestingPrompt={isExecuting}
-                  showVariables={executionHook.shouldShowVariables}
-                  messages={promptData?.messages || []}
-                  resources={resources}
-                  onResourcesChange={setResources}
-                  enablePasteImages={false}
+                <SmartPromptInput
+                  runId={runId}
+                  placeholder="Type a message..."
+                  sendButtonVariant="blue"
+                  showSubmitOnEnterToggle={false}
+                  enablePasteImages={true}
                 />
               </div>
             </div>
@@ -283,24 +235,26 @@ export default function PromptCompactModal({
             
             <div className="flex-1" />
             
-            {/* Toggle chat input */}
-            <button
-              onClick={() => setShowChat(!showChat)}
-              className={`flex items-center gap-1.5 px-3.5 py-1 text-xs rounded transition-colors ${
-                showChat 
-                  ? 'bg-primary/10 text-primary hover:bg-primary/20' 
-                  : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-              }`}
-              title={showChat ? 'Hide chat input' : 'Show chat input'}
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span className="font-medium">Chat</span>
-              {showChat ? (
-                <ChevronsDown className="w-3 h-3 ml-0.5" />
-              ) : (
-                <ChevronsUp className="w-3 h-3 ml-0.5" />
-              )}
-            </button>
+            {/* Toggle chat input - Only show if allow_chat is enabled in execution config */}
+            {allowChat && (
+              <button
+                onClick={() => setShowChat(!showChat)}
+                className={`flex items-center gap-1.5 px-3.5 py-1 text-xs rounded transition-colors ${
+                  showChat 
+                    ? 'bg-primary/10 text-primary hover:bg-primary/20' 
+                    : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+                }`}
+                title={showChat ? 'Hide chat input' : 'Show chat input'}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span className="font-medium">Chat</span>
+                {showChat ? (
+                  <ChevronsDown className="w-3 h-3 ml-0.5" />
+                ) : (
+                  <ChevronsUp className="w-3 h-3 ml-0.5" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

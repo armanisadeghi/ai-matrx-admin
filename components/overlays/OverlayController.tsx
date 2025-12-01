@@ -6,23 +6,28 @@ import {
   closePromptModal, 
   selectIsPromptModalOpen, 
   selectPromptModalConfig,
+  selectPromptModalRunId,
   selectPromptModalTaskId,
   closeCompactModal,
   selectIsCompactModalOpen,
   selectCompactModalConfig,
+  selectCompactModalRunId,
   selectCompactModalTaskId,
   closeInlineOverlay,
   selectIsInlineOverlayOpen,
   selectInlineOverlayData,
+  selectInlineOverlayRunId,
   closeSidebarResult,
   selectIsSidebarResultOpen,
   selectSidebarResultConfig,
+  selectSidebarResultRunId,
   selectSidebarPosition,
   selectSidebarSize,
   selectSidebarTaskId,
   closeFlexiblePanel,
   selectIsFlexiblePanelOpen,
   selectFlexiblePanelConfig,
+  selectFlexiblePanelRunId,
   selectFlexiblePanelPosition,
   selectFlexiblePanelTaskId,
   selectToastQueue,
@@ -148,21 +153,26 @@ export const OverlayController: React.FC = () => {
   // Prompt Runner Modals
   const isPromptModalOpen = useAppSelector(selectIsPromptModalOpen);
   const promptModalConfig = useAppSelector(selectPromptModalConfig);
+  const promptModalRunId = useAppSelector(selectPromptModalRunId);
   
   const isCompactModalOpen = useAppSelector(selectIsCompactModalOpen);
   const compactModalConfig = useAppSelector(selectCompactModalConfig);
+  const compactModalRunId = useAppSelector(selectCompactModalRunId);
   const compactModalTaskId = useAppSelector(selectCompactModalTaskId);
   
   const isInlineOverlayOpen = useAppSelector(selectIsInlineOverlayOpen);
   const inlineOverlayData = useAppSelector(selectInlineOverlayData);
+  const inlineOverlayRunId = useAppSelector(selectInlineOverlayRunId);
   
   const isSidebarResultOpen = useAppSelector(selectIsSidebarResultOpen);
   const sidebarResultConfig = useAppSelector(selectSidebarResultConfig);
+  const sidebarResultRunId = useAppSelector(selectSidebarResultRunId);
   const sidebarPosition = useAppSelector(selectSidebarPosition);
   const sidebarSize = useAppSelector(selectSidebarSize);
   
   const isFlexiblePanelOpen = useAppSelector(selectIsFlexiblePanelOpen);
   const flexiblePanelConfig = useAppSelector(selectFlexiblePanelConfig);
+  const flexiblePanelRunId = useAppSelector(selectFlexiblePanelRunId);
   const flexiblePanelPosition = useAppSelector(selectFlexiblePanelPosition);
   
   const toastQueue = useAppSelector(selectToastQueue);
@@ -430,22 +440,15 @@ export const OverlayController: React.FC = () => {
           title={promptModalConfig.title}
           runId={promptModalConfig.runId}
           onExecutionComplete={promptModalConfig.onExecutionComplete}
-          displayVariant={promptModalConfig.displayVariant}
         />
       )}
       
-      {/* Modal Compact */}
-      {isCompactModalOpen && compactModalConfig && (
+      {/* Modal Compact - Gold Standard: Only runId needed */}
+      {isCompactModalOpen && compactModalRunId && (
         <PromptCompactModal
           isOpen={true}
           onClose={handleCloseCompactModal}
-          promptId={compactModalConfig.promptId}
-          promptData={compactModalConfig.promptData}
-          executionConfig={compactModalConfig.executionConfig}
-          variables={compactModalConfig.variables}
-          title={compactModalConfig.title}
-          preloadedResult={(compactModalConfig as any).preloadedResult}
-          taskId={compactModalTaskId || undefined}
+          runId={compactModalRunId}
         />
       )}
       
@@ -457,6 +460,7 @@ export const OverlayController: React.FC = () => {
           result={inlineOverlayData.result || ''}
           originalText={inlineOverlayData.originalText || ''}
           promptName={inlineOverlayData.promptName || ''}
+          runId={inlineOverlayRunId || undefined}
           taskId={inlineOverlayData.taskId || undefined}
           isStreaming={inlineOverlayData.isStreaming}
           onReplace={inlineOverlayData.callbacks?.onReplace}
@@ -477,6 +481,7 @@ export const OverlayController: React.FC = () => {
           executionConfig={sidebarResultConfig.executionConfig}
           variables={sidebarResultConfig.variables}
           title={sidebarResultConfig.title}
+          runId={sidebarResultRunId || sidebarResultConfig.runId}
         />
       )}
       
@@ -491,6 +496,7 @@ export const OverlayController: React.FC = () => {
           executionConfig={flexiblePanelConfig.executionConfig}
           variables={flexiblePanelConfig.variables}
           title={flexiblePanelConfig.title}
+          runId={flexiblePanelRunId || flexiblePanelConfig.runId}
         />
       )}
       
@@ -511,6 +517,7 @@ export const OverlayController: React.FC = () => {
             promptName={toast.promptName || ''}
             promptData={toast.promptData}
             executionConfig={toast.executionConfig}
+            runId={toast.runId}
             taskId={toast.taskId}
             isStreaming={toast.isStreaming}
             onDismiss={handleDismissToast}

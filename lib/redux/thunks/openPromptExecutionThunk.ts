@@ -2,11 +2,17 @@
  * openPromptExecutionThunk.ts
  * 
  * Unified entry point for all prompt executions.
- * Routes to appropriate display type based on result_display configuration.
+ * ALL executions now flow through the Redux execution instance system.
+ * 
+ * Flow:
+ * 1. Fetch/cache prompt data
+ * 2. Create execution instance via startPromptInstance (generates runId)
+ * 3. Open UI for display type with runId
+ * 4. Auto-execute if configured
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
+import type { RootState, AppDispatch } from '../store';
 import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import type { PromptData, PromptDb } from '@/features/prompts/types/core';
 import {
@@ -17,29 +23,28 @@ import {
   openFlexiblePanel,
   addToastResult,
 } from '../slices/promptRunnerSlice';
-import { cachePrompt } from '../slices/promptCacheSlice';
-import { supabase } from '@/utils/supabase/client';
-import { executePromptDirect } from './executePromptDirectThunk';
-import { createAndSubmitTask } from '../socket-io/thunks/submitTaskThunk';
-import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
+import { startPromptInstance } from '../prompt-execution/thunks/startInstanceThunk';
+import { executeMessage } from '../prompt-execution/thunks/executeMessageThunk';
+import { selectPrimaryResponseEndedByTaskId, selectPrimaryResponseTextByTaskId } from '../socket-io/selectors/socket-response-selectors';
 
 export interface OpenPromptExecutionPayload {
   // Prompt identification
   promptId?: string;
   promptData?: PromptData;
+  promptSource?: 'prompts' | 'prompt_builtins'; // Which table to fetch from
   
-  // Execution configuration
+  // Execution configuration (all properties required)
   executionConfig: Omit<PromptExecutionConfig, 'result_display'>;
   result_display: ResultDisplay;
-  
-  // Display variant for PromptRunner (standard | compact)
-  displayVariant?: 'standard' | 'compact';
   
   // Variables and initial message
   variables?: Record<string, string>;
   initialMessage?: string;
   title?: string;
   runId?: string;
+  
+  // Resources (attachments)
+  resources?: any[]; // Using any[] to match Resource type from different module
   
   // Inline-specific: text manipulation callbacks
   onTextReplace?: (text: string) => void;
@@ -55,19 +60,27 @@ export interface OpenPromptExecutionPayload {
   onExecutionComplete?: (result: { response: string; metadata?: any }) => void;
 }
 
-export const openPromptExecution = createAsyncThunk(
+export const openPromptExecution = createAsyncThunk<
+  any,
+  OpenPromptExecutionPayload,
+  {
+    dispatch: AppDispatch;
+    state: RootState;
+  }
+>(
   'promptExecution/open',
-  async (payload: OpenPromptExecutionPayload, { dispatch, getState }) => {
+  async (payload, { dispatch, getState }) => {
     const {
       promptId,
       promptData: initialPromptData,
+      promptSource: providedPromptSource,
       executionConfig,
       result_display,
-      displayVariant,
       variables,
       initialMessage,
       title,
-      runId,
+      runId: providedRunId,
+      resources,
       onTextReplace,
       onTextInsertBefore,
       onTextInsertAfter,
@@ -77,85 +90,142 @@ export const openPromptExecution = createAsyncThunk(
       onExecutionComplete,
     } = payload;
 
-    // Step 1: Fetch/cache prompt data if needed
-    let finalPromptData: PromptData | undefined = initialPromptData;
-
-    if (promptId && !initialPromptData) {
-      const state = getState() as RootState;
-      const cachedPrompt = state.promptCache.prompts[promptId];
-
-      if (cachedPrompt) {
-        finalPromptData = cachedPrompt;
-      } else {
-        // Fetch from database
-        const { data: prompt, error } = await supabase
-          .from('prompts')
-          .select('*')
-          .eq('id', promptId)
-          .single();
-
-        if (error || !prompt) {
-          console.error('Failed to fetch prompt:', error?.message);
-          throw new Error(`Prompt not found: ${promptId}`);
-        }
-
-        // Normalize and cache
-        const fetchedPrompt = {
-          id: prompt.id || '',
-          name: prompt.name || '',
-          description: prompt.description || '',
-          messages: prompt.messages || [],
-          variableDefaults: prompt.variable_defaults || [],
-          settings: prompt.settings || {},
-          userId: prompt.user_id,
-        };
-
-        dispatch(cachePrompt({
-          ...fetchedPrompt,
-          source: 'prompts' as const,
-          fetchedAt: Date.now(),
-          status: 'cached' as const,
-        }));
-        finalPromptData = fetchedPrompt;
-      }
-    }
-
-    if (!finalPromptData) {
+    // Validate input
+    if (!promptId && !initialPromptData) {
       throw new Error('Either promptId or promptData must be provided');
     }
 
-    // Step 2: Build base modal config (used by modal types)
+    const finalPromptId = promptId || initialPromptData?.id || '';
+    const promptSource = providedPromptSource || 'prompts'; // Default to 'prompts' for backwards compatibility
+
+    // ============================================================================
+    // STEP 1: Create Execution Instance (UNIFIED SYSTEM)
+    // ============================================================================
+    // ALL display types now create a proper execution instance first
+    const createdRunId = await dispatch(startPromptInstance({
+      promptId: finalPromptId,
+      promptSource,
+      executionConfig: executionConfig as any, // startPromptInstance handles internal ExecutionConfig
+      variables: variables || {},
+      initialMessage: initialMessage || '',
+      runId: providedRunId, // Use provided runId if available
+      resources: resources || [], // Pass resources to startPromptInstance
+    })).unwrap();
+
+    console.log(`✅ Created execution instance: ${createdRunId} for display: ${result_display}`);
+
+    // Get prompt data from the created instance (it's now cached)
+    const state = getState() as RootState;
+    const instance = state.promptExecution.instances[createdRunId];
+    if (!instance) {
+      throw new Error('Failed to create execution instance');
+    }
+
+    // Build prompt data from instance
+    const finalPromptData: PromptData = initialPromptData || {
+      id: instance.promptId,
+      name: title || 'Prompt',
+      description: '',
+      messages: instance.messages,
+      variableDefaults: instance.variableDefaults,
+      settings: instance.settings,
+    };
+
+    // ============================================================================
+    // STEP 2: Build Modal Config with runId
+    // ============================================================================
     const baseModalConfig = {
-      promptId,
+      promptId: finalPromptId,
       promptData: finalPromptData,
       executionConfig,
-      displayVariant,
       variables,
       initialMessage,
       title: title || finalPromptData.name,
-      runId,
+      runId: createdRunId, // ⭐ Now all configs include runId
     };
 
-    // Step 3: Route based on result_display
+    // ============================================================================
+    // STEP 3: Route to Display Type
+    // ============================================================================
     switch (result_display) {
       case 'modal-full':
+        // Open modal with runId
         dispatch(openPromptModal(baseModalConfig));
+        
+        // Auto-execute if configured
+        if (executionConfig.auto_run) {
+          await dispatch(executeMessage({ runId: createdRunId }));
+        }
         break;
 
       case 'modal-compact':
+        // Open compact modal with runId
         dispatch(openCompactModal(baseModalConfig));
+        
+        // Auto-execute if configured
+        if (executionConfig.auto_run) {
+          await dispatch(executeMessage({ runId: createdRunId }));
+        }
+        break;
+
+      case 'sidebar':
+        // Open sidebar with runId
+        dispatch(openSidebarResult({
+          config: baseModalConfig,
+          position: sidebarPosition || 'right',
+          size: sidebarSize || 'md',
+        }));
+        
+        // Auto-execute if configured
+        if (executionConfig.auto_run) {
+          await dispatch(executeMessage({ runId: createdRunId }));
+        }
+        break;
+
+      case 'flexible-panel':
+        // Open flexible panel with runId
+        dispatch(openFlexiblePanel({
+          config: baseModalConfig,
+          position: sidebarPosition || 'right',
+        }));
+        
+        // Auto-execute if configured
+        if (executionConfig.auto_run) {
+          await dispatch(executeMessage({ runId: createdRunId }));
+        }
         break;
 
       case 'inline': {
-        // For inline, execute first, then show overlay with result
-        const result = await dispatch(executePromptDirect({
-          promptData: finalPromptData,
-          variables: variables || {},
-        })).unwrap();
+        // Execute via unified system
+        const taskId = await dispatch(executeMessage({ runId: createdRunId })).unwrap();
+        
+        // Wait for streaming to complete
+        await new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            const state = getState() as RootState;
+            const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
+            
+            if (isEnded) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+          
+          // Timeout after 5 minutes
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve();
+          }, 5 * 60 * 1000);
+        });
 
+        // Get final result
+        const state = getState() as RootState;
+        const result = selectPrimaryResponseTextByTaskId(taskId)(state);
+
+        // Show inline overlay with result
         dispatch(openInlineOverlay({
-          result: result.response,
-          taskId: result.taskId,
+          result: result || '',
+          taskId: taskId,
           originalText: originalText || '',
           promptName: finalPromptData.name,
           isStreaming: false,
@@ -168,47 +238,9 @@ export const openPromptExecution = createAsyncThunk(
         break;
       }
 
-      case 'sidebar':
-        dispatch(openSidebarResult({
-          config: baseModalConfig,
-          position: sidebarPosition || 'right',
-          size: sidebarSize || 'md',
-        }));
-        break;
-
-      case 'flexible-panel':
-        dispatch(openFlexiblePanel({
-          config: baseModalConfig,
-          position: sidebarPosition || 'right', // Reuse sidebarPosition for flexible panel
-        }));
-        break;
-
       case 'toast': {
-        // Show toast immediately and stream the response
-        const messagesWithVariables = (finalPromptData.messages || []).map(msg => ({
-          ...msg,
-          content: replaceVariablesInText(msg.content, variables || {})
-        }));
-        
-        const finalMessages = initialMessage
-          ? [...messagesWithVariables, { role: 'user' as const, content: initialMessage }]
-          : messagesWithVariables;
-        
-        const chatConfig: Record<string, any> = {
-          model_id: finalPromptData.settings?.model_id,
-          messages: finalMessages,
-          stream: true,
-          ...finalPromptData.settings,
-        };
-        
-        // Submit task to get taskId immediately
-        const result = await dispatch(createAndSubmitTask({
-          service: 'chat_service',
-          taskName: 'direct_chat',
-          taskData: {
-            chat_config: chatConfig
-          }
-        })).unwrap();
+        // Execute via unified system
+        const taskId = await dispatch(executeMessage({ runId: createdRunId })).unwrap();
 
         // Show toast immediately with taskId (will stream in real-time)
         dispatch(addToastResult({
@@ -217,28 +249,69 @@ export const openPromptExecution = createAsyncThunk(
           duration: 5000,
           promptData: finalPromptData,
           executionConfig,
-          taskId: result.taskId,
-          isStreaming: true, // Mark as streaming
+          taskId: taskId,
+          isStreaming: true,
         }));
 
-        // Optionally wait for completion for onExecutionComplete callback
+        // Optionally wait for completion
         if (onExecutionComplete) {
-          const completeResult = await dispatch(executePromptDirect({
-            promptData: finalPromptData,
-            variables: variables || {},
-          })).unwrap();
-          onExecutionComplete(completeResult);
+          // Wait for streaming to complete
+          await new Promise<void>((resolve) => {
+            const checkInterval = setInterval(() => {
+              const state = getState() as RootState;
+              const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
+              
+              if (isEnded) {
+                clearInterval(checkInterval);
+                resolve();
+              }
+            }, 100);
+            
+            setTimeout(() => {
+              clearInterval(checkInterval);
+              resolve();
+            }, 5 * 60 * 1000);
+          });
+
+          const state = getState() as RootState;
+          const response = selectPrimaryResponseTextByTaskId(taskId)(state);
+          onExecutionComplete({ response, metadata: {} });
         }
         
         break;
       }
 
       case 'direct': {
-        // Execute and return result directly (no UI)
-        const result = await dispatch(executePromptDirect({
-          promptData: finalPromptData,
-          variables: variables || {},
-        })).unwrap();
+        // Execute via unified system (no UI)
+        const taskId = await dispatch(executeMessage({ runId: createdRunId })).unwrap();
+
+        // Wait for completion
+        await new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            const state = getState() as RootState;
+            const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
+            
+            if (isEnded) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+          
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve();
+          }, 5 * 60 * 1000);
+        });
+
+        // Get final result
+        const state = getState() as RootState;
+        const response = selectPrimaryResponseTextByTaskId(taskId)(state);
+        
+        const result = {
+          response,
+          taskId,
+          metadata: {},
+        };
 
         if (onExecutionComplete) {
           onExecutionComplete(result);
@@ -248,11 +321,36 @@ export const openPromptExecution = createAsyncThunk(
       }
 
       case 'background': {
-        // Execute silently in background
-        const result = await dispatch(executePromptDirect({
-          promptData: finalPromptData,
-          variables: variables || {},
-        })).unwrap();
+        // Execute silently via unified system
+        const taskId = await dispatch(executeMessage({ runId: createdRunId })).unwrap();
+
+        // Wait for completion
+        await new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            const state = getState() as RootState;
+            const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
+            
+            if (isEnded) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+          
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve();
+          }, 5 * 60 * 1000);
+        });
+
+        // Get final result
+        const state = getState() as RootState;
+        const response = selectPrimaryResponseTextByTaskId(taskId)(state);
+        
+        const result = {
+          response,
+          taskId,
+          metadata: {},
+        };
 
         if (onExecutionComplete) {
           onExecutionComplete(result);
@@ -265,7 +363,7 @@ export const openPromptExecution = createAsyncThunk(
         throw new Error(`Unknown result_display type: ${result_display}`);
     }
 
-    return null;
+    return createdRunId;
   }
 );
 

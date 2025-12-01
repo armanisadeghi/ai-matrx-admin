@@ -47,10 +47,13 @@ import {
   EyeOff,
   Settings,
   Shield,
+  AlertCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { useUnifiedContextMenu } from '@/features/prompt-builtins/hooks';
-import { useShortcutExecution } from '@/features/prompt-builtins/hooks';
 import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '@/features/prompt-builtins/constants';
+import { mapScopeToVariables } from '@/features/prompt-builtins/utils/execution';
+import { usePromptRunner } from '@/features/prompts/hooks/usePromptRunner';
 import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt-builtins/types/menu';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { FindReplaceModal } from '@/components/modals/FindReplaceModal';
@@ -61,6 +64,7 @@ import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { selectIsOverlayOpen, toggleOverlay } from '@/lib/redux/slices/overlaySlice';
 import { ContextDebugModal } from '@/components/debug/ContextDebugModal';
 import { getIconComponent } from '@/components/official/IconResolver';
+import { toast } from '@/components/ui/use-toast';
 
 interface UnifiedContextMenuProps {
   children: React.ReactNode;
@@ -154,8 +158,8 @@ export function UnifiedContextMenu({
     dbPlacementTypes.length > 0
   );
 
-  // Execution
-  const { executeShortcut, streamingText } = useShortcutExecution();
+  // Execution via unified Redux system
+  const { openPrompt } = usePromptRunner();
 
   // Quick Actions via Redux (hard-coded)
   const {
@@ -476,40 +480,57 @@ export function UnifiedContextMenu({
     findReplaceOpenRef.current = true; // Set ref immediately for reliable access
   };
 
-  // Handle shortcut execution
+  // Handle shortcut execution via unified Redux system
   const handleShortcutTrigger = async (shortcut: any, placementType: string) => {
     try {
-      // Build scope context with all provided data
-      // Standard scopes
-      const scopes: Record<string, string> = {
-        selection: selectedText || '', // Auto-captured from user selection
-        content: contextData?.content || '', // Primary content (configurable)
-        context: contextData?.context || '', // Broader context (configurable)
-      };
-
-      // Add all custom variables from contextData
-      if (contextData) {
-        Object.keys(contextData).forEach(key => {
-          // Skip standard keys and internal keys
-          if (key !== 'content' && key !== 'context' && key !== 'contextFilter') {
-            scopes[key] = contextData[key];
-          }
+      // Check if builtin is connected
+      if (!shortcut.prompt_builtin) {
+        toast({
+          title: "Prompt Not Connected",
+          description: (
+            <div className="flex flex-col gap-2">
+              <p className="font-medium">{shortcut.label}</p>
+              <p className="text-sm text-muted-foreground">
+                This shortcut has no connected prompt builtin. Please configure it in the admin panel.
+              </p>
+            </div>
+          ),
+          variant: "destructive",
         });
+        return;
       }
 
-      console.log('[UnifiedContextMenu] Executing with scopes:', JSON.stringify(scopes, null, 2));
+      const builtin = shortcut.prompt_builtin;
+
+      // Build application scopes (standard + custom)
+      const applicationScope = {
+        selection: selectedText || '',
+        content: contextData?.content || '',
+        context: contextData?.context || '',
+      };
+
+      console.log('[UnifiedContextMenu] Application scope:', JSON.stringify(applicationScope, null, 2));
+
+      // Map application scopes to prompt variables using scope_mappings
+      const variables = mapScopeToVariables(
+        applicationScope,
+        shortcut.scope_mappings || {},
+        builtin.variableDefaults || []
+      );
+
+      console.log('[UnifiedContextMenu] Mapped variables:', JSON.stringify(variables, null, 2));
 
       if (isDebugMode) {
         dispatch(showPromptDebugIndicator({
           promptName: shortcut.label,
           placementType,
           selectedText: selectedText,
-          availableContext: scopes,
-          resolvedVariables: shortcut.prompt_builtin?.variableDefaults || {},
+          availableContext: applicationScope,
+          resolvedVariables: variables,
           canResolve: {
-            canResolve: true, // Assume true for now - shortcuts handle their own validation
+            canResolve: true,
             missingVariables: [],
-            resolvedVariables: Object.keys(scopes),
+            resolvedVariables: Object.keys(variables),
           },
           metadata: {
             scopeMappings: shortcut.scope_mappings,
@@ -518,48 +539,57 @@ export function UnifiedContextMenu({
         }));
       }
 
-      // Check if builtin is connected
-      if (!shortcut.prompt_builtin) {
-        alert(`"${shortcut.label}" has no connected prompt. Please configure in admin panel.`);
-        return;
-      }
+      // Get result display type
+      const resultDisplay = shortcut.result_display || 'modal-full';
 
-      // Check if shortcut is configured for inline execution
-      const resultDisplay = shortcut.result_display || 'modal';
+      // Build execution config
+      const executionConfig = {
+        auto_run: shortcut.auto_run ?? true,
+        allow_chat: shortcut.allow_chat ?? true,
+        show_variables: shortcut.show_variables ?? false,
+        apply_variables: shortcut.apply_variables ?? true,
+        track_in_runs: true,
+      };
 
-      if (resultDisplay === 'inline' && isEditable && selectionRange && onTextReplace) {
-        // Execute inline - we'll handle the result with the captured selection range
-        const result = await executeShortcut(shortcut, {
-          scopes,
-        });
-
-        // If we got a result and have selection range, replace the text
-        if (result && typeof result === 'string') {
-          const resultText: string = result;
-
-          if (selectionRange.element instanceof HTMLTextAreaElement) {
-            const textarea = selectionRange.element;
-            const { start } = selectionRange;
-
-            // Update via callback
-            onTextReplace(resultText);
-
-            // Restore focus and select replaced text
-            setTimeout(() => {
-              textarea.focus();
-              textarea.setSelectionRange(start, start + resultText.length);
-            }, 0);
-          }
-        }
-      } else {
-        // Execute according to shortcut's configured result_display and boolean flags
-        await executeShortcut(shortcut, {
-          scopes,
-        });
-      }
+      // ⭐ Call unified system with ONLY the prompt ID
+      // Redux will handle fetching from cache (already populated by useUnifiedContextMenu)
+      await openPrompt({
+        promptId: builtin.id, // Just the ID - Redux handles the rest!
+        promptSource: 'prompt_builtins', // Tell Redux this is a builtin, not a custom prompt
+        variables: shortcut.apply_variables ? variables : {},
+        executionConfig,
+        result_display: resultDisplay,
+        title: shortcut.label,
+        initialMessage: '',
+        // For inline display: pass text manipulation callbacks
+        ...(resultDisplay === 'inline' && isEditable && {
+          onTextReplace,
+          onTextInsertBefore,
+          onTextInsertAfter,
+          originalText: selectedText || '',
+        }),
+      });
     } catch (error) {
       console.error('[UnifiedContextMenu] Error executing shortcut:', error);
-      alert(`Error: ${(error as Error).message}`);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      
+      toast({
+        title: "Execution Failed",
+        description: (
+          <div className="flex flex-col gap-2">
+            <p className="font-medium">{shortcut.label}</p>
+            <p className="text-sm text-muted-foreground">
+              {errorMessage}
+            </p>
+            {isDebugMode && (
+              <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-x-auto">
+                {error instanceof Error ? error.stack : String(error)}
+              </pre>
+            )}
+          </div>
+        ),
+        variant: "destructive",
+      });
     }
   };
 
@@ -962,7 +992,7 @@ export function UnifiedContextMenu({
             setSelectedText('');
           }}
           originalText={textResultData.original}
-          aiResponse={streamingText || textResultData.result}
+          aiResponse={textResultData.result}
           promptName={textResultData.promptName}
           onReplace={(newText) => {
             onTextReplace?.(newText);

@@ -133,12 +133,12 @@ export const selectMergedVariables = createSelector(
       });
     }
 
-    // Merge in priority order
+    // Merge in priority order (only spread if properties exist to avoid creating new object references)
     return {
       ...defaults,
-      ...(scopedVariables?.user || {}),
-      ...(scopedVariables?.org || {}),
-      ...(scopedVariables?.project || {}),
+      ...(scopedVariables?.user || EMPTY_OBJECT),
+      ...(scopedVariables?.org || EMPTY_OBJECT),
+      ...(scopedVariables?.project || EMPTY_OBJECT),
       ...instance.variables.userValues,
       ...instance.variables.computedValues,
     };

@@ -9,9 +9,11 @@ interface PromptUserMessageProps {
     content: string;
     messageIndex: number;
     onContentChange?: (messageIndex: number, newContent: string) => void;
+    /** Compact mode: minimal styling, less padding, no left margin */
+    compact?: boolean;
 }
 
-export function PromptUserMessage({ content, messageIndex, onContentChange }: PromptUserMessageProps) {
+export function PromptUserMessage({ content, messageIndex, onContentChange, compact = false }: PromptUserMessageProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(content);
     const [isCollapsed, setIsCollapsed] = useState(true);
@@ -90,13 +92,19 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
         }
     };
 
+    // Adjust styling based on compact mode - keep ALL functionality
+    const containerMargin = compact ? "" : "ml-12";
+    const headerPadding = compact ? "px-2 py-1" : "px-3 py-2";
+    const contentPadding = compact ? "px-2 pb-2" : "px-3 pb-3";
+    const textSize = compact ? "text-xs" : "text-sm";
+
     return (
-        <div className="ml-12">
+        <div className={containerMargin}>
             {/* Unified container with border and background */}
             <div className={`bg-muted border border-border ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
                 {/* Thin delicate header */}
                 <div
-                    className="flex items-center justify-between px-3 py-2 cursor-pointer"
+                    className={`flex items-center justify-between ${headerPadding} cursor-pointer`}
                     onClick={handleHeaderClick}
                 >
                     <div className="text-xs font-semibold text-muted-foreground">
@@ -152,14 +160,14 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                 </div>
 
                 {/* Content */}
-                <div className="px-3 pb-3 relative">
+                <div className={`${contentPadding} relative`}>
                     {isEditing ? (
                         <div className="space-y-2">
                             <textarea
                                 ref={textareaRef}
                                 value={editContent}
                                 onChange={handleTextareaChange}
-                                className="w-full text-sm text-foreground bg-card border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden"
+                                className={`w-full ${textSize} text-foreground bg-card border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden`}
                             />
                             {hasUnsavedChanges && (
                                 <div className="text-xs text-warning">
@@ -179,7 +187,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                 <div className="relative">
                                     <div
                                         ref={contentRef}
-                                        className={`text-sm text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${isCollapsed ? "max-h-24" : ""
+                                        className={`${textSize} text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${isCollapsed ? "max-h-24" : ""
                                             }`}
                                     >
                                         {textContent}

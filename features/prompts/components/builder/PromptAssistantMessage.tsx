@@ -22,6 +22,8 @@ interface PromptAssistantMessageProps {
         totalTime?: number;
         tokens?: number;
     };
+    /** Compact mode: minimal header, reduced spacing */
+    compact?: boolean;
 }
 
 export function PromptAssistantMessage({ 
@@ -30,7 +32,8 @@ export function PromptAssistantMessage({
     messageIndex,
     isStreamActive = false,
     onContentChange,
-    metadata 
+    metadata,
+    compact = false
 }: PromptAssistantMessageProps) {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -93,11 +96,16 @@ export function PromptAssistantMessage({
     // Check if this is an error message
     const isError = content.startsWith("Error:");
     
+    // Adjust styling based on compact mode - keep ALL functionality
+    const headerMargin = compact ? "mb-0" : "mb-0.5";
+    const markdownClassName = compact ? "text-xs bg-transparent" : "bg-textured";
+    const buttonMargin = compact ? "mt-0.5" : "mt-1";
+    
     return (
         <div >
-            <div className="text-xs font-semibold mb-0.5 text-muted-foreground">
+            <div className={`text-xs font-semibold ${headerMargin} text-muted-foreground`}>
                 Assistant
-                {metadata && metadata.totalTime && (
+                {!compact && metadata && metadata.totalTime && (
                     <span className="ml-2 text-muted-foreground font-normal">
                         ({Math.round(metadata.totalTime / 1000)}s)
                     </span>
@@ -115,11 +123,11 @@ export function PromptAssistantMessage({
                         isStreamActive={isStreamActive}
                         hideCopyButton={true}
                         allowFullScreenEditor={false}
-                        className="bg-textured"
+                        className={markdownClassName}
                         onContentChange={handleContentChange}
                     />
                     {!isStreamActive && (
-                        <div className="flex items-center gap-1 mt-1">
+                        <div className={`flex items-center gap-1 ${buttonMargin}`}>
                             <Button
                                 variant="ghost"
                                 size="sm"

@@ -2,7 +2,7 @@
  * API Payload Builder Utility
  * 
  * SINGLE SOURCE OF TRUTH for what gets sent to the API.
- * This utility replicates the EXACT logic from executeMessageThunk.
+ * This utility uses the EXACT same centralized logic as executeMessageThunk.
  * 
  * Used by:
  * 1. Debug panel - to show accurate preview
@@ -13,8 +13,7 @@
 
 import type { ConversationMessage } from '../types';
 import type { Resource } from '@/features/prompts/types/resources';
-import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
-import { buildFinalMessage } from './message-builder';
+import { processMessagesForExecution } from './message-builder';
 
 export interface APIPayloadBuilderOptions {
   /**
@@ -47,9 +46,8 @@ export interface APIPayloadResult {
 /**
  * Build the EXACT API payload that will be sent
  * 
- * This function follows the same logic as executeMessageThunk:
- * 1. First execution (requiresVariableReplacement=true): Simulate template processing
- * 2. Subsequent execution: Show current messages + what would be appended
+ * This function uses the SAME centralized logic as executeMessageThunk.
+ * No more duplication - everything goes through processMessagesForExecution.
  * 
  * @param options - Current state options
  * @returns The exact API payload with metadata
@@ -66,95 +64,25 @@ export async function buildAPIPayload(
   } = options;
 
   try {
-    if (requiresVariableReplacement) {
-      // ========== MODE 1: FIRST EXECUTION (SIMULATION) ==========
-      // This simulates what executeMessageThunk does on first execution
-      
-      // Process all template messages (replace variables)
-      const processedMessages = messages.map(msg => ({
-        role: msg.role,
-        content: replaceVariablesInText(msg.content, variables),
-      }));
+    // Use the EXACT same centralized function as executeMessageThunk
+    const result = await processMessagesForExecution({
+      templateMessages: messages,
+      isFirstExecution: requiresVariableReplacement,
+      userInput: currentInput,
+      resources,
+      variables,
+    });
 
-      // Check if last message is user message
-      const lastMsg = processedMessages[processedMessages.length - 1];
-      const isLastMessageUser = lastMsg?.role === 'user';
-      
-      if (isLastMessageUser && lastMsg) {
-        // Build the final message using the message builder
-        const lastTemplateMessage = messages[messages.length - 1];
-        
-        const result = await buildFinalMessage({
-          isFirstMessage: true,
-          isLastTemplateMessageUser: true,
-          lastTemplateMessage: {
-            role: lastTemplateMessage.role as 'user' | 'assistant' | 'system',
-            content: lastTemplateMessage.content,
-          },
-          userInput: currentInput,
-          resources,
-          variables,
-        });
+    // Strip timestamps for API payload (API doesn't need them)
+    const apiMessages = result.messages.map(m => ({
+      role: m.role,
+      content: m.content,
+    }));
 
-        // Replace last message with the combined one
-        lastMsg.content = result.finalContent;
-        
-        return {
-          messages: processedMessages,
-          isSimulation: true,
-        };
-      } else {
-        // Last message is not user - append new user message
-        if (currentInput.trim() || resources.length > 0) {
-          const result = await buildFinalMessage({
-            isFirstMessage: true,
-            isLastTemplateMessageUser: false,
-            userInput: currentInput,
-            resources,
-            variables,
-          });
-
-          processedMessages.push({
-            role: 'user',
-            content: result.finalContent,
-          });
-        }
-
-        return {
-          messages: processedMessages,
-          isSimulation: true,
-        };
-      }
-    } else {
-      // ========== MODE 2: SUBSEQUENT EXECUTION ==========
-      // Show current messages + what will be appended
-      
-      const currentMessages = messages.map(m => ({
-        role: m.role,
-        content: m.content,
-      }));
-
-      // If there's input/resources, show what would be appended
-      if (currentInput.trim() || resources.length > 0) {
-        const result = await buildFinalMessage({
-          isFirstMessage: false,
-          isLastTemplateMessageUser: false,
-          userInput: currentInput,
-          resources,
-          variables,
-        });
-
-        currentMessages.push({
-          role: 'user',
-          content: result.finalContent,
-        });
-      }
-
-      return {
-        messages: currentMessages,
-        isSimulation: false,
-      };
-    }
+    return {
+      messages: apiMessages,
+      isSimulation: requiresVariableReplacement,
+    };
   } catch (error) {
     return {
       messages: [],
@@ -166,7 +94,11 @@ export async function buildAPIPayload(
 
 /**
  * Synchronous version for quick previews (without resources)
- * Use this when you don't need resource fetching/formatting
+ * 
+ * NOTE: This is a simplified version that does NOT include resource processing.
+ * Use buildAPIPayload() for accurate previews with resources.
+ * 
+ * This is kept for backwards compatibility with components that don't need resources.
  */
 export function buildAPIPayloadSync(
   options: APIPayloadBuilderOptions
@@ -175,40 +107,34 @@ export function buildAPIPayloadSync(
     requiresVariableReplacement,
     messages,
     currentInput,
-    variables,
   } = options;
 
   try {
+    // Quick sync version - call the async version with empty resources
+    // We can't use the centralized function here (it's async), so we keep simple logic
+    
     if (requiresVariableReplacement) {
-      // Process templates
-      const processedMessages = messages.map(msg => ({
-        role: msg.role,
-        content: replaceVariablesInText(msg.content, variables),
-      }));
-
-      // Check last message
+      // Return templates as-is (no variable replacement in sync version)
+      const processedMessages = [...messages];
+      
       const lastMsg = processedMessages[processedMessages.length - 1];
       const isLastMessageUser = lastMsg?.role === 'user';
 
-      if (isLastMessageUser && lastMsg) {
-        // Append to last message
-        if (currentInput.trim()) {
-          lastMsg.content = `${lastMsg.content}\n\n${currentInput.trim()}`;
-        }
+      if (isLastMessageUser && lastMsg && currentInput.trim()) {
+        lastMsg.content = `${lastMsg.content}\n\n${currentInput.trim()}`;
       } else if (currentInput.trim()) {
-        // Add new message
         processedMessages.push({
           role: 'user',
           content: currentInput.trim(),
+          timestamp: new Date().toISOString(),
         });
       }
 
       return {
-        messages: processedMessages,
+        messages: processedMessages.map(m => ({ role: m.role, content: m.content })),
         isSimulation: true,
       };
     } else {
-      // Show current messages + potential append
       const currentMessages = messages.map(m => ({
         role: m.role,
         content: m.content,

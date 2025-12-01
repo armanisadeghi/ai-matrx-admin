@@ -10,6 +10,7 @@ import {
 } from '../slice';
 import type { ExecutionInstance, ConversationMessage } from '../types';
 import { PromptDb } from '@/features/prompts';
+import { getPrompt } from '../../thunks/promptSystemThunks';
 
 interface LoadRunPayload {
     runId: string;
@@ -49,18 +50,28 @@ export const loadRun = createAsyncThunk<
                 throw new Error(error?.message || `Run not found: ${runId}`);
             }
 
-            // Fetch prompt data to get defaults and settings if needed
+            // Fetch prompt data to get defaults and settings if needed (cache-first)
             // We use the source_id from the run to fetch the prompt
-            let fetchedPromptData = null as PromptDb | null;
-            if (run.source_type === 'prompts' && run.source_id) {
-                const { data: prompt } = await supabase
-                    .from('prompts')
-                    .select('*')
-                    .eq('id', run.source_id)
-                    .single();
-                fetchedPromptData = prompt;
+            let fetchedPromptData: any = null;
+            if (run.source_id) {
+                const validSource = (run.source_type === 'prompts' || run.source_type === 'prompt_builtins')
+                    ? run.source_type
+                    : 'prompts';
+                
+                try {
+                    const { promptData } = await dispatch(
+                        getPrompt({
+                            promptId: run.source_id,
+                            source: validSource,
+                            allowStale: true // Allow stale for historical runs
+                        })
+                    ).unwrap();
+                    fetchedPromptData = promptData;
+                } catch (error) {
+                    console.warn(`Failed to fetch prompt ${run.source_id} for run ${runId}:`, error);
+                    // Continue without prompt data - use run's stored settings
+                }
             }
-            // TODO: Add support for prompt_builtins if needed
 
             // Prepare instance data
             const now = Date.now();
@@ -80,7 +91,7 @@ export const loadRun = createAsyncThunk<
                 updatedAt: now,
 
                 // Use settings from run, fallback to prompt settings
-                settings: run.settings || fetchedPromptData?.settings || {},
+                settings: run.settings || (fetchedPromptData?.settings as any) || {},
 
                 executionConfig: {
                     auto_run: false, // Don't auto-run loaded historical runs
@@ -95,7 +106,7 @@ export const loadRun = createAsyncThunk<
                     scopedValues: {},
                     computedValues: {},
                 },
-                variableDefaults: fetchedPromptData?.variable_defaults || [],
+                variableDefaults: fetchedPromptData?.variableDefaults || [],
 
                 messages: [], // Will be populated below
 

@@ -211,10 +211,11 @@ export interface PromptExecutionState {
 export interface StartInstancePayload {
   promptId: string;
   promptSource?: 'prompts' | 'prompt_builtins';
-  executionConfig?: Partial<ExecutionConfig>;
+  executionConfig: ExecutionConfig;
   variables?: Record<string, string>;
   initialMessage?: string;
   runId?: string;
+  resources?: Resource[];
 }
 
 export interface ExecuteMessagePayload {

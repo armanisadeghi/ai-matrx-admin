@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { buildCategoryHierarchy } from '@/features/prompt-builtins/utils/menuHierarchy';
 import type { CategoryGroup } from '@/features/prompt-builtins/types/menu';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { cachePrompt } from '@/lib/redux/slices/promptCacheSlice';
+import type { CachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
 
 interface UseUnifiedContextMenuReturn {
   categoryGroups: CategoryGroup[];
@@ -34,6 +37,7 @@ export function useUnifiedContextMenu(
   contextFilter?: string,
   enabled: boolean = true
 ): UseUnifiedContextMenuReturn {
+  const dispatch = useAppDispatch();
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -66,6 +70,56 @@ export function useUnifiedContextMenu(
       const allGroups = (data as ViewResponse[])?.flatMap(row =>
         buildCategoryHierarchy(row.categories_flat || [], contextFilter)
       ) || [];
+
+      // ⭐ CACHE ALL PROMPT BUILTINS IN REDUX
+      // This ensures they're available for execution without refetching
+      allGroups.forEach(group => {
+        const cacheItems = (items: any[]) => {
+          items.forEach(item => {
+            // Only cache prompt shortcuts that have a connected builtin
+            if (item.type === 'prompt_shortcut' && item.prompt_builtin) {
+              const builtin = item.prompt_builtin;
+              
+              const cachedPrompt: CachedPrompt = {
+                id: builtin.id,
+                name: builtin.name,
+                description: builtin.description || undefined,
+                messages: builtin.messages,
+                variableDefaults: builtin.variableDefaults || [],
+                settings: builtin.settings,
+                userId: builtin.user_id || '', // From the builtin
+                source: 'prompt_builtins',
+                fetchedAt: Date.now(),
+                status: 'cached',
+              };
+
+              // Cache in Redux - now getPrompt will use this instead of refetching
+              dispatch(cachePrompt(cachedPrompt));
+            }
+          });
+        };
+
+        // Cache items from this group
+        if (group.items) {
+          cacheItems(group.items);
+        }
+
+        // Recursively cache items from child groups
+        const cacheChildren = (children: typeof allGroups) => {
+          children.forEach(child => {
+            if (child.items) {
+              cacheItems(child.items);
+            }
+            if (child.children) {
+              cacheChildren(child.children);
+            }
+          });
+        };
+
+        if (group.children) {
+          cacheChildren(group.children);
+        }
+      });
 
       setCategoryGroups(allGroups);
 

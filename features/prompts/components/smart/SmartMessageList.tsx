@@ -21,6 +21,8 @@ interface SmartMessageListProps {
     className?: string;
     emptyStateMessage?: string;
     showSystemMessage?: boolean;
+    /** Compact mode: reduces spacing and simplifies message display */
+    compact?: boolean;
 }
 
 export function SmartMessageList({
@@ -28,6 +30,7 @@ export function SmartMessageList({
     className = "",
     emptyStateMessage = "Ready to run your prompt",
     showSystemMessage: showSystemMessageProp,
+    compact = false,
 }: SmartMessageListProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -41,10 +44,11 @@ export function SmartMessageList({
     const currentTaskId = instance?.execution?.currentTaskId;
     // Select ONLY the completion status, NOT the text
     const isResponseEnded = useAppSelector((state) =>
-        currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
+        currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : true
     );
 
-    const isStreaming = !isResponseEnded || false;
+    // Only streaming if we have a taskId AND response hasn't ended
+    const isStreaming = !!currentTaskId && !isResponseEnded;
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
@@ -71,8 +75,13 @@ export function SmartMessageList({
         );
     }
 
+    // Adjust spacing classes based on compact mode
+    const spacingClasses = compact 
+        ? "space-y-2 pt-2 pb-2" 
+        : "space-y-6 pt-6 pb-4";
+
     return (
-        <div className={`space-y-6 pt-6 pb-4 ${className}`}>
+        <div className={`${spacingClasses} ${className}`}>
             {shouldShowMessages && messages.map((msg, idx) => {
                 // Skip system messages if showSystemMessage is false
                 if (msg.role === "system" && !showSystemMessage) {
@@ -85,6 +94,7 @@ export function SmartMessageList({
                             <PromptUserMessage
                                 content={msg.content}
                                 messageIndex={idx}
+                                compact={compact}
                             />
                         ) : msg.role === "system" ? (
                             <PromptSystemMessage
@@ -93,6 +103,7 @@ export function SmartMessageList({
                                 messageIndex={idx}
                                 isStreamActive={false}
                                 metadata={msg.metadata}
+                                compact={compact}
                             />
                         ) : (
                             <PromptAssistantMessage
@@ -101,6 +112,7 @@ export function SmartMessageList({
                                 messageIndex={idx}
                                 isStreamActive={false} // Historical messages are not streaming
                                 metadata={msg.metadata}
+                                compact={compact}
                             />
                         )}
                     </div>
@@ -113,6 +125,7 @@ export function SmartMessageList({
                     <StreamingAssistantMessage
                         taskId={currentTaskId}
                         messageIndex={messages.length}
+                        compact={compact}
                     />
                 </div>
             )}

@@ -19,7 +19,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '../../store';
 import type { StartInstancePayload, ExecutionInstance } from '../types';
-import { createInstance, setInstanceStatus, setCurrentInput } from '../slice';
+import { createInstance, setInstanceStatus, setCurrentInput, setResources } from '../slice';
 import { getPrompt } from '../../thunks/promptSystemThunks';
 
 /**
@@ -49,11 +49,12 @@ export const startPromptInstance = createAsyncThunk<
   async (payload, { dispatch, getState }) => {
     const {
       promptId,
-      promptSource = 'prompts', // Default to custom prompts for backwards compatibility
-      executionConfig = {},
+      promptSource = 'prompts',
+      executionConfig,
       variables = {},
       initialMessage = '',
       runId: providedRunId,
+      resources = [],
     } = payload;
 
     // Use provided runId or generate new one
@@ -110,13 +111,7 @@ export const startPromptInstance = createAsyncThunk<
 
         // Configuration
         settings: prompt.settings,
-        executionConfig: {
-          auto_run: executionConfig.auto_run ?? false,
-          allow_chat: executionConfig.allow_chat ?? true,
-          show_variables: executionConfig.show_variables ?? false,
-          apply_variables: executionConfig.apply_variables ?? true,
-          track_in_runs: executionConfig.track_in_runs ?? true,
-        },
+        executionConfig,
 
         // Variables
         variables: {
@@ -164,6 +159,11 @@ export const startPromptInstance = createAsyncThunk<
       // Set initial message if provided (uses isolated currentInputs map)
       if (initialMessage) {
         dispatch(setCurrentInput({ runId, input: initialMessage }));
+      }
+
+      // Set resources if provided (uses isolated resources map)
+      if (resources && resources.length > 0) {
+        dispatch(setResources({ runId, resources }));
       }
 
       // If loading existing run, fetch messages

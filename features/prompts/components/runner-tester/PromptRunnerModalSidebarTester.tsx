@@ -11,27 +11,38 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { usePromptRunner } from '../../hooks/usePromptRunner';
+import { useAppSelector } from '@/lib/redux';
+import {
+    selectInstance,
+    selectMergedVariables,
+    selectResources,
+    selectCurrentInput,
+} from '@/lib/redux/prompt-execution/selectors';
+import { useProgrammaticPromptExecution } from '../../hooks/useProgrammaticPromptExecution';
 import PromptExecutionTestModal from './PromptExecutionTestModal';
-import type { PromptData } from '@/features/prompts/types/core';
-import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
+import type { ResultDisplay } from '@/features/prompt-builtins/types/execution-modes';
+import { getAllDisplayTypes, getDisplayMeta } from '@/features/prompt-builtins/types/execution-modes';
 import {
     ChevronDown, Zap, Eye, Settings, TestTube2, Play, TestTube,
-    Square, RectangleVertical, FileEdit, PanelRight, BellRing, ArrowRight, Loader,
-    Maximize2
+    Database
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 interface PromptRunnerModalSidebarTesterProps {
-    promptData: PromptData;
     runId?: string;
 }
 
 /**
- * Comprehensive testing component for ALL 7 ResultDisplay types
- * Mix-and-match execution config with display types to test robustness
+ * Comprehensive testing component for ALL ResultDisplay types
+ * Demonstrates programmatic execution by reading REAL data from current run
+ * and executing prompts programmatically - proving the Redux architecture works correctly.
+ * 
+ * KEY CONCEPT:
+ * This component proves that EVERYTHING the UI can do can be replicated programmatically.
+ * It uses ONLY Redux selectors and programmatic APIs - no prompt data prop drilling needed.
  */
-export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunnerModalSidebarTesterProps) {
-    const { openPrompt } = usePromptRunner();
+export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSidebarTesterProps) {
+    const { executePrompt } = useProgrammaticPromptExecution();
     const [isOpen, setIsOpen] = useState(false);
     const [testModalOpen, setTestModalOpen] = useState(false);
     const [testModalType, setTestModalType] = useState<'direct' | 'inline' | 'background'>('direct');
@@ -41,17 +52,19 @@ export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunn
     const [allowChat, setAllowChat] = useState(true);
     const [showVariables, setShowVariables] = useState(false);
     const [applyVariables, setApplyVariables] = useState(true);
+    const [trackInRuns, setTrackInRuns] = useState(true);
 
-    // Generate test variables with defaults
-    const getTestVariables = () => {
-        const vars: Record<string, string> = {};
-        promptData.variableDefaults?.forEach(v => {
-            vars[v.name] = v.defaultValue || 'Test value';
-        });
-        return vars;
-    };
+    const instance = useAppSelector(state => runId ? selectInstance(state, runId) : null);
+    const currentVariables = useAppSelector(state => selectMergedVariables(state, runId || ''));
+    const currentResources = useAppSelector(state => selectResources(state, runId || ''));
+    const currentInput = useAppSelector(state => selectCurrentInput(state, runId || ''));
 
-    const openWithDisplayType = (resultDisplay: ResultDisplay, displayVariant?: 'standard' | 'compact') => {
+    const openWithDisplayType = async (resultDisplay: ResultDisplay) => {
+        if (!instance) {
+            console.warn('No active run instance - cannot test display type');
+            return;
+        }
+
         // For direct, inline, background - open test modal
         if (resultDisplay === 'direct' || resultDisplay === 'inline' || resultDisplay === 'background') {
             setTestModalType(resultDisplay);
@@ -59,114 +72,50 @@ export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunn
             return;
         }
 
-        const executionConfig: Omit<PromptExecutionConfig, 'result_display'> = {
+        try {
+            await executePrompt({
+                // Prompt identification (from Redux, not props!)
+                promptId: instance.promptId,
+                promptSource: instance.promptSource,
+                
+                // Complete execution config (from user's test settings)
+                executionConfig: {
+                    result_display: resultDisplay,
             auto_run: autoRun,
             allow_chat: allowChat,
             show_variables: showVariables,
             apply_variables: applyVariables,
-        };
-
-        const variables = applyVariables ? getTestVariables() : {};
-
-        openPrompt({
-            promptData,
-            result_display: resultDisplay,
-            executionConfig,
-            variables,
-            displayVariant,
-            runId, // Pass the current runId to share state
-        });
+                    track_in_runs: trackInRuns,
+                },
+                
+                // Current state from Redux (mimicking programmatic usage)
+                variables: applyVariables ? currentVariables : {},
+                resources: currentResources,
+                initialMessage: currentInput,
+                
+                // DO NOT pass runId - creates a new independent run
+                // This proves programmatic execution works identically to UI
+            });
+        } catch (error) {
+            console.error('❌ Programmatic execution failed:', error);
+        }
     };
 
-    // ResultDisplay types with their characteristics
-    const displayTypes = [
-        {
-            name: 'Modal Full',
-            icon: Square,
-            color: 'text-purple-600 dark:text-purple-400',
-            resultDisplay: 'modal-full' as ResultDisplay,
-            disabled: false,
-            ignores: [],
-            note: 'Full modal with all features',
-            displayVariant: 'standard' as const
-        },
-        {
-            name: 'Modal Full Compact',
-            icon: Maximize2,
-            color: 'text-violet-600 dark:text-violet-400',
-            resultDisplay: 'modal-full' as ResultDisplay,
-            disabled: false,
-            ignores: [],
-            note: 'Full modal with compact display variant',
-            displayVariant: 'compact' as const
-        },
-        {
-            name: 'Modal Compact',
-            icon: RectangleVertical,
-            color: 'text-blue-600 dark:text-blue-400',
-            resultDisplay: 'modal-compact' as ResultDisplay,
-            disabled: false,
-            ignores: ['show_variables'],
-            note: 'Minimal UI, ignores show_variables'
-        },
-        {
-            name: 'Inline',
-            icon: FileEdit,
-            color: 'text-amber-600 dark:text-amber-400',
-            resultDisplay: 'inline' as ResultDisplay,
-            disabled: false,
-            ignores: ['allow_chat', 'show_variables'],
-            note: 'Opens test editor with inline overlay',
-            testMode: true
-        },
-        {
-            name: 'Sidebar',
-            icon: PanelRight,
-            color: 'text-teal-600 dark:text-teal-400',
-            resultDisplay: 'sidebar' as ResultDisplay,
-            disabled: false,
-            ignores: [],
-            note: 'Side panel with full features'
-        },
-        {
-            name: 'Flexible Panel',
-            icon: Maximize2,
-            color: 'text-emerald-600 dark:text-emerald-400',
-            resultDisplay: 'flexible-panel' as ResultDisplay,
-            disabled: false,
-            ignores: [],
-            note: 'Advanced resizable panel with position controls'
-        },
-        {
-            name: 'Toast',
-            icon: BellRing,
-            color: 'text-orange-600 dark:text-orange-400',
-            resultDisplay: 'toast' as ResultDisplay,
-            disabled: false,
-            ignores: ['allow_chat', 'show_variables'],
-            note: 'Quick notification, ignores chat/vars'
-        },
-        {
-            name: 'Direct',
-            icon: ArrowRight,
-            color: 'text-cyan-600 dark:text-cyan-400',
-            resultDisplay: 'direct' as ResultDisplay,
-            disabled: false,
-            ignores: ['allow_chat', 'show_variables'],
-            note: 'Test programmatic result retrieval',
-            testMode: true
-        },
-        {
-            name: 'Background',
-            icon: Loader,
-            color: 'text-slate-600 dark:text-slate-400',
-            resultDisplay: 'background' as ResultDisplay,
-            disabled: false,
-            ignores: ['allow_chat', 'show_variables'],
-            note: 'Test silent execution & storage',
-            testMode: true
-        },
-    ];
+    // Get all display types from single source of truth
+    const displayTypes = getAllDisplayTypes().map(resultDisplay => {
+        const meta = getDisplayMeta(resultDisplay);
+        // Get icon component from lucide-react dynamically
+        const IconComponent = (LucideIcons as any)[meta.icon];
+        
+        return {
+            name: meta.label,
+            icon: IconComponent,
+            color: meta.color,
+            resultDisplay,
+            note: meta.description,
+            testMode: meta.testMode,
+        };
+    });
 
     return (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -185,7 +134,7 @@ export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunn
                     </Button>
                 </CollapsibleTrigger>
 
-                <CollapsibleContent className="space-y-2">
+                <CollapsibleContent className="space-y-2">                    
                     {/* Execution Config Toggles */}
                     <div className="space-y-2 pr-2 pl-4">
                         <div className="flex items-center justify-between">
@@ -235,6 +184,18 @@ export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunn
                                 onCheckedChange={setApplyVariables}
                             />
                         </div>
+
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="track-in-runs" className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Database className="w-3.5 h-3.5" />
+                                Track in Runs
+                            </Label>
+                            <Switch
+                                id="track-in-runs"
+                                checked={trackInRuns}
+                                onCheckedChange={setTrackInRuns}
+                            />
+                        </div>
                     </div>
 
                     <Separator />
@@ -242,19 +203,18 @@ export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunn
                     {/* Display Type Buttons */}
                     <div className="space-y-1">
                         <div className="space-y-0 px-1">
-                            {displayTypes.map((display, idx) => (
+                            {displayTypes.map((display) => (
                                 <Button
-                                    key={idx}
+                                    key={display.resultDisplay}
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => !display.disabled && openWithDisplayType(display.resultDisplay, (display as any).displayVariant)}
-                                    disabled={display.disabled}
-                                    className="w-full justify-start h-8 px-2 text-xs hover:bg-accent disabled:opacity-40"
+                                    onClick={() => openWithDisplayType(display.resultDisplay)}
+                                    className="w-full justify-start h-8 px-2 text-xs hover:bg-accent"
                                     title={display.note}
                                 >
-                                    <display.icon className={`w-3.5 h-3.5 mr-2 flex-shrink-0 ${display.disabled ? 'text-muted-foreground' : display.color}`} />
+                                    <display.icon className={`w-3.5 h-3.5 mr-2 flex-shrink-0 ${display.color}`} />
                                     <span className="flex-1 text-left font-medium">{display.name}</span>
-                                    {(display as any).testMode && (
+                                    {display.testMode && (
                                         <Badge variant="outline" className="text-[8px] h-4 px-1">
                                             <TestTube className="w-2.5 h-2.5" />
                                         </Badge>
@@ -268,19 +228,26 @@ export function PromptRunnerModalSidebarTester({ promptData, runId }: PromptRunn
             </div>
 
             {/* Test Modal for Direct/Inline/Background */}
+            {instance && (
             <PromptExecutionTestModal
                 isOpen={testModalOpen}
                 onClose={() => setTestModalOpen(false)}
                 testType={testModalType}
-                promptData={promptData}
+                    promptId={instance.promptId}
+                    promptSource={instance.promptSource}
                 executionConfig={{
+                        result_display: testModalType,
                     auto_run: autoRun,
                     allow_chat: allowChat,
                     show_variables: showVariables,
                     apply_variables: applyVariables,
+                        track_in_runs: trackInRuns,
                 }}
-                variables={getTestVariables()}
+                variables={applyVariables ? currentVariables : {}}
+                    resources={currentResources}
+                    initialMessage={currentInput}
             />
+            )}
         </Collapsible>
     );
 }
