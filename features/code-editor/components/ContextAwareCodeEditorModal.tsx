@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ContextAwarePromptRunner } from '@/features/prompts/components/results-display/ContextAwarePromptRunner';
@@ -15,6 +15,7 @@ import { applyCodeEdits } from '@/features/code-editor/utils/applyCodeEdits';
 import { getDiffStats } from '@/features/code-editor/utils/generateDiff';
 import { DYNAMIC_CONTEXT_VARIABLE } from '@/features/code-editor/utils/ContextVersionManager';
 import type { PromptData } from '@/features/prompts/types/core';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ContextAwareCodeEditorModalProps {
     open: boolean;
@@ -29,7 +30,6 @@ export interface ContextAwareCodeEditorModalProps {
     title?: string;
     customMessage?: string;
     countdownSeconds?: number;
-    displayVariant?: 'standard' | 'compact';
 }
 
 /**
@@ -68,12 +68,24 @@ export function ContextAwareCodeEditorModal({
     title = 'AI Code Editor (Context-Aware)',
     customMessage = "Describe the specific code changes you want to make.",
     countdownSeconds,
-    displayVariant = 'standard',
 }: ContextAwareCodeEditorModalProps) {
     const dispatch = useAppDispatch();
     const { open: openCanvas, close: closeCanvas } = useCanvas();
 
     const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
+    
+    // Track a key to reset runId when modal reopens
+    const [sessionKey, setSessionKey] = useState(0);
+    
+    // Generate new runId when modal opens (based on sessionKey)
+    const runId = useMemo(() => uuidv4(), [sessionKey]);
+    
+    // Reset session when modal closes and reopens
+    useEffect(() => {
+        if (open) {
+            setSessionKey(prev => prev + 1);
+        }
+    }, [open]);
 
     const language = normalizeLanguage(rawLanguage);
     const currentCodeRef = useRef(code);
@@ -283,6 +295,7 @@ export function ContextAwareCodeEditorModal({
         </div>
     ) : promptData ? (
         <ContextAwarePromptRunner
+            runId={runId}
             initialContext={code}
             contextType="code"
             contextLanguage={language}
@@ -306,7 +319,6 @@ export function ContextAwareCodeEditorModal({
             isActive={open}
             customMessage={customMessage}
             countdownSeconds={countdownSeconds}
-            displayVariant={displayVariant}
         />
     ) : (
         <div className="flex items-center justify-center h-full">
@@ -315,11 +327,6 @@ export function ContextAwareCodeEditorModal({
             </div>
         </div>
     );
-
-    // Compact display renders its own backdrop and positioning - no Dialog wrapper
-    if (displayVariant === 'compact') {
-        return content;
-    }
 
     // Standard display needs Dialog wrapper
     return (

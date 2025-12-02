@@ -27,7 +27,6 @@ export type { ContextAwarePromptCompactModalProps } from './ContextAwarePromptCo
 
 // Display variants
 export { default as PromptCompactModal } from './PromptCompactModal';
-export { default as PromptCompactModalNew } from './PromptCompactModal-new';
 export { default as PromptInlineOverlay } from './PromptInlineOverlay';
 export { QuickAIResultsSheet } from './QuickAIResultsSheet';
 

@@ -6,7 +6,6 @@ import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import {
   selectInstance,
   selectMessages,
-  selectIsExecuting,
 } from '@/lib/redux/prompt-execution/selectors';
 import { selectExecutionConfig } from '@/lib/redux/prompt-execution/slice';
 import { selectCachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
@@ -16,66 +15,36 @@ import { SmartPromptInput } from '../smart/SmartPromptInput';
 import { SmartMessageList } from '../smart/SmartMessageList';
 
 interface PromptCompactModalProps {
-  /** Whether modal is open */
   isOpen: boolean;
-  /** Close handler */
   onClose: () => void;
-  /** Execution instance runId - everything else comes from Redux */
   runId: string;
 }
 
-/**
- * PromptCompactModal - Gold Standard for Redux-Driven Display Components
- * 
- * ARCHITECTURE:
- * - Only receives runId as data prop
- * - Reads ALL state from Redux using selectors
- * - Respects ALL execution config settings
- * - Self-contained and fully functional
- * 
- * EXECUTION CONFIG RESPECT:
- * - auto_run: Handled by execution thunks before modal opens
- * - allow_chat: Shows/hides chat input based on config
- * - show_variables: Passed to SmartPromptInput
- * - apply_variables: Handled by execution engine
- * - track_in_runs: Handled by execution engine
- * 
- * This component serves as the MODEL for all other display components.
- */
+
 export default function PromptCompactModal({
   isOpen,
   onClose,
   runId,
 }: PromptCompactModalProps) {
   const dispatch = useAppDispatch();
-  const [copied, setCopied] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showChat, setShowChat] = useState(false);
   
-  // ========== REDUX STATE (Single Source of Truth) ==========
   const instance = useAppSelector((state) => selectInstance(state, runId));
   const executionConfig = useAppSelector((state) => selectExecutionConfig(state, runId));
-  const messages = useAppSelector((state) => selectMessages(state, runId));
-  const isExecuting = useAppSelector((state) => selectIsExecuting(state, runId));
   const prompt = useAppSelector((state) => 
     instance ? selectCachedPrompt(state, instance.promptId) : null
   );
   
-  // Get current task for streaming finalization
   const currentTaskId = instance?.execution?.currentTaskId;
   const isResponseEnded = useAppSelector((state) =>
     currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
   );
   
-  // Derive title from prompt name
   const title = prompt?.name || 'AI Response';
   
-  // Get last assistant message for display
-  const latestResponse = messages
-    .filter(m => m.role === 'assistant')
-    .slice(-1)[0]?.content || '';
   
   // Respect execution config: show chat input if allow_chat is enabled
   const allowChat = executionConfig?.allow_chat ?? true;
@@ -94,14 +63,6 @@ export default function PromptCompactModal({
       dispatch(finalizeExecution({ runId, taskId: currentTaskId }));
     }
   }, [runId, currentTaskId, isResponseEnded, dispatch]);
-
-  const handleCopy = () => {
-    if (latestResponse) {
-      navigator.clipboard.writeText(latestResponse);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;

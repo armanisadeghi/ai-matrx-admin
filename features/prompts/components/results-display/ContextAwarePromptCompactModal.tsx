@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
-import PromptCompactModal from "./PromptCompactModal-new";
+import React, { useEffect } from "react";
 import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import { useAppDispatch } from '@/lib/redux/hooks';
@@ -52,7 +51,9 @@ export interface ContextAwarePromptCompactModalProps {
  * 
  * Perfect for code editing while viewing the source!
  * 
- * Note: Uses startPromptInstance directly to support initialContexts parameter.
+ * Note: This component doesn't render the modal directly - it creates the execution
+ * instance and calls openPromptExecution which triggers OverlayController to render
+ * the PromptCompactModal with the proper runId.
  */
 export function ContextAwarePromptCompactModal({
   isOpen,
@@ -168,24 +169,8 @@ export function ContextAwarePromptCompactModal({
     }
   }, [isOpen]);
   
-  if (!currentRunId) {
-    // Don't render until execution is started
-    return null;
-  }
-  
-  return (
-    <PromptCompactModal
-      isOpen={isOpen}
-      onClose={onClose}
-      promptId={promptId}
-      promptData={promptData}
-      executionConfig={executionConfig}
-      variables={staticVariables}
-      title={title}
-      onExecutionComplete={onResponseComplete}
-      customMessage={customMessage}
-      countdownSeconds={countdownSeconds}
-    />
-  );
+  // The modal is rendered by OverlayController via Redux (openPromptExecution dispatches openCompactModal)
+  // This component just handles execution instance creation and context management
+  return null;
 }
 

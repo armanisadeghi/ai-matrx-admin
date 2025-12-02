@@ -148,7 +148,39 @@ export async function processMessagesForExecution(
     baseContent = userInput;
   }
   
+  // ========== Handle Empty User Input ==========
+  // If no base content and we're on first execution with template messages,
+  // the template messages are sufficient - return them as-is
   if (!baseContent.trim()) {
+    if (isFirstExecution && processedMessages.length > 0) {
+      // Template messages exist - they're self-contained, no additional user message needed
+      // Still process resources/contexts and attach to the last message if applicable
+      const lastMessage = processedMessages[processedMessages.length - 1];
+      
+      // Fetch resources if provided
+      let resourcesXml = '';
+      const hasResources = resources.length > 0;
+      if (hasResources && lastMessage) {
+        const enrichedResources = await fetchResourcesData(resources);
+        resourcesXml = formatResourcesToXml(enrichedResources);
+        lastMessage.content = appendResourcesToMessage(lastMessage.content, resourcesXml);
+      }
+      
+      // Add dynamic contexts to last message if applicable
+      const contextsXml = buildContextSection(dynamicContexts);
+      if (contextsXml && lastMessage) {
+        lastMessage.content = `${lastMessage.content}${contextsXml}`;
+      }
+      
+      return {
+        messages: processedMessages,
+        finalUserMessageContent: lastMessage?.content || '',
+        baseContent: '',
+        resourcesXml,
+        hasResources,
+      };
+    }
+    
     throw new Error('No message content to build');
   }
   

@@ -80,6 +80,14 @@ export interface PromptBuiltin {
       context: false,
       icon: 'FileText',
     },
+    MATRIX_CUSTOM_CHAT: {
+      id: 'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
+      name: 'Matrx Custom Chat',
+      description: 'Custom AI chat assistant for quick conversations',
+      key: 'matrix-custom-chat',
+      context: false,
+      icon: 'MessageSquare',
+    },
   } as const;
   
   // Create reverse lookups for O(1) access

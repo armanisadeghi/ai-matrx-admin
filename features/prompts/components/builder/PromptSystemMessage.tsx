@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
-import { Edit, MoreHorizontal, Copy, Check, Settings } from "lucide-react";
+import { Edit, MoreHorizontal, Copy, Check } from "lucide-react";
 import MarkdownStream from "@/components/Markdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
@@ -97,25 +97,13 @@ export function PromptSystemMessage({
     const isError = content.startsWith("Error:");
 
     // Adjust styling based on compact mode - keep ALL functionality
-    const headerMargin = compact ? "mb-0" : "mb-0.5";
-    const headerGap = compact ? "gap-1" : "gap-1.5";
-    const iconSize = compact ? "w-3 h-3" : "w-3.5 h-3.5";
     const markdownClassName = compact 
         ? "text-xs bg-amber-500/5 border-l border-amber-500/30 px-1.5 py-1" 
         : "bg-amber-500/5 border-l-2 border-amber-500/30 p-2";
     const buttonMargin = compact ? "mt-0.5" : "mt-1";
     
     return (
-        <div >
-            <div className={`text-xs font-semibold ${headerMargin} text-muted-foreground flex items-center ${headerGap}`}>
-                <Settings className={iconSize} />
-                System
-                {!compact && metadata && metadata.totalTime && (
-                    <span className="ml-2 text-muted-foreground font-normal">
-                        ({Math.round(metadata.totalTime / 1000)}s)
-                    </span>
-                )}
-            </div>
+        <div>
             {isError ? (
                 <PromptErrorMessage message={content.replace("Error: ", "")} />
             ) : (

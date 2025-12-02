@@ -97,20 +97,11 @@ export function PromptAssistantMessage({
     const isError = content.startsWith("Error:");
     
     // Adjust styling based on compact mode - keep ALL functionality
-    const headerMargin = compact ? "mb-0" : "mb-0.5";
     const markdownClassName = compact ? "text-xs bg-transparent" : "bg-textured";
     const buttonMargin = compact ? "mt-0.5" : "mt-1";
     
     return (
-        <div >
-            <div className={`text-xs font-semibold ${headerMargin} text-muted-foreground`}>
-                Assistant
-                {!compact && metadata && metadata.totalTime && (
-                    <span className="ml-2 text-muted-foreground font-normal">
-                        ({Math.round(metadata.totalTime / 1000)}s)
-                    </span>
-                )}
-            </div>
+        <div>
             {isError ? (
                 <PromptErrorMessage message={content.replace("Error: ", "")} />
             ) : (

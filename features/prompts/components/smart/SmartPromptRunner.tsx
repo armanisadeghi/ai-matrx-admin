@@ -135,7 +135,7 @@ export function SmartPromptRunner({
         return (
             <div className={`flex flex-col items-center justify-center h-full gap-4 ${className || ''}`}>
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Initializing runner...</p>
+                <p className="text-sm text-muted-foreground">Initializing smart runner...</p>
             </div>
         );
     }

@@ -104,12 +104,9 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
             <div className={`bg-muted border border-border ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
                 {/* Thin delicate header */}
                 <div
-                    className={`flex items-center justify-between ${headerPadding} cursor-pointer`}
+                    className={`flex items-center justify-end ${headerPadding} cursor-pointer`}
                     onClick={handleHeaderClick}
                 >
-                    <div className="text-xs font-semibold text-muted-foreground">
-                        User
-                    </div>
                     <div className="flex items-center gap-1">
                         {isEditing ? (
                             <>

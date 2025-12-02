@@ -13,6 +13,8 @@ import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 
 type DisplayVariant = 'standard' | 'compact';
 
+// TODO: The display variant is controled through the display component, not here. Need to update the logic here.
+
 export default function AICodeEditorV3DemoPage() {
   const [displayVariant, setDisplayVariant] = useState<DisplayVariant>('standard');
   const [codeExample, setCodeExample] = useState<CodeFile>('types');
@@ -103,10 +105,9 @@ export default function AICodeEditorV3DemoPage() {
         language={selectedExample.language}
         builtinId={getBuiltinId('code-editor-dynamic-context')}
         onCodeChange={handleCodeChange}
-        title={`Code Editor (${displayVariant})`}
+        title={`Code Editor`}
         customMessage="Describe the code changes you want."
         countdownSeconds={5}
-        displayVariant={displayVariant}
       />
     </div>
   );

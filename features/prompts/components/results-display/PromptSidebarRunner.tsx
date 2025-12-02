@@ -49,6 +49,7 @@ export default function PromptSidebarRunner({
   executionConfig,
   variables,
   title,
+  runId,
   customMessage,
 }: PromptSidebarRunnerProps) {
   // Map size to FloatingSheet width
@@ -77,6 +78,7 @@ export default function PromptSidebarRunner({
         executionConfig={executionConfig}
         variables={variables}
         title={title}
+        runId={runId}
         onClose={onClose}
         isActive={isOpen}
         customMessage={customMessage}

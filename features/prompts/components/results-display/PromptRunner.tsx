@@ -33,6 +33,9 @@ import { selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/select
 export interface PromptRunnerProps {
     promptId?: string;
     promptData?: PromptData | null;
+    
+    /** Source table for prompt lookup - defaults to 'prompts' */
+    promptSource?: 'prompts' | 'prompt_builtins';
 
     /** Execution configuration */
     executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
@@ -70,6 +73,7 @@ export interface PromptRunnerProps {
 export function PromptRunner({
     promptId,
     promptData: initialPromptData,
+    promptSource = 'prompts',
     executionConfig,
     variables: initialVariables,
     initialMessage,
@@ -122,10 +126,10 @@ export function PromptRunner({
                 executionConfig: resolvedConfig,
                 variables: initialVariables,
                 initialMessage,
-                promptSource: 'prompts' // Default
+                promptSource,
             }));
         }
-    }, [isActive, runId, instance, promptId, initialPromptData, resolvedConfig, initialVariables, initialMessage, dispatch]);
+    }, [isActive, runId, instance, promptId, initialPromptData, resolvedConfig, initialVariables, initialMessage, promptSource, dispatch]);
 
     // Handle auto-run logic
     useEffect(() => {
@@ -185,7 +189,7 @@ export function PromptRunner({
         return (
             <div className={`flex flex-col items-center justify-center h-full gap-4 ${className || ''}`}>
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Initializing runner...</p>
+                <p className="text-sm text-muted-foreground">Initializing prompt runner...</p>
             </div>
         );
     }
@@ -223,7 +227,7 @@ export function PromptRunner({
                 </div>
             )}
 
-            <div className="flex-1 flex flex-row overflow-hidden">
+            <div className="flex-1 flex flex-row overflow-hidden px-2">
                 {/* Main Content Area - Messages Container */}
                 <div className="flex-1 min-w-[400px] flex flex-col overflow-hidden">
                     {/* Messages Area */}
@@ -233,8 +237,8 @@ export function PromptRunner({
 
                     {/* Input Area - Fixed at Bottom using flex-shrink */}
                     <div className={`flex-shrink-0 bg-textured ${isMobile
-                        ? 'pt-4 pb-safe px-3'
-                        : 'pt-6 pb-4 px-6'
+                        ? 'pt-4 pb-safe'
+                        : 'pt-6 pb-2'
                         }`}>
                         <div className={`rounded-xl ${isMobile ? 'w-full' : 'max-w-[800px] mx-auto'
                             }`}>
