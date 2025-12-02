@@ -248,6 +248,7 @@ export const openPromptExecution = createAsyncThunk<
           duration: 5000,
           promptData: finalPromptData,
           executionConfig,
+          runId: createdRunId, // CRITICAL: Pass runId for modal opening
           taskId: taskId,
           isStreaming: true,
         }));

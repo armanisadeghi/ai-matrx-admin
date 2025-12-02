@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, MessageSquare, GripVertical, X, ChevronsUp, ChevronsDown } from 'lucide-react';
+import { MessageSquare, GripVertical, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import {
   selectInstance,
@@ -177,19 +177,12 @@ export default function PromptCompactModal({
           {/* Header */}
           {title && (
             <div 
-              className="relative px-5 py-3.5 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center gap-2"
+              className="relative pl-8 py-1.5 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center gap-2"
               style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
               onMouseDown={handleMouseDown}
             >
               <GripVertical className="w-3.5 h-3.5 text-[#888888] flex-shrink-0" />
               <div className="text-xs font-medium text-[#cccccc] dark:text-[#cccccc] flex-1">{title}</div>
-              <button
-                onClick={onClose}
-                className="p-1 text-[#888888] hover:text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
-                title="Close"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
             </div>
           )}
           
@@ -219,27 +212,12 @@ export default function PromptCompactModal({
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5">
-            <button
-              onClick={handleCopy}
-              disabled={!latestResponse}
-              className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title={copied ? 'Copied!' : 'Copy response'}
-            >
-              {copied ? (
-                <Check className="w-3.5 h-3.5 text-green-500" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
-            </button>
-            
-            <div className="flex-1" />
-            
+          <div className="flex items-center gap-1.5 px-3 py-1.5">            
             {/* Toggle chat input - Only show if allow_chat is enabled in execution config */}
             {allowChat && (
               <button
                 onClick={() => setShowChat(!showChat)}
-                className={`flex items-center gap-1.5 px-3.5 py-1 text-xs rounded transition-colors ${
+                className={`flex items-center gap-1.5 px-3.5 py-1 text-xs rounded transition-colors ml-auto ${
                   showChat 
                     ? 'bg-primary/10 text-primary hover:bg-primary/20' 
                     : 'text-[#cccccc] hover:bg-[#2a2d2e]'

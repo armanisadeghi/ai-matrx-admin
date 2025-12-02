@@ -1,11 +1,52 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Check, Maximize2 } from 'lucide-react';
 import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openCompactModal } from '@/lib/redux/slices/promptRunnerSlice';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
+
+/**
+ * Process streaming content to handle <thinking> and <planning> tags
+ */
+function processStreamingContent(content: string): {
+  displayContent: string;
+  isInThinking: boolean;
+  isInPlanning: boolean;
+} {
+  // Check if we're currently inside an unclosed thinking tag
+  const thinkingOpenCount = (content.match(/<thinking>/g) || []).length;
+  const thinkingCloseCount = (content.match(/<\/thinking>/g) || []).length;
+  const isInThinking = thinkingOpenCount > thinkingCloseCount;
+  
+  // Check if we're currently inside an unclosed planning tag
+  const planningOpenCount = (content.match(/<planning>/g) || []).length;
+  const planningCloseCount = (content.match(/<\/planning>/g) || []).length;
+  const isInPlanning = planningOpenCount > planningCloseCount;
+  
+  // Remove all complete thinking and planning tag blocks
+  let displayContent = content
+    .replace(/<thinking>[\s\S]*?<\/thinking>/g, '')
+    .replace(/<planning>[\s\S]*?<\/planning>/g, '');
+  
+  // If we're inside an unclosed tag, remove everything from that opening tag onwards
+  if (isInThinking) {
+    displayContent = displayContent.replace(/<thinking>[\s\S]*$/g, '');
+  }
+  if (isInPlanning) {
+    displayContent = displayContent.replace(/<planning>[\s\S]*$/g, '');
+  }
+  
+  // Trim whitespace
+  displayContent = displayContent.trim();
+  
+  return {
+    displayContent,
+    isInThinking,
+    isInPlanning
+  };
+}
 
 interface PromptToastProps {
   toastId: string;
@@ -37,6 +78,7 @@ export default function PromptToast({
   promptName,
   promptData,
   executionConfig,
+  runId,
   taskId,
   isStreaming: initialStreaming = false,
   onDismiss,
@@ -56,8 +98,15 @@ export default function PromptToast({
   const result = streamingResponse || initialResult;
   const isStreaming = taskId ? !hasEnded : initialStreaming;
   
+  // Process content to handle thinking/planning tags
+  const processedContent = useMemo(() => {
+    return processStreamingContent(result);
+  }, [result]);
+  
+  const { displayContent, isInThinking, isInPlanning } = processedContent;
+  
   // Check if content is long (more than 150 characters or 3 lines)
-  const isLongContent = result.length > 150 || result.split('\n').length > 3;
+  const isLongContent = displayContent.length > 150 || displayContent.split('\n').length > 3;
 
   const handleDismiss = () => {
     setIsExiting(true);
@@ -67,7 +116,7 @@ export default function PromptToast({
   };
   
   const handleShowMore = () => {
-    // Open compact modal - use taskId to load from Redux state if available
+    // Open compact modal - use runId for Redux-driven display
     dispatch(openCompactModal({
       promptData: promptData || { 
         id: toastId, 
@@ -78,10 +127,11 @@ export default function PromptToast({
       },
       executionConfig,
       title: promptName,
+      runId: runId, // CRITICAL: Pass runId so PromptCompactModal can render
       // Use taskId for loading from state (preferred) or fallback to preloaded result
       taskId: taskId,
-      preloadedResult: taskId ? undefined : result,
-    }));
+      preloadedResult: taskId ? undefined : displayContent,
+    } as any));
     
     // Dismiss the toast
     handleDismiss();
@@ -133,15 +183,27 @@ export default function PromptToast({
 
         {/* Content - Markdown rendered, line-clamped */}
         <div className="text-sm leading-relaxed line-clamp-3 overflow-hidden">
-          {isStreaming && !result ? (
+          {isInThinking ? (
             <div className="flex items-start">
               <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
-                Thinking...
+                Thinking....
               </span>
             </div>
-          ) : result ? (
+          ) : isInPlanning ? (
+            <div className="flex items-start">
+              <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
+                Planning....
+              </span>
+            </div>
+          ) : isStreaming && !displayContent ? (
+            <div className="flex items-start">
+              <span className="text-sm text-muted-foreground animate-[fadeInOut_2s_ease-in-out_infinite]">
+                Loading...
+              </span>
+            </div>
+          ) : displayContent ? (
             <BasicMarkdownContent 
-              content={result} 
+              content={displayContent} 
               showCopyButton={false}
             />
           ) : (

@@ -408,7 +408,10 @@ export function SmartPromptInput({
                       </Popover>
                     ) : (
                       <div className="flex items-center gap-2 px-3 h-10 bg-gray-50 dark:bg-zinc-800 border-b border-gray-300 dark:border-gray-600 hover:bg-gray-100 hover:dark:bg-zinc-700 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
-                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer">
+                        <Label 
+                          className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer"
+                          onClick={() => handleExpandedVariableChange(variable.name)}
+                        >
                           {formatText(variable.name)}
                         </Label>
                         <input
