@@ -10,6 +10,7 @@ interface BlockRendererProps {
     isStreamActive?: boolean;
     onContentChange?: (newContent: string) => void;
     messageId?: string;
+    taskId?: string; // Add taskId for canvas deduplication
     // Handlers
     handleCodeChange: (newCode: string, originalCode: string) => void;
     handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
@@ -27,6 +28,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     isStreamActive,
     onContentChange,
     messageId,
+    taskId,
     handleCodeChange,
     handleTableChange,
     handleMatrxBrokerChange,
@@ -166,7 +168,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "flashcards":
-            return <BlockComponents.FlashcardsBlock key={index} content={block.content} />;
+            return <BlockComponents.FlashcardsBlock key={index} content={block.content} taskId={taskId} />;
 
         case "quiz":
             if (!block.metadata?.isComplete) {
@@ -175,7 +177,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             try {
                 const quizData = JSON.parse(block.content);
                 if (quizData.quiz_title && Array.isArray(quizData.multiple_choice) && quizData.multiple_choice.length > 0) {
-                    return <BlockComponents.MultipleChoiceQuiz key={index} quizData={quizData} />;
+                    return <BlockComponents.MultipleChoiceQuiz key={index} quizData={quizData} taskId={taskId} />;
                 }
                 return renderFallbackContent(block.content);
             } catch (error) {
@@ -194,6 +196,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                         <BlockComponents.Slideshow
                             key={index}
                             slides={presentationData.presentation.slides}
+                            taskId={taskId}
                             theme={presentationData.presentation.theme || {
                                 primaryColor: "#2563eb",
                                 secondaryColor: "#1e40af",
@@ -224,7 +227,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.RecipeViewer recipe={recipeData} />
+                    default: () => <BlockComponents.RecipeViewer recipe={recipeData} taskId={taskId} />
                 };
             });
             
@@ -247,7 +250,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.TimelineBlock timeline={timelineData} />
+                    default: () => <BlockComponents.TimelineBlock timeline={timelineData} taskId={taskId} />
                 };
             });
             
@@ -270,7 +273,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.ResearchBlock research={researchData} />
+                    default: () => <BlockComponents.ResearchBlock research={researchData} taskId={taskId} />
                 };
             });
             
@@ -293,7 +296,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.ResourceCollectionBlock collection={resourcesData} />
+                    default: () => <BlockComponents.ResourceCollectionBlock collection={resourcesData} taskId={taskId} />
                 };
             });
             
@@ -316,7 +319,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.ProgressTrackerBlock tracker={progressData} />
+                    default: () => <BlockComponents.ProgressTrackerBlock tracker={progressData} taskId={taskId} />
                 };
             });
             
@@ -339,7 +342,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.ComparisonTableBlock comparison={comparisonData} />
+                    default: () => <BlockComponents.ComparisonTableBlock comparison={comparisonData} taskId={taskId} />
                 };
             });
             
@@ -362,7 +365,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.TroubleshootingBlock troubleshooting={troubleshootingData} />
+                    default: () => <BlockComponents.TroubleshootingBlock troubleshooting={troubleshootingData} taskId={taskId} />
                 };
             });
             
@@ -385,7 +388,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.DecisionTreeBlock decisionTree={decisionTreeData} />
+                    default: () => <BlockComponents.DecisionTreeBlock decisionTree={decisionTreeData} taskId={taskId} />
                 };
             });
             
@@ -408,7 +411,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 
                 return {
-                    default: () => <BlockComponents.InteractiveDiagramBlock diagram={diagramData} />
+                    default: () => <BlockComponents.InteractiveDiagramBlock diagram={diagramData} taskId={taskId} />
                 };
             });
             

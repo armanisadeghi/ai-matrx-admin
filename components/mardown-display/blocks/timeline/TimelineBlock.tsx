@@ -32,9 +32,10 @@ interface TimelineData {
 
 interface TimelineBlockProps {
   timeline: TimelineData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
-const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
+const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline, taskId }) => {
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -207,7 +208,10 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                           onClick={() => openCanvas({
                             type: 'timeline',
                             data: timeline,
-                            metadata: { title: timeline.title }
+                            metadata: { 
+                              title: timeline.title,
+                              sourceTaskId: taskId
+                            }
                           })}
                           className="p-1.5 rounded-md bg-purple-500 dark:bg-purple-600 text-white shadow-sm hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
                           title="Open in side panel"

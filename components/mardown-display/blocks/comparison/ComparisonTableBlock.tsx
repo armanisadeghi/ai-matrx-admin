@@ -25,11 +25,12 @@ interface ComparisonTableData {
 
 interface ComparisonTableBlockProps {
   comparison: ComparisonTableData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
 type SortDirection = 'asc' | 'desc' | null;
 
-const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison }) => {
+const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -347,7 +348,10 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
                           onClick={() => openCanvas({
                             type: 'comparison',
                             data: comparison,
-                            metadata: { title: comparison.title }
+                            metadata: { 
+                              title: comparison.title,
+                              sourceTaskId: taskId
+                            }
                           })}
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                         >

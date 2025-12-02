@@ -92,6 +92,7 @@ const SafeBlockRenderer: React.FC<{
     isStreamActive?: boolean;
     onContentChange?: (newContent: string) => void;
     messageId?: string;
+    taskId?: string;
     handleCodeChange: (newCode: string, originalCode: string) => void;
     handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
     handleMatrxBrokerChange: (updatedBrokerContent: string, originalBrokerContent: string) => void;
@@ -279,6 +280,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                         isStreamActive={isStreamActive}
                         onContentChange={onContentChange}
                         messageId={messageId}
+                        taskId={taskId}
                         handleCodeChange={handleCodeChange}
                         handleTableChange={handleTableChange}
                         handleMatrxBrokerChange={handleMatrxBrokerChange}

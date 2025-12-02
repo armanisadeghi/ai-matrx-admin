@@ -168,6 +168,7 @@ interface DiagramData {
 
 interface InteractiveDiagramBlockProps {
   diagram: DiagramData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
 const nodeTypes: NodeTypes = {
@@ -548,7 +549,7 @@ const DiagramFlow: React.FC<{
   );
 };
 
-const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagram }) => {
+const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagram, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
@@ -670,7 +671,10 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                         onClick={() => openCanvas({
                           type: 'diagram',
                           data: diagram,
-                          metadata: { title: diagram.title }
+                          metadata: { 
+                            title: diagram.title,
+                            sourceTaskId: taskId
+                          }
                         })}
                         className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                         title="Open in side panel"

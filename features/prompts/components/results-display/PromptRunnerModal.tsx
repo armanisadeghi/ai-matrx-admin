@@ -8,11 +8,12 @@ import { PromptRunner } from "./PromptRunner";
 /**
  * PromptRunnerModal - Wrapper component for PromptRunner
  * 
- * Conditionally applies Dialog wrapper based on displayVariant:
- * - 'standard': Wraps in Dialog with fixed dimensions (modal-style)
- * - 'compact': Renders directly without wrapper (free-floating draggable)
+ * Uses the new hybrid canvas system:
+ * - Canvas automatically renders in global CanvasSideSheet (z-index 10000)
+ * - Works seamlessly without any special canvas handling
  * 
- * This allows each display variant to control its own container structure.
+ * Note: Modal is not wide enough for inline canvas (max-w-3xl = 768px < 1100px minimum)
+ * so canvas will always render in the global side sheet.
  */
 export function PromptRunnerModal({
     isOpen,
@@ -40,6 +41,7 @@ export function PromptRunnerModal({
         onClose,
         isActive: isOpen,
         customMessage,
+        // Canvas will use global CanvasSideSheet (modal not wide enough for inline)
     };
 
     // Standard display needs Dialog wrapper with fixed dimensions

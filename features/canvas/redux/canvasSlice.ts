@@ -40,15 +40,20 @@ interface CanvasItem {
   content: CanvasContent;
   timestamp: number; // When it was created
   sourceMessageId?: string; // Link to the message that created it
+  sourceTaskId?: string; // Link to the task that created it (for deduplication)
   savedItemId?: string; // Database ID if saved to Supabase
   isSynced?: boolean; // Whether this item is saved to the database
 }
+
+export type CanvasRenderMode = 'inline' | 'global' | 'auto';
 
 interface CanvasState {
   isOpen: boolean;
   items: CanvasItem[]; // List of all canvas items in current session
   currentItemId: string | null; // Currently active item
   isAvailable: boolean; // Whether canvas is available in current context/layout
+  canvasWidth: number; // Width of canvas panel in pixels (persisted)
+  renderMode: CanvasRenderMode; // Preferred render mode
 }
 
 const initialState: CanvasState = {
@@ -56,19 +61,49 @@ const initialState: CanvasState = {
   items: [],
   currentItemId: null,
   isAvailable: false, // Default to false, layouts enable it
+  canvasWidth: 800, // Default width - canvas gets priority (750px when there's enough room)
+  renderMode: 'auto', // Auto-detect best render mode
 };
 
 export const canvasSlice = createSlice({
   name: 'canvas',
   initialState,
   reducers: {
-    // Add a new canvas item and make it active
+    // Add a new canvas item and make it active (with deduplication)
     openCanvas: (state, action: PayloadAction<CanvasContent>) => {
+      const sourceTaskId = action.payload.metadata?.sourceTaskId;
+      const sourceMessageId = action.payload.metadata?.sourceMessageId;
+      
+      // DEDUPLICATION: Check if an item from this source already exists
+      // Priority: taskId > messageId (taskId is more specific)
+      let existingItem: CanvasItem | undefined;
+      
+      if (sourceTaskId) {
+        // Check by taskId first (most specific identifier)
+        existingItem = state.items.find(item => item.sourceTaskId === sourceTaskId);
+      } else if (sourceMessageId) {
+        // Fallback to messageId if no taskId
+        existingItem = state.items.find(item => 
+          item.sourceMessageId === sourceMessageId && !item.sourceTaskId
+        );
+      }
+      
+      if (existingItem) {
+        // Item already exists - just switch to it and reopen
+        state.currentItemId = existingItem.id;
+        state.isOpen = true;
+        // Update timestamp to mark as recently accessed
+        existingItem.timestamp = Date.now();
+        return;
+      }
+      
+      // No existing item - create new one
       const newItem: CanvasItem = {
         id: `canvas-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: action.payload,
         timestamp: Date.now(),
-        sourceMessageId: action.payload.metadata?.sourceMessageId,
+        sourceMessageId,
+        sourceTaskId,
       };
       
       state.items.push(newItem);
@@ -174,6 +209,16 @@ export const canvasSlice = createSlice({
     setCanvasAvailable: (state, action: PayloadAction<boolean>) => {
       state.isAvailable = action.payload;
     },
+    
+    // Set canvas width (for persistence)
+    setCanvasWidth: (state, action: PayloadAction<number>) => {
+      state.canvasWidth = action.payload;
+    },
+    
+    // Set preferred render mode
+    setCanvasRenderMode: (state, action: PayloadAction<CanvasRenderMode>) => {
+      state.renderMode = action.payload;
+    },
   },
 });
 
@@ -188,6 +233,8 @@ export const {
   markItemSynced,
   markItemUnsynced,
   setCanvasAvailable,
+  setCanvasWidth,
+  setCanvasRenderMode,
 } = canvasSlice.actions;
 
 // Selectors
@@ -211,6 +258,12 @@ export const selectCanvasContent = (state: RootState): CanvasContent | null => {
 
 // Get canvas count
 export const selectCanvasCount = (state: RootState) => state.canvas.items.length;
+
+// Get canvas width
+export const selectCanvasWidth = (state: RootState) => state.canvas.canvasWidth;
+
+// Get canvas render mode
+export const selectCanvasRenderMode = (state: RootState) => state.canvas.renderMode;
 
 // Export types
 export type { CanvasItem };

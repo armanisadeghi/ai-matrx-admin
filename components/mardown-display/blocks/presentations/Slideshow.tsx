@@ -22,7 +22,7 @@ export interface PresentationData {
 }
 
 
-const Slideshow = (presentationData: PresentationData) => {
+const Slideshow = (presentationData: PresentationData & { taskId?: string }) => {
   const { slides, theme } = presentationData;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState('next');
@@ -113,7 +113,10 @@ const Slideshow = (presentationData: PresentationData) => {
                   onClick={() => openCanvas({
                     type: 'presentation',
                     data: presentationData,
-                    metadata: { title: slides[0]?.title || 'Presentation' }
+                    metadata: { 
+                      title: slides[0]?.title || 'Presentation',
+                      sourceTaskId: presentationData.taskId
+                    }
                   })}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white text-xs font-medium transition-all shadow-sm"
                   title="Open in side panel"

@@ -48,9 +48,10 @@ interface TroubleshootingData {
 
 interface TroubleshootingBlockProps {
   troubleshooting: TroubleshootingData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
-const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshooting }) => {
+const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshooting, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set(['issue-0'])); // First issue expanded by default
@@ -277,7 +278,10 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                         onClick={() => openCanvas({
                           type: 'troubleshooting',
                           data: troubleshooting,
-                          metadata: { title: troubleshooting.title }
+                          metadata: { 
+                            title: troubleshooting.title,
+                            sourceTaskId: taskId
+                          }
                         })}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >

@@ -10,6 +10,7 @@ import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 
 interface FlashcardsBlockProps {
     content: string;
+    taskId?: string; // Task ID for canvas deduplication
 }
 
 type LayoutMode = "grid" | "list";
@@ -56,7 +57,7 @@ const LayoutToggle: React.FC<LayoutToggleProps> = ({ layoutMode, onLayoutChange 
     );
 };
 
-const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
+const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) => {
     const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
     const [isFullscreen, setIsFullscreen] = useState(false);
     const { open: openCanvas } = useCanvas();
@@ -214,7 +215,10 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                             openCanvas({
                                 type: 'flashcards',
                                 data: content,
-                                metadata: { title: 'Flashcards' }
+                                metadata: { 
+                                    title: 'Flashcards',
+                                    sourceTaskId: taskId
+                                }
                             });
                         }}
                         title="Open in side panel"
@@ -260,7 +264,10 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                         onClick={() => openCanvas({
                             type: 'flashcards',
                             data: content,
-                            metadata: { title: 'Flashcards' }
+                            metadata: { 
+                                title: 'Flashcards',
+                                sourceTaskId: taskId
+                            }
                         })}
                     >
                         <ExternalLink className="h-3 w-3" />

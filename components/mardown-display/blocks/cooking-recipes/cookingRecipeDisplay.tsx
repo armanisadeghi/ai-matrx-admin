@@ -30,9 +30,10 @@ interface RecipeData {
 
 interface RecipeViewerProps {
   recipe: RecipeData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
-const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
+const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -142,7 +143,10 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
                           onClick={() => openCanvas({
                             type: 'recipe',
                             data: recipe,
-                            metadata: { title: recipe.title }
+                            metadata: { 
+                              title: recipe.title,
+                              sourceTaskId: taskId
+                            }
                           })}
                           className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-xs font-semibold shadow-sm hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-md transform hover:scale-105 transition-all"
                         >

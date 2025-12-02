@@ -18,6 +18,7 @@ import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import TokenRefreshInitializer from "@/components/auth/TokenRefreshInitializer";
+import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -99,6 +100,8 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
                 <AdminIndicatorWrapper />
                 <DebugIndicatorManager />
             </ResponsiveLayout>
+            {/* Global Canvas Side Sheet - Available everywhere (routes, modals, sheets) */}
+            <CanvasSideSheet />
         </Providers>
     );
 }

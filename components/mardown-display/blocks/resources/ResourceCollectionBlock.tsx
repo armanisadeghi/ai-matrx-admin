@@ -37,9 +37,10 @@ interface ResourceCollectionData {
 
 interface ResourceCollectionBlockProps {
   collection: ResourceCollectionData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
-const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ collection }) => {
+const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ collection, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -234,7 +235,10 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                         onClick={() => openCanvas({
                           type: 'resources',
                           data: collection,
-                          metadata: { title: collection.title }
+                          metadata: { 
+                            title: collection.title,
+                            sourceTaskId: taskId
+                          }
                         })}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >

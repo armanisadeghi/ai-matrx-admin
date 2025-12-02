@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, GripVertical, X, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { GripVertical, X } from 'lucide-react';
 import { PromptRunner } from './PromptRunner';
 import type { PromptData } from '@/features/prompts/types/core';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
-import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 
 interface PromptCompactModalProps {
   isOpen: boolean;
@@ -22,14 +21,16 @@ interface PromptCompactModalProps {
 
 /**
  * PromptCompactModal - iOS-style minimal draggable modal for quick AI responses
- * NOW with canvas support! Wraps PromptRunner just like PromptRunnerModal.
+ * 
+ * Uses the new hybrid canvas system:
+ * - Canvas automatically renders in global CanvasSideSheet (z-index 10000)
+ * - Works seamlessly with draggable modal (no layout conflicts)
  * 
  * Features:
  * - Draggable positioning
  * - Compact, minimal design
- * - Full canvas support (shows side-by-side)
  * - All PromptRunner features (streaming, conversation, etc.)
- * - Perfect for code editing while viewing the source!
+ * - Perfect for code editing while viewing canvas in side sheet!
  */
 export default function PromptCompactModal({
   isOpen,
@@ -46,7 +47,6 @@ export default function PromptCompactModal({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const { isOpen: isCanvasOpen } = useCanvas();
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Don't start drag if clicking on buttons or interactive elements
@@ -93,9 +93,6 @@ export default function PromptCompactModal({
 
   if (!isOpen) return null;
 
-  // When canvas is open, show side-by-side layout
-  const showSideBySide = isCanvasOpen;
-
   return (
     <>
       {/* Z-index override for Radix portaled components */}
@@ -129,10 +126,10 @@ export default function PromptCompactModal({
                 left: position.x,
                 top: position.y,
                 transform: 'none',
-                width: showSideBySide ? 'min(85vw, 1400px)' : 'min(90vw, 768px)',
+                width: 'min(90vw, 768px)',
               }
             : {
-                width: showSideBySide ? 'min(85vw, 1400px)' : 'min(90vw, 768px)',
+                width: 'min(90vw, 768px)',
               }
         }
       >

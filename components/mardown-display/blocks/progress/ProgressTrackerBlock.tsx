@@ -43,9 +43,10 @@ interface ProgressTrackerData {
 
 interface ProgressTrackerBlockProps {
   tracker: ProgressTrackerData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
-const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) => {
+const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { open: openCanvas } = useCanvas();
@@ -298,7 +299,10 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                         onClick={() => openCanvas({
                           type: 'progress',
                           data: tracker,
-                          metadata: { title: tracker.title }
+                          metadata: { 
+                            title: tracker.title,
+                            sourceTaskId: taskId
+                          }
                         })}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >

@@ -25,6 +25,7 @@ export type Question = OriginalQuestion;
 interface MultipleChoiceQuizProps {
   quizData: RawQuizJSON; // Quiz object: { quiz_title, category?, multiple_choice }
   sessionId?: string; // Load existing quiz session from database
+  taskId?: string; // Task ID for canvas deduplication
   enableAutoSave?: boolean; // Enable automatic saving to database (default: true)
   autoSaveInterval?: number; // Auto-save interval in milliseconds (default: 10000)
   showCanvasButton?: boolean; // Show the "Open in Canvas" button (default: true)
@@ -112,6 +113,7 @@ const ExplanationText: React.FC<{explanation: string, isCorrect: boolean, isFull
 const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ 
   quizData,
   sessionId,
+  taskId,
   enableAutoSave = true,
   autoSaveInterval = 10000,
   showCanvasButton = true
@@ -661,7 +663,8 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                           data: quizData,
                           metadata: {
                             title: parsedQuiz.title,
-                            sourceMessageId: sessionId
+                            sourceMessageId: sessionId,
+                            sourceTaskId: taskId
                           }
                         })}
                         size="md"

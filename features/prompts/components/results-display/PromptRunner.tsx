@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
@@ -10,6 +10,14 @@ import {
     type NewExecutionConfig
 } from "@/features/prompts/types/modal";
 import type { PromptData } from '@/features/prompts/types/core';
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ResizableCanvas } from "@/features/canvas/core/ResizableCanvas";
+import { CanvasRenderer } from "@/features/canvas/core/CanvasRenderer";
+import { 
+    selectCanvasWidth, 
+    setCanvasWidth,
+    selectCurrentCanvasItem,
+} from "@/features/canvas/redux/canvasSlice";
 
 import { SmartPromptInput } from "../smart/SmartPromptInput";
 import { SmartMessageList } from "../smart/SmartMessageList";
@@ -45,6 +53,9 @@ export interface PromptRunnerProps {
 
     /** Show/hide system messages in the message list (default: false) */
     showSystemMessage?: boolean;
+
+    /** Enable inline canvas (side-by-side with messages) - Canvas always on right */
+    enableInlineCanvas?: boolean;
 }
 
 /**
@@ -53,6 +64,8 @@ export interface PromptRunnerProps {
  * This component now relies on the global Redux state for prompt execution.
  * It initializes the run if needed, but primarily acts as a view layer
  * connecting SmartPromptInput and SmartMessageList.
+ * 
+ * NEW: Supports inline canvas mode (side-by-side) with canvas priority sizing.
  */
 export function PromptRunner({
     promptId,
@@ -67,14 +80,30 @@ export function PromptRunner({
     className,
     isActive = true,
     showSystemMessage = true,
+    enableInlineCanvas = false,
 }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
+    const isMobile = useIsMobile();
+    
+    // Canvas state
+    const { isOpen: isCanvasOpen } = useCanvas();
+    const currentCanvasItem = useAppSelector(selectCurrentCanvasItem);
+    const canvasWidth = useAppSelector(selectCanvasWidth);
 
     // Selectors
     const instance = useAppSelector(state => runId ? selectInstance(state, runId) : null);
     const reduxConfig = useAppSelector(state => runId ? selectExecutionConfig(state, runId) : null);
+    
+    // Viewport size tracking for inline canvas
+    const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+    
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        
+        const handleResize = () => setViewportWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Resolve configuration (prefer Redux if available, else props)
     const resolvedConfig = useMemo(() => {
@@ -134,8 +163,23 @@ export function PromptRunner({
         }
     }, [runId, currentTaskId, isResponseEnded, dispatch, onExecutionComplete]);
 
-    // Mobile detection (simplified for now)
-    const isMobile = false;
+    // Determine if we should show inline canvas
+    // Conditions:
+    // 1. enableInlineCanvas prop is true
+    // 2. Canvas is open
+    // 3. Not on mobile
+    // 4. Viewport is wide enough (min 1150px = 800px canvas + 400px messages)
+    const minViewportForInline = 1200;
+    const shouldShowInlineCanvas = enableInlineCanvas && 
+                                    isCanvasOpen && 
+                                    currentCanvasItem && 
+                                    !isMobile && 
+                                    viewportWidth >= minViewportForInline;
+    
+    // Handle canvas width changes
+    const handleCanvasWidthChange = (newWidth: number) => {
+        dispatch(setCanvasWidth(newWidth));
+    };
 
     if (!runId) {
         return (
@@ -179,9 +223,9 @@ export function PromptRunner({
                 </div>
             )}
 
-            <div className="flex-1 flex overflow-hidden">
-                {/* Main Content Area */}
-                <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-row overflow-hidden">
+                {/* Main Content Area - Messages Container */}
+                <div className="flex-1 min-w-[400px] flex flex-col overflow-hidden">
                     {/* Messages Area */}
                     <div className="flex-1 overflow-y-auto scrollbar-hide">
                         <SmartMessageList runId={runId} showSystemMessage={showSystemMessage} />
@@ -202,6 +246,22 @@ export function PromptRunner({
                         </div>
                     </div>
                 </div>
+
+                {/* Inline Canvas - Right Side (Canvas Priority) */}
+                {shouldShowInlineCanvas && currentCanvasItem && (
+                    <ResizableCanvas
+                        initialWidth={canvasWidth}
+                        minWidth={500}
+                        maxWidth={1200}
+                        onWidthChange={handleCanvasWidthChange}
+                        className="border-l border-zinc-200 dark:border-zinc-800"
+                    >
+                        <CanvasRenderer 
+                            content={currentCanvasItem.content}
+                            variant="default"
+                        />
+                    </ResizableCanvas>
+                )}
             </div>
         </div>
     );

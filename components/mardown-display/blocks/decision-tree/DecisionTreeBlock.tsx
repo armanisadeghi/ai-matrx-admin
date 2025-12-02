@@ -29,6 +29,7 @@ interface DecisionTreeData {
 
 interface DecisionTreeBlockProps {
   decisionTree: DecisionTreeData;
+  taskId?: string; // Task ID for canvas deduplication
 }
 
 interface NavigationStep {
@@ -38,7 +39,7 @@ interface NavigationStep {
   timestamp: number;
 }
 
-const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) => {
+const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, taskId }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [currentNode, setCurrentNode] = useState<DecisionNode>(decisionTree.root);
   const [navigationHistory, setNavigationHistory] = useState<NavigationStep[]>([]);
@@ -351,7 +352,10 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
                           onClick={() => openCanvas({
                             type: 'decision-tree',
                             data: decisionTree,
-                            metadata: { title: decisionTree.title }
+                            metadata: { 
+                              title: decisionTree.title,
+                              sourceTaskId: taskId
+                            }
                           })}
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                         >

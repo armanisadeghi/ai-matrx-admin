@@ -40,6 +40,7 @@ export interface ContentBlockWrapperProps {
     canvasType?: CanvasContentType;
     canvasData?: any;
     canvasMetadata?: Record<string, any>;
+    taskId?: string; // Task ID for canvas deduplication
     
     // Save/Download functionality
     onDownload?: () => void;
@@ -78,6 +79,7 @@ const ContentBlockWrapper: React.FC<ContentBlockWrapperProps> = ({
     canvasType,
     canvasData,
     canvasMetadata,
+    taskId,
     onDownload,
     onUpload,
     onSave,
@@ -119,7 +121,10 @@ const ContentBlockWrapper: React.FC<ContentBlockWrapperProps> = ({
         openCanvas({
             type: canvasType as CanvasContentType,
             data: canvasData,
-            metadata: canvasMetadata || {}
+            metadata: {
+                ...canvasMetadata,
+                sourceTaskId: taskId
+            }
         });
     };
     
