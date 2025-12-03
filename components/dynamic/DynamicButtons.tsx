@@ -15,6 +15,9 @@ import { PromptRunnerModal } from '@/features/prompts/components/results-display
 import { Loader2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DynamicButtonsProps {
   category?: string;
@@ -29,10 +32,12 @@ export function DynamicButtons({
   renderAs = 'inline',
   className,
 }: DynamicButtonsProps) {
+  const dispatch = useAppDispatch();
   const { systemPrompts, loading } = useButtonPrompts(category);
   const [executingId, setExecutingId] = React.useState<string | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [modalConfig, setModalConfig] = React.useState<any>(null);
+  const [modalRunId, setModalRunId] = React.useState<string | null>(null);
+  const [modalTitle, setModalTitle] = React.useState<string>('');
 
   const handleButtonClick = async (systemPrompt: any) => {
     // Check if placeholder
@@ -61,27 +66,35 @@ export function DynamicButtons({
 
       if (!canResolve.canResolve) {
         console.warn(`Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
+        setExecutingId(null);
         return;
       }
 
       // Get placement settings
       const settings = systemPrompt.placement_settings || {};
       const allowChat = settings.allowChat ?? true;
-      const allowInitialMessage = settings.allowInitialMessage ?? false;
 
-      // Open modal with the prompt
-      setModalConfig({
-        promptData: systemPrompt.prompt_snapshot,
-        variables,
+      // Initialize the run via Redux
+      const newRunId = uuidv4();
+      const promptId = systemPrompt.source_prompt_id || systemPrompt.prompt_snapshot?.id || 'unknown';
+      
+      await dispatch(startPromptInstance({
+        runId: newRunId,
+        promptId,
+        promptSource: 'prompts',
         executionConfig: {
           auto_run: true,
           allow_chat: allowChat,
           show_variables: false,
-          apply_variables: true
+          apply_variables: true,
+          track_in_runs: true,
         },
-        title: systemPrompt.name,
-        initialMessage: allowInitialMessage ? undefined : '',
-      });
+        variables,
+      })).unwrap();
+      
+      // Store runId and open modal
+      setModalRunId(newRunId);
+      setModalTitle(systemPrompt.name);
       setModalOpen(true);
       setExecutingId(null);
     } catch (error) {
@@ -150,16 +163,16 @@ export function DynamicButtons({
         })}
       </div>
 
-      {/* Modal for execution */}
-      {modalOpen && modalConfig && (
+      {/* Modal for execution - runId must be initialized in Redux */}
+      {modalOpen && modalRunId && (
         <PromptRunnerModal
           isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          promptData={modalConfig.promptData}
-          variables={modalConfig.variables}
-          executionConfig={modalConfig.executionConfig}
-          title={modalConfig.title}
-          initialMessage={modalConfig.initialMessage}
+          onClose={() => {
+            setModalOpen(false);
+            setModalRunId(null);
+          }}
+          runId={modalRunId}
+          title={modalTitle}
         />
       )}
     </>

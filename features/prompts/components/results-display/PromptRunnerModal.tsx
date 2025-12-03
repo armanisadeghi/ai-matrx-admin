@@ -2,11 +2,26 @@
 
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { PromptRunnerModalProps } from "../../types/modal";
 import { PromptRunner } from "./PromptRunner";
+
+interface PromptRunnerModalProps {
+    /** Whether the modal is open */
+    isOpen: boolean;
+    /** Callback when modal closes */
+    onClose: () => void;
+    /** Required: The run ID - instance must exist in Redux */
+    runId: string;
+    /** Optional title */
+    title?: string;
+    /** Callback when execution completes */
+    onExecutionComplete?: (result: { runId: string; response: string; metadata: any }) => void;
+}
 
 /**
  * PromptRunnerModal - Wrapper component for PromptRunner
+ * 
+ * IMPORTANT: Caller must initialize the run via startPromptInstance or loadRun
+ * BEFORE opening this modal. The runId must exist in Redux.
  * 
  * Uses the new hybrid canvas system:
  * - Canvas automatically renders in global CanvasSideSheet (z-index 10000)
@@ -18,39 +33,22 @@ import { PromptRunner } from "./PromptRunner";
 export function PromptRunnerModal({
     isOpen,
     onClose,
-    promptId,
-    promptData,
-    executionConfig,
-    variables,
-    initialMessage,
-    onExecutionComplete,
-    title,
     runId,
-    customMessage,
+    title,
+    onExecutionComplete,
 }: PromptRunnerModalProps) {
-    // Shared PromptRunner props
-    const promptRunnerProps = {
-        promptId,
-        promptData,
-        executionConfig,
-        variables,
-        initialMessage,
-        onExecutionComplete,
-        title,
-        runId,
-        onClose,
-        isActive: isOpen,
-        customMessage,
-        // Canvas will use global CanvasSideSheet (modal not wide enough for inline)
-    };
-
     // Standard display needs Dialog wrapper with fixed dimensions
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent 
                 className="w-full max-w-3xl h-[95vh] p-0 gap-0 overflow-hidden"
             >
-                <PromptRunner {...promptRunnerProps} />
+                <PromptRunner
+                    runId={runId}
+                    title={title}
+                    onClose={onClose}
+                    onExecutionComplete={onExecutionComplete}
+                />
             </DialogContent>
         </Dialog>
     );

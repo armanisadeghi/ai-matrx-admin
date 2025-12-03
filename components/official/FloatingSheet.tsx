@@ -14,25 +14,26 @@ interface FloatingSheetProps {
     position?: "right" | "left" | "top" | "bottom" | "center";
     showCloseButton?: boolean;
     closeOnBackdropClick?: boolean;
-    closeOnEsc?: boolean; // New: Close the sheet when ESC key is pressed
+    closeOnEsc?: boolean; // Close the sheet when ESC key is pressed
     width?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "full";
     height?: "auto" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "full";
     spacing?: string;
     rounded?: string;
     className?: string;
     contentClassName?: string;
-    headerClassName?: string; // New: Class name for the header
-    footerClassName?: string; // New: Class name for the footer
-    backdropClassName?: string; // New: Class name for the backdrop
-    initialFocus?: boolean; // New: Automatically focus the sheet when opened
-    lockScroll?: boolean; // New: Whether to lock body scroll when opened
-    animationDuration?: number; // New: Custom animation duration in ms
-    preserveScrollPosition?: boolean; // New: Preserve scroll position when reopening
-    closeButton?: ReactNode; // New: Custom close button element
-    role?: string; // New: ARIA role (defaults to "dialog")
-    hasBackdrop?: boolean; // New: Whether to show a backdrop behind the sheet
-    onBackdropClick?: () => void; // New: Handler for backdrop clicks
-    isMobile?: boolean; // New: Flag to enable mobile-friendly mode
+    headerClassName?: string; // Class name for the header
+    footerClassName?: string; // Class name for the footer
+    backdropClassName?: string; // Class name for the backdrop
+    initialFocus?: boolean; // Automatically focus the sheet when opened
+    lockScroll?: boolean; // Whether to lock body scroll when opened
+    animationDuration?: number; // Custom animation duration in ms
+    preserveScrollPosition?: boolean; // Preserve scroll position when reopening
+    closeButton?: ReactNode; // Custom close button element
+    role?: string; // ARIA role (defaults to "dialog")
+    hasBackdrop?: boolean; // Whether to show a backdrop behind the sheet
+    onBackdropClick?: () => void; // Handler for backdrop clicks
+    isMobile?: boolean; // Flag to enable mobile-friendly mode
+    respectHeader?: boolean; // Whether to position below the app header (default: true)
 }
 
 const FloatingSheet: React.FC<FloatingSheetProps> = ({
@@ -47,7 +48,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     position = "right",
     showCloseButton = true,
     closeOnBackdropClick = true,
-    closeOnEsc = true, // Default to true for better accessibility
+    closeOnEsc = true,
     width = "md",
     height = "auto",
     spacing = "0",
@@ -65,7 +66,8 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     role = "dialog",
     hasBackdrop = true,
     onBackdropClick,
-    isMobile = false, // Default to false to maintain backward compatibility
+    isMobile = false,
+    respectHeader = true, // Default to true - sheets should respect the header by default
 }) => {
     // Create a state to track if the component has been initially rendered
     const [hasRendered, setHasRendered] = useState(false);
@@ -183,31 +185,37 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     
     // Determine height for top/bottom/center positions
     const getHeightClass = () => {
-        // For mobile mode with bottom position, use a fixed height
+        // For mobile mode with bottom position, use dvh and account for safe area
         if (isMobile && position === "bottom") {
-            return "max-h-[90vh]";
+            return "max-h-[90dvh]";
         }
         
-        // For mobile mode with full screen (other positions), use full height
+        // For mobile mode with full screen (other positions), use dvh units
         if (isMobile && position !== "bottom") {
-            return "max-h-full h-full";
+            // If respecting header, height is already constrained by top-10 bottom-0
+            return respectHeader ? "" : "h-dvh";
         }
         
-        // Only apply height constraints for top, bottom, or center positions
+        // For right/left positions, height is controlled by top/bottom positioning
+        // No explicit height class needed as it stretches between top and bottom
         if (position === "right" || position === "left") {
             return "";
         }
         
+        // For top/bottom/center positions, use dvh units
+        // When respectHeader is true, available height is 100dvh - 2.5rem (header height)
         const heightMap: Record<string, string> = {
-            sm: "max-h-sm",
-            md: "max-h-md",
-            lg: "max-h-lg",
-            xl: "max-h-xl",
-            "2xl": "max-h-2xl",
-            "3xl": "max-h-3xl",
-            "4xl": "max-h-4xl",
-            full: "max-h-full",
-            auto: position === "center" ? "max-h-[85vh]" : "max-h-[50vh]", // Default reasonable heights
+            sm: "max-h-[20dvh]",
+            md: "max-h-[40dvh]",
+            lg: "max-h-[60dvh]",
+            xl: "max-h-[70dvh]",
+            "2xl": "max-h-[80dvh]",
+            "3xl": "max-h-[85dvh]",
+            "4xl": "max-h-[90dvh]",
+            full: respectHeader ? "max-h-[calc(100dvh-2.5rem)]" : "max-h-dvh",
+            auto: position === "center" 
+                ? (respectHeader ? "max-h-[calc(85dvh-2.5rem)]" : "max-h-[85dvh]")
+                : (respectHeader ? "max-h-[calc(50dvh-2.5rem)]" : "max-h-[50dvh]"),
         };
         
         return heightMap[height] || heightMap.auto;
@@ -222,30 +230,74 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 return "inset-x-0 bottom-0";
             }
             
-            // For other positions on mobile, use full screen
+            // For other positions on mobile, respect header if enabled
+            if (respectHeader) {
+                return "inset-x-0 top-10 bottom-0";
+            }
             return "inset-0";
         }
         
         // Map spacing values to actual Tailwind classes
+        // When respectHeader is true, use top-10 (header height) instead of regular top spacing
         const spacingClasses: Record<string, { top: string; bottom: string; left: string; right: string }> = {
-            "0": { top: "top-0", bottom: "bottom-0", left: "left-0", right: "right-0" },
-            "1": { top: "top-1", bottom: "bottom-1", left: "left-1", right: "right-1" },
-            "2": { top: "top-2", bottom: "bottom-2", left: "left-2", right: "right-2" },
-            "3": { top: "top-3", bottom: "bottom-3", left: "left-3", right: "right-3" },
-            "4": { top: "top-4", bottom: "bottom-4", left: "left-4", right: "right-4" },
-            "5": { top: "top-5", bottom: "bottom-5", left: "left-5", right: "right-5" },
-            "6": { top: "top-6", bottom: "bottom-6", left: "left-6", right: "right-6" },
-            "8": { top: "top-8", bottom: "bottom-8", left: "left-8", right: "right-8" },
+            "0": { 
+                top: respectHeader ? "top-10" : "top-0", 
+                bottom: "bottom-0", 
+                left: "left-0", 
+                right: "right-0" 
+            },
+            "1": { 
+                top: respectHeader ? "top-[2.75rem]" : "top-1", 
+                bottom: "bottom-1", 
+                left: "left-1", 
+                right: "right-1" 
+            },
+            "2": { 
+                top: respectHeader ? "top-[3rem]" : "top-2", 
+                bottom: "bottom-2", 
+                left: "left-2", 
+                right: "right-2" 
+            },
+            "3": { 
+                top: respectHeader ? "top-[3.25rem]" : "top-3", 
+                bottom: "bottom-3", 
+                left: "left-3", 
+                right: "right-3" 
+            },
+            "4": { 
+                top: respectHeader ? "top-[3.5rem]" : "top-4", 
+                bottom: "bottom-4", 
+                left: "left-4", 
+                right: "right-4" 
+            },
+            "5": { 
+                top: respectHeader ? "top-[3.75rem]" : "top-5", 
+                bottom: "bottom-5", 
+                left: "left-5", 
+                right: "right-5" 
+            },
+            "6": { 
+                top: respectHeader ? "top-[4rem]" : "top-6", 
+                bottom: "bottom-6", 
+                left: "left-6", 
+                right: "right-6" 
+            },
+            "8": { 
+                top: respectHeader ? "top-[4.5rem]" : "top-8", 
+                bottom: "bottom-8", 
+                left: "left-8", 
+                right: "right-8" 
+            },
         };
         
-        const classes = spacingClasses[spacing] || spacingClasses["4"];
+        const classes = spacingClasses[spacing] || spacingClasses["0"];
         
         const positionMap: Record<string, string> = {
             right: `${classes.top} ${classes.bottom} ${classes.right}`,
             left: `${classes.top} ${classes.bottom} ${classes.left}`,
             top: `${classes.top} ${classes.left} ${classes.right}`,
             bottom: `${classes.bottom} ${classes.left} ${classes.right}`,
-            center: "inset-0 flex items-center justify-center",
+            center: respectHeader ? "left-0 right-0 top-10 bottom-0 flex items-center justify-center" : "inset-0 flex items-center justify-center",
         };
         
         return positionMap[position] || `${classes.top} ${classes.bottom} ${classes.right}`;
@@ -343,6 +395,24 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     // Determine if we need to show the footer
     const showFooter = footer || footerContent;
     
+    // Determine explicit height class for the sheet container
+    // For right/left positions with top/bottom positioning, height is implicit
+    // For other positions or when height is explicitly set, use the height class
+    const getSheetHeightClass = () => {
+        // For right/left positions, height is controlled by top/bottom positioning
+        if ((position === "right" || position === "left") && respectHeader) {
+            return ""; // No explicit height - let top/bottom control it
+        }
+        
+        // For mobile full-screen (not bottom sheet)
+        if (isMobile && position !== "bottom") {
+            return "h-full";
+        }
+        
+        // For bottom sheets on mobile or other positions, height is controlled differently
+        return "h-full";
+    };
+    
     // Mobile-specific header styles
     const getMobileHeaderClass = () => {
         if (isMobile) {
@@ -354,19 +424,26 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     // Mobile-specific footer styles
     const getMobileFooterClass = () => {
         if (isMobile) {
-            return "sticky bottom-0 bg-zinc-100 dark:bg-zinc-850 z-10 px-4 py-4 mt-auto";
+            return "sticky bottom-0 bg-zinc-100 dark:bg-zinc-850 z-10 px-4 py-4 pb-safe mt-auto";
         }
-        return "px-4 pt-2 pb-6";
+        return "px-4 pt-2 pb-6 pb-safe";
+    };
+    
+    // Content padding - add pb-safe when there's no footer
+    const getContentPaddingClass = () => {
+        const basePadding = isMobile ? "px-4 py-4" : "";
+        const bottomPadding = showFooter ? "" : "pb-safe";
+        return `${basePadding} ${bottomPadding}`.trim();
     };
     
     // CRITICAL: We always render the sheet regardless of isOpen state
     // This ensures state is preserved inside sheet contents
     return (
         <>
-            {/* Backdrop - Only shown when open */}
+            {/* Backdrop - Only shown when open, respects header if enabled */}
             {isOpen && hasBackdrop && (
                 <div
-                    className={`fixed inset-0 bg-black/50 z-40 ${isMobile ? "backdrop-blur-sm" : ""} transition-opacity ${durationClass} ${backdropClassName}`}
+                    className={`fixed ${respectHeader ? "left-0 right-0 top-10 bottom-0" : "inset-0"} bg-black/50 z-40 ${isMobile ? "backdrop-blur-sm" : ""} transition-opacity ${durationClass} ${backdropClassName}`}
                     onClick={handleBackdropClick}
                     aria-hidden="true"
                     data-testid="floating-sheet-backdrop"
@@ -378,9 +455,9 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 ref={sheetRef}
                 className={`fixed ${positionClasses} z-50 ${
                     isMobile || position === "center" ? "" : "w-full"
-                } ${widthClass} ${heightClass} ${roundedClass} bg-zinc-100 dark:bg-zinc-850 shadow-xl transform transition-all ${durationClass} ease-in-out ${transformClass} ${
-                    isOpen ? "visible opacity-100" : "invisible opacity-0"
-                } ${isMobile ? "h-full flex flex-col" : "h-full"} outline-none ${className}`}
+                } ${widthClass} ${heightClass} ${roundedClass} bg-textured shadow-xl transition-all ${durationClass} ease-out ${transformClass} ${
+                    isOpen ? "pointer-events-auto" : "pointer-events-none"
+                } ${getSheetHeightClass()} outline-none ${className}`}
                 role={role}
                 aria-modal={isOpen}
                 aria-hidden={!isOpen}
@@ -388,7 +465,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 tabIndex={-1}
                 data-testid="floating-sheet"
             >
-                <div className={`flex flex-col h-full ${isMobile ? "overflow-hidden" : ""}`}>
+                <div className="flex flex-col h-full overflow-hidden">
                     {/* Header - Only show if title exists or showCloseButton is true or headerContent exists */}
                     {showHeader && (
                         <div
@@ -440,7 +517,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                     {/* Content area */}
                     <div 
                         ref={contentRef} 
-                        className={`flex-1 overflow-y-auto ${isMobile ? "px-4 py-4" : ""} ${contentClassName}`} 
+                        className={`flex-1 overflow-y-auto ${getContentPaddingClass()} ${contentClassName}`} 
                         data-testid="floating-sheet-content"
                     >
                         {children}

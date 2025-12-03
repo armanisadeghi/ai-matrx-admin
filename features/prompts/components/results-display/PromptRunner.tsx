@@ -1,15 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Button } from "@/components/ui/button";
-import {
-    resolveExecutionConfig,
-    type NewExecutionConfig
-} from "@/features/prompts/types/modal";
-import type { PromptData } from '@/features/prompts/types/core';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ResizableCanvas } from "@/features/canvas/core/ResizableCanvas";
 import { CanvasRenderer } from "@/features/canvas/core/CanvasRenderer";
@@ -21,40 +16,28 @@ import {
 
 import { SmartPromptInput } from "../smart/SmartPromptInput";
 import { SmartMessageList } from "../smart/SmartMessageList";
-import {
-    selectInstance,
-    selectExecutionConfig,
-} from "@/lib/redux/prompt-execution/slice";
+import { selectInstance } from "@/lib/redux/prompt-execution/slice";
 import { executeMessage } from "@/lib/redux/prompt-execution/thunks/executeMessageThunk";
-import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startInstanceThunk";
 import { finalizeExecution } from "@/lib/redux/prompt-execution/thunks/finalizeExecutionThunk";
 import { selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 export interface PromptRunnerProps {
-    promptId?: string;
-    promptData?: PromptData | null;
+    /** Required: The run ID - instance must exist in Redux */
+    runId: string;
     
-    /** Source table for prompt lookup - defaults to 'prompts' */
-    promptSource?: 'prompts' | 'prompt_builtins';
-
-    /** Execution configuration */
-    executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
-
-    variables?: Record<string, string>;
-    initialMessage?: string;
+    /** Callback when execution completes */
     onExecutionComplete?: (result: { runId: string; response: string; metadata: any }) => void;
+    
+    /** Optional title to display */
     title?: string;
-    runId?: string;
+    
+    /** Callback when close is requested */
     onClose?: () => void;
+    
+    /** Additional CSS classes */
     className?: string;
-    isActive?: boolean; // Used to control initialization/reset
-    customMessage?: string; // Optional custom message for AdditionalInfoModal
-    countdownSeconds?: number; // Optional countdown override for AdditionalInfoModal
 
-    /** Enable/disable AdditionalInfoModal for hidden-variables mode (default: true) */
-    enableAdditionalInfoModal?: boolean;
-
-    /** Show/hide system messages in the message list (default: false) */
+    /** Show/hide system messages in the message list (default: true) */
     showSystemMessage?: boolean;
 
     /** Enable inline canvas (side-by-side with messages) - Canvas always on right */
@@ -62,27 +45,23 @@ export interface PromptRunnerProps {
 }
 
 /**
- * PromptRunner - Core prompt running functionality (Redux-Integrated)
+ * PromptRunner - Core prompt display component (Redux-Driven)
  * 
- * This component now relies on the global Redux state for prompt execution.
- * It initializes the run if needed, but primarily acts as a view layer
- * connecting SmartPromptInput and SmartMessageList.
+ * IMPORTANT: This component requires the instance to exist in Redux.
+ * Callers must initialize via startPromptInstance or loadRun BEFORE rendering.
  * 
- * NEW: Supports inline canvas mode (side-by-side) with canvas priority sizing.
+ * The component reads ALL state from Redux:
+ * - If requiresVariableReplacement && auto_run && status === 'ready' → auto-execute
+ * - Otherwise → just render and wait for user input
+ * 
+ * Supports inline canvas mode (side-by-side) with canvas priority sizing.
  */
 export function PromptRunner({
-    promptId,
-    promptData: initialPromptData,
-    promptSource = 'prompts',
-    executionConfig,
-    variables: initialVariables,
-    initialMessage,
+    runId,
     onExecutionComplete,
     title,
-    runId,
     onClose,
     className,
-    isActive = true,
     showSystemMessage = true,
     enableInlineCanvas = false,
 }: PromptRunnerProps) {
@@ -94,9 +73,8 @@ export function PromptRunner({
     const currentCanvasItem = useAppSelector(selectCurrentCanvasItem);
     const canvasWidth = useAppSelector(selectCanvasWidth);
 
-    // Selectors
-    const instance = useAppSelector(state => runId ? selectInstance(state, runId) : null);
-    const reduxConfig = useAppSelector(state => runId ? selectExecutionConfig(state, runId) : null);
+    // Select instance from Redux - MUST exist (caller is responsible for initialization)
+    const instance = useAppSelector(state => selectInstance(state, runId));
     
     // Viewport size tracking for inline canvas
     const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -109,35 +87,18 @@ export function PromptRunner({
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Resolve configuration (prefer Redux if available, else props)
-    const resolvedConfig = useMemo(() => {
-        if (reduxConfig) return reduxConfig;
-        return resolveExecutionConfig(executionConfig);
-    }, [reduxConfig, executionConfig]);
-
-    const { auto_run: autoRun } = resolvedConfig;
-
-    // Initialize run if needed (and if we have a runId but no instance yet)
+    // Handle auto-run logic - ONLY for first execution
+    // Redux tells us everything: requiresVariableReplacement means first execution hasn't happened
     useEffect(() => {
-        if (isActive && runId && !instance && (promptId || initialPromptData)) {
-            dispatch(startPromptInstance({
-                runId,
-                promptId: promptId || initialPromptData?.id || 'unknown',
-                executionConfig: resolvedConfig,
-                variables: initialVariables,
-                initialMessage,
-                promptSource,
-            }));
-        }
-    }, [isActive, runId, instance, promptId, initialPromptData, resolvedConfig, initialVariables, initialMessage, promptSource, dispatch]);
-
-    // Handle auto-run logic
-    useEffect(() => {
-        if (isActive && runId && instance && autoRun && instance.messages.length === 0 && instance.status === 'ready') {
-            // Trigger execution
+        if (
+            instance &&
+            instance.requiresVariableReplacement &&
+            instance.executionConfig.auto_run &&
+            instance.status === 'ready'
+        ) {
             dispatch(executeMessage({ runId }));
         }
-    }, [isActive, runId, instance, autoRun, dispatch]);
+    }, [runId, instance, dispatch]);
 
     // ============================================================================================
     // STREAMING LOGIC
@@ -185,11 +146,12 @@ export function PromptRunner({
         dispatch(setCanvasWidth(newWidth));
     };
 
-    if (!runId) {
+    // Instance must exist in Redux (caller is responsible for initialization)
+    if (!instance) {
         return (
             <div className={`flex flex-col items-center justify-center h-full gap-4 ${className || ''}`}>
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Initializing prompt runner...</p>
+                <p className="text-sm text-muted-foreground">Loading run...</p>
             </div>
         );
     }

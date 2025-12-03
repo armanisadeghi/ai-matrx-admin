@@ -239,19 +239,6 @@ export function QuickAIResultsSheet() {
     }
   };
 
-  // Determine prompt source for the selected run
-  const selectedRunSource = useMemo(() => {
-    if (!selectedRunId) return 'prompts';
-    const run = allRuns.find(r => r.id === selectedRunId);
-    return (run?.source_type === 'prompt_builtins' ? 'prompt_builtins' : 'prompts') as 'prompts' | 'prompt_builtins';
-  }, [selectedRunId, allRuns]);
-
-  const selectedRunPromptId = useMemo(() => {
-    if (!selectedRunId) return undefined;
-    const run = allRuns.find(r => r.id === selectedRunId);
-    return run?.source_id || undefined;
-  }, [selectedRunId, allRuns]);
-
   // ========== CONVERSATION VIEW ==========
   if (selectedRunId && selectedInstance) {
     return (
@@ -290,16 +277,6 @@ export function QuickAIResultsSheet() {
           <PromptRunner
             key={selectedRunId}
             runId={selectedRunId}
-            promptId={selectedRunPromptId}
-            promptSource={selectedRunSource}
-            executionConfig={{
-              auto_run: false,
-              allow_chat: true,
-              show_variables: false,
-              apply_variables: true,
-              track_in_runs: true,
-            }}
-            isActive={true}
             showSystemMessage={false}
             className="h-full"
           />

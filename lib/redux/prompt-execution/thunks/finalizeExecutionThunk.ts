@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../../store';
 import { selectPrimaryResponseTextByTaskId } from '../../socket-io/selectors/socket-response-selectors';
-import { addMessage, setInstanceStatus } from '../slice';
+import { addMessage, completeExecution, setInstanceStatus } from '../slice';
 import { selectInstance, selectDynamicContexts, selectHasDynamicContexts } from '../selectors';
 import { createClient } from '@/utils/supabase/client';
 import { detectAndUpdateContextsFromResponse } from './detectContextUpdatesThunk';
@@ -93,7 +93,11 @@ export const finalizeExecution = createAsyncThunk<
             }
         }
 
-        // 5. Set Status to Ready
+        // 5. Complete execution - THIS CLEARS currentTaskId to prevent duplicate finalization
+        // completeExecution clears taskId and sets status to 'completed'
+        dispatch(completeExecution({ runId, stats: {} }));
+        
+        // 6. Set status back to 'ready' for chat continuation
         dispatch(setInstanceStatus({ runId, status: 'ready' }));
 
         console.log('✅ Execution finalized for run:', runId);

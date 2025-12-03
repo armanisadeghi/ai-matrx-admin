@@ -275,8 +275,6 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
                             {activeRunId ? (
                                 <PromptRunner
                                     runId={activeRunId}
-                                    promptId={promptData.id}
-                                    promptData={promptData}
                                     className="h-full"
                                 />
                             ) : (

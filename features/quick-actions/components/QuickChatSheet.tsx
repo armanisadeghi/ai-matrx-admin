@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageSquarePlus, X, Loader2 } from 'lucide-react';
+import { MessageSquarePlus, X, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PromptRunner } from '@/features/prompts/components/results-display/PromptRunner';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,7 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
     // Current runId for the chat session
     const [currentRunId, setCurrentRunId] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(false);
+    const [initError, setInitError] = useState<string | null>(null);
     
     // Check if instance exists in Redux
     const instance = useAppSelector(state => 
@@ -44,6 +45,7 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
     // Initialize chat on mount
     const initializeChat = useCallback(async () => {
         setIsInitializing(true);
+        setInitError(null);
         
         try {
             const newRunId = uuidv4();
@@ -56,7 +58,7 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                 executionConfig: {
                     auto_run: false,
                     allow_chat: true,
-                    show_variables: false,
+                    show_variables: true,
                     apply_variables: true,
                     track_in_runs: true,
                 },
@@ -64,22 +66,25 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
             
             setCurrentRunId(newRunId);
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('[QuickChatSheet] Failed to initialize chat:', error);
+            setInitError(errorMessage);
         } finally {
             setIsInitializing(false);
         }
     }, [dispatch]);
     
-    // Initialize on mount
+    // Initialize on mount (only if no error - prevents infinite retry)
     useEffect(() => {
-        if (!currentRunId && !isInitializing) {
+        if (!currentRunId && !isInitializing && !initError) {
             initializeChat();
         }
-    }, [currentRunId, isInitializing, initializeChat]);
+    }, [currentRunId, isInitializing, initError, initializeChat]);
     
     // Handle new chat - creates a fresh session
     const handleNewChat = useCallback(async () => {
         setCurrentRunId(null); // Clear current session
+        setInitError(null); // Clear any previous error
         await initializeChat(); // Start new session
     }, [initializeChat]);
 
@@ -127,21 +132,28 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
             </div>
 
             {/* Chat Interface */}
-            <div className="h-full [&>*]:h-full [&>*>*:first-child]:hidden [&_[style*='paddingBottom']]:!pb-28 [&_.px-6]:!px-3 [&_.pt-6]:!pt-3">
-                {isReady ? (
+            <div className="h-full">
+                {initError ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="flex flex-col items-center gap-3 text-destructive max-w-md p-4">
+                            <AlertCircle className="h-8 w-8" />
+                            <span className="text-sm font-medium">Failed to initialize chat</span>
+                            <span className="text-xs text-muted-foreground text-center break-all">{initError}</span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleNewChat}
+                                className="mt-2 gap-2"
+                            >
+                                <RefreshCw className="h-3.5 w-3.5" />
+                                Retry
+                            </Button>
+                        </div>
+                    </div>
+                ) : isReady ? (
                     <PromptRunner
                         key={currentRunId}
                         runId={currentRunId}
-                        promptId={getBuiltinId('matrix-custom-chat')}
-                        promptSource="prompt_builtins"
-                        executionConfig={{
-                            auto_run: false,
-                            allow_chat: true,
-                            show_variables: false,
-                            apply_variables: true,
-                            track_in_runs: true,
-                        }}
-                        isActive={true}
                         className="h-full"
                     />
                 ) : (

@@ -2,8 +2,6 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import type { PromptData } from '@/features/prompts/types/core';
-import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 
 const FloatingSheet = dynamic(
   () => import('@/components/official/FloatingSheet'),
@@ -16,41 +14,39 @@ const PromptRunner = dynamic(
 );
 
 interface PromptSidebarRunnerProps {
+  /** Whether the sidebar is open */
   isOpen: boolean;
+  /** Callback when sidebar closes */
   onClose: () => void;
+  /** Required: The run ID - instance must exist in Redux */
+  runId: string;
+  /** Sidebar position */
   position?: 'left' | 'right';
+  /** Sidebar size */
   size?: 'sm' | 'md' | 'lg';
-  promptId?: string;
-  promptData?: PromptData;
-  executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
-  variables?: Record<string, string>;
+  /** Optional title */
   title?: string;
-  runId?: string; // ⭐ Execution instance runId
-  customMessage?: string;
 }
 
 /**
  * PromptSidebarRunner - Renders PromptRunner in a FloatingSheet sidebar
+ * 
+ * IMPORTANT: Caller must initialize the run via startPromptInstance or loadRun
+ * BEFORE opening this sidebar. The runId must exist in Redux.
  * 
  * Features:
  * - Wraps PromptRunner in our existing FloatingSheet component
  * - Supports left/right positioning
  * - Adjustable sizes (sm, md, lg)
  * - Full prompt execution capabilities
- * - Optional push-content mode (future)
  */
 export default function PromptSidebarRunner({
   isOpen,
   onClose,
+  runId,
   position = 'right',
   size = 'lg',
-  promptId,
-  promptData,
-  executionConfig,
-  variables,
   title,
-  runId,
-  customMessage,
 }: PromptSidebarRunnerProps) {
   // Map size to FloatingSheet width
   const widthMap = {
@@ -73,15 +69,9 @@ export default function PromptSidebarRunner({
       contentClassName="p-0"
     >
       <PromptRunner
-        promptId={promptId}
-        promptData={promptData}
-        executionConfig={executionConfig}
-        variables={variables}
-        title={title}
         runId={runId}
+        title={title}
         onClose={onClose}
-        isActive={isOpen}
-        customMessage={customMessage}
       />
     </FloatingSheet>
   );

@@ -3,26 +3,27 @@
 import React from "react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { PromptRunner } from "./PromptRunner";
-import type { PromptData } from '@/features/prompts/types/core';
-import { PromptExecutionConfig } from "@/features/prompt-builtins/types/execution-modes";
 
 interface PromptFlexiblePanelProps {
+  /** Whether the panel is open */
   isOpen: boolean;
+  /** Callback when panel closes */
   onClose: () => void;
+  /** Required: The run ID - instance must exist in Redux */
+  runId: string;
+  /** Panel position */
   position?: 'left' | 'right' | 'top' | 'bottom';
-  promptId?: string;
-  promptData: PromptData;
-  executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
-  variables?: Record<string, string>;
-  initialMessage?: string;
+  /** Optional title */
   title?: string;
-  runId?: string;
+  /** Callback when execution completes */
   onExecutionComplete?: (result: { runId: string; response: string; metadata: any }) => void;
-  customMessage?: string;
 }
 
 /**
  * PromptFlexiblePanel - Displays the PromptRunner component within a MatrxDynamicPanel.
+ *
+ * IMPORTANT: Caller must initialize the run via startPromptInstance or loadRun
+ * BEFORE opening this panel. The runId must exist in Redux.
  *
  * Features:
  * - Supports all 4 positions (left, right, top, bottom)
@@ -34,16 +35,10 @@ interface PromptFlexiblePanelProps {
 export default function PromptFlexiblePanel({
   isOpen,
   onClose,
-  position = 'right',
-  promptId,
-  promptData,
-  executionConfig,
-  variables,
-  initialMessage,
-  title,
   runId,
+  position = 'right',
+  title,
   onExecutionComplete,
-  customMessage,
 }: PromptFlexiblePanelProps) {
   if (!isOpen) return null;
 
@@ -63,23 +58,16 @@ export default function PromptFlexiblePanel({
       header={
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold">
-            {title || promptData?.name || 'AI Prompt'}
+            {title || 'AI Prompt'}
           </h2>
         </div>
       }
     >
       <PromptRunner
-        promptId={promptId}
-        promptData={promptData}
-        executionConfig={executionConfig}
-        variables={variables}
-        initialMessage={initialMessage}
-        onExecutionComplete={onExecutionComplete}
-        title={title}
         runId={runId}
+        title={title}
         onClose={onClose}
-        isActive={isOpen}
-        customMessage={customMessage}
+        onExecutionComplete={onExecutionComplete}
       />
     </MatrxDynamicPanel>
   );

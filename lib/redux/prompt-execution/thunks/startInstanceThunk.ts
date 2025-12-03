@@ -180,25 +180,6 @@ export const startPromptInstance = createAsyncThunk<
         });
       }
 
-      // If loading existing run, fetch messages
-      if (providedRunId) {
-        // Dynamically import to avoid circular dependency if possible, or just use the imported action
-        // We need to import loadRun. Since it's in the same directory structure, we can import it at top level if no circular dep.
-        // But loadRun imports createInstance from slice, and startInstance imports createInstance from slice.
-        // They don't import each other directly.
-
-        // However, we need to dispatch it.
-        const { loadRun } = await import('./loadRunThunk');
-        await dispatch(loadRun({ runId: providedRunId }));
-      }
-
-      console.log('✅ Prompt instance created:', {
-        runId,
-        promptId,
-        promptSource,
-        promptName: prompt.name,
-      });
-
       return runId;
 
     } catch (error) {

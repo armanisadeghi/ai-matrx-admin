@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PromptRunnerModal } from '../results-display/PromptRunnerModal';
 import type { SystemPromptDB } from '@/types/system-prompts-db';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
+import { v4 as uuidv4 } from 'uuid';
 
 interface PromptExecutionCardProps {
     // Either provide the full system prompt object or just the ID
@@ -41,11 +44,64 @@ export function PromptExecutionCard({
     onExecutionStart,
     onExecutionComplete,
 }: PromptExecutionCardProps) {
+    const dispatch = useAppDispatch();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [modalRunId, setModalRunId] = useState<string | null>(null);
 
     // Get the prompt ID to use
     const promptId = systemPrompt?.source_prompt_id || systemPromptId;
+
+    const handleCardClick = useCallback(async () => {
+        if (isLoading || !promptId) return;
+        
+        if (onExecutionStart) {
+            onExecutionStart();
+        }
+        
+        setIsLoading(true);
+        
+        try {
+            // Initialize the run via Redux
+            const newRunId = uuidv4();
+            
+            await dispatch(startPromptInstance({
+                runId: newRunId,
+                promptId,
+                promptSource: 'prompts',
+                executionConfig: {
+                    auto_run: true,
+                    allow_chat: allowChat,
+                    show_variables: false,
+                    apply_variables: true,
+                    track_in_runs: true,
+                },
+                variables: {
+                    title,
+                    description,
+                    context,
+                },
+            })).unwrap();
+            
+            setModalRunId(newRunId);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Failed to start prompt execution:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isLoading, promptId, onExecutionStart, dispatch, allowChat, title, description, context]);
+
+    const handleModalClose = useCallback(() => {
+        setIsModalOpen(false);
+        setModalRunId(null);
+    }, []);
+
+    const handleExecutionComplete = useCallback((result: any) => {
+        if (onExecutionComplete) {
+            onExecutionComplete(result);
+        }
+    }, [onExecutionComplete]);
 
     if (!promptId) {
         return (
@@ -56,26 +112,6 @@ export function PromptExecutionCard({
             </Card>
         );
     }
-
-    const handleCardClick = () => {
-        if (isLoading) return;
-        
-        if (onExecutionStart) {
-            onExecutionStart();
-        }
-        
-        setIsModalOpen(true);
-    };
-
-    const handleModalClose = () => {
-        setIsModalOpen(false);
-    };
-
-    const handleExecutionComplete = (result: any) => {
-        if (onExecutionComplete) {
-            onExecutionComplete(result);
-        }
-    };
 
     return (
         <>
@@ -106,26 +142,16 @@ export function PromptExecutionCard({
                 </div>
             </Card>
 
-            <PromptRunnerModal
-                isOpen={isModalOpen}
-                onClose={handleModalClose}
-                promptId={promptId}
-                executionConfig={{
-                    auto_run: true,
-                    allow_chat: allowChat,
-                    show_variables: false,
-                    apply_variables: true,
-                    track_in_runs: true,
-                }}
-                variables={{
-                    title,
-                    description,
-                    context,
-                }}
-                initialMessage={allowInitialMessage ? undefined : ''}
-                title={title}
-                onExecutionComplete={handleExecutionComplete}
-            />
+            {/* Modal - runId must be initialized in Redux */}
+            {modalRunId && (
+                <PromptRunnerModal
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                    runId={modalRunId}
+                    title={title}
+                    onExecutionComplete={handleExecutionComplete}
+                />
+            )}
         </>
     );
 }

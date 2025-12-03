@@ -296,10 +296,11 @@ export function ContextAwareCodeEditorModal({
     ) : promptData ? (
         <ContextAwarePromptRunner
             runId={runId}
+            promptId={defaultBuiltinId}
+            promptSource="prompt_builtins"
             initialContext={code}
             contextType="code"
             contextLanguage={language}
-            promptData={promptData}
             staticVariables={{
                 ...(selection && { selection }),
                 ...(context && { context }),
@@ -316,9 +317,6 @@ export function ContextAwareCodeEditorModal({
             onContextUpdateReady={handleContextUpdateReady}
             title={title}
             onClose={() => onOpenChange(false)}
-            isActive={open}
-            customMessage={customMessage}
-            countdownSeconds={countdownSeconds}
         />
     ) : (
         <div className="flex items-center justify-center h-full">

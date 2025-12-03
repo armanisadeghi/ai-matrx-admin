@@ -26,8 +26,10 @@ import { TextActionResultModal } from '@/components/modals/TextActionResultModal
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
 import { useAppSelector, useAppDispatch } from '@/lib/redux';
 import { selectIsDebugMode, showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
+import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DynamicContextMenuProps {
   children: React.ReactNode;
@@ -73,7 +75,8 @@ export function DynamicContextMenu({
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalConfig, setModalConfig] = useState<any>(null);
+  const [modalRunId, setModalRunId] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>('');
   const [textResultModalOpen, setTextResultModalOpen] = useState(false);
   const [textResultData, setTextResultData] = useState<{ original: string; result: string; promptName: string } | null>(null);
   const isDebugMode = useAppSelector(selectIsDebugMode);
@@ -247,29 +250,26 @@ export function DynamicContextMenu({
         });
         setTextResultModalOpen(true);
       } else {
-        // Regular modal with chat
-        const executionConfig = {
-          auto_run: true,
-          allow_chat: allowChat,
-          show_variables: false,
-          apply_variables: true
-        };
+        // Regular modal with chat - initialize via Redux
+        const newRunId = uuidv4();
+        const promptId = systemPrompt.source_prompt_id || systemPrompt.prompt_snapshot?.id || 'unknown';
         
-        const config = systemPrompt.source_prompt_id ? {
-          promptId: systemPrompt.source_prompt_id,
+        await dispatch(startPromptInstance({
+          runId: newRunId,
+          promptId,
+          promptSource: 'prompts',
+          executionConfig: {
+            auto_run: true,
+            allow_chat: allowChat,
+            show_variables: false,
+            apply_variables: true,
+            track_in_runs: true,
+          },
           variables,
-          executionConfig,
-          title: systemPrompt.name,
-          initialMessage: allowInitialMessage ? undefined : '',
-        } : {
-          promptData: systemPrompt.prompt_snapshot,
-          variables,
-          executionConfig,
-          title: systemPrompt.name,
-          initialMessage: allowInitialMessage ? undefined : '',
-        };
+        })).unwrap();
         
-        setModalConfig(config);
+        setModalRunId(newRunId);
+        setModalTitle(systemPrompt.name);
         setModalOpen(true);
       }
       
@@ -445,24 +445,20 @@ export function DynamicContextMenu({
       </ContextMenuContent>
     </ContextMenu>
 
-    {/* Modal for execution */}
-    {modalOpen && modalConfig ? (
+    {/* Modal for execution - runId must be initialized in Redux */}
+    {modalOpen && modalRunId ? (
       <PromptRunnerModal
         isOpen={modalOpen}
         onClose={() => {
           console.log('[DynamicContextMenu] Closing modal');
           setModalOpen(false);
-          setModalConfig(null);
+          setModalRunId(null);
           // Clear selection range when modal closes
           setSelectionRange(null);
           setSelectedText('');
         }}
-        promptId={modalConfig.promptId}
-        promptData={modalConfig.promptData}
-        variables={modalConfig.variables}
-        executionConfig={modalConfig.executionConfig}
-        title={modalConfig.title}
-        initialMessage={modalConfig.initialMessage}
+        runId={modalRunId}
+        title={modalTitle}
       />
     ) : null}
 

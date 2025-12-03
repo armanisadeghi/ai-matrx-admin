@@ -319,7 +319,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleCloseQuickNotes}
           title="Quick Notes"
           position="right"
-          width="xl"
+          width="2xl"
           height="full"
           closeOnBackdropClick={true}
           closeOnEsc={true}
@@ -336,7 +336,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleCloseQuickTasks}
           title="Quick Tasks"
           position="right"
-          width="xl"
+          width="2xl"
           height="full"
           closeOnBackdropClick={true}
           closeOnEsc={true}
@@ -353,7 +353,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleCloseQuickChat}
           title=""
           position="right"
-          width="xl"
+          width="2xl"
           height="full"
           closeOnBackdropClick={true}
           closeOnEsc={true}
@@ -371,7 +371,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleCloseQuickData}
           title="Data Tables"
           position="right"
-          width="xl"
+          width="2xl"
           height="full"
           closeOnBackdropClick={true}
           closeOnEsc={true}
@@ -388,7 +388,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleCloseQuickFiles}
           title=""
           position="right"
-          width="xl"
+          width="2xl"
           height="full"
           closeOnBackdropClick={true}
           closeOnEsc={true}
@@ -414,7 +414,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleCloseQuickAIResults}
           title=""
           position="right"
-          width="md"
+          width="2xl"
           height="full"
           closeOnBackdropClick={true}
           closeOnEsc={true}
@@ -427,18 +427,13 @@ export const OverlayController: React.FC = () => {
 
       {/* ========== PROMPT RESULT DISPLAYS ========== */}
       
-      {/* Modal Full */}
-      {isPromptModalOpen && promptModalConfig && (
+      {/* Modal Full - Requires runId to be initialized in Redux */}
+      {isPromptModalOpen && promptModalConfig?.runId && (
         <PromptRunnerModal
           isOpen={true}
           onClose={handleClosePromptModal}
-          promptId={promptModalConfig.promptId}
-          promptData={promptModalConfig.promptData}
-          executionConfig={promptModalConfig.executionConfig}
-          variables={promptModalConfig.variables}
-          initialMessage={promptModalConfig.initialMessage}
-          title={promptModalConfig.title}
           runId={promptModalConfig.runId}
+          title={promptModalConfig.title}
           onExecutionComplete={promptModalConfig.onExecutionComplete}
         />
       )}
@@ -469,34 +464,26 @@ export const OverlayController: React.FC = () => {
         />
       )}
       
-      {/* Sidebar Result */}
-      {isSidebarResultOpen && sidebarResultConfig && (
+      {/* Sidebar Result - Requires runId to be initialized in Redux */}
+      {isSidebarResultOpen && (sidebarResultRunId || sidebarResultConfig?.runId) && (
         <PromptSidebarRunner
           isOpen={true}
           onClose={handleCloseSidebarResult}
+          runId={sidebarResultRunId || sidebarResultConfig?.runId || ''}
           position={sidebarPosition}
           size={sidebarSize}
-          promptId={sidebarResultConfig.promptId}
-          promptData={sidebarResultConfig.promptData}
-          executionConfig={sidebarResultConfig.executionConfig}
-          variables={sidebarResultConfig.variables}
-          title={sidebarResultConfig.title}
-          runId={sidebarResultRunId || sidebarResultConfig.runId}
+          title={sidebarResultConfig?.title}
         />
       )}
       
-      {/* Flexible Panel (Advanced Resizable Panel) */}
-      {isFlexiblePanelOpen && flexiblePanelConfig && (
+      {/* Flexible Panel - Requires runId to be initialized in Redux */}
+      {isFlexiblePanelOpen && (flexiblePanelRunId || flexiblePanelConfig?.runId) && (
         <PromptFlexiblePanel
           isOpen={true}
           onClose={handleCloseFlexiblePanel}
+          runId={flexiblePanelRunId || flexiblePanelConfig?.runId || ''}
           position={flexiblePanelPosition}
-          promptId={flexiblePanelConfig.promptId}
-          promptData={flexiblePanelConfig.promptData}
-          executionConfig={flexiblePanelConfig.executionConfig}
-          variables={flexiblePanelConfig.variables}
-          title={flexiblePanelConfig.title}
-          runId={flexiblePanelRunId || flexiblePanelConfig.runId}
+          title={flexiblePanelConfig?.title}
         />
       )}
       
