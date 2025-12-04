@@ -355,7 +355,7 @@ export function SmartPromptInput({
             <div className="space-y-0">
               {variableDefaults.map((variable, index) => {
                 const isExpanded = expandedVariable === variable.name;
-                const value = variableValues[variable.name] || variable.defaultValue || '';
+                const value = variableValues[variable.name] ?? variable.defaultValue ?? '';
 
                 return (
                   <div key={variable.name}>
@@ -419,7 +419,7 @@ export function SmartPromptInput({
                           value={value.includes('\n') ? value.replace(/\n/g, " ↵ ") : value}
                           onChange={(e) => handleVariableValueChange(variable.name, e.target.value)}
                           placeholder={variable.helpText || "Enter value..."}
-                          className="flex-1 text-base bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
+                          className="flex-1 text-xs bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
                           style={{ fontSize: '16px' }}
                           tabIndex={index + 1}
                         />

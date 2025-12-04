@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StickyNote, CheckSquare, Database, LayoutGrid, Bell, MessageSquare, Crown, LogOut, Sun, Moon } from 'lucide-react';
+import { StickyNote, CheckSquare, Database, LayoutGrid, Bell, MessageSquare, Crown, LogOut, Sun, Moon, FolderOpen, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -34,7 +34,9 @@ export function MobileUnifiedMenu() {
     openQuickTasks,
     openQuickChat,
     openQuickData,
+    openQuickFiles,
     openQuickUtilities,
+    openQuickAIResults,
   } = useQuickActions();
   
   // Notifications state (placeholder)
@@ -110,6 +112,16 @@ export function MobileUnifiedMenu() {
         <DropdownMenuItem onClick={() => openQuickData()}>
           <Database className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
           <span className="text-sm">Quick Data</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={() => openQuickFiles()}>
+          <FolderOpen className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Quick Files</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={() => openQuickAIResults()}>
+          <Sparkles className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">AI Results</span>
         </DropdownMenuItem>
         
         <DropdownMenuItem onClick={() => openQuickUtilities()}>

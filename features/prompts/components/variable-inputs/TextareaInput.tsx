@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { VoiceTextarea } from '@/components/official/VoiceTextarea';
 import { toast } from 'sonner';
@@ -20,14 +20,25 @@ export function TextareaInput({
   variableName,
   onRequestClose
 }: TextareaInputProps) {
+  const hasSelectedRef = useRef(false);
+
+  // Select all text on first focus (works with autoFocus)
+  const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    if (!hasSelectedRef.current && e.target.value) {
+      e.target.select();
+      hasSelectedRef.current = true;
+    }
+  };
+
   return (
     <div className="space-y-1.5">
       <Label className="text-sm font-medium">
         {variableName}
       </Label>
       <VoiceTextarea
-        value={value || ""}
+        value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={handleFocus}
         placeholder={`Enter ${variableName.toLowerCase()}... (hover for voice input)`}
         className="min-h-[200px] text-sm"
         autoFocus
