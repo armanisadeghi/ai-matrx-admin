@@ -214,7 +214,7 @@ export function SimpleImageViewer({
                                 {/* Image container with fixed position */}
                                 <div className="w-full h-full flex items-center justify-center">
                                     <img
-                                        src={buffer[Math.floor(preloadCount/2)] || photos[imageIndex]?.url}
+                                        src={photos[imageIndex]?.url}
                                         alt={photos[imageIndex]?.description}
                                         className="max-w-full max-h-full object-contain"
                                         style={{ 
@@ -350,7 +350,6 @@ export function SimpleImageViewer({
                                         }`}
                                         onClick={() => {
                                             setPage([index, index > imageIndex ? 1 : -1]);
-                                            onRelatedPhotoClick(photo);
                                         }}
                                     />
                                 ))}
