@@ -67,7 +67,7 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       content,
       metadata,
       prePopulate: {
-        title: 'AI Response',
+        title: 'New Task from AI Response',
         description: content,
         metadataInfo: metadata ? `\n\n---\n**Origin Info:**\n${JSON.stringify(metadata, null, 2)}` : ''
       }

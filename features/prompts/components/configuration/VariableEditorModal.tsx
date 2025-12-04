@@ -8,11 +8,13 @@ import { VariableEditor } from "./VariableEditor";
 interface VariableEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
+  onSave: (name: string, defaultValue: string, customComponent?: VariableCustomComponent, required?: boolean, helpText?: string) => void;
   existingVariable?: {
     name: string;
     defaultValue: string;
     customComponent?: VariableCustomComponent;
+    required?: boolean;
+    helpText?: string;
   };
   existingNames: string[];
   mode: 'add' | 'edit';
@@ -32,6 +34,8 @@ export function VariableEditorModal({
   const [name, setName] = useState("");
   const [defaultValue, setDefaultValue] = useState("");
   const [customComponent, setCustomComponent] = useState<VariableCustomComponent | undefined>();
+  const [required, setRequired] = useState(false);
+  const [helpText, setHelpText] = useState("");
 
   // Initialize form with existing variable data
   useEffect(() => {
@@ -39,11 +43,15 @@ export function VariableEditorModal({
       setName(existingVariable.name);
       setDefaultValue(existingVariable.defaultValue || "");
       setCustomComponent(existingVariable.customComponent);
+      setRequired(existingVariable.required || false);
+      setHelpText(existingVariable.helpText || "");
     } else {
       // Reset for add mode
       setName("");
       setDefaultValue("");
       setCustomComponent(undefined);
+      setRequired(false);
+      setHelpText("");
     }
   }, [isOpen, mode, existingVariable]);
 
@@ -54,7 +62,7 @@ export function VariableEditorModal({
 
   const handleSave = () => {
     if (!sanitizedName || isDuplicate) return;
-    onSave(sanitizedName, defaultValue, customComponent);
+    onSave(sanitizedName, defaultValue, customComponent, required, helpText);
     onClose();
   };
 
@@ -72,11 +80,15 @@ export function VariableEditorModal({
             name={name}
             defaultValue={defaultValue}
             customComponent={customComponent}
+            required={required}
+            helpText={helpText}
             existingNames={existingNames}
             originalName={mode === 'edit' ? existingVariable?.name : undefined}
             onNameChange={setName}
             onDefaultValueChange={setDefaultValue}
             onCustomComponentChange={setCustomComponent}
+            onRequiredChange={setRequired}
+            onHelpTextChange={setHelpText}
           />
 
           {/* Action Buttons */}

@@ -158,14 +158,19 @@ export const executeMessage = createAsyncThunk<
         dynamicContexts,
       });
 
-      // Replace instance messages with processed versions
-      dispatch(clearMessages({ runId }));
-      messageResult.messages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
-      
-      // Mark first execution as complete
+      // CRITICAL: Only clear messages on FIRST execution
+      // Subsequent executions must preserve conversation history!
       if (instance.requiresVariableReplacement) {
+        // First execution: Replace template messages with processed versions
+        dispatch(clearMessages({ runId }));
+        messageResult.messages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
+        
+        // Mark first execution as complete
         dispatch(setRequiresVariableReplacement({ runId, value: false }));
         dispatch(setShowVariables({ runId, show: false }));
+      } else {
+        // Subsequent executions: Append new message (preserve conversation history!)
+        messageResult.messages.forEach(msg => dispatch(addMessage({ runId, message: msg })));
       }
 
       // Clear input and resources AFTER building the message

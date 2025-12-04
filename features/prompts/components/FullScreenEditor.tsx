@@ -11,7 +11,7 @@ import { SystemPromptOptimizer } from "@/features/prompts/components/actions/pro
 import { ModelSettings } from "./configuration/ModelSettings";
 import { VariableEditor } from "./configuration/VariableEditor";
 import { VariableValidationPanel } from "./configuration/VariableValidationPanel";
-import { sanitizeVariableName } from "@/features/prompts/utils/variable-utils";
+import { sanitizeVariableName, isVariableUsed } from "@/features/prompts/utils/variable-utils";
 import { validateVariables } from "@/features/prompts/utils/variable-validator";
 import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
@@ -46,8 +46,8 @@ interface FullScreenEditorProps {
     onModelConfigChange?: (config: PromptSettings) => void;
     // Variables
     variableDefaults?: PromptVariable[];
-    onAddVariable?: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
-    onUpdateVariable?: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
+    onAddVariable?: (name: string, defaultValue: string, customComponent?: VariableCustomComponent, required?: boolean, helpText?: string) => void;
+    onUpdateVariable?: (oldName: string, newName: string, defaultValue: string, customComponent?: VariableCustomComponent, required?: boolean, helpText?: string) => void;
     onRemoveVariable?: (variableName: string) => void;
     // Tools
     selectedTools?: string[];
@@ -100,6 +100,8 @@ export function FullScreenEditor({
     const [editingVariableName, setEditingVariableName] = useState("");
     const [editingVariableDefaultValue, setEditingVariableDefaultValue] = useState("");
     const [editingVariableCustomComponent, setEditingVariableCustomComponent] = useState<VariableCustomComponent | undefined>();
+    const [editingVariableRequired, setEditingVariableRequired] = useState(false);
+    const [editingVariableHelpText, setEditingVariableHelpText] = useState("");
 
     // JSON editing state
     const [editableJson, setEditableJson] = useState("");
@@ -160,11 +162,15 @@ export function FullScreenEditor({
             setEditingVariableName("");
             setEditingVariableDefaultValue("");
             setEditingVariableCustomComponent(undefined);
+            setEditingVariableRequired(false);
+            setEditingVariableHelpText("");
         } else if (selectedVariableIndex !== null && variableDefaults[selectedVariableIndex]) {
             const variable = variableDefaults[selectedVariableIndex];
             setEditingVariableName(variable.name);
             setEditingVariableDefaultValue(variable.defaultValue);
             setEditingVariableCustomComponent(variable.customComponent);
+            setEditingVariableRequired(variable.required || false);
+            setEditingVariableHelpText(variable.helpText || "");
         }
     }, [isAddingVariable, selectedVariableIndex, variableDefaults]);
 
@@ -733,243 +739,371 @@ export function FullScreenEditor({
                             )}
 
                             {selectedItem.type === "variables" && onAddVariable && onUpdateVariable && onRemoveVariable && (
-                                <div className="absolute inset-2 overflow-hidden flex">
+                                <div className="absolute inset-2 overflow-hidden flex flex-col">
                                     <div className="flex-1 overflow-hidden flex">
                                         {/* Variables List */}
-                                        <div className="w-72 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-2 overflow-y-auto">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    Variables ({variableDefaults.length})
-                                                </Label>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setIsAddingVariable(true);
-                                                        setSelectedVariableIndex(null);
-                                                    }}
-                                                    className="h-7"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5 mr-1" />
-                                                    Add
-                                                </Button>
-                                            </div>
-
-                                            {/* Validation Summary */}
-                                            <div className={`mb-3 p-2 rounded-lg border ${
-                                                variableValidation.hasIssues
-                                                    ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
-                                                    : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
-                                            }`}>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    {variableValidation.hasIssues ? (
-                                                        <AlertTriangle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
-                                                    ) : (
-                                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                                                    )}
-                                                    <span className={`text-xs font-medium ${
-                                                        variableValidation.hasIssues
-                                                            ? "text-yellow-800 dark:text-yellow-300"
-                                                            : "text-green-800 dark:text-green-300"
-                                                    }`}>
-                                                        {variableValidation.hasIssues ? "Issues Found" : "All Valid"}
-                                                    </span>
-                                                </div>
-                                                <div className={`text-[10px] space-y-0.5 ${
-                                                    variableValidation.hasIssues
-                                                        ? "text-yellow-700 dark:text-yellow-400"
-                                                        : "text-green-700 dark:text-green-400"
-                                                }`}>
-                                                    <div className="flex justify-between">
-                                                        <span>Used:</span>
-                                                        <span className="font-medium">{variableValidation.usedVariables.length}</span>
+                                        <div className="w-[420px] border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex flex-col overflow-hidden">
+                                            {/* List Header */}
+                                            <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-800 bg-textured">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                            Variables
+                                                        </h4>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                            {variableDefaults.length} defined
+                                                        </p>
                                                     </div>
-                                                    {variableValidation.undefinedVariables.length > 0 && (
-                                                        <div className="flex justify-between">
-                                                            <span>Undefined:</span>
-                                                            <span className="font-medium">{variableValidation.undefinedVariables.length}</span>
-                                                        </div>
-                                                    )}
-                                                    {variableValidation.unusedVariables.length > 0 && (
-                                                        <div className="flex justify-between">
-                                                            <span>Unused:</span>
-                                                            <span className="font-medium">{variableValidation.unusedVariables.length}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {variableDefaults.length === 0 && !isAddingVariable && (
-                                                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                                                    <Variable className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                                                    <p className="text-xs">No variables yet</p>
-                                                </div>
-                                            )}
-
-                                            <div className="space-y-2">
-                                                {variableDefaults.map((variable, index) => (
-                                                    <div
-                                                        key={variable.name}
+                                                    <Button
+                                                        size="sm"
                                                         onClick={() => {
-                                                            setSelectedVariableIndex(index);
-                                                            setIsAddingVariable(false);
+                                                            setIsAddingVariable(true);
+                                                            setSelectedVariableIndex(null);
                                                         }}
-                                                        className={`w-full text-left p-3 rounded-lg transition-colors cursor-pointer ${
-                                                            selectedVariableIndex === index && !isAddingVariable
-                                                                ? "bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-500 dark:border-cyan-500"
-                                                                : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent"
-                                                        }`}
+                                                        className="h-8 text-xs"
                                                     >
-                                                        <div className="flex items-start justify-between gap-2">
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-baseline gap-2">
-                                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                        {formatText(variable.name)}
-                                                                    </p>
-                                                                    {variable.customComponent && (
-                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium">
-                                                                            {variable.customComponent.type}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <p className="font-mono text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                                                    {variable.name}
-                                                                </p>
-                                                            </div>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    onRemoveVariable(variable.name);
-                                                                    if (selectedVariableIndex === index) {
-                                                                        setSelectedVariableIndex(null);
-                                                                    }
-                                                                }}
-                                                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                                                                title="Delete variable"
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </button>
+                                                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                                        New Variable
+                                                    </Button>
+                                                </div>
+
+                                                {/* Compact Validation Summary */}
+                                                {variableValidation.hasIssues && (
+                                                    <div className="flex items-center gap-2 p-2 rounded bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                                                        <AlertTriangle className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                                                        <div className="text-xs text-yellow-800 dark:text-yellow-300 flex-1">
+                                                            {variableValidation.undefinedVariables.length > 0 && (
+                                                                <span>{variableValidation.undefinedVariables.length} undefined</span>
+                                                            )}
+                                                            {variableValidation.undefinedVariables.length > 0 && variableValidation.unusedVariables.length > 0 && (
+                                                                <span className="mx-1">•</span>
+                                                            )}
+                                                            {variableValidation.unusedVariables.length > 0 && (
+                                                                <span>{variableValidation.unusedVariables.length} unused</span>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                ))}
+                                                )}
+                                            </div>
+
+                                            {/* Variables List */}
+                                            <div className="flex-1 overflow-y-auto p-3">
+                                                {variableDefaults.length === 0 && !isAddingVariable ? (
+                                                    <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                                                        <Variable className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                                                        <p className="text-sm font-medium">No Variables</p>
+                                                        <p className="text-xs mt-1">Click "New Variable" to add one</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-2">
+                                                        {variableDefaults.map((variable, index) => {
+                                                            const isUsed = isVariableUsed(variable.name, messages, developerMessage);
+                                                            const isSelected = selectedVariableIndex === index && !isAddingVariable;
+                                                            
+                                                            return (
+                                                                <div
+                                                                    key={variable.name}
+                                                                    onClick={() => {
+                                                                        setSelectedVariableIndex(index);
+                                                                        setIsAddingVariable(false);
+                                                                    }}
+                                                                    className={`group relative p-3 rounded-lg transition-all cursor-pointer border-2 ${
+                                                                        isSelected
+                                                                            ? "bg-cyan-50 dark:bg-cyan-900/30 border-cyan-500 dark:border-cyan-500 shadow-sm"
+                                                                            : !isUsed
+                                                                                ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                                                                                : "bg-white dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm"
+                                                                    }`}
+                                                                >
+                                                                    <div className="flex items-start gap-3">
+                                                                        {/* Status Indicator */}
+                                                                        <div className="flex-shrink-0 mt-0.5">
+                                                                            {!isUsed ? (
+                                                                                <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center" title="Unused variable">
+                                                                                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center" title="Variable in use">
+                                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* Variable Info */}
+                                                                        <div className="flex-1 min-w-0">
+                                                                            {/* Name */}
+                                                                            <div className="flex items-center gap-2 mb-1">
+                                                                                <h5 className={`text-sm font-semibold truncate ${
+                                                                                    isUsed 
+                                                                                        ? 'text-gray-900 dark:text-gray-100' 
+                                                                                        : 'text-amber-900 dark:text-amber-100'
+                                                                                }`} title={formatText(variable.name)}>
+                                                                                    {formatText(variable.name)}
+                                                                                </h5>
+                                                                                {variable.required && (
+                                                                                    <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-medium">
+                                                                                        Required
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+
+                                                                            {/* Variable Name (mono) */}
+                                                                            <p className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-2 truncate" title={`{{${variable.name}}}`}>
+                                                                                {`{{${variable.name}}}`}
+                                                                            </p>
+
+                                                                            {/* Type & Default Value */}
+                                                                            <div className="space-y-1">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 font-medium">
+                                                                                        {variable.customComponent?.type || 'textarea'}
+                                                                                    </span>
+                                                                                    {variable.customComponent?.type === 'toggle' && (
+                                                                                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                                                                                            {variable.customComponent.toggleValues?.[0]} / {variable.customComponent.toggleValues?.[1]}
+                                                                                        </span>
+                                                                                    )}
+                                                                                    {(variable.customComponent?.type === 'select' || 
+                                                                                      variable.customComponent?.type === 'radio' || 
+                                                                                      variable.customComponent?.type === 'checkbox') && 
+                                                                                     variable.customComponent.options && (
+                                                                                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                                                                                            {variable.customComponent.options.length} options
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                                {variable.defaultValue && (
+                                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 truncate" title={variable.defaultValue}>
+                                                                                        <span className="text-gray-500 dark:text-gray-500">Default:</span> {variable.defaultValue}
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* Delete Button */}
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onRemoveVariable(variable.name);
+                                                                                if (selectedVariableIndex === index) {
+                                                                                    setSelectedVariableIndex(null);
+                                                                                }
+                                                                            }}
+                                                                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 p-1"
+                                                                            title="Delete variable"
+                                                                        >
+                                                                            <X className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
-                                        {/* Variable Editor */}
-                                        <div className="flex-1 overflow-y-auto bg-textured p-6">
-                                            <div className="max-w-2xl">
-                                            {/* Validation Details Panel - Always show at top */}
-                                            <div className="mb-6">
-                                                <VariableValidationPanel 
-                                                    validation={variableValidation}
-                                                    onAddVariable={(name) => {
-                                                        // Add the variable with empty default value
-                                                        onAddVariable(name, "", undefined);
-                                                        // Switch to adding mode for that variable
-                                                        const newIndex = variableDefaults.length;
-                                                        setSelectedVariableIndex(newIndex);
-                                                        setIsAddingVariable(false);
-                                                    }}
-                                                />
-                                            </div>
-
+                                        {/* Variable Editor Panel */}
+                                        <div className="flex-1 overflow-y-auto bg-textured">
                                             {isAddingVariable ? (
-                                                <div>
-                                                    <div className="mb-6">
-                                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                            Add Variable
-                                                        </h3>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                            Create a new prompt variable
-                                                        </p>
-                                                    </div>
-                                                    <VariableEditor
-                                                        name={editingVariableName}
-                                                        defaultValue={editingVariableDefaultValue}
-                                                        customComponent={editingVariableCustomComponent}
-                                                        existingNames={variableDefaults.map((v) => v.name)}
-                                                        onNameChange={setEditingVariableName}
-                                                        onDefaultValueChange={setEditingVariableDefaultValue}
-                                                        onCustomComponentChange={setEditingVariableCustomComponent}
-                                                    />
-                                                    <div className="flex justify-end gap-2 mt-6">
-                                                        <Button variant="outline" onClick={() => setIsAddingVariable(false)}>
-                                                            Cancel
-                                                        </Button>
-                                                        <Button
-                                                            onClick={() => {
-                                                                const sanitizedName = sanitizeVariableName(editingVariableName);
-                                                                if (
-                                                                    sanitizedName &&
-                                                                    !variableDefaults.some((v) => v.name === sanitizedName)
-                                                                ) {
-                                                                    onAddVariable(
-                                                                        sanitizedName,
-                                                                        editingVariableDefaultValue,
-                                                                        editingVariableCustomComponent
-                                                                    );
-                                                                    setIsAddingVariable(false);
+                                                <div className="p-6">
+                                                    <div className="max-w-3xl mx-auto">
+                                                        <div className="mb-6">
+                                                            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                                                Add Variable
+                                                            </h3>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                                Create a new prompt variable
+                                                            </p>
+                                                        </div>
+                                                        <VariableEditor
+                                                            name={editingVariableName}
+                                                            defaultValue={editingVariableDefaultValue}
+                                                            customComponent={editingVariableCustomComponent}
+                                                            required={editingVariableRequired}
+                                                            helpText={editingVariableHelpText}
+                                                            existingNames={variableDefaults.map((v) => v.name)}
+                                                            onNameChange={setEditingVariableName}
+                                                            onDefaultValueChange={setEditingVariableDefaultValue}
+                                                            onCustomComponentChange={setEditingVariableCustomComponent}
+                                                            onRequiredChange={setEditingVariableRequired}
+                                                            onHelpTextChange={setEditingVariableHelpText}
+                                                        />
+                                                        <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                                                            <Button 
+                                                                variant="outline" 
+                                                                onClick={() => setIsAddingVariable(false)}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => {
+                                                                    const sanitizedName = sanitizeVariableName(editingVariableName);
+                                                                    if (
+                                                                        sanitizedName &&
+                                                                        !variableDefaults.some((v) => v.name === sanitizedName)
+                                                                    ) {
+                                                                        onAddVariable(
+                                                                            sanitizedName,
+                                                                            editingVariableDefaultValue,
+                                                                            editingVariableCustomComponent,
+                                                                            editingVariableRequired,
+                                                                            editingVariableHelpText
+                                                                        );
+                                                                        setIsAddingVariable(false);
+                                                                    }
+                                                                }}
+                                                                disabled={
+                                                                    !editingVariableName.trim() ||
+                                                                    variableDefaults.some(
+                                                                        (v) => v.name === sanitizeVariableName(editingVariableName)
+                                                                    )
                                                                 }
-                                                            }}
-                                                            disabled={
-                                                                !editingVariableName.trim() ||
-                                                                variableDefaults.some(
-                                                                    (v) => v.name === sanitizeVariableName(editingVariableName)
-                                                                )
-                                                            }
-                                                        >
-                                                            Add Variable
-                                                        </Button>
+                                                            >
+                                                                Add Variable
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ) : selectedVariableIndex !== null && variableDefaults[selectedVariableIndex] ? (
-                                                <div>
-                                                    <div className="mb-6">
-                                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                            Edit Variable
-                                                        </h3>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                            Update variable configuration
-                                                        </p>
-                                                    </div>
-                                                    <VariableEditor
-                                                        name={editingVariableName}
-                                                        defaultValue={editingVariableDefaultValue}
-                                                        customComponent={editingVariableCustomComponent}
-                                                        existingNames={variableDefaults.map((v) => v.name)}
-                                                        originalName={variableDefaults[selectedVariableIndex].name}
-                                                        onNameChange={setEditingVariableName}
-                                                        onDefaultValueChange={setEditingVariableDefaultValue}
-                                                        onCustomComponentChange={setEditingVariableCustomComponent}
-                                                    />
-                                                    <div className="flex justify-end gap-2 mt-6">
-                                                        <Button
-                                                            onClick={() => {
-                                                                const originalName = variableDefaults[selectedVariableIndex].name;
-                                                                const sanitizedName = sanitizeVariableName(editingVariableName);
-                                                                if (sanitizedName) {
-                                                                    onUpdateVariable(
-                                                                        originalName,
-                                                                        editingVariableDefaultValue,
-                                                                        editingVariableCustomComponent
-                                                                    );
-                                                                }
-                                                            }}
-                                                            disabled={!editingVariableName.trim()}
-                                                        >
-                                                            Save Changes
-                                                        </Button>
+                                                <div className="p-6">
+                                                    <div className="max-w-3xl mx-auto">
+                                                        {/* Validation Panel for selected variable */}
+                                                        {(variableValidation.undefinedVariables.length > 0 || variableValidation.unusedVariables.length > 0) && (
+                                                            <div className="mb-6 p-4 rounded-lg border bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                                                                <div className="flex items-start gap-2">
+                                                                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                                                    <div className="flex-1">
+                                                                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                                                                            Validation Status
+                                                                        </p>
+                                                                        <div className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
+                                                                            {variableValidation.undefinedVariables.length > 0 && (
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <AlertTriangle className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
+                                                                                    <span>{variableValidation.undefinedVariables.length} undefined: {variableValidation.undefinedVariables.join(', ')}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {variableValidation.unusedVariables.length > 0 && (
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Info className="w-3 h-3" />
+                                                                                    <span>{variableValidation.unusedVariables.length} unused: {variableValidation.unusedVariables.join(', ')}</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        {variableValidation.undefinedVariables.length > 0 && onAddVariable && (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => {
+                                                                                    variableValidation.undefinedVariables.forEach(name => {
+                                                                                        onAddVariable(name, "", undefined);
+                                                                                    });
+                                                                                }}
+                                                                                className="mt-3 h-7 text-xs"
+                                                                            >
+                                                                                <Plus className="w-3 h-3 mr-1" />
+                                                                                Add All Undefined
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="mb-6">
+                                                            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                                                Edit Variable
+                                                            </h3>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                                Update variable configuration
+                                                            </p>
+                                                        </div>
+                                                        <VariableEditor
+                                                            name={editingVariableName}
+                                                            defaultValue={editingVariableDefaultValue}
+                                                            customComponent={editingVariableCustomComponent}
+                                                            required={editingVariableRequired}
+                                                            helpText={editingVariableHelpText}
+                                                            existingNames={variableDefaults.map((v) => v.name)}
+                                                            originalName={variableDefaults[selectedVariableIndex].name}
+                                                            onNameChange={setEditingVariableName}
+                                                            onDefaultValueChange={setEditingVariableDefaultValue}
+                                                            onCustomComponentChange={setEditingVariableCustomComponent}
+                                                            onRequiredChange={setEditingVariableRequired}
+                                                            onHelpTextChange={setEditingVariableHelpText}
+                                                        />
+                                                        <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                                                            <Button
+                                                                onClick={() => {
+                                                                    const originalName = variableDefaults[selectedVariableIndex].name;
+                                                                    const sanitizedName = sanitizeVariableName(editingVariableName);
+                                                                    if (sanitizedName) {
+                                                                        onUpdateVariable(
+                                                                            originalName,
+                                                                            sanitizedName,
+                                                                            editingVariableDefaultValue,
+                                                                            editingVariableCustomComponent,
+                                                                            editingVariableRequired,
+                                                                            editingVariableHelpText
+                                                                        );
+                                                                    }
+                                                                }}
+                                                                disabled={!editingVariableName.trim()}
+                                                            >
+                                                                <Save className="w-3.5 h-3.5 mr-1.5" />
+                                                                Save Changes
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-center text-gray-500 dark:text-gray-400">
-                                                    <div>
-                                                        <Variable className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                                                        <p className="text-sm">Select a variable to edit or click Add to create a new one</p>
+                                                <div className="h-full flex items-center justify-center">
+                                                    <div className="text-center text-gray-500 dark:text-gray-400 max-w-md">
+                                                        {variableValidation.undefinedVariables.length > 0 ? (
+                                                            <>
+                                                                <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-yellow-500 dark:text-yellow-400 opacity-50" />
+                                                                <p className="text-base font-medium mb-2">Undefined Variables Detected</p>
+                                                                <p className="text-sm mb-4">
+                                                                    You have {variableValidation.undefinedVariables.length} undefined variable{variableValidation.undefinedVariables.length !== 1 ? 's' : ''} in your messages.
+                                                                </p>
+                                                                <div className="space-y-2 mb-4">
+                                                                    {variableValidation.undefinedVariables.map((varName) => (
+                                                                        <div
+                                                                            key={varName}
+                                                                            className="flex items-center justify-between gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded"
+                                                                        >
+                                                                            <span className="text-sm font-mono">{`{{${varName}}}`}</span>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => {
+                                                                                    onAddVariable(varName, "", undefined);
+                                                                                    const newIndex = variableDefaults.length;
+                                                                                    setSelectedVariableIndex(newIndex);
+                                                                                    setIsAddingVariable(false);
+                                                                                }}
+                                                                                className="h-7 text-xs"
+                                                                            >
+                                                                                <Plus className="w-3 h-3 mr-1" />
+                                                                                Add
+                                                                            </Button>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Variable className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                                                                <p className="text-base font-medium mb-2">No Variable Selected</p>
+                                                                <p className="text-sm">
+                                                                    Select a variable from the list to edit its configuration, or click "New Variable" to create one.
+                                                                </p>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             )}
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

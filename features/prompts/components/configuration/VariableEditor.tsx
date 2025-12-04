@@ -15,11 +15,15 @@ interface VariableEditorProps {
     name: string;
     defaultValue: string;
     customComponent?: VariableCustomComponent;
+    required?: boolean;
+    helpText?: string;
     existingNames?: string[]; // For duplicate checking
     originalName?: string; // For edit mode - allows keeping same name
     onNameChange?: (name: string) => void;
     onDefaultValueChange?: (value: string) => void;
     onCustomComponentChange?: (component: VariableCustomComponent | undefined) => void;
+    onRequiredChange?: (required: boolean) => void;
+    onHelpTextChange?: (helpText: string) => void;
     readonly?: boolean;
 }
 
@@ -27,11 +31,15 @@ export function VariableEditor({
     name,
     defaultValue,
     customComponent,
+    required = false,
+    helpText = "",
     existingNames = [],
     originalName,
     onNameChange,
     onDefaultValueChange,
     onCustomComponentChange,
+    onRequiredChange,
+    onHelpTextChange,
     readonly = false,
 }: VariableEditorProps) {
     const [componentType, setComponentType] = useState<VariableComponentType>(
@@ -192,6 +200,40 @@ export function VariableEditor({
                     autoGrow={true}
                     minHeight={80}
                     maxHeight={300}
+                />
+            </div>
+
+            {/* Help Text */}
+            <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Help Text</Label>
+                <Textarea
+                    placeholder="Optional help text to guide users"
+                    value={helpText}
+                    onChange={(e) => onHelpTextChange?.(e.target.value)}
+                    disabled={readonly}
+                    autoGrow={true}
+                    minHeight={60}
+                    maxHeight={200}
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Provide instructions or context for this variable
+                </p>
+            </div>
+
+            {/* Required Toggle */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex-1">
+                    <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Required
+                    </Label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        User must provide a value for this variable
+                    </p>
+                </div>
+                <Switch
+                    checked={required}
+                    onCheckedChange={onRequiredChange}
+                    disabled={readonly}
                 />
             </div>
 

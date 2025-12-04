@@ -94,9 +94,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
 
     // Adjust styling based on compact mode - keep ALL functionality
     const containerMargin = compact ? "" : "ml-12";
-    const headerPadding = compact ? "px-2 py-1" : "px-3 py-2";
-    const contentPadding = compact ? "px-2 pb-2" : "px-3 pb-3";
-    const textSize = compact ? "text-xs" : "text-sm";
+    const textSize = compact ? "text-xs" : "text-xs";
 
     return (
         <div className={containerMargin}>
@@ -104,7 +102,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
             <div className={`bg-muted border border-border ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
                 {/* Thin delicate header */}
                 <div
-                    className={`flex items-center justify-end ${headerPadding} cursor-pointer`}
+                    className={`flex items-center justify-end px-2 py-1 cursor-pointer`}
                     onClick={handleHeaderClick}
                 >
                     <div className="flex items-center gap-1">
@@ -157,7 +155,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
                 </div>
 
                 {/* Content */}
-                <div className={`${contentPadding} relative`}>
+                <div className={`px-2 pb-2 relative`}>
                     {isEditing ? (
                         <div className="space-y-2">
                             <textarea

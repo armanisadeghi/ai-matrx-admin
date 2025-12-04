@@ -37,8 +37,8 @@ export interface PromptBuilderSharedProps {
 
     // Variables
     variableDefaults: PromptVariable[];
-    onAddVariable: (name: string, defaultValue: string, customComponent?: any) => void;
-    onUpdateVariable: (name: string, defaultValue: string, customComponent?: any) => void;
+    onAddVariable: (name: string, defaultValue: string, customComponent?: any, required?: boolean, helpText?: string) => void;
+    onUpdateVariable: (oldName: string, newName: string, defaultValue: string, customComponent?: any, required?: boolean, helpText?: string) => void;
     onRemoveVariable: (variableName: string) => void;
     onVariableValueChange: (variableName: string, value: string) => void;
     expandedVariable: string | null;

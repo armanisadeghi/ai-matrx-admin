@@ -8,13 +8,14 @@ import { Label } from "@/components/ui/label";
 import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X, Sparkles, Wrench, Sliders } from "lucide-react";
+import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X, Sparkles, Wrench, Sliders, AlertCircle as UnusedIcon } from "lucide-react";
 import { PromptVariable, PromptMessage, VariableCustomComponent } from "@/features/prompts/types/core";
 import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
 import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 import { FullPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/FullPromptOptimizer";
 import StandalonePromptsPreferences from "@/components/user-preferences/StandalonePromptsPreferences";
+import { isVariableUsed } from "@/features/prompts/utils/variable-utils";
 
 interface PromptSettingsModalProps {
     isOpen: boolean;
@@ -75,6 +76,8 @@ export function PromptSettingsModal({
     const [editingVariableName, setEditingVariableName] = useState("");
     const [editingVariableDefaultValue, setEditingVariableDefaultValue] = useState("");
     const [editingVariableCustomComponent, setEditingVariableCustomComponent] = useState<VariableCustomComponent | undefined>();
+    const [editingVariableRequired, setEditingVariableRequired] = useState(false);
+    const [editingVariableHelpText, setEditingVariableHelpText] = useState("");
 
     // Full prompt optimizer state
     const [isFullOptimizerOpen, setIsFullOptimizerOpen] = useState(false);
@@ -100,6 +103,8 @@ export function PromptSettingsModal({
             setEditingVariableName("");
             setEditingVariableDefaultValue("");
             setEditingVariableCustomComponent(undefined);
+            setEditingVariableRequired(false);
+            setEditingVariableHelpText("");
         } else if (selectedVariableIndex !== null && localVariables[selectedVariableIndex]) {
             const variable = localVariables[selectedVariableIndex];
             setEditingVariableName(variable.name);
@@ -108,8 +113,10 @@ export function PromptSettingsModal({
             setEditingVariableCustomComponent(
                 variable.customComponent ? JSON.parse(JSON.stringify(variable.customComponent)) : undefined
             );
+            setEditingVariableRequired(variable.required || false);
+            setEditingVariableHelpText(variable.helpText || "");
         }
-    }, [isAddingVariable, selectedVariableIndex]);
+    }, [isAddingVariable, selectedVariableIndex, localVariables]);
 
     // Build the complete prompt object
     const promptObject = useMemo(() => {
@@ -394,43 +401,57 @@ export function PromptSettingsModal({
                                             <p className="text-xs">No variables yet</p>
                                         </div>
                                     ) : (
-                                        localVariables.map((variable, index) => (
-                                            <div
-                                                key={variable.name}
-                                                onClick={() => {
-                                                    setSelectedVariableIndex(index);
-                                                    setIsAddingVariable(false);
-                                                }}
-                                                className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                                    selectedVariableIndex === index && !isAddingVariable
-                                                        ? 'bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-500 dark:border-cyan-500'
-                                                        : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
-                                                }`}
-                                            >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-mono text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                            {variable.name}
-                                                        </p>
-                                                        {variable.customComponent && (
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                                {variable.customComponent.type}
-                                                            </p>
-                                                        )}
+                                        localVariables.map((variable, index) => {
+                                            const isUsed = isVariableUsed(variable.name, localMessages);
+                                            return (
+                                                <div
+                                                    key={variable.name}
+                                                    onClick={() => {
+                                                        setSelectedVariableIndex(index);
+                                                        setIsAddingVariable(false);
+                                                    }}
+                                                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                                                        selectedVariableIndex === index && !isAddingVariable
+                                                            ? 'bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-500 dark:border-cyan-500'
+                                                            : isUsed
+                                                                ? 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                                                                : 'bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1">
+                                                                {!isUsed && (
+                                                                    <UnusedIcon className="w-3 h-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                                                )}
+                                                                <p className={`font-mono text-sm font-medium truncate ${
+                                                                    isUsed 
+                                                                        ? 'text-gray-900 dark:text-gray-100'
+                                                                        : 'text-amber-900 dark:text-amber-100'
+                                                                }`}>
+                                                                    {variable.name}
+                                                                </p>
+                                                            </div>
+                                                            {variable.customComponent && (
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                    {variable.customComponent.type}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveVariable(variable.name);
+                                                            }}
+                                                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                                            title="Delete variable"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveVariable(variable.name);
-                                                        }}
-                                                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                                                        title="Delete variable"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
                                                 </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
 
@@ -442,10 +463,14 @@ export function PromptSettingsModal({
                                                 name={editingVariableName}
                                                 defaultValue={editingVariableDefaultValue}
                                                 customComponent={editingVariableCustomComponent}
+                                                required={editingVariableRequired}
+                                                helpText={editingVariableHelpText}
                                                 existingNames={localVariables.map(v => v.name)}
                                                 onNameChange={setEditingVariableName}
                                                 onDefaultValueChange={setEditingVariableDefaultValue}
                                                 onCustomComponentChange={setEditingVariableCustomComponent}
+                                                onRequiredChange={setEditingVariableRequired}
+                                                onHelpTextChange={setEditingVariableHelpText}
                                             />
                                             <div className="flex justify-end gap-2 mt-4">
                                                 <Button
@@ -463,7 +488,9 @@ export function PromptSettingsModal({
                                                             setLocalVariables([...localVariables, { 
                                                                 name: sanitizedName, 
                                                                 defaultValue: editingVariableDefaultValue,
-                                                                customComponent: editingVariableCustomComponent
+                                                                customComponent: editingVariableCustomComponent,
+                                                                required: editingVariableRequired,
+                                                                helpText: editingVariableHelpText
                                                             }]);
                                                             setIsAddingVariable(false);
                                                         }
@@ -480,11 +507,15 @@ export function PromptSettingsModal({
                                                 name={editingVariableName}
                                                 defaultValue={editingVariableDefaultValue}
                                                 customComponent={editingVariableCustomComponent}
+                                                required={editingVariableRequired}
+                                                helpText={editingVariableHelpText}
                                                 existingNames={localVariables.map(v => v.name)}
                                                 originalName={localVariables[selectedVariableIndex].name}
                                                 onNameChange={setEditingVariableName}
                                                 onDefaultValueChange={setEditingVariableDefaultValue}
                                                 onCustomComponentChange={setEditingVariableCustomComponent}
+                                                onRequiredChange={setEditingVariableRequired}
+                                                onHelpTextChange={setEditingVariableHelpText}
                                             />
                                             <div className="flex justify-end gap-2 mt-4">
                                                 <Button
@@ -493,7 +524,7 @@ export function PromptSettingsModal({
                                                         const originalName = localVariables[selectedVariableIndex].name;
                                                         setLocalVariables(prev => prev.map(v => 
                                                             v.name === originalName 
-                                                                ? { name: originalName, defaultValue: editingVariableDefaultValue, customComponent: editingVariableCustomComponent }
+                                                                ? { name: editingVariableName, defaultValue: editingVariableDefaultValue, customComponent: editingVariableCustomComponent, required: editingVariableRequired, helpText: editingVariableHelpText }
                                                                 : v
                                                         ));
                                                     }}

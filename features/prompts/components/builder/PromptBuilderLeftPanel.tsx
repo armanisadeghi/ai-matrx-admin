@@ -20,8 +20,8 @@ interface PromptBuilderLeftPanelProps {
 
     // Variables - single source of truth
     variableDefaults: PromptVariable[];
-    onAddVariable: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
-    onUpdateVariable: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
+    onAddVariable: (name: string, defaultValue: string, customComponent?: VariableCustomComponent, required?: boolean, helpText?: string) => void;
+    onUpdateVariable: (oldName: string, newName: string, defaultValue: string, customComponent?: VariableCustomComponent, required?: boolean, helpText?: string) => void;
     onRemoveVariable: (variableName: string) => void;
 
     // Tools
@@ -129,6 +129,8 @@ export function PromptBuilderLeftPanel({
                     onAddVariable={onAddVariable}
                     onUpdateVariable={onUpdateVariable}
                     onRemoveVariable={onRemoveVariable}
+                    messages={messages}
+                    systemMessage={developerMessage}
                 />
                 {/* Tools - Conditionally shown with settings */}
                 {showSettingsOnMainPage && (

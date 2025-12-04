@@ -384,7 +384,7 @@ export function SmartPromptInput({
                                 </span>
                               ) : (
                                 <span className="text-gray-400 dark:text-gray-600">
-                                  Enter value...
+                                  {variable.helpText || "Enter value..."}
                                 </span>
                               )}
                             </div>
@@ -418,7 +418,7 @@ export function SmartPromptInput({
                           type="text"
                           value={value.includes('\n') ? value.replace(/\n/g, " ↵ ") : value}
                           onChange={(e) => handleVariableValueChange(variable.name, e.target.value)}
-                          placeholder="Enter value..."
+                          placeholder={variable.helpText || "Enter value..."}
                           className="flex-1 text-base bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
                           style={{ fontSize: '16px' }}
                           tabIndex={index + 1}

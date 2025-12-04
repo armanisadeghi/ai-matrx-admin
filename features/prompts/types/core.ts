@@ -82,6 +82,7 @@ export interface PromptVariable {
     defaultValue: string;
     customComponent?: VariableCustomComponent;
     required?: boolean;
+    helpText?: string;
 }
 
 export interface PromptDb {

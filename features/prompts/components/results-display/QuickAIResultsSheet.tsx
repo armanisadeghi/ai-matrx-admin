@@ -142,7 +142,7 @@ export function QuickAIResultsSheet() {
         executionConfig: {
           auto_run: false,
           allow_chat: true,
-          show_variables: false,
+          show_variables: true,
           apply_variables: true,
           track_in_runs: true,
         },

@@ -140,7 +140,9 @@ export function UniversalPromptEditor({
     const handleAddVariable = useCallback((
         name: string,
         defaultValue: string,
-        customComponent?: VariableCustomComponent
+        customComponent?: VariableCustomComponent,
+        required?: boolean,
+        helpText?: string
     ) => {
         const sanitizedName = sanitizeVariableName(name);
         if (!sanitizedName) return;
@@ -148,20 +150,23 @@ export function UniversalPromptEditor({
         setVariableDefaults(prev => {
             // Check for duplicates
             if (prev.some(v => v.name === sanitizedName)) return prev;
-            return [...prev, { name: sanitizedName, defaultValue, customComponent }];
+            return [...prev, { name: sanitizedName, defaultValue, customComponent, required, helpText }];
         });
         setIsDirty(true);
     }, []);
 
     const handleUpdateVariable = useCallback((
         originalName: string,
+        newName: string,
         defaultValue: string,
-        customComponent?: VariableCustomComponent
+        customComponent?: VariableCustomComponent,
+        required?: boolean,
+        helpText?: string
     ) => {
         setVariableDefaults(prev =>
             prev.map(v =>
                 v.name === originalName
-                    ? { ...v, defaultValue, customComponent }
+                    ? { name: newName, defaultValue, customComponent, required, helpText }
                     : v
             )
         );

@@ -2,6 +2,8 @@
  * Utility functions for handling prompt variables
  */
 
+import { PromptMessage } from "@/features/prompts/types/core";
+
 /**
  * Sanitizes a variable name to be valid for use in prompts.
  * 
@@ -60,4 +62,31 @@ export const shouldShowSanitizationPreview = (input: string): boolean => {
     const simpleLowercase = trimmed.toLowerCase();
     
     return sanitized !== simpleLowercase;
+};
+
+/**
+ * Checks if a variable is used in any of the prompt messages (including system message).
+ * 
+ * @param variableName - The name of the variable to check
+ * @param messages - Array of prompt messages to search through
+ * @param systemMessage - Optional system/developer message to search through
+ * @returns True if the variable is used (appears as {{variableName}}) in any message
+ * 
+ * @example
+ * isVariableUsed("city", messages, systemMessage) // true if any message contains {{city}}
+ */
+export const isVariableUsed = (
+    variableName: string,
+    messages: PromptMessage[],
+    systemMessage?: string
+): boolean => {
+    const variablePattern = `{{${variableName}}}`;
+    
+    // Check system message
+    if (systemMessage && systemMessage.includes(variablePattern)) {
+        return true;
+    }
+    
+    // Check all messages
+    return messages.some(message => message.content.includes(variablePattern));
 };

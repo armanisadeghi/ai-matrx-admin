@@ -11,8 +11,6 @@ import { ResourcePickerButton } from "./resource-picker";
 import { ResourceChips, type Resource, ResourcePreviewSheet } from "./resource-display";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import { selectIsDebugMode, showResourceDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useRecordAndTranscribe } from '@/features/audio';
 import { TranscriptionLoader } from '@/features/audio';
 import { toast } from 'sonner';
@@ -84,20 +82,7 @@ export function PromptInput({
 
     const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const dispatch = useAppDispatch();
-    const isDebugMode = useAppSelector(selectIsDebugMode);
     const pendingVoiceSubmitRef = useRef(false);
-    
-    // Show resource debug indicator when debug mode is on and resources exist
-    useEffect(() => {
-        if (isDebugMode && resources.length > 0) {
-            dispatch(showResourceDebugIndicator({ 
-                resources, 
-                chatInput, 
-                variableDefaults 
-            }));
-        }
-    }, [isDebugMode, resources, chatInput, variableDefaults, dispatch]);
 
     // File upload hook for paste support
     const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
@@ -271,7 +256,7 @@ export function PromptInput({
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-gray-400 dark:text-gray-600">
-                                                                    Enter value...
+                                                                    {variable.helpText || "Enter value..."}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -304,7 +289,7 @@ export function PromptInput({
                                                         ? (variable.defaultValue || "").replace(/\n/g, " ↵ ")
                                                         : (variable.defaultValue || "")}
                                                     onChange={(e) => onVariableValueChange(variable.name, e.target.value)}
-                                                    placeholder="Enter value..."
+                                                    placeholder={variable.helpText || "Enter value..."}
                                                     className="flex-1 text-base bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
                                                     style={{ fontSize: '16px' }}
                                                     tabIndex={index + 1}
