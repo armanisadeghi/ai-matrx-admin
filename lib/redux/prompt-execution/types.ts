@@ -98,6 +98,7 @@ export interface ExecutionInstance {
   runId: string;
   promptId: string;
   promptSource: 'prompts' | 'prompt_builtins';
+  promptName: string; // Name of the prompt (from database)
 
   // ========== Status ==========
   status: ExecutionStatus;

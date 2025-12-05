@@ -123,7 +123,7 @@ export const openPromptExecution = createAsyncThunk<
     // Build prompt data from instance
     const finalPromptData: PromptData = initialPromptData || {
       id: instance.promptId,
-      name: title || 'Prompt',
+      name: instance.promptName, // ✅ Use the actual prompt name from the instance
       description: '',
       messages: instance.messages,
       variableDefaults: instance.variableDefaults,
@@ -139,7 +139,7 @@ export const openPromptExecution = createAsyncThunk<
       executionConfig,
       variables,
       initialMessage,
-      title: title || finalPromptData.name,
+      title: title || instance.promptName, // ✅ Use instance.promptName as fallback
       runId: createdRunId, // ⭐ Now all configs include runId
     };
 

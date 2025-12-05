@@ -77,22 +77,22 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
                 // Prompt identification (from Redux, not props!)
                 promptId: instance.promptId,
                 promptSource: instance.promptSource,
-                
+
                 // Complete execution config (from user's test settings)
                 executionConfig: {
                     result_display: resultDisplay,
-            auto_run: autoRun,
-            allow_chat: allowChat,
-            show_variables: showVariables,
-            apply_variables: applyVariables,
+                    auto_run: autoRun,
+                    allow_chat: allowChat,
+                    show_variables: showVariables,
+                    apply_variables: applyVariables,
                     track_in_runs: trackInRuns,
                 },
-                
+
                 // Current state from Redux (mimicking programmatic usage)
                 variables: applyVariables ? currentVariables : {},
                 resources: currentResources,
                 initialMessage: currentInput,
-                
+
                 // DO NOT pass runId - creates a new independent run
                 // This proves programmatic execution works identically to UI
             });
@@ -106,7 +106,7 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
         const meta = getDisplayMeta(resultDisplay);
         // Get icon component from lucide-react dynamically
         const IconComponent = (LucideIcons as any)[meta.icon];
-        
+
         return {
             name: meta.label,
             icon: IconComponent,
@@ -134,7 +134,7 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
                     </Button>
                 </CollapsibleTrigger>
 
-                <CollapsibleContent className="space-y-2">                    
+                <CollapsibleContent className="space-y-2">
                     {/* Execution Config Toggles */}
                     <div className="space-y-2 pr-2 pl-4">
                         <div className="flex items-center justify-between">
@@ -229,24 +229,24 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
 
             {/* Test Modal for Direct/Inline/Background */}
             {instance && (
-            <PromptExecutionTestModal
-                isOpen={testModalOpen}
-                onClose={() => setTestModalOpen(false)}
-                testType={testModalType}
+                <PromptExecutionTestModal
+                    isOpen={testModalOpen}
+                    onClose={() => setTestModalOpen(false)}
+                    testType={testModalType}
                     promptId={instance.promptId}
                     promptSource={instance.promptSource}
-                executionConfig={{
+                    executionConfig={{
                         result_display: testModalType,
-                    auto_run: autoRun,
-                    allow_chat: allowChat,
-                    show_variables: showVariables,
-                    apply_variables: applyVariables,
+                        auto_run: autoRun,
+                        allow_chat: allowChat,
+                        show_variables: showVariables,
+                        apply_variables: applyVariables,
                         track_in_runs: trackInRuns,
-                }}
-                variables={applyVariables ? currentVariables : {}}
+                    }}
+                    variables={applyVariables ? currentVariables : {}}
                     resources={currentResources}
                     initialMessage={currentInput}
-            />
+                />
             )}
         </Collapsible>
     );

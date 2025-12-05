@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
 import {ImperativePanelGroupHandle} from 'react-resizable-panels';
+import {useIsMobile} from '@/hooks/use-mobile';
 import type {CSSProperties} from 'react';
 
 type PanelPosition = 'left' | 'right' | 'top' | 'bottom';
@@ -128,6 +129,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     const [preFullScreenSize, setPreFullScreenSize] = React.useState<number | null>(defaultSize);
     const [currentPosition, setCurrentPosition] = React.useState<PanelPosition>(initialPosition);
     const isExpanded = controlledExpanded ?? localExpanded;
+    const isMobile = useIsMobile();
 
     const panelGroupRef = React.useRef<ImperativePanelGroupHandle>(null);
     const isVertical = currentPosition === 'top' || currentPosition === 'bottom';
@@ -165,7 +167,8 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     };
 
     const getPanelSizes = () => {
-        if (isFullScreen) {
+        // Mobile is always full screen when expanded
+        if (isFullScreen || isMobile) {
             return {
                 contentPanel: {
                     defaultSize: 100,
@@ -197,7 +200,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     };
 
     const handleStyles = (isVertical: boolean, isFullScreen: boolean): CSSProperties => ({
-        visibility: isFullScreen ? 'hidden' as const : 'visible' as const,
+        visibility: (isFullScreen || isMobile) ? 'hidden' as const : 'visible' as const,
         ...(isVertical ? {
             width: '100%',
             display: 'flex',
@@ -207,11 +210,14 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     });
 
     const getPositionStyles = () => {
+        // Mobile: full screen panels, desktop: resizable panels
         const positionMap = {
             left: {
-                container: 'fixed inset-y-0 left-0',
-                dimensions: {width: '100vw'},
-                button: 'left-4 top-10',
+                container: isMobile ? 'fixed inset-0' : 'fixed inset-y-0 left-0',
+                dimensions: isMobile 
+                    ? {width: '100dvw', height: '100dvh'} 
+                    : {width: '100dvw'},
+                button: 'left-4 top-[calc(var(--header-height)+1rem)]',
                 panel: 'left-0',
                 border: 'border-r',
                 chevron: {
@@ -220,9 +226,11 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 }
             },
             right: {
-                container: 'fixed inset-y-0 right-0',
-                dimensions: {width: '100vw'},
-                button: 'right-4 top-10',
+                container: isMobile ? 'fixed inset-0' : 'fixed inset-y-0 right-0',
+                dimensions: isMobile 
+                    ? {width: '100dvw', height: '100dvh'} 
+                    : {width: '100dvw'},
+                button: 'right-4 top-[calc(var(--header-height)+1rem)]',
                 panel: 'right-0',
                 border: 'border-l',
                 chevron: {
@@ -231,9 +239,11 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 }
             },
             top: {
-                container: 'fixed inset-x-0 top-0',
-                dimensions: {height: '100vh'},
-                button: 'top-4 left-4',
+                container: isMobile ? 'fixed inset-0' : 'fixed inset-x-0 top-0',
+                dimensions: isMobile 
+                    ? {width: '100dvw', height: '100dvh'} 
+                    : {height: '100dvh'},
+                button: 'top-[calc(var(--header-height)+1rem)] left-4',
                 panel: 'top-0',
                 border: 'border-b',
                 chevron: {
@@ -242,9 +252,11 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 }
             },
             bottom: {
-                container: 'fixed inset-x-0 bottom-0',
-                dimensions: {height: '100vh'},
-                button: 'bottom-4 right-4',
+                container: isMobile ? 'fixed inset-0' : 'fixed inset-x-0 bottom-0',
+                dimensions: isMobile 
+                    ? {width: '100dvw', height: '100dvh'} 
+                    : {height: '100dvh'},
+                button: cn('bottom-4 right-4', isMobile && 'pb-safe'),
                 panel: 'bottom-0',
                 border: 'border-t',
                 chevron: {
@@ -285,7 +297,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             key="spacer"
             {...panelSizes.spacerPanel}
             style={{
-                visibility: isFullScreen ? 'hidden' : 'visible',
+                visibility: (isFullScreen || isMobile) ? 'hidden' : 'visible',
                 touchAction: 'none',
                 pointerEvents: 'none',
             }}
@@ -311,7 +323,12 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             defaultSize={panelSizes.contentPanel.defaultSize}
         >
             <Card
-                className={cn("h-full shadow-lg", styles.border)}
+                className={cn(
+                    "shadow-lg", 
+                    styles.border,
+                    isMobile ? "h-dvh" : "h-full",
+                    isMobile && currentPosition === 'bottom' && "pb-safe"
+                )}
                 style={{
                     touchAction: 'pan-y',
                     transform: 'translate3d(0,0,0)',
@@ -320,8 +337,9 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             >
                 <div
                     className={cn(
-                        "border-b p-3 flex items-center bg-background sticky top-0 scrollbar-none",
-                        isVertical ? "justify-between" : "flex-wrap gap-2"
+                        "border-b px-3 py-1.5 flex items-center bg-background sticky top-0 scrollbar-none",
+                        isVertical ? "justify-between" : "flex-wrap gap-2",
+                        isMobile && "pt-[calc(var(--header-height)+0.75rem)]"
                     )}
                     style={{zIndex: 10}}
                 >
@@ -329,22 +347,26 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                         {header}
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
-                        <PositionControl
-                            position={currentPosition}
-                            onPositionChange={handlePositionChange}
-                            isVertical={isVertical}
-                        />
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleFullScreenToggle}
-                            className="h-6 px-2"
-                        >
-                            {isFullScreen ?
-                             <Minimize2 className="h-3 w-3"/> :
-                             <Maximize2 className="h-3 w-3"/>
-                            }
-                        </Button>
+                        {!isMobile && (
+                            <>
+                                <PositionControl
+                                    position={currentPosition}
+                                    onPositionChange={handlePositionChange}
+                                    isVertical={isVertical}
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleFullScreenToggle}
+                                    className="h-6 px-2"
+                                >
+                                    {isFullScreen ?
+                                     <Minimize2 className="h-3 w-3"/> :
+                                     <Maximize2 className="h-3 w-3"/>
+                                    }
+                                </Button>
+                            </>
+                        )}
                         <Button
                             variant="ghost"
                             size="sm"
@@ -356,9 +378,14 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                     </div>
                 </div>
                 <div
-                    className="overflow-auto scrollbar-none"
+                    className={cn(
+                        "overflow-auto scrollbar-none",
+                        isMobile && currentPosition === 'bottom' && "pb-safe"
+                    )}
                     style={{
-                        height: 'calc(100% - 48px)',
+                        height: isMobile 
+                            ? 'calc(100dvh - var(--header-height) - 48px)' 
+                            : 'calc(100% - 48px)',
                         touchAction: 'pan-y',
                     }}
                 >

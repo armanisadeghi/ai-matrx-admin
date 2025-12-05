@@ -106,8 +106,8 @@ export function SmartMessageList({
 
     // Adjust spacing classes based on compact mode
     const spacingClasses = compact 
-        ? "space-y-2 pt-2 pb-2" 
-        : "space-y-6 pt-6 pb-4";
+        ? "space-y-2 pt-0 pb-2" 
+        : "space-y-6 pt-0 pb-4";
 
     return (
         <div className={`${spacingClasses} ${className}`}>

@@ -101,6 +101,7 @@ export const startPromptInstance = createAsyncThunk<
         runId,
         promptId,
         promptSource,
+        promptName: prompt.name, // Store the actual prompt name from database
 
         // Status
         status: 'ready',

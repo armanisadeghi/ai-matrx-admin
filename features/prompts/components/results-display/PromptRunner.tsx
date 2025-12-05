@@ -181,7 +181,7 @@ export function PromptRunner({
     }
 
     return (
-        <div className={`flex flex-col h-full overflow-hidden bg-background ${className || ''}`}>
+        <div className={`flex flex-col h-full overflow-hidden bg-textured ${className || ''}`}>
             {/* Header / Title if needed */}
             {title && (
                 <div className="flex items-center justify-between px-4 py-2 border-b">
