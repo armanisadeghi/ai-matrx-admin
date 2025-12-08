@@ -483,14 +483,15 @@
 
 @layer base {
     * {
-        @apply border-border;
+        border-color: hsl(var(--border));
     }
     html {
-        @apply scroll-smooth;
+        scroll-behavior: smooth;
         font-size: 16px; /* Base font size */
     }
     body {
-        @apply bg-background text-foreground;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
         background-image: var(--background-texture);
         font-synthesis-weight: none;
         text-rendering: optimizeLegibility;
@@ -510,7 +511,8 @@
     h4,
     h5,
     h6 {
-        @apply font-heading font-medium;
+        font-family: var(--font-heading);
+        font-weight: 500;
         letter-spacing: -0.015em;
         line-height: 1.2;
     }
@@ -518,7 +520,7 @@
     /* Code readability */
     code,
     pre {
-        @apply font-mono;
+        font-family: var(--font-mono);
     }
 
     input,
@@ -558,7 +560,7 @@
 
 @layer components {
     .card {
-        @apply bg-card;
+        background-color: hsl(var(--card));
         background-image: var(--card-texture);
     }
 }
@@ -629,6 +631,29 @@
         color: hsl(var(--destructive));
     }
     
+    /* Border utilities */
+    .border {
+        border-width: 1px;
+        border-style: solid;
+        border-color: hsl(var(--border));
+    }
+    
+    .border-0 {
+        border-width: 0px;
+    }
+    
+    .border-2 {
+        border-width: 2px;
+    }
+    
+    .border-4 {
+        border-width: 4px;
+    }
+    
+    .border-8 {
+        border-width: 8px;
+    }
+    
     /* Border colors */
     .border-border {
         border-color: hsl(var(--border));
@@ -640,6 +665,14 @@
     
     .border-primary {
         border-color: hsl(var(--primary));
+    }
+    
+    .border-background {
+        border-color: hsl(var(--background));
+    }
+    
+    .border-gray-200 {
+        border-color: rgb(229 231 235);
     }
     
     /* Ring colors */
@@ -656,7 +689,9 @@
     }
 
     .light-mode-border {
-        @apply border border-gray-200;
+        border-width: 1px;
+        border-style: solid;
+        border-color: rgb(229 231 235);
     }
 
     .light-mode-bg-gradient {
@@ -668,18 +703,41 @@
     }
 
     .step:before {
-        @apply absolute w-9 h-9 bg-muted rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px border-4 border-background;
-        @apply ml-[-50px] mt-[-4px];
+        position: absolute;
+        width: 2.25rem;
+        height: 2.25rem;
+        background-color: hsl(var(--muted));
+        background-image: var(--background-texture);
+        border-radius: 9999px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        text-align: center;
+        font-size: 1.05rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-indent: -1px;
+        border-width: 4px;
+        border-style: solid;
+        border-color: hsl(var(--background));
+        margin-left: -50px;
+        margin-top: -4px;
         content: counter(step);
     }
 
     .chunk-container {
-        @apply shadow-none;
+        box-shadow: none;
     }
 
     .chunk-container::after {
         content: "";
-        @apply absolute -inset-4 shadow-xl rounded-xl border;
+        position: absolute;
+        inset: -1rem;
+        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        border-radius: 0.75rem;
+        border-width: 1px;
+        border-style: solid;
+        border-color: hsl(var(--border));
     }
 
     /* Hide scrollbar utility */
@@ -1035,10 +1093,11 @@
 
 @layer base {
     * {
-        @apply border-border;
+        border-color: hsl(var(--border));
     }
     body {
-        @apply bg-background text-foreground;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
     }
 }
 
@@ -1211,7 +1270,8 @@
 @layer utilities {
     @media (max-width: 640px) {
         .container {
-            @apply px-1;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
         }
 
         .notes-mobile-layout {
