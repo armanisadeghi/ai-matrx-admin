@@ -132,7 +132,7 @@ export function RunItem({ run, isActive, onClick, onStar, onUpdate, compact = fa
         "group relative px-2 py-1 rounded border transition-all cursor-pointer",
         isActive 
           ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" 
-          : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-850"
+          : "bg-textured"
       )}
     >
       {/* Content - single line */}

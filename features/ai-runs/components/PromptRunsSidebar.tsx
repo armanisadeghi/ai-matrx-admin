@@ -87,7 +87,7 @@ export function PromptRunsSidebar({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-gray-800">
+    <div className="h-full flex flex-col bg-textured border-r border-gray-200 dark:border-gray-800">
       {/* Compact Header */}
       <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 px-2.5 py-2">
         <div className="flex items-center justify-between gap-1.5 mb-2">
