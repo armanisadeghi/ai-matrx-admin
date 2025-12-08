@@ -91,7 +91,7 @@ export default function DesktopLayout({
             delayDuration={300} 
             skipDelayDuration={0}
         >
-            <div id={uniqueId} className="min-h-dvh bg-textured text-sidebar-foreground"
+            <div id={uniqueId} className="min-h-dvh bg-textured text-gray-800 dark:text-gray-100"
             >
                 {/* Main Header */}
                 <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured">
@@ -150,7 +150,7 @@ export default function DesktopLayout({
 
             {/* Sidebar */}
             <aside 
-                className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-56"} bg-sidebar transition-all duration-300 z-40 overflow-hidden`}
+                className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-56"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
                 style={{ backgroundImage: BACKGROUND_PATTERN }}
             >
                 <nav 

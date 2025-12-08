@@ -219,23 +219,33 @@ git checkout pre-tailwind-v4-upgrade
 
 ### Dark Mode Fix Details (Dec 8, 2024)
 
-**Problem:** After initial migration, dark mode was not working - cards stayed white/light even with `.dark` class applied. Sidebar remained white, and "Add Feature" hover didn't work.
+**Problem:** After initial migration, dark mode was not working - cards stayed white/light even with `.dark` class applied.
 
 **Root Causes:**
 1. `@theme inline` approach didn't work for dark mode - colors were static at build time
 2. `@apply` directives in CSS caused build errors in Tailwind v4
 3. Standard Tailwind color utilities (bg-white, bg-zinc-800, etc.) were missing
-4. Manual `tailwind-colors.css` approach was incomplete and didn't support all variants (hover, dark, etc.) properly.
 
 **Fixes Applied:**
-1. **Removed `@theme inline` color definitions** - Removed all `--color-*` definitions from `@theme inline` block.
-2. **Replaced `@apply` with plain CSS** - Converted all `@apply` directives to plain CSS properties.
-3. **Moved Custom Colors to `@theme`:** Added `zinc-850`, `sidebar`, and other custom colors directly to `app/globals.css` `@theme` block. This ensures Tailwind generates all necessary utilities (including `dark:` and `hover:` variants).
-4. **Removed Manual CSS File:** Deleted `app/tailwind-colors.css` which was preventing proper variant generation.
-5. **Updated Components to Semantic Colors:**
-   - Modified `DesktopLayout.tsx` to use `bg-sidebar` and `text-sidebar-foreground` instead of hardcoded colors.
-   - Modified `MobileLayout.tsx` similarly.
-   - This ensures the components use the CSS variables defined in the theme, which switch automatically in dark mode.
+1. **Removed `@theme inline` color definitions** - Removed all `--color-*` definitions from `@theme inline` block as they prevented dark mode from working
+2. **Replaced `@apply` with plain CSS** - Converted all `@apply` directives to plain CSS properties:
+   - `@apply border-border` → `border-color: hsl(var(--border));`
+   - `@apply bg-background` → `background-color: hsl(var(--background));`
+   - `@apply font-heading` → `font-family: var(--font-heading);`
+3. **Added color utilities in `@layer utilities`** - Created custom utilities for theme colors:
+   - `.bg-card { background-color: hsl(var(--card)); }`
+   - `.text-foreground { color: hsl(var(--foreground)); }`
+   - `.border-border { border-color: hsl(var(--border)); }`
+4. **Created `app/tailwind-colors.css`** - Added all standard Tailwind color utilities that components depend on:
+   - Base colors: bg-white, bg-zinc-700/800, bg-gray-50/100, etc.
+   - Color variants: bg-indigo-*, bg-emerald-*, bg-blue-*, etc. (all 15 color families)
+   - Dark mode variants: `.dark\:bg-zinc-800:is(.dark *)` with proper `:is(.dark *)` selector
+   - Hover states: `.hover\:bg-indigo-50:hover`, `.dark\:hover\:bg-indigo-900\/30:is(.dark *):hover`
+   - Text colors and dark variants
 
-**Result:** Dark mode now works correctly - all cards, backgrounds, sidebar, and text colors properly switch between light and dark themes. Hover states also work as expected.
+**Files Modified:**
+- `app/globals.css` - Removed `@theme inline` colors, replaced `@apply` directives, added custom utilities, imported tailwind-colors.css
+- `app/tailwind-colors.css` - NEW - Contains 150+ standard Tailwind color utilities
+
+**Result:** Dark mode now works correctly - all cards, backgrounds, and text colors properly switch between light and dark themes.
 

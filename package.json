@@ -214,7 +214,7 @@
   "devDependencies": {
     "@iconify/react": "^5.2.1",
     "@next/bundle-analyzer": "^15.3.2",
-    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/typography": "0.5.0-alpha.3",
     "@types/chroma-js": "^3.1.2",
     "@types/fabric": "latest",
@@ -247,7 +247,7 @@
     "stream-browserify": "latest",
     "stream-http": "latest",
     "tailwind-scrollbar": "latest",
-    "tailwindcss": "4.0.0",
+    "tailwindcss": "4.1.17",
     "tailwindcss-3d": "latest",
     "ts-jest": "latest",
     "ts-node": "latest",
