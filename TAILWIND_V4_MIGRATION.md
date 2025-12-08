@@ -67,7 +67,86 @@ Upgrading from Tailwind CSS 3.4.18 to 4.x
 
 ## Known Issues
 
-(Will be documented as discovered)
+### Critical: Build Compatibility Issue
+
+**Status:** Build failing with Tailwind v4.0.0 + Next.js 16.0.7 + Turbopack
+
+**Error:** `Missing field 'negated' on ScannerOptions.sources`
+
+**Root Cause:** Compatibility issue between:
+- tailwindcss: 4.0.0
+- @tailwindcss/postcss: 4.0.0  
+- Next.js: 16.0.7 (Turbopack)
+
+**Migration Status:** 95% Complete
+
+### What Was Successfully Migrated:
+
+✅ Dependencies updated:
+   - tailwindcss 3.4.18 → 4.0.0
+   - Added @tailwindcss/postcss 4.0.0
+   - Replaced tailwindcss-animate with tw-animate-css
+   - Updated @tailwindcss/typography to v4
+
+✅ PostCSS configuration updated to use @tailwindcss/postcss
+
+✅ CSS imports updated:
+   - Replaced `@tailwind` directives with `@import "tailwindcss"`
+   - Added `@import "tw-animate-css"`
+
+✅ Theme configuration migrated to @theme blocks:
+   - All colors (using CSS variables)
+   - Font families (sans, heading, mono)
+   - Border radius variables
+   - Font sizes with line heights
+   - All custom sizing values
+
+✅ 30+ keyframes and animations migrated to @theme
+
+✅ Custom utilities migrated to @layer utilities:
+   - Texture utilities (dots, lines, noise variations)
+   - Glow utilities and effects
+   - Safe area utilities (pb-safe, mt-safe, etc.)
+   - Dynamic viewport height utilities (h-dvh, min-h-dvh, etc.)
+   - Page height utilities (h-page, min-h-page, etc.)
+   - Mask utilities (mask-bottom, fade-bottom, etc.)
+   - Gradient utilities (bg-gradient-radial)
+
+✅ All utils/tailwind-config/ modules converted to CSS
+
+### Remaining Issues to Resolve:
+
+1. **Build Error:** The build fails due to a compatibility issue between Tailwind v4.0.0 and Next.js 16 with Turbopack. This needs investigation and may require:
+   - Waiting for a patch release of Tailwind v4
+   - Downgrading Next.js temporarily
+   - Disabling Turbopack temporarily
+   - Or waiting for Next.js to fix the compatibility
+
+2. **Files Modified But Not Tested:**
+   - tailwind.config.ts (kept but may need removal after testing)
+   - utils/tailwind-config/ directory (kept but no longer used)
+
+### Next Steps:
+
+1. **Resolve Build Error:**
+   - Try updating to latest versions of tailwindcss and @tailwindcss/postcss
+   - Check Tailwind v4 + Next.js 16 compatibility status
+   - Consider temporarily disabling Turbopack if needed
+   - Monitor Tailwind v4 and Next.js GitHub issues
+
+2. **Once Build Works:**
+   - Test all 30+ animations
+   - Test dark mode throughout the app
+   - Test all custom utilities
+   - Test texture backgrounds
+   - Test ShadCN components
+   - Test mobile layouts (dvh, safe areas)
+   - Remove obsolete tailwind.config.ts and utils/tailwind-config/
+
+3. **Documentation:**
+   - Update README with Node.js 20+ requirement
+   - Update README with browser requirements
+   - Document any visual changes discovered during testing
 
 ---
 
