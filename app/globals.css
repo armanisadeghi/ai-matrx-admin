@@ -683,6 +683,87 @@
         border-color: rgb(229 231 235);
     }
     
+    /* Gradient color stops for theme colors */
+    .from-card {
+        --tw-gradient-from: hsl(var(--card)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--card) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-card {
+        --tw-gradient-to: hsl(var(--card)) var(--tw-gradient-to-position);
+    }
+    
+    .from-muted {
+        --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-muted {
+        --tw-gradient-to: hsl(var(--muted)) var(--tw-gradient-to-position);
+    }
+    
+    .from-primary {
+        --tw-gradient-from: hsl(var(--primary)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--primary) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-primary {
+        --tw-gradient-to: hsl(var(--primary)) var(--tw-gradient-to-position);
+    }
+    
+    .from-secondary {
+        --tw-gradient-from: hsl(var(--secondary)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--secondary) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-secondary {
+        --tw-gradient-to: hsl(var(--secondary)) var(--tw-gradient-to-position);
+    }
+    
+    .from-accent {
+        --tw-gradient-from: hsl(var(--accent)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--accent) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-accent {
+        --tw-gradient-to: hsl(var(--accent)) var(--tw-gradient-to-position);
+    }
+    
+    .from-background {
+        --tw-gradient-from: hsl(var(--background)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--background) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-background {
+        --tw-gradient-to: hsl(var(--background)) var(--tw-gradient-to-position);
+    }
+    
+    .from-destructive {
+        --tw-gradient-from: hsl(var(--destructive)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--destructive) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-destructive {
+        --tw-gradient-to: hsl(var(--destructive)) var(--tw-gradient-to-position);
+    }
+    
+    .from-popover {
+        --tw-gradient-from: hsl(var(--popover)) var(--tw-gradient-from-position);
+        --tw-gradient-to: hsl(var(--popover) / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    
+    .to-popover {
+        --tw-gradient-to: hsl(var(--popover)) var(--tw-gradient-to-position);
+    }
+    
     /* Ring colors */
     .ring-ring {
         --tw-ring-color: hsl(var(--ring));
