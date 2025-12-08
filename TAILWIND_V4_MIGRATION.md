@@ -67,16 +67,28 @@ Upgrading from Tailwind CSS 3.4.18 to 4.x
 
 ## Known Issues
 
-### Critical: Build Compatibility Issue
+### ✅ RESOLVED: Build Compatibility Issue
 
-**Status:** Build failing with Tailwind v4.0.0 + Next.js 16.0.7 + Turbopack
+**Status:** FIXED - Updated to tailwindcss 4.1.17 and @tailwindcss/postcss 4.1.17
 
-**Error:** `Missing field 'negated' on ScannerOptions.sources`
+**Previous Error:** `Missing field 'negated' on ScannerOptions.sources`
 
-**Root Cause:** Compatibility issue between:
-- tailwindcss: 4.0.0
-- @tailwindcss/postcss: 4.0.0  
-- Next.js: 16.0.7 (Turbopack)
+**Solution:** Updated both packages to latest versions (4.1.17)
+
+### ✅ RESOLVED: Dark Mode Issues
+
+**Status:** FIXED - Added custom color utilities and fixed @apply directives
+
+**Previous Issues:**
+- Cards not switching to dark backgrounds
+- `@apply` directives causing build errors
+- Missing standard Tailwind color utilities
+
+**Solutions:**
+1. Removed color definitions from `@theme` block (they conflicted with dark mode)
+2. Replaced all `@apply` directives with plain CSS
+3. Added custom utilities for bg-card, bg-popover, bg-muted with proper hsl() values
+4. Created app/tailwind-colors.css with all standard Tailwind colors (bg-white, bg-zinc-*, text-*, hover states, dark: variants)
 
 **Migration Status:** 95% Complete
 
@@ -205,5 +217,35 @@ git checkout pre-tailwind-v4-upgrade
 
 ## Notes
 
-(Additional notes will be added during migration)
+### Dark Mode Fix Details (Dec 8, 2024)
+
+**Problem:** After initial migration, dark mode was not working - cards stayed white/light even with `.dark` class applied.
+
+**Root Causes:**
+1. `@theme inline` approach didn't work for dark mode - colors were static at build time
+2. `@apply` directives in CSS caused build errors in Tailwind v4
+3. Standard Tailwind color utilities (bg-white, bg-zinc-800, etc.) were missing
+
+**Fixes Applied:**
+1. **Removed `@theme inline` color definitions** - Removed all `--color-*` definitions from `@theme inline` block as they prevented dark mode from working
+2. **Replaced `@apply` with plain CSS** - Converted all `@apply` directives to plain CSS properties:
+   - `@apply border-border` → `border-color: hsl(var(--border));`
+   - `@apply bg-background` → `background-color: hsl(var(--background));`
+   - `@apply font-heading` → `font-family: var(--font-heading);`
+3. **Added color utilities in `@layer utilities`** - Created custom utilities for theme colors:
+   - `.bg-card { background-color: hsl(var(--card)); }`
+   - `.text-foreground { color: hsl(var(--foreground)); }`
+   - `.border-border { border-color: hsl(var(--border)); }`
+4. **Created `app/tailwind-colors.css`** - Added all standard Tailwind color utilities that components depend on:
+   - Base colors: bg-white, bg-zinc-700/800, bg-gray-50/100, etc.
+   - Color variants: bg-indigo-*, bg-emerald-*, bg-blue-*, etc. (all 15 color families)
+   - Dark mode variants: `.dark\:bg-zinc-800:is(.dark *)` with proper `:is(.dark *)` selector
+   - Hover states: `.hover\:bg-indigo-50:hover`, `.dark\:hover\:bg-indigo-900\/30:is(.dark *):hover`
+   - Text colors and dark variants
+
+**Files Modified:**
+- `app/globals.css` - Removed `@theme inline` colors, replaced `@apply` directives, added custom utilities, imported tailwind-colors.css
+- `app/tailwind-colors.css` - NEW - Contains 150+ standard Tailwind color utilities
+
+**Result:** Dark mode now works correctly - all cards, backgrounds, and text colors properly switch between light and dark themes.
 
