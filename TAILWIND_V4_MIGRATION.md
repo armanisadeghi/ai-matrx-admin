@@ -245,7 +245,18 @@ git checkout pre-tailwind-v4-upgrade
 
 **Files Modified:**
 - `app/globals.css` - Removed `@theme inline` colors, replaced `@apply` directives, added custom utilities, imported tailwind-colors.css
-- `app/tailwind-colors.css` - NEW - Contains 150+ standard Tailwind color utilities
+- `app/tailwind-colors.css` - NEW - Contains **970+ lines** with comprehensive color utilities:
+  - All 15+ color families (red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose)
+  - Gray/zinc/slate in all shades (50-950) + custom shades (zinc-750, zinc-850, gray-850)
+  - All variants: bg-*, text-*, border-*
+  - All dark mode variants: dark:bg-*, dark:text-*, dark:border-* ← **THIS WAS THE KEY FIX**
+  - All hover states: hover:bg-*, dark:hover:bg-*
+  - Opacity variants: dark:bg-color-900/70, dark:bg-color-900/30, etc.
 
-**Result:** Dark mode now works correctly - all cards, backgrounds, and text colors properly switch between light and dark themes.
+**Why this was necessary:** 
+- In Tailwind v3, the `tailwind.config.ts` file generated all utilities automatically
+- In Tailwind v4 with CSS-first config, utilities must be explicitly defined in CSS
+- The codebase has 15,625+ uses of `dark:` variants across 1,426 files - all needed explicit definitions
+
+**Result:** Dark mode now works correctly - all cards, backgrounds, text colors, borders, and hover states properly respond to the `.dark` class. The `dark:` variant syntax works everywhere in the codebase.
 
