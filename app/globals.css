@@ -12,6 +12,17 @@
   --color-zinc-850: hsl(240, 4%, 13%);
   --color-gray-850: hsl(240, 4%, 13%);
   
+  /* Theme colors - Using CSS variable references so they work with light/dark mode */
+  --color-card: hsl(var(--card));
+  --color-muted: hsl(var(--muted));
+  --color-primary: hsl(var(--primary));
+  --color-secondary: hsl(var(--secondary));
+  --color-accent: hsl(var(--accent));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-popover: hsl(var(--popover));
+  
   /* Custom grid templates */
   --grid-template-columns-12: repeat(12, minmax(0, 1fr));
   --grid-template-columns-24: repeat(24, minmax(0, 1fr));
