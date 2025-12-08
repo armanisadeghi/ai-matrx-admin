@@ -501,9 +501,6 @@
 }
 
 @layer base {
-    * {
-        border-color: hsl(var(--border));
-    }
     html {
         scroll-behavior: smooth;
         font-size: 16px; /* Base font size */
