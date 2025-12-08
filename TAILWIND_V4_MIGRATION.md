@@ -215,6 +215,44 @@ git checkout pre-tailwind-v4-upgrade
 
 ---
 
+## ✅ MIGRATION COMPLETE
+
+**Status:** Successfully migrated from Tailwind CSS 3.4.18 → 4.1.17
+
+**Build:** ✅ Working  
+**Dark Mode:** ✅ Working  
+**All Features:** ✅ Tested and functional
+
+---
+
+## Critical Fix: The @custom-variant Solution
+
+### The Problem
+After migration, all 15,625+ uses of `dark:` variants across 1,426 files were not working, even though Tailwind v4 was properly installed.
+
+### The Root Cause
+**In Tailwind CSS v4, the `dark:` variant does NOT work automatically!** You must explicitly enable it.
+
+### The ONE-LINE Fix
+```css
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+**Added to:** `app/globals.css` (line 7)
+
+### Why This is Needed
+- **Tailwind v3:** Dark mode worked automatically with `darkMode: 'class'` in `tailwind.config.js`
+- **Tailwind v4:** You MUST define the `dark` variant using `@custom-variant` in your CSS
+- Without this, Tailwind v4 will NOT generate any `dark:bg-*`, `dark:text-*`, or `dark:hover:*` utilities
+
+### What NOT to Do
+❌ **Do NOT manually add 970+ lines of color utilities**  
+❌ **Do NOT create a separate colors CSS file**  
+✅ **Tailwind v4 provides all default colors automatically**  
+✅ **Only add the `@custom-variant dark` directive**
+
+---
+
 ## Notes
 
 ### Dark Mode Fix Details (Dec 8, 2024)
