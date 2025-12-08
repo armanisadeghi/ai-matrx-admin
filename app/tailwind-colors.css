@@ -1,0 +1,146 @@
+/* Standard Tailwind Color Utilities for v4 */
+.bg-white { background-color: rgb(255 255 255); }
+.bg-zinc-700 { background-color: rgb(63 63 70); }
+.bg-zinc-800 { background-color: rgb(39 39 42); }
+.bg-gray-50 { background-color: rgb(249 250 251); }
+.bg-gray-100 { background-color: rgb(243 244 246); }
+.bg-indigo-50 { background-color: rgb(238 242 255); }
+.bg-indigo-100 { background-color: rgb(224 231 255); }
+.bg-emerald-50 { background-color: rgb(236 253 245); }
+.bg-emerald-100 { background-color: rgb(209 250 229); }
+.bg-blue-50 { background-color: rgb(239 246 255); }
+.bg-blue-100 { background-color: rgb(219 234 254); }
+.bg-amber-50 { background-color: rgb(255 251 235); }
+.bg-amber-100 { background-color: rgb(254 243 199); }
+.bg-purple-50 { background-color: rgb(250 245 255); }
+.bg-purple-100 { background-color: rgb(243 232 255); }
+.bg-red-50 { background-color: rgb(254 242 242); }
+.bg-red-100 { background-color: rgb(254 226 226); }
+.bg-green-50 { background-color: rgb(240 253 244); }
+.bg-green-100 { background-color: rgb(220 252 231); }
+.bg-yellow-50 { background-color: rgb(254 252 232); }
+.bg-yellow-100 { background-color: rgb(254 249 195); }
+.bg-pink-50 { background-color: rgb(253 242 248); }
+.bg-pink-100 { background-color: rgb(252 231 243); }
+.bg-orange-50 { background-color: rgb(255 247 237); }
+.bg-orange-100 { background-color: rgb(255 237 213); }
+.bg-teal-50 { background-color: rgb(240 253 250); }
+.bg-teal-100 { background-color: rgb(204 251 241); }
+.bg-cyan-50 { background-color: rgb(236 254 255); }
+.bg-cyan-100 { background-color: rgb(207 250 254); }
+.bg-lime-50 { background-color: rgb(247 254 231); }
+.bg-lime-100 { background-color: rgb(236 252 203); }
+.bg-rose-50 { background-color: rgb(255 241 242); }
+.bg-rose-100 { background-color: rgb(255 228 230); }
+
+/* Dark mode variants */
+.dark\:bg-zinc-700:is(.dark *) { background-color: rgb(63 63 70); }
+.dark\:bg-zinc-800:is(.dark *) { background-color: rgb(39 39 42); }
+.dark\:bg-indigo-900\/70:is(.dark *) { background-color: rgb(49 46 129 / 0.7); }
+.dark\:bg-indigo-900\/30:is(.dark *) { background-color: rgb(49 46 129 / 0.3); }
+.dark\:bg-emerald-900\/70:is(.dark *) { background-color: rgb(6 78 59 / 0.7); }
+.dark\:bg-emerald-900\/30:is(.dark *) { background-color: rgb(6 78 59 / 0.3); }
+.dark\:bg-blue-900\/70:is(.dark *) { background-color: rgb(30 58 138 / 0.7); }
+.dark\:bg-blue-900\/30:is(.dark *) { background-color: rgb(30 58 138 / 0.3); }
+.dark\:bg-amber-900\/70:is(.dark *) { background-color: rgb(120 53 15 / 0.7); }
+.dark\:bg-amber-900\/30:is(.dark *) { background-color: rgb(120 53 15 / 0.3); }
+.dark\:bg-purple-900\/70:is(.dark *) { background-color: rgb(88 28 135 / 0.7); }
+.dark\:bg-purple-900\/30:is(.dark *) { background-color: rgb(88 28 135 / 0.3); }
+.dark\:bg-red-900\/70:is(.dark *) { background-color: rgb(127 29 29 / 0.7); }
+.dark\:bg-red-900\/30:is(.dark *) { background-color: rgb(127 29 29 / 0.3); }
+.dark\:bg-green-900\/70:is(.dark *) { background-color: rgb(20 83 45 / 0.7); }
+.dark\:bg-green-900\/30:is(.dark *) { background-color: rgb(20 83 45 / 0.3); }
+.dark\:bg-yellow-900\/70:is(.dark *) { background-color: rgb(113 63 18 / 0.7); }
+.dark\:bg-yellow-900\/30:is(.dark *) { background-color: rgb(113 63 18 / 0.3); }
+.dark\:bg-pink-900\/70:is(.dark *) { background-color: rgb(131 24 67 / 0.7); }
+.dark\:bg-pink-900\/30:is(.dark *) { background-color: rgb(131 24 67 / 0.3); }
+.dark\:bg-orange-900\/70:is(.dark *) { background-color: rgb(124 45 18 / 0.7); }
+.dark\:bg-orange-900\/30:is(.dark *) { background-color: rgb(124 45 18 / 0.3); }
+.dark\:bg-teal-900\/70:is(.dark *) { background-color: rgb(19 78 74 / 0.7); }
+.dark\:bg-teal-900\/30:is(.dark *) { background-color: rgb(19 78 74 / 0.3); }
+.dark\:bg-cyan-900\/70:is(.dark *) { background-color: rgb(22 78 99 / 0.7); }
+.dark\:bg-cyan-900\/30:is(.dark *) { background-color: rgb(22 78 99 / 0.3); }
+.dark\:bg-lime-900\/70:is(.dark *) { background-color: rgb(54 83 20 / 0.7); }
+.dark\:bg-lime-900\/30:is(.dark *) { background-color: rgb(54 83 20 / 0.3); }
+.dark\:bg-rose-900\/70:is(.dark *) { background-color: rgb(136 19 55 / 0.7); }
+.dark\:bg-rose-900\/30:is(.dark *) { background-color: rgb(136 19 55 / 0.3); }
+
+/* Text colors */
+.text-gray-400 { color: rgb(156 163 175); }
+.text-gray-500 { color: rgb(107 114 128); }
+.text-indigo-400 { color: rgb(129 140 248); }
+.text-indigo-500 { color: rgb(99 102 241); }
+.text-emerald-400 { color: rgb(52 211 153); }
+.text-emerald-500 { color: rgb(16 185 129); }
+.text-blue-400 { color: rgb(96 165 250); }
+.text-blue-500 { color: rgb(59 130 246); }
+.text-amber-400 { color: rgb(251 191 36); }
+.text-amber-500 { color: rgb(245 158 11); }
+.text-purple-400 { color: rgb(192 132 252); }
+.text-purple-500 { color: rgb(168 85 247); }
+.text-red-400 { color: rgb(248 113 113); }
+.text-red-500 { color: rgb(239 68 68); }
+.text-green-400 { color: rgb(74 222 128); }
+.text-green-500 { color: rgb(34 197 94); }
+.text-yellow-400 { color: rgb(250 204 21); }
+.text-yellow-500 { color: rgb(234 179 8); }
+.text-pink-400 { color: rgb(244 114 182); }
+.text-pink-500 { color: rgb(236 72 153); }
+.text-orange-400 { color: rgb(251 146 60); }
+.text-orange-500 { color: rgb(249 115 22); }
+.text-teal-400 { color: rgb(45 212 191); }
+.text-teal-500 { color: rgb(20 184 166); }
+.text-cyan-400 { color: rgb(34 211 238); }
+.text-cyan-500 { color: rgb(6 182 212); }
+.text-lime-400 { color: rgb(163 230 53); }
+.text-lime-500 { color: rgb(132 204 22); }
+.text-rose-400 { color: rgb(251 113 133); }
+.text-rose-500 { color: rgb(244 63 94); }
+
+.dark\:text-gray-400:is(.dark *) { color: rgb(156 163 175); }
+.dark\:text-indigo-400:is(.dark *) { color: rgb(129 140 248); }
+.dark\:text-emerald-400:is(.dark *) { color: rgb(52 211 153); }
+.dark\:text-blue-400:is(.dark *) { color: rgb(96 165 250); }
+.dark\:text-amber-400:is(.dark *) { color: rgb(251 191 36); }
+.dark\:text-purple-400:is(.dark *) { color: rgb(192 132 252); }
+.dark\:text-red-400:is(.dark *) { color: rgb(248 113 113); }
+.dark\:text-green-400:is(.dark *) { color: rgb(74 222 128); }
+.dark\:text-yellow-400:is(.dark *) { color: rgb(250 204 21); }
+.dark\:text-pink-400:is(.dark *) { color: rgb(244 114 182); }
+.dark\:text-orange-400:is(.dark *) { color: rgb(251 146 60); }
+.dark\:text-teal-400:is(.dark *) { color: rgb(45 212 191); }
+.dark\:text-cyan-400:is(.dark *) { color: rgb(34 211 238); }
+.dark\:text-lime-400:is(.dark *) { color: rgb(163 230 53); }
+.dark\:text-rose-400:is(.dark *) { color: rgb(251 113 133); }
+
+/* Hover states */
+.hover\:bg-indigo-50:hover { background-color: rgb(238 242 255); }
+.dark\:hover\:bg-indigo-900\/30:is(.dark *):hover { background-color: rgb(49 46 129 / 0.3); }
+.hover\:bg-emerald-50:hover { background-color: rgb(236 253 245); }
+.dark\:hover\:bg-emerald-900\/30:is(.dark *):hover { background-color: rgb(6 78 59 / 0.3); }
+.hover\:bg-blue-50:hover { background-color: rgb(239 246 255); }
+.dark\:hover\:bg-blue-900\/30:is(.dark *):hover { background-color: rgb(30 58 138 / 0.3); }
+.hover\:bg-amber-50:hover { background-color: rgb(255 251 235); }
+.dark\:hover\:bg-amber-900\/30:is(.dark *):hover { background-color: rgb(120 53 15 / 0.3); }
+.hover\:bg-purple-50:hover { background-color: rgb(250 245 255); }
+.dark\:hover\:bg-purple-900\/30:is(.dark *):hover { background-color: rgb(88 28 135 / 0.3); }
+.hover\:bg-gray-50:hover { background-color: rgb(249 250 251); }
+.dark\:hover\:bg-zinc-700:is(.dark *):hover { background-color: rgb(63 63 70); }
+.hover\:bg-red-50:hover { background-color: rgb(254 242 242); }
+.dark\:hover\:bg-red-900\/30:is(.dark *):hover { background-color: rgb(127 29 29 / 0.3); }
+.hover\:bg-green-50:hover { background-color: rgb(240 253 244); }
+.dark\:hover\:bg-green-900\/30:is(.dark *):hover { background-color: rgb(20 83 45 / 0.3); }
+.hover\:bg-yellow-50:hover { background-color: rgb(254 252 232); }
+.dark\:hover\:bg-yellow-900\/30:is(.dark *):hover { background-color: rgb(113 63 18 / 0.3); }
+.hover\:bg-pink-50:hover { background-color: rgb(253 242 248); }
+.dark\:hover\:bg-pink-900\/30:is(.dark *):hover { background-color: rgb(131 24 67 / 0.3); }
+.hover\:bg-orange-50:hover { background-color: rgb(255 247 237); }
+.dark\:hover\:bg-orange-900\/30:is(.dark *):hover { background-color: rgb(124 45 18 / 0.3); }
+.hover\:bg-teal-50:hover { background-color: rgb(240 253 250); }
+.dark\:hover\:bg-teal-900\/30:is(.dark *):hover { background-color: rgb(19 78 74 / 0.3); }
+.hover\:bg-cyan-50:hover { background-color: rgb(236 254 255); }
+.dark\:hover\:bg-cyan-900\/30:is(.dark *):hover { background-color: rgb(22 78 99 / 0.3); }
+.hover\:bg-lime-50:hover { background-color: rgb(247 254 231); }
+.dark\:hover\:bg-lime-900\/30:is(.dark *):hover { background-color: rgb(54 83 20 / 0.3); }
+.hover\:bg-rose-50:hover { background-color: rgb(255 241 242); }
+.dark\:hover\:bg-rose-900\/30:is(.dark *):hover { background-color: rgb(136 19 55 / 0.3); }
