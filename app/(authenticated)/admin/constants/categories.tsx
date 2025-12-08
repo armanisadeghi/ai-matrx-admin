@@ -40,7 +40,7 @@ import {
 import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminComponetOne";
 import React from "react";
 import {CiFloppyDisk} from "react-icons/ci";
-import LocalFileAccess from "@/app/(authenticated)/admin/components/LocalFileAccess";
+// import LocalFileAccess from "@/app/(authenticated)/admin/components/LocalFileAccess";
 import CommandTestPage from "@/app/(authenticated)/admin/components/command-testers/CommandTestPage";
 import EntityTestingLab from "@/app/(authenticated)/admin/components/entities/EntityTestingLab";
 import EntityTester from "@/app/(authenticated)/admin/components/entities/EntityTester";
@@ -57,12 +57,12 @@ export const adminCategories = [
         name: "File Explorer & Basic Operations",
         icon: <IconFolder className="w-6 h-6" />,
         features: [
-            {
-                title: "Access Local",
-                description: "Directly access and browse files stored on the local filesystem, enabling quick file management.",
-                icon: <IconFolder />,
-                component: <LocalFileAccess />
-            },
+            // {
+            //     title: "Access Local",
+            //     description: "Directly access and browse files stored on the local filesystem, enabling quick file management.",
+            //     icon: <IconFolder />,
+            //     component: <LocalFileAccess />
+            // },
             {
                 title: "Save Local Files",
                 description: "Easily save files locally from the application, ensuring that important data is kept within reach.",

@@ -4,10 +4,16 @@ import { PMIDView } from "@/components/applet/pmid/PMIDView"
 export default async function PMIDPage({
                                            params
                                        }: {
-    params: { applet: string; entity: string; field: string; pmid: string }
+    params: Promise<{ applet: string; entity: string; field: string; pmid: string }>
 }) {
-    const { pmid } = params
-    const data = await fetchDataForPmid(pmid)
+    const { pmid } = await params
+    
+    // TODO: Implement fetchDataForPmid to retrieve actual PMID data
+    const data: Record<string, unknown> = {
+        pmid,
+        status: "Not implemented",
+        message: "PMID data fetching needs to be implemented"
+    }
 
     return <PMIDView pmid={pmid} data={data} />
 }

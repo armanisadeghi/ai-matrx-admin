@@ -6,6 +6,7 @@ import React, {
     createContext,
     useContext,
     useCallback,
+    JSX,
 } from "react";
 import {
     IconArrowNarrowLeft,
@@ -99,7 +100,7 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
         >
             <div className="relative w-full">
                 <div
-                    className="flex w-full overflow-x-scroll overscroll-x-auto py-10 md:py-20 scroll-smooth [scrollbar-width:none]"
+                    className="flex w-full overflow-x-scroll overscroll-x-auto py-10 md:py-20 scroll-smooth scrollbar-hide"
                     ref={carouselRef}
                     onScroll={checkScrollability}
                 >
@@ -128,7 +129,6 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
                                         duration: 0.5,
                                         delay: 0.2 * index,
                                         ease: "easeOut",
-                                        once: true,
                                     },
                                 }}
                                 key={"card" + index}

@@ -127,7 +127,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Helper function to check if a line is a table separator
     const isTableSeparator = (line: string): boolean => {
         const trimmed = removeMatrxPattern(line).trim();
-        return trimmed.match(/^\|[-:\s|]+\|?$/) !== null;
+        return trimmed.match(/^\|[:\s|\-]+\|?$/) !== null;
     };
 
     // Helper function to process potential table buffer

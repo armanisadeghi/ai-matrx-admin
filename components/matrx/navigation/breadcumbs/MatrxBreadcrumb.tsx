@@ -1,5 +1,12 @@
-import {Breadcrumbs, BreadcrumbItem} from "@heroui/react";
+import {
+    Breadcrumb,
+    BreadcrumbList,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import React from 'react';
+import { cn } from "@/lib/utils";
 
 export interface MatrxBreadcrumbItem {
     id: string;
@@ -20,33 +27,43 @@ const MatrxBreadcrumb = (
         onNavigate,
         className = ''
     }: MatrxBreadcrumbProps) => {
+    
+    const handleClick = (e: React.MouseEvent, itemId: string, isCurrent?: boolean) => {
+        if (!isCurrent && onNavigate) {
+            e.preventDefault();
+            onNavigate(itemId);
+        }
+    };
+
     return (
-        <Breadcrumbs
-            className={className}
-            classNames={{
-                list: "gap-1",
-            }}
-            itemClasses={{
-                item: [
-                    "px-2 py-0.5 border-small border-default-400 rounded-small",
-                    "data-[current=true]:border-foreground data-[current=true]:bg-foreground data-[current=true]:text-background transition-colors",
-                    "data-[disabled=true]:border-default-400 data-[disabled=true]:bg-default-100",
-                ],
-                separator: "hidden",
-            }}
-            size="sm"
-            onAction={onNavigate}
-        >
-            {items.map((item) => (
-                <BreadcrumbItem
-                    key={item.id}
-                    startContent={item.icon}
-                    isCurrent={item.isCurrent}
-                >
-                    {item.label}
-                </BreadcrumbItem>
-            ))}
-        </Breadcrumbs>
+        <Breadcrumb className={className}>
+            <BreadcrumbList className="gap-1">
+                {items.map((item, index) => (
+                    <React.Fragment key={item.id}>
+                        <BreadcrumbItem className={cn(
+                            "px-2 py-0.5 border border-border rounded-sm transition-colors",
+                            item.isCurrent && "border-foreground bg-foreground text-background"
+                        )}>
+                            {item.isCurrent ? (
+                                <BreadcrumbPage className="flex items-center gap-1.5">
+                                    {item.icon}
+                                    {item.label}
+                                </BreadcrumbPage>
+                            ) : (
+                                <BreadcrumbLink 
+                                    href="#" 
+                                    onClick={(e) => handleClick(e, item.id, item.isCurrent)}
+                                    className="flex items-center gap-1.5"
+                                >
+                                    {item.icon}
+                                    {item.label}
+                                </BreadcrumbLink>
+                            )}
+                        </BreadcrumbItem>
+                    </React.Fragment>
+                ))}
+            </BreadcrumbList>
+        </Breadcrumb>
     );
 };
 

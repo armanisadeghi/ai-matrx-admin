@@ -332,7 +332,7 @@ export function PromptInput({
                     onChange={(e) => onChatInputChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholderText}
-                    className="w-full bg-transparent border-none outline-none text-base text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    className="w-full bg-transparent border-none outline-none text-base text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto scrollbar-hide"
                     style={{ minHeight: '40px', maxHeight: '200px', fontSize: '16px' }}
                     tabIndex={variableDefaults.length + 1}
                     rows={1}

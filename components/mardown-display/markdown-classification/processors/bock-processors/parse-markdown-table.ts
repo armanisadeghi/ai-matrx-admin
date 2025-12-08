@@ -132,7 +132,7 @@ export const parseMarkdownTable = (
 
         // More robust separator validation
         const separatorLine = tableLines[1].trim();
-        if (!separatorLine.includes("-") || !separatorLine.match(/^\|[-:\s|]+\|?$/)) {
+        if (!separatorLine.includes("-") || !separatorLine.match(/^\|[:\s|\-]+\|?$/)) {
             if (!isStreamActive && process.env.NODE_ENV === 'development') {
                 console.warn("Invalid table separator format:", separatorLine);
             }

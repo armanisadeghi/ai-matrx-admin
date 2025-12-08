@@ -218,7 +218,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
             
             // Second line = separator (validate but don't use)
             const separatorLine = lines[1];
-            if (!separatorLine.match(/^\|[-:\s|]+\|?$/)) return null;
+            if (!separatorLine.match(/^\|[:\s|\-]+\|?$/)) return null;
             
             // Parse row into cells
             const parseRow = (line: string): string[] => {
@@ -662,8 +662,8 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <div className="flex gap-1">
                                         <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse [animation-delay:0.2s]" />
-                                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse [animation-delay:0.4s]" />
+                                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse [animation-delay:200ms]" />
+                                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse [animation-delay:400ms]" />
                                     </div>
                                     <span>
                                         Streaming data... ({metadata?.completeRowCount} row{metadata?.completeRowCount !== 1 ? 's' : ''} complete{metadata?.hasPartialContent ? ', 1 buffering' : ''})

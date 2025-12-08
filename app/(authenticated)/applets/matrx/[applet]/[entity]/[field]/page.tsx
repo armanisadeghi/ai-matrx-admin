@@ -5,10 +5,12 @@ export default async function FieldPage(
     {
         params
     }: {
-        params: { applet: string; entity: string; field: string }
+        params: Promise<{ applet: string; entity: string; field: string }>
     }) {
-    const {applet, entity, field} = params
-    const pmids = await fetchPmidsForField(field)
+    const {applet, entity, field} = await params
+    
+    // TODO: Implement fetchPmidsForField to retrieve actual PMIDs for this field
+    const pmids: number[] = []
 
     return <FieldView
         applet={applet}

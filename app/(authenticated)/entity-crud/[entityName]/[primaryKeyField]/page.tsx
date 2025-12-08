@@ -7,7 +7,7 @@ import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Search, Plus} from 'lucide-react';
 import {useCallback, useMemo, useState} from "react";
-import {cn} from "@heroui/react";
+import {cn} from '@/utils';
 import {Card, CardContent} from '@/components/ui/card';
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import { use } from 'react';

@@ -42,6 +42,8 @@ const nextConfig = {
             'lucide-react',
         ],
     },
+    // Turbopack configuration (Next.js 16 default bundler)
+    turbopack: {},
     serverExternalPackages: ["@react-pdf/renderer", "canvas", "next-mdx-remote", "vscode-oniguruma", "websocket"],
     typescript: {
         ignoreBuildErrors: true,
@@ -72,6 +74,14 @@ const nextConfig = {
         // First apply your existing webpack config
         config = configureWebpack(config, { isServer });
 
+        // Externalize jsdom from client bundles (used by fabric.js)
+        if (!isServer) {
+            config.externals = config.externals || [];
+            config.externals.push({
+                jsdom: 'commonjs jsdom',
+            });
+        }
+
         // Optimize webpack for production builds - MINIMAL SAFE CONFIG
         if (!dev) {
             config.output.hashFunction = 'xxhash64';
@@ -100,7 +110,7 @@ const nextConfig = {
         if (!isServer) {
             const webpack = require('webpack');
             
-            // Ignore pptxgenjs Node.js dependencies
+            // Ignore pptxgenjs and other Node.js dependencies
             config.resolve.fallback = {
                 ...config.resolve.fallback,
                 fs: false,
@@ -111,6 +121,10 @@ const nextConfig = {
                 'node:fs': false,
                 'node:path': false,
                 'node:stream': false,
+                jsdom: false,
+                net: false,
+                tls: false,
+                child_process: false,
             };
             
             // Replace node: protocol imports with empty module
@@ -129,10 +143,8 @@ const nextConfig = {
 
         return config;
     },
-    eslint: {
-        ignoreDuringBuilds: true,
-        dirs: ["pages", "components", "lib", "utils", "app"],
-    },
+    // Note: eslint config removed - no longer supported in Next.js 16
+    // Use ESLint directly or via package.json scripts
     env: {
         GROQ_API_KEY: process.env.GROQ_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,

@@ -1,10 +1,10 @@
-/* globals.css */
+/* globals.css - MINIMAL DEBUG VERSION */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
+/* Test CSS variables */
 @layer base {
     :root {
         /* Layout Header Heights - Unified: 2.5rem (h-10) for both mobile and desktop */

@@ -1,7 +1,12 @@
 // utils/fileSystemUtil.ts
+// Note: This file uses Node.js fs APIs but is also imported by client components
+// For Turbopack compatibility, we conditionally import fs only on server
 import path from 'path';
-import {promises as fs} from 'fs';
-import type {Dirent} from 'fs';
+
+// Conditional import for server-side only
+const fs = typeof window === 'undefined' ? require('fs').promises : null;
+type Dirent = any; // Simplified type for client compatibility
+
 import {printLink} from './printLink';
 
 // Default paths that can be overridden

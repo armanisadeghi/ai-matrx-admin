@@ -1,10 +1,10 @@
-// File: middleware.ts
+// File: proxy.ts
 
 import { type NextRequest } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
 
-export async function middleware(request: NextRequest) {
-    // Log which URL is being processed by the middleware
+export async function proxy(request: NextRequest) {
+    // Log which URL is being processed by the proxy
     return await updateSession(request)
 }
 
@@ -34,3 +34,4 @@ export const config = {
         '/((?!api|_next/static|_next/image|public|login|auth|matrx|flash-cards|dash-test|app_redirect|app_callback|sign-up|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|favicon.ico|sitemap.xml|robots.txt|$).*)',
     ],
 }
+

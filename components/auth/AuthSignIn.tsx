@@ -3,7 +3,13 @@
 "use client";
 
 import React from "react";
-import {Button, Input, Checkbox, Link, Divider} from "@heroui/react";
+import {Button} from "@/components/ui/button";
+import {BasicInput} from "@/components/ui/input";
+import {Checkbox} from "@/components/ui/checkbox";
+import {Label} from "@/components/ui/label";
+import {Separator} from "@/components/ui/separator";
+import Link from "next/link";
+import {Eye, EyeOff} from "lucide-react";
 import {Icon} from "@iconify/react";
 
 export default function AuthSignIn() {
@@ -13,72 +19,74 @@ export default function AuthSignIn() {
 
     return (
         <div className="flex h-screen w-screen items-center justify-center bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 p-2 sm:p-4 lg:p-8">
-            <div className="flex w-full max-w-sm flex-col gap-4 rounded-large bg-content1 px-8 pb-10 pt-6 shadow-large">
+            <div className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-card px-8 pb-10 pt-6 shadow-lg">
                 <p className="pb-2 text-xl font-medium">Log In</p>
-                <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                        label="Email Address"
-                        name="email"
-                        placeholder="Enter your email"
-                        type="email"
-                        variant="bordered"
-                    />
-                    <Input
-                        endContent={
-                            <button type="button" onClick={toggleVisibility}>
+                <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <BasicInput
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            type="email"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                            <BasicInput
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                type={isVisible ? "text" : "password"}
+                                className="pr-10"
+                            />
+                            <button 
+                                type="button" 
+                                onClick={toggleVisibility}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
                                 {isVisible ? (
-                                    <Icon
-                                        className="pointer-events-none text-2xl text-default-400"
-                                        icon="solar:eye-closed-linear"
-                                    />
+                                    <EyeOff className="h-4 w-4" />
                                 ) : (
-                                    <Icon
-                                        className="pointer-events-none text-2xl text-default-400"
-                                        icon="solar:eye-bold"
-                                    />
+                                    <Eye className="h-4 w-4" />
                                 )}
                             </button>
-                        }
-                        label="Password"
-                        name="password"
-                        placeholder="Enter your password"
-                        type={isVisible ? "text" : "password"}
-                        variant="bordered"
-                    />
+                        </div>
+                    </div>
                     <div className="flex items-center justify-between px-1 py-2">
-                        <Checkbox name="remember" size="sm">
-                            Remember me
-                        </Checkbox>
-                        <Link className="text-default-500" href="#" size="sm">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id="remember" name="remember" />
+                            <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                                Remember me
+                            </Label>
+                        </div>
+                        <Link className="text-sm text-muted-foreground hover:text-foreground" href="#">
                             Forgot password?
                         </Link>
                     </div>
-                    <Button color="primary" type="submit">
+                    <Button type="submit" className="w-full">
                         Log In
                     </Button>
                 </form>
                 <div className="flex items-center gap-4 py-2">
-                    <Divider className="flex-1" />
-                    <p className="shrink-0 text-tiny text-default-500">OR</p>
-                    <Divider className="flex-1" />
+                    <Separator className="flex-1" />
+                    <p className="shrink-0 text-xs text-muted-foreground">OR</p>
+                    <Separator className="flex-1" />
                 </div>
                 <div className="flex flex-col gap-2">
-                    <Button
-                        startContent={<Icon icon="flat-color-icons:google" width={24} />}
-                        variant="bordered"
-                    >
+                    <Button variant="outline" className="w-full">
+                        <Icon icon="flat-color-icons:google" width={20} className="mr-2" />
                         Continue with Google
                     </Button>
-                    <Button
-                        startContent={<Icon className="text-default-500" icon="fe:github" width={24} />}
-                        variant="bordered"
-                    >
+                    <Button variant="outline" className="w-full">
+                        <Icon className="mr-2" icon="fe:github" width={20} />
                         Continue with Github
                     </Button>
                 </div>
-                <p className="text-center text-small">
-                    Need to create an account?&nbsp;
-                    <Link href="#" size="sm">
+                <p className="text-center text-sm">
+                    Need to create an account?{" "}
+                    <Link href="#" className="text-primary hover:underline">
                         Sign Up
                     </Link>
                 </p>

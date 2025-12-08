@@ -4,7 +4,6 @@
 
 import React from "react";
 import { SchemaProvider } from "@/providers/SchemaProvider";
-import { HeroUIProvider } from "@heroui/react"; // Changed from NextUIProvider
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
@@ -73,7 +72,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                 <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
                                                                     <FilePreviewProvider>
                                                                         <OldFileSystemProvider>
-                                                                            <HeroUIProvider>
                                                                             <TooltipProvider delayDuration={200}>
                                                                                 <AudioModalProvider>
                                                                                     <ModuleHeaderProvider>
@@ -96,7 +94,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                                     <Toaster />
                                                                                 </AudioModalProvider>
                                                                             </TooltipProvider>
-                                                                        </HeroUIProvider>
                                                                     </OldFileSystemProvider>
                                                                 </FilePreviewProvider>
                                                             </FileSystemProvider>

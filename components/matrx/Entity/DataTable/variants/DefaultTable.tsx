@@ -3,7 +3,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {flexRender} from "@tanstack/react-table"
-import {Spinner} from "@heroui/spinner";
+import {Spinner} from "@/components/ui/spinner";
 import {
     Alert,
     AlertDescription,

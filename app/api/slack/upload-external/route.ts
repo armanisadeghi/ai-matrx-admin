@@ -264,10 +264,5 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// Configure the API route to handle large files
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: '100mb',
-  },
-};
+// Next.js 16 App Router: bodyParser is always disabled for route handlers
+// Response size limits are handled via experimental serverActions.bodySizeLimit in next.config.js

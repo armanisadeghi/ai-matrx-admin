@@ -19,7 +19,8 @@ import {
     EntityQuickReferenceList,
     EntityQuickReferenceSelect
 } from '../prewired-components/quick-reference';
-import {cn} from "@heroui/react";
+import { cn } from '@/utils';
+
 
 type QuickReferenceComponentType =
     | 'cards'

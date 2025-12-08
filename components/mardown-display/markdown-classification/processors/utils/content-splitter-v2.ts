@@ -500,7 +500,7 @@ function detectTableRow(line: string): boolean {
 
 function isTableSeparator(line: string): boolean {
     const trimmed = removeMatrxPattern(line).trim();
-    return /^\|[-:\s|]+\|?$/.test(trimmed);
+    return /^\|[:\s|\-]+\|?$/.test(trimmed);
 }
 
 function extractTable(startIndex: number, lines: string[]): ExtractionResult {

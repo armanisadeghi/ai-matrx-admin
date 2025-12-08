@@ -3,7 +3,8 @@ import {motion, AnimatePresence} from 'motion/react';
 import {cn} from '@/utils/cn';
 
 import {useDispatch, useSelector} from 'react-redux';
-import {Button, Popover, PopoverContent, PopoverTrigger} from "@heroui/react";
+import {Button} from "@/components/ui/button";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {
     DynamicFieldWrapper,
     DynamicFieldWrapperProps
@@ -175,17 +176,12 @@ const ActionWrapper: React.FC<ActionWrapperProps> = (
         );
 
         return modal ? (
-            <Popover isOpen={open} onOpenChange={handleOpenChange} backdrop="opaque">
-                <PopoverTrigger>
+            <Popover open={!!activePresentation} onOpenChange={(open) => !open && closePresentation()}>
+                <PopoverTrigger asChild>
                     <Button className="hidden">Open Modal</Button>
                 </PopoverTrigger>
-                <PopoverContent className="fixed inset-0 bg-black/50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        {content}
-                        <Button onClick={() => handleOpenChange(false)} className="mt-4">
-                            Close
-                        </Button>
-                    </div>
+                <PopoverContent className="w-auto max-w-lg">
+                    {content}
                 </PopoverContent>
             </Popover>
         ) : (

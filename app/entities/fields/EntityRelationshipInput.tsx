@@ -1,7 +1,7 @@
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { SearchIcon } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { cn } from "@heroui/react";
+import { cn } from '@/utils';
 import EntityInput, { EntityInputProps } from './field-components/EntityInput';
 import EntityButton from './other-components/EntityButton';
 

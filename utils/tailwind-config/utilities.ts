@@ -28,27 +28,8 @@ export function createUtilities({ addUtilities, theme }: any) {
         ".glow-text-cyan": {
             "--glow-color": "rgba(34, 211, 238, 0.5)",
         },
-        ".glow-sweep": {
-            position: "relative",
-            overflow: "hidden",
-            "&::before": {
-                content: '""',
-                position: "absolute",
-                top: "0",
-                left: "0",
-                right: "0",
-                bottom: "0",
-                background: "linear-gradient(90deg, transparent, var(--glow-color), transparent)",
-                backgroundSize: "200% 100%",
-                zIndex: "-1",
-                animation: "glow-sweep 3s ease-in-out infinite",
-            },
-        },
-        ".glow-sweep-delayed": {
-            "&::before": {
-                animationDelay: "0.5s",
-            },
-        },
+        // Note: .glow-sweep removed - nested selectors not compatible with Turbopack
+        // Use @layer utilities in globals.css instead if needed
         ".bg-matrx-back": {
             backgroundImage: `${theme("backgroundImage.matrx-texture")}`,
             backgroundColor: "hsl(var(--background))",

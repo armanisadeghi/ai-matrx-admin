@@ -1,7 +1,6 @@
 // utils/tailwind-config/plugins.ts
 
-import { heroui } from "@heroui/react";
-import animations from '@midudev/tailwind-animations';
+// Removed @midudev/tailwind-animations - incompatible with Turbopack CSS parser
 import { createUtilities } from './utilities';
 const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
 
@@ -18,19 +17,8 @@ function addVariablesForColors({addBase, theme}: any) {
 
 export const plugins = [
     require("tailwindcss-animate"),
-    require("@xpd/tailwind-3dtransforms"),
-    require('tailwind-scrollbar'),
     require('tailwind-scrollbar-hide'),
-    require('tailwindcss-3d'),
     require('@tailwindcss/container-queries'),
-    heroui({
-        prefix: "next-",
-        addCommonColors: false,
-        defaultTheme: "dark",
-        defaultExtendTheme: "dark",
-        layout: {},
-    }),
     addVariablesForColors,
-    animations,
     createUtilities
 ];

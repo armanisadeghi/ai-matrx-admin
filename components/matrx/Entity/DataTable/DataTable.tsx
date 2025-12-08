@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table"
 import {Input} from "@/components/ui/input"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
-import {Spinner} from "@heroui/spinner";
+import {LoadingSpinner} from "@/components/ui/spinner";
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
 import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {EntityTabModal} from "@/components/matrx/Entity";
@@ -147,7 +147,8 @@ export function DataTable<TEntity extends EntityKeys>(
             {loadingState.loading && (
                 <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">
                     <div className="flex items-center gap-2">
-                        <Spinner size="lg" label="Loading..." color="primary" labelColor="primary"/>
+                        <LoadingSpinner size="lg"/>
+                        <span className="text-sm text-primary">Loading...</span>
                     </div>
                 </div>
             )}

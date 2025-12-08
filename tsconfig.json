@@ -1,75 +1,112 @@
 {
-    "compilerOptions": {
-        "lib": ["dom", "dom.iterable", "esnext"],
-        "target": "es2018",
-        "allowJs": true,
-        "types": ["node", "react", "react-dom"],
-        "skipLibCheck": true,
-        "noEmit": true,
-        "esModuleInterop": true,
-        "module": "esnext",
-        "moduleResolution": "bundler",
-        "resolveJsonModule": true,
-        "jsx": "preserve",
-        "baseUrl": ".",
-        "paths": {
-            "@/*": ["./*"],
-            "@components/ui/*": ["./components/ui/*"],
-            "@components/*": ["./components/*"],
-            "/*": ["public/*"]
-        },
-        "incremental": true,
-        "isolatedModules": true,
-        "plugins": [
-            {
-                "name": "next"
-            }
-        ],
-        "strict": false,
-        "noImplicitAny": false,
-        "strictNullChecks": false,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
-        "noFallthroughCasesInSwitch": false,
-        "allowUnreachableCode": false,
-        "noErrorTruncation": true,
-        "strictFunctionTypes": false,
-        "strictBindCallApply": false,
-        "strictPropertyInitialization": false,
-        "noImplicitThis": false,
-        "alwaysStrict": false,
-        "forceConsistentCasingInFileNames": false
-    },
-    "include": [
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.js",
-        "**/*.jsx",
-        ".next/types/**/*.ts",
-        "tests/**/*",
-        "scripts/**/*",
-        "node_modules/flowbite-react/lib/esm/index.d.ts",
-        "global.d.ts",
-        "cartesia.d.ts",
-        "components/**/*",
-        "features/**/*",
-        "app/**/*"
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "exclude": ["node_modules", "_armani", "_dev", ".next", "out"],
-    "ts-node": {
-        "require": ["tsconfig-paths/register"],
-        "transpileOnly": true,
-        "compilerOptions": {
-            "types": ["node"],
-            "lib": ["dom", "dom.iterable", "esnext"],
-            "module": "commonjs",
-            "moduleResolution": "node",
-            "baseUrl": ".",
-            "paths": {
-                "@/*": ["./*"],
-                "@components/ui/*": ["./components/ui/*"],
-                "@components/*": ["./components/*"]
-            }
-        }
+    "target": "es2018",
+    "allowJs": true,
+    "types": [
+      "node",
+      "react",
+      "react-dom"
+    ],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@components/ui/*": [
+        "./components/ui/*"
+      ],
+      "@components/*": [
+        "./components/*"
+      ],
+      "/*": [
+        "public/*"
+      ]
+    },
+    "incremental": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false,
+    "allowUnreachableCode": false,
+    "noErrorTruncation": true,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": false,
+    "alwaysStrict": false,
+    "forceConsistentCasingInFileNames": false
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    ".next/types/**/*.ts",
+    "tests/**/*",
+    "scripts/**/*",
+    "node_modules/flowbite-react/lib/esm/index.d.ts",
+    "global.d.ts",
+    "cartesia.d.ts",
+    "components/**/*",
+    "features/**/*",
+    "app/**/*",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "_armani",
+    "_dev",
+    ".next",
+    "out"
+  ],
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register"
+    ],
+    "transpileOnly": true,
+    "compilerOptions": {
+      "types": [
+        "node"
+      ],
+      "lib": [
+        "dom",
+        "dom.iterable",
+        "esnext"
+      ],
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": [
+          "./*"
+        ],
+        "@components/ui/*": [
+          "./components/ui/*"
+        ],
+        "@components/*": [
+          "./components/*"
+        ]
+      }
     }
+  }
 }

@@ -11,7 +11,7 @@ import {Search, Plus, ArrowRight} from 'lucide-react';
 import Link from 'next/link';
 import {useCallback, useMemo, useState} from "react";
 import {QuickReferenceRecord} from "@/lib/redux/entity/types";
-import {cn} from "@heroui/react";
+import {cn} from '@/utils';
 import EntityFormWrapper from '@/components/matrx/Entity/form/EntityFormWrapper';
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 

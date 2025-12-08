@@ -1,10 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import { Spinner } from "@/components/ui";
 import {SearchIcon} from "lucide-react";
-import {EntityInputProps} from "@/components/matrx/ArmaniForm/field-components/EntityInput";
+
 import {EntityButton, EntityInput} from "@/components/matrx/ArmaniForm/field-components/index";
 import { useRouter } from "next/router";
-import {cn} from "@heroui/react";
+import {cn} from '@/utils';
 
 type RelationType =
     | 'foreignKey'           // Single reference to another entity
@@ -95,11 +95,8 @@ const RelationalButton: React.FC<RelationalButtonBaseProps> = ({
     );
 };
 
-interface RelationalInputProps extends EntityInputProps {
-    relational?: RelationalConfig;
-}
 
-const RelationalInput: React.FC<RelationalInputProps> = (
+const RelationalInput: React.FC<any> = (
     {
         value,
         onChange,
@@ -173,4 +170,4 @@ const RelationalInput: React.FC<RelationalInputProps> = (
 };
 
 export { RelationalInput, RelationalButton };
-export type { RelationalConfig, RelationalInputProps, RelationalButtonBaseProps };
+export type { RelationalConfig, RelationalButtonBaseProps };

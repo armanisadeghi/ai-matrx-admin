@@ -1,6 +1,13 @@
 'use client';
 
-import {Select, SelectItem} from "@heroui/react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export const animals = [
   {key: "cat", label: "Cat"},
@@ -20,15 +27,20 @@ export const animals = [
 
 export default function App() {
   return (
-    <Select
-      className="max-w-xs"
-      label="Favorite Animal"
-      placeholder="Select an animal"
-      selectionMode="multiple"
-    >
-      {animals.map((animal) => (
-        <SelectItem key={animal.key}>{animal.label}</SelectItem>
-      ))}
-    </Select>
+    <div className="w-full max-w-xs space-y-2">
+      <Label htmlFor="animal-select">Favorite Animal</Label>
+      <Select>
+        <SelectTrigger id="animal-select">
+          <SelectValue placeholder="Select an animal" />
+        </SelectTrigger>
+        <SelectContent>
+          {animals.map((animal) => (
+            <SelectItem key={animal.key} value={animal.key}>
+              {animal.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

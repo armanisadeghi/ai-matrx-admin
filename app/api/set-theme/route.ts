@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get the cookies instance
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
 
         // Create a new ResponseCookies instance for setting the cookie
         const response = NextResponse.json({ success: true });

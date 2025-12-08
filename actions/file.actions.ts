@@ -31,7 +31,7 @@ export async function savePublicText({
             return { success: false, error: 'Text content must be a string' };
         }
 
-        const result = await fileHelpers.text.save(filename, content, {
+        const result = await fileHelpers.text.save(filename, content as string, {
             type: 'public',
             path,
             environment: 'development'

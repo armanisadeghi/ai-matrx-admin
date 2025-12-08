@@ -1,10 +1,18 @@
 'use client';
 
 import {getCurrentParsedPathName} from "@/utils/client-nav-utils";
-import {Breadcrumbs, BreadcrumbItem} from "@heroui/react";
+import {
+    Breadcrumb,
+    BreadcrumbList,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import {Component, ChevronRight, LucideIcon} from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { cn } from "@/lib/utils";
 
 export type BreadcrumbVariant = 'default' | 'minimal' | 'filled' | 'custom';
 
@@ -12,7 +20,7 @@ interface BreadcrumbStyles {
     container?: string;
     list?: string;
     separator?: React.ReactNode;
-    item?: string[];
+    item?: string;
     icon?: LucideIcon;
 }
 
@@ -26,38 +34,26 @@ interface AutoBreadcrumbsProps {
 const variantStyles: Record<BreadcrumbVariant, BreadcrumbStyles> = {
     default: {
         list: "gap-1",
-        separator: <ChevronRight className="w-4 h-4 text-default-400"/>,
-        item: [
-            "px-2 py-0.5 border-small border-default-400 rounded-small",
-            "data-[current=true]:bg-default-300 data-[current=true]:text-default-foreground",
-            "data-[disabled=true]:border-default-400 data-[disabled=true]:bg-default-100",
-        ],
+        separator: <ChevronRight className="w-4 h-4 text-muted-foreground"/>,
+        item: "px-2 py-0.5 border border-border rounded-sm data-[current=true]:bg-muted data-[current=true]:text-foreground",
         icon: Component,
     },
     minimal: {
         list: "gap-2",
-        separator: <ChevronRight className="w-3 h-3 text-default-300"/>,
-        item: [
-            "px-1",
-            "data-[current=true]:font-medium data-[current=true]:text-default-foreground",
-            "data-[disabled=true]:text-default-400",
-        ],
+        separator: <ChevronRight className="w-3 h-3 text-muted-foreground/50"/>,
+        item: "px-1 data-[current=true]:font-medium data-[current=true]:text-foreground",
         icon: Component,
     },
     filled: {
         list: "gap-1",
-        separator: <ChevronRight className="w-4 h-4 text-primary-400"/>,
-        item: [
-            "px-3 py-1 rounded-full",
-            "data-[current=true]:bg-primary-100 data-[current=true]:text-primary-600",
-            "data-[disabled=true]:bg-default-100 data-[disabled=true]:text-default-500",
-        ],
+        separator: <ChevronRight className="w-4 h-4 text-primary/60"/>,
+        item: "px-3 py-1 rounded-full data-[current=true]:bg-primary/10 data-[current=true]:text-primary",
         icon: Component,
     },
     custom: {
         list: "",
         separator: undefined,
-        item: [],
+        item: "",
         icon: Component,
     },
 };
@@ -74,34 +70,44 @@ const AutoBreadcrumbs: React.FC<AutoBreadcrumbsProps> = (
 
     const IconComponent = styles?.icon || Component;
 
+    const sizeClasses = {
+        sm: 'text-sm',
+        md: 'text-base',
+        lg: 'text-lg'
+    };
+
     return (
-        <Breadcrumbs
-            className={`gap-1 ${styles?.container || ''}`}
-            classNames={{
-                list: styles?.list || '',
-            }}
-            separator={styles?.separator}
-            itemClasses={{
-                item: styles?.item || [],
-            }}
-            size={size}
-        >
-            {pathParts.map((part, index) => (
-                <BreadcrumbItem
-                    key={part.id}
-                    startContent={showIcons && index === 0 ? <IconComponent className="w-4 h-4"/> : undefined}
-                    isCurrent={part.isLast}
-                >
-                    {part.isLast ? (
-                        <span>{part.name}</span>
-                    ) : (
-                        <Link href={part.href}>
-                            {part.name}
-                        </Link>
-                    )}
-                </BreadcrumbItem>
-            ))}
-        </Breadcrumbs>
+        <Breadcrumb className={cn("gap-1", styles?.container || '', sizeClasses[size])}>
+            <BreadcrumbList className={styles?.list || ''}>
+                {pathParts.map((part, index) => (
+                    <React.Fragment key={part.id}>
+                        <BreadcrumbItem 
+                            className={styles?.item}
+                            data-current={part.isLast}
+                        >
+                            {part.isLast ? (
+                                <BreadcrumbPage className="flex items-center gap-1.5">
+                                    {showIcons && index === 0 && <IconComponent className="w-4 h-4"/>}
+                                    <span>{part.name}</span>
+                                </BreadcrumbPage>
+                            ) : (
+                                <BreadcrumbLink asChild>
+                                    <Link href={part.href} className="flex items-center gap-1.5">
+                                        {showIcons && index === 0 && <IconComponent className="w-4 h-4"/>}
+                                        {part.name}
+                                    </Link>
+                                </BreadcrumbLink>
+                            )}
+                        </BreadcrumbItem>
+                        {index < pathParts.length - 1 && styles?.separator && (
+                            <BreadcrumbSeparator>
+                                {styles.separator}
+                            </BreadcrumbSeparator>
+                        )}
+                    </React.Fragment>
+                ))}
+            </BreadcrumbList>
+        </Breadcrumb>
     );
 };
 

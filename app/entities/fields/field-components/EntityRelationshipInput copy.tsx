@@ -1,10 +1,9 @@
-import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
-import { Spinner } from "@/components/ui";
-import {SearchIcon} from "lucide-react";
-import {EntityInputProps} from "@/components/matrx/ArmaniForm/field-components/EntityInput";
-import {EntityButton, EntityInput} from "@/components/matrx/ArmaniForm/field-components/index";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { SearchIcon } from "lucide-react";
+import { EntityButton, EntityInput } from "@/components/matrx/ArmaniForm/field-components/index";
 import { useRouter } from "next/router";
-import {cn} from "@heroui/react";
+import { cn } from '@/utils';
+import { EntityInputProps } from "./EntityInput";
 
 type RelationType =
     | 'foreignKey'           // Single reference to another entity
@@ -66,12 +65,12 @@ interface RelationalButtonBaseProps {
 }
 
 const RelationalButton: React.FC<RelationalButtonBaseProps> = ({
-        config,
-        currentValue,
-        onAction,
-        loading,
-        error
-    }) => {
+    config,
+    currentValue,
+    onAction,
+    loading,
+    error
+}) => {
     const buttonVariant = config.type === 'foreignKey' ? 'outline' : 'ghost';
 
     const Spinner: React.FC<{ className?: string }> = ({ className }) => (
@@ -86,10 +85,10 @@ const RelationalButton: React.FC<RelationalButtonBaseProps> = ({
             disabled={loading}
         >
             {loading ? (
-                <Spinner className="mr-2 h-4 w-4"/>
+                <Spinner className="mr-2 h-4 w-4" />
             ) : (
-                 <SearchIcon className="mr-2 h-4 w-4"/>
-             )}
+                <SearchIcon className="mr-2 h-4 w-4" />
+            )}
             {config.type === 'foreignKey' ? 'View' : `View ${config.target.entity}`}
         </EntityButton>
     );
@@ -104,7 +103,7 @@ const RelationalInput: React.FC<RelationalInputProps> = (
         value,
         onChange,
         relational,
-    field, // Make sure to include field from EntityInputProps
+        field, // Make sure to include field from EntityInputProps
         ...props
     }) => {
     // Redux hooks
