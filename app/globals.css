@@ -3,8 +3,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@theme {
-  /* Colors - referencing CSS variables */
+@theme inline {
+  /* Dark mode support - use inline to make CSS variables reactive */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -29,7 +29,9 @@
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
   --color-info: hsl(var(--info));
-  
+}
+
+@theme {
   /* Custom grid templates */
   --grid-template-columns-12: repeat(12, minmax(0, 1fr));
   --grid-template-columns-24: repeat(24, minmax(0, 1fr));
