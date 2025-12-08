@@ -221,6 +221,7 @@ git checkout pre-tailwind-v4-upgrade
 
 **Build:** ✅ Working  
 **Dark Mode:** ✅ Working  
+**Gradients:** ✅ Working (custom theme colors)  
 **All Features:** ✅ Tested and functional
 
 ---
@@ -248,8 +249,45 @@ After migration, all 15,625+ uses of `dark:` variants across 1,426 files were no
 ### What NOT to Do
 ❌ **Do NOT manually add 970+ lines of color utilities**  
 ❌ **Do NOT create a separate colors CSS file**  
+❌ **Do NOT manually create gradient utilities (from-*, to-*)**  
 ✅ **Tailwind v4 provides all default colors automatically**  
-✅ **Only add the `@custom-variant dark` directive**
+✅ **Only add the `@custom-variant dark` directive**  
+✅ **Define custom/theme colors in `@theme` block and Tailwind generates ALL utilities**
+
+---
+
+## Critical Learning: Gradient Utilities (92 uses fixed)
+
+### The Problem
+- Components using `from-card`, `to-muted`, `from-primary`, etc. had **transparent backgrounds**
+- Example: `PromptActionModal` with `bg-gradient-to-br from-card to-muted`
+- **92 uses** across 28 files were broken
+
+### The Root Cause
+Theme colors (`--card`, `--muted`, `--primary`) were defined in `:root` but **NOT in `@theme`**.
+
+**In Tailwind v4:** Colors MUST be in `@theme` for Tailwind to generate utilities (including gradients).
+
+### The Fix
+```css
+@theme {
+  /* Theme colors - Reference CSS variables for light/dark mode support */
+  --color-card: hsl(var(--card));
+  --color-muted: hsl(var(--muted));
+  --color-primary: hsl(var(--primary));
+  --color-secondary: hsl(var(--secondary));
+  --color-accent: hsl(var(--accent));
+  /* etc. */
+}
+```
+
+**Result:** Tailwind v4 now **automatically generates**:
+- ✅ `bg-card`, `text-card`, `border-card`
+- ✅ `from-card`, `to-card`, `via-card`
+- ✅ `hover:bg-card`, `dark:bg-card`
+- ✅ All other variants for every color in `@theme`
+
+**Important:** By referencing `hsl(var(--card))`, the colors still use the CSS variables from `:root`, so light/dark mode switching continues to work perfectly.
 
 ---
 
