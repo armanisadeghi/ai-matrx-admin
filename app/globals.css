@@ -3,6 +3,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Enable dark mode variant for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Custom color shades (extending Tailwind's default palette) */
   --color-zinc-750: hsl(240, 5%, 23%);
