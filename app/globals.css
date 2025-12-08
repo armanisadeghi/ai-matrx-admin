@@ -2,9 +2,13 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./tailwind-colors.css";
 
 @theme {
+  /* Custom color shades (extending Tailwind's default palette) */
+  --color-zinc-750: hsl(240, 5%, 23%);
+  --color-zinc-850: hsl(240, 4%, 13%);
+  --color-gray-850: hsl(240, 4%, 13%);
+  
   /* Custom grid templates */
   --grid-template-columns-12: repeat(12, minmax(0, 1fr));
   --grid-template-columns-24: repeat(24, minmax(0, 1fr));
