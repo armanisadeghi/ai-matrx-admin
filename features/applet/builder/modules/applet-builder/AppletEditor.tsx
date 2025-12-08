@@ -85,7 +85,7 @@ const AppletEditor: React.FC<AppletEditorProps> = ({
       />
       
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex justify-end space-x-4 pt-4 border-t border-border">
         <Button
           variant="outline"
           onClick={handleCancelClick}

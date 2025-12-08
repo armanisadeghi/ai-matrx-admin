@@ -39,7 +39,7 @@ const MatrxTooltip: React.FC<TooltipProps> = (
 
     // Apply styling based on `style` prop.
     const tooltipClass = style === 'light'
-        ? 'text-gray-900 bg-white border border-gray-200'
+        ? 'text-gray-900 bg-white border-border'
         : 'text-white bg-gray-900 dark:bg-gray-700';
 
     return (

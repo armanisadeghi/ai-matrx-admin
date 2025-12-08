@@ -59,8 +59,8 @@ const JsonFallback = ({ data, onCopy }: { data: any; onCopy: () => void }) => {
   return (
     <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
       <div className="h-full max-w-7xl mx-auto">
-        <div className="h-full bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="h-full bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FileText size={16} className="text-gray-500 dark:text-gray-400" />
@@ -86,7 +86,7 @@ const JsonFallback = ({ data, onCopy }: { data: any; onCopy: () => void }) => {
           </div>
           
           <div className="p-6 overflow-auto" style={{ height: 'calc(100% - 80px)' }}>
-            <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border-border">
               {JSON.stringify(data, null, 2)}
             </pre>
           </div>
@@ -147,7 +147,7 @@ const renderContentItem = (item: ContentItem, index: number) => {
             Invalid Content Item
           </span>
         </div>
-        <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
+        <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-2 rounded border-border overflow-auto">
           {JSON.stringify(item, null, 2)}
         </pre>
       </div>
@@ -315,8 +315,8 @@ const SectionsViewer = ({ data }: { data: any }) => {
     <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
       <div className="h-full flex gap-4 max-w-7xl mx-auto">
         {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="w-80 flex-shrink-0 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <h2 className="font-semibold text-gray-800 dark:text-gray-200">Content Sections</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{safeData.length} section{safeData.length !== 1 ? 's' : ''}</p>
           </div>
@@ -384,9 +384,9 @@ const SectionsViewer = ({ data }: { data: any }) => {
         </div>
         
         {/* Main Content */}
-        <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FileText size={20} className="text-gray-500 dark:text-gray-400" />
@@ -427,7 +427,7 @@ const SectionsViewer = ({ data }: { data: any }) => {
                       Invalid Section Data
                     </span>
                   </div>
-                  <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
+                  <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded border-border overflow-auto">
                     {JSON.stringify(selectedSection, null, 2)}
                   </pre>
                 </div>

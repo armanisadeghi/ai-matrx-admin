@@ -16,7 +16,7 @@ const ModernAppletCard: React.FC<AppletCardProps> = ({
   
   return (
     <div 
-      className="group relative rounded-xl overflow-hidden transition-all duration-300 cursor-pointer flex flex-col border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+      className="group relative rounded-xl overflow-hidden transition-all duration-300 cursor-pointer flex flex-col border-border hover:border-gray-400 dark:hover:border-gray-500"
       onClick={onClick}
     >
       {/* Horizontal layout with icon on left side */}
@@ -89,7 +89,7 @@ const ModernAppletCard: React.FC<AppletCardProps> = ({
       </div>
       
       {/* Bottom stats bar */}
-      <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-border flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <div className={`h-2 w-2 rounded-full bg-${primaryColor}-500 dark:bg-${primaryColor}-600`}></div>
           <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>

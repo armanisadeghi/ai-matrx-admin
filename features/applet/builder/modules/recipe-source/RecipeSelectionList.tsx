@@ -351,7 +351,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                             useCardLayout={true}
                         />
                     ) : (
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="border-border rounded-lg">
                             <EmptyStateCard
                                 title="No Recipe Selected"
                                 description="Please select a recipe from the list to choose version"

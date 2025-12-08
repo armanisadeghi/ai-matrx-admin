@@ -467,7 +467,7 @@ export function RecipeTemplatesGallery({
         <>
             <div className={cn("flex flex-col h-full bg-white dark:bg-gray-900", className)}>
                 {/* Header */}
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-6 border-b border-border">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
                             <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -619,7 +619,7 @@ export function RecipeTemplatesGallery({
                                         </h4>
                                         <div className="space-y-3">
                                             {previewTemplate.messages.map((message, index) => (
-                                                <Card key={index} className="border border-gray-200 dark:border-gray-700">
+                                                <Card key={index} className="border-border">
                                                     <CardHeader className="pb-2">
                                                         <div className="flex items-center gap-2">
                                                             <Badge variant={
@@ -649,7 +649,7 @@ export function RecipeTemplatesGallery({
                                             <h4 className="font-semibold mb-2 text-sm text-gray-700 dark:text-gray-300">
                                                 Recommended Settings:
                                             </h4>
-                                            <Card className="border border-gray-200 dark:border-gray-700">
+                                            <Card className="border-border">
                                                 <CardContent className="pt-4">
                                                     <div className="space-y-2 text-sm">
                                                         {previewTemplate.settings.model && (

@@ -199,7 +199,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
                             key={index}
                             open={expandedSection === `${title}-${index}`}
                             onOpenChange={() => setExpandedSection(expandedSection === `${title}-${index}` ? null : `${title}-${index}`)}
-                            className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
+                            className="border-border rounded-md overflow-hidden"
                         >
                             <CollapsibleTrigger className="w-full p-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 text-left">
                                 <div>
@@ -208,7 +208,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
                                 </div>
                                 <span>{expandedSection === `${title}-${index}` ? "−" : "+"}</span>
                             </CollapsibleTrigger>
-                            <CollapsibleContent className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                            <CollapsibleContent className="p-3 border-t border-border bg-gray-50 dark:bg-gray-800">
                                 <div className="text-gray-700 dark:text-gray-300">{item.text || "No content details available"}</div>
                             </CollapsibleContent>
                         </Collapsible>
@@ -285,7 +285,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
         return (
             <div className="h-full flex flex-col">
                 {/* Page info and status */}
-                <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-center p-4 border-b border-border">
                     <div>
                         <h1 className="text-2xl font-bold truncate dark:text-white text-gray-800">
                             {overview?.page_title || "Untitled Page"}
@@ -299,7 +299,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
 
                 {/* Content tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                    <TabsList className="p-2 flex flex-wrap border-b border-gray-200 dark:border-gray-700 gap-1">
+                    <TabsList className="p-2 flex flex-wrap border-b border-border gap-1">
                         <TabsTrigger value="organized">Organized Content</TabsTrigger>
                         <TabsTrigger value="structured">Structured Data</TabsTrigger>
                         <TabsTrigger value="text">Text Content</TabsTrigger>
@@ -346,7 +346,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
                 </Tabs>
 
                 {/* Action buttons */}
-                <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-end gap-2 p-4 border-t border-border">
                     {overview?.url && (
                         <Button variant="outline" onClick={() => window.open(overview.url, "_blank")}>
                             Visit Website
@@ -361,7 +361,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
         <div className="w-full h-full flex flex-col">
             {/* Page tabs - Only show if multiple pages */}
             {contentResponses.length > 1 && (
-                <div className="border-b border-gray-200 dark:border-gray-700 p-2">
+                <div className="border-b border-border p-2">
                     <Tabs value={String(activePageIndex)} onValueChange={(value) => setActivePageIndex(parseInt(value))}>
                         <TabsList className="flex flex-wrap gap-1">
                             {contentResponses.map((response, idx) => {

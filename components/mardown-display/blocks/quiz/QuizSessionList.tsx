@@ -91,7 +91,7 @@ export const QuizSessionList: React.FC<QuizSessionListProps> = ({
         return (
           <div
             key={session.id}
-            className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+            className="bg-textured border-border rounded-lg p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">

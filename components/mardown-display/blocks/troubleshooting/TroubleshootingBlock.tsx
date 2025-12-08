@@ -227,7 +227,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
           
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30">
               <div className="flex items-center gap-3">
                 <HelpCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Troubleshooting Guide</h3>
@@ -309,14 +309,14 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                         placeholder="Search issues or solutions..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                        className="pl-10 pr-4 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                       />
                     </div>
                     
                     <select
                       value={selectedSeverity}
                       onChange={(e) => setSelectedSeverity(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Severities</option>
                       <option value="critical">Critical</option>
@@ -383,7 +383,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
 
                       {/* Issue Content */}
                       {isExpanded && (
-                        <div className="border-t border-gray-200 dark:border-gray-700 p-6 space-y-6">
+                        <div className="border-t border-border p-6 space-y-6">
                           
                           {/* Possible Causes */}
                           {issue.causes.length > 0 && (
@@ -415,7 +415,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                                 const priorityColor = getPriorityColor(solution.priority);
 
                                 return (
-                                  <div key={solution.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                  <div key={solution.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg border-border">
                                     <button
                                       onClick={() => toggleSolution(solution.id)}
                                       className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors text-left rounded-t-lg"
@@ -457,7 +457,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
 
                                     {/* Solution Steps */}
                                     {isSolutionExpanded && (
-                                      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+                                      <div className="border-t border-border p-4">
                                         <div className="space-y-3">
                                           {solution.steps.map((step, stepIndex) => {
                                             const isStepExpanded = expandedSteps.has(step.id);
@@ -619,7 +619,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
 
               {/* Summary Stats */}
               <div className="grid md:grid-cols-4 gap-4">
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Target className="h-5 w-5 text-red-600 dark:text-red-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Total Issues</span>
@@ -629,7 +629,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
                 </div>
                 
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Wrench className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Solutions</span>
@@ -639,7 +639,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
                 </div>
                 
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Completed</span>
@@ -649,7 +649,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
                 </div>
                 
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Total Steps</span>

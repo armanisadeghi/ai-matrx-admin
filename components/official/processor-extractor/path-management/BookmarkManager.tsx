@@ -219,7 +219,7 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ open, onOpenChange })
                                 </p>
                             </div>
                             
-                            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="pt-4 border-t border-border">
                                 <h3 className="font-medium text-sm mb-2">Import Bookmarks</h3>
                                 <div className="space-y-3">
                                     <textarea

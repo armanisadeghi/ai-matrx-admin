@@ -303,7 +303,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
           
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
               <div className="flex items-center gap-3">
                 <Table className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Comparison Table</h3>
@@ -380,7 +380,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                         placeholder="Search items or criteria..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        className="pl-10 pr-4 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                       />
                     </div>
                     
@@ -389,7 +389,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         showScores 
                           ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-border'
                       }`}
                     >
                       {showScores ? 'Hide Scores' : 'Show Scores'}
@@ -464,7 +464,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
               )}
 
               {/* Column Visibility Controls */}
-              <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg p-4 border-border">
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -492,7 +492,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
               </div>
 
               {/* Comparison Table */}
-              <div className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-900/50">
@@ -595,7 +595,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
 
               {/* Summary Stats */}
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Items Compared</span>
@@ -605,7 +605,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                   </div>
                 </div>
                 
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Table className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Criteria</span>
@@ -615,7 +615,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                   </div>
                 </div>
                 
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Avg Score</span>

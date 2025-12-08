@@ -16,7 +16,7 @@ const ComponentManager = ({
   return (
     <>
       {/* Save Component Section */}
-      <div className="bg-textured p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="bg-textured p-4 border-t border-border">
         <div className="flex space-x-2">
           <input
             type="text"
@@ -35,8 +35,8 @@ const ComponentManager = ({
       </div>
       
       {/* Saved Components */}
-      <div className="bg-textured border-t border-gray-200 dark:border-gray-700">
-        <div className="bg-gray-100 dark:bg-gray-800 p-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-textured border-t border-border">
+        <div className="bg-gray-100 dark:bg-gray-800 p-2 border-b border-border">
           <h2 className="font-semibold text-gray-700 dark:text-gray-200">Saved Components</h2>
         </div>
         <div className="max-h-60 overflow-auto p-2">

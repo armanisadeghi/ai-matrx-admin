@@ -75,7 +75,7 @@ export function AnalyticsAdmin() {
     return (
         <div className="flex flex-col h-full w-full bg-textured overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+            <div className="p-4 border-b border-border bg-textured">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Analytics Dashboard
                 </h2>
@@ -168,7 +168,7 @@ export function AnalyticsAdmin() {
                                 {analytics.map(app => (
                                     <div
                                         key={app.app_id}
-                                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                                        className="border-border rounded-lg p-4 hover:shadow-sm transition-shadow"
                                     >
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1 min-w-0">
@@ -237,7 +237,7 @@ export function AnalyticsAdmin() {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 dark:text-gray-400 mt-3 pt-3 border-t border-border">
                                                     <div>
                                                         <span className="font-medium">Users:</span> {app.unique_anonymous_users || 0} anonymous, {app.unique_authenticated_users || 0} auth
                                                     </div>

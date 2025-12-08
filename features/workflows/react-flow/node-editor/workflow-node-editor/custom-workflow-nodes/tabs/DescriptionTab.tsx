@@ -58,7 +58,7 @@ const DescriptionTab: React.FC<DescriptionTabProps> = ({ nodeData, enrichedBroke
                         ) : (
                             <ScrollArea className="h-full">
                                 <div className="pr-4">
-                                    <div className="bg-muted/50 dark:bg-muted/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                                    <div className="bg-muted/50 dark:bg-muted/30 rounded-lg p-4 border-border">
                                         <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-200 leading-relaxed">
                                             {functionData.description.trim()}
                                         </pre>
@@ -70,7 +70,7 @@ const DescriptionTab: React.FC<DescriptionTabProps> = ({ nodeData, enrichedBroke
 
                     {/* Footer info */}
                     {functionData && functionData.description && (
-                        <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                        <div className="pt-3 mt-3 border-t border-border flex-shrink-0">
                             <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                                 <span>Function ID: {functionData.id}</span>
                                 <span>{functionData.description.length} characters</span>

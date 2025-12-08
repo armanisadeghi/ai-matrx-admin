@@ -204,7 +204,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                         // Feedback Form
                         <>
                             {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between p-4 border-b border-border">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                     Submit Feedback
                                 </h3>

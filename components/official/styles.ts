@@ -40,8 +40,8 @@ const colorSpecificStyles = {
         cardTitle: "text-pink-500 dark:text-pink-600",
     },
     gray: {
-        card: "border border-gray-200 dark:border-gray-600",
-        cardHeader: "border border-gray-200 dark:border-gray-600",
+        card: "border-border",
+        cardHeader: "border-border",
         cardTitle: "text-gray-900 dark:text-gray-100",
     },
     indigo: {

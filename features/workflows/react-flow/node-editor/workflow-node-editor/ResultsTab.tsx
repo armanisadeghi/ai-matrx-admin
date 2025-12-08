@@ -124,7 +124,7 @@ const ResultsTab: React.FC<TabComponentProps> = ({ nodeData, enrichedBrokers }) 
                     />
 
                     {/* Footer Info */}
-                    <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <div className="pt-3 mt-3 border-t border-border flex-shrink-0">
                         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                             <span>Node ID: {nodeData.id}</span>
                             <span>Status: {nodeData.status || "pending"}</span>

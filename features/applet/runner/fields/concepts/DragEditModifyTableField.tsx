@@ -348,14 +348,14 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
         return ( 
         <table ref={provided.innerRef} {...provided.draggableProps} style={{ ...provided.draggableProps.style, borderCollapse: 'collapse', tableLayout: 'fixed', width: totalWidth, opacity: 0.95 }} className={cn("bg-textured", "shadow-lg rounded overflow-hidden")}> 
             <tbody> 
-                <tr className="border-b border-gray-200 dark:border-gray-700"> 
-                    <td className="p-0 border-r border-gray-200 dark:border-gray-700 align-middle" style={{ width: columnWidths[0] ?? 'auto' }}> 
+                <tr className="border-b border-border"> 
+                    <td className="p-0 border-r border-border align-middle" style={{ width: columnWidths[0] ?? 'auto' }}> 
                         <div {...provided.dragHandleProps} className="h-full flex items-center justify-center p-2 cursor-grab"> 
                             <GripHorizontal className="h-4 w-4 text-gray-400 dark:text-gray-500" /> 
                         </div> 
                     </td> 
                     {columns.map((col, index) => ( 
-                        <td key={col.id} className={cn("p-3 align-middle overflow-hidden text-ellipsis whitespace-nowrap", "border-r border-gray-200 dark:border-gray-700")} style={{ width: columnWidths[index + 1] ?? 'auto' }} > 
+                        <td key={col.id} className={cn("p-3 align-middle overflow-hidden text-ellipsis whitespace-nowrap", "border-r border-border")} style={{ width: columnWidths[index + 1] ?? 'auto' }} > 
                             <span className={cn("text-sm", col.key === 'label' ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300")}> 
                                 {String(item.data[col.key] ?? '-')} 
                             </span> 
@@ -372,13 +372,13 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
     return (
         <div className={`${safeWidthClass} ${className}`}>
             <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="w-full overflow-x-auto border-border rounded-lg">
                     <table ref={tableRef} className="min-w-full border-collapse" style={{ tableLayout: 'auto' }}>
                         <thead className="bg-gray-50 dark:bg-gray-900/50 select-none">
                             <Droppable droppableId={`cols-${fieldId}`} direction="horizontal" type="COLUMN" isDropDisabled={disabled}>
                                 {(providedCols) => (
-                                    <tr ref={providedCols.innerRef} {...providedCols.droppableProps} className="border-b border-gray-200 dark:border-gray-700">
-                                        <th className="w-10 sticky left-0 z-10 bg-inherit p-0 border-r border-gray-200 dark:border-gray-700 align-middle">
+                                    <tr ref={providedCols.innerRef} {...providedCols.droppableProps} className="border-b border-border">
+                                        <th className="w-10 sticky left-0 z-10 bg-inherit p-0 border-r border-border align-middle">
                                             <div className="h-full flex items-center justify-center p-2"><div className="w-5 h-5" /></div>
                                         </th>
                                         {columns.map((col, index) => {
@@ -403,7 +403,7 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
                                                                 style={style}
                                                                 className={cn(
                                                                     "text-left p-0 relative group", col.minWidthClass,
-                                                                    "border-r border-gray-200 dark:border-gray-700",
+                                                                    "border-r border-border",
                                                                     !col.isFixed && !disabled && !isCurrentlyEditingThisColumn && "cursor-grab",
                                                                     !snapshotColDraggable.isDragging && !col.isFixed && !disabled && !isCurrentlyEditingThisColumn && "hover:bg-gray-100 dark:hover:bg-gray-700/50",
                                                                     snapshotColDraggable.isDragging && "bg-blue-100 dark:bg-blue-900 shadow-md opacity-95 z-20"
@@ -458,17 +458,17 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
                                                             "bg-textured",
                                                             !snapshotRowDraggable.isDragging && "hover:bg-gray-50 dark:hover:bg-gray-700/50",
                                                             snapshotRowDraggable.isDragging ? "opacity-0" : "opacity-100",
-                                                            "border-b border-gray-200 dark:border-gray-700",
+                                                            "border-b border-border",
                                                             "transition-opacity duration-150 ease-in-out"
                                                         )}
                                                     >
-                                                        <td className="w-10 sticky left-0 z-0 bg-inherit p-0 border-r border-gray-200 dark:border-gray-700 align-middle">
+                                                        <td className="w-10 sticky left-0 z-0 bg-inherit p-0 border-r border-border align-middle">
                                                             <div {...providedRowDraggable.dragHandleProps} className={cn("h-full flex items-center justify-center p-2",!disabled && "cursor-grab hover:bg-gray-100 dark:hover:bg-gray-700","transition-colors duration-150")} aria-label="Drag to reorder row">
                                                                 <GripHorizontal className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                                                             </div>
                                                         </td>
                                                         {columns.map((col) => (
-                                                            <td key={col.id} className={cn("p-0 align-middle", "border-r border-gray-200 dark:border-gray-700")}>
+                                                            <td key={col.id} className={cn("p-0 align-middle", "border-r border-border")}>
                                                                 {editingCell?.rowId === row.id && editingCell?.columnKey === col.key ? (
                                                                     <input type="text" value={editValue} onChange={handleEditChange} onKeyDown={handleEditKeyDown} onBlur={saveEdit} autoFocus className={cn("w-full h-full px-3 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 bg-inherit", col.key === 'label' ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300")} />
                                                                 ) : (

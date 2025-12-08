@@ -121,7 +121,7 @@ const SitemapViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay
                         return (
                             <div
                                 key={index}
-                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border-border"
                             >
                                 <div className="flex items-center">
                                     <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-3" />
@@ -147,7 +147,7 @@ const SitemapViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay
                         {Object.entries(data?.links || {}).map(([subdomain, urls]) => (
                             <div
                                 key={subdomain}
-                                className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                                className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border-border"
                             >
                                 <div className="font-medium text-gray-800 dark:text-gray-200 mb-1">
                                     {subdomain === "@" ? "Main Domain" : subdomain}
@@ -172,7 +172,7 @@ const SitemapViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay
                             return (
                                 <div
                                     key={index}
-                                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-900 rounded border border-gray-100 dark:border-gray-800"
+                                    className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-900 rounded border-border"
                                 >
                                     <div className="flex items-center min-w-0 flex-1">
                                         <Link className="h-3 w-3 text-gray-400 mr-2 flex-shrink-0" />
@@ -207,7 +207,7 @@ const SitemapViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay
                         return a.localeCompare(b);
                     })
                     .map(([route, urls]) => (
-                        <AccordionItem key={route} value={route} className="border-b border-gray-200 dark:border-gray-700">
+                        <AccordionItem key={route} value={route} className="border-b border-border">
                             <AccordionTrigger className="hover:no-underline py-3">
                                 <div className="flex items-center">
                                     <FolderTree className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
@@ -321,7 +321,7 @@ const SitemapViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay
                                             </div>
                                         </div>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="bg-textured border border-gray-200 dark:border-gray-700">
+                                    <DropdownMenuContent className="bg-textured border-border">
                                         <DropdownMenuItem
                                             onClick={handleTestPageNavigation}
                                             className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"

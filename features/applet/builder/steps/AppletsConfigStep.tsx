@@ -278,7 +278,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                 {/* Main Content - 3 column layout */}
                 <div className="flex flex-col md:flex-row">
                     {/* Middle: Applet list - now first column */}
-                    <div className="w-full md:w-1/4 p-5 bg-gray-50 dark:bg-gray-800/50 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700">
+                    <div className="w-full md:w-1/4 p-5 bg-gray-50 dark:bg-gray-800/50 border-t md:border-t-0 md:border-r border-border">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-gray-900 dark:text-gray-100 font-medium">
                                 Your Applets{" "}
@@ -333,7 +333,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                     </div>
 
                     {/* Left side: Form or Edit area - now second column */}
-                    <div className="w-full md:w-1/2 p-5 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700">
+                    <div className="w-full md:w-1/2 p-5 border-t md:border-t-0 md:border-l border-border">
                         {showAppletForm ? (
                             <div className="space-y-5">
                                 <div className="flex justify-between items-center">

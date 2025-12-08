@@ -176,11 +176,11 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
       bg-textured border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 
       hover:bg-gray-50 dark:hover:bg-gray-750 focus:bg-white dark:focus:bg-gray-800 
       focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500`,
-        dropdown: "bg-textured border border-gray-200 dark:border-gray-700",
+        dropdown: "bg-textured border-border",
         option: "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300",
         optionSelected: "bg-blue-50 dark:bg-blue-900/20",
         groupHeading: "text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-750",
-        searchInput: "bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200",
+        searchInput: "bg-gray-50 dark:bg-gray-700 border-border text-gray-800 dark:text-gray-200",
         emptyMessage: "text-gray-500 dark:text-gray-400",
     };
 
@@ -213,7 +213,7 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
             >
                 {/* Search input */}
                 {showSearch && (
-                    <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <div className="p-2 border-b border-border">
                         <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                             <input

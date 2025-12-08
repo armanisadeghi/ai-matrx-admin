@@ -339,7 +339,7 @@ export default function ContainersEditTab({ appletId }: ContainersEditTabProps) 
       ) : (
         <div className="space-y-4">
           {containers.map((container) => (
-            <Card key={container.id} className="p-4 border border-gray-200 dark:border-gray-700">
+            <Card key={container.id} className="p-4 border-border">
               {editingContainerId === container.id ? (
                 // Edit mode for container properties
                 <div className="space-y-4">
@@ -442,7 +442,7 @@ export default function ContainersEditTab({ appletId }: ContainersEditTabProps) 
                             <textarea
                               value={JSON.stringify(container, null, 2)}
                               onChange={(e) => handleJsonChange(e.target.value)}
-                              className="w-full h-96 p-4 font-mono text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none border border-gray-200 dark:border-gray-700"
+                              className="w-full h-96 p-4 font-mono text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none border-border"
                               spellCheck="false"
                             />
                           </div>
@@ -499,7 +499,7 @@ export default function ContainersEditTab({ appletId }: ContainersEditTabProps) 
                   
                   {/* Container properties (visible when expanded) */}
                   {expandedContainer === container.id && (
-                    <div className="mt-4 space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="mt-4 space-y-4 border-t border-border pt-4">
                       <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300">Container Properties</h5>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div className="space-y-1">
@@ -666,7 +666,7 @@ export default function ContainersEditTab({ appletId }: ContainersEditTabProps) 
                                         <textarea
                                           value={fieldJsonEditing?.fieldId === field.id ? fieldJsonEditing.json : JSON.stringify(field, null, 2)}
                                           onChange={(e) => handleFieldJsonChange(e.target.value)}
-                                          className="w-full h-96 p-4 font-mono text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none border border-gray-200 dark:border-gray-700"
+                                          className="w-full h-96 p-4 font-mono text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none border-border"
                                           spellCheck="false"
                                         />
                                       </div>

@@ -161,7 +161,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
   return (
     <div className={cn("w-full h-full flex flex-col bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200", className)}>
       {/* Header */}
-      <div className="w-full p-4 bg-textured border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="w-full p-4 bg-textured border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Socket Schema Builder</h1>
@@ -287,7 +287,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                           placeholder="e.g., Sparkles"
                         />
                         {iconValidation[index] === true && field.ICON_NAME && (
-                          <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded flex justify-center items-center">
+                          <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-950 border-border rounded flex justify-center items-center">
                             {React.createElement((LucideIcons as any)[field.ICON_NAME], {
                               size: 20,
                               className: 'text-gray-700 dark:text-gray-300'

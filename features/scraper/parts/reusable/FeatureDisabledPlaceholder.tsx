@@ -13,7 +13,7 @@ const FeatureDisabledPlaceholder = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full p-8">
-      <div className="bg-gradient-to-br from-gray-50/90 to-white dark:from-gray-900/90 dark:to-gray-800 rounded-xl shadow-md p-10 max-w-md border border-gray-100 dark:border-gray-700">
+      <div className="bg-gradient-to-br from-gray-50/90 to-white dark:from-gray-900/90 dark:to-gray-800 rounded-xl shadow-md p-10 max-w-md border-border">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
           <LightbulbIcon className="h-8 w-8 text-white" />
         </div>

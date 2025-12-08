@@ -188,7 +188,7 @@ const SectionViewer = ({ data }: { data: any }) => {
                         Invalid Section Data
                       </span>
                     </div>
-                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto">
+                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border-border overflow-auto">
                       {JSON.stringify(section, null, 2)}
                     </pre>
                   </div>
@@ -198,7 +198,7 @@ const SectionViewer = ({ data }: { data: any }) => {
               return (
                 <div
                   key={index}
-                  className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-textured border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">

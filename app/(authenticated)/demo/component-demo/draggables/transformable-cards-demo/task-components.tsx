@@ -31,7 +31,7 @@ export const TaskCard = ({
       {description}
     </p>
     
-    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 grid grid-cols-2 gap-2 text-sm">
+    <div className="mt-4 pt-3 border-t border-border grid grid-cols-2 gap-2 text-sm">
       {priority && (
         <div className="flex items-center gap-1">
           <span className="text-gray-500 dark:text-gray-400">Priority:</span>

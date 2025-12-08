@@ -81,7 +81,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
     const colorOptions = getAllColorOptions();
     const colorStyle = colorOptions.find((option) => option.color === metadata.color)?.className || "";
 
-    const elevationStyles = "border border-gray-200 dark:border-gray-600 shadow-sm";
+    const elevationStyles = "border-border shadow-sm";
     const { fetchDataBrokerAll, dataBrokerActions, dataBrokerRecordsById } = useDataBrokerWithFetch();
 
     // Look up the actual broker data from the store
@@ -232,7 +232,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                 </div>
 
                 {/* Default value field with copy button - textarea on new line and full width */}
-                <div className="my-4 border border-gray-200 dark:border-gray-600 shadow-sm rounded-t-xl">
+                <div className="my-4 border-border shadow-sm rounded-t-xl">
                     <label className="pl-2 mt-2 text-sm text-muted-foreground block mb-2">Default Value:</label>
                     <FancyTextarea
                         className={cn("min-h-[100px] font-mono text-sm w-full resize-y", elevationStyles)}

@@ -133,7 +133,7 @@ export function ContextMenuExample() {
             }
           ]}
         >
-          <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
             <div className="prose dark:prose-invert max-w-none">
               <h3 className="text-lg font-semibold mb-3">Sample Article</h3>
               <p className="text-sm leading-relaxed whitespace-pre-line select-text">

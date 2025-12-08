@@ -141,7 +141,7 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSele
         >
             <div className="flex flex-col h-full">
                 {/* Search Bar */}
-                <div className="px-2 py-2 border-b border-gray-200 dark:border-gray-700">
+                <div className="px-2 py-2 border-b border-border">
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                             <Search size={16} className="text-gray-400" />
@@ -162,7 +162,7 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSele
                 </div>
 
                 {/* Filter Controls */}
-                <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-zinc-100 dark:bg-zinc-850">
+                <div className="px-3 py-2 border-b border-border bg-zinc-100 dark:bg-zinc-850">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                             <button

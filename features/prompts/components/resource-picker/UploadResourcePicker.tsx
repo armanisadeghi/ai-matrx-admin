@@ -78,7 +78,7 @@ export function UploadResourcePicker({ onBack, onSelect }: UploadResourcePickerP
     return (
         <div className="flex flex-col h-[400px]">
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
                     variant="ghost"
                     size="sm"

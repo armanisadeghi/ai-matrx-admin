@@ -221,7 +221,7 @@ export function VariableEditor({
             </div>
 
             {/* Required Toggle */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-border">
                 <div className="flex-1">
                     <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Required
@@ -261,7 +261,7 @@ export function VariableEditor({
 
             {/* Toggle Configuration */}
             {componentType === "toggle" && (
-                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-border">
                     <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Toggle Labels</Label>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -288,13 +288,13 @@ export function VariableEditor({
 
             {/* Options Configuration */}
             {(componentType === "radio" || componentType === "checkbox" || componentType === "select") && (
-                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-border">
                     <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Options</Label>
                     
                     {options.length > 0 && (
                         <div className="space-y-2">
                             {options.map((option, idx) => (
-                                <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+                                <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-900 rounded border-border">
                                     <span className="text-sm flex-1 text-gray-900 dark:text-gray-100">{option}</span>
                                     {!readonly && (
                                         <button
@@ -335,7 +335,7 @@ export function VariableEditor({
                         </div>
                     )}
                     
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
                         <Label className="text-sm text-gray-900 dark:text-gray-100">
                             Allow "Other" option
                         </Label>
@@ -350,7 +350,7 @@ export function VariableEditor({
 
             {/* Number Configuration */}
             {componentType === "number" && (
-                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-border">
                     <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Number Settings</Label>
                     <div className="grid grid-cols-3 gap-3">
                         <div>

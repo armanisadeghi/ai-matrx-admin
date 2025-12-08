@@ -153,7 +153,7 @@ const SmartFieldsListWrapper = forwardRef<SmartFieldsListRefType, SmartFieldsLis
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {overlayTitle}
               </h2>
@@ -200,7 +200,7 @@ const SmartFieldsListWrapper = forwardRef<SmartFieldsListRefType, SmartFieldsLis
             </div>
             
             {/* Footer */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div className="p-4 border-t border-border flex justify-end">
               {multiSelect ? (
                 <Button 
                   variant="default"

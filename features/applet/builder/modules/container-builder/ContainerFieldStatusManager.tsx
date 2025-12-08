@@ -63,7 +63,7 @@ const ContainerFieldStatusManager: React.FC<ContainerFieldStatusManagerProps> = 
   return (
     <>
       {!isOk && (
-        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center text-xs text-gray-600 dark:text-gray-400">
+        <div className="mt-2 pt-2 border-t border-border flex items-center text-xs text-gray-600 dark:text-gray-400">
           <span className="mr-2">Status:</span>
           <TooltipProvider>
             {isMissing && (
@@ -121,7 +121,7 @@ const ContainerFieldStatusManager: React.FC<ContainerFieldStatusManagerProps> = 
         </div>
       )}
       {isOk && (
-        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center text-xs text-gray-600 dark:text-gray-400">
+        <div className="mt-2 pt-2 border-t border-border flex items-center text-xs text-gray-600 dark:text-gray-400">
           <span className="mr-2">Status:</span>
           <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400" />
         </div>

@@ -67,7 +67,7 @@ export default function FetchReactPage() {
                                 </button>
                             </div>
                         </div>
-                        <div className="bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 min-h-[600px] overflow-auto">
+                        <div className="bg-gray-50 dark:bg-gray-900 rounded-md border-border min-h-[600px] overflow-auto">
                             {viewMode === 'rendered' ? (
                                 <HtmlDisplay htmlId={currentId} />
                             ) : (

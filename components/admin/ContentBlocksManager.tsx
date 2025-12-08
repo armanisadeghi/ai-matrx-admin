@@ -641,9 +641,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     return (
         <div className={`flex h-full w-full bg-textured overflow-hidden ${className}`}>
             {/* Sidebar */}
-            <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+            <div className="w-80 border-r border-border flex flex-col overflow-hidden">
                 {/* Sidebar Header */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-b border-border">
                     <div className="flex gap-2 mb-3">
                         <Button onClick={() => setIsCategoryManagementOpen(true)} size="sm" variant="outline">
                             <Settings className="w-4 h-4 mr-1" />
@@ -783,7 +783,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 </ScrollArea>
 
                 {/* Stats */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="p-4 border-t border-border bg-gray-50 dark:bg-gray-800">
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                         {filteredBlocks.length} blocks ({contentBlocks.filter(b => b.is_active).length} active)
                     </div>
@@ -795,7 +795,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 {selectedBlock ? (
                     <>
                         {/* Header with Save/Discard buttons */}
-                        <div className="px-6 py-2 border-b border-gray-200 dark:border-gray-700 bg-textured">
+                        <div className="px-6 py-2 border-b border-border bg-textured">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -987,7 +987,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
 
                                             {/* Preview Section */}
                                             {previewMode === 'preview' && (
-                                                <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
+                                                <div className="flex-1 min-w-0 min-h-[300px] border-border rounded-lg p-4 bg-textured overflow-auto">
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
                                                         <MarkdownStream
                                                             content={editData.template || ''}
@@ -1323,7 +1323,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                         {category.children.map(childCat => (
                                                             <div
                                                                 key={childCat.id}
-                                                                className={`flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 ${!childCat.is_active ? 'opacity-60' : ''}`}
+                                                                className={`flex items-center gap-2 p-2 rounded-md border-border ${!childCat.is_active ? 'opacity-60' : ''}`}
                                                             >
                                                                 <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
                                                                 {editingCategoryId === childCat.id ? (
@@ -1479,7 +1479,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-end pt-4 border-t border-border">
                         <Button onClick={() => setIsCategoryManagementOpen(false)}>
                             Done
                         </Button>

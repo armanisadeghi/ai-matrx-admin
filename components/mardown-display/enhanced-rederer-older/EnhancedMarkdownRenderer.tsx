@@ -190,7 +190,7 @@ const EnhancedContentRenderer = ({
     return (
         <Card className="w-full h-full flex flex-col">
             {/* Fixed header section */}
-            <div className="flex-none border-b border-gray-200 dark:border-gray-700 p-2">
+            <div className="flex-none border-b border-border p-2">
                 <div className="flex justify-between items-center">
                     <div className="flex space-x-1">
                         {availableModes.map(([mode, { icon: Icon, label }]) => (

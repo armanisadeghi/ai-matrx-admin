@@ -331,7 +331,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-7xl w-[95vw] h-[95vh] max-h-[95vh] overflow-hidden flex flex-col p-0">
-                <DialogHeader className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <DialogHeader className="p-4 border-b border-border flex-shrink-0">
                     <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">Connection Details</DialogTitle>
                     <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
                         Review and configure the connection between workflow nodes
@@ -339,7 +339,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
                 </DialogHeader>
 
                 {/* Connection Summary */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="p-4 border-b border-border flex-shrink-0">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Connection Summary</h3>
 
                     {/* Connection Type */}
@@ -411,7 +411,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
 
                 {/* Connection Message */}
                 {connectionMessage && (
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <div className="p-4 border-b border-border flex-shrink-0">
                         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <div className="flex items-start">
                                 <div className="flex-shrink-0">
@@ -466,7 +466,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
                 </div>
 
                 {/* Footer with Action Buttons */}
-                <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="flex justify-end gap-2 p-4 border-t border-border flex-shrink-0">
                     <Button variant="outline" onClick={onClose}>
                         Close
                     </Button>

@@ -100,13 +100,13 @@ const DraggableTableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-a
 
     return (
         <div className={`${safeWidthClass} ${className}`}>
-            <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="w-full overflow-x-auto border-border rounded-lg">
                 <table ref={tableRef} className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
                     <TableColumns />
                     <thead className="bg-gray-50 dark:bg-gray-900/50">
-                        <tr className="border-b border-gray-200 dark:border-gray-700">
-                            <th className="p-0 border-r border-gray-200 dark:border-gray-700"><div className="h-full flex items-center justify-center p-2"><div className="w-5 h-5" /></div></th>
-                            <th className="text-left border-r border-gray-200 dark:border-gray-700 p-3"><span className="font-medium text-sm text-gray-700 dark:text-gray-300">Label</span></th>
+                        <tr className="border-b border-border">
+                            <th className="p-0 border-r border-border"><div className="h-full flex items-center justify-center p-2"><div className="w-5 h-5" /></div></th>
+                            <th className="text-left border-r border-border p-3"><span className="font-medium text-sm text-gray-700 dark:text-gray-300">Label</span></th>
                             <th className="text-left p-3"><span className="font-medium text-sm text-gray-700 dark:text-gray-300">Description</span></th>
                         </tr>
                     </thead>
@@ -141,7 +141,7 @@ const DraggableTableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-a
                                                     )}
                                                 >
                                                     <td
-                                                        className="w-10 p-0 border-r border-gray-200 dark:border-gray-700 align-middle"
+                                                        className="w-10 p-0 border-r border-border align-middle"
                                                         style={snapshotDraggable.isDragging && columnWidths[0] ? { width: columnWidths[0] } : {}}
                                                     >
                                                         <div
@@ -157,7 +157,7 @@ const DraggableTableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-a
                                                         </div>
                                                     </td>
                                                     <td
-                                                        className="w-1/3 p-3 border-r border-gray-200 dark:border-gray-700 align-middle"
+                                                        className="w-1/3 p-3 border-r border-border align-middle"
                                                         style={snapshotDraggable.isDragging && columnWidths[1] ? { width: columnWidths[1] } : {}}
                                                     >
                                                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{row.label}</span>

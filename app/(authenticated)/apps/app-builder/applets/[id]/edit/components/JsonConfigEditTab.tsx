@@ -123,7 +123,7 @@ export default function JsonConfigEditTab({
             </Alert>
           )}
           
-          <div className="border border-gray-200 dark:border-gray-700 rounded-md">
+          <div className="border-border rounded-md">
             <textarea
               id="json-editor"
               value={jsonText}

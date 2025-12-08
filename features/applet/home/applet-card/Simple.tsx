@@ -13,7 +13,7 @@ const SimpleAppletCard: React.FC<AppletCardProps> = ({
 }) => {
   return (
     <div 
-      className="group flex items-start p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50 dark:bg-gray-800 cursor-pointer transition-all duration-200 hover:shadow-sm"
+      className="group flex items-start p-4 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50 dark:bg-gray-800 cursor-pointer transition-all duration-200 hover:shadow-sm"
       onClick={onClick}
     >
       {/* Icon */}

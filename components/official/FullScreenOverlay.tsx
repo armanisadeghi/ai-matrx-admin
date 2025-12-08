@@ -159,7 +159,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                                         key={`header-${tab.id}`}
                                         className={cn(
                                             positionClass,
-                                            "border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700",
+                                            "border-border hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700",
                                             isMobile ? "px-6 py-3 text-base min-h-[44px]" : "text-xs px-2 py-0.5"
                                         )}
                                         value={tab.id}

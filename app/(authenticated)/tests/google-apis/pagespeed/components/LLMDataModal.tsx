@@ -42,7 +42,7 @@ export function LLMDataModal({ open, onOpenChange, data }: LLMDataModalProps) {
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex items-center gap-2 pb-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 pb-3 border-b border-border">
                     <div className="flex-1 flex items-center gap-2">
                         {criticalCount > 0 && (
                             <Badge className="bg-red-500 text-white">
@@ -95,12 +95,12 @@ export function LLMDataModal({ open, onOpenChange, data }: LLMDataModalProps) {
                 </div>
 
                 <div className="flex-1 overflow-auto">
-                    <pre className="text-xs font-mono bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 whitespace-pre-wrap break-words">
+                    <pre className="text-xs font-mono bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border-border whitespace-pre-wrap break-words">
                         {formattedData}
                     </pre>
                 </div>
 
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                <div className="pt-3 border-t border-border text-xs text-gray-500 dark:text-gray-400">
                     <p>
                         💡 <strong>Tip:</strong> Copy this data and paste it into any AI workflow for analysis and
                         improvement suggestions.

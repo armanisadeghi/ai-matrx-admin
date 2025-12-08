@@ -138,7 +138,7 @@ export default function TableCards() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {[...Array(3)].map((_, i) => (
-          <Card key={i} className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 h-[300px] flex flex-col">
+          <Card key={i} className="bg-white dark:bg-gray-950 border-border h-[300px] flex flex-col">
             <CardHeader className="pb-2">
               <div className="h-6 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mb-2"></div>
               <div className="h-4 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
@@ -177,7 +177,7 @@ export default function TableCards() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tables.map((table) => (
           <Link key={table.id} href={`/data/${table.id}`} className="group">
-            <Card className="h-[300px] bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 hover:shadow-md dark:hover:shadow-black/30 transition-all cursor-pointer group-hover:border-blue-300 dark:group-hover:border-blue-700 flex flex-col">
+            <Card className="h-[300px] bg-white dark:bg-gray-950 border-border hover:shadow-md dark:hover:shadow-black/30 transition-all cursor-pointer group-hover:border-blue-300 dark:group-hover:border-blue-700 flex flex-col">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">

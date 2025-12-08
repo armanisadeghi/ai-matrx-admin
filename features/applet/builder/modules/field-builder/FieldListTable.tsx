@@ -262,7 +262,7 @@ export default function FieldListTable({
                     </div>
                 ) : (
                     <div className="flex justify-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-border">
                             Optional
                         </span>
                     </div>

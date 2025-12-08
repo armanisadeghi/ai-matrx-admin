@@ -75,7 +75,7 @@ export default function SchemaVisualizer() {
                         className="bg-textured border-gray-200 dark:border-gray-700 [&>button]:border-gray-200 dark:[&>button]:border-gray-700 [&>button]:bg-white dark:[&>button]:bg-gray-800 [&>button:hover]:bg-gray-50 dark:[&>button:hover]:bg-gray-700 [&>button]:text-gray-700 dark:[&>button]:text-gray-200"
                     />
                     <Panel position="bottom-left"
-                           className="bg-white/80 dark:bg-gray-900/80 p-2 rounded-lg backdrop-blur-sm border border-gray-200 dark:border-gray-700"
+                           className="bg-white/80 dark:bg-gray-900/80 p-2 rounded-lg backdrop-blur-sm border-border"
                     >
                         <div className="flex gap-3 text-gray-900 dark:text-white text-sm">
                             <div className="flex items-center gap-1">

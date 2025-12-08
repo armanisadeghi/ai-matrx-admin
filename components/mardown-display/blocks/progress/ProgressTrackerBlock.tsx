@@ -248,7 +248,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, ta
           
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Progress Tracker</h3>
@@ -390,7 +390,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, ta
                     <select
                       value={selectedPriority}
                       onChange={(e) => setSelectedPriority(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Priority</option>
                       <option value="high">High Priority</option>
@@ -403,7 +403,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker, ta
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         showCompletedOnly 
                           ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-border'
                       }`}
                     >
                       {showCompletedOnly ? 'Show All' : 'Completed Only'}

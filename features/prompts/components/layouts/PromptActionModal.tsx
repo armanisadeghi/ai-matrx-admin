@@ -81,7 +81,7 @@ export function PromptActionModal({
                     <button
                         onClick={(e) => handleAction(e, 'run', onRun)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-primary/30 transition-all duration-300 ${
+                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
                             isAnyActionActive 
                                 ? 'opacity-50 cursor-not-allowed' 
                                 : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
@@ -102,10 +102,10 @@ export function PromptActionModal({
                     <button
                         onClick={(e) => handleAction(e, 'edit', onEdit)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-primary/30 transition-all duration-300 ${
+                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
                             isAnyActionActive 
                                 ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:border-secondary/70 hover:shadow-xl hover:scale-[1.02]'
+                                : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
                         }`}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-accent/10 group-hover:from-secondary/20 group-hover:to-accent/20 transition-all duration-300" />
@@ -124,10 +124,10 @@ export function PromptActionModal({
                         <button
                             onClick={(e) => handleAction(e, 'create-app', onCreateApp)}
                             disabled={isAnyActionActive}
-                            className={`w-full group relative overflow-hidden rounded-lg border-2 border-accent/30 transition-all duration-300 ${
+                            className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
                                 isAnyActionActive 
                                     ? 'opacity-50 cursor-not-allowed' 
-                                    : 'hover:border-accent/70 hover:shadow-xl hover:scale-[1.02]'
+                                    : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
                             }`}
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-accent/10 to-primary/10 group-hover:from-accent/20 group-hover:to-primary/20 transition-all duration-300" />

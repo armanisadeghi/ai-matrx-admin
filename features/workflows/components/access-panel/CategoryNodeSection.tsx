@@ -27,7 +27,7 @@ const CategoryNodeSection: React.FC<CategoryNodeSectionProps> = ({
                         <button
                             key={category.id}
                             onClick={() => onCategoryClick(category.id)}
-                            className="flex flex-col items-center gap-2 p-1.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                            className="flex flex-col items-center gap-2 p-1.5 bg-gray-50 dark:bg-gray-700 border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         >
                             <IconComponent className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                             <span className="text-[11px] text-gray-700 dark:text-gray-300">{category.label}</span>

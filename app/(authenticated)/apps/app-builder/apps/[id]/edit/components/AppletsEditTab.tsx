@@ -53,7 +53,7 @@ export default function AppletsEditTab({ appId }: AppletsEditTabProps) {
         
         {appletIds && appletIds.length > 0 ? (
           <div className="space-y-6">
-            <div className="rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="rounded-md border-border overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>

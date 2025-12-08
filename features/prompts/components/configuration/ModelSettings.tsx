@@ -365,7 +365,7 @@ export function ModelSettings({
             </div>
 
             {/* Divider for toggle section */}
-            <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+            <div className="pt-1 border-t border-border" />
 
             {/* Toggle Switches Grid - Note: Tools selection is handled in ToolsManager, not here */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -549,7 +549,7 @@ export function ModelSettings({
             {/* Tools Section */}
             {availableTools.length > 0 && normalizedControls.tools && (
                 <>
-                    <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+                    <div className="pt-1 border-t border-border" />
                     
                     <div className="space-y-2">
                         <Label className="text-xs text-gray-700 dark:text-gray-300">

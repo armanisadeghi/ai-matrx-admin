@@ -205,7 +205,7 @@ export function ContentBlockEditModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-4 pt-4 pb-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <DialogHeader className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <div className="flex items-center justify-between pr-8">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-blue-500" />
@@ -376,7 +376,7 @@ export function ContentBlockEditModal({
 
                   {/* Preview Section */}
                   {previewMode === 'preview' && (
-                    <div className="flex-1 min-w-0 min-h-[250px] border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-textured overflow-auto">
+                    <div className="flex-1 min-w-0 min-h-[250px] border-border rounded-lg p-3 bg-textured overflow-auto">
                       <div className="prose prose-sm dark:prose-invert max-w-none">
                         <MarkdownStream content={editData.template || ''} />
                       </div>

@@ -48,7 +48,7 @@ export default function GoogleAccessPage() {
                 </div>
 
                 {/* Google Sign In/Out Status */}
-                <div className="w-full max-w-2xl mb-8 bg-textured rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
+                <div className="w-full max-w-2xl mb-8 bg-textured rounded-xl shadow-md p-6 border-border">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Google Account Status</h2>
@@ -82,7 +82,7 @@ export default function GoogleAccessPage() {
                 </div>
 
                 {/* Info Card - Updated with popup instructions */}
-                <div className="w-full max-w-2xl mb-12 bg-textured rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
+                <div className="w-full max-w-2xl mb-12 bg-textured rounded-xl shadow-md p-6 border-border">
                     <div className="flex items-start">
                         <div className="flex-shrink-0 p-1">
                             <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

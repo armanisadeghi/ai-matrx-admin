@@ -243,7 +243,7 @@ const AstRenderer: React.FC<AstRendererProps> = ({
 
   return (
     <article className={`prose prose-gray dark:prose-invert max-w-none ${className}`}>
-      <div className="bg-textured rounded-xl shadow-lg dark:shadow-gray-800/20 p-6 md:p-8 space-y-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-textured rounded-xl shadow-lg dark:shadow-gray-800/20 p-6 md:p-8 space-y-6 border-border">
         {processedNodes.map((node, index) => (
           <NodeRenderer 
             key={index} 

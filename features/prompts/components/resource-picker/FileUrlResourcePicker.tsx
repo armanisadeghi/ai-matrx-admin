@@ -225,7 +225,7 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
     return (
         <div className="flex flex-col h-[450px]">
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -294,7 +294,7 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
 
                 {/* File Preview */}
                 {previewFile && (
-                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                    <div className="border-border rounded-lg overflow-hidden">
                         {/* File Icon/Info */}
                         <div className="p-4 bg-gray-50 dark:bg-zinc-900 flex items-center gap-3">
                             <div className="w-12 h-12 rounded bg-purple-100 dark:bg-purple-950/30 flex items-center justify-center flex-shrink-0">
@@ -313,7 +313,7 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                         </div>
 
                         {/* URL */}
-                        <div className="p-2 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900">
+                        <div className="p-2 border-t border-border bg-white dark:bg-zinc-900">
                             <a
                                 href={previewFile.url}
                                 target="_blank"
@@ -347,7 +347,7 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
 
             {/* Footer with Add Button */}
             {previewFile && (
-                <div className="border-t border-gray-200 dark:border-gray-800 p-3">
+                <div className="border-t border-border p-3">
                     <Button
                         onClick={handleSelect}
                         className="w-full"

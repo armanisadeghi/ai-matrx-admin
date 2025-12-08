@@ -59,7 +59,7 @@ const StreamBooleanDisplay = ({
 
   // Normal view with card container
   return (
-    <Card className="h-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col">
+    <Card className="h-full bg-gray-50 dark:bg-gray-900 border-border flex flex-col">
       <CardHeader className="p-3 pb-0">
         <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">{title}</CardTitle>
       </CardHeader>

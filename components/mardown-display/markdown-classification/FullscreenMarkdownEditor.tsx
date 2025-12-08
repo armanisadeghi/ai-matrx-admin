@@ -93,7 +93,7 @@ const FullscreenMarkdownEditor = ({
           className="w-[95vw] h-[90vh] bg-textured rounded-lg shadow-xl flex flex-col overflow-hidden"
           onClick={handleContentClick}
         >
-          <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-2 border-b border-border">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Creator Content Admin View</h2>
             <Button
               variant="ghost" 
@@ -141,7 +141,7 @@ const FullscreenMarkdownEditor = ({
             className="w-[95vw] h-[95vh] bg-textured rounded-lg shadow-xl flex flex-col overflow-hidden"
             onClick={handleContentClick}
           >
-            <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-2 border-b border-border">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{triggerLabel || "Content Processing & Classification"}</h2>
               <Button
                 variant="ghost" 

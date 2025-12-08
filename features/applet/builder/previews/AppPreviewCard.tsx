@@ -69,7 +69,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ appId, className }) => 
 
   return (
     <div className={cn("w-full", className)}>
-      <Card className="border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <Card className="border-border overflow-hidden">
         {/* App Banner Image */}
         {imageUrl ? (
           <div className="w-full h-36 relative">
@@ -80,7 +80,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ appId, className }) => 
             />
           </div>
         ) : (
-          <div className="w-full h-36 flex items-center justify-center bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+          <div className="w-full h-36 flex items-center justify-center bg-gray-100 dark:bg-gray-900 border-b border-border">
             <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">
               <ImageIcon className={`h-10 w-10 mb-2 ${accentTextClass} ${accentBorderClass}`} />
               <span className="text-sm">App Banner Image</span>
@@ -144,7 +144,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ appId, className }) => 
         </CardContent>
         
         {/* Apply primary background color to footer section */}
-        <CardFooter className={`p-4 border-t border-gray-200 dark:border-gray-700 ${primaryBgClass}`}>
+        <CardFooter className={`p-4 border-t border-border ${primaryBgClass}`}>
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-2">
               <CalendarIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />

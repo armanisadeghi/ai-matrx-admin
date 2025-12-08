@@ -48,7 +48,7 @@ const CategoryNodeSection: React.FC<CategoryNodeSectionProps> = ({ workflowId, o
                             <button
                                 key={category.id}
                                 onClick={() => handleCategoryClick(category.id)}
-                                className="flex flex-col items-center gap-1 p-1 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                className="flex flex-col items-center gap-1 p-1 bg-gray-50 dark:bg-gray-700 border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                                 disabled={isAddingNode}
                             >
                                 <IconComponent className="h-4 w-4 text-gray-600 dark:text-gray-400" />

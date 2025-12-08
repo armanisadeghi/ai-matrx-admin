@@ -48,7 +48,7 @@ const AppletPreviewCard: React.FC<AppletPreviewCardProps> = ({ applet, className
   return (
     <div className={cn("w-full", className)}>
       <Card 
-        className={`border border-gray-200 dark:border-gray-700 overflow-hidden ${
+        className={`border-border overflow-hidden ${
           onClick ? 'cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-all' : ''
         }`}
         onClick={onClick}
@@ -118,7 +118,7 @@ const AppletPreviewCard: React.FC<AppletPreviewCardProps> = ({ applet, className
           </div>
         </CardContent>
 
-        <CardFooter className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <CardFooter className="p-3 border-t border-border bg-gray-50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between w-full">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Created by {applet.creator || 'Unknown'}

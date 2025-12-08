@@ -234,7 +234,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                     {topWebResults.map((result, index) => (
                         <React.Fragment key={index}>
                             <div 
-                                className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow cursor-pointer"
+                                className="relative bg-textured rounded-lg border-border hover:shadow-sm transition-shadow cursor-pointer"
                                 onClick={(e) => {
                                     // Don't toggle if clicking on a link
                                     if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
@@ -290,7 +290,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             
                             {/* Insert image gallery after 3rd result */}
                             {index === 2 && resultsWithImages.length > 0 && (
-                                <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                                <div className="bg-textured rounded-lg border-border p-3">
                                     <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                                         <FileText className="w-3 h-3 mr-1.5" />
                                         Related Images
@@ -302,7 +302,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                                 href={imgResult.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="group relative flex-shrink-0 w-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 hover:ring-2 hover:ring-blue-500 transition-all border border-gray-200 dark:border-gray-700"
+                                                className="group relative flex-shrink-0 w-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 hover:ring-2 hover:ring-blue-500 transition-all border-border"
                                                 title={imgResult.title}
                                             >
                                                 <div className="aspect-video bg-gray-200 dark:bg-gray-900 flex items-center justify-center">
@@ -347,7 +347,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                 {topVideos.map((video, index) => (
                                     <div
                                         key={index}
-                                        className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
+                                        className="relative bg-textured rounded-lg border-border overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
                                         onClick={(e) => {
                                             if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
                                                 toggleSelection(video.url);
@@ -439,7 +439,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                 return (
                     <div
                         key={index}
-                        className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        className="relative bg-textured rounded-lg border-border p-4 hover:shadow-md transition-shadow cursor-pointer"
                         onClick={(e) => {
                             // Don't toggle if clicking on a link
                             if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
@@ -557,7 +557,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
             {data?.content?.videos?.results?.map((video, index) => (
                 <div
                     key={index}
-                    className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-md transition-shadow cursor-pointer"
+                    className="relative bg-textured rounded-lg border-border p-3 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={(e) => {
                         if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
                             toggleSelection(video.url);
@@ -631,7 +631,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
     const ByDomainContent = () => (
         <Accordion type="multiple" className="w-full">
             {resultsByDomain.map(([domain, results]) => (
-                <AccordionItem key={domain} value={domain} className="border-b border-gray-200 dark:border-gray-700">
+                <AccordionItem key={domain} value={domain} className="border-b border-border">
                     <AccordionTrigger className="hover:no-underline py-3">
                         <div className="flex items-center justify-between w-full pr-4">
                             <div className="flex items-center gap-2">
@@ -648,7 +648,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             {results.map((result, idx) => (
                                 <div
                                     key={idx}
-                                    className="p-2 hover:bg-gray-50 dark:hover:bg-gray-900 rounded border border-gray-100 dark:border-gray-800"
+                                    className="p-2 hover:bg-gray-50 dark:hover:bg-gray-900 rounded border-border"
                                 >
                                     <a
                                         href={result.url}
@@ -765,7 +765,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             {getSelectedResultsData.web.map((result, index) => (
                                 <div
                                     key={result.url}
-                                    className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                    className="bg-textured rounded-lg border-border p-4"
                                 >
                                     <div className="flex items-start justify-between gap-3 mb-2">
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1">
@@ -794,14 +794,14 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                         </div>
                                         
                                         {result.description && (
-                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-border">
                                                 <span className="text-gray-500 dark:text-gray-300">Description:</span>{' '}
                                                 {result.description}
                                             </div>
                                         )}
                                         
                                         {result.extra_snippets && result.extra_snippets.length > 0 && (
-                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-border">
                                                 <div className="text-gray-500 dark:text-gray-300 mb-1">Additional Info:</div>
                                                 <ul className="list-disc list-inside space-y-1">
                                                     {result.extra_snippets.map((snippet, idx) => (
@@ -818,7 +818,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             {getSelectedResultsData.videos.map((video, index) => (
                                 <div
                                     key={video.url}
-                                    className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                    className="bg-textured rounded-lg border-border p-4"
                                 >
                                     <div className="flex items-start justify-between gap-3 mb-2">
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1 flex items-center gap-2">
@@ -860,7 +860,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                         </div>
                                         
                                         {video.description && (
-                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-border">
                                                 <span className="text-gray-500 dark:text-gray-300">Description:</span>{' '}
                                                 {video.description}
                                             </div>

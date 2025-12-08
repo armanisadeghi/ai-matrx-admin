@@ -86,7 +86,7 @@ export function TemplateStep() {
         ))}
       </div>
 
-      <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-8 border-t border-border">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           Or, choose from one of these options.
         </h3>

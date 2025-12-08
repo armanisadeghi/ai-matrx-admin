@@ -63,7 +63,7 @@ export default function TabLayout({ title, subtitle, tabs, id }: TabLayoutProps)
       </div>
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-border">
           <TabsList className="bg-transparent p-0 h-auto">
             {tabs.map((tab) => (
               <TabsTrigger

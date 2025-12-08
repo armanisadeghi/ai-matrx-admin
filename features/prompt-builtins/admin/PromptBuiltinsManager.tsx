@@ -746,9 +746,9 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   return (
     <div className={`flex h-full w-full bg-textured overflow-hidden ${className}`}>
       {/* Sidebar */}
-      <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+      <div className="w-80 border-r border-border flex flex-col overflow-hidden">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
             <div className="flex gap-2">
               <Button onClick={() => setIsCreateCategoryOpen(true)} size="sm" variant="outline">
@@ -937,7 +937,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         </ScrollArea>
 
         {/* Stats */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+        <div className="p-4 border-t border-border bg-gray-50 dark:bg-gray-800">
           <div className="text-xs text-gray-600 dark:text-gray-400">
             {categories.length} categories • {categoryItems.filter(i => i.item_type === 'shortcut').length} shortcuts • {categoryItems.filter(i => i.item_type === 'content_block').length} content blocks
           </div>
@@ -949,7 +949,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         {selectedItem ? (
           <>
             {/* Header */}
-            <div className="px-6 py-2 border-b border-gray-200 dark:border-gray-700 bg-textured">
+            <div className="px-6 py-2 border-b border-border bg-textured">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h1 className="text-lg font-bold">
@@ -1126,7 +1126,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                         </div>
 
                         {/* Divider */}
-                        <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+                        <div className="pt-1 border-t border-border" />
 
                         {/* Boolean switches in compact grid */}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">

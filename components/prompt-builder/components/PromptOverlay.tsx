@@ -126,11 +126,11 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
             tabIndex={-1}
         >
             <div
-                className="bg-textured rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700"
+                className="bg-textured rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col border-border"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-3 border-b border-border">
                     <div className="flex items-center gap-2 flex-1">
                         <input
                             type="text"
@@ -178,8 +178,8 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
                     {/* Main content */}
                     <div className={`flex-1 overflow-y-auto p-3 space-y-3 transition-all duration-200 ${sidebarOpen ? "mr-2" : ""}`}>
                         {messages.map((message, index) => (
-                            <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-md">
-                                <div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                            <div key={index} className="border-border rounded-md">
+                                <div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-border">
                                     <button
                                         onClick={() => toggleRole(index)}
                                         className={`px-2 py-1 rounded text-xs font-medium ${
@@ -236,7 +236,7 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
 
                     {/* Sidebar */}
                     {sidebarOpen && (
-                        <div className="w-80 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 overflow-y-auto">
+                        <div className="w-80 border-l border-border bg-gray-50 dark:bg-gray-800 p-3 overflow-y-auto">
                             <div className="space-y-3">
                                 <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Variable Defaults</h3>
                                 {extractVariables().length === 0 ? (
@@ -264,7 +264,7 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
 
                 {/* Variables preview */}
                 {extractVariables().length > 0 && (
-                    <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                    <div className="px-3 py-2 border-t border-border bg-gray-50 dark:bg-gray-800">
                         <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Variables (Simple Brokers) detected:</div>
                         <div className="flex flex-wrap gap-1">
                             {extractVariables().map((variable) => (
@@ -280,7 +280,7 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
                 )}
 
                 {/* Footer */}
-                <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400">
+                <div className="px-3 py-2 border-t border-border bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400">
                     Use <code className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-1 rounded">{"{variable}"}</code>{" "}
                     syntax for variables •
                     <kbd className="ml-1 px-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded">Cmd+Enter</kbd> to save

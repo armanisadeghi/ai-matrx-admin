@@ -55,7 +55,7 @@ export default function AppLayoutEditTab({ appId }: AppLayoutEditTabProps) {
             className="space-y-4"
           >
             {Object.entries(layoutDescriptions).map(([type, description]) => (
-              <div key={type} className="flex items-start space-x-2 p-4 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+              <div key={type} className="flex items-start space-x-2 p-4 rounded-md border-border hover:bg-gray-50 dark:hover:bg-gray-800">
                 <RadioGroupItem value={type} id={`layout-${type}`} className="mt-1" />
                 <div className="flex-1">
                   <Label 
@@ -84,8 +84,8 @@ export default function AppLayoutEditTab({ appId }: AppLayoutEditTabProps) {
           </p>
           
           {app.extraButtons && app.extraButtons.length > 0 ? (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-md">
-              <div className="bg-gray-50 dark:bg-gray-800 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="border-border rounded-md">
+              <div className="bg-gray-50 dark:bg-gray-800 px-4 py-2 border-b border-border">
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Extra Buttons</h4>
               </div>
               <ul className="divide-y divide-gray-100 dark:divide-gray-800">

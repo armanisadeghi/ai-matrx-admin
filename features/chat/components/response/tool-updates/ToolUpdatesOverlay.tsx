@@ -85,15 +85,15 @@ const renderToolUpdateContent = (update: ToolCallObject, index: number): React.R
                                     </div>
                                     <div className="text-sm text-gray-700 dark:text-gray-300">
                                         {typeof value === "string" ? (
-                                            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
+                                            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded border-border">
                                                 {value}
                                             </div>
                                         ) : typeof value === "number" || typeof value === "boolean" ? (
-                                            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700 font-mono">
+                                            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded border-border font-mono">
                                                 {String(value)}
                                             </div>
                                         ) : (
-                                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-40 border border-gray-200 dark:border-gray-700">
+                                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto max-h-40 border-border">
                                                 {JSON.stringify(value, null, 2)}
                                             </pre>
                                         )}
@@ -115,7 +115,7 @@ const renderToolUpdateContent = (update: ToolCallObject, index: number): React.R
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-60 border border-gray-200 dark:border-gray-700">
+                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-60 border-border">
                             {JSON.stringify(update.mcp_input, null, 2)}
                         </pre>
                     </CardContent>
@@ -176,7 +176,7 @@ const renderToolUpdateContent = (update: ToolCallObject, index: number): React.R
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="bg-white dark:bg-gray-950 p-4 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto max-h-[65vh]">
+                            <div className="bg-white dark:bg-gray-950 p-4 rounded-lg border-border overflow-auto max-h-[65vh]">
                                 <div className="prose dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
                                     {textContent}
                                 </div>
@@ -191,7 +191,7 @@ const renderToolUpdateContent = (update: ToolCallObject, index: number): React.R
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-[60vh] border border-gray-200 dark:border-gray-700">
+                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-[60vh] border-border">
                                 {JSON.stringify(update.mcp_output, null, 2)}
                             </pre>
                         </CardContent>
@@ -208,7 +208,7 @@ const renderToolUpdateContent = (update: ToolCallObject, index: number): React.R
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-60 border border-gray-200 dark:border-gray-700">
+                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-60 border-border">
                                 {JSON.stringify(update.mcp_output, null, 2)}
                             </pre>
                         </CardContent>

@@ -51,7 +51,7 @@ export default function QuickScrapePage() {
     return (
         <div className="h-page flex flex-col overflow-hidden bg-textured">
             {/* Header */}
-            <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
+            <div className="flex-shrink-0 p-4 border-b border-border bg-white/50 dark:bg-gray-900/50">
                 <div className="max-w-5xl mx-auto">
                     <div className="flex items-center gap-2 mb-3">
                         <Search className="w-5 h-5 text-gray-500" />
@@ -195,7 +195,7 @@ export default function QuickScrapePage() {
                                     <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
                                         Extracted Content
                                     </h3>
-                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border-border">
                                         <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed">
                                             {data.textContent}
                                         </pre>

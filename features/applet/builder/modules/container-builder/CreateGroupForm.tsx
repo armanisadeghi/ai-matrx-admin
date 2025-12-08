@@ -218,7 +218,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500 dark:border-amber-400"></div>
             </div>
           ) : (!newGroup.fields || newGroup.fields.length === 0) ? (
-            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
+            <div className="bg-gray-50 dark:bg-gray-800 border-border rounded-lg p-6 text-center">
               <FileTextIcon className="h-8 w-8 mx-auto text-gray-400 dark:text-gray-600 mb-2" />
               <p className="text-gray-500 dark:text-gray-400">No fields added yet</p>
               <Button 
@@ -231,8 +231,8 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="border-border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 dark:bg-gray-800 border-b border-border px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Field List
               </div>
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">

@@ -80,7 +80,7 @@ export default function AppActionsTab({ appId }: AppActionsTabProps) {
         {extraButtons.length > 0 ? (
           <div className="space-y-4">
             {extraButtons.map((button: CustomActionButton, index: number) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <div key={index} className="border-border rounded-md p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     {getActionTypeIcon(button.actionType)}

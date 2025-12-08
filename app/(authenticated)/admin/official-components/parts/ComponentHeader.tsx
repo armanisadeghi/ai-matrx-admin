@@ -55,7 +55,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
   }, []);
 
   return (
-    <div className="w-full bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 py-3 px-4">
+    <div className="w-full bg-white dark:bg-gray-950 border-b border-border py-3 px-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           {!isMainPage && (
@@ -134,7 +134,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
                   href={`/admin/official-components/${component.id}`}
                   className="min-w-48 flex-shrink-0"
                 >
-                  <div className="border border-gray-200 dark:border-gray-800 rounded-md p-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer h-full">
+                  <div className="border-border rounded-md p-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer h-full">
                     <h4 className="font-medium mb-1 flex items-center">
                       {categoryIcons[component.category]}
                       <span className="ml-1">{component.name}</span>

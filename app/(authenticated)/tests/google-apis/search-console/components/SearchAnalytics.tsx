@@ -148,7 +148,7 @@ export function SearchAnalytics({ token, property }: SearchAnalyticsProps) {
             {/* Data Tables */}
             {!loading && (
                 <Tabs defaultValue="queries" className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-4 bg-textured border border-gray-200 dark:border-gray-700">
+                    <TabsList className="grid w-full grid-cols-4 bg-textured border-border">
                         <TabsTrigger value="queries" className="gap-2">
                             <BarChart3 className="w-4 h-4" />
                             <span className="hidden sm:inline">Queries</span>

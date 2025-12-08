@@ -229,7 +229,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
   
   return (
     <div className="w-full">
-      <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg overflow-hidden rounded-3xl">
+      <Card className="border-border bg-textured shadow-lg overflow-hidden rounded-3xl">
         <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div>
@@ -266,7 +266,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
         
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="px-6 py-3 border-b border-border">
               <TabsList className="grid w-full max-w-md grid-cols-3 mb-0">
                 <TabsTrigger 
                   value="preview"
@@ -299,7 +299,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
                 </div>
                 
                 <div className="w-full md:w-1/2 lg:w-2/3">
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 border-border rounded-lg p-4">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
                       App Details
                     </h3>
@@ -369,8 +369,8 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
               ) : (
                 <div className="space-y-6">
                   {applets.map((applet) => (
-                    <div key={applet.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                      <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <div key={applet.id} className="border-border rounded-lg overflow-hidden">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-border flex justify-between items-center">
                         <h3 className="font-medium text-gray-900 dark:text-gray-100">{applet.name}</h3>
                         <Button
                           variant="outline"
@@ -400,7 +400,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
                           </div>
                           
                           <div className="md:col-span-1">
-                            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="bg-gray-50 dark:bg-gray-800 border-border rounded-lg p-3">
                               <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Applet Details</h4>
                               <dl className="grid grid-cols-1 gap-y-1 text-xs">
                                 <div className="flex justify-between">
@@ -421,13 +421,13 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
                         </div>
                         
                         {applet.containers && applet.containers.length > 0 && (
-                          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                          <div className="bg-gray-50 dark:bg-gray-800 border-border rounded-lg p-3">
                             <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Groups</h4>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
                               {applet.containers.map((container) => (
                                 <div 
                                   key={container.id} 
-                                  className="p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md flex justify-between items-center"
+                                  className="p-2 bg-white dark:bg-gray-700 border-border rounded-md flex justify-between items-center"
                                 >
                                   <div>
                                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{container.label}</p>
@@ -464,7 +464,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
               )}
             </TabsContent>
             
-            <TabsContent value="json" className="border-t border-gray-200 dark:border-gray-700">
+            <TabsContent value="json" className="border-t border-border">
               <div className="p-0">
                 <Tabs defaultValue="full" className="w-full">
                   <div className="flex items-center justify-between p-4">

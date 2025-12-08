@@ -118,7 +118,7 @@ const MarkdownClassifier: React.FC<MarkdownClassifierProps> = ({
   return (
     <div className="flex flex-col h-full overflow-hidden bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Controls */}
-      <div className="border-b border-gray-200 dark:border-gray-700 p-2 flex flex-wrap items-center gap-2">
+      <div className="border-b border-border p-2 flex flex-wrap items-center gap-2">
         {showSampleSelector && (
           <div className="flex-1 min-w-[200px]">
             <Select onValueChange={handleSampleSelect}>

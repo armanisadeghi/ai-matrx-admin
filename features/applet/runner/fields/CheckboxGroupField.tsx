@@ -278,7 +278,7 @@ const CheckboxGroupField: React.FC<CommonFieldProps> = ({ field, sourceId="no-ap
                 {showSelectAll && (
                     <div
                         className={cn(
-                            "flex items-center py-1 mb-2 border-b border-gray-200 dark:border-gray-700",
+                            "flex items-center py-1 mb-2 border-b border-border",
                             disabled && "opacity-50"
                         )}
                     >

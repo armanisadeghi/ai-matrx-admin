@@ -25,7 +25,7 @@ export function PromptAppsAdminContainer({ className }: PromptAppsAdminContainer
     return (
         <div className={`flex flex-col h-full bg-textured overflow-hidden ${className}`}>
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+            <div className="p-4 border-b border-border bg-textured">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     Prompt Apps Administration
                 </h1>
@@ -35,7 +35,7 @@ export function PromptAppsAdminContainer({ className }: PromptAppsAdminContainer
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                <div className="border-b border-gray-200 dark:border-gray-700 px-4 bg-textured">
+                <div className="border-b border-border px-4 bg-textured">
                     <TabsList className="bg-transparent h-auto p-0 gap-1">
                         <TabsTrigger 
                             value="categories" 

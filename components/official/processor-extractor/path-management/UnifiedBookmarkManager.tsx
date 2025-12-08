@@ -392,14 +392,14 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                             <TableCell colSpan={4} className="bg-gray-50 dark:bg-gray-800 p-0">
                               <div className="p-4 text-sm">
                                 {bookmark.description && (
-                                  <div className="mb-4 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-3 rounded-md border border-gray-200 dark:border-gray-600">
+                                  <div className="mb-4 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-3 rounded-md border-border">
                                     <div className="font-semibold mb-1">Description:</div>
                                     <div>{bookmark.description}</div>
                                   </div>
                                 )}
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-                                  <div className="bg-textured p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                                  <div className="bg-textured p-3 rounded-md border-border shadow-sm">
                                     <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b">
                                       Type Details
                                     </div>
@@ -424,7 +424,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                     </div>
                                   </div>
 
-                                  <div className="bg-textured p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                                  <div className="bg-textured p-3 rounded-md border-border shadow-sm">
                                     <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b">
                                       Metadata
                                     </div>
@@ -450,7 +450,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                   </div>
                                 </div>
 
-                                <div className="bg-textured p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <div className="bg-textured p-3 rounded-md border-border shadow-sm">
                                   <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b flex justify-between items-center">
                                     <span>Full Path</span>
                                     <Button 
@@ -502,7 +502,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
               </Button>
             </div>
             
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4 border-t border-border">
               <h3 className="font-medium text-sm mb-2 flex items-center">
                 <ImportIcon className="w-4 h-4 mr-2" />
                 Import Bookmarks
@@ -599,7 +599,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
               </Select>
             </div>
             
-            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md border-border">
               <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">Path Information</div>
               <div className="mb-3">
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Type:</div>

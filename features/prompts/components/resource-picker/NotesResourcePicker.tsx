@@ -71,7 +71,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
     return (
         <div className="flex flex-col h-[400px]">
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -86,7 +86,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
             </div>
 
             {/* Search */}
-            <div className="px-2 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="px-2 py-2 border-b border-border">
                 <div className="relative">
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     <Input
@@ -169,7 +169,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
                                             
                                             {isExpanded && (
                                                 <div className="px-2 pb-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50">
-                                                    <div className="max-h-32 overflow-y-auto scrollbar-thin rounded bg-white dark:bg-zinc-900 p-2 border border-gray-200 dark:border-gray-700">
+                                                    <div className="max-h-32 overflow-y-auto scrollbar-thin rounded bg-white dark:bg-zinc-900 p-2 border-border">
                                                         <div className="text-[11px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                                                             {note.content || "Empty note"}
                                                         </div>

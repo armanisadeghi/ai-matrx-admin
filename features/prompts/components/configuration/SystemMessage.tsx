@@ -202,7 +202,7 @@ export function SystemMessage({
     
     return (
         <div className="space-y-3">
-            <div className="group border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="group border-border rounded-lg bg-gray-50 dark:bg-gray-800">
                 {/* Header */}
                 <div className="flex items-center justify-between px-2 py-1">
                     <Label className="text-xs text-gray-600 dark:text-gray-400">System</Label>

@@ -42,7 +42,7 @@ export default function GoogleAccessCard({ service }: GoogleAccessCardProps) {
   if (!googleServices[service as keyof typeof googleServices]) {
     console.error(`Service "${service}" not found in googleServices`);
     return (
-      <div className="bg-textured shadow-lg rounded-xl p-6 flex flex-col items-center space-y-4 border border-gray-100 dark:border-gray-700">
+      <div className="bg-textured shadow-lg rounded-xl p-6 flex flex-col items-center space-y-4 border-border">
         <FaGoogle className="w-8 h-8 text-red-500" />
         <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Unknown Service</h3>
         <p className="text-gray-600 dark:text-gray-300 text-center text-sm">
@@ -118,7 +118,7 @@ export default function GoogleAccessCard({ service }: GoogleAccessCardProps) {
   };
 
   return (
-    <div className="bg-textured shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl p-6 flex flex-col items-center space-y-4 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+    <div className="bg-textured shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl p-6 flex flex-col items-center space-y-4 border-border relative overflow-hidden">
       <div 
         className="w-16 h-16 rounded-full flex items-center justify-center mb-2"
         style={{ backgroundColor: `${serviceColor}20` }} // Using the service color with transparency

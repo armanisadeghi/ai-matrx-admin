@@ -307,7 +307,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
           
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30">
               <div className="flex items-center gap-3">
                 <GitBranch className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Decision Tree</h3>
@@ -379,7 +379,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                   <div className="flex items-center gap-3">
                     <button
                       onClick={goToRoot}
-                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border-border transition-colors"
                     >
                       <Home className="h-4 w-4" />
                       Start Over
@@ -388,7 +388,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                     <button
                       onClick={goBack}
                       disabled={navigationHistory.length === 0}
-                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border-border transition-colors"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Back
@@ -396,7 +396,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                     
                     <button
                       onClick={resetTree}
-                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border-border transition-colors"
                     >
                       <RotateCcw className="h-4 w-4" />
                       Reset
@@ -407,7 +407,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         showFullTree 
                           ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700'
-                          : 'bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
+                          : 'bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border-border'
                       }`}
                     >
                       <GitBranch className="h-4 w-4" />
@@ -455,7 +455,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
 
               {/* Navigation Breadcrumbs */}
               {navigationHistory.length > 0 && (
-                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border-border">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                     <ArrowRight className="h-4 w-4" />
                     Decision Path
@@ -486,7 +486,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree, tas
               )}
 
               {/* Decision Tree Visualization */}
-              <div className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">

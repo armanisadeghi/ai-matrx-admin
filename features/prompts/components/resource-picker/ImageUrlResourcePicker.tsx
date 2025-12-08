@@ -193,7 +193,7 @@ export function ImageUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUr
     return (
         <div className="flex flex-col h-[450px]">
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -262,7 +262,7 @@ export function ImageUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUr
 
                 {/* Image Preview */}
                 {previewImage && (
-                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                    <div className="border-border rounded-lg overflow-hidden">
                         {/* Image */}
                         <div className="relative h-48 bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                             <img
@@ -313,7 +313,7 @@ export function ImageUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUr
 
             {/* Footer with Add Button */}
             {previewImage && (
-                <div className="border-t border-gray-200 dark:border-gray-800 p-3">
+                <div className="border-t border-border p-3">
                     <Button
                         onClick={handleSelect}
                         className="w-full"

@@ -177,7 +177,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
             {/* Container List Table - first column */}
-            <div className="md:col-span-3 bg-gray-100 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden rounded-t-xl">
+            <div className="md:col-span-3 bg-gray-100 dark:bg-gray-800/80 rounded-lg border-border overflow-hidden rounded-t-xl">
                 <ContainerListTable
                     onContainerEdit={handleEditContainer}
                     onContainerSelect={handleContainerSelect}

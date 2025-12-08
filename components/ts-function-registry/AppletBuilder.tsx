@@ -285,7 +285,7 @@ export default function AppletBuilder() {
               
               {/* Step Results (if executed) */}
               {executionResults[step.id] && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="mt-3 pt-3 border-t border-border">
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Result:
                   </h4>

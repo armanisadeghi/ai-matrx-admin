@@ -90,7 +90,7 @@ const FancyJsonExplorer = ({ pageData }) => {
       return (
         <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
           {currentData.map((item, index) => (
-            <div key={index} className="mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <div key={index} className="mb-4 border-b border-border pb-2">
               <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">Item {index}</div>
               <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">
                 {formatJson(item)}
@@ -105,7 +105,7 @@ const FancyJsonExplorer = ({ pageData }) => {
       return (
         <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
           {Object.entries(currentData).map(([key, value]) => (
-            <div key={key} className="mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <div key={key} className="mb-4 border-b border-border pb-2">
               <div className="flex justify-between">
                 <div className="font-medium text-gray-700 dark:text-gray-300">{key}</div>
                 {isNavigable(value) && (

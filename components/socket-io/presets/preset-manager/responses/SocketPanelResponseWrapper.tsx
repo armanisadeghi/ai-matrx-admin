@@ -31,8 +31,8 @@ export const SocketPanelResponseWrapper: React.FC<SocketPresetResponseProps> = (
   // If we have a task ID, show the response panel
   if (taskId) {
     return (
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-textured">
-        <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+      <div className="border-border rounded-lg bg-textured">
+        <div className="p-3 border-b border-border bg-gray-50 dark:bg-gray-800/50">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -52,7 +52,7 @@ export const SocketPanelResponseWrapper: React.FC<SocketPresetResponseProps> = (
 
   // Empty state - waiting for execution
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 p-8">
+    <div className="border-border rounded-lg bg-gray-50 dark:bg-gray-800/50 p-8">
       <div className="text-center text-gray-500 dark:text-gray-400">
         <Play className="w-12 h-12 mx-auto mb-4 opacity-30" />
         <p>

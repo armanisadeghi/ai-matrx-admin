@@ -260,8 +260,8 @@ export function CategoriesAdmin() {
     return (
         <div className="flex h-full w-full bg-textured overflow-hidden">
             {/* Sidebar */}
-            <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="w-80 border-r border-border flex flex-col overflow-hidden">
+                <div className="p-4 border-b border-border">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             Categories
@@ -336,7 +336,7 @@ export function CategoriesAdmin() {
                     </div>
                 </ScrollArea>
 
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="p-4 border-t border-border bg-gray-50 dark:bg-gray-800">
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                         {filteredCategories.length} categories
                     </div>
@@ -347,7 +347,7 @@ export function CategoriesAdmin() {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {selectedCategory ? (
                     <>
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+                        <div className="p-4 border-b border-border bg-textured">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">

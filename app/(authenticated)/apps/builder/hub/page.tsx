@@ -42,7 +42,7 @@ const BuilderHub = () => {
               )}
             </AnimatePresence>
             
-            <Card className="h-full border border-gray-200 dark:border-gray-700 bg-textured transition-all duration-200 relative z-10">
+            <Card className="h-full border-border bg-textured transition-all duration-200 relative z-10">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-3">
                   {module.icon}

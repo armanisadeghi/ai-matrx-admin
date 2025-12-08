@@ -72,7 +72,7 @@ export function RunsList({
 
       {/* Load more button */}
       {hasMore && (
-        <div className="border-t border-gray-200 dark:border-gray-800 px-2 py-2">
+        <div className="border-t border-border px-2 py-2">
           <Button
             onClick={loadMore}
             disabled={isLoading}

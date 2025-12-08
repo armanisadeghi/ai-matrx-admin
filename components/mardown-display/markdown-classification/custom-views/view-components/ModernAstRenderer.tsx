@@ -46,7 +46,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
                 return `${baseClasses} text-gray-700 dark:text-gray-300`;
 
             case "table":
-                return `${baseClasses} w-full border-collapse border border-gray-200 dark:border-gray-700 my-4`;
+                return `${baseClasses} w-full border-collapse border-border my-4`;
 
             case "tableRow":
                 return `${baseClasses}`;
@@ -54,7 +54,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
             case "tableCell":
             case "text - tableCell":
             case "text - strong - tableCell":
-                return `${baseClasses} px-3 py-2 text-sm border border-gray-200 dark:border-gray-700`;
+                return `${baseClasses} px-3 py-2 text-sm border-border`;
 
             default:
                 if (type.startsWith("listItem")) {

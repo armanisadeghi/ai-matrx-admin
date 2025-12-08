@@ -417,8 +417,8 @@ export const JsonFallback: React.FC<JsonFallbackProps> = ({
   return (
     <div className={`w-full h-full p-4 bg-gray-50 dark:bg-gray-900 ${className}`}>
       <div className="h-full max-w-7xl mx-auto">
-        <div className="h-full bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="h-full bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FileText size={16} className="text-gray-500 dark:text-gray-400" />
@@ -444,7 +444,7 @@ export const JsonFallback: React.FC<JsonFallbackProps> = ({
           </div>
           
           <div className="p-6 overflow-auto" style={{ height: 'calc(100% - 80px)' }}>
-            <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border-border">
               {JSON.stringify(data, null, 2)}
             </pre>
           </div>
@@ -473,7 +473,7 @@ export const InvalidDataDisplay: React.FC<InvalidDataDisplayProps> = ({
           {title}
         </span>
       </div>
-      <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
+      <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded border-border overflow-auto">
         {JSON.stringify(data, null, 2)}
       </pre>
     </div>

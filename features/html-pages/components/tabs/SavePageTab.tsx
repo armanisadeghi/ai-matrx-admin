@@ -93,7 +93,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                 )}
 
                 {/* Metadata Actions Bar */}
-                <div className="flex items-center gap-2 py-2 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 py-2 border-b border-border">
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -192,7 +192,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                 </div>
 
                 {/* Additional SEO Fields */}
-                <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="space-y-4 border-t border-border pt-4">
                     {/* Meta Keywords */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -248,7 +248,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                     </div>
 
                     {/* Search Engine Indexing */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="border-t border-border pt-4">
                         <div className="flex items-start space-x-3">
                             <input
                                 type="checkbox"
@@ -373,7 +373,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                     </div>
                 </div>
                 
-                <div className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-950">
+                <div className="flex-1 border-border rounded-lg overflow-hidden bg-white dark:bg-gray-950">
                     {previewUrl ? (
                         <iframe
                             key={iframeKey}

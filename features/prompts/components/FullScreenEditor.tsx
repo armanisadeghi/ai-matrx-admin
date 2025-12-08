@@ -324,9 +324,9 @@ export function FullScreenEditor({
             <DialogContent className="max-w-none w-screen h-screen p-0 m-0 rounded-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-90 data-[state=open]:zoom-in-90 data-[state=open]:duration-300 data-[state=closed]:duration-200">
                 <div className="flex h-full bg-gray-50 dark:bg-gray-950">
                     {/* Sidebar */}
-                    <div className="w-80 bg-textured border-r border-gray-200 dark:border-gray-800 flex flex-col">
+                    <div className="w-80 bg-textured border-r border-border flex flex-col">
                         {/* Sidebar Header */}
-                        <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+                        <div className="p-3 border-b border-border">
                             <div className="flex items-center justify-between">
                                 <DialogTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">
                                     Full Screen Editor
@@ -506,7 +506,7 @@ export function FullScreenEditor({
 
                         {/* Add Message Button */}
                         {onAddMessage && (
-                            <div className="p-2 border-t border-gray-200 dark:border-gray-800">
+                            <div className="p-2 border-t border-border">
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -523,7 +523,7 @@ export function FullScreenEditor({
                     {/* Editor Area */}
                     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
                         {/* Editor Header */}
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-textured">
+                        <div className="p-4 border-b border-border bg-textured">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -700,7 +700,7 @@ export function FullScreenEditor({
                                     <div className="h-full overflow-y-auto bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-6">
                                         <div className="max-w-2xl space-y-4">
                                             {/* Model Selection */}
-                                            <div className="pb-3 border-b border-gray-200 dark:border-gray-800">
+                                            <div className="pb-3 border-b border-border">
                                                 <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                                     Select Model
                                                 </Label>
@@ -742,9 +742,9 @@ export function FullScreenEditor({
                                 <div className="absolute inset-2 overflow-hidden flex flex-col">
                                     <div className="flex-1 overflow-hidden flex">
                                         {/* Variables List */}
-                                        <div className="w-[420px] border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex flex-col overflow-hidden">
+                                        <div className="w-[420px] border-r border-border bg-gray-50 dark:bg-gray-900/50 flex flex-col overflow-hidden">
                                             {/* List Header */}
-                                            <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-800 bg-textured">
+                                            <div className="flex-shrink-0 p-4 border-b border-border bg-textured">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div>
                                                         <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -929,7 +929,7 @@ export function FullScreenEditor({
                                                             onRequiredChange={setEditingVariableRequired}
                                                             onHelpTextChange={setEditingVariableHelpText}
                                                         />
-                                                        <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                                                        <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-border">
                                                             <Button 
                                                                 variant="outline" 
                                                                 onClick={() => setIsAddingVariable(false)}
@@ -1033,7 +1033,7 @@ export function FullScreenEditor({
                                                             onRequiredChange={setEditingVariableRequired}
                                                             onHelpTextChange={setEditingVariableHelpText}
                                                         />
-                                                        <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                                                        <div className="flex justify-end gap-2 mt-6 pt-6 border-t border-border">
                                                             <Button
                                                                 onClick={() => {
                                                                     const originalName = variableDefaults[selectedVariableIndex].name;
@@ -1113,7 +1113,7 @@ export function FullScreenEditor({
                                 <div className="absolute inset-2 overflow-hidden flex">
                                     <div className="flex-1 overflow-hidden flex">
                                         {/* Selected Tools List */}
-                                        <div className="w-72 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-4 overflow-y-auto">
+                                        <div className="w-72 border-r border-border bg-gray-50 dark:bg-gray-900/50 p-4 overflow-y-auto">
                                             <div className="mb-4">
                                                 <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                     Selected Tools ({selectedTools.length})
@@ -1258,7 +1258,7 @@ export function FullScreenEditor({
                                 <div className="absolute inset-2 overflow-hidden flex flex-col">
                                     <div className="flex-1 overflow-hidden flex flex-col bg-textured border border-gray-300 dark:border-gray-700 rounded-lg">
                                         {/* Header with Apply Button */}
-                                        <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-800">
+                                        <div className="flex-shrink-0 p-4 border-b border-border">
                                             <div className="flex items-start gap-3">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2 mb-2">

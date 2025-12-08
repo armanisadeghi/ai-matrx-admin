@@ -100,7 +100,7 @@ const FieldsList: React.FC<FieldsListProps> = ({
             {fields.map((field, index) => (
               <div 
                 key={field.id || index}
-                className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="p-2 border-border rounded-lg bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 onClick={() => onFieldClicked && field.id && onFieldClicked(field.id)}
               >
                 <div className="flex justify-between items-start">

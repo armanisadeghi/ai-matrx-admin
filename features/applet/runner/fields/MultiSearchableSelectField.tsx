@@ -239,7 +239,7 @@ const MultiSearchableSelectField: React.FC<CommonFieldProps> = ({
                             <div className="p-1 nodrag">
                                 {showSelectAll && (
                                     <div
-                                        className="flex items-center relative cursor-default select-none py-1.5 px-2 rounded-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 border-b border-gray-200 dark:border-gray-700 nodrag"
+                                        className="flex items-center relative cursor-default select-none py-1.5 px-2 rounded-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 border-b border-border nodrag"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             toggleSelectAll();

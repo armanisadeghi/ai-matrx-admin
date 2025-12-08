@@ -157,7 +157,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                         return (
                             <div
                                 key={index}
-                                className={`border-b border-gray-200 dark:border-gray-700 last:border-b-0 pb-6 last:pb-0 ${
+                                className={`border-b border-border last:border-b-0 pb-6 last:pb-0 ${
                                     isClient ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 -m-2" : ""
                                 }`}
                             >
@@ -324,7 +324,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                                     return (
                                     <div
                                         key={index}
-                                        className={`flex items-center space-x-3 p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-700 ${
+                                        className={`flex items-center space-x-3 p-3 bg-textured rounded-lg border-border ${
                                             isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                                         }`}
                                     >
@@ -371,7 +371,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                                 return (
                                 <div
                                     key={index}
-                                    className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                                    className={`border-border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                                         isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                                     }`}
                                 >
@@ -422,7 +422,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                         return (
                         <div
                             key={index}
-                            className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                            className={`border-border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                                 isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                             }`}
                         >
@@ -595,7 +595,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                         return (
                         <div
                             key={index}
-                            className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                            className={`border-border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                                 isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                             }`}
                         >
@@ -662,7 +662,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                         return (
                         <div
                             key={index}
-                            className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                            className={`border-border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                                 isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                             }`}
                         >
@@ -755,7 +755,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                         return (
                         <div
                             key={index}
-                            className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                            className={`border-border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                                 isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                             }`}
                         >

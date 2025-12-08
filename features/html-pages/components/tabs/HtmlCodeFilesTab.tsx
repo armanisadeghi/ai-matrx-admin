@@ -113,7 +113,7 @@ export function HtmlCodeFilesTab({ state, actions }: HtmlCodeFilesTabProps) {
     return (
         <div className="h-full flex flex-col">
             {/* Toolbar */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-gray-50 dark:bg-gray-900">
                 <div className="flex items-center gap-2">
                     {state.isMarkdownDirty && (
                         <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">

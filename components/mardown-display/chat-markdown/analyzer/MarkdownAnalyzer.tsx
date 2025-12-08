@@ -20,7 +20,7 @@ const MarkdownAnalyzer: React.FC<MarkdownAnalyzerProps> = ({ messageId }) => {
 
     if (!markdownAnalysis?.section_groups?.length || !Object.keys(markdownAnalysis?.analysis || {}).length) {
         return (
-            <div className="w-full p-6 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="w-full p-6 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border-border">
                 <h1 className="text-lg font-medium">
                     Markdown Analysis Data is only available for messages that were just streamed.
                 </h1>
@@ -31,9 +31,9 @@ const MarkdownAnalyzer: React.FC<MarkdownAnalyzerProps> = ({ messageId }) => {
     const totalTabs = markdownAnalysis.section_groups.length + 1; // +1 for Analysis tab
 
     return (
-        <div className="w-full bg-textured rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="w-full bg-textured rounded-lg border-border shadow-sm">
             {/* Tab Navigation */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
+            <div className="flex border-b border-border">
                 {markdownAnalysis.section_groups.map((_, index) => (
                     <button
                         key={index}

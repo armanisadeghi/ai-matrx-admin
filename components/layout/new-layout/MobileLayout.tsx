@@ -51,7 +51,7 @@ export default function MobileLayout({
   return (
     <div id={uniqueId} className="min-h-dvh bg-textured">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured border-b border-gray-200 dark:border-gray-700">
+      <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured border-b border-border">
         <div className="flex items-center justify-between h-full px-2">
           {/* Left side - Menu and page-specific content */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -87,7 +87,7 @@ export default function MobileLayout({
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+        <div className="flex items-center justify-between p-3 border-b border-border flex-shrink-0">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Menu</h2>
           <button
             onClick={toggleSidebar}

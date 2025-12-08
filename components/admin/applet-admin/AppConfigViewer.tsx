@@ -66,7 +66,7 @@ const AppConfigViewer = ({ app }: Props) => {
       <div className="space-y-8 p-6">
         {/* App Info Section */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">App Info</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-border pb-2">App Info</h2>
           
           <div className="mt-4">
             <h3 className="text-md font-medium text-gray-700 dark:text-gray-300">Description</h3>
@@ -100,7 +100,7 @@ const AppConfigViewer = ({ app }: Props) => {
 
         {/* Applets Section */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Available Applets</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-border pb-2">Available Applets</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(app.appletList || []).map((applet) => (
               <div key={applet.appletId} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -129,7 +129,7 @@ const AppConfigViewer = ({ app }: Props) => {
 
         {/* Raw JSON Section */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Raw JSON</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-border pb-2">Raw JSON</h2>
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
             <pre className="text-xs text-gray-800 dark:text-gray-200 overflow-auto max-h-96">
               {JSON.stringify(app, null, 2)}

@@ -133,7 +133,7 @@ export function ImportTranscriptModal({
                             </div>
 
                             {/* Preview Info */}
-                            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
+                            <div className="rounded-lg border-border p-3 bg-gray-50 dark:bg-gray-800/50">
                                 <div className="text-sm space-y-1">
                                     <div className="flex justify-between">
                                         <span className="text-gray-600 dark:text-gray-400">Segments:</span>

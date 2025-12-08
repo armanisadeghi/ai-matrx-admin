@@ -25,7 +25,7 @@ interface PaginationProps {
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   return (
-    <div className="flex items-center justify-between py-2 px-4 border-t border-gray-200 dark:border-gray-700">
+    <div className="flex items-center justify-between py-2 px-4 border-t border-border">
       <div className="text-sm text-gray-500 dark:text-gray-400">
         Page {currentPage} of {totalPages}
       </div>
@@ -328,7 +328,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
     
     return (
       <div className="h-full flex flex-col bg-textured">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <div className="p-4 border-b border-border flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <FileJson className="h-5 w-5 text-blue-500" />
             <span className="font-medium text-gray-700 dark:text-gray-200">JSON Data</span>
@@ -362,7 +362,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
     return (
       <div className="h-full flex flex-col bg-textured">
         {/* Header with controls */}
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2">
+        <div className="border-b border-border bg-gray-50 dark:bg-gray-900 p-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Left section: File info */}
             <div className="flex items-center space-x-3">
@@ -443,7 +443,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
                   {headers.map((header, cellIndex) => (
                     <td 
                       key={cellIndex} 
-                      className="border-b border-gray-200 dark:border-gray-700 px-4 py-2 text-gray-700 dark:text-gray-300 text-sm"
+                      className="border-b border-border px-4 py-2 text-gray-700 dark:text-gray-300 text-sm"
                       title={String(row[header] ?? '')}
                     >
                       {row[header] === null || row[header] === undefined ? 

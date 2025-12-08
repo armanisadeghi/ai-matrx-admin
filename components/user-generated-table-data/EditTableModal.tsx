@@ -138,7 +138,7 @@ export default function EditTableModal({ isOpen, onClose, onSuccess, tableId, in
             />
           </div>
           
-          <div className="space-y-4 pt-2 border-t border-gray-200 dark:border-gray-800">
+          <div className="space-y-4 pt-2 border-t border-border">
             <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 pt-2">Access Controls</h3>
             
             <div className="flex items-center justify-between">

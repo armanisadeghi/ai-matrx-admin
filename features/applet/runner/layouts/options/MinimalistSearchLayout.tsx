@@ -65,7 +65,7 @@ const MinimalistSearchLayout: React.FC<MinimalistSearchLayoutProps> = ({
                     return (
                         <div key={container.id} className="transition-all duration-300">
                             <div
-                                className="flex items-center cursor-pointer py-3 border-b border-gray-200 dark:border-gray-700"
+                                className="flex items-center cursor-pointer py-3 border-b border-border"
                                 onClick={() => setExpandedGroup(isExpanded ? null : container.id)}
                             >
                                 <h3 className="text-xl font-light text-gray-800 dark:text-gray-200 flex-grow">{container.label}</h3>

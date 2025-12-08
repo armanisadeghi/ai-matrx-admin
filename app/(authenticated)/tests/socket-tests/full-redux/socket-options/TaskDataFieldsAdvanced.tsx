@@ -35,7 +35,7 @@ const TaskDataFieldsAdvanced: React.FC<TaskDataFieldsAdvancedProps> = ({
   }
 
   return (
-    <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-zinc-800">
+    <div className="space-y-4 p-4 border-border rounded-md bg-white dark:bg-zinc-800">
       <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
         Task Data (Advanced)
       </h3>

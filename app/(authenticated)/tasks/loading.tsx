@@ -4,7 +4,7 @@ export default function TasksLoading() {
   return (
     <div className="flex w-full h-full">
       {/* Sidebar placeholder */}
-      <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col animate-pulse">
+      <div className="w-64 bg-white dark:bg-gray-800 border-r border-border p-4 flex flex-col animate-pulse">
         <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
         
         {/* Toggle buttons */}
@@ -33,7 +33,7 @@ export default function TasksLoading() {
       {/* Main content loading */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header placeholder */}
-        <div className="border-b border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 animate-pulse">
+        <div className="border-b border-border p-4 bg-white dark:bg-gray-800 animate-pulse">
           <div className="h-8 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
 
@@ -41,7 +41,7 @@ export default function TasksLoading() {
         <main className="flex-1 overflow-y-auto p-4 bg-textured">
           <div className="mx-auto max-w-4xl space-y-3 animate-pulse">
             {/* Add task form skeleton */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border-border p-3">
               <div className="space-y-2">
                 <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
                 <div className="flex gap-2">
@@ -53,7 +53,7 @@ export default function TasksLoading() {
             
             {/* Skeleton task items */}
             {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border-border p-3">
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
                   <div className="flex-1 space-y-2">

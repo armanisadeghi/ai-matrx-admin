@@ -60,7 +60,7 @@ export default function AppletListTableDisplay({ component }: ComponentDisplayPr
           title="Select an Applet"
           hideStatusColumn={true}
           customSettings={{
-            tableClassName: "rounded-lg border border-gray-200 dark:border-gray-700",
+            tableClassName: "rounded-lg border-border",
             tableHeaderClassName: "bg-gray-50 dark:bg-gray-800"
           }}
           selectLabel="Use"
@@ -153,7 +153,7 @@ export default function AppletListTableDisplay({ component }: ComponentDisplayPr
   title="Select an Applet"
   hideStatusColumn={true}
   customSettings={{
-    tableClassName: "rounded-lg border border-gray-200 dark:border-gray-700",
+    tableClassName: "rounded-lg border-border",
     tableHeaderClassName: "bg-gray-50 dark:bg-gray-800"
   }}
   selectLabel="Use"

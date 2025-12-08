@@ -5,7 +5,7 @@ import { selectResponseTextByListenerId } from '@/lib/redux/socket-io/selectors'
 const SocketPlainTextDisplay = memo(({ eventName }: { eventName: string }) => {
     const text = useSelector(selectResponseTextByListenerId(eventName));
     return (
-      <div className="text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-md p-3">
+      <div className="text-gray-700 dark:text-gray-300 border-border rounded-md p-3">
         <span className="font-medium">Text:</span>
         {text ? (
           <pre className="mt-1 whitespace-pre-wrap">{text}</pre>

@@ -250,7 +250,7 @@ const ResumeBuilder = () => {
   const renderExperience = () => (
     <div className="space-y-8">
       {formData.experience.map((exp, index) => (
-        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
               <Briefcase className="mr-2" size={20} />
@@ -354,7 +354,7 @@ const ResumeBuilder = () => {
   const renderEducation = () => (
     <div className="space-y-8">
       {formData.education.map((edu, index) => (
-        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
               <GraduationCap className="mr-2" size={20} />
@@ -489,7 +489,7 @@ const ResumeBuilder = () => {
         </button>
       </div>
       
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-6 border-t border-border">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
           <Award className="mr-2" size={20} />
           Certifications & Licenses
@@ -497,7 +497,7 @@ const ResumeBuilder = () => {
         
         <div className="space-y-6">
           {formData.certifications.map((cert, index) => (
-            <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border shadow-sm">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-medium text-gray-700 dark:text-gray-300">Certification {index + 1}</h4>
                 {formData.certifications.length > 1 && (
@@ -571,7 +571,7 @@ const ResumeBuilder = () => {
     <div className="space-y-8">
       <div>
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Personal Information</h3>
-        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Full Name</p>
@@ -604,7 +604,7 @@ const ResumeBuilder = () => {
       <div>
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Experience ({formData.experience.length})</h3>
         {formData.experience.map((exp, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-4">
+          <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border mb-4">
             <div className="flex justify-between">
               <div>
                 <p className="font-medium dark:text-white">{exp.position || 'Position not specified'}</p>
@@ -622,7 +622,7 @@ const ResumeBuilder = () => {
       <div>
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Education ({formData.education.length})</h3>
         {formData.education.map((edu, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-4">
+          <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border mb-4">
             <div className="flex justify-between">
               <div>
                 <p className="font-medium dark:text-white">{edu.degree || 'Degree not specified'} {edu.field ? `in ${edu.field}` : ''}</p>
@@ -639,7 +639,7 @@ const ResumeBuilder = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Skills ({formData.skills.length})</h3>
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border">
             <ul className="space-y-2">
               {formData.skills.map((skill, index) => (
                 <li key={index} className="flex justify-between">
@@ -653,7 +653,7 @@ const ResumeBuilder = () => {
         
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Certifications ({formData.certifications.length})</h3>
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border-border">
             <ul className="space-y-4">
               {formData.certifications.map((cert, index) => (
                 <li key={index}>

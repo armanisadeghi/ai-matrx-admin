@@ -300,10 +300,10 @@
         --muted: 240 5% 92%;
         --muted-foreground: 240 4% 40%;
         
-        /* Accent - Zinc-150 for hover states */
-        --accent: 240 5% 94%;
-        --accent-foreground: 240 4% 16%;
-        
+        /* Accent - More visible for hover states and UI elements */
+        --accent:  oklch(0.967 0.001 286.375);
+        --accent-foreground:  oklch(0.21 0.006 285.885);
+             
         /* Status colors */
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
@@ -426,10 +426,10 @@
         --muted: 240 4% 24%;
         --muted-foreground: 240 5% 60%;
         
-        /* Accent - Zinc-825 for hover states */
-        --accent: 240 4% 22%;
-        --accent-foreground: 240 5% 90%;
-        
+        /* Accent - More visible for hover states and UI elements */
+        --accent:  oklch(0.274 0.006 286.033);
+        --accent-foreground:  oklch(0.985 0 0);
+             
         /* Status colors - adjusted for dark mode */
         --destructive: 0 72% 60%;
         --destructive-foreground: 0 85.7% 97.3%;

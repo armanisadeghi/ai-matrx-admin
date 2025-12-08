@@ -26,7 +26,7 @@ export default function AppletBuilder() {
   return (
     <div className="w-full h-full flex flex-col bg-textured rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex-shrink-0 p-6 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -43,7 +43,7 @@ export default function AppletBuilder() {
       </div>
 
       {/* Progress Steps */}
-      <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex-shrink-0 p-6 border-b border-border">
         <StepIndicator />
       </div>
 
@@ -55,7 +55,7 @@ export default function AppletBuilder() {
         </div>
 
         {/* Navigation - Fixed at bottom */}
-        <div className="flex-shrink-0 flex justify-between pt-6 mt-8 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 flex justify-between pt-6 mt-8 border-t border-border">
           <Button
             variant="secondary"
             onClick={handleBack}

@@ -184,7 +184,7 @@ export function CanvasSocialActions({
                         </div>
 
                         {/* Engagement Rate */}
-                        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <div className="pt-2 border-t border-border">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-gray-600 dark:text-gray-400">Engagement Rate</span>
                                 <span className="font-semibold text-blue-600 dark:text-blue-400">

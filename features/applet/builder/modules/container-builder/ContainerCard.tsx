@@ -340,7 +340,7 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                             return (
                                 <div
                                     key={field.id}
-                                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-3"
+                                    className="w-full bg-gray-50 dark:bg-gray-700 border-border rounded-md p-3"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="space-y-3">

@@ -5,9 +5,9 @@ type FormComponentType = 'input' | 'textarea' | 'select' | 'switch' | 'checkbox'
 
 const formComponentStyles = {
     base: {
-        compact: 'w-full rounded-sm border border-gray-200 bg-white text-sm',
-        normal: 'w-full rounded-md border border-gray-200 bg-white text-base',
-        comfortable: 'w-full rounded-lg border border-gray-200 bg-white text-lg'
+        compact: 'w-full rounded-sm border-border bg-white text-sm',
+        normal: 'w-full rounded-md border-border bg-white text-base',
+        comfortable: 'w-full rounded-lg border-border bg-white text-lg'
     },
     padding: {
         compact: 'px-1 py-0.5',

@@ -469,7 +469,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                     {/* Header - Only show if title exists or showCloseButton is true or headerContent exists */}
                     {showHeader && (
                         <div
-                            className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-700 ${getMobileHeaderClass()} ${headerClassName}`}
+                            className={`flex items-center justify-between border-b border-border ${getMobileHeaderClass()} ${headerClassName}`}
                         >
                             <div className="flex-1 min-w-0">
                                 {typeof title === "string" ? (
@@ -526,7 +526,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                     {/* Footer - Only render if provided */}
                     {showFooter && (
                         <div
-                            className={`border-t border-gray-200 dark:border-gray-700 ${getMobileFooterClass()} ${footerClassName}`}
+                            className={`border-t border-border ${getMobileFooterClass()} ${footerClassName}`}
                             data-testid="floating-sheet-footer"
                         >
                             {footer || footerContent}

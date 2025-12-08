@@ -42,7 +42,7 @@ export default function TabLayout({ title, subtitle, tabs, id }: TabLayoutProps)
     <div className="space-y-4">     
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Desktop Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700 hidden md:block">
+        <div className="border-b border-border hidden md:block">
           <TabsList className="bg-transparent p-0 h-auto flex flex-wrap justify-start">
             {tabs.map((tab) => (
               <TabsTrigger
@@ -60,7 +60,7 @@ export default function TabLayout({ title, subtitle, tabs, id }: TabLayoutProps)
         </div>
 
         {/* Mobile Dropdown */}
-        <div className="md:hidden border-b border-gray-200 dark:border-gray-700 pb-2">
+        <div className="md:hidden border-b border-border pb-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {tabs.find(tab => tab.id === activeTab)?.label}

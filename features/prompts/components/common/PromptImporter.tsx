@@ -239,7 +239,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
             </div>
 
             {/* Import Button */}
-            <div className="flex-shrink-0 flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 flex items-center justify-between pt-2 border-t border-border">
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {jsonInput.trim() && (
                   <span className="flex items-center gap-1">
@@ -323,7 +323,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 {results.filter(r => r.success).length} succeeded, {results.filter(r => !r.success).length} failed
               </div>

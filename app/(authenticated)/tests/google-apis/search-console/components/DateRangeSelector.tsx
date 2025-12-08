@@ -64,7 +64,7 @@ export function DateRangeSelector({ startDate, endDate, onChange }: DateRangeSel
                             {preset.label}
                         </button>
                     ))}
-                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <div className="pt-2 border-t border-border">
                         <div className="space-y-2">
                             <div>
                                 <label className="text-xs font-medium text-gray-600 dark:text-gray-400">

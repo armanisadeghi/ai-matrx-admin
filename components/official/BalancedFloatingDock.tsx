@@ -98,7 +98,7 @@ function BalancedFloatingDockMobile({
         <div className={cn("fixed inset-0 z-50", bgColor)} style={{ backgroundImage: BACKGROUND_PATTERN }}>
           <div className="flex flex-col h-full">
             {/* Header with close button */}
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center p-4 border-b border-border">
               {/* Back button (positioned on the left) */}
               <button
                 onClick={() => setOpen(false)}
@@ -126,7 +126,7 @@ function BalancedFloatingDockMobile({
                 <Link
                   href={item.href}
                   key={item.label}
-                  className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+                  className="flex items-center justify-between p-4 border-b border-border"
                   onClick={() => setOpen(false)}
                 >
                   <div className="flex items-center space-x-4">
@@ -252,13 +252,13 @@ function BalancedIconContainer({
         initial: { opacity: 0, y: 0, x: 10 },
         animate: { opacity: 1, y: 0, x: 60 },
         exit: { opacity: 0, y: 0, x: 10 },
-        className: cn("p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 absolute left-full top-1/2 -translate-y-1/2 w-fit text-xs shadow-sm z-50", "border border-gray-200 dark:border-gray-700")
+        className: cn("p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 absolute left-full top-1/2 -translate-y-1/2 w-fit text-xs shadow-sm z-50", "border-border")
       }
     : {
         initial: { opacity: 0, y: 5 },
         animate: { opacity: 1, y: 15 },
         exit: { opacity: 0, y: 5 },
-        className: cn("p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 absolute left-1/2 -translate-x-1/2 top-full w-fit text-xs shadow-sm", "border border-gray-200 dark:border-gray-700")
+        className: cn("p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 absolute left-1/2 -translate-x-1/2 top-full w-fit text-xs shadow-sm", "border-border")
       };
   
   return (
@@ -290,7 +290,7 @@ function BalancedIconContainer({
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 15 }}
                   exit={{ opacity: 0, x: 5 }}
-                  className={cn("p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 w-fit text-xs shadow-sm", "border border-gray-200 dark:border-gray-700")}
+                  className={cn("p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 w-fit text-xs shadow-sm", "border-border")}
                 >
                   {label}
                 </motion.div>

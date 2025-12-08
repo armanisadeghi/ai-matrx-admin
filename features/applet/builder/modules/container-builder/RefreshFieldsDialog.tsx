@@ -76,7 +76,7 @@ export const RefreshFieldsDialog: React.FC<RefreshFieldsDialogProps> = ({
           {refreshOption === "selected" && groupToRefresh && (
             <div className="space-y-2">
               <Label className="text-gray-900 dark:text-gray-100">Select Fields to Refresh</Label>
-              <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="max-h-60 overflow-y-auto border-border rounded-lg">
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {savedGroups
                     .find((group) => group.id === groupToRefresh)

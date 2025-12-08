@@ -173,8 +173,8 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
       <div className="h-full flex gap-4 max-w-7xl mx-auto">
         {/* Sidebar - Show when we have valid data OR when in JSON explorer mode */}
         {(shouldShowSidebar || showJsonExplorer) && (
-          <div className="w-80 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="w-80 flex-shrink-0 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -248,11 +248,11 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
         )}
         
         {/* Main Content */}
-        <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
           {showJsonExplorer ? (
             /* JSON Explorer Mode */
             <>
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
                 <div className="flex items-center gap-3">
                   <Braces size={16} className="text-gray-500 dark:text-gray-400" />
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -267,7 +267,7 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
           ) : (
             /* Normal Section View Mode */
             <>
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {getSectionTypeIcon(selectedSection?.type || 'unknown')}

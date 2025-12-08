@@ -147,7 +147,7 @@ export default function CardDemoPage() {
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
       {/* Header */}
-      <div className="flex-none border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900">
+      <div className="flex-none border-b border-border bg-white dark:bg-zinc-900">
         <div className="px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600">

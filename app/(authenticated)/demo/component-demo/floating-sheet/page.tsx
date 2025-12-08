@@ -180,7 +180,7 @@ const FloatingSheetDemo = () => {
               
               {/* Sample form content */}
               {selectedDemo === 'withFooter' && (
-                <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                <div className="space-y-4 border-t border-border pt-4 mt-4">
                   <h4 className="font-medium text-gray-900 dark:text-white">Sample Form</h4>
                   <div className="space-y-4">
                     <div>
@@ -196,9 +196,9 @@ const FloatingSheetDemo = () => {
               )}
               
               {/* Scrollable content example */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+              <div className="border-t border-border pt-4 mt-4">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Scroll Example</h4>
-                <div className="h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                <div className="h-64 overflow-y-auto border-border rounded-md p-4">
                   <p className="text-gray-600 dark:text-gray-300 mb-4">The content area is scrollable when content exceeds the available space:</p>
                   {Array.from({ length: 10 }).map((_, i) => (
                     <p key={i} className="text-gray-600 dark:text-gray-300 mb-4">

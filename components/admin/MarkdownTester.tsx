@@ -99,7 +99,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
       
       <div className={containerClasses} style={{ height: availableHeight }}>
         {/* Fixed Header Section */}
-        <div className="flex-shrink-0 bg-textured border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+        <div className="flex-shrink-0 bg-textured border-b border-border px-4 py-2">
           {/* Title and Main Controls */}
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-base font-semibold flex items-center gap-2">

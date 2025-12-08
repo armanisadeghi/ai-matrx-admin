@@ -121,7 +121,7 @@ export function RadioGroupInput({
             return (
               <div 
                 key={itemKey}
-                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
                 onClick={() => handleOptionChange(displayOption)}
               >
                 <RadioGroupItem value={displayOption} id={`${variableName}-${displayOption}-${index}`} />
@@ -139,7 +139,7 @@ export function RadioGroupInput({
           {allowOther && (
             <div className="space-y-2">
               <div 
-                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
                 onClick={() => handleOptionChange('Other')}
               >
                 <RadioGroupItem value="Other" id={`${variableName}-other`} />

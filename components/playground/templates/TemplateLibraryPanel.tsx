@@ -164,7 +164,7 @@ export function TemplateLibraryPanel({
     return (
         <div className={cn("flex flex-col h-full bg-white dark:bg-gray-900", className)}>
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-border">
                 <div className="flex items-center gap-2 mb-4">
                     <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -224,7 +224,7 @@ export function TemplateLibraryPanel({
                                             {blocks.map(block => (
                                                 <Card
                                                     key={block.id}
-                                                    className="group hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500"
+                                                    className="group hover:shadow-md transition-all duration-200 border-border hover:border-blue-500 dark:hover:border-blue-500"
                                                 >
                                                     <CardHeader className="p-3">
                                                         <div className="flex items-start justify-between gap-2">

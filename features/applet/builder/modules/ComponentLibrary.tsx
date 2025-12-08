@@ -257,7 +257,7 @@ const ComponentLibrary = () => {
     if (isLoading) {
         return (
             <div className="container mx-auto px-4 py-6 min-h-screen">
-                <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg h-full">
+                <Card className="border-border bg-textured shadow-lg h-full">
                     <CardContent className="p-8 flex justify-center items-center min-h-[80vh]">
                         <div className="text-center">
                             <div className="animate-pulse h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-4"></div>
@@ -271,7 +271,7 @@ const ComponentLibrary = () => {
 
     return (
         <div className="container mx-auto px-4 py-6 min-h-screen">
-            <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg h-full">
+            <Card className="border-border bg-textured shadow-lg h-full">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-blue-500 dark:text-blue-400">Component Library</CardTitle>
                     <CardDescription className="text-gray-500 dark:text-gray-400">Import and export components for reuse</CardDescription>

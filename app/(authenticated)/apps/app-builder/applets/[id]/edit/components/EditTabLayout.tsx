@@ -104,7 +104,7 @@ export default function EditTabLayout({ title, subtitle, tabs, id, onSave, hasCh
             {/* Tabs moved outside the flex container */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* Desktop Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-700 hidden md:block overflow-x-auto">
+                <div className="border-b border-border hidden md:block overflow-x-auto">
                     <TabsList className="bg-transparent p-0 h-auto flex flex-wrap justify-start">
                         {tabs.map((tab) => (
                             <TabsTrigger
@@ -122,7 +122,7 @@ export default function EditTabLayout({ title, subtitle, tabs, id, onSave, hasCh
                 </div>
 
                 {/* Mobile Dropdown */}
-                <div className="md:hidden border-b border-gray-200 dark:border-gray-700 pb-2">
+                <div className="md:hidden border-b border-border pb-2">
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             {tabs.find((tab) => tab.id === activeTab)?.label}
@@ -159,7 +159,7 @@ export default function EditTabLayout({ title, subtitle, tabs, id, onSave, hasCh
                     </div>
 
                     {showPreview && (
-                        <div className="md:w-1/2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 h-[calc(100vh-500px)] sticky top-4 overflow-hidden relative">
+                        <div className="md:w-1/2 bg-gray-50 dark:bg-gray-800 rounded-lg border-border p-4 h-[calc(100vh-500px)] sticky top-4 overflow-hidden relative">
                             {applet?.slug ? (
                                 <div className="h-full">
                                     <LiveAppAndAppletPreview
@@ -189,7 +189,7 @@ export default function EditTabLayout({ title, subtitle, tabs, id, onSave, hasCh
                 </div>
             </Tabs>
 
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-textured border-t border-gray-200 dark:border-gray-700 z-10">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-textured border-t border-border z-10">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <Button variant="outline" onClick={handleBack} className="flex items-center gap-2">

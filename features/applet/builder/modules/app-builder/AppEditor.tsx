@@ -229,7 +229,7 @@ const AppEditor: React.FC<AppEditorProps> = ({ appId, isCreatingNew = false, onS
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end space-x-4 pt-4 border-t border-border">
                 <Button variant="outline" onClick={handleCancelClick} disabled={isLoading}>
                     <X className="w-4 h-4 mr-2" />
                     Cancel

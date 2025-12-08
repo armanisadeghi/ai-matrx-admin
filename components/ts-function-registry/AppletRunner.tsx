@@ -86,7 +86,7 @@ export default function AppletRunner({
               ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700' 
               : result 
                 ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-                : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+                : 'bg-gray-50 dark:bg-gray-800 border-border'
           }`}
         >
           <h3 className="text-lg font-medium mb-1 text-gray-800 dark:text-gray-200">

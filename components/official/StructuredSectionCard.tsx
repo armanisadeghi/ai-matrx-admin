@@ -29,7 +29,7 @@ const StructuredSectionCard: React.FC<StructuredSectionCardProps> = ({
 
   return (
     <div className={cn(
-      "border border-gray-200 dark:border-gray-700 bg-textured shadow-sm rounded-xl overflow-hidden",
+      "border-border bg-textured shadow-sm rounded-xl overflow-hidden",
       className
     )}>
       {/* Header with title, description, and actions */}
@@ -55,7 +55,7 @@ const StructuredSectionCard: React.FC<StructuredSectionCardProps> = ({
 
       {/* Footer with 3 columns if any footer content exists */}
       {hasFooter && (
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center">
+        <div className="px-4 py-3 border-t border-border flex flex-wrap items-center">
           {/* Left column */}
           <div className="flex-1 flex justify-start space-x-2 min-w-[33%] sm:min-w-0">
             {footerLeft}

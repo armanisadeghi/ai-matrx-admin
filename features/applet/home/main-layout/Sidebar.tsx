@@ -32,9 +32,9 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className="h-full w-full overflow-hidden flex">
       {/* Sidebar */}
-      <div className="w-64 border-r border-gray-200 dark:border-gray-700 h-full flex flex-col bg-gray-50 dark:bg-gray-800">
+      <div className="w-64 border-r border-border h-full flex flex-col bg-gray-50 dark:bg-gray-800">
         {/* App Info */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3 mb-3">
             {appIcon && (
               <div className="w-10 h-10 rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm flex-shrink-0">
@@ -144,7 +144,7 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
             Applet Details
           </h2>
           
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border-border">
             <p className="text-gray-600 dark:text-gray-300">
               Select an applet from the sidebar to view its details.
             </p>

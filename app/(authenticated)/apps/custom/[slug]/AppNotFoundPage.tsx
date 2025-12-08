@@ -24,7 +24,7 @@ export default function AppNotFoundPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border-border">
                         <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
                             What you can do:
                         </h3>

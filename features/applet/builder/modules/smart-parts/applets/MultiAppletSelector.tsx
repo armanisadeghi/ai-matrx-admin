@@ -229,7 +229,7 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
           className={`
             flex items-center justify-between w-full p-3
             bg-gray-50 dark:bg-gray-800 
-            border border-gray-200 dark:border-gray-700 
+            border-border 
             rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700
             transition-colors
           `}
@@ -259,7 +259,7 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
       {/* Applet selector dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-0 border-gray-200 dark:border-gray-700 sm:max-w-[90vw] sm:max-h-[90vh]">
-          <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <DialogHeader className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {dialogTitle}
@@ -329,7 +329,7 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
             {/* Available applets */}
             <div>
               <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Available Applets</h4>
-              <ScrollArea className="h-[400px] rounded-md border border-gray-200 dark:border-gray-700">
+              <ScrollArea className="h-[400px] rounded-md border-border">
                 {isLoading ? (
                   <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                     Loading applets...
@@ -350,7 +350,7 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
                             flex items-center justify-between p-3 mb-2 rounded-lg cursor-pointer
                             ${isSelected 
                               ? `bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800` 
-                              : `bg-textured border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700`
+                              : `bg-textured border-border hover:bg-gray-50 dark:hover:bg-gray-700`
                             }
                           `}
                           onClick={() => toggleAppletSelection(applet)}

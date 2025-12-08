@@ -314,7 +314,7 @@ export function FilesResourcePicker({ onBack, onSelect, allowedBuckets }: FilesR
     return (
         <div className="flex flex-col h-[400px]">
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -332,7 +332,7 @@ export function FilesResourcePicker({ onBack, onSelect, allowedBuckets }: FilesR
 
             {/* Search */}
             {isViewingBuckets && (
-                <div className="px-2 py-2 border-b border-gray-200 dark:border-gray-800">
+                <div className="px-2 py-2 border-b border-border">
                     <div className="relative">
                         <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                         <Input

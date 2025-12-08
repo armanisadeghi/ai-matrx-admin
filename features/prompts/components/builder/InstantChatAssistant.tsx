@@ -165,7 +165,7 @@ function InstantChatAssistantComponent({ onClose }: InstantChatAssistantProps) {
                         {/* Left Column */}
                         <div className="space-y-3">
                             {/* Language Selection */}
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="border-border rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Languages className="text-blue-500 dark:text-blue-400" size={16} />
                                     <h3 className="text-sm font-medium">Language</h3>
@@ -192,7 +192,7 @@ function InstantChatAssistantComponent({ onClose }: InstantChatAssistantProps) {
                             </div>
 
                             {/* Persona Selection */}
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="border-border rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <MessageSquare className="text-yellow-500 dark:text-yellow-400" size={16} />
                                     <h3 className="text-sm font-medium">Persona</h3>
@@ -224,7 +224,7 @@ function InstantChatAssistantComponent({ onClose }: InstantChatAssistantProps) {
                             </div>
 
                             {/* Cognitive Approach */}
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="border-border rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Brain className="text-green-500 dark:text-green-400" size={16} />
                                     <h3 className="text-sm font-medium">Cognitive Approach</h3>
@@ -259,7 +259,7 @@ function InstantChatAssistantComponent({ onClose }: InstantChatAssistantProps) {
                             </div>
 
                             {/* Format Style */}
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="border-border rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <BookOpen className="text-red-500 dark:text-red-400" size={16} />
                                     <h3 className="text-sm font-medium">Format Style</h3>
@@ -290,7 +290,7 @@ function InstantChatAssistantComponent({ onClose }: InstantChatAssistantProps) {
                                 </Select>
                             </div>
                             {/* Tone/Style Selection */}
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="border-border rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Palette className="text-pink-500 dark:text-pink-400" size={16} />
                                     <h3 className="text-sm font-medium">Tone & Style</h3>
@@ -325,7 +325,7 @@ function InstantChatAssistantComponent({ onClose }: InstantChatAssistantProps) {
                         {/* Right Column */}
                         <div className="space-y-3">
                             {/* Fine-Tuning */}
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                            <div className="border-border rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Gauge className="text-indigo-500 dark:text-indigo-400" size={16} />
                                     <h3 className="text-sm font-medium">Fine-Tuning</h3>

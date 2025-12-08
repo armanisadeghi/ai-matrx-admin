@@ -265,7 +265,7 @@ export function ImagePreviewRow({
         <div
           ref={scrollContainerRef}
           className={cn(
-            "flex overflow-x-auto scrollbar-hide px-1 py-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-md",
+            "flex overflow-x-auto scrollbar-hide px-1 py-1 bg-textured border-border rounded-md",
             sizeMap[size].container,
             sizeMap[size].gap
           )}

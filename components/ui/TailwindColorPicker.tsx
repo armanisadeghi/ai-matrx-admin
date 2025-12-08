@@ -165,7 +165,7 @@ export function TailwindColorPicker({
         </button>
       </PopoverTrigger>
       
-      <PopoverContent className="w-auto p-0 bg-textured border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
+      <PopoverContent className="w-auto p-0 bg-textured border-border shadow-lg rounded-xl">
         <div className="grid grid-cols-6 gap-1 p-1">
           {tailwindColors.map((colorGroup) => (
             <div 

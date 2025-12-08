@@ -238,7 +238,7 @@ export function FullPromptOptimizer({
                 <Copy className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <div className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="flex-1 bg-gray-50 dark:bg-gray-900 border-border rounded-lg overflow-hidden">
               <div className="h-full overflow-y-auto p-3">
                 <CodeBlock
                   code={currentPromptJson}
@@ -277,7 +277,7 @@ export function FullPromptOptimizer({
                   
                   {streamingText && (
                     <div className="flex-1 bg-white/50 dark:bg-gray-900/50 rounded-lg overflow-hidden flex flex-col">
-                      <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                      <div className="p-3 border-b border-border bg-gray-50/50 dark:bg-gray-900/50">
                         <p className="text-xs text-gray-600 dark:text-gray-400">Live Response:</p>
                       </div>
                       <div className="flex-1 overflow-y-auto p-4">

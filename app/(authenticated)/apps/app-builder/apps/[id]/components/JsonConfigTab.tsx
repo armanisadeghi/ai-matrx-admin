@@ -22,7 +22,7 @@ export default function JsonConfigTab({ appId }: JsonConfigTabProps) {
     <div className="space-y-6">
       <Card className="p-6">
         <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">App Configuration (JSON)</h3>
-        <ScrollArea className="h-[500px] rounded-md border border-gray-200 dark:border-gray-700">
+        <ScrollArea className="h-[500px] rounded-md border-border">
           <pre className="p-4 text-sm bg-gray-50 dark:bg-gray-900 rounded-md overflow-auto">
             <code className="text-gray-800 dark:text-gray-300">
               {JSON.stringify(app, null, 2)}

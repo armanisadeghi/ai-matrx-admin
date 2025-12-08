@@ -136,10 +136,10 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                             <table className="w-full text-xs border-collapse">
                                                                 <thead className="bg-gray-100 dark:bg-gray-700">
                                                                     <tr>
-                                                                        <th className="px-2 py-1 text-left border border-gray-200 dark:border-gray-600">
+                                                                        <th className="px-2 py-1 text-left border-border">
                                                                             Type
                                                                         </th>
-                                                                        <th className="px-2 py-1 text-left border border-gray-200 dark:border-gray-600">
+                                                                        <th className="px-2 py-1 text-left border-border">
                                                                             Content
                                                                         </th>
                                                                     </tr>
@@ -148,9 +148,9 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                                     {item.segmentation.segments.map(([type, text], index) => (
                                                                         <tr
                                                                             key={index}
-                                                                            className="border-b border-gray-200 dark:border-gray-700"
+                                                                            className="border-b border-border"
                                                                         >
-                                                                            <td className="px-2 py-1 border border-gray-200 dark:border-gray-600 align-top">
+                                                                            <td className="px-2 py-1 border-border align-top">
                                                                                 <span
                                                                                     className={`inline-block px-2 py-0.5 text-xs rounded-full ${getSegmentTypeColor(
                                                                                         type
@@ -159,7 +159,7 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                                                     {type}
                                                                                 </span>
                                                                             </td>
-                                                                            <td className="px-2 py-1 border border-gray-200 dark:border-gray-600 font-mono whitespace-pre-wrap">
+                                                                            <td className="px-2 py-1 border-border font-mono whitespace-pre-wrap">
                                                                                 {text}
                                                                             </td>
                                                                         </tr>
@@ -176,10 +176,10 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                             <table className="w-full text-xs border-collapse">
                                                                 <thead className="bg-gray-100 dark:bg-gray-700">
                                                                     <tr>
-                                                                        <th className="px-2 py-1 text-left border border-gray-200 dark:border-gray-600">
+                                                                        <th className="px-2 py-1 text-left border-border">
                                                                             Key
                                                                         </th>
-                                                                        <th className="px-2 py-1 text-left border border-gray-200 dark:border-gray-600">
+                                                                        <th className="px-2 py-1 text-left border-border">
                                                                             Value
                                                                         </th>
                                                                     </tr>
@@ -188,12 +188,12 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                                     {getRelevantMetadata(item.metadata).map(([key, value], index) => (
                                                                         <tr
                                                                             key={index}
-                                                                            className="border-b border-gray-200 dark:border-gray-700"
+                                                                            className="border-b border-border"
                                                                         >
-                                                                            <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                                                                            <td className="px-2 py-1 border-border">
                                                                                 {key}
                                                                             </td>
-                                                                            <td className="px-2 py-1 border border-gray-200 dark:border-gray-600">
+                                                                            <td className="px-2 py-1 border-border">
                                                                                 {value}
                                                                             </td>
                                                                         </tr>
@@ -207,7 +207,7 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                             <h4 className="text-xs font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                                                 Clean Line
                                                             </h4>
-                                                            <div className="p-2 bg-textured border border-gray-200 dark:border-gray-700 rounded font-mono text-xs whitespace-pre-wrap">
+                                                            <div className="p-2 bg-textured border-border rounded font-mono text-xs whitespace-pre-wrap">
                                                                 {item.clean_line}
                                                             </div>
                                                         </div>
@@ -216,7 +216,7 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                         <h4 className="text-xs font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                                             Raw Data
                                                         </h4>
-                                                        <div className="p-2 bg-textured border border-gray-200 dark:border-gray-700 rounded">
+                                                        <div className="p-2 bg-textured border-border rounded">
                                                             <pre className="text-xs overflow-auto max-h-40">
                                                                 {JSON.stringify(item, null, 2)}
                                                             </pre>

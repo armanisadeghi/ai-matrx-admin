@@ -80,7 +80,7 @@ export default function JsonConfigEditTab({ appId }: JsonConfigEditTabProps) {
             Edit the JSON configuration directly. This is an advanced feature.
           </p>
           
-          <ScrollArea className="h-[500px] rounded-md border border-gray-200 dark:border-gray-700">
+          <ScrollArea className="h-[500px] rounded-md border-border">
             <Textarea
               value={jsonValue}
               onChange={handleJsonChange}

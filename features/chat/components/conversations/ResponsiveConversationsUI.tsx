@@ -49,7 +49,7 @@ export const MobileConversationsPanel: React.FC = () => {
       
       {/* Sidebar content */}
       <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-white dark:bg-gray-950 shadow-xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -147,7 +147,7 @@ export const MobileConversationsPanel: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Mobile header */}
-      <header className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+      <header className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-white dark:bg-gray-950">
         <button
           onClick={() => setSidebarOpen(true)}
           className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -177,11 +177,11 @@ export const MobileConversationsPanel: React.FC = () => {
       {/* Desktop layout */}
       <div className="hidden lg:flex flex-1 overflow-hidden">
         {/* Desktop Sidebar - This uses our existing ConversationsPanel component */}
-        <div className="w-80 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-col">
+        <div className="w-80 border-r border-border bg-white dark:bg-gray-950 flex flex-col">
           {/* Import the DesktopConversationsPanel here */}
           {/* <DesktopConversationsPanel /> */}
           {/* For now, we'll simplify and just show a placeholder */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="p-4 border-b border-border">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
           </div>
           <div className="p-4">

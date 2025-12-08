@@ -83,7 +83,7 @@ const ContainerFieldDisplay: React.FC<ContainerFieldDisplayProps> = ({
                     fields.map((field, index) => (
                         <Card 
                             key={field.id} 
-                            className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+                            className="w-full border-border bg-gray-50 dark:bg-gray-800/50"
                         >
                             <CardContent className="p-3">
                                 <div className="flex items-center justify-between">

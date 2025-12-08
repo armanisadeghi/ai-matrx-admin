@@ -51,14 +51,14 @@ export function VariableValidationPanel({ validation, onAddVariable }: VariableV
 
                 {/* Summary Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border-border">
                         <div className="flex items-center gap-2 mb-1">
                             <Variable className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             <span className="text-xs text-gray-600 dark:text-gray-400">Defined Variables</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{definedCount}</p>
                     </div>
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border-border">
                         <div className="flex items-center gap-2 mb-1">
                             <Info className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             <span className="text-xs text-gray-600 dark:text-gray-400">Referenced Variables</span>

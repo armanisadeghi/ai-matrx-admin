@@ -40,12 +40,12 @@ export const ConversationsPanel: React.FC = () => {
   return (
     <div
       className={clsx(
-        "flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 transition-all duration-300 ease-in-out",
+        "flex flex-col border-r border-border bg-white dark:bg-gray-950 transition-all duration-300 ease-in-out",
         expanded ? "w-96" : "w-72"
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
         <div className="flex space-x-2">
           <button
@@ -168,7 +168,7 @@ export const ConversationsPanel: React.FC = () => {
             left: `${contextMenuPosition.x}px`,
             zIndex: 50,
           }}
-          className="bg-textured shadow-lg rounded-md p-1 border border-gray-200 dark:border-gray-700"
+          className="bg-textured shadow-lg rounded-md p-1 border-border"
         >
           <button
             onClick={() => contextMenuConversationId && handleEdit(contextMenuConversationId)}

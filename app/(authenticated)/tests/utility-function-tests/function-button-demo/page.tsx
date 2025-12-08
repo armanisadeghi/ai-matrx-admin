@@ -208,7 +208,7 @@ export default function FunctionButtonDemo() {
             </p>
             
             <div className="space-y-4">
-              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div className="p-4 border-border rounded-md">
                 <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Format Current Date</h4>
                 <FunctionButton
                   functionName="formatDate"
@@ -219,7 +219,7 @@ export default function FunctionButtonDemo() {
                 />
               </div>
               
-              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div className="p-4 border-border rounded-md">
                 <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Generate Random Names</h4>
                 <FunctionButton
                   functionName="generateRandomData"
@@ -230,7 +230,7 @@ export default function FunctionButtonDemo() {
                 />
               </div>
               
-              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div className="p-4 border-border rounded-md">
                 <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Calculate Statistics</h4>
                 <FunctionButton
                   functionName="calculateStats"

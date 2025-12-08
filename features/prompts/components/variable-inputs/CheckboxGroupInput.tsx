@@ -157,7 +157,7 @@ export function CheckboxGroupInput({
           return (
             <div 
               key={itemKey}
-              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
               onClick={() => handleToggle(displayOption, !isChecked)}
             >
               <Checkbox 
@@ -179,7 +179,7 @@ export function CheckboxGroupInput({
         {allowOther && (
           <div className="space-y-2">
             <div 
-              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
               onClick={() => handleOtherToggle(!isOtherChecked)}
             >
               <Checkbox 
@@ -212,7 +212,7 @@ export function CheckboxGroupInput({
       </div>
       
       {selectedItems.length > 0 && (
-        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-2 border-t border-border">
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Selected: {selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''}
           </p>

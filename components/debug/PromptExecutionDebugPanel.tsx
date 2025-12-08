@@ -116,7 +116,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
     const isExpanded = expandedSection === id;
     
     return (
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-border">
         <button
           onClick={() => setExpandedSection(isExpanded ? 'overview' : id)}
           className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
@@ -164,7 +164,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
           )}
         </Button>
       </div>
-      <pre className="text-xs bg-white dark:bg-black p-3 rounded border border-gray-200 dark:border-gray-800 overflow-x-auto">
+      <pre className="text-xs bg-white dark:bg-black p-3 rounded border-border overflow-x-auto">
         <code className="whitespace-pre-wrap break-words font-mono">{content}</code>
       </pre>
     </div>
@@ -183,7 +183,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
     >
       <Card className="h-full shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-blue-600 to-blue-700 text-white">
           <div className="flex items-center gap-2">
             <Database className="w-5 h-5" />
             <div>
@@ -261,7 +261,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
               ) : (
                 <div className="space-y-3">
                   {templateMessages.map((msg, idx) => (
-                    <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded p-3">
+                    <div key={idx} className="border-border rounded p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                           msg.role === 'system' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
@@ -309,7 +309,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
               ) : (
                 <div className="space-y-3">
                   {conversationMessages.map((msg, idx) => (
-                    <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded p-3">
+                    <div key={idx} className="border-border rounded p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                           msg.role === 'system' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
@@ -367,7 +367,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
                 ) : (
                   <div className="space-y-2">
                     {resources.map((resource, idx) => (
-                      <div key={idx} className="text-xs border border-gray-200 dark:border-gray-700 rounded p-2">
+                      <div key={idx} className="text-xs border-border rounded p-2">
                         <div className="font-medium">{resource.type}</div>
                         <div className="text-gray-500 text-[10px] mt-1">
                           {JSON.stringify(resource.data).substring(0, 100)}...
@@ -413,7 +413,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
                 ) : (
                   <div className="space-y-2">
                     {resources.map((resource, idx) => (
-                      <div key={idx} className="text-xs border border-gray-200 dark:border-gray-700 rounded p-2">
+                      <div key={idx} className="text-xs border-border rounded p-2">
                         <div className="font-medium">{resource.type}</div>
                         <div className="text-gray-500 text-[10px] mt-1">
                           {JSON.stringify(resource.data).substring(0, 100)}...
@@ -488,7 +488,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
                           </span>
                           <span className="text-xs text-gray-500">Message {idx + 1}/{apiPayload.messages.length}</span>
                         </div>
-                        <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-3 rounded border border-gray-200 dark:border-gray-700 max-h-64 overflow-y-auto">
+                        <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-3 rounded border-border max-h-64 overflow-y-auto">
                           {msg.content}
                         </pre>
                       </div>

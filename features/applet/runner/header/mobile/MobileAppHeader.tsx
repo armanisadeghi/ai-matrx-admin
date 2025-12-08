@@ -93,7 +93,7 @@ export const MobileAppHeader = ({
                     {(isDemo || !appId) && !isPreview && <AppSelector />}
                     <ThemeSwitcherIcon className={`text-gray-800 dark:text-gray-200 ${isPreview ? 'w-4 h-4' : ''}`} />
                     {!isPreview && (
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div className="w-8 h-8 rounded-full overflow-hidden border-border">
                             {profilePhoto ? (
                                 <Image src={profilePhoto} width={32} height={32} alt={displayName} className="w-full h-full object-cover" />
                             ) : (

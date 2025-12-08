@@ -394,7 +394,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     return (
       <div className="w-full py-3">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-textured rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-textured rounded-xl p-4 shadow-lg border-border">
             <div className="text-center mb-4">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Trophy className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />
@@ -494,7 +494,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               )}
 
               {/* Download Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-border">
                 <button
                   onClick={handleDownloadQuiz}
                   className="flex-1 px-3 py-2 rounded-lg font-semibold text-sm bg-gray-600 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 text-white shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-1"
@@ -756,7 +756,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           </div>
 
         {/* Navigation Buttons - Fixed at bottom in fullscreen */}
-        <div className={isFullScreen ? 'flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-textured' : ''}>
+        <div className={isFullScreen ? 'flex-shrink-0 p-4 border-t border-border bg-textured' : ''}>
           <div className="flex justify-between items-center gap-3">
             <button
               onClick={handlePrevious}

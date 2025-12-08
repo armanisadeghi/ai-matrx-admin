@@ -145,7 +145,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             className={`
-                bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                bg-gray-50 dark:bg-gray-700 border-border 
                 rounded-md p-2 flex items-center
                 ${
                     isDropped && !hasIssue

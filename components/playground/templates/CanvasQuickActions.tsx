@@ -205,7 +205,7 @@ export function CanvasQuickActions({
     return (
         <div className={cn("flex flex-col h-full bg-white dark:bg-gray-900", className)}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-border">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
                         <Sparkles className="w-6 h-6 text-white" />
@@ -276,7 +276,7 @@ export function CanvasQuickActions({
             </ScrollArea>
 
             {/* Footer Help Text */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <div className="p-4 border-t border-border bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
                     <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
                     <p>

@@ -156,7 +156,7 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
         >
             <div className="flex flex-col h-full">
                 {/* Search Bar */}
-                <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                <div className="px-4 py-2 border-b border-border">
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                             <Search size={16} className="text-gray-400" />
@@ -177,7 +177,7 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
                 </div>
 
                 {/* Filter Controls */}
-                <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="px-4 py-2 border-b border-border bg-gray-50 dark:bg-gray-800">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                             <button

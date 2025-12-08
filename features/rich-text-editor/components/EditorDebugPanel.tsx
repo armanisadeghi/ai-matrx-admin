@@ -34,8 +34,8 @@ const EditorDebugPanel: React.FC<EditorDebugPanelProps> = ({ snapshots, onClearS
     };
 
     return (
-        <div className="fixed bottom-4 right-4 w-96 bg-textured rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed bottom-4 right-4 w-96 bg-textured rounded-lg shadow-lg border-border">
+            <div className="flex items-center justify-between p-3 border-b border-border">
                 <div className="flex items-center space-x-2">
                     <h3 className="font-medium">Editor Debug Panel</h3>
                     {hasErrors && (

@@ -71,7 +71,7 @@ const chartData = [
     <div className="h-full flex flex-col">
       <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-gray-200">Upcoming Events</h3>
       <div className="space-y-3">
-        <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+        <div className="p-3 border-border rounded-md bg-textured">
           <div className="flex justify-between items-center">
             <span className="font-medium text-gray-800 dark:text-gray-200">Team Meeting</span>
             <span className="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 px-2 py-1 rounded">Today</span>
@@ -80,7 +80,7 @@ const chartData = [
             <Calendar className="h-3 w-3" /> 2:00 PM - 3:30 PM
           </div>
         </div>
-        <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+        <div className="p-3 border-border rounded-md bg-textured">
           <div className="flex justify-between items-center">
             <span className="font-medium text-gray-800 dark:text-gray-200">Client Call</span>
             <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-1 rounded">Tomorrow</span>
@@ -97,7 +97,7 @@ const chartData = [
     <div className="h-full flex flex-col">
       <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-gray-200">Recent Messages</h3>
       <div className="space-y-3">
-        <div className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+        <div className="flex items-start p-3 border-border rounded-md bg-textured">
           <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center mr-3">
             <span className="text-indigo-600 dark:text-indigo-300 font-medium">JD</span>
           </div>
@@ -107,7 +107,7 @@ const chartData = [
             <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">10 minutes ago</div>
           </div>
         </div>
-        <div className="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+        <div className="flex items-start p-3 border-border rounded-md bg-textured">
           <div className="h-10 w-10 rounded-full bg-pink-100 dark:bg-pink-800 flex items-center justify-center mr-3">
             <span className="text-pink-600 dark:text-pink-300 font-medium">AS</span>
           </div>
@@ -125,7 +125,7 @@ const chartData = [
     <div className="h-full flex flex-col">
       <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-gray-200">System Configuration</h3>
       <div className="space-y-3">
-        <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+        <div className="p-3 border-border rounded-md bg-textured">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <FileCog className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
@@ -142,7 +142,7 @@ const chartData = [
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">85% availability</div>
           </div>
         </div>
-        <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+        <div className="p-3 border-border rounded-md bg-textured">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <FileCog className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />

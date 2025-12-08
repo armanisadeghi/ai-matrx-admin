@@ -13,7 +13,7 @@ const CompactAppletCard: React.FC<AppletCardProps> = ({
   
   return (
     <div 
-      className="group relative flex items-center p-3 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-750 cursor-pointer transition-all duration-150"
+      className="group relative flex items-center p-3 rounded-md bg-gray-50 dark:bg-gray-800 border-border hover:bg-gray-100 dark:hover:bg-gray-750 cursor-pointer transition-all duration-150"
       onClick={onClick}
     >
       {/* Icon - using circle with accent color border */}

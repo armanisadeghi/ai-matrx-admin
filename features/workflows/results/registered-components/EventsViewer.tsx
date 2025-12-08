@@ -183,7 +183,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
 
         return (
             <div
-                className={`bg-textured rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ${
+                className={`bg-textured rounded-lg border-border hover:shadow-md transition-all duration-200 ${
                     compact ? "p-3" : "p-4"
                 }`}
             >
@@ -273,7 +273,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
                 {Object.entries(processedData.eventsByMonth)
                     .sort(([a], [b]) => new Date(a + " 1").getTime() - new Date(b + " 1").getTime())
                     .map(([month, events]) => (
-                        <AccordionItem key={month} value={month} className="border-b border-gray-200 dark:border-gray-700">
+                        <AccordionItem key={month} value={month} className="border-b border-border">
                             <AccordionTrigger className="hover:no-underline py-3">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center">
@@ -322,7 +322,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
             </div>
             <Accordion type="multiple" className="w-full">
                 {filteredVenues.map(([venue, events]) => (
-                    <AccordionItem key={venue} value={venue} className="border-b border-gray-200 dark:border-gray-700">
+                    <AccordionItem key={venue} value={venue} className="border-b border-border">
                         <AccordionTrigger className="hover:no-underline py-3">
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center min-w-0 flex-1">
@@ -371,7 +371,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
             </div>
             <Accordion type="multiple" className="w-full">
                 {filteredArtists.map(([performer, events]) => (
-                    <AccordionItem key={performer} value={performer} className="border-b border-gray-200 dark:border-gray-700">
+                    <AccordionItem key={performer} value={performer} className="border-b border-border">
                         <AccordionTrigger className="hover:no-underline py-3">
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center min-w-0 flex-1">
@@ -490,7 +490,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
                                             </div>
                                         </div>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="bg-textured border border-gray-200 dark:border-gray-700">
+                                    <DropdownMenuContent className="bg-textured border-border">
                                         <DropdownMenuItem
                                             onClick={handleTestPageNavigation}
                                             className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"

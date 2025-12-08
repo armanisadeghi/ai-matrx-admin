@@ -42,7 +42,7 @@ const MarkdownInput: React.FC<MarkdownInputProps> = ({
 
     return (
         <div 
-            className="w-1/3 bg-textured border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden h-full"
+            className="w-1/3 bg-textured border-r border-border flex flex-col overflow-hidden h-full"
             onClick={handleContainerClick}
         >
             <ResizablePanelGroup

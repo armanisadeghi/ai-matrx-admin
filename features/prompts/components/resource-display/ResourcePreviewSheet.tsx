@@ -214,7 +214,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                                 Content
                             </h3>
-                            <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-800">
+                            <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border-border">
                                 <pre className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-sans">
                                     {resource.data.content || "No content"}
                                 </pre>
@@ -372,7 +372,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                     resource.data.tasks.map((task: any) => (
                                         <div
                                             key={task.id}
-                                            className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-zinc-900 rounded border border-gray-200 dark:border-gray-800"
+                                            className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-zinc-900 rounded border-border"
                                         >
                                             <CheckSquare className={`w-4 h-4 ${task.status === 'completed'
                                                 ? 'text-green-600 dark:text-green-500'
@@ -419,7 +419,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                             <>
                                 {/* Full Table Preview */}
                                 {tableData.type === 'full_table' && (
-                                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-900">
+                                    <div className="border-border rounded-lg overflow-hidden bg-white dark:bg-zinc-900">
                                         <UserTableViewer
                                             tableId={resource.data.table_id}
                                             showTableSelector={false}
@@ -435,8 +435,8 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                                 <strong>Row ID:</strong> {tableData.row.id}
                                             </p>
                                         </div>
-                                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                                            <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                                        <div className="border-border rounded-lg overflow-hidden">
+                                            <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-border">
                                                 <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Row Data</h4>
                                             </div>
                                             <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
@@ -473,8 +473,8 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                                 )}
                                             </p>
                                         </div>
-                                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                                            <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                                        <div className="border-border rounded-lg overflow-hidden">
+                                            <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-border">
                                                 <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                                                     Column Values ({tableData.rows.length} of {tableData.total || tableData.rows.length} rows)
                                                 </h4>
@@ -490,7 +490,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                                         return (
                                                             <div
                                                                 key={row.id}
-                                                                className="p-2 border-b border-gray-200 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-zinc-900/50"
+                                                                className="p-2 border-b border-border last:border-b-0 hover:bg-gray-50 dark:hover:bg-zinc-900/50"
                                                             >
                                                                 <div className="text-xs text-gray-900 dark:text-gray-100">
                                                                     {cellValue !== null && cellValue !== undefined
@@ -522,8 +522,8 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                                 <strong>Row ID:</strong> {tableData.rowId}
                                             </p>
                                         </div>
-                                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                                            <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                                        <div className="border-border rounded-lg overflow-hidden">
+                                            <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-border">
                                                 <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Cell Value</h4>
                                             </div>
                                             <div className="p-4">
@@ -540,7 +540,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                 )}
                             </>
                         ) : (
-                            <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-800">
+                            <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border-border">
                                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">No data available</p>
                             </div>
                         )}
@@ -577,7 +577,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                     {resource.data.charCount?.toLocaleString() || 0} characters
                                 </span>
                             </div>
-                            <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-800 max-h-[70vh] overflow-y-auto">
+                            <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border-border max-h-[70vh] overflow-y-auto">
                                 <pre className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">
                                     {resource.data.textContent}
                                 </pre>
@@ -646,7 +646,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                 {resource.type === "image_url" && (
                     <div className="space-y-4">
                         {/* Image Display */}
-                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                        <div className="border-border rounded-lg overflow-hidden">
                             <div className="relative aspect-video bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                                 <img
                                     src={resource.data.url}
@@ -684,7 +684,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                 {resource.type === "file_url" && (
                     <div className="space-y-4">
                         {/* File Icon/Info */}
-                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                        <div className="border-border rounded-lg overflow-hidden">
                             <div className="p-6 bg-gray-50 dark:bg-zinc-900 flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-lg bg-purple-100 dark:bg-purple-950/30 flex items-center justify-center flex-shrink-0">
                                     <FileText className="w-8 h-8 text-purple-600 dark:text-purple-500" />

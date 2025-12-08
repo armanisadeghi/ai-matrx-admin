@@ -74,7 +74,7 @@ export default function AppActionsEditTab({ appId }: AppActionsEditTabProps) {
         {extraButtons.length > 0 ? (
           <div className="space-y-4">
             {extraButtons.map((button, index) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
+              <div key={index} className="border-border rounded-md p-4">
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="font-medium">{button.label}</h4>
                   <Button 

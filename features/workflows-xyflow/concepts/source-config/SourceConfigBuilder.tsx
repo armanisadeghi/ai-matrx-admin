@@ -179,7 +179,7 @@ const SourceConfigBuilder = () => {
                                         {renderSpecificConfigForm(config, index)}
                                     </div>
 
-                                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <div className="pt-4 border-t border-border">
                                         <h4 className="text-md font-semibold mb-2 text-gray-900 dark:text-gray-100">Generated JSON</h4>
                                         <pre className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto max-h-120 text-gray-900 dark:text-gray-100">
                                             {JSON.stringify(config, null, 2)}

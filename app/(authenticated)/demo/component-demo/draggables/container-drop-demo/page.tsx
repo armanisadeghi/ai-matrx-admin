@@ -21,7 +21,7 @@ const TaskCard = ({ title, description, icon }: { title: string; description: st
     <p className="text-gray-600 dark:text-gray-400 flex-1">
       {description}
     </p>
-    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+    <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
       <div className="text-sm text-gray-500 dark:text-gray-400">Drag to organize</div>
       <div className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">Task</div>
     </div>
@@ -53,7 +53,7 @@ const ContainerAssignmentDisplay = () => {
   });
   
   return (
-    <div className="mt-8 p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="mt-8 p-4 bg-textured rounded-lg border-border">
       <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Container Assignments</h2>
       <div className="grid grid-cols-3 gap-4">
         {Object.entries(containerAssignments).map(([containerId, cardIds]) => (
@@ -206,7 +206,7 @@ export default function ContainerDropDemo() {
         />
         
         {/* Free dragging area with cards */}
-        <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 min-h-[300px] mb-8">
+        <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg border-border p-4 min-h-[300px] mb-8">
           <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Free Movement Area</h2>
           
           {/* Draggable cards */}

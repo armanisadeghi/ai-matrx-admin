@@ -177,7 +177,7 @@ export const UnifiedConversationsUI: React.FC = () => {
       
       {/* Sidebar content */}
       <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-white dark:bg-gray-950 shadow-xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -235,12 +235,12 @@ export const UnifiedConversationsUI: React.FC = () => {
   const DesktopSidebar = () => (
     <div
       className={clsx(
-        "flex-none flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 transition-all duration-300 ease-in-out",
+        "flex-none flex flex-col border-r border-border bg-white dark:bg-gray-950 transition-all duration-300 ease-in-out",
         expanded ? "w-96" : "w-72"
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
         <div className="flex space-x-2">
           <button
@@ -298,7 +298,7 @@ export const UnifiedConversationsUI: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Mobile header - only visible on small screens */}
-      <header className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+      <header className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-white dark:bg-gray-950">
         <button
           onClick={() => setSidebarOpen(true)}
           className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"

@@ -405,9 +405,9 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
     return (
         <div className={`flex h-full w-full bg-textured overflow-hidden ${className}`}>
             {/* Sidebar */}
-            <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+            <div className="w-80 border-r border-border flex flex-col overflow-hidden">
                 {/* Sidebar Header */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-b border-border">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             Content Templates
@@ -506,7 +506,7 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                 </ScrollArea>
 
                 {/* Stats */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div className="p-4 border-t border-border bg-gray-50 dark:bg-gray-800">
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                         {filteredTemplates.length} templates ({templates.filter(t => t.is_public).length} public)
                     </div>
@@ -518,7 +518,7 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                 {selectedTemplate ? (
                     <>
                         {/* Header with Save/Discard buttons */}
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+                        <div className="p-4 border-b border-border bg-textured">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -704,8 +704,8 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                             
                                             {/* Preview Section */}
                                             {previewMode !== 'editor' && (
-                                                <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
-                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                                <div className="flex-1 min-w-0 min-h-[300px] border-border rounded-lg p-4 bg-textured overflow-auto">
+                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-border">
                                                         PREVIEW
                                                     </div>
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">

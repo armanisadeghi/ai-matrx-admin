@@ -196,8 +196,8 @@ const DragEditModifyTableField: React.FC<{
                 className="bg-textured shadow-lg rounded overflow-hidden"
             >
                 <tbody>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                        <td style={{ width: columnWidths[0] }} className="p-0 border-r border-gray-200 dark:border-gray-700">
+                    <tr className="border-b border-border">
+                        <td style={{ width: columnWidths[0] }} className="p-0 border-r border-border">
                             <div {...provided.dragHandleProps} className="h-full flex items-center justify-center p-2 cursor-grab">
                                 <GripHorizontal className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                             </div>
@@ -206,7 +206,7 @@ const DragEditModifyTableField: React.FC<{
                             <td
                                 key={col.id}
                                 style={{ width: columnWidths[index + 1] }}
-                                className="p-3 border-r border-gray-200 dark:border-gray-700"
+                                className="p-3 border-r border-border"
                             >
                                 <span
                                     className={cn(
@@ -231,7 +231,7 @@ const DragEditModifyTableField: React.FC<{
     return (
         <div className={`${safeWidthClass} ${className}`}>
             <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="w-full overflow-x-auto border-border rounded-lg">
                     <table ref={tableRef} className="min-w-full border-collapse" style={{ tableLayout: "auto" }}>
                         <thead className="bg-gray-50 dark:bg-gray-900/50 select-none">
                             <Droppable droppableId={`cols-${fieldId}`} direction="horizontal" type="COLUMN" isDropDisabled={disabled}>
@@ -239,9 +239,9 @@ const DragEditModifyTableField: React.FC<{
                                     <tr
                                         ref={providedCols.innerRef}
                                         {...providedCols.droppableProps}
-                                        className="border-b border-gray-200 dark:border-gray-700"
+                                        className="border-b border-border"
                                     >
-                                        <th className="w-10 sticky left-0 z-10 bg-inherit p-0 border-r border-gray-200 dark:border-gray-700">
+                                        <th className="w-10 sticky left-0 z-10 bg-inherit p-0 border-r border-border">
                                             <div className="h-full flex items-center justify-center p-2">
                                                 <div className="w-5 h-5" />
                                             </div>
@@ -267,7 +267,7 @@ const DragEditModifyTableField: React.FC<{
                                                             className={cn(
                                                                 "text-left p-0 relative group",
                                                                 col.minWidthClass,
-                                                                "border-r border-gray-200 dark:border-gray-700",
+                                                                "border-r border-border",
                                                                 !col.isFixed &&
                                                                     !disabled &&
                                                                     !isEditing &&
@@ -371,10 +371,10 @@ const DragEditModifyTableField: React.FC<{
                                                             "bg-textured",
                                                             !snapshotRow.isDragging && "hover:bg-gray-50 dark:hover:bg-gray-700/50",
                                                             snapshotRow.isDragging ? "opacity-0" : "opacity-100",
-                                                            "border-b border-gray-200 dark:border-gray-700"
+                                                            "border-b border-border"
                                                         )}
                                                     >
-                                                        <td className="w-10 sticky left-0 z-0 bg-inherit p-0 border-r border-gray-200 dark:border-gray-700">
+                                                        <td className="w-10 sticky left-0 z-0 bg-inherit p-0 border-r border-border">
                                                             <div
                                                                 {...providedRow.dragHandleProps}
                                                                 className={cn(
@@ -386,7 +386,7 @@ const DragEditModifyTableField: React.FC<{
                                                             </div>
                                                         </td>
                                                         {sortedColumns.map((col) => (
-                                                            <td key={col.id} className="p-0 border-r border-gray-200 dark:border-gray-700">
+                                                            <td key={col.id} className="p-0 border-r border-border">
                                                                 {editingCell?.rowId === row.id && editingCell?.columnId === col.id ? (
                                                                     <input
                                                                         type="text"

@@ -109,7 +109,7 @@ export default function FieldComponentsList() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : filteredComponents.length === 0 ? (
-        <div className="text-center p-8 border border-gray-200 dark:border-gray-800 rounded-lg">
+        <div className="text-center p-8 border-border rounded-lg">
           <p className="text-lg text-gray-600 dark:text-gray-400">
             {searchTerm 
               ? 'No components match your search' 
@@ -127,9 +127,9 @@ export default function FieldComponentsList() {
           {filteredComponents.map((component) => (
             <div 
               key={component.id} 
-              className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
                 <div className="flex justify-between items-start">
                   <h3 className="text-lg font-medium">{component.label}</h3>
                   <span className="px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 capitalize">

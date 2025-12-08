@@ -115,7 +115,7 @@ const AppletSelectCreateOverlay: React.FC<AppletSelectCreateOverlayProps> & {
                     ${isFullscreen ? "w-screen h-screen max-w-none rounded-none" : "max-w-[80vw] h-[80vh]"}
                 `}
             >
-                <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <DialogHeader className="px-6 py-4 border-b border-border">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                             {view === "quickapplet" && (
@@ -151,7 +151,7 @@ const AppletSelectCreateOverlay: React.FC<AppletSelectCreateOverlayProps> & {
                             />
                         </div>
 
-                        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end space-x-2">
+                        <div className="px-6 py-4 border-t border-border bg-gray-50 dark:bg-gray-800 flex justify-end space-x-2">
                             <Button variant="outline" onClick={() => setOpen(false)}>
                                 Cancel
                             </Button>

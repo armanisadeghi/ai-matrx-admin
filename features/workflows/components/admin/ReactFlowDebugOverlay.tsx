@@ -231,7 +231,7 @@ const ReactFlowDebugOverlay: React.FC<ReactFlowDebugOverlayProps> = ({ className
                <div>Viewport X: {Math.round(currentData.viewport.x)}</div>
                <div>Viewport Y: {Math.round(currentData.viewport.y)}</div>
                <div>Zoom: {Math.round(currentData.viewport.zoom * 100)}%</div>
-               <div className="pt-1 border-t border-gray-200 dark:border-gray-700 mt-2">
+               <div className="pt-1 border-t border-border mt-2">
                  <div>Min Zoom: {reactFlowInstance.minZoom}</div>
                  <div>Max Zoom: {reactFlowInstance.maxZoom}</div>
                </div>

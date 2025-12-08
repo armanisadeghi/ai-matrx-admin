@@ -88,7 +88,7 @@ const EntityColorPicker = React.forwardRef<HTMLDivElement, EntityColorPickerProp
                         <button
                             key={`${color}-${index}`}
                             className={cn(
-                                "w-6 h-6 rounded-full border border-gray-200",
+                                "w-6 h-6 rounded-full border-border",
                                 "hover:scale-110 transition-transform",
                                 disabled && "cursor-not-allowed"
                             )}

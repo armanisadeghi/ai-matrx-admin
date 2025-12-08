@@ -27,7 +27,7 @@ const ColorDivs100 = () => {
       <div className="bg-pink-100 dark:bg-pink-900 border border-pink-100 dark:border-pink-900 text-pink-100 bg-pink-900 p-4 rounded-lg text-center">
         Pink
       </div>
-      <div className="bg-gray-100 dark:bg-gray-900 border border-gray-100 dark:border-gray-900 text-gray-100 bg-gray-900 p-4 rounded-lg text-center">
+      <div className="bg-gray-100 dark:bg-gray-900 border-border text-gray-100 bg-gray-900 p-4 rounded-lg text-center">
         Gray
       </div>
       <div className="bg-teal-100 dark:bg-teal-900 border border-teal-100 dark:border-teal-900 text-teal-100 bg-teal-900 p-4 rounded-lg text-center">
@@ -95,7 +95,7 @@ export const ColorDivs200 = () => {
       <div className="bg-pink-200 dark:bg-pink-800 border border-pink-200 dark:border-pink-800 text-pink-200 p-4 rounded-lg text-center">
         Pink
       </div>
-      <div className="bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-200 p-4 rounded-lg text-center">
+      <div className="bg-gray-200 dark:bg-gray-800 border-border text-gray-200 p-4 rounded-lg text-center">
         Gray
       </div>
       <div className="bg-teal-200 dark:bg-teal-800 border border-teal-200 dark:border-teal-800 text-teal-200 p-4 rounded-lg text-center">

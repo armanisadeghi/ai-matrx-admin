@@ -99,7 +99,7 @@ export const StepperFooter: React.FC<StepperFooterProps> = ({
                                     onClick={onReset}
                                     disabled={isLoading}
                                     size="sm"
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700"
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border-border"
                                 >
                                     {resetButtonText}
                                 </Button>

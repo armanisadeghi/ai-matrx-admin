@@ -116,7 +116,7 @@ export default function EditTabLayout({
       </div>
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="border-b border-border overflow-x-auto">
           <TabsList className="bg-transparent p-0 h-auto">
             {tabs.map((tab) => (
               <TabsTrigger

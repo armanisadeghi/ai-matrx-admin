@@ -262,7 +262,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline, taskId }) => {
                         <select
                           value={selectedCategory}
                           onChange={(e) => setSelectedCategory(e.target.value)}
-                          className="text-xs px-2 py-1 rounded bg-textured border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                          className="text-xs px-2 py-1 rounded bg-textured border-border text-gray-700 dark:text-gray-300"
                         >
                           {categories.map(cat => (
                             <option key={cat} value={cat}>

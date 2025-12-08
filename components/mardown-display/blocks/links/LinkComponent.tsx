@@ -266,7 +266,7 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
     const popupMenu = isPopupActive && isHovered && isMountedRef.current && (
         <div 
             ref={menuRef}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl backdrop-blur-sm py-0 w-[280px] text-gray-700 dark:text-gray-200 text-sm overflow-hidden"
+            className="bg-white dark:bg-gray-900 border-border rounded-lg shadow-2xl backdrop-blur-sm py-0 w-[280px] text-gray-700 dark:text-gray-200 text-sm overflow-hidden"
             style={getMenuStyle()}
         >
             {/* Title Section */}

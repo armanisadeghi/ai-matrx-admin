@@ -84,7 +84,7 @@ export default function Page() {
     return (
         <div className="h-full flex flex-col bg-textured">
             {/* Compact Input Row */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured flex-shrink-0">
+            <div className="p-4 border-b border-border bg-textured flex-shrink-0">
                 <div className="flex gap-3 items-center max-w-6xl mx-auto">
                     <div className="flex-1">
                         <Input

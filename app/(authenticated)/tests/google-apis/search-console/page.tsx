@@ -79,7 +79,7 @@ export default function SearchConsolePage() {
 
                 {/* Not Authenticated State */}
                 {isGoogleLoaded && !isAuthenticated && (
-                    <div className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+                    <div className="bg-textured border-border rounded-lg p-8 text-center">
                         <Search className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                             Sign In Required

@@ -29,7 +29,7 @@ const TaskResponses: React.FC<TaskResponsesProps> = ({ taskId }) => {
                     listenerIds.map((eventName) => (
                         <div
                             key={eventName}
-                            className="p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-zinc-800"
+                            className="p-4 border-border rounded-md bg-white dark:bg-zinc-800"
                         >
                             <h4 className="text-md font-medium mb-3 text-gray-800 dark:text-gray-200">
                                 Event {eventName}{" "}
@@ -45,7 +45,7 @@ const TaskResponses: React.FC<TaskResponsesProps> = ({ taskId }) => {
                         </div>
                     ))
                 ) : (
-                    <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-zinc-800">
+                    <div className="p-4 border-border rounded-md bg-white dark:bg-zinc-800">
                         <p className="text-gray-500 dark:text-gray-400">No active events for this task</p>
                     </div>
                 )}

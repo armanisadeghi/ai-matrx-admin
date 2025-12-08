@@ -80,7 +80,7 @@ export function registerResultComponents() {
         <div className="stats-display">
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(result).map(([key, value]) => (
-              <div key={key} className="p-2 border border-gray-200 dark:border-gray-700 rounded">
+              <div key={key} className="p-2 border-border rounded">
                 <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{key}</div>
                 <div className="text-lg font-bold text-gray-800 dark:text-gray-200">{String(value)}</div>
               </div>
@@ -191,7 +191,7 @@ export function registerResultComponents() {
           {originalInput && (
             <div className="mb-3">
               <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Original:</div>
-              <div className="text-gray-800 dark:text-gray-200 p-2 bg-textured rounded border border-gray-200 dark:border-gray-700">
+              <div className="text-gray-800 dark:text-gray-200 p-2 bg-textured rounded border-border">
                 {originalInput}
               </div>
             </div>

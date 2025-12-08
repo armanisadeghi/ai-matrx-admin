@@ -149,7 +149,7 @@ export function ImageManagerRow({
               <div className="absolute right-1 top-1 z-20">
                 <button
                   type="button"
-                  className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors shadow-sm"
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 border-border rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors shadow-sm"
                   onClick={handleOpenManager}
                 >
                   <Images className="h-3 w-3" />

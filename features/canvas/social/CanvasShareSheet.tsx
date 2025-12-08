@@ -246,7 +246,7 @@ export function CanvasShareSheet({
                                 </Select>
                             </div>
 
-                            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between p-4 rounded-lg border-border">
                                 <div className="space-y-0.5">
                                     <Label>Allow Remixes</Label>
                                     <p className="text-sm text-gray-500">Let others fork and modify your canvas</p>
@@ -257,7 +257,7 @@ export function CanvasShareSheet({
                                 />
                             </div>
 
-                            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between p-4 rounded-lg border-border">
                                 <div className="space-y-0.5">
                                     <Label>Require Attribution</Label>
                                     <p className="text-sm text-gray-500">Remixes must credit you as original creator</p>

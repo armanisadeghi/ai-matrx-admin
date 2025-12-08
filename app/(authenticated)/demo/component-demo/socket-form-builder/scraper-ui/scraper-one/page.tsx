@@ -50,7 +50,7 @@ export default function Page() {
             </div>
 
             {/* Toggle Bar */}
-            <div className="sticky top-0 z-10 bg-textured border-b border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="sticky top-0 z-10 bg-textured border-b border-border shadow-sm">
                 <div className="flex justify-between items-center px-4 py-2">
                     <div className="flex items-center">
                         <button

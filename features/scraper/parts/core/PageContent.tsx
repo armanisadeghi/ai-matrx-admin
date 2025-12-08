@@ -151,7 +151,7 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                 />
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
                     <ContentTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                    <div className="flex-1 overflow-auto bg-textured rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                    <div className="flex-1 overflow-auto bg-textured rounded-xl shadow-md border-border">
                         <TabsContent value="reader" className="m-0 h-full overflow-auto">
                             <SimplifiedView pageData={extractedData} />
                         </TabsContent>

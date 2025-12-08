@@ -32,7 +32,7 @@ const AppletCarousel: React.FC<AppletCarouselProps> = ({ applets, onAppletClick 
       {/* Left arrow */}
       <button
         onClick={() => scroll('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-textured shadow-md hover:shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 border border-gray-200 dark:border-gray-700"
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-textured shadow-md hover:shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 border-border"
         disabled={!scrollRef.current?.scrollLeft}
       >
         <ChevronLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
@@ -58,7 +58,7 @@ const AppletCarousel: React.FC<AppletCarouselProps> = ({ applets, onAppletClick 
       {/* Right arrow */}
       <button
         onClick={() => scroll('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-textured shadow-md hover:shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 border border-gray-200 dark:border-gray-700"
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-textured shadow-md hover:shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 border-border"
       >
         <ChevronRightIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
       </button>

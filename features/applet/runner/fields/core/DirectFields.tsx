@@ -94,10 +94,10 @@ export const DirectFieldValues: React.FC<DirectFieldValuesProps> = ({ fields, so
     const fieldArray = Array.isArray(fields) ? fields : [fields];
 
     return (
-        <div className={`grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-4 ${className}`}>
+        <div className={`grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 bg-textured border-border rounded-lg p-4 ${className}`}>
             {fieldArray?.map((field) => (
                 <React.Fragment key={field.id}>
-                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 py-1 pr-2 border-r border-gray-200 dark:border-gray-700">
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 py-1 pr-2 border-r border-border">
                         {field.label}
                     </div>
                     <div className="py-1">

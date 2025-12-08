@@ -261,7 +261,7 @@ const SmartAppletList = forwardRef<
             return Array(6)
                 .fill(0)
                 .map((_, index) => (
-                    <Card key={`skeleton-${index}`} className="overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <Card key={`skeleton-${index}`} className="overflow-hidden border-border">
                         <div className="p-4">
                             <div className="flex items-center space-x-3">
                                 <Skeleton className="h-10 w-10 rounded-md" />
@@ -275,7 +275,7 @@ const SmartAppletList = forwardRef<
                                 <Skeleton className="h-3 w-3/4" />
                             </div>
                         </div>
-                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-border">
                             <Skeleton className="h-8 w-full rounded-md" />
                         </div>
                     </Card>
@@ -335,7 +335,7 @@ const SmartAppletList = forwardRef<
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <div className="flex border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                        <div className="flex border-border rounded-md overflow-hidden">
                             <Button
                                 variant={viewMode === "grid" ? "default" : "ghost"}
                                 size="sm"
@@ -398,7 +398,7 @@ const SmartAppletList = forwardRef<
                                     >
                                         <Card
                                             className={`
-                      border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 h-full
+                      border-border hover:shadow-md transition-shadow duration-200 h-full
                       ${viewMode === "list" ? "flex overflow-hidden" : "overflow-hidden"}
                       ${colorClasses.cardBg}
                     `}
@@ -509,7 +509,7 @@ const SmartAppletList = forwardRef<
 
                                             <CardFooter
                                                 className={`
-                      border-t border-gray-200 dark:border-gray-700 p-3
+                      border-t border-border p-3
                       ${colorClasses.cardFooterBg}
                       ${
                           viewMode === "list"

@@ -114,7 +114,7 @@ function FieldItem({ field, index }: { field: FieldDefinition; index: number }) 
   const [isExpanded, setIsExpanded] = useState(false);
   
   return (
-    <Card className="border border-gray-200 dark:border-gray-700">
+    <Card className="border-border">
       <div 
         className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -141,7 +141,7 @@ function FieldItem({ field, index }: { field: FieldDefinition; index: number }) 
       </div>
       
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="px-4 pb-4 border-t border-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
               <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Field ID</p>

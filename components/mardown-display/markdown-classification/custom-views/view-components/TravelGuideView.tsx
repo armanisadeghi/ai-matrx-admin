@@ -158,7 +158,7 @@ const ListItemComponent = ({ item }: { item: ListItem }) => {
 // Component for rendering a table
 const TableComponent = ({ data }: { data: { headers: string[]; rows: string[][] } }) => {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+    <div className="overflow-x-auto rounded-lg border-border mb-6">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
@@ -415,7 +415,7 @@ const TravelGuide: React.FC<TravelGuideProps> = ({
             <div className="bg-textured rounded-lg shadow-md p-6 md:p-8">
               {/* Hero section with the first paragraph */}
               {data.sections[0] && data.sections[0].type === 'paragraph' && (
-                <div className="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
+                <div className="mb-8 pb-8 border-b border-border">
                   <div 
                     className="text-lg text-gray-800 dark:text-gray-200 leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: formatText(data.sections[0].content as string) }}
@@ -514,7 +514,7 @@ export const TravelGuideLoading = () => {
         <main className="flex-1 md:ml-8">
           <div className="bg-textured rounded-lg shadow-md p-6 md:p-8">
             {/* Progress indicator */}
-            <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="mb-8 pb-6 border-b border-border">
               <div className="space-y-3">
                 <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-700 rounded loading-shine"></div>
                 <div className="h-5 w-full bg-gray-200 dark:bg-gray-700 rounded loading-shine"></div>
@@ -564,7 +564,7 @@ export const TravelGuideLoading = () => {
             ))}
             
             {/* Table Skeleton */}
-            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="overflow-x-auto rounded-lg border-border mb-6">
               <div className="min-w-full bg-gray-50 dark:bg-gray-800 p-4">
                 <div className="grid grid-cols-2 gap-4">
                   {[...Array(6)].map((_, rowIndex) => (

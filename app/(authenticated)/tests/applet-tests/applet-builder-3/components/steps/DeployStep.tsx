@@ -36,7 +36,7 @@ export function DeployStep() {
       />
 
       <div className="space-y-6">
-        <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border-border">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Deployment Options
           </h3>

@@ -162,7 +162,7 @@ export function DataTable({ data, dimension, title }: DataTableProps) {
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                            <tr className="border-b border-border">
                                 <th className="text-left py-3 px-4">
                                     <button
                                         onClick={() => handleSort('name')}

@@ -9,7 +9,7 @@ export default async function TestControlsPage() {
     return (
         <div className="h-full w-full p-8 overflow-auto">
             <Card className="bg-textured border-gray-200 dark:border-gray-800">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+                <div className="p-6 border-b border-border">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         Test: Dynamic Model Controls
                     </h1>

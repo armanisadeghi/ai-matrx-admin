@@ -124,7 +124,7 @@ export function CanvasLeaderboard({
 
             {/* Current User Rank (if not in top N) */}
             {showCurrentUserRank && data.userRank && data.userRank > limit && (
-                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-3 border-t border-border">
                     <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                         Your rank: <span className="font-semibold">#{data.userRank}</span>
                     </div>

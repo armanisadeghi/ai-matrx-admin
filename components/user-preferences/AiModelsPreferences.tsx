@@ -222,7 +222,7 @@ const AiModelsPreferences = () => {
                 />
             </div>
 
-            <div className="pt-4 mt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4 mt-6 border-t border-border">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                     Total models: {models.length} • Active: {activeModels.length} • Available: {availableModels.length} • Inactive: {inactiveModels.length}
                 </p>

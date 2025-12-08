@@ -243,7 +243,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {/* App Selector */}
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border-border">
                         <h3 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Select App</h3>
                         <RadioGroup 
                             value={selectedAppId} 
@@ -268,7 +268,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                     </div>
                     
                     {/* Applet Selector */}
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border-border">
                         <h3 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Select Applet</h3>
                         <div className="max-h-40 overflow-y-auto">
                             <RadioGroup 
@@ -298,7 +298,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                     </div>
                     
                     {/* Container Selector */}
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border-border">
                         <h3 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Select Container</h3>
                         <div className="max-h-40 overflow-y-auto">
                             <RadioGroup 
@@ -328,7 +328,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                     </div>
                     
                     {/* Component Selector */}
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border-border">
                         <h3 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Select Component</h3>
                         <div className="max-h-40 overflow-y-auto">
                             <RadioGroup 
@@ -358,7 +358,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                     </div>
                     
                     {/* Instance Selector */}
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border-border">
                         <h3 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Select Instance</h3>
                         <div className="max-h-40 overflow-y-auto">
                             <RadioGroup 
@@ -394,7 +394,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                     </div>
                     
                     {/* Broker ID Display */}
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border-border">
                         <h3 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Associated Broker</h3>
                         <div className="space-y-2">
                             {selectedBrokerId ? (

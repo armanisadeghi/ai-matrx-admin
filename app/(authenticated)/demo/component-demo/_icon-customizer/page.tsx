@@ -236,7 +236,7 @@ const IconCustomizer = () => {
                                             `bg-${c}-500`;
 
                                     const buttonClass = `
-                                    w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700
+                                    w-8 h-8 rounded-full border-border
                                     ${bgColorClass}
                                     ${color === c ? 'ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-gray-800' : ''}
                                     relative group

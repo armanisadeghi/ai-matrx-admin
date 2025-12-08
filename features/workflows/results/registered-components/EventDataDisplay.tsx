@@ -62,7 +62,7 @@ const EventDataDisplay: React.FC<EventDataDisplayProps> = ({ nodeData, brokerId,
     // Raw content component
     const RawContentTab = () => (
         <Card title="Raw Event Data">
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border-border">
                 <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono leading-relaxed">{dataToUse?.data}</pre>
             </div>
         </Card>
@@ -72,7 +72,7 @@ const EventDataDisplay: React.FC<EventDataDisplayProps> = ({ nodeData, brokerId,
     const MetadataTab = () => (
         <Card title="Response Metadata">
             <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border-border">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Success:</span>

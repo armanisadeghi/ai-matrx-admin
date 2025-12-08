@@ -115,7 +115,7 @@ const StreamDisplayOverlay = ({
       {isFullscreen && (
         <div className="fixed inset-0 z-50 flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
           {/* Header */}
-          <div className="flex justify-between items-center p-3 bg-textured border-b border-gray-200 dark:border-gray-700 shadow-sm flex-shrink-0">
+          <div className="flex justify-between items-center p-3 bg-textured border-b border-border shadow-sm flex-shrink-0">
             <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200">
               {title}
             </h2>

@@ -11,7 +11,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ type, onChange }) =>
     <select
         value={type || ""}
         onChange={(e) => onChange(e.target.value as Row["type"])}
-        className="border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm 
+        className="border-border rounded px-2 py-1 text-sm 
               bg-textured text-gray-900 dark:text-gray-100"
     >
         <option value="">Select type...</option>

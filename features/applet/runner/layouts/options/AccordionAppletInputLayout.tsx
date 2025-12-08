@@ -52,7 +52,7 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
                         <div key={container.id} className={`${index !== 0 ? "border-t dark:border-gray-700" : ""}`}>
                             <button
                                 className={`w-full flex justify-between items-center p-4 text-left focus:outline-none 
-                  ${isActive ? "bg-gray-50 dark:bg-gray-700" : "hover:bg-gray-50 dark:hover:bg-gray-700 hover: border border-gray-100 dark:border-gray-800"} cursor-pointer`}
+                  ${isActive ? "bg-gray-50 dark:bg-gray-700" : "hover:bg-gray-50 dark:hover:bg-gray-700 hover: border-border"} cursor-pointer`}
                                 onClick={() => toggleGroup(container.id)}
                             >
                                 <div>
@@ -64,7 +64,7 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
                                 <div><ChevronDown size={20} className={`transition-transform duration-300 ${isActive ? 'rotate-180' : ''}`} /></div>
                             </button>
                             <div
-                                className="overflow-hidden transition-[height] duration-500 ease-in-out border-b border-gray-200 dark:border-gray-700"
+                                className="overflow-hidden transition-[height] duration-500 ease-in-out border-b border-border"
                                 style={{
                                     height: isActive ? contentRefs.current.get(container.id)?.current?.scrollHeight || "auto" : 0,
                                 }}

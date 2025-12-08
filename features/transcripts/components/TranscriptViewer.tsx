@@ -46,7 +46,7 @@ export function TranscriptViewer() {
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-900">
             {/* Header */}
-            <div className="border-b border-gray-200 dark:border-gray-700 p-6 space-y-4">
+            <div className="border-b border-border p-6 space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="title" className="text-sm font-medium">
                         Title

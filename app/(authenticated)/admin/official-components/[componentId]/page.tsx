@@ -91,7 +91,7 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
               <Separator className="my-6" />
               
               <h3 className="text-xl font-semibold mb-6">Component Demo</h3>
-              <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 rounded-lg border-border bg-gray-50 dark:bg-gray-900">
                 <ComponentDisplay component={component} />
               </div>
             </CardContent>

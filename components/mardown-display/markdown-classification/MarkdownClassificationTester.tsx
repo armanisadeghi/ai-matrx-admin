@@ -192,7 +192,7 @@ const MarkdownClassificationTester = ({
         <div className="flex flex-col h-full overflow-hidden bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             {/* Controls */}
             {showSelectors && (
-                <div className="border-b border-gray-200 dark:border-gray-700 p-2 flex flex-wrap items-end gap-2 text-sm">
+                <div className="border-b border-border p-2 flex flex-wrap items-end gap-2 text-sm">
                     {/* Coordinator Selector */}
                     <div className="flex-shrink-0 flex items-center gap-2">
                         <label className="text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Coordinator:</label>

@@ -307,7 +307,7 @@ export function PromptBuiltinEditPanel({
             </div>
 
             {/* Divider */}
-            <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+            <div className="pt-1 border-t border-border" />
 
             {/* Boolean switches in compact grid */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">

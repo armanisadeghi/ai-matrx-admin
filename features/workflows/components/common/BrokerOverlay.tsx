@@ -26,9 +26,9 @@ export function BrokerOverlay({ workflowData, isOpen, onClose }: BrokerOverlayPr
       />
       
       {/* Overlay Content */}
-      <div className="relative bg-textured rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-6xl max-h-[90vh] overflow-hidden mx-4">
+      <div className="relative bg-textured rounded-lg shadow-2xl border-border w-full max-w-6xl max-h-[90vh] overflow-hidden mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Workflow Brokers

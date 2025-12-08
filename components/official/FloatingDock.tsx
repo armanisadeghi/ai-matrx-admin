@@ -80,7 +80,7 @@ function FloatingDockMobile({
         <div className={cn("fixed inset-0 z-50", bgColor)} style={{ backgroundImage: BACKGROUND_PATTERN }}>
           <div className="flex flex-col h-full">
             {/* Header with close button */}
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center p-4 border-b border-border">
               <h2 className="text-lg font-medium">Menu</h2>
               <button
                 onClick={() => setOpen(false)}
@@ -98,7 +98,7 @@ function FloatingDockMobile({
                 <Link
                   href={item.href}
                   key={item.label}
-                  className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+                  className="flex items-center justify-between p-4 border-b border-border"
                   onClick={() => setOpen(false)}
                 >
                   <div className="flex items-center space-x-4">

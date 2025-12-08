@@ -212,7 +212,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
                 
                 {/* Ingredients Section */}
                 <div className="space-y-2">
-                  <div className="bg-textured rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-4 shadow-md border-border">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
@@ -262,7 +262,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
                           className={`flex items-start gap-2 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
                             checkedIngredients.has(index)
                               ? 'bg-purple-50 dark:bg-purple-950/30 border border-purple-300 dark:border-purple-700'
-                              : 'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
+                              : 'bg-gray-50 dark:bg-gray-900/50 border-border hover:border-purple-300 dark:hover:border-purple-700'
                           }`}
                         >
                           {checkedIngredients.has(index) ? (
@@ -294,7 +294,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
 
                 {/* Instructions Section */}
                 <div className="space-y-2">
-                  <div className="bg-textured rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-4 shadow-md border-border">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -333,7 +333,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe, taskId }) => {
                           className={`relative flex gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                             completedSteps.has(index)
                               ? 'bg-green-50 dark:bg-green-950/30 border border-green-300 dark:border-green-700'
-                              : 'bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
+                              : 'bg-gray-50 dark:bg-gray-900/50 border-border hover:border-blue-300 dark:hover:border-blue-700'
                           }`}
                         >
                           <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${

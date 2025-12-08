@@ -218,7 +218,7 @@ export function SingleImageSelect({
             <div
                 className={cn(
                     "relative overflow-hidden cursor-pointer transition-all duration-200",
-                    "border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600",
+                    "border-border hover:border-blue-400 dark:hover:border-blue-600",
                     "bg-gray-50 dark:bg-gray-900",
                     sizeClass,
                     aspectRatioClass,

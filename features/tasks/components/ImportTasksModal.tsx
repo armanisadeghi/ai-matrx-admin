@@ -324,7 +324,7 @@ export default function ImportTasksModal({
                     {getSelectedCount()} selected
                   </span>
                 </div>
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-64 overflow-y-auto">
+                <div className="border-border rounded-lg p-3 max-h-64 overflow-y-auto">
                   {renderTaskTree(tasks)}
                 </div>
               </div>

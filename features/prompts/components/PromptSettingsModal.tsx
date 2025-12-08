@@ -243,7 +243,7 @@ export function PromptSettingsModal({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-5xl h-[95vh] flex flex-col bg-textured p-0">
-                <DialogHeader className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <DialogHeader className="px-4 py-3 border-b border-border flex-shrink-0">
                     <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Prompt Settings
                     </DialogTitle>
@@ -747,7 +747,7 @@ export function PromptSettingsModal({
                 </Tabs>
 
                 {/* Actions */}
-                <div className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="flex justify-end gap-2 px-4 py-3 border-t border-border flex-shrink-0">
                     <Button
                         variant="outline"
                         onClick={handleCancel}

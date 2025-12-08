@@ -50,7 +50,7 @@ export const AddFieldsDialog: React.FC<AddFieldsDialogProps> = ({
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Create fields first in the Field Builder</p>
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="max-h-96 overflow-y-auto border-border rounded-lg">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {availableFields.map((field) => (
                   <li 

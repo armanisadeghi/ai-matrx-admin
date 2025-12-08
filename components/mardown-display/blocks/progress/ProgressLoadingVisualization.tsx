@@ -100,7 +100,7 @@ const ProgressLoadingVisualization: React.FC<ProgressLoadingVisualizationProps> 
         </div>
 
         {/* Overall Progress Section */}
-        <div className="bg-textured/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="bg-textured/50 rounded-xl p-6 border-border mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg animate-pulse">
@@ -131,7 +131,7 @@ const ProgressLoadingVisualization: React.FC<ProgressLoadingVisualizationProps> 
             { label: 'In Progress', icon: TrendingUp, color: 'text-orange-600 dark:text-orange-400' },
             { label: 'Categories', icon: BarChart3, color: 'text-purple-600 dark:text-purple-400' }
           ].map((stat, index) => (
-            <div key={index} className="bg-textured/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 150}ms` }}>
+            <div key={index} className="bg-textured/50 rounded-lg p-3 border-border animate-pulse" style={{ animationDelay: `${index * 150}ms` }}>
               <div className={`flex items-center gap-2 ${stat.color} mb-2`}>
                 <stat.icon className="h-4 w-4" />
                 <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-16" />
@@ -143,7 +143,7 @@ const ProgressLoadingVisualization: React.FC<ProgressLoadingVisualizationProps> 
 
         {/* Loading Text */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-textured/50 rounded-full border border-gray-200 dark:border-gray-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-textured/50 rounded-full border-border">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full animate-bounce" />
               <div className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce delay-100" />

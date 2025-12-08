@@ -273,8 +273,8 @@ const LinesViewer = ({ data }: { data: LineItem[] }) => {
     <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
       <div className="h-full flex gap-4 max-w-7xl mx-auto">
         {/* Simplified Sidebar */}
-        <div className="w-16 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          <div className="p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="w-16 flex-shrink-0 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="p-2 border-b border-border bg-gray-50 dark:bg-gray-900">
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">{data.length}</p>
           </div>
           
@@ -312,9 +312,9 @@ const LinesViewer = ({ data }: { data: LineItem[] }) => {
         </div>
         
         {/* Main Content */}
-        <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-gray-800 dark:text-gray-200">

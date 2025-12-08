@@ -38,7 +38,7 @@ export default function AppDataContextTab({ appId }: AppDataContextTabProps) {
               This is the shared data context available to all applets within this app.
             </p>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-md">
-              <ScrollArea className="h-96 w-full rounded-md border border-gray-200 dark:border-gray-700">
+              <ScrollArea className="h-96 w-full rounded-md border-border">
                 <pre className="p-4 text-sm text-gray-800 dark:text-gray-200 font-mono">
                   {formattedJson}
                 </pre>

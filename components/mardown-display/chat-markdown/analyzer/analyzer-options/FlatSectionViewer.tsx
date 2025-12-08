@@ -95,8 +95,8 @@ const FlatSectionViewer = ({ data, bookmark }: FlatSectionViewerProps) => {
     <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
       <div className="h-full flex gap-4 max-w-7xl mx-auto">
         {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="w-80 flex-shrink-0 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -136,9 +136,9 @@ const FlatSectionViewer = ({ data, bookmark }: FlatSectionViewerProps) => {
         </div>
         
         {/* Main Content */}
-        <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ const FlatSectionViewer = ({ data, bookmark }: FlatSectionViewerProps) => {
                         No formatting applied
                       </span>
                     </div>
-                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 font-mono">
+                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border-border font-mono">
                       {selectedSection.content}
                     </pre>
                   </div>

@@ -276,7 +276,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     Your new table was created with {saveResponse.row_count} rows and {saveResponse.field_count} fields per row.
                 </div>
 
-                <div className="h-[calc(85vh-140px)] overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-textured">
+                <div className="h-[calc(85vh-140px)] overflow-auto border-border rounded-lg bg-textured">
                     <UserTableViewer tableId={saveResponse.table_id} showTableSelector={false} />
                 </div>
             </div>

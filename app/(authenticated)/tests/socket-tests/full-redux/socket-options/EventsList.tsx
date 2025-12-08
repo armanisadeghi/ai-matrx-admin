@@ -14,7 +14,7 @@ const EventsList: React.FC = () => {
           Object.keys(responses).map((eventName) => (
             <div 
               key={eventName}
-              className="p-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-zinc-800"
+              className="p-2 border-border rounded-md bg-white dark:bg-zinc-800"
             >
               <div className="flex items-center justify-between">
                 <p className="text-gray-700 dark:text-gray-300 text-sm overflow-hidden text-ellipsis">

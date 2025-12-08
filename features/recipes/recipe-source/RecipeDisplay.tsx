@@ -107,7 +107,7 @@ interface RecipeListProps {
 // Component for displaying the recipe list
 export const RecipeList: React.FC<RecipeListProps> = ({ filteredRecipes, selectedRecipe, isLoading, onRecipeSelect }) => {
     return (
-        <div className="max-h-[30vh] md:max-h-[40vh] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+        <div className="max-h-[30vh] md:max-h-[40vh] overflow-y-auto border-border rounded-lg">
             {isLoading ? (
                 <div className="text-center py-6">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Loading recipes...</p>

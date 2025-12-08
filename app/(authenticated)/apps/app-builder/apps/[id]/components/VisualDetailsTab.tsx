@@ -64,7 +64,7 @@ export default function VisualDetailsTab({ appId }: VisualDetailsTabProps) {
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Primary Color</p>
                 <div
-                  className="w-8 h-8 rounded border border-gray-200 dark:border-gray-700 mt-1"
+                  className="w-8 h-8 rounded border-border mt-1"
                   style={{ backgroundColor: primaryColor }}
                 />
               </div>
@@ -74,7 +74,7 @@ export default function VisualDetailsTab({ appId }: VisualDetailsTabProps) {
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Accent Color</p>
                 <div
-                  className="w-8 h-8 rounded border border-gray-200 dark:border-gray-700 mt-1"
+                  className="w-8 h-8 rounded border-border mt-1"
                   style={{ backgroundColor: accentColor }}
                 />
               </div>

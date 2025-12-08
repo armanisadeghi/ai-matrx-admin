@@ -46,9 +46,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   if (isCollapsed) {
     return (
-      <div className="h-full w-full flex flex-col items-center bg-textured border-r border-gray-200 dark:border-gray-800">
+      <div className="h-full w-full flex flex-col items-center bg-textured border-r border-border">
         {/* Collapsed View */}
-        <div className="p-2 w-full border-b border-gray-200 dark:border-gray-800">
+        <div className="p-2 w-full border-b border-border">
           <button
             onClick={onToggleCollapse}
             className="w-full p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -91,9 +91,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-textured border-r border-gray-200 dark:border-gray-800">
+    <div className="h-full w-full flex flex-col bg-textured border-r border-border">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between p-3 border-b border-border">
         <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Chats</h2>
         {onToggleCollapse && (
           <button

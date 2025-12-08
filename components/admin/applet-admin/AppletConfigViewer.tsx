@@ -134,7 +134,7 @@ const AppletConfigViewer = ({ applet, searchParams }: AppletConfigViewerProps) =
     return (
         <div className="bg-textured rounded-lg shadow overflow-hidden">
             {/* Tabs */}
-            <div className="border-b border-gray-200 dark:border-gray-700">
+            <div className="border-b border-border">
                 <nav className="flex space-x-2 px-4" aria-label="Tabs">
                     <Link
                         href="?tab=info"
@@ -276,7 +276,7 @@ const AppletConfigViewer = ({ applet, searchParams }: AppletConfigViewerProps) =
                                 </Link>
 
                                 {expandedContainer === container.id && (
-                                    <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="border-t border-border p-4 bg-gray-50 dark:bg-gray-800/50">
                                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{container.description}</p>
                                         <div className="space-y-6">
                                             {container.fields.map((field) => (

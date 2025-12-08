@@ -338,7 +338,7 @@ export function McpToolsManager() {
                     </div>
 
                     {/* Stats */}
-                    <div className="flex gap-6 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-6 mt-4 pt-4 border-t border-border">
                         <div className="text-sm">
                             <span className="font-medium text-gray-900 dark:text-gray-100">{filteredTools.length}</span>
                             <span className="text-gray-500 dark:text-gray-400 ml-1">
@@ -536,7 +536,7 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+                    <div className="border-t border-border pt-4 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <Label className="font-medium text-gray-700 dark:text-gray-300">Function Path</Label>
@@ -830,7 +830,7 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                     </div>
 
                     {tool && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
                             <div>
                                 <Label>Tool ID</Label>
                                 <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
@@ -849,7 +849,7 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
             </Tabs>
 
             {/* Actions */}
-            <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end space-x-2 pt-4 border-t border-border">
                 <Button variant="outline" onClick={onCancel}>
                     Cancel
                 </Button>

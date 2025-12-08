@@ -68,7 +68,7 @@ const ChipSearchUtility: React.FC = () => {
     };
 
     return (
-        <div className="p-4 space-y-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="p-4 space-y-4 bg-textured rounded-lg border-border">
             {/* Header with Refresh */}
             <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Chip Content Recovery</h2>
@@ -201,7 +201,7 @@ const ChipSearchUtility: React.FC = () => {
 
             {/* Metadata Display */}
             {brokerContent && (
-                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded border-border">
                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content Metadata</h3>
                     <pre className="text-xs whitespace-pre-wrap text-gray-600 dark:text-gray-400">
                         {JSON.stringify(brokerContent.chips.map(chip => ({

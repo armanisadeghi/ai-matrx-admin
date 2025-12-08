@@ -94,7 +94,7 @@ export function TemplatePreviewDialog({
                     </TabsList>
 
                     <TabsContent value="preview" className="flex-1 overflow-hidden mt-4">
-                        <ScrollArea className="h-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                        <ScrollArea className="h-full rounded-md border-border bg-white dark:bg-gray-900">
                             <div className="p-6">
                                 <MarkdownStream
                                     content={template.template}
@@ -111,7 +111,7 @@ export function TemplatePreviewDialog({
                     </TabsContent>
 
                     <TabsContent value="raw" className="flex-1 overflow-hidden mt-4">
-                        <ScrollArea className="h-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                        <ScrollArea className="h-full rounded-md border-border bg-gray-50 dark:bg-gray-900">
                             <pre className="p-6 text-sm text-gray-800 dark:text-gray-200 font-mono">
                                 {template.template}
                             </pre>

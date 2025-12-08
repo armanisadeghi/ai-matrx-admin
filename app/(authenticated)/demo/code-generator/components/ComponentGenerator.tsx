@@ -384,7 +384,7 @@ function CustomComponent() {
       
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Panel: Component Editor and AI Assistant */}
-        <div className="w-full md:w-1/2 flex flex-col border-r border-gray-200 dark:border-gray-700">
+        <div className="w-full md:w-1/2 flex flex-col border-r border-border">
           {/* AI Assistant Section */}
           <AIAssistant 
             generateWithAI={generateWithAI}

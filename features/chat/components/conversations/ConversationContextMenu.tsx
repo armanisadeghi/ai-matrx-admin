@@ -61,7 +61,7 @@ export const ConversationContextMenu: React.FC<ConversationContextMenuProps> = (
         left: `${adjustedPosition.x}px`,
         zIndex: 50,
       }}
-      className="bg-textured shadow-lg rounded-md border border-gray-200 dark:border-gray-700 min-w-[180px] overflow-hidden"
+      className="bg-textured shadow-lg rounded-md border-border min-w-[180px] overflow-hidden"
     >
       <div className="py-1">
         <button
@@ -115,7 +115,7 @@ export const ConversationContextMenu: React.FC<ConversationContextMenuProps> = (
         )}
       </div>
       
-      <div className="border-t border-gray-200 dark:border-gray-700 py-1">
+      <div className="border-t border-border py-1">
         <button
           onClick={() => {
             onDelete(conversationId);

@@ -223,7 +223,7 @@ export function PromptInput({
         <div className="bg-white dark:bg-zinc-900 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
             {/* Variable Inputs - Only shown when showVariables is true */}
             {showVariables && variableDefaults.length > 0 && (
-                <div className="border-b border-gray-200 dark:border-gray-800">
+                <div className="border-b border-border">
                     <div className="p-0">
                         <div className="space-y-0">
                             {variableDefaults.map((variable, index) => {
@@ -315,7 +315,7 @@ export function PromptInput({
 
             {/* Resource Chips Display */}
             {resources.length > 0 && (
-                <div className="border-b border-gray-200 dark:border-gray-800 py-1">
+                <div className="border-b border-border py-1">
                     <ResourceChips
                         resources={resources}
                         onRemove={handleRemoveResource}

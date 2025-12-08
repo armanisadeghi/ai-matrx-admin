@@ -118,7 +118,7 @@ const SplitScreenOverlay: React.FC<SplitScreenOverlayProps> = ({
                 return (
                     <TabsTrigger
                         key={tab.id}
-                        className={`${positionClass} px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700`}
+                        className={`${positionClass} px-4 py-2 border-border hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700`}
                         value={tab.id}
                     >
                         {tab.label}
@@ -138,8 +138,8 @@ const SplitScreenOverlay: React.FC<SplitScreenOverlayProps> = ({
 
                 <div className="flex flex-row flex-grow overflow-hidden">
                     {/* Left Panel */}
-                    <div className={`flex flex-col border-r border-gray-200 dark:border-gray-700`} style={{ width: leftPanelWidth }}>
-                        <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <div className={`flex flex-col border-r border-border`} style={{ width: leftPanelWidth }}>
+                        <div className="p-2 border-b border-border">
                             <Tabs value={activeLeftTab} onValueChange={handleLeftTabChange}>
                                 {renderTabsList(leftTabs, activeLeftTab, handleLeftTabChange)}
                             </Tabs>
@@ -155,7 +155,7 @@ const SplitScreenOverlay: React.FC<SplitScreenOverlayProps> = ({
 
                     {/* Right Panel */}
                     <div className={`flex flex-col`} style={{ width: rightPanelWidth }}>
-                        <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="p-2 border-b border-border">
                             <Tabs value={activeRightTab} onValueChange={handleRightTabChange}>
                                 {renderTabsList(rightTabs, activeRightTab, handleRightTabChange)}
                             </Tabs>

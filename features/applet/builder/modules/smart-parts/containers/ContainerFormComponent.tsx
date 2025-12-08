@@ -163,15 +163,15 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
 
     if (!containerId) {
         return (
-            <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
+            <Card className="border-border bg-textured shadow-lg">
                 <CardContent className="p-6 text-center text-gray-500 dark:text-gray-400">No container selected.</CardContent>
             </Card>
         );
     }
 
     return (
-        <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
-            <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+        <Card className="border-border bg-textured shadow-lg">
+            <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-border">
                 <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
                     {title}
                     {isDirty && container?.label && <span className="text-xs text-red-500 ml-2">(unsaved changes)</span>}

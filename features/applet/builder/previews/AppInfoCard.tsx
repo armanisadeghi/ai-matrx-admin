@@ -58,7 +58,7 @@ const AppInfoCard: React.FC<AppInfoCardProps> = ({ appId, className = '' }) => {
     : 'Not set';
 
   return (
-    <div className={`p-4 bg-${primaryColor} rounded-lg border border-gray-200 dark:border-gray-600 ${className}`}>
+    <div className={`p-4 bg-${primaryColor} rounded-lg border-border ${className}`}>
       <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">App Information</h4>
       
       <div className="grid grid-cols-1 gap-2 text-xs">

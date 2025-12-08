@@ -312,7 +312,7 @@ const SmartFieldsList = forwardRef<
             return Array(6)
                 .fill(0)
                 .map((_, index) => (
-                    <Card key={`skeleton-${index}`} className="overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <Card key={`skeleton-${index}`} className="overflow-hidden border-border">
                         <div className="p-4">
                             <div className="flex items-center space-x-3">
                                 <Skeleton className="h-8 w-28 rounded-md" />
@@ -327,7 +327,7 @@ const SmartFieldsList = forwardRef<
                                 <Skeleton className="h-5 w-24 rounded-full" />
                             </div>
                         </div>
-                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-border">
                             <div className="flex justify-between">
                                 <Skeleton className="h-8 w-16 rounded-md" />
                                 <Skeleton className="h-8 w-24 rounded-md" />
@@ -395,7 +395,7 @@ const SmartFieldsList = forwardRef<
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <div className="flex border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                        <div className="flex border-border rounded-md overflow-hidden">
                             <Button
                                 variant={viewMode === "grid" ? "default" : "ghost"}
                                 size="sm"
@@ -531,7 +531,7 @@ const SmartFieldsList = forwardRef<
                                             {!hideActions && (
                                                 <CardFooter
                                                     className={`
-                                                            border-t border-gray-200 dark:border-gray-700 p-3
+                                                            border-t border-border p-3
                                                             ${
                                                                 viewMode === "list"
                                                                     ? "w-auto border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center"

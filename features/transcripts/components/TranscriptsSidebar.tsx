@@ -92,9 +92,9 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-border">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Transcripts
@@ -122,7 +122,7 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
             </div>
 
             {/* Folders */}
-            <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-2 border-b border-border">
                 <ScrollArea className="h-32">
                     <div className="space-y-1">
                         <button

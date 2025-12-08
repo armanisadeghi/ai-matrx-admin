@@ -332,7 +332,7 @@ render(<CustomComponent />);
             <div className="flex-1 p-4 overflow-auto bg-white">
               <LiveProvider code={code} noInline={true}>
                 <LiveError className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md mb-4" />
-                <LivePreview className="p-4 border border-gray-200 rounded-md" />
+                <LivePreview className="p-4 border-border rounded-md" />
               </LiveProvider>
             </div>
           </div>

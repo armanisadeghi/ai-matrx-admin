@@ -191,7 +191,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
           
           {/* Fullscreen Header */}
           {isFullScreen && (
-            <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
+            <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
               <div className="flex items-center gap-3">
                 <FolderOpen className="h-6 w-6 text-violet-600 dark:text-violet-400" />
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Resource Library</h3>
@@ -311,7 +311,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                       placeholder="Search resources..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -319,7 +319,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Types</option>
                       {allTypes.map(type => (
@@ -333,7 +333,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                       <select
                         value={selectedDifficulty}
                         onChange={(e) => setSelectedDifficulty(e.target.value)}
-                        className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
+                        className="px-3 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 text-sm"
                       >
                         <option value="all">All Levels</option>
                         {allDifficulties.map(difficulty => (
@@ -350,7 +350,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
               {/* Resource Categories */}
               <div className="space-y-6">
                 {filteredCategories.map((category, categoryIndex) => (
-                  <div key={category.id} className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div key={category.id} className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
                     <button
                       onClick={() => toggleCategory(category.id)}
                       className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
@@ -373,7 +373,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                     </button>
 
                     {expandedCategories.has(category.id) && (
-                      <div className="border-t border-gray-200 dark:border-gray-700 p-6">
+                      <div className="border-t border-border p-6">
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                           {category.resources.map((resource) => (
                             <div

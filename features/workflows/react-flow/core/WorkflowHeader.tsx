@@ -228,7 +228,7 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
                     )}
                     {mode === "edit" && (
                         <Select value={selectedFunction} onValueChange={handleFunctionSelect}>
-                            <SelectTrigger className="w-64 bg-inherit border border-gray-200 dark:border-gray-700">
+                            <SelectTrigger className="w-64 bg-inherit border-border">
                                 <SelectValue placeholder="Select a function to add..." />
                             </SelectTrigger>
                             <SelectContent>

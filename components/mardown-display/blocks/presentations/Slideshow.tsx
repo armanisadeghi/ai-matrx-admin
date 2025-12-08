@@ -70,11 +70,11 @@ const Slideshow = (presentationData: PresentationData & { taskId?: string }) => 
         />
       )}
       
-      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700'}`}>
+      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'rounded-2xl overflow-hidden shadow-xl border-border'}`}>
         <div className={`bg-textured ${isFullScreen ? 'h-full w-full max-w-7xl max-h-[95vh] rounded-2xl overflow-hidden' : 'w-full'} flex flex-col`}>
           
           {/* Header with Controls */}
-          <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-border flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
                 {slides.map((_, index) => (
@@ -217,7 +217,7 @@ const Slideshow = (presentationData: PresentationData & { taskId?: string }) => 
           </div>
 
           {/* Bottom Navigation Bar with Arrow Buttons */}
-          <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div className="flex-shrink-0 px-4 py-3 border-t border-border bg-gray-50 dark:bg-gray-800">
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={goToPrevious}

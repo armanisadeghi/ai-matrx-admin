@@ -76,7 +76,7 @@ const CompactTextDisplay = ({
   };
 
   return (
-    <Card className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+    <Card className="bg-gray-50 dark:bg-gray-900 border-border">
       <StreamDisplayOverlay 
         title={title} 
         className=""
@@ -91,7 +91,7 @@ const CompactTextDisplay = ({
           <CardContent className="p-3 pt-0 flex-1">
             <div 
               ref={scrollAreaRef}
-              className="h-56 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-textured overflow-auto"
+              className="h-56 w-full rounded-md border-border bg-textured overflow-auto"
             >
               {hasContent ? (
                 <pre className={cn(

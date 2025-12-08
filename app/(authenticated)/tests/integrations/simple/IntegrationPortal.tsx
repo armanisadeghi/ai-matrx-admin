@@ -89,7 +89,7 @@ const IntegrationPortal: React.FC = () => {
   return (
     <div className="flex h-full bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
-      <div className="hidden md:block w-64 bg-textured border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+      <div className="hidden md:block w-64 bg-textured border-r border-border overflow-y-auto">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Categories</h2>
           <nav>
@@ -117,7 +117,7 @@ const IntegrationPortal: React.FC = () => {
       </div>
       
       {/* Mobile category tabs */}
-      <div className="md:hidden fixed top-[72px] left-0 right-0 bg-textured border-b border-gray-200 dark:border-gray-700 z-10 overflow-x-auto">
+      <div className="md:hidden fixed top-[72px] left-0 right-0 bg-textured border-b border-border z-10 overflow-x-auto">
         <div className="flex p-2 space-x-2">
           {categoriesWithCount.map(({ name }) => (
             <button
@@ -139,7 +139,7 @@ const IntegrationPortal: React.FC = () => {
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
         {/* Sticky header */}
-        <div className="sticky top-0 z-10 bg-textured border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="sticky top-0 z-10 bg-textured border-b border-border shadow-sm">
           <div className="px-6 py-4">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
               Connect Your Business Tools

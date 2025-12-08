@@ -151,7 +151,7 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ title, children, className = "" }) => (
-  <div className={`bg-textured rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700 ${className}`}>
+  <div className={`bg-textured rounded-xl shadow-md p-6 border-border ${className}`}>
     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{title}</h2>
     {children}
   </div>
@@ -284,7 +284,7 @@ export const HeaderGroup: React.FC<HeaderGroupProps> = ({ tag, items }) => {
         {items.map((text, idx) => (
           <div
             key={idx}
-            className="p-4 rounded-lg bg-textured shadow-sm border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="p-4 rounded-lg bg-textured shadow-sm border-border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <span className={`${headerSizes[tag]} text-gray-800 dark:text-gray-200`}>{text}</span>
           </div>

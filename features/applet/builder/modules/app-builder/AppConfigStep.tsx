@@ -454,7 +454,7 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved,
                         </div>
 
                         {/* Preview */}
-                        <div className="p-5 md:w-1/3 flex-shrink-0 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                        <div className="p-5 md:w-1/3 flex-shrink-0 border-t md:border-t-0 md:border-l border-border bg-gray-50 dark:bg-gray-800">
                             <AppPreviewCard appId={appId} className="max-w-lg mx-auto mb-6" />
 
                             {/* App Info Card */}

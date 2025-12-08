@@ -48,7 +48,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
     return (
         <div className="p-6 space-y-6">
             {/* Actual UI Components */}
-            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+            <div className="bg-gray-50 dark:bg-gray-950 border-border rounded-lg p-4">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                     Actual Prompt Builder Components
                 </h2>
@@ -66,7 +66,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
                     Current Settings (State)
                 </h2>
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border-border overflow-hidden">
                     <pre className="p-4 overflow-auto text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
                         {JSON.stringify(modelConfig, null, 2)}
                     </pre>
@@ -95,7 +95,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
                     Parsed Controls (From Hook)
                 </h2>
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border-border overflow-hidden">
                     <pre className="p-4 overflow-auto text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words max-h-[400px]">
                         {JSON.stringify(normalizedControls, null, 2)}
                     </pre>

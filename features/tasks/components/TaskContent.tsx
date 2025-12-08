@@ -58,7 +58,7 @@ export default function TaskContent(): JSX.Element {
         <main className="flex-1 overflow-y-auto p-4 bg-textured">
           <div className="mx-auto max-w-4xl space-y-3 animate-pulse">
             {/* Add task form skeleton */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border-border p-3">
               <div className="space-y-2">
                 <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
                 <div className="flex gap-2">
@@ -70,7 +70,7 @@ export default function TaskContent(): JSX.Element {
             
             {/* Skeleton task items */}
             {[...Array(5)].map((_, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border-border p-3">
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
                   <div className="flex-1 space-y-2">
@@ -134,7 +134,7 @@ export default function TaskContent(): JSX.Element {
         {/* Add Task Form - Show when viewing tasks */}
         {canShowTasks && (
           <div className="mb-3 mx-auto max-w-4xl">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border-border p-3 shadow-sm">
               <form onSubmit={handleAddTask} className="space-y-2">
                 {/* Input row */}
                 <div className="flex items-center gap-2">
@@ -195,7 +195,7 @@ export default function TaskContent(): JSX.Element {
               
               {/* Advanced options - Show when user starts typing */}
               {showAdvanced && (
-                <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="space-y-2 pt-2 border-t border-border">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1">

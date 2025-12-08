@@ -90,7 +90,7 @@ export default function LoadingComponentTester() {
           })}
         </div>
 
-        <div className="mt-4 p-3 bg-textured rounded border border-gray-200 dark:border-gray-700">
+        <div className="mt-4 p-3 bg-textured rounded border-border">
           <div className="text-sm mb-2">
             Preview: {featureCount} features, {stepCount} steps
           </div>
@@ -98,7 +98,7 @@ export default function LoadingComponentTester() {
         </div>
       </div>
 
-      <div className="flex-1 bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 overflow-y-auto mb-4">
+      <div className="flex-1 bg-textured rounded-lg border-border p-4 overflow-y-auto mb-4">
         {messages.map((message, index) => (
           <div
             key={index}

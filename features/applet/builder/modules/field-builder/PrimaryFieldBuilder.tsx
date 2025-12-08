@@ -172,7 +172,7 @@ const PrimaryFieldBuilder: React.FC<PrimaryFieldBuilderProps> = ({ onFieldSelect
 
     return (
         <div className="container mx-auto px-4 py-6">
-            <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
+            <Card className="border-border bg-textured shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-blue-500 dark:text-blue-400">Field Components Manager</CardTitle>
                     <CardDescription className="text-gray-500 dark:text-gray-400">

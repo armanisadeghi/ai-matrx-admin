@@ -183,7 +183,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                         {value.map((file, index) => (
                                             <div
                                                 key={index}
-                                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700"
+                                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border-border"
                                             >
                                                 <span className="text-sm truncate">
                                                     {typeof file === "string" ? file : file.name || `File ${index + 1}`}
@@ -490,7 +490,7 @@ const FormField: React.FC<FormFieldProps> = ({
                         </div>
                         <div className="flex flex-col gap-2">
                             {value ? (
-                                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border-border">
                                     <span className="text-sm truncate">
                                         {typeof value === "object" && value.name ? value.name : typeof value === "string" ? value : "File"}
                                     </span>

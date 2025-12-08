@@ -101,7 +101,7 @@ export const ChatSidebarContent: React.FC = () => {
               placeholder="Search..."
               value={labelSearch}
               onChange={(e) => setLabelSearch(e.target.value)}
-              className="w-full pl-7 pr-2 py-1 text-xs font-light rounded-lg bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none focus:outline-none ring-0 focus:ring-0 transition-all duration-300 border border-gray-200 dark:border-gray-700 focus:border-gray-300 dark:focus:border-gray-600"
+              className="w-full pl-7 pr-2 py-1 text-xs font-light rounded-lg bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none focus:outline-none ring-0 focus:ring-0 transition-all duration-300 border-border focus:border-gray-300 dark:focus:border-gray-600"
               style={{ boxShadow: 'none' }}
             />
           </div>

@@ -38,8 +38,8 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
     };
 
     return (
-        <Card className={`border border-gray-200 dark:border-gray-700 bg-textured shadow-sm ${className}`}>
-            <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 py-3 px-4">
+        <Card className={`border-border bg-textured shadow-sm ${className}`}>
+            <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-border py-3 px-4">
                 <CardTitle className="text-sm font-medium text-gray-800 dark:text-gray-200 flex items-center">
                     <Database className="h-4 w-4 mr-2 text-indigo-500" />
                     Available Fields

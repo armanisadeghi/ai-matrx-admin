@@ -63,7 +63,7 @@ const renderSectionContent = (section: SectionData) => {
             // Check if this is the first item (likely a header)
             if (index === 0) {
               return (
-                <h3 key={index} className="text-xl font-bold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
+                <h3 key={index} className="text-xl font-bold text-gray-800 dark:text-gray-200 border-b border-border pb-2">
                   {item}
                 </h3>
               );
@@ -155,10 +155,10 @@ const renderSectionContent = (section: SectionData) => {
         <div className="space-y-3">
           {content.map((item, index) => (
             <div key={index} className="overflow-x-auto">
-              <table className="min-w-full border border-gray-200 dark:border-gray-700">
+              <table className="min-w-full border-border">
                 <tbody>
                   {item.split('\n').map((row, rowIndex) => (
-                    <tr key={rowIndex} className="border-b border-gray-200 dark:border-gray-700">
+                    <tr key={rowIndex} className="border-b border-border">
                       {row.split('|').map((cell, cellIndex) => (
                         <td key={cellIndex} className="px-4 py-2 text-gray-700 dark:text-gray-300">
                           {cell.trim()}
@@ -292,8 +292,8 @@ const SectionViewerV2 = ({ data }: { data: any }) => {
     <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
       <div className="h-full flex gap-4 max-w-7xl mx-auto">
         {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="w-80 flex-shrink-0 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <h2 className="font-semibold text-gray-800 dark:text-gray-200">Content Sections</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{safeData.length} section{safeData.length !== 1 ? 's' : ''}</p>
           </div>
@@ -334,9 +334,9 @@ const SectionViewerV2 = ({ data }: { data: any }) => {
         </div>
         
         {/* Main Content */}
-        <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 bg-textured border-border rounded-lg overflow-hidden shadow-sm">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {getSectionTypeIcon(selectedSection?.section || 'unknown')}

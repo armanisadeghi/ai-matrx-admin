@@ -173,7 +173,7 @@ const DragTableRowAndColumnField: React.FC<CommonFieldProps> = ({ field, sourceI
 
     return (
         <div className={`${safeWidthClass} ${className}`}>
-            <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="w-full overflow-x-auto border-border rounded-lg">
                 <DragDropContext onDragEnd={handleOnDragEnd}>
                     <table ref={tableRef} className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
                         <TableColumns />
@@ -183,7 +183,7 @@ const DragTableRowAndColumnField: React.FC<CommonFieldProps> = ({ field, sourceI
                                     <tr 
                                         ref={providedDroppable.innerRef}
                                         {...providedDroppable.droppableProps}
-                                        className="border-b border-gray-200 dark:border-gray-700"
+                                        className="border-b border-border"
                                     >
                                         {sortedColumns.map((col, colIndex) => (
                                             <Draggable 
@@ -200,7 +200,7 @@ const DragTableRowAndColumnField: React.FC<CommonFieldProps> = ({ field, sourceI
                                                             ...providedDraggable.draggableProps.style,
                                                         }}
                                                         className={cn(
-                                                            colIndex < sortedColumns.length - 1 && "border-r border-gray-200 dark:border-gray-700",
+                                                            colIndex < sortedColumns.length - 1 && "border-r border-border",
                                                             col.id === 'drag-handle' ? "p-0" : "p-3",
                                                             col.id !== 'drag-handle' ? "text-left" : "",
                                                             snapshotDraggable.isDragging && "shadow-lg opacity-90 bg-textured",
@@ -272,7 +272,7 @@ const DragTableRowAndColumnField: React.FC<CommonFieldProps> = ({ field, sourceI
                                                         <td
                                                             key={col.id}
                                                             className={cn(
-                                                                colIndex < sortedColumns.length - 1 && "border-r border-gray-200 dark:border-gray-700",
+                                                                colIndex < sortedColumns.length - 1 && "border-r border-border",
                                                                 "align-middle",
                                                                 col.id === 'drag-handle' ? "w-10 p-0" : "p-3"
                                                             )}

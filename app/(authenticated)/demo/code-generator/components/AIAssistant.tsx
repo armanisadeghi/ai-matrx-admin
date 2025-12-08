@@ -7,7 +7,7 @@ import React from 'react';
 // Component for AI assistance
 const AIAssistant = ({ generateWithAI, isGenerating, aiSuggestion, applySuggestion }) => {
   return (
-    <div className="bg-textured p-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="bg-textured p-4 border-b border-border">
       <h2 className="font-bold text-lg mb-2 text-gray-800 dark:text-gray-100">AI Assistant</h2>
       <div className="flex space-x-2 mb-3">
         <input

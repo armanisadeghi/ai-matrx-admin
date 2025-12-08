@@ -15,7 +15,7 @@ const AppletCard: React.FC<AppletCardProps> = ({
 
   return (
     <div 
-      className="group relative rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 cursor-pointer border border-gray-200 dark:border-gray-700"
+      className="group relative rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 cursor-pointer border-border"
       onClick={onClick}
     >
       {/* Card image/banner */}

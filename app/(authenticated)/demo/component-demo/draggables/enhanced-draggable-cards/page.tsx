@@ -72,7 +72,7 @@ const CalendarCard = () => (
   <div className="h-full flex flex-col">
     <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-gray-200">Upcoming Events</h3>
     <div className="space-y-3">
-      <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+      <div className="p-3 border-border rounded-md bg-textured">
         <div className="flex justify-between items-center">
           <span className="font-medium text-gray-800 dark:text-gray-200">Team Meeting</span>
           <span className="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 px-2 py-1 rounded">Today</span>
@@ -81,7 +81,7 @@ const CalendarCard = () => (
           <Calendar className="h-3 w-3" /> 2:00 PM - 3:30 PM
         </div>
       </div>
-      <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
+      <div className="p-3 border-border rounded-md bg-textured">
         <div className="flex justify-between items-center">
           <span className="font-medium text-gray-800 dark:text-gray-200">Client Call</span>
           <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-1 rounded">Tomorrow</span>
@@ -238,7 +238,7 @@ export default function EnhancedDraggableCardsDemo() {
         
         <div 
           ref={containerRef} 
-          className="relative bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 min-h-[600px]"
+          className="relative bg-gray-100 dark:bg-gray-800 rounded-lg border-border p-4 min-h-[600px]"
         >
           {showGrid && snapPoints.length > 0 && (
             <div className="absolute inset-0 pointer-events-none">
@@ -294,7 +294,7 @@ export default function EnhancedDraggableCardsDemo() {
           )}
         </div>
         
-        <div className="mt-8 p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="mt-8 p-4 bg-textured rounded-lg border-border">
           <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Card Position Data</h2>
           <pre className="overflow-auto p-3 bg-gray-100 dark:bg-gray-900 rounded text-xs text-gray-800 dark:text-gray-300">
             {JSON.stringify(positions, null, 2)}

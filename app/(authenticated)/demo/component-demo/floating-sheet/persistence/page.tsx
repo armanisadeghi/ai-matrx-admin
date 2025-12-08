@@ -94,7 +94,7 @@ const FloatingSheet = ({
       >
         <div className={`flex ${position === 'top' || position === 'bottom' ? 'h-full' : ''} flex-col`}>
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
             <button
               onClick={onClose}
@@ -241,7 +241,7 @@ const PositioningDemo = () => {
           </div>
           
           {/* Sample content to demonstrate scrolling */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+          <div className="border-t border-border pt-4 mt-4">
             <h3 className="font-medium text-gray-900 dark:text-white mb-2">Sample Content</h3>
             {Array.from({ length: 5 }).map((_, i) => (
               <p key={i} className="text-gray-600 dark:text-gray-300 mb-4">

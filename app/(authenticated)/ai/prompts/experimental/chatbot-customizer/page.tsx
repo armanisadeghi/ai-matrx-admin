@@ -201,8 +201,8 @@ export default function AIExperienceCustomizer() {
     };
     
     return (
-      <div className={`bg-card border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all p-6 ${sizeClasses[size]} ${className}`}>
-        <div className="flex items-center mb-5 pb-3 border-b border-gray-200 dark:border-gray-700">
+      <div className={`bg-card border-border rounded-xl shadow-sm hover:shadow-md transition-all p-6 ${sizeClasses[size]} ${className}`}>
+        <div className="flex items-center mb-5 pb-3 border-b border-border">
           <span className="p-2 rounded-lg bg-primary/10 text-primary mr-3">{icon}</span>
           <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
         </div>
@@ -274,7 +274,7 @@ export default function AIExperienceCustomizer() {
   // Render the UI
   return (
     <div className="flex flex-col h-full bg-textured text-gray-800 dark:text-gray-100">
-      <header className="sticky top-0 z-10 bg-textured border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
+      <header className="sticky top-0 z-10 bg-textured border-b border-border px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <Wand2 className="h-7 w-7 text-blue-600 dark:text-blue-500 mr-2" />
@@ -294,7 +294,7 @@ export default function AIExperienceCustomizer() {
         <div className="max-w-7xl mx-auto">
           
           {/* Section 1: Personality & Style */}
-          <section className="mb-12 pb-12 border-b border-gray-200 dark:border-gray-700">
+          <section className="mb-12 pb-12 border-b border-border">
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-sm">
@@ -386,7 +386,7 @@ export default function AIExperienceCustomizer() {
           </section>
           
           {/* Knowledge & Capabilities */}
-          <section className="mb-12 pb-12 border-b border-gray-200 dark:border-gray-700">
+          <section className="mb-12 pb-12 border-b border-border">
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-bold text-sm">
@@ -462,7 +462,7 @@ export default function AIExperienceCustomizer() {
           </section>
           
           {/* Output Format & Preferences */}
-          <section className="mb-12 pb-12 border-b border-gray-200 dark:border-gray-700">
+          <section className="mb-12 pb-12 border-b border-border">
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold text-sm">
@@ -514,7 +514,7 @@ export default function AIExperienceCustomizer() {
                     onChange={() => handleToggleChange('preferences', 'imageGen')}
                   />
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="mt-4 pt-4 border-t border-border">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Display Theme</label>
                   <div className="grid grid-cols-3 gap-2">
                     {['light', 'dark', 'system'].map((theme) => (

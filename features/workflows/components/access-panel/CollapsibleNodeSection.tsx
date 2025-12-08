@@ -53,7 +53,7 @@ const CollapsibleNodeSection: React.FC<CollapsibleNodeSectionProps> = ({
                             <button
                                 key={node.id}
                                 onClick={() => handleNodeClick(node)}
-                                className="flex flex-col items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                className="flex flex-col items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700 border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                             >
                                 <IconComponent className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                                 <span className="text-xs text-gray-700 dark:text-gray-300">{node.label}</span>

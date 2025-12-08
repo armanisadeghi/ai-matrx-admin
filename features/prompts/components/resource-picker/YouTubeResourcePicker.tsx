@@ -154,7 +154,7 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
     return (
         <div className="flex flex-col h-[450px]">
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -211,7 +211,7 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
 
                 {/* Video Preview - Compact version */}
                 {videoPreview && (
-                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                    <div className="border-border rounded-lg overflow-hidden">
                         {/* Thumbnail - Smaller */}
                         <div className="relative h-32 bg-gray-100 dark:bg-gray-900">
                             <img
@@ -267,7 +267,7 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
 
             {/* Footer with Add Button - Fixed at bottom */}
             {videoPreview && (
-                <div className="border-t border-gray-200 dark:border-gray-800 p-3">
+                <div className="border-t border-border p-3">
                     <Button
                         onClick={handleSelect}
                         className="w-full"

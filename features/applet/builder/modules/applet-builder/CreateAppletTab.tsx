@@ -315,7 +315,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
       </div>
       
       {/* Group Containers Section */}
-      <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="space-y-4 pt-4 border-t border-border">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Containers</h3>
@@ -347,7 +347,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
         </div>
         
         {(!newApplet.containers || newApplet.containers.length === 0) ? (
-          <div className="p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
+          <div className="p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-border text-center">
             <LayoutIcon className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No containers</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -367,7 +367,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
         ) : (
           <Accordion type="multiple" defaultValue={[]} className="w-full">
             {newApplet.containers.map((container: AppletContainer) => (
-              <AccordionItem key={container.id} value={container.id} className="border border-gray-200 dark:border-gray-700 rounded-md mb-2 px-2">
+              <AccordionItem key={container.id} value={container.id} className="border-border rounded-md mb-2 px-2">
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center justify-between w-full pr-4">
                     <div className="flex items-center">
@@ -416,7 +416,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
       </div>
       
       {/* Recipe Section */}
-      <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="space-y-4 pt-4 border-t border-border">
         <div className="space-y-2">
           <Label className="text-gray-900 dark:text-gray-100">
             Compiled Recipe
@@ -432,7 +432,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
             </Button>
           </div>
           {compiledRecipeId && selectedRecipe && (
-            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
+            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 border-border rounded-md">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {selectedRecipe.name}
               </p>

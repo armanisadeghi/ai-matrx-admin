@@ -34,7 +34,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className="h-full w-full overflow-auto p-4 md:p-6">
       {/* Compact App Header */}
-      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border-border">
         <div className="flex items-center gap-3">
           {appIcon && (
             <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm flex-shrink-0">
@@ -87,7 +87,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
               <div 
                 key={applet.id}
                 onClick={() => navigateToApplet(applet.slug)}
-                className="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-textured shadow-sm hover:shadow transition-all duration-200 cursor-pointer flex flex-col h-48"
+                className="group relative overflow-hidden rounded-lg border-border bg-textured shadow-sm hover:shadow transition-all duration-200 cursor-pointer flex flex-col h-48"
               >
                 {/* Card image/banner top section */}
                 <div className="h-20 bg-gray-100 dark:bg-gray-700 relative">
@@ -109,7 +109,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
                   )}
                   
                   {/* Icon overlay */}
-                  <div className="absolute -bottom-4 left-3 w-8 h-8 rounded-md bg-textured shadow-sm flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                  <div className="absolute -bottom-4 left-3 w-8 h-8 rounded-md bg-textured shadow-sm flex items-center justify-center border-border">
                     {applet.appletIcon ? (
                       getAppIcon({
                         icon: applet.appletIcon,
@@ -155,7 +155,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
         </div>
         
         {appletList.length === 0 && (
-          <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-border">
             <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>

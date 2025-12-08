@@ -141,7 +141,7 @@ function SchemaNode({ data }: SchemaNodeProps) {
         if (!relationships || relationships.length === 0) return null;
 
         return (
-            <div key={title} className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <div key={title} className="border-b border-border pb-3">
                 <h5 className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-2">{title}</h5>
                 <div className="space-y-1">
                     {relationships.map((rel, index) => (
@@ -173,7 +173,7 @@ function SchemaNode({ data }: SchemaNodeProps) {
             <Handle type="target" position={Position.Top} className="!bg-gray-400 dark:!bg-gray-500" />
             <div
                 onClick={handleTableClick}
-                className="rounded-lg bg-textured border border-gray-200 dark:border-gray-700 min-w-[300px] max-w-[400px] overflow-hidden shadow-lg cursor-pointer hover:border-primary/50 transition-colors"
+                className="rounded-lg bg-textured border-border min-w-[300px] max-w-[400px] overflow-hidden shadow-lg cursor-pointer hover:border-primary/50 transition-colors"
             >
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
                     <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ function SchemaNode({ data }: SchemaNodeProps) {
                 </div>
 
                 <div className="px-4 py-3 space-y-4">
-                    <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+                    <div className="border-b border-border pb-3">
                         <div className="flex items-center gap-2">
                             <span className="text-amber-600 dark:text-amber-400 text-xs font-medium">Primary Key</span>
                             <span className="text-gray-700 dark:text-gray-300 text-sm">
@@ -194,7 +194,7 @@ function SchemaNode({ data }: SchemaNodeProps) {
                         </div>
                     </div>
 
-                    <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
+                    <div className="border-b border-border pb-3">
                         <h4 className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-2">Fields</h4>
                         <div className="space-y-1">
                             {Object.entries(entity.entityFields).map(([fieldName, field]) => (

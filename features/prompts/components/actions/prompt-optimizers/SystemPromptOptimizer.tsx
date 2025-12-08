@@ -272,7 +272,7 @@ export function SystemPromptOptimizer({
           {/* Original System Message */}
           <div className="flex flex-col min-h-0">
             <Label className="text-sm font-medium mb-2">Current System Message</Label>
-            <div className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 overflow-y-auto">
+            <div className="flex-1 bg-gray-50 dark:bg-gray-900 border-border rounded-lg p-3 overflow-y-auto">
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                 {currentSystemMessage || <span className="text-gray-400 italic">No system message</span>}
               </p>

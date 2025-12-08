@@ -210,7 +210,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
+                                        className="relative aspect-video rounded-lg overflow-hidden border-border hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
                                     >
                                         <Image
                                             src={url}

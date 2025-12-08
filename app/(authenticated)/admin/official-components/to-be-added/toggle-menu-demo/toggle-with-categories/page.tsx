@@ -96,7 +96,7 @@ const HierarchicalExample = () => {
 
             {/* Debug Panel */}
             {debugInfo.showDebug && (
-                <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+                <div className="rounded-md border-border bg-gray-50 dark:bg-gray-900 p-4">
                     <div className="flex items-center gap-2 mb-2 text-gray-700 dark:text-gray-300">
                         <FileJson size={18} />
                         <h3 className="font-medium">Component State Debug Info</h3>
@@ -135,7 +135,7 @@ const HierarchicalExample = () => {
                             showHierarchy={true}
                         />
                         
-                        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border-border">
                             <div className="font-medium mb-1">Selected ID:</div>
                             <div className="text-sm text-blue-600 dark:text-blue-400 font-mono">
                                 {singleSelectLibrary.length > 0 ? singleSelectLibrary[0] : "None"}
@@ -171,7 +171,7 @@ const HierarchicalExample = () => {
                             defaultExpandedCategories={true}
                         />
                         
-                        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border-border">
                             <div className="font-medium mb-1">Selected IDs:</div>
                             {multiSelectLibrary.length > 0 ? (
                                 <div>
@@ -195,7 +195,7 @@ const HierarchicalExample = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <div className="space-y-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 rounded-lg border-border">
                     <h3 className="font-semibold">Direction: Top</h3>
                     <HierarchicalToggleMenu
                         label="Libraries"
@@ -212,7 +212,7 @@ const HierarchicalExample = () => {
                     </div>
                 </div>
                 
-                <div className="space-y-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 rounded-lg border-border">
                     <h3 className="font-semibold">Direction: Right</h3>
                     <HierarchicalToggleMenu
                         label="Libraries"
@@ -229,7 +229,7 @@ const HierarchicalExample = () => {
                     </div>
                 </div>
                 
-                <div className="space-y-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 rounded-lg border-border">
                     <h3 className="font-semibold">Without Icons</h3>
                     <HierarchicalToggleMenu
                         label="Libraries"
@@ -246,7 +246,7 @@ const HierarchicalExample = () => {
                     </div>
                 </div>
                 
-                <div className="space-y-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="space-y-3 p-4 rounded-lg border-border">
                     <h3 className="font-semibold">Non-Collapsible Categories</h3>
                     <HierarchicalToggleMenu
                         label="Libraries"

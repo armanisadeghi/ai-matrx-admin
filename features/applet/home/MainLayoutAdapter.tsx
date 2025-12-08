@@ -69,7 +69,7 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
         </div>
         
         {appletList.length === 0 && (
-          <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-xl border-border">
             <h3 className="text-xl text-gray-800 dark:text-gray-200 mb-2">No applets available</h3>
             <p className="text-gray-600 dark:text-gray-400">This app doesn't have any applets configured yet.</p>
           </div>

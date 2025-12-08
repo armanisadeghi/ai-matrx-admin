@@ -28,7 +28,7 @@ export function DataStep() {
             {SAMPLE_DATA.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-border last:border-0"
               >
                 <span className="font-medium text-gray-900 dark:text-white">
                   {item.name}

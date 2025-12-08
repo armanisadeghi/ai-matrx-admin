@@ -54,7 +54,7 @@ const EnhancedAccordion: React.FC<EnhancedAccordionProps> = (
     }
 
     return (
-        <div className={cn("w-full rounded-md border border-gray-200 dark:border-gray-700", className)}>
+        <div className={cn("w-full rounded-md border-border", className)}>
             {items.map((item, index) => (
                 <AccordionItem
                     key={item.id}
@@ -89,7 +89,7 @@ const AccordionItem: React.FC<AccordionItemProps> = (
         contentClassName,
     }) => {
     return (
-        <div className={cn("border-b border-gray-200 dark:border-gray-700", className)}>
+        <div className={cn("border-b border-border", className)}>
             <motion.button
                 className={cn(
                     "flex w-full items-center justify-between px-4 py-4 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-800",

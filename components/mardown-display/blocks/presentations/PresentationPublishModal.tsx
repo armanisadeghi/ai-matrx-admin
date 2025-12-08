@@ -45,9 +45,9 @@ export const PresentationPublishModal: React.FC<PresentationPublishModalProps> =
             />
             
             {/* Modal */}
-            <div className="fixed inset-4 md:inset-8 lg:inset-16 bg-textured rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="fixed inset-4 md:inset-8 lg:inset-16 bg-textured rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden border-border">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-4 border-b border-border">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                         {isPublishing ? 'Publishing Presentation...' : 'Presentation Published'}
                     </h2>
@@ -119,7 +119,7 @@ export const PresentationPublishModal: React.FC<PresentationPublishModalProps> =
                                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                                     Live Preview
                                 </h3>
-                                <div className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-950">
+                                <div className="flex-1 border-border rounded-lg overflow-hidden bg-white dark:bg-gray-950">
                                     <iframe
                                         key={iframeKey}
                                         src={`${publishedUrl}?t=${iframeKey}`}

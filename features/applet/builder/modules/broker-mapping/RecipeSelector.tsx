@@ -83,7 +83,7 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
                         </div>
                     </Button>
                 ) : (
-                    <div className="pt-3 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative">
+                    <div className="pt-3 px-3 bg-gray-50 dark:bg-gray-800 border-border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative">
                         <div className="flex items-start">
                             <div className="mr-3 mt-0.5">
                                 <BrainCog className="h-5 w-5 text-blue-600 dark:text-blue-400" />

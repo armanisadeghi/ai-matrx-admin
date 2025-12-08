@@ -283,7 +283,7 @@ const DashboardPage = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-3 border border-gray-200 dark:border-zinc-700 rounded-3xl">
+                            <div className="mt-3 border border-border rounded-3xl">
                                 <LatestAiModels />
                             </div>
                             {/* Recent activity */}

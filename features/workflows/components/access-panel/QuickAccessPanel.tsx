@@ -151,7 +151,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
             </div>
 
             {/* Floating Action Button */}
-            {/* <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+            {/* <div className="p-2 border-t border-border">
                 <button
                     onClick={() => setIsOverlayOpen(true)}
                     className="w-full flex items-center justify-center gap-2 p-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transform hover:scale-[1.02]"

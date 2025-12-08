@@ -181,13 +181,13 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ messages, neededBrokers, enri
             })}
 
             {messages.length > 10 && (
-                <div className="text-xs text-gray-500 dark:text-gray-400 text-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-xs text-gray-500 dark:text-gray-400 text-center pt-2 border-t border-border">
                     Showing all {messages.length} messages
                 </div>
             )}
 
             {/* Token and Cost Summary */}
-            <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-3 pt-2 border-t border-border">
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">
                     <div className="flex items-center justify-between text-xs">
                         <span className="font-medium text-gray-700 dark:text-gray-300">

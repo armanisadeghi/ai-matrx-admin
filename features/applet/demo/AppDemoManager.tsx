@@ -94,7 +94,7 @@ export default function AppDemoManager({
     }
     return (
         <div
-            className="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+            className="overflow-hidden border-border rounded-lg shadow-lg"
             style={{
                 width: demoWidth,
                 height: demoHeight,

@@ -450,7 +450,7 @@ function ComparisonDemo() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">ImageManagerIcon</h3>
-          <div className="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-md flex items-center justify-center">
+          <div className="p-6 bg-white dark:bg-gray-950 border-border rounded-md flex items-center justify-center">
             <ImageManagerIcon 
               size="lg" 
               imageManagerProps={{
@@ -467,7 +467,7 @@ function ComparisonDemo() {
         
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">ImageManagerRow</h3>
-          <div className="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-md flex items-center justify-center">
+          <div className="p-6 bg-white dark:bg-gray-950 border-border rounded-md flex items-center justify-center">
             <ImageManagerRow 
               imageManagerProps={{
                 userImages: sampleImageUrls
@@ -614,7 +614,7 @@ function CustomizationDemo() {
         </CardContent>
       </Card>
       
-      <div className="p-8 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-800">
+      <div className="p-8 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center border-border">
         <ImageManagerIcon 
           mode={mode}
           size={size}

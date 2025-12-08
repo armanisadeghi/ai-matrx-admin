@@ -68,7 +68,7 @@ export const SavedAppletsTab: React.FC<SavedAppletsTabProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {savedApplets.map(applet => (
-        <Card key={applet.id} className="border border-gray-200 dark:border-gray-700 bg-textured">
+        <Card key={applet.id} className="border-border bg-textured">
           <CardHeader className="pb-2">
             <div className="flex items-center space-x-2">
               {renderIcon(applet.appletIcon)}

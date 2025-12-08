@@ -58,7 +58,7 @@ export const RecipeVersionSelectionCard: React.FC<RecipeVersionSelectionCardProp
     // Original simple version
     if (!useCardLayout) {
         return (
-            <div className="w-full mt-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <div className="w-full mt-4 p-3 border-border rounded-lg bg-gray-50 dark:bg-gray-800/50">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Version Selection</h3>
                 <RadioGroup
                     value={versionSelection}

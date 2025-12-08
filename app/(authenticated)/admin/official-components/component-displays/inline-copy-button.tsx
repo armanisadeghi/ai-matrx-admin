@@ -433,7 +433,7 @@ export default function InlineCopyButtonDisplay({ component }: ComponentDisplayP
                         </div>
                     </TabsContent>
                 </Tabs>
-                <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
                     <h2 className="text-xl font-semibold mb-4">Component Options</h2>
                     <table className="w-full text-sm">
                         <thead>

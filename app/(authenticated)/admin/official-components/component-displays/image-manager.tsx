@@ -255,7 +255,7 @@ function AdvancedControlsExample() {
   
   return (
     <div className="space-y-6">
-      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
         <h3 className="text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">
           Advanced Controls
         </h3>
@@ -324,7 +324,7 @@ function AdvancedControlsExample() {
       </Button>
       
       {selectedImages.length > 0 && (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
           <div className="flex justify-between mb-2">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Selected Images ({selectedImages.length})
@@ -396,7 +396,7 @@ function BasicImageManagerDemo() {
       
       {/* Display currently selected images */}
       {selectedImages.length > 0 ? (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
           <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
             Selected Images ({selectedImages.length})
           </h3>
@@ -408,7 +408,7 @@ function BasicImageManagerDemo() {
           />
         </div>
       ) : (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center text-gray-500 dark:text-gray-400">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border text-center text-gray-500 dark:text-gray-400">
           No images selected. Click the button above to open the Image Manager.
         </div>
       )}
@@ -481,7 +481,7 @@ function SelectionModeDemo() {
       
       {/* Display currently selected images */}
       {selectedImages.length > 0 ? (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
           <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
             Selected Images ({selectedImages.length})
           </h3>
@@ -493,7 +493,7 @@ function SelectionModeDemo() {
           />
         </div>
       ) : (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center text-gray-500 dark:text-gray-400">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border text-center text-gray-500 dark:text-gray-400">
           No images selected. Click the button above to open the Image Manager.
         </div>
       )}
@@ -547,7 +547,7 @@ function CustomTabDemo() {
         Open with "{tabOptions.find(t => t.value === activeTab)?.label}" Tab
       </Button>
       
-      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
         <p className="text-sm text-gray-500 dark:text-gray-400">
           The ImageManager will open with the {tabOptions.find(t => t.value === activeTab)?.label} tab active. This is useful when you want to guide users directly to a specific function.
         </p>
@@ -594,7 +594,7 @@ function AdvancedControlsDemo() {
   
   return (
     <div className="w-full space-y-6">
-      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
         <h3 className="text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">
           Advanced Controls
         </h3>
@@ -674,7 +674,7 @@ function AdvancedControlsDemo() {
       </div>
       
       {selectedImages.length > 0 && (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
           <div className="flex justify-between mb-2">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Selected Images ({selectedImages.length})
@@ -691,7 +691,7 @@ function AdvancedControlsDemo() {
         </div>
       )}
       
-      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
         <div className="text-sm text-gray-700 dark:text-gray-300">
           <span className="font-medium">Configuration Summary:</span>
           <ul className="mt-2 space-y-1 text-gray-500 dark:text-gray-400">

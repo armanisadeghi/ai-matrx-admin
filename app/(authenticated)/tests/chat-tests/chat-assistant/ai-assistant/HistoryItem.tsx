@@ -28,7 +28,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
     : contentPreview;
   
   return (
-    <div className="rounded-lg p-2 shadow-sm bg-textured border border-gray-100 dark:border-gray-700 relative">
+    <div className="rounded-lg p-2 shadow-sm bg-textured border-border relative">
       <div className="flex justify-between items-start">
         <div className="flex-grow">
           <div className="text-xs mb-1 text-gray-500 dark:text-gray-400">

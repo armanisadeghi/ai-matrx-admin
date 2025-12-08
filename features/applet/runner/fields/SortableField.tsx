@@ -126,7 +126,7 @@ const SortableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-
                             {...provided.droppableProps}
                             ref={provided.innerRef}
                             className={cn(
-                                "w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50 overflow-hidden",
+                                "w-full border-border rounded-lg bg-gray-50 dark:bg-gray-900/50 overflow-hidden",
                                 disabled && "opacity-60",
                                 snapshot.isDraggingOver && "border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
                             )}

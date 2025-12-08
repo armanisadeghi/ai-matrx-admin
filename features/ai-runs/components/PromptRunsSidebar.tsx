@@ -87,9 +87,9 @@ export function PromptRunsSidebar({
   };
 
   return (
-    <div className="h-full flex flex-col bg-textured border-r border-gray-200 dark:border-gray-800">
+    <div className="h-full flex flex-col bg-textured border-r border-border">
       {/* Compact Header */}
-      <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 px-2.5 py-2">
+      <div className="flex-shrink-0 border-b border-border px-2.5 py-2">
         <div className="flex items-center justify-between gap-1.5 mb-2">
           <div className="flex items-center gap-1.5">
             <History className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
@@ -173,7 +173,7 @@ export function PromptRunsSidebar({
       
       {/* Optional footer */}
       {footer && (
-        <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-800">
+        <div className="flex-shrink-0 border-t border-border">
           {footer}
         </div>
       )}

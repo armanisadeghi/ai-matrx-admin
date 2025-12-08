@@ -78,7 +78,7 @@ export function CategoryDetails({ category, audits }: CategoryDetailsProps) {
         };
 
         return (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border-border">
                 <div className="flex-shrink-0 mt-0.5">{getIcon()}</div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -189,7 +189,7 @@ export function CategoryDetails({ category, audits }: CategoryDetailsProps) {
 
                 {/* Informational */}
                 {informational.length > 0 && (
-                    <AccordionItem value="informational" className="border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <AccordionItem value="informational" className="border-border rounded-lg">
                         <AccordionTrigger className="px-4 hover:no-underline">
                             <div className="flex items-center gap-2">
                                 <Info className="w-5 h-5 text-blue-500 dark:text-blue-400" />

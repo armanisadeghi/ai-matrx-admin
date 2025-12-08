@@ -352,7 +352,7 @@ export const InlineCopyButton = ({
         
         {/* Format options popup for markdown content */}
         {showFormatOptions && isMarkdown && (
-        <div className="absolute top-full mt-1 min-w-48 right-0 bg-textured border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30">
+        <div className="absolute top-full mt-1 min-w-48 right-0 bg-textured border-border rounded shadow-lg z-30">
           <button 
             onClick={handleRegularCopy}
             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"

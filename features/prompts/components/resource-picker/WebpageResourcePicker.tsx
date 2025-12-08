@@ -157,7 +157,7 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
         <>
             <div className="flex flex-col h-[450px]">
                 {/* Header */}
-                <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                     <Button
                         variant="ghost"
                         size="sm"
@@ -274,7 +274,7 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
             {/* Preview Modal */}
             <Dialog open={showPreview} onOpenChange={handleClosePreview}>
                 <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col p-0">
-                    <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+                    <DialogHeader className="px-6 py-4 border-b border-border flex-shrink-0">
                         <DialogTitle className="flex items-center gap-2">
                             <FileText className="w-5 h-5 text-green-600 dark:text-green-500" />
                             <span>Webpage Content Preview</span>
@@ -321,7 +321,7 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                     {data && (
                         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
                             {/* Metadata */}
-                            <div className="flex-shrink-0 px-6 py-3 border-b border-gray-200 dark:border-gray-800 space-y-2">
+                            <div className="flex-shrink-0 px-6 py-3 border-b border-border space-y-2">
                                 <div className="flex items-start gap-2">
                                     <Globe className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500" />
                                     <div className="flex-1 min-w-0">
@@ -355,7 +355,7 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
 
                             {/* Content Preview - Editable */}
                             <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                                <div className="flex items-center justify-between px-6 py-2 bg-gray-100 dark:bg-zinc-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                <div className="flex items-center justify-between px-6 py-2 bg-gray-100 dark:bg-zinc-800 border-b border-border flex-shrink-0">
                                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                         Content (Editable)
                                     </span>
@@ -377,7 +377,7 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                             </div>
 
                             {/* Actions */}
-                            <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-800">
+                            <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-border">
                                 <div className="text-xs text-gray-500 dark:text-gray-400">
                                     {editedContent !== data.textContent ? (
                                         <span className="text-orange-600 dark:text-orange-500">

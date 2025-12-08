@@ -25,7 +25,7 @@ const BookmarksDialog: React.FC<BookmarksDialogProps> = ({
           ) : (
             <div className="space-y-3">
               {bookmarks.map((bookmark, index) => (
-                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded p-3">
+                <div key={index} className="border-border rounded p-3">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium">{bookmark.name}</h3>
                     <div className="flex gap-2">

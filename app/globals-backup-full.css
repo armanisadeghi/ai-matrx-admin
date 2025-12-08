@@ -340,7 +340,7 @@
     }
 
     .light-mode-border {
-        @apply border border-gray-200;
+        @apply border-border;
     }
 
     .light-mode-bg-gradient {

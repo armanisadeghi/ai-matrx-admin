@@ -93,7 +93,7 @@ export default function NotificationDropdown({
                 sideOffset={8}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-4 border-b border-border">
                     <div className="flex items-center gap-2">
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                             Notifications

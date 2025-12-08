@@ -246,8 +246,8 @@ const RelationshipMaker = () => {
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Left side - Models */}
-        <div className="lg:w-1/3 h-full border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="lg:w-1/3 h-full border-r border-border flex flex-col overflow-hidden">
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-border">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-md font-semibold text-gray-700 dark:text-gray-300 flex items-center">
                 <Move className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
@@ -361,7 +361,7 @@ const RelationshipMaker = () => {
 
         {/* Right side - endpoints */}
         <div className="lg:w-2/3 flex-1 overflow-hidden flex flex-col">
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-border">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-md font-semibold text-gray-700 dark:text-gray-300 flex items-center">
                 <Check className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />

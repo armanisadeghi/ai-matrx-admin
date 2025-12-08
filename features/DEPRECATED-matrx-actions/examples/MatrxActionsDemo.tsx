@@ -149,7 +149,7 @@ export function MatrxActionsDemo() {
         </CardHeader>
         <CardContent>
           <TextSelectionMatrxMenu onActionTrigger={handleActionTrigger}>
-            <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[400px]">
+            <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-border min-h-[400px]">
               <div className="prose dark:prose-invert max-w-none">
                 <div className="whitespace-pre-line text-sm leading-relaxed select-text">
                   {sampleContent}
@@ -238,7 +238,7 @@ export function MatrxActionsDemo() {
             </div>
           </div>
 
-          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-border">
             <div className="font-semibold mb-2">Benefits of This Architecture:</div>
             <div className="grid gap-2 text-sm">
               <div className="flex items-start gap-2">

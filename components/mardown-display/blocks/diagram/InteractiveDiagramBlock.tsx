@@ -464,13 +464,13 @@ const DiagramFlow: React.FC<{
       />
       
       <Controls 
-        className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+        className="bg-textured border-border rounded-lg shadow-lg"
         showInteractive={false}
       />
       
       {showMiniMap && (
         <MiniMap
-          className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+          className="bg-textured border-border rounded-lg shadow-lg"
           nodeColor={(node) => {
             switch (node.data.nodeType) {
               case 'start': return '#10b981';
@@ -485,7 +485,7 @@ const DiagramFlow: React.FC<{
         />
       )}
 
-      <Panel position="top-right" className="bg-textured rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1">
+      <Panel position="top-right" className="bg-textured rounded-lg shadow-lg border-border p-1">
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
             <button
@@ -640,7 +640,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
         <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Header */}
-          <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700' : ''}`}>
+          <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-b border-border' : ''}`}>
             <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-2xl p-4 shadow-lg border-2 border-blue-200 dark:border-blue-800/50">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div className="flex items-start gap-3">
@@ -693,7 +693,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                   {isFullScreen && (
                     <button
                       onClick={() => setIsFullScreen(false)}
-                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border border-gray-200 dark:border-gray-600"
+                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border-border"
                       title="Exit Fullscreen"
                     >
                       <Minimize2 className="h-4 w-4" />
@@ -701,7 +701,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                   )}
                   <button
                     onClick={exportDiagramJSON}
-                    className="flex items-center justify-center gap-2 px-2 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                    className="flex items-center justify-center gap-2 px-2 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border-border transition-colors"
                     title="Export as JSON"
                   >
                     <Download className="h-4 w-4" />
@@ -712,7 +712,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
           </div>
 
           {/* ReactFlow Container */}
-          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden`}>
+          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-textured rounded-xl shadow-lg border-border overflow-hidden`}>
             <ReactFlowProvider>
               <DiagramFlow 
                 diagram={diagram}
@@ -761,8 +761,8 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
             }
 
             return (
-              <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700' : 'mt-4'}`}>
-                <div className="bg-textured rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-t border-border' : 'mt-4'}`}>
+                <div className="bg-textured rounded-xl p-3 border-border shadow-sm">
                   <div className={`grid gap-3 ${relevantLegendItems.length <= 2 ? 'grid-cols-2' : relevantLegendItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-5'}`}>
                     {relevantLegendItems.map(({ type, label, color, icon: Icon }) => (
                       <div key={type} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} text-xs font-medium`}>

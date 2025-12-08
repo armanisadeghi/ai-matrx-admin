@@ -144,7 +144,7 @@ export function CanvasCard({ canvas }: CanvasCardProps) {
                 </div>
             </CardContent>
 
-            <CardFooter className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <CardFooter className="border-t border-border pt-4">
                 {/* Creator Info */}
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2 min-w-0 flex-1">

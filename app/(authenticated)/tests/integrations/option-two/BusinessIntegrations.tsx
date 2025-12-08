@@ -192,7 +192,7 @@ const BusinessIntegrations: React.FC = () => {
                                     {groupedIntegrations[category as Category].map((integration) => (
                                         <div
                                             key={integration.id}
-                                            className="bg-textured rounded-lg shadow hover:shadow-md transition-shadow p-4 border border-gray-200 dark:border-gray-700 flex flex-col"
+                                            className="bg-textured rounded-lg shadow hover:shadow-md transition-shadow p-4 border-border flex flex-col"
                                         >
                                             <div className="flex items-center space-x-3 mb-2">
                                                 {/* Service icon */}

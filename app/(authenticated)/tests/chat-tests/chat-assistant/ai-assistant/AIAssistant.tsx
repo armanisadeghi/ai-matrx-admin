@@ -337,7 +337,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           className={`
             rounded-full p-2 shadow-lg flex items-center justify-center transition-all duration-300
             ${notifications > 0 && !isOpen ? "animate-glow ring-2 ring-indigo-400" : ""}
-            bg-white hover:bg-gray-100 text-indigo-600 border border-gray-200
+            bg-white hover:bg-gray-100 text-indigo-600 border-border
             dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:text-white dark:border-transparent
           `}
           aria-label={isOpen ? "Minimize assistant" : "Open assistant"}
