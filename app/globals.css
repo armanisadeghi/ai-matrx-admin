@@ -13,15 +13,52 @@
   --color-gray-850: hsl(240, 4%, 13%);
   
   /* Theme colors - Using CSS variable references so they work with light/dark mode */
-  --color-card: hsl(var(--card));
-  --color-muted: hsl(var(--muted));
-  --color-primary: hsl(var(--primary));
-  --color-secondary: hsl(var(--secondary));
-  --color-accent: hsl(var(--accent));
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-  --color-destructive: hsl(var(--destructive));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
   --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-accent-2: hsl(var(--accent-2));
+  --color-accent-3: hsl(var(--accent-3));
+  
+  /* Sidebar colors */
+  --color-sidebar-background: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  
+  /* Elevation colors */
+  --color-elevation-1: hsl(var(--elevation-1));
+  --color-elevation-2: hsl(var(--elevation-2));
+  --color-elevation-3: hsl(var(--elevation-3));
   
   /* Custom grid templates */
   --grid-template-columns-12: repeat(12, minmax(0, 1fr));
@@ -314,8 +351,8 @@
         
         /* UI Elements */
         --border: 240 6% 85%; /* zinc-300 - visible but subtle */
-        --input: 0 0% 100%; /* white inputs */
-        --ring: 240 5% 50%; /* zinc-500 - balanced focus ring */
+        --input: 240 6% 90%; /* slightly lighter than border for subtle distinction */
+        --ring: 240 6% 78%; /* slightly darker than border for subtle focus ring */
         --radius: 0.5rem;
 
         --chart-1: 12 76% 61%;
@@ -440,8 +477,8 @@
         
         /* UI Elements */
         --border: 240 4% 30%; /* zinc-750 - visible in dark mode */
-        --input: 240 5% 20%; /* zinc-800 - matches cards */
-        --ring: 240 5% 55%; /* zinc-500 - balanced focus ring for dark mode */
+        --input: 240 4% 28%; /* slightly darker than border for subtle distinction */
+        --ring: 240 4% 35%; /* slightly lighter than border for subtle focus ring */
         --radius: 0.5rem;
 
         --chart-1: 220 70% 50%;
@@ -622,6 +659,18 @@
         background-color: hsl(var(--destructive));
     }
     
+    .bg-success {
+        background-color: hsl(var(--success));
+    }
+    
+    .bg-warning {
+        background-color: hsl(var(--warning));
+    }
+    
+    .bg-info {
+        background-color: hsl(var(--info));
+    }
+    
     /* Text colors */
     .text-foreground {
         color: hsl(var(--foreground));
@@ -645,6 +694,30 @@
     
     .text-destructive {
         color: hsl(var(--destructive));
+    }
+    
+    .text-destructive-foreground {
+        color: hsl(var(--destructive-foreground));
+    }
+    
+    .text-success {
+        color: hsl(var(--success));
+    }
+    
+    .text-success-foreground {
+        color: hsl(var(--success-foreground));
+    }
+    
+    .text-warning {
+        color: hsl(var(--warning));
+    }
+    
+    .text-warning-foreground {
+        color: hsl(var(--warning-foreground));
+    }
+    
+    .text-info {
+        color: hsl(var(--info));
     }
     
     /* Border utilities */
@@ -685,6 +758,22 @@
     
     .border-background {
         border-color: hsl(var(--background));
+    }
+    
+    .border-destructive {
+        border-color: hsl(var(--destructive));
+    }
+    
+    .border-success {
+        border-color: hsl(var(--success));
+    }
+    
+    .border-warning {
+        border-color: hsl(var(--warning));
+    }
+    
+    .border-info {
+        border-color: hsl(var(--info));
     }
     
     .border-gray-200 {

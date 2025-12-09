@@ -341,7 +341,7 @@ export function NotesSidebar({
                                 <div key={group.folder_name} className="mb-0.5">
                                     {/* Folder Header - Drop Zone - Fixed Layout */}
                                     <div 
-                                        className="group flex items-center gap-0.5 mb-0.5"
+                                        className="group flex items-center gap-0.5 mb-0.5 hover:bg-primary/15 transition-colors"
                                         onDragOver={handleDragOver(group.folder_name)}
                                         onDragLeave={handleDragLeave}
                                         onDrop={handleDrop(group.folder_name)}
@@ -351,7 +351,7 @@ export function NotesSidebar({
                                             variant="ghost"
                                             size="sm"
                                             className={cn(
-                                                "h-5 px-1 justify-start text-xs font-medium text-foreground hover:bg-accent",
+                                                "h-5 px-1 justify-start text-xs font-medium text-foreground transition-colors",
                                                 "flex-1 min-w-0",
                                                 isDropTarget && "bg-primary/10 border-2 border-dashed border-primary"
                                             )}
@@ -410,7 +410,7 @@ export function NotesSidebar({
                                                 return (
                                                     <div
                                                         key={note.id}
-                                                        className="group flex items-center gap-0.5 min-w-0"
+                                                        className="group flex items-center gap-0.5 min-w-0 hover:bg-primary/15 transition-colors"
                                                         draggable
                                                         onDragStart={handleDragStart(note)}
                                                         onDragEnd={handleDragEnd}
@@ -423,7 +423,7 @@ export function NotesSidebar({
                                                             variant="ghost"
                                                             size="sm"
                                                             className={cn(
-                                                                "h-5 px-1 flex-1 justify-start text-xs rounded-none hover:bg-accent cursor-move min-w-0 font-normal",
+                                                                "h-5 px-1 flex-1 justify-start text-xs rounded-none text-foreground cursor-move min-w-0 font-normal transition-colors",
                                                                 isActive && "bg-primary/10 text-primary font-medium border-b border-primary",
                                                                 isDragging && "opacity-50"
                                                             )}
