@@ -32,8 +32,19 @@ export function TranscriptsProvider({ children }: { children: ReactNode }) {
             const data = await transcriptsService.fetchTranscripts();
             setTranscripts(data);
 
-            // If no active transcript and we have transcripts, set the first one
-            if (!activeTranscript && data.length > 0) {
+            // If we have an active transcript, refresh it from the new data
+            if (activeTranscript) {
+                const refreshedActive = data.find(t => t.id === activeTranscript.id);
+                if (refreshedActive) {
+                    setActiveTranscript(refreshedActive);
+                } else if (data.length > 0) {
+                    // Active was deleted, select first one
+                    setActiveTranscript(data[0]);
+                } else {
+                    setActiveTranscript(null);
+                }
+            } else if (data.length > 0) {
+                // No active transcript, set the first one
                 setActiveTranscript(data[0]);
             }
         } catch (error) {
@@ -68,6 +79,7 @@ export function TranscriptsProvider({ children }: { children: ReactNode }) {
     // Create transcript
     const createTranscript = useCallback(async (input: CreateTranscriptInput): Promise<Transcript> => {
         const newTranscript = await transcriptsService.createTranscript(input);
+        // Add to the beginning of the list and set as active
         setTranscripts(prev => [newTranscript, ...prev]);
         setActiveTranscript(newTranscript);
         return newTranscript;
@@ -75,8 +87,18 @@ export function TranscriptsProvider({ children }: { children: ReactNode }) {
 
     // Update transcript
     const updateTranscript = useCallback(async (id: string, updates: UpdateTranscriptInput): Promise<void> => {
+        // Optimistic update for better UX
+        if (activeTranscript?.id === id) {
+            setActiveTranscript(prev => prev ? { ...prev, ...updates } as Transcript : null);
+        }
+        setTranscripts(prev => 
+            prev.map(t => t.id === id ? { ...t, ...updates } as Transcript : t)
+        );
+
+        // Perform actual update
         const updated = await transcriptsService.updateTranscript(id, updates);
         
+        // Update with server response
         setTranscripts(prev => 
             prev.map(t => t.id === id ? updated : t)
         );
@@ -90,16 +112,20 @@ export function TranscriptsProvider({ children }: { children: ReactNode }) {
     const deleteTranscript = useCallback(async (id: string): Promise<void> => {
         await transcriptsService.deleteTranscript(id);
         
-        setTranscripts(prev => prev.filter(t => t.id !== id));
+        // Remove from list immediately (optimistic update)
+        const newTranscripts = transcripts.filter(t => t.id !== id);
+        setTranscripts(newTranscripts);
         
+        // If deleting active transcript, select the first available one
         if (activeTranscript?.id === id) {
-            setActiveTranscript(transcripts[0] || null);
+            setActiveTranscript(newTranscripts.length > 0 ? newTranscripts[0] : null);
         }
     }, [activeTranscript, transcripts]);
 
     // Copy transcript
     const copyTranscript = useCallback(async (id: string): Promise<void> => {
         const copied = await transcriptsService.copyTranscript(id);
+        // Add copy to the beginning and set as active
         setTranscripts(prev => [copied, ...prev]);
         setActiveTranscript(copied);
     }, []);

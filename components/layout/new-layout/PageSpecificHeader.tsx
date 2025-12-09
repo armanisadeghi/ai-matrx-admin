@@ -239,6 +239,40 @@ export function NotesHeader(props: NotesHeaderProps) {
   );
 }
 
+interface TranscriptsHeaderProps {
+  onCreateNew: () => void;
+  onDeleteTranscript: () => void;
+  className?: string;
+}
+
+export function TranscriptsHeaderPortal(props: TranscriptsHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on transcripts pages
+  if (!pathname?.includes('/transcripts')) {
+    return null;
+  }
+
+  // Dynamically import the component to avoid SSR issues
+  const [TranscriptsHeader, setTranscriptsHeader] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/transcripts/components/TranscriptsHeader').then((module) => {
+      setTranscriptsHeader(() => module.TranscriptsHeader);
+    });
+  }, []);
+
+  if (!TranscriptsHeader) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <TranscriptsHeader {...props} />
+    </PageSpecificHeader>
+  );
+}
+
 interface AppletHeaderProps {
   appId?: string;
   isDemo?: boolean;

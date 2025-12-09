@@ -148,9 +148,56 @@ export async function updateTranscript(id: string, updates: UpdateTranscriptInpu
 }
 
 /**
- * Soft delete a transcript
+ * Delete a transcript and its associated audio file from storage
  */
 export async function deleteTranscript(id: string): Promise<void> {
+    // First, fetch the transcript to get the audio file path
+    const { data: transcript, error: fetchError } = await supabase
+        .from('transcripts')
+        .select('audio_file_path, video_file_path')
+        .eq('id', id)
+        .single();
+
+    if (fetchError) {
+        console.error('Error fetching transcript for deletion:', fetchError);
+        throw fetchError;
+    }
+
+    // Delete audio file from storage if it exists
+    if (transcript?.audio_file_path) {
+        try {
+            const { error: storageError } = await supabase
+                .storage
+                .from('user-private-assets')
+                .remove([transcript.audio_file_path]);
+
+            if (storageError) {
+                console.warn('Error deleting audio file from storage:', storageError);
+                // Continue with transcript deletion even if storage deletion fails
+            }
+        } catch (error) {
+            console.warn('Failed to delete audio file:', error);
+            // Continue with transcript deletion
+        }
+    }
+
+    // Delete video file from storage if it exists
+    if (transcript?.video_file_path) {
+        try {
+            const { error: storageError } = await supabase
+                .storage
+                .from('user-private-assets')
+                .remove([transcript.video_file_path]);
+
+            if (storageError) {
+                console.warn('Error deleting video file from storage:', storageError);
+            }
+        } catch (error) {
+            console.warn('Failed to delete video file:', error);
+        }
+    }
+
+    // Soft delete the transcript record
     const { error } = await supabase
         .from('transcripts')
         .update({ is_deleted: true })

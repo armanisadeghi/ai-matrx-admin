@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Transcript } from '../types';
+import { formatDuration, formatRelativeTime } from '../utils/dateFormatting';
 
 interface TranscriptsSidebarProps {
     onCreateTranscript?: () => void;
@@ -84,39 +85,34 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
         }
     };
 
-    const formatDuration = (seconds?: number) => {
-        if (!seconds) return '';
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-border">
+        <div className="flex flex-col h-full bg-background border-r border-border">
             {/* Header */}
-            <div className="p-4 border-b border-border">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="p-3 md:p-4 border-b border-border">
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                    <h2 className="text-base md:text-lg font-semibold">
                         Transcripts
                     </h2>
                     <Button
                         size="sm"
                         onClick={onCreateTranscript}
-                        className="h-8"
+                        className="h-7 md:h-8 text-xs md:text-sm"
                     >
-                        <Plus className="h-4 w-4" />
-                        New
+                        <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                        <span className="ml-1">New</span>
                     </Button>
                 </div>
 
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-2.5 md:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search transcripts..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
+                        className="pl-8 md:pl-9 h-9 text-sm md:text-base"
+                        style={{ fontSize: '16px' }}
                     />
                 </div>
             </div>
@@ -206,9 +202,9 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
                                                     {formatDuration(transcript.metadata.duration)}
                                                 </span>
                                             )}
-                                            {transcript.metadata?.segmentCount && (
-                                                <span>
-                                                    {transcript.metadata.segmentCount} segments
+                                            {transcript.updated_at && (
+                                                <span className="flex items-center gap-1">
+                                                    • {formatRelativeTime(transcript.updated_at)}
                                                 </span>
                                             )}
                                         </div>

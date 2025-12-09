@@ -3,5 +3,7 @@
 export { TranscriptsLayout } from './TranscriptsLayout';
 export { TranscriptsSidebar } from './TranscriptsSidebar';
 export { TranscriptViewer } from './TranscriptViewer';
-export { TranscriptToolbar } from './TranscriptToolbar';
+export { TranscriptsHeader } from './TranscriptsHeader';
+export { DeleteTranscriptDialog } from './DeleteTranscriptDialog';
+export { CreateTranscriptModal } from './CreateTranscriptModal';
 

@@ -5,7 +5,7 @@ import { useTranscriptsContext } from '../context/TranscriptsContext';
 import AdvancedTranscriptViewer, { TranscriptSegment } from '@/components/mardown-display/blocks/transcripts/AdvancedTranscriptViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Edit2, Save, X, Play, Pause, SkipBack, SkipForward, Volume2, Loader2, RotateCw } from 'lucide-react';
+import { Download, Edit2, Save, X, Play, Pause, SkipBack, SkipForward, Volume2, Loader2, RotateCw, FileText } from 'lucide-react';
 import { useToastManager } from '@/hooks/useToastManager';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -147,8 +147,9 @@ export function TranscriptViewer() {
 
     if (!activeTranscript) {
         return (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground bg-white dark:bg-neutral-900 border-l border-zinc-200 dark:border-zinc-800">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground bg-background">
                 <div className="text-center">
+                    <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                     <p>Select a transcript to view</p>
                 </div>
             </div>
@@ -156,21 +157,24 @@ export function TranscriptViewer() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-900 border-l border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+            <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border shrink-0">
                 {isEditingMetadata ? (
                     <div className="space-y-3">
                         <Input
                             value={editTitle}
                             onChange={(e) => setEditTitle(e.target.value)}
-                            className="font-semibold text-lg"
+                            className="font-semibold text-base md:text-lg"
+                            style={{ fontSize: '16px' }}
                         />
                         <Textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
                             placeholder="Description"
                             rows={2}
+                            className="text-sm"
+                            style={{ fontSize: '16px' }}
                         />
                         <div className="flex gap-2">
                             <Button size="sm" onClick={handleUpdateMetadata}>
@@ -205,7 +209,7 @@ export function TranscriptViewer() {
 
             {/* Audio Player */}
             {activeTranscript.source_type === 'audio' && (
-                <div className="px-6 py-3 bg-zinc-50 dark:bg-neutral-800/50 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                <div className="px-4 md:px-6 py-2 md:py-3 bg-muted/50 border-b border-border shrink-0">
                     <div className="flex flex-col gap-2">
                         {/* Hidden Audio Element */}
                         {audioUrl && (
@@ -272,7 +276,7 @@ export function TranscriptViewer() {
             )}
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 bg-zinc-50/50 dark:bg-neutral-900/50">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/30 pb-safe">
                 <Card className="border-0 shadow-none bg-transparent">
                     <CardContent className="p-0">
                         {/* We pass the reconstructed string content, BUT AdvancedTranscriptViewer 

@@ -2,7 +2,9 @@
 
 ## 📋 Overview
 
-The Transcripts feature provides a complete database-backed system for managing audio/video transcripts with full CRUD operations, real-time sync, and seamless import from AI-generated transcripts.
+The Transcripts feature provides a complete database-backed system for managing audio/video transcripts with full CRUD operations, real-time sync, audio file upload with AI transcription, and seamless organization.
+
+**Recently Updated:** Complete UI/UX overhaul with modern layout system, proper mobile support, and enhanced user experience.
 
 ---
 
@@ -11,20 +13,23 @@ The Transcripts feature provides a complete database-backed system for managing 
 ### Core Functionality
 - ✅ **Full Database Persistence** - All transcripts stored in Supabase
 - ✅ **Real-time Sync** - Live updates across sessions
+- ✅ **Audio Upload & Transcription** - Upload audio files and transcribe with Groq Whisper
+- ✅ **Storage Management** - Audio files stored in Supabase Storage
+- ✅ **Complete File Deletion** - Delete both transcript records and storage files
 - ✅ **Segment Management** - Timestamps, speakers, and text
 - ✅ **Rich Metadata** - Duration, word count, speaker tracking
-- ✅ **File References** - Links to audio/video files in Supabase Storage
 - ✅ **Organization** - Folders, tags, and search
-- ✅ **Import from AI** - One-click import from AI-generated transcripts
 - ✅ **Export** - Download as text file
 
 ### Advanced Features
 - 🎯 **Multi-source Support** - Audio, Video, Meetings, Interviews
 - 🎯 **Speaker Tracking** - Automatic speaker detection and labeling
 - 🎯 **Search & Filter** - Full-text search, folder filtering
-- 🎯 **Editing** - Edit segments, split, merge, delete
+- 🎯 **Editing** - Edit segments, metadata, and details
 - 🎯 **Copy & Duplicate** - Clone entire transcripts
-- 🎯 **Soft Delete** - Recover deleted transcripts
+- 🎯 **Modern Layout System** - Portal-based header injection like notes
+- 🎯 **Mobile Optimized** - Proper dvh usage, safe areas, and touch-friendly
+- 🎯 **Beautiful Time Formatting** - Relative times and clean duration display
 
 ---
 
@@ -63,21 +68,28 @@ Navigate to `/transcripts` to access the transcript management interface.
 ```
 features/transcripts/
 ├── migrations/
-│   └── create_transcripts_table.sql  # Database migration
+│   └── create_transcripts_table.sql      # Database migration
 ├── service/
-│   └── transcriptsService.ts         # CRUD operations
+│   └── transcriptsService.ts             # CRUD operations + storage deletion
 ├── context/
-│   └── TranscriptsContext.tsx        # React context provider
+│   └── TranscriptsContext.tsx            # React context with optimistic updates
+├── hooks/
+│   └── useSignedUrl.ts                   # Auto-refreshing signed URLs
+├── utils/
+│   ├── dateFormatting.ts                 # Time/date formatting utilities
+│   └── index.ts                          # Utils exports
 ├── components/
-│   ├── TranscriptsLayout.tsx         # Main layout
-│   ├── TranscriptsSidebar.tsx        # Folder/transcript browser
-│   ├── TranscriptViewer.tsx          # Display/edit transcript
-│   ├── TranscriptToolbar.tsx         # Action buttons
-│   ├── ImportTranscriptModal.tsx     # Import modal
-│   └── index.ts                      # Component exports
-├── types.ts                          # TypeScript interfaces
-├── index.ts                          # Main exports
-└── README.md                         # This file
+│   ├── TranscriptsLayout.tsx             # Main layout with h-page system
+│   ├── TranscriptsHeader.tsx             # Header portal component
+│   ├── TranscriptsSidebar.tsx            # Folder/transcript browser
+│   ├── TranscriptViewer.tsx              # Display/edit transcript
+│   ├── CreateTranscriptModal.tsx         # Upload & transcribe modal
+│   ├── DeleteTranscriptDialog.tsx        # Proper delete confirmation
+│   ├── ImportTranscriptModal.tsx         # Import modal
+│   └── index.ts                          # Component exports
+├── types.ts                              # TypeScript interfaces
+├── index.ts                              # Main exports
+└── README.md                             # This file
 ```
 
 ---
@@ -200,28 +212,50 @@ All context methods use these underlying service functions:
 ## 🎨 Component Architecture
 
 ### TranscriptsProvider
-- Manages global state
+- Manages global state with optimistic updates
 - Handles real-time subscriptions
+- Auto-refreshes UI after operations
 - Provides context to children
 
 ### TranscriptsLayout
-- Main container component
+- Uses proper `h-page` layout system
+- Portal-based header injection
 - Responsive sidebar + content
-- Mobile sheet for sidebar
+- Mobile sheet with safe areas
+
+### TranscriptsHeader (Portal Component)
+- Injected into main header via portal
+- Create, refresh, copy, export actions
+- Dropdown for additional options
+- Proper delete confirmation trigger
 
 ### TranscriptsSidebar
 - Browse transcripts by folder
-- Search functionality
-- Quick stats and metadata
+- Search functionality with ≥16px inputs
+- Relative time formatting (e.g., "2 hours ago")
+- Clean duration display
+- Mobile-optimized touch targets
 
 ### TranscriptViewer
 - Display and edit transcript
+- Integrated audio player with signed URLs
+- Metadata editing with mobile-friendly inputs
 - Integration with AdvancedTranscriptViewer
-- Metadata editing
+- Responsive padding and safe areas
 
-### TranscriptToolbar
-- Action buttons (save, copy, delete, export)
-- Dropdown for additional actions
+### CreateTranscriptModal
+- Upload audio files to Supabase Storage
+- Clear "Upload Only" vs "Upload & Transcribe" options
+- Animated transcription progress with file details
+- Groq Whisper Large V3 Turbo integration
+- Mobile-friendly inputs (≥16px)
+
+### DeleteTranscriptDialog
+- Modern AlertDialog (no browser alerts)
+- Clear warning about file + transcript deletion
+- Shows file path confirmation
+- Loading states during deletion
+- Proper error handling
 
 ### ImportTranscriptModal
 - Import AI-generated transcripts
@@ -312,7 +346,10 @@ The system seamlessly integrates with the existing `AdvancedTranscriptViewer` co
 
 ## 🚀 Future Enhancements
 
-- [ ] Audio/video player integration
+- [x] Audio player integration (✅ Completed)
+- [x] Modern layout system (✅ Completed)
+- [x] Proper storage file deletion (✅ Completed)
+- [x] Upload & transcription (✅ Completed)
 - [ ] Automatic speaker diarization
 - [ ] Transcript versioning
 - [ ] Collaborative editing
@@ -320,6 +357,19 @@ The system seamlessly integrates with the existing `AdvancedTranscriptViewer` co
 - [ ] AI-powered summaries
 - [ ] Integration with meeting scheduling
 - [ ] Bulk import from file uploads
+
+## ✨ Recent Updates
+
+### December 2024 - Complete UI/UX Overhaul
+- **Modern Layout System**: Implemented portal-based header injection following notes pattern
+- **Mobile Optimization**: Proper dvh usage, safe areas, iOS zoom prevention
+- **Delete Functionality**: Now properly deletes storage files along with records
+- **Upload Experience**: Clear "Upload Only" vs "Upload & Transcribe" options
+- **Loading States**: Beautiful animated progress indicators during transcription
+- **Time Formatting**: Relative times ("2 hours ago") and clean duration display
+- **No Browser Alerts**: All confirmations use modern AlertDialog components
+- **Optimistic Updates**: Instant UI feedback with proper error handling
+- **Accessibility**: ≥16px inputs, proper focus management, keyboard navigation
 
 ---
 

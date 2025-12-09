@@ -13,6 +13,7 @@ import { useAudioTranscription } from '@/features/audio/hooks/useAudioTranscript
 import { useToastManager } from '@/hooks/useToastManager';
 import { FileUploadWithStorage, UploadedFileResult } from '@/components/ui/file-upload/FileUploadWithStorage';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/utils/supabase/client';
 
 interface CreateTranscriptModalProps {
     isOpen: boolean;
@@ -86,31 +87,32 @@ export function CreateTranscriptModal({
         setStep('process');
 
         try {
-            // 1. We need to get the file blob to send to Groq
-            // Since we just uploaded it, we might not have the blob directly accessible from the result
-            // We have the URL. If it's private, we might need a signed URL, but let's try fetching it.
-            // CAUTION: If the bucket is private, standard fetch might fail without auth headers or signed URL.
-            // However, useAudioTranscription expects a Blob.
-            // Option 2: Ask the user to re-select for transcription? No, bad UX.
-            // Option 3: Fetch the file content from Supabase storage using the path.
-
-            // Since we are in the browser and just uploaded it, we don't have the File object persisted unless we stored it in state in the parent?
-            // FileUploadWithStorage doesn't seem to pass back the File object, only the result.
-            // We need to fetch it.
-
-            // NOTE: For now, I'll attempt to fetch using the url provided.
-            // If that fails due to CORS/Auth, we might need to modify FileUploadWithStorage to return the File object or handle it differently.
-            // Actually, we can just use the path to download it via Supabase client if needed, but let's try the URL first.
-
+            // 1. Download the file from Supabase Storage using the client
+            // The file is in a private bucket, so we need to use Supabase client to download it
             let audioBlob: Blob;
 
-            // Check if we have a public URL or need to download via supabase
-            if (uploadedFile.url) {
+            if (uploadedFile.details?.path && uploadedFile.details?.filename) {
+                // Construct the full file path
+                const filePath = `${uploadedFile.details.path}/${uploadedFile.details.filename}`;
+                
+                // Download from Supabase Storage
+                const { data, error } = await supabase
+                    .storage
+                    .from('user-private-assets')
+                    .download(filePath);
+
+                if (error || !data) {
+                    throw new Error('Failed to download audio file for transcription');
+                }
+
+                audioBlob = data;
+            } else if (uploadedFile.url) {
+                // Fallback: try fetching with the URL (might be signed)
                 const response = await fetch(uploadedFile.url);
                 if (!response.ok) throw new Error('Failed to download audio for transcription');
                 audioBlob = await response.blob();
             } else {
-                throw new Error("No file URL available");
+                throw new Error("No file path or URL available");
             }
 
             // 2. Transcribe
@@ -227,6 +229,8 @@ export function CreateTranscriptModal({
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Transcript Title"
+                                    className="border border-border"
+                                    style={{ fontSize: '16px' }}
                                 />
                             </div>
 
@@ -238,6 +242,8 @@ export function CreateTranscriptModal({
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="Add a description..."
                                     rows={2}
+                                    className="border border-border"
+                                    style={{ fontSize: '16px' }}
                                 />
                             </div>
 
@@ -265,6 +271,8 @@ export function CreateTranscriptModal({
                                         value={folder}
                                         onChange={(e) => setFolder(e.target.value)}
                                         placeholder="Folder Name"
+                                        style={{ fontSize: '16px' }}
+                                        className="border border-border"
                                     />
                                 </div>
                             </div>
@@ -283,27 +291,42 @@ export function CreateTranscriptModal({
                                         <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Transcription Failed</h3>
                                         <p className="text-sm text-gray-500 mt-2">{transcribeError}</p>
                                     </div>
-                                    <Button variant="outline" onClick={() => setStep('details')}>
-                                        Go Back
-                                    </Button>
-                                    <Button variant="default" onClick={handleSaveWithoutTranscription} disabled={isSaving}>
-                                        {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                                        Save Without Transcription
-                                    </Button>
+                                    <div className="flex gap-2 justify-center">
+                                        <Button variant="outline" onClick={() => setStep('details')}>
+                                            Go Back
+                                        </Button>
+                                        <Button variant="default" onClick={handleSaveWithoutTranscription} disabled={isSaving}>
+                                            {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                                            Save Without Transcription
+                                        </Button>
+                                    </div>
                                 </div>
                             ) : (
                                 <>
                                     <div className="relative">
-                                        <div className="h-24 w-24 rounded-full border-4 border-t-blue-500 border-blue-200 dark:border-blue-900 animate-spin"></div>
+                                        {/* Outer rotating ring */}
+                                        <div className="h-24 w-24 rounded-full border-4 border-t-primary border-r-primary/50 border-b-primary/20 border-l-primary/20 animate-spin"></div>
+                                        {/* Inner pulsing circle */}
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <Loader2 className="h-8 w-8 text-blue-500" />
+                                            <div className="h-16 w-16 rounded-full bg-primary/10 animate-pulse flex items-center justify-center">
+                                                <FileAudio className="h-8 w-8 text-primary" />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="text-center space-y-2">
-                                        <h3 className="text-lg font-medium">Transcribing Audio...</h3>
-                                        <p className="text-sm text-gray-500">
-                                            Using Groq Whisper Large V3 Turbo for lightning fast results.
+                                    <div className="text-center space-y-2 max-w-md">
+                                        <h3 className="text-lg font-semibold">Transcribing Audio...</h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Processing <span className="font-medium text-foreground">{uploadedFile?.details?.filename}</span>
                                         </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Using Groq Whisper Large V3 Turbo for lightning-fast results
+                                        </p>
+                                    </div>
+                                    {/* Progress dots animation */}
+                                    <div className="flex gap-1.5">
+                                        <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                        <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                        <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></div>
                                     </div>
                                 </>
                             )}
@@ -318,13 +341,25 @@ export function CreateTranscriptModal({
                     {step === 'details' && (
                         <>
                             <Button variant="ghost" onClick={() => setStep('upload')}>Back</Button>
-                            <Button variant="outline" onClick={handleSaveWithoutTranscription} disabled={isSaving}>
-                                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Save Draft
-                            </Button>
-                            <Button onClick={handleStartProcessing}>
-                                Transcribe & Save
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleSaveWithoutTranscription} 
+                                    disabled={isSaving}
+                                    className="min-w-[120px]"
+                                >
+                                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Upload Only
+                                </Button>
+                                <Button 
+                                    onClick={handleStartProcessing}
+                                    disabled={isSaving}
+                                    className="min-w-[160px]"
+                                >
+                                    <FileAudio className="mr-2 h-4 w-4" />
+                                    Upload & Transcribe
+                                </Button>
+                            </div>
                         </>
                     )}
                 </DialogFooter>
