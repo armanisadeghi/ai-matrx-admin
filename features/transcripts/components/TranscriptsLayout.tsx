@@ -1,10 +1,10 @@
-// features/transcripts/components/TranscriptsLayout.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { TranscriptsSidebar } from './TranscriptsSidebar';
 import { TranscriptViewer } from './TranscriptViewer';
 import { TranscriptToolbar } from './TranscriptToolbar';
+import { CreateTranscriptModal } from './CreateTranscriptModal';
 import { useTranscriptsContext } from '../context/TranscriptsContext';
 import { Loader2, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -18,6 +18,7 @@ interface TranscriptsLayoutProps {
 export function TranscriptsLayout({ className }: TranscriptsLayoutProps) {
     const { isLoading } = useTranscriptsContext();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -51,12 +52,19 @@ export function TranscriptsLayout({ className }: TranscriptsLayoutProps) {
                 </div>
 
                 {/* Toolbar */}
-                <TranscriptToolbar className="hidden md:flex" />
-                
+                <TranscriptToolbar
+                    className="hidden md:flex"
+                    onCreateNew={() => setIsCreateModalOpen(true)}
+                />
+
                 {/* Transcript Viewer */}
                 <TranscriptViewer />
+
+                <CreateTranscriptModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                />
             </div>
         </div>
     );
 }
-

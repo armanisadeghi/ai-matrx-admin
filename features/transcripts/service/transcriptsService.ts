@@ -80,7 +80,7 @@ function generateMetadata(segments: TranscriptSegment[]) {
  */
 export async function createTranscript(input: CreateTranscriptInput): Promise<Transcript> {
     const { data: userData } = await supabase.auth.getUser();
-    
+
     if (!userData?.user?.id) {
         throw new Error('User not authenticated');
     }
@@ -123,7 +123,7 @@ export async function createTranscript(input: CreateTranscriptInput): Promise<Tr
 export async function updateTranscript(id: string, updates: UpdateTranscriptInput): Promise<Transcript> {
     // If segments are being updated, regenerate metadata
     let finalUpdates = { ...updates };
-    
+
     if (updates.segments) {
         const autoMetadata = generateMetadata(updates.segments);
         finalUpdates.metadata = {
@@ -192,7 +192,7 @@ export async function copyTranscript(id: string): Promise<Transcript> {
     }
 
     const { data: userData } = await supabase.auth.getUser();
-    
+
     if (!userData?.user?.id) {
         throw new Error('User not authenticated');
     }
@@ -279,3 +279,20 @@ export async function getTranscriptsByTag(tag: string): Promise<Transcript[]> {
     return data || [];
 }
 
+
+/**
+ * Get a signed URL for an audio/video file
+ */
+export async function getSignedUrl(filePath: string, bucket: string = 'user-private-assets', expiresIn: number = 3600): Promise<string | null> {
+    const { data, error } = await supabase
+        .storage
+        .from(bucket)
+        .createSignedUrl(filePath, expiresIn);
+
+    if (error) {
+        console.error('Error getting signed URL:', error);
+        return null;
+    }
+
+    return data.signedUrl;
+}

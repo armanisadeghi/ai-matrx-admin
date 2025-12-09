@@ -1,106 +1,308 @@
-// features/transcripts/components/TranscriptViewer.tsx
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranscriptsContext } from '../context/TranscriptsContext';
-import AdvancedTranscriptViewer from '@/components/mardown-display/blocks/transcripts/AdvancedTranscriptViewer';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import AdvancedTranscriptViewer, { TranscriptSegment } from '@/components/mardown-display/blocks/transcripts/AdvancedTranscriptViewer';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Download, Edit2, Save, X, Play, Pause, SkipBack, SkipForward, Volume2, Loader2, RotateCw } from 'lucide-react';
+import { useToastManager } from '@/hooks/useToastManager';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { FileText } from 'lucide-react';
-import type { TranscriptSegment } from '../types';
+import { Separator } from '@/components/ui/separator';
+import { useSignedUrl } from '../hooks/useSignedUrl';
+import { Slider } from '@/components/ui/slider';
 
 export function TranscriptViewer() {
     const { activeTranscript, updateTranscript } = useTranscriptsContext();
+    const toast = useToastManager('transcripts');
+
+    const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+
+    // Audio Player State
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(1);
+    const audioRef = useRef<HTMLAudioElement>(null);
+
+    // Get signed URL for audio
+    const { url: audioUrl, isLoading: isLoadingUrl, error: urlError } = useSignedUrl(activeTranscript?.audio_file_path, {
+        bucket: 'user-private-assets', // Assuming this is where it is
+        expiresIn: 3600
+    });
+
+    useEffect(() => {
+        if (activeTranscript) {
+            setEditTitle(activeTranscript.title);
+            setEditDescription(activeTranscript.description);
+            // Reset player when transcript changes
+            setIsPlaying(false);
+            setCurrentTime(0);
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        }
+    }, [activeTranscript]);
+
+    const handleUpdateMetadata = async () => {
+        if (!activeTranscript) return;
+
+        try {
+            await updateTranscript(activeTranscript.id, {
+                title: editTitle,
+                description: editDescription,
+            });
+            setIsEditingMetadata(false);
+            toast.success('Transcript details updated');
+        } catch (error) {
+            toast.error('Failed to update details');
+        }
+    };
+
+    const handleUpdateSegments = async (segments: TranscriptSegment[]) => {
+        if (!activeTranscript) return;
+
+        try {
+            await updateTranscript(activeTranscript.id, {
+                segments: segments,
+            });
+            // Toast is handled by the viewer context menu mostly, but good to confirm
+        } catch (error) {
+            toast.error('Failed to update segments');
+        }
+    };
+
+    // Audio Player Handlers
+    const togglePlay = () => {
+        if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
+
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            setCurrentTime(audioRef.current.currentTime);
+        }
+    };
+
+    const handleLoadedMetadata = () => {
+        if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+        }
+    };
+
+    const handleSeek = (value: number[]) => {
+        if (audioRef.current) {
+            audioRef.current.currentTime = value[0];
+            setCurrentTime(value[0]);
+        }
+    };
+
+    const handleVolumeChange = (value: number[]) => {
+        if (audioRef.current) {
+            audioRef.current.volume = value[0];
+            setVolume(value[0]);
+        }
+    };
+
+    const handleTranscriptTimeClick = (seconds: number) => {
+        if (audioRef.current) {
+            audioRef.current.currentTime = seconds;
+            setCurrentTime(seconds);
+            if (!isPlaying) {
+                audioRef.current.play();
+                setIsPlaying(true);
+            }
+        }
+    };
+
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    // Construct the transcript content string for the viewer if segments exist
+    const transcriptContent = React.useMemo(() => {
+        if (!activeTranscript?.segments) return '';
+        // Reconstruct content from segments for the viewer
+        return activeTranscript.segments
+            .map(s => {
+                let line = `[${s.timecode}]`;
+                if (s.speaker) line += ` ${s.speaker}:`;
+                line += ` ${s.text}`;
+                return line;
+            })
+            .join('\n\n');
+    }, [activeTranscript]);
 
     if (!activeTranscript) {
         return (
-            <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-900">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground bg-white dark:bg-neutral-900 border-l border-zinc-200 dark:border-zinc-800">
                 <div className="text-center">
-                    <FileText className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        No Transcript Selected
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Select a transcript from the sidebar or create a new one
-                    </p>
+                    <p>Select a transcript to view</p>
                 </div>
             </div>
         );
     }
 
-    const handleTitleChange = (title: string) => {
-        updateTranscript(activeTranscript.id, { title });
-    };
-
-    const handleDescriptionChange = (description: string) => {
-        updateTranscript(activeTranscript.id, { description });
-    };
-
-    const handleUpdateSegments = (segments: TranscriptSegment[]) => {
-        updateTranscript(activeTranscript.id, { segments });
-    };
-
     return (
-        <div className="h-full flex flex-col bg-white dark:bg-gray-900">
+        <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-900 border-l border-zinc-200 dark:border-zinc-800 overflow-hidden">
             {/* Header */}
-            <div className="border-b border-border p-6 space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="title" className="text-sm font-medium">
-                        Title
-                    </Label>
-                    <Input
-                        id="title"
-                        value={activeTranscript.title}
-                        onChange={(e) => handleTitleChange(e.target.value)}
-                        className="text-lg font-semibold"
-                        placeholder="Transcript title..."
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="description" className="text-sm font-medium">
-                        Description
-                    </Label>
-                    <Textarea
-                        id="description"
-                        value={activeTranscript.description}
-                        onChange={(e) => handleDescriptionChange(e.target.value)}
-                        className="resize-none"
-                        rows={2}
-                        placeholder="Add a description..."
-                    />
-                </div>
-
-                {/* Metadata */}
-                <div className="flex flex-wrap gap-2 items-center text-sm text-gray-500 dark:text-gray-400">
-                    <Badge variant="outline">
-                        {activeTranscript.source_type}
-                    </Badge>
-                    {activeTranscript.metadata?.segmentCount && (
-                        <span>{activeTranscript.metadata.segmentCount} segments</span>
-                    )}
-                    {activeTranscript.metadata?.wordCount && (
-                        <span>{activeTranscript.metadata.wordCount.toLocaleString()} words</span>
-                    )}
-                    {activeTranscript.metadata?.speakers && activeTranscript.metadata.speakers.length > 0 && (
-                        <span>{activeTranscript.metadata.speakers.length} speakers</span>
-                    )}
-                </div>
+            <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                {isEditingMetadata ? (
+                    <div className="space-y-3">
+                        <Input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="font-semibold text-lg"
+                        />
+                        <Textarea
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            placeholder="Description"
+                            rows={2}
+                        />
+                        <div className="flex gap-2">
+                            <Button size="sm" onClick={handleUpdateMetadata}>
+                                <Save className="h-4 w-4 mr-1" /> Save
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setIsEditingMetadata(false)}>
+                                <X className="h-4 w-4 mr-1" /> Cancel
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-xl font-bold text-foreground">{activeTranscript.title}</h1>
+                            {activeTranscript.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{activeTranscript.description}</p>
+                            )}
+                            <div className="flex gap-2 mt-2">
+                                {activeTranscript.tags.map((tag) => (
+                                    <span key={tag} className="px-2 py-0.5 bg-secondary text-secondary-foreground rounded-full text-xs">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => setIsEditingMetadata(true)}>
+                            <Edit2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
             </div>
 
-            {/* Transcript Content */}
-            <div className="flex-1 overflow-auto">
-                <AdvancedTranscriptViewer
-                    content=""
-                    hideTitle={true}
-                    onUpdateTranscript={handleUpdateSegments}
-                    readOnly={false}
-                />
+            {/* Audio Player */}
+            {activeTranscript.source_type === 'audio' && (
+                <div className="px-6 py-3 bg-zinc-50 dark:bg-neutral-800/50 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                    <div className="flex flex-col gap-2">
+                        {/* Hidden Audio Element */}
+                        {audioUrl && (
+                            <audio
+                                ref={audioRef}
+                                src={audioUrl}
+                                onTimeUpdate={handleTimeUpdate}
+                                onLoadedMetadata={handleLoadedMetadata}
+                                onEnded={() => setIsPlaying(false)}
+                            />
+                        )}
+
+                        <div className="flex items-center gap-4">
+                            <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-10 w-10 rounded-full shrink-0"
+                                onClick={togglePlay}
+                                disabled={!audioUrl}
+                            >
+                                {isLoadingUrl ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : isPlaying ? (
+                                    <Pause className="h-4 w-4" />
+                                ) : (
+                                    <Play className="h-4 w-4 ml-0.5" />
+                                )}
+                            </Button>
+
+                            <div className="flex-1 flex flex-col justify-center gap-1">
+                                <Slider
+                                    value={[currentTime]}
+                                    max={duration || 100}
+                                    step={0.1}
+                                    onValueChange={handleSeek}
+                                    className="cursor-pointer"
+                                />
+                                <div className="flex justify-between text-xs text-muted-foreground font-mono">
+                                    <span>{formatTime(currentTime)}</span>
+                                    <span>{formatTime(duration)}</span>
+                                </div>
+                            </div>
+
+                            {/* Volume Control - Hidden on mobile could be an option, but let's keep it simple */}
+                            <div className="hidden sm:flex items-center gap-2 w-24">
+                                <Volume2 className="h-4 w-4 text-muted-foreground" />
+                                <Slider
+                                    value={[volume]}
+                                    max={1}
+                                    step={0.1}
+                                    onValueChange={handleVolumeChange}
+                                />
+                            </div>
+
+                            {activeTranscript.audio_file_path && !audioUrl && !isLoadingUrl && (
+                                <div className="text-xs text-red-500 flex items-center">
+                                    <X className="h-3 w-3 mr-1" />
+                                    Failed to load audio
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 bg-zinc-50/50 dark:bg-neutral-900/50">
+                <Card className="border-0 shadow-none bg-transparent">
+                    <CardContent className="p-0">
+                        {/* We pass the reconstructed string content, BUT AdvancedTranscriptViewer 
+                            should ideally accept segments directly to avoid re-parsing. 
+                            However, the current simplified version takes content string. 
+                            
+                            Fix: The viewer we just updated (if I recall correctly from my thought process) 
+                            accepts `content` string and parses it. 
+                            
+                            Actually, passing segments directly would be more efficient if we already have them.
+                            But `AdvancedTranscriptViewer` is designed to parse raw text.
+                            
+                            Wait, I can modify `AdvancedTranscriptViewer` to accept `segments` prop as override?
+                            Or just rely on the content string reconstruction which I did above.
+                            
+                            The `AdvancedTranscriptViewer` uses `onUpdateTranscript` to pass back edits.
+                            
+                            For now, relying on string reconstruction `transcriptContent` is fine, 
+                            as long as `AdvancedTranscriptViewer` can parse it back to segments.
+                         */}
+                        <AdvancedTranscriptViewer
+                            content={transcriptContent}
+                            hideTitle={true}
+                            onUpdateTranscript={handleUpdateSegments}
+                            onTimeClick={handleTranscriptTimeClick}
+                            currentTime={currentTime}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
 }
-

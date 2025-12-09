@@ -64,6 +64,7 @@ export type TranscriptViewerProps = {
     onCopySegment?: (text: string) => void;
     onUpdateTranscript?: (segments: TranscriptSegment[]) => void;
     readOnly?: boolean;
+    currentTime?: number;
 };
 
 export type TranscriptStats = {
@@ -73,13 +74,290 @@ export type TranscriptStats = {
     charCount: number;
 };
 
+// Extracted component to handle individual segment rendering and hooks correctly
+type TranscriptSegmentItemProps = {
+    segment: TranscriptSegment;
+    nextSegment?: TranscriptSegment;
+    index: number;
+    isActive: boolean;
+    isSearchResult: boolean;
+    isCurrentSearchResult: boolean;
+    viewMode: ViewMode;
+    readOnly: boolean;
+    showTimecodes: boolean;
+    copiedSegmentId: string | null;
+    searchTerm: string;
+    isLastSegment: boolean;
+    onTimeClick: (seconds: number) => void;
+    onEdit: (segment: TranscriptSegment) => void;
+    onSplit: (segment: TranscriptSegment) => void;
+    onMerge: (segmentId: string) => void;
+    onCopy: (text: string, id: string) => void;
+    onDelete: (id: string) => void;
+    registerRef: (id: string, el: HTMLDivElement | null) => void;
+};
+
+const TranscriptSegmentItem = React.memo(({
+    segment,
+    nextSegment,
+    index,
+    isActive,
+    isSearchResult,
+    isCurrentSearchResult,
+    viewMode,
+    readOnly,
+    showTimecodes,
+    copiedSegmentId,
+    searchTerm,
+    isLastSegment,
+    onTimeClick,
+    onEdit,
+    onSplit,
+    onMerge,
+    onCopy,
+    onDelete,
+    registerRef
+}: TranscriptSegmentItemProps) => {
+    const itemRef = useRef<HTMLDivElement | null>(null);
+
+    // Auto-scroll to active segment if it changes
+    useEffect(() => {
+        if (isActive && itemRef.current) {
+            itemRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
+    }, [isActive]);
+
+    // Combined ref callback to handle both local ref and parent ref registration
+    const setRef = (el: HTMLDivElement | null) => {
+        itemRef.current = el;
+        registerRef(segment.id, el);
+    };
+
+    // Highlight search terms
+    const highlightSearchTerm = (text: string): React.ReactNode => {
+        if (!searchTerm.trim()) return <>{text}</>;
+
+        const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
+
+        return (
+            <>
+                {parts.map((part, i) =>
+                    part.toLowerCase() === searchTerm.toLowerCase() ? (
+                        <span key={i} className="bg-yellow-200 dark:bg-yellow-900 px-0.5 rounded">
+                            {part}
+                        </span>
+                    ) : (
+                        <span key={i}>{part}</span>
+                    )
+                )}
+            </>
+        );
+    };
+
+    // Text-only view
+    if (viewMode === "text-only") {
+        return (
+            <div
+                key={segment.id}
+                ref={setRef}
+                className={`relative px-3 py-2 transition-colors ${isActive
+                    ? "bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-500 rounded-r"
+                    : isCurrentSearchResult
+                        ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
+                        : isSearchResult
+                            ? "bg-yellow-50/50 dark:bg-yellow-900/10"
+                            : "hover:bg-accent/20"
+                    }`}
+            >
+                <p className="text-sm">{highlightSearchTerm(segment.text)}</p>
+            </div>
+        );
+    }
+
+    // Detailed/Compact view
+    return (
+        <ContextMenu key={segment.id}>
+            <ContextMenuTrigger disabled={readOnly}>
+                <div
+                    ref={setRef}
+                    className={`relative rounded-md transition-colors ${isActive
+                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 shadow-sm"
+                        : isCurrentSearchResult
+                            ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
+                            : isSearchResult
+                                ? "bg-yellow-50/50 dark:bg-yellow-900/10"
+                                : "group hover:bg-accent/50"
+                        }`}
+                >
+                    {/* Header with timecode and speaker */}
+                    <div className="flex items-center justify-between px-3 pt-2 pb-1">
+                        <div className="flex items-center gap-2">
+                            {showTimecodes && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-2 font-mono text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                    onClick={() => onTimeClick(segment.seconds)}
+                                >
+                                    <Clock className="mr-1 h-3 w-3" />
+                                    {segment.timecode}
+                                </Button>
+                            )}
+
+                            {segment.speaker && (
+                                <Badge variant="outline" className="font-normal text-primary">
+                                    {segment.speaker}
+                                </Badge>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button size="sm" variant="ghost" className="h-7 w-7" onClick={() => onEdit(segment)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Segment</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button size="sm" variant="ghost" className="h-7 w-7" onClick={() => onSplit(segment)}>
+                                        <Scissors className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Split Segment</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7"
+                                        onClick={() => onMerge(segment.id)}
+                                        disabled={isLastSegment}
+                                    >
+                                        <MergeIcon className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Merge with Next</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7"
+                                        onClick={() => {
+                                            const timeText = `${window.location.href.split("#")[0]}#t=${segment.seconds}`;
+                                            navigator.clipboard.writeText(timeText);
+                                        }}
+                                    >
+                                        <Link className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Copy Timestamp Link</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7"
+                                        onClick={() => onCopy(segment.text, segment.id)}
+                                    >
+                                        {copiedSegmentId === segment.id ? (
+                                            <CheckCheck className="h-4 w-4 text-green-500" />
+                                        ) : (
+                                            <Copy className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Copy Text</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                        onClick={() => onDelete(segment.id)}
+                                    >
+                                        <Trash className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete Segment</TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </div>
+
+                    {/* Line separator */}
+                    <Separator className="my-1" />
+
+                    {/* Transcript text */}
+                    <div className="px-3 pb-2 pt-1">
+                        <div className={`text-sm ${viewMode === "compact" ? "line-clamp-2" : ""}`}>
+                            {highlightSearchTerm(segment.text)}
+                        </div>
+                    </div>
+                </div>
+            </ContextMenuTrigger>
+
+            {!readOnly && (
+                <ContextMenuContent className="w-48">
+                    <ContextMenuItem onClick={() => onEdit(segment)}>
+                        <Edit className="h-4 w-4 mr-2" /> Edit Segment
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => onSplit(segment)}>
+                        <Scissors className="h-4 w-4 mr-2" /> Split Segment
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => onMerge(segment.id)} disabled={isLastSegment}>
+                        <MergeIcon className="h-4 w-4 mr-2" /> Merge with Next
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={() => onCopy(segment.text, segment.id)}>
+                        <Copy className="h-4 w-4 mr-2" /> Copy Text
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                        onClick={() => {
+                            const timeText = `${window.location.href.split("#")[0]}#t=${segment.seconds}`;
+                            navigator.clipboard.writeText(timeText);
+                        }}
+                    >
+                        <Link className="h-4 w-4 mr-2" /> Timestamp Link
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        onClick={() => onDelete(segment.id)}
+                        className="text-destructive focus:text-destructive"
+                    >
+                        <Trash className="h-4 w-4 mr-2" /> Delete Segment
+                    </ContextMenuItem>
+                </ContextMenuContent>
+            )}
+        </ContextMenu>
+    );
+});
+TranscriptSegmentItem.displayName = "TranscriptSegmentItem";
+
+const formatTime = (seconds: number) => {
+    if (!seconds && seconds !== 0) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 const AdvancedTranscriptViewer = ({
     content,
     hideTitle = false,
-    onTimeClick = () => {},
-    onCopySegment = () => {},
-    onUpdateTranscript = () => {},
+    onTimeClick = () => { },
+    onCopySegment = () => { },
+    onUpdateTranscript = () => { },
     readOnly = false,
+    currentTime = -1,
 }: TranscriptViewerProps) => {
     const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
     const [showTimecodes, setShowTimecodes] = useState(true);
@@ -294,7 +572,7 @@ const AdvancedTranscriptViewer = ({
 
     const handleSplitPositionChange = (pos: number) => {
         setSplitPosition(pos);
-        
+
         if (splitSegment) {
             // Find the appropriate split position based on current settings
             let adjustedPos = pos;
@@ -423,243 +701,57 @@ const AdvancedTranscriptViewer = ({
         onUpdateTranscript(updatedTranscript);
     };
 
-    // Highlight search terms in text
-    const highlightSearchTerm = (text: string): React.ReactNode => {
-        if (!searchTerm.trim()) return <>{text}</>;
-
-        const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
-
-        return (
-            <>
-                {parts.map((part, i) =>
-                    part.toLowerCase() === searchTerm.toLowerCase() ? (
-                        <span key={i} className="bg-yellow-200 dark:bg-yellow-900 px-0.5 rounded">
-                            {part}
-                        </span>
-                    ) : (
-                        <span key={i}>{part}</span>
-                    )
-                )}
-            </>
-        );
-    };
-
-    // Format time for display
-    const formatTime = (seconds: number): string => {
-        const hours = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-
-        if (hours > 0) {
-            return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-        }
-
-        return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    };
-
-    // Render a segment based on the view mode
-    const renderSegment = (segment: TranscriptSegment, index: number) => {
-        const isSearchResult = searchResults.includes(index);
-        const isCurrentSearchResult = isSearchResult && searchResults[currentSearchIndex] === index;
-
-        // Text-only view just returns the text content
-        if (viewMode === "text-only") {
-            return (
-                <div
-                    key={segment.id}
-                    ref={(el) => {
-                        segmentRefs.current[segment.id] = el;
-                    }}
-                    className={`relative px-3 py-2 transition-colors ${
-                        isCurrentSearchResult
-                            ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
-                            : isSearchResult
-                            ? "bg-yellow-50/50 dark:bg-yellow-900/10"
-                            : "hover:bg-accent/20"
-                    }`}
-                >
-                    <p className="text-sm">{highlightSearchTerm(segment.text)}</p>
-                </div>
-            );
-        }
-
-        // For detailed and compact views, return the segment with header
-        return (
-            <ContextMenu key={segment.id}>
-                <ContextMenuTrigger disabled={readOnly}>
-                    <div
-                        ref={(el) => {
-                            segmentRefs.current[segment.id] = el;
-                        }}
-                        className={`relative rounded-md transition-colors ${
-                            isCurrentSearchResult
-                                ? "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
-                                : isSearchResult
-                                ? "bg-yellow-50/50 dark:bg-yellow-900/10"
-                                : "group hover:bg-accent/50"
-                        }`}
-                    >
-                        {/* Header with timecode and speaker */}
-                        <div className="flex items-center justify-between px-3 pt-2 pb-1">
-                            <div className="flex items-center gap-2">
-                                {showTimecodes && (
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-6 px-2 font-mono text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                                        onClick={() => handleTimeClick(segment.seconds)}
-                                    >
-                                        <Clock className="mr-1 h-3 w-3" />
-                                        {segment.timecode}
-                                    </Button>
-                                )}
-
-                                {segment.speaker && (
-                                    <Badge variant="outline" className="font-normal text-primary">
-                                        {segment.speaker}
-                                    </Badge>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button size="sm" variant="ghost" className="h-7 w-7" onClick={() => openEditModal(segment)}>
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Edit Segment</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button size="sm" variant="ghost" className="h-7 w-7" onClick={() => openSplitModal(segment)}>
-                                            <Scissors className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Split Segment</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-7 w-7"
-                                            onClick={() => handleMergeWithNext(segment.id)}
-                                            disabled={index >= transcript.length - 1}
-                                        >
-                                            <MergeIcon className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Merge with Next</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-7 w-7"
-                                            onClick={() => {
-                                                const timeText = `${window.location.href.split("#")[0]}#t=${segment.seconds}`;
-                                                navigator.clipboard.writeText(timeText);
-                                            }}
-                                        >
-                                            <Link className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Copy Timestamp Link</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-7 w-7"
-                                            onClick={() => handleCopySegment(segment.text, segment.id)}
-                                        >
-                                            {copiedSegmentId === segment.id ? (
-                                                <CheckCheck className="h-4 w-4 text-green-500" />
-                                            ) : (
-                                                <Copy className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Copy Text</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-7 w-7 text-destructive hover:text-destructive"
-                                            onClick={() => handleDeleteSegment(segment.id)}
-                                        >
-                                            <Trash className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Delete Segment</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </div>
-
-                        {/* Line separator */}
-                        <Separator className="my-1" />
-
-                        {/* Transcript text */}
-                        <div className="px-3 pb-2 pt-1">
-                            <div className={`text-sm ${viewMode === "compact" ? "line-clamp-2" : ""}`}>
-                                {highlightSearchTerm(segment.text)}
-                            </div>
-                        </div>
-                    </div>
-                </ContextMenuTrigger>
-
-                {!readOnly && (
-                    <ContextMenuContent className="w-48">
-                        <ContextMenuItem onClick={() => openEditModal(segment)}>
-                            <Edit className="h-4 w-4 mr-2" /> Edit Segment
-                        </ContextMenuItem>
-                        <ContextMenuItem onClick={() => openSplitModal(segment)}>
-                            <Scissors className="h-4 w-4 mr-2" /> Split Segment
-                        </ContextMenuItem>
-                        <ContextMenuItem onClick={() => handleMergeWithNext(segment.id)} disabled={index >= transcript.length - 1}>
-                            <MergeIcon className="h-4 w-4 mr-2" /> Merge with Next
-                        </ContextMenuItem>
-                        <ContextMenuSeparator />
-                        <ContextMenuItem onClick={() => handleCopySegment(segment.text, segment.id)}>
-                            <Copy className="h-4 w-4 mr-2" /> Copy Text
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                            onClick={() => {
-                                const timeText = `${window.location.href.split("#")[0]}#t=${segment.seconds}`;
-                                navigator.clipboard.writeText(timeText);
-                            }}
-                        >
-                            <Link className="h-4 w-4 mr-2" /> Timestamp Link
-                        </ContextMenuItem>
-                        <ContextMenuSeparator />
-                        <ContextMenuItem
-                            onClick={() => handleDeleteSegment(segment.id)}
-                            className="text-destructive focus:text-destructive"
-                        >
-                            <Trash className="h-4 w-4 mr-2" /> Delete Segment
-                        </ContextMenuItem>
-                    </ContextMenuContent>
-                )}
-            </ContextMenu>
-        );
-    };
-
     // Render all segments
     const renderTranscriptContent = () => {
+        const content = (
+            <>
+                {transcript.map((segment, index) => {
+                    const isSearchResult = searchResults.includes(index);
+                    const isCurrentSearchResult = isSearchResult && searchResults[currentSearchIndex] === index;
+                    const nextSegment = transcript[index + 1];
+                    const isActive = currentTime >= 0 &&
+                        currentTime >= segment.seconds &&
+                        (!nextSegment || currentTime < nextSegment.seconds);
+
+                    return (
+                        <TranscriptSegmentItem
+                            key={segment.id}
+                            segment={segment}
+                            nextSegment={nextSegment}
+                            index={index}
+                            isActive={isActive}
+                            isSearchResult={isSearchResult}
+                            isCurrentSearchResult={isCurrentSearchResult}
+                            viewMode={viewMode}
+                            readOnly={readOnly}
+                            showTimecodes={showTimecodes}
+                            copiedSegmentId={copiedSegmentId}
+                            searchTerm={searchTerm}
+                            isLastSegment={index >= transcript.length - 1}
+                            onTimeClick={handleTimeClick}
+                            onEdit={openEditModal}
+                            onSplit={openSplitModal}
+                            onMerge={handleMergeWithNext}
+                            onCopy={handleCopySegment}
+                            onDelete={handleDeleteSegment}
+                            registerRef={(id, el) => {
+                                segmentRefs.current[id] = el;
+                            }}
+                        />
+                    );
+                })}
+            </>
+        );
+
         if (viewMode === "text-only") {
             return (
                 <div className="text-sm space-y-2 leading-relaxed bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100">
-                    {transcript.map((segment, index) => renderSegment(segment, index))}
+                    {content}
                 </div>
             );
         }
 
-        return <div className="space-y-4">{transcript.map((segment, index) => renderSegment(segment, index))}</div>;
+        return <div className="space-y-4">{content}</div>;
     };
 
     return (
@@ -854,101 +946,113 @@ const AdvancedTranscriptViewer = ({
                     </DialogHeader>
 
                     <div className="space-y-4 py-2">
-                        <div className="space-y-2">
-                            <Label htmlFor="split-position">Split Position</Label>
-                            <Slider
-                                id="split-position"
-                                min={1}
-                                max={splitSegment?.text.length || 100}
-                                value={[splitPosition]}
-                                onValueChange={(value) => handleSplitPositionChange(value[0])}
-                            />
-                        </div>
-
-                        {/* Add the switches */}
-                        <div className="flex flex-col space-y-2">
-                            <div className="flex items-center space-x-2">
-                                <Switch id="never-mid-word" checked={neverMidWord} onCheckedChange={setNeverMidWord} />
-                                <Label htmlFor="never-mid-word">Never Split Mid-Word</Label>
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                                <Switch id="never-mid-sentence" checked={neverMidSentence} onCheckedChange={setNeverMidSentence} />
-                                <Label htmlFor="never-mid-sentence">Never Split Mid-Sentence</Label>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Preview</Label>
-                            <div className="border rounded-md p-3 space-y-3 text-sm">
-                                <div>
-                                    <span className="font-medium text-xs text-muted-foreground">First segment:</span>
-                                    <p>{splitPreview.before}</p>
+                        {splitSegment && (
+                            <>
+                                <div className="space-y-1">
+                                    <Label>Original Segment</Label>
+                                    <div className="text-sm bg-muted p-2 rounded-md max-h-32 overflow-y-auto">
+                                        {splitSegment.text}
+                                    </div>
                                 </div>
-                                <Separator />
-                                <div>
-                                    <span className="font-medium text-xs text-muted-foreground">Second segment:</span>
-                                    <p>{splitPreview.after}</p>
+
+                                <div className="space-y-4">
+                                    <Label>Split Position: {splitPosition} characters</Label>
+                                    <Slider
+                                        value={[splitPosition]}
+                                        min={0}
+                                        max={splitSegment.text.length}
+                                        step={1}
+                                        onValueChange={(value) => handleSplitPositionChange(value[0])}
+                                    />
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">First Part</Label>
+                                            <div className="text-sm bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md h-24 overflow-y-auto border border-blue-100 dark:border-blue-800">
+                                                {splitPreview.before}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Second Part</Label>
+                                            <div className="text-sm bg-green-50 dark:bg-green-900/20 p-2 rounded-md h-24 overflow-y-auto border border-green-100 dark:border-green-800">
+                                                {splitPreview.after}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center space-x-2">
+                                            <Switch
+                                                id="mid-word"
+                                                checked={neverMidWord}
+                                                onCheckedChange={setNeverMidWord}
+                                            />
+                                            <Label htmlFor="mid-word">Snap to adjacent word boundary</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Switch
+                                                id="mid-sentence"
+                                                checked={neverMidSentence}
+                                                onCheckedChange={setNeverMidSentence}
+                                            />
+                                            <Label htmlFor="mid-sentence">Snap to adjacent sentence boundary</Label>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </div>
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsSplitModalOpen(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={handleSplitSave}>Split Segment</Button>
+                        <Button onClick={handleSplitSave}>Split</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Copy All Dialog */}
+            {/* Copy All Modal */}
             <Dialog open={isCopyAllOpen} onOpenChange={setIsCopyAllOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Copy Transcript</DialogTitle>
                     </DialogHeader>
 
-                    <div className="py-4">
-                        <RadioGroup
-                            value={copyFormat}
-                            onValueChange={(value) => setCopyFormat(value as "text-only" | "with-timestamps" | "complete")}
-                            className="space-y-3"
-                        >
+                    <div className="py-4 space-y-4">
+                        <RadioGroup value={copyFormat} onValueChange={(v) => setCopyFormat(v as any)}>
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="text-only" id="text-only" />
-                                <Label htmlFor="text-only" className="font-normal cursor-pointer">
-                                    Text only
-                                </Label>
+                                <Label htmlFor="text-only">Text Only</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="with-timestamps" id="with-timestamps" />
-                                <Label htmlFor="with-timestamps" className="font-normal cursor-pointer">
-                                    Text with timestamps
-                                </Label>
+                                <Label htmlFor="with-timestamps">With Timestamps</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="complete" id="complete" />
-                                <Label htmlFor="complete" className="font-normal cursor-pointer">
-                                    Complete (with timestamps and speakers)
-                                </Label>
+                                <Label htmlFor="complete">Complete (Speakers & Timestamps)</Label>
                             </div>
                         </RadioGroup>
+
+                        <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+                            {copyFormat === "text-only" && "Copies the plain text of the transcript."}
+                            {copyFormat === "with-timestamps" && "Copies text with timecodes [00:00]."}
+                            {copyFormat === "complete" && "Copies updated text with timecodes and speaker labels."}
+                        </div>
                     </div>
 
                     <DialogFooter>
-                        <Button onClick={handleCopyAll} className="w-full" disabled={copyAllSuccess}>
+                        <Button variant="outline" onClick={() => setIsCopyAllOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleCopyAll} disabled={copyAllSuccess}>
                             {copyAllSuccess ? (
                                 <>
-                                    <CheckCheck className="mr-2 h-4 w-4" />
-                                    Copied!
+                                    <CheckCheck className="mr-2 h-4 w-4" /> Copied!
                                 </>
                             ) : (
-                                <>
-                                    <Copy className="mr-2 h-4 w-4" />
-                                    Copy to Clipboard
-                                </>
+                                "Copy to Clipboard"
                             )}
                         </Button>
                     </DialogFooter>

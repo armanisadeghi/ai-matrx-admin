@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { MultiFileUpload, MiniFileUpload } from "@/components/ui/file-upload/file-upload";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 
 type SaveToOption = "public" | "private";
 
 // Define a type for the uploaded file results
-export type UploadedFileResult = { 
-    url: string; 
-    type: string; 
+export type UploadedFileResult = {
+    url: string;
+    type: string;
     details?: EnhancedFileDetails;
 };
 
@@ -54,7 +54,7 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
 
     const handleFilesChange = async (files: File[]) => {
         setUploadingFiles(files);
-        
+
         try {
             let results;
             // Choose upload method based on saveTo prop
@@ -65,7 +65,7 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
             } else {
                 results = await uploadFiles(files); // Fallback to default behavior
             }
-            
+
             if (results.length > 0 && onUploadComplete) {
                 onUploadComplete(results);
             }
@@ -77,7 +77,7 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
     };
 
     // Progress animation variants
-    const progressVariants = {
+    const progressVariants: Variants = {
         progress: {
             width: ["3%", "29%", "60%", "75%", "85%", "92%"],
             transition: {
@@ -88,9 +88,9 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
             }
         }
     };
-    
+
     const isActivelyUploading = isLoading && uploadingFiles.length > 0;
-    
+
     // Determine whether to use mini or regular progress indicator
     const ProgressIndicator = () => (
         <div className={`mt-${useMiniUploader ? '3' : '6'}`}>
@@ -103,13 +103,13 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
                     Uploading {uploadingFiles.length} {uploadingFiles.length === 1 ? 'file' : 'files'}
                 </h3>
             </div>
-            
+
             <div className={`bg-white dark:bg-neutral-800 rounded-lg shadow-sm ${useMiniUploader ? 'p-2' : 'p-4'}`}>
                 <div className="w-full h-3 bg-gray-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                     {(() => {
                         try {
                             return (
-                                <motion.div 
+                                <motion.div
                                     className="h-full bg-blue-500"
                                     initial={{ width: "0%" }}
                                     animate="progress"
@@ -125,26 +125,26 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
             </div>
         </div>
     );
-    
+
     return (
         <div>
             {/* Conditionally render either the normal or mini uploader */}
             {useMiniUploader ? (
-                <MiniFileUpload 
-                    onChange={handleFilesChange} 
+                <MiniFileUpload
+                    onChange={handleFilesChange}
                     multiple={multiple}
                     maxHeight={maxHeight}
                     initialFiles={initialFiles}
                 />
             ) : (
-                <MultiFileUpload 
-                    onChange={handleFilesChange} 
+                <MultiFileUpload
+                    onChange={handleFilesChange}
                     multiple={multiple}
                     maxHeight={maxHeight}
                     initialFiles={initialFiles}
                 />
             )}
-            
+
             {/* Progress indicator */}
             {isActivelyUploading && <ProgressIndicator />}
         </div>

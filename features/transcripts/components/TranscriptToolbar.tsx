@@ -1,17 +1,17 @@
-// features/transcripts/components/TranscriptToolbar.tsx
 'use client';
 
 import React from 'react';
 import { useTranscriptsContext } from '../context/TranscriptsContext';
 import { Button } from '@/components/ui/button';
-import { 
-    Save, 
-    Copy, 
-    Trash2, 
+import {
+    Save,
+    Copy,
+    Trash2,
     RefreshCw,
     Download,
     Share2,
-    MoreHorizontal
+    MoreHorizontal,
+    Plus
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -25,14 +25,15 @@ import { cn } from '@/lib/utils';
 
 interface TranscriptToolbarProps {
     className?: string;
+    onCreateNew?: () => void;
 }
 
-export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
-    const { 
-        activeTranscript, 
-        copyTranscript, 
+export function TranscriptToolbar({ className, onCreateNew }: TranscriptToolbarProps) {
+    const {
+        activeTranscript,
+        copyTranscript,
         deleteTranscript,
-        refreshTranscripts 
+        refreshTranscripts
     } = useTranscriptsContext();
     const toast = useToastManager('transcripts');
 
@@ -50,7 +51,7 @@ export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
     const handleDelete = async () => {
         if (!activeTranscript) return;
         if (!confirm(`Delete "${activeTranscript.title}"?`)) return;
-        
+
         try {
             await deleteTranscript(activeTranscript.id);
             toast.success('Transcript deleted');
@@ -72,12 +73,12 @@ export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
 
     const handleExport = () => {
         if (!activeTranscript) return;
-        
+
         // Create a downloadable text file
         const text = activeTranscript.segments
             .map(seg => `[${seg.timecode}]${seg.speaker ? ` ${seg.speaker}:` : ''} ${seg.text}`)
             .join('\n\n');
-        
+
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -85,7 +86,7 @@ export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
         a.download = `${activeTranscript.title}.txt`;
         a.click();
         URL.revokeObjectURL(url);
-        
+
         toast.success('Transcript exported');
     };
 
@@ -95,11 +96,15 @@ export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
             className
         )}>
             <div className="flex items-center gap-2">
+                <Button size="sm" onClick={onCreateNew}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    New Transcript
+                </Button>
+
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleRefresh}
-                    disabled={!activeTranscript}
                 >
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
@@ -133,7 +138,7 @@ export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
                             Export as Text
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={handleDelete}
                             className="text-red-600 dark:text-red-400"
                         >
@@ -146,4 +151,3 @@ export function TranscriptToolbar({ className }: TranscriptToolbarProps) {
         </div>
     );
 }
-
