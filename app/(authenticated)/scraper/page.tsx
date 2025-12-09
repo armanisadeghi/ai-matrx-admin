@@ -75,7 +75,7 @@ export default function Page() {
         setError(null);
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !isLoading) {
             handleScrape();
         }
@@ -92,7 +92,7 @@ export default function Page() {
                             placeholder="Enter URL to scrape..."
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
-                            onKeyPress={handleKeyPress}
+                            onKeyDown={handleKeyDown}
                             className="text-base"
                             disabled={isLoading}
                         />

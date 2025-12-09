@@ -32,13 +32,21 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     const {
         data: { user },
     } = await supabase.auth.getUser();
+    
+    // Middleware already handles redirecting unauthenticated users to login
+    // This is a safety check in case middleware is bypassed somehow
     if (!user) {
-        // Get the current path from headers to preserve the intended destination
         const pathname = headersList.get("x-pathname") || "/dashboard";
         const searchParams = headersList.get("x-search-params") || "";
         const fullPath = searchParams ? `${pathname}${searchParams}` : pathname;
         
-        return redirect(`/login?redirectTo=${encodeURIComponent(fullPath)}`);
+        // Never redirect to homepage or auth pages
+        const safeRedirect = (fullPath === '/' || fullPath === '/login' || fullPath === '/sign-up') 
+            ? '/dashboard' 
+            : fullPath;
+        
+        console.log(`[LAYOUT] Unauthenticated user detected (middleware bypass?), redirecting to login with redirectTo: ${safeRedirect}`);
+        return redirect(`/login?redirectTo=${encodeURIComponent(safeRedirect)}`);
     }
 
     const session = await supabase.auth.getSession();

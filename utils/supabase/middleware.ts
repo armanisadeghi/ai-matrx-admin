@@ -44,28 +44,55 @@ export async function updateSession(request: NextRequest) {
 
   // This is the critical part! getUser() will check the JWT validity and
   // automatically refresh the token if needed, updating the cookies
-  const { data } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
+  
+  // Log authentication status for debugging
+  const timestamp = new Date().toISOString();
+  const isStaticAsset = request.nextUrl.pathname.includes('.');
+  const isPublicRoute = request.nextUrl.pathname.startsWith('/login') || 
+                        request.nextUrl.pathname.startsWith('/auth') || 
+                        request.nextUrl.pathname.startsWith('/_next');
+  
+  // Only log meaningful auth checks (skip static assets and public routes for cleaner logs)
+  if (!isStaticAsset && !isPublicRoute) {
+    console.log(`[${timestamp}] Auth Check - Path: ${request.nextUrl.pathname}, User: ${data.user ? 'authenticated' : 'not authenticated'}${error ? `, Error: ${error.message}` : ''}`);
+  }
 
-
+  // Handle unauthenticated users trying to access protected routes
   if (
       !data.user &&
       !request.nextUrl.pathname.startsWith('/login') &&
       !request.nextUrl.pathname.startsWith('/auth') &&
       !request.nextUrl.pathname.startsWith('/_next') &&
-      !request.nextUrl.pathname.includes('.') // Don't redirect for static assets
+      !isStaticAsset // Don't redirect for static assets
   ) {
     // Get the full requested URL path and search params
     const fullPath = request.nextUrl.pathname + request.nextUrl.search
     
-    
-    // Create the login URL with the redirectTo parameter
+    // Only add redirectTo if it's not the homepage (/)
+    // Homepage should just go to login, then default to dashboard
     const loginUrl = new URL('/login', request.url)
-    
-    // Set redirectTo parameter - ensure URL is clean
-    loginUrl.searchParams.set('redirectTo', fullPath)
-    
+    if (fullPath !== '/') {
+      loginUrl.searchParams.set('redirectTo', fullPath)
+      console.log(`[${timestamp}] → Redirecting to /login with redirectTo: ${fullPath}`);
+    } else {
+      console.log(`[${timestamp}] → Redirecting to /login (homepage access)`);
+    }
     
     return NextResponse.redirect(loginUrl)
+  }
+
+  // Handle authenticated users trying to access homepage or auth pages
+  // Redirect them to dashboard instead
+  if (data.user) {
+    const pathname = request.nextUrl.pathname;
+    
+    // Redirect authenticated users away from public pages to dashboard
+    if (pathname === '/' || pathname === '/login' || pathname === '/sign-up') {
+      const timestamp2 = new Date().toISOString();
+      console.log(`[${timestamp2}] ↪ Authenticated user on ${pathname} → redirecting to /dashboard`);
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return supabaseResponse
