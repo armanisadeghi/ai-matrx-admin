@@ -5,13 +5,19 @@ import { useTranscriptsContext } from '../context/TranscriptsContext';
 import AdvancedTranscriptViewer, { TranscriptSegment } from '@/components/mardown-display/blocks/transcripts/AdvancedTranscriptViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Edit2, Save, X, Play, Pause, SkipBack, SkipForward, Volume2, Loader2, RotateCw, FileText } from 'lucide-react';
+import { Download, Edit2, Save, X, Play, Pause, SkipBack, SkipForward, Volume2, Loader2, RotateCw, FileText, Gauge, Check } from 'lucide-react';
 import { useToastManager } from '@/hooks/useToastManager';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { useSignedUrl } from '../hooks/useSignedUrl';
 import { Slider } from '@/components/ui/slider';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function TranscriptViewer() {
     const { activeTranscript, updateTranscript } = useTranscriptsContext();
@@ -26,7 +32,11 @@ export function TranscriptViewer() {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
+    const [playbackSpeed, setPlaybackSpeed] = useState(1);
     const audioRef = useRef<HTMLAudioElement>(null);
+
+    // Playback speed options
+    const speedOptions = [0.75, 1, 1.25, 1.5, 1.75, 2, 3];
 
     // Get signed URL for audio
     const { url: audioUrl, isLoading: isLoadingUrl, error: urlError } = useSignedUrl(activeTranscript?.audio_file_path, {
@@ -41,9 +51,11 @@ export function TranscriptViewer() {
             // Reset player when transcript changes
             setIsPlaying(false);
             setCurrentTime(0);
+            setPlaybackSpeed(1);
             if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current.currentTime = 0;
+                audioRef.current.playbackRate = 1;
             }
         }
     }, [activeTranscript]);
@@ -112,6 +124,21 @@ export function TranscriptViewer() {
             audioRef.current.volume = value[0];
             setVolume(value[0]);
         }
+    };
+
+    const handleSpeedChange = (speed: number) => {
+        if (audioRef.current) {
+            audioRef.current.playbackRate = speed;
+            setPlaybackSpeed(speed);
+        }
+    };
+
+    const formatSpeed = (speed: number) => {
+        // Format speed consistently to avoid UI shifts
+        if (speed === 1) return '1.0×';
+        if (speed === 2) return '2.0×';
+        if (speed === 3) return '3.0×';
+        return `${speed.toFixed(2)}×`;
     };
 
     const handleTranscriptTimeClick = (seconds: number) => {
@@ -222,11 +249,11 @@ export function TranscriptViewer() {
                             />
                         )}
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 md:gap-4">
                             <Button
                                 size="icon"
                                 variant="outline"
-                                className="h-10 w-10 rounded-full shrink-0"
+                                className="h-9 w-9 md:h-10 md:w-10 rounded-full shrink-0"
                                 onClick={togglePlay}
                                 disabled={!audioUrl}
                             >
@@ -239,7 +266,39 @@ export function TranscriptViewer() {
                                 )}
                             </Button>
 
-                            <div className="flex-1 flex flex-col justify-center gap-1">
+                            {/* Playback Speed Dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-9 px-2 md:px-3 shrink-0 font-mono text-xs md:text-sm min-w-[52px] md:min-w-[60px]"
+                                        disabled={!audioUrl}
+                                        title="Playback speed"
+                                    >
+                                        <Gauge className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5" />
+                                        {formatSpeed(playbackSpeed)}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="min-w-[140px]">
+                                    {speedOptions.map((speed) => (
+                                        <DropdownMenuItem
+                                            key={speed}
+                                            onSelect={() => handleSpeedChange(speed)}
+                                            className="font-mono cursor-pointer"
+                                        >
+                                            <div className="flex items-center justify-between w-full">
+                                                <span>{formatSpeed(speed)}</span>
+                                                {playbackSpeed === speed && (
+                                                    <Check className="h-4 w-4 ml-2 text-primary" />
+                                                )}
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <div className="flex-1 flex flex-col justify-center gap-1 min-w-0">
                                 <Slider
                                     value={[currentTime]}
                                     max={duration || 100}
@@ -253,8 +312,8 @@ export function TranscriptViewer() {
                                 </div>
                             </div>
 
-                            {/* Volume Control - Hidden on mobile could be an option, but let's keep it simple */}
-                            <div className="hidden sm:flex items-center gap-2 w-24">
+                            {/* Volume Control - Hidden on mobile */}
+                            <div className="hidden sm:flex items-center gap-2 w-20 md:w-24 shrink-0">
                                 <Volume2 className="h-4 w-4 text-muted-foreground" />
                                 <Slider
                                     value={[volume]}
@@ -265,7 +324,7 @@ export function TranscriptViewer() {
                             </div>
 
                             {activeTranscript.audio_file_path && !audioUrl && !isLoadingUrl && (
-                                <div className="text-xs text-red-500 flex items-center">
+                                <div className="text-xs text-red-500 flex items-center shrink-0">
                                     <X className="h-3 w-3 mr-1" />
                                     Failed to load audio
                                 </div>
