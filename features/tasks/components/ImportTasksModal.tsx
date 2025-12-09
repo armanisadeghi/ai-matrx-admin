@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { CheckSquare, FolderPlus, Loader2 } from 'lucide-react';
 import { useTaskContext } from '../context/TaskContext';
+import { toast } from 'sonner';
 import type { TaskItemType } from '@/components/mardown-display/blocks/tasks/TaskChecklist';
 
 interface ImportTasksModalProps {
@@ -29,7 +30,7 @@ export default function ImportTasksModal({
   checkboxState,
 }: ImportTasksModalProps) {
   const { projects, addProject, refresh } = useTaskContext();
-  
+
   const [selectedTasks, setSelectedTasks] = useState<SelectionState>({});
   const [projectSelection, setProjectSelection] = useState<'new' | 'existing' | 'draft'>('draft');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -66,7 +67,7 @@ export default function ImportTasksModal({
   const toggleTask = (taskId: string, includeChildren: boolean = false) => {
     setSelectedTasks(prev => {
       const newState = { ...prev, [taskId]: !prev[taskId] };
-      
+
       // If includeChildren, toggle all children too
       if (includeChildren) {
         const task = findTaskById(tasks, taskId);
@@ -82,7 +83,7 @@ export default function ImportTasksModal({
           toggleChildren(task.children);
         }
       }
-      
+
       return newState;
     });
   };
@@ -108,10 +109,10 @@ export default function ImportTasksModal({
     try {
       // Step 1: Determine or create project
       let targetProjectId = selectedProjectId;
-      
+
       if (projectSelection === 'new') {
         if (!newProjectName.trim()) {
-          alert('Please enter a project name');
+          toast.error('Please enter a project name');
           setIsImporting(false);
           return;
         }
@@ -153,7 +154,7 @@ export default function ImportTasksModal({
 
     } catch (error) {
       console.error('Import failed:', error);
-      alert('Failed to import tasks. Please try again.');
+      toast.error('Failed to import tasks. Please try again.');
       setIsImporting(false);
     }
   };
@@ -166,7 +167,7 @@ export default function ImportTasksModal({
     onProgress: (count: number) => void
   ) => {
     const { createTask, createSubtask } = await import('../services/taskService');
-    
+
     for (const item of items) {
       // Skip sections and unselected tasks
       if (item.type === 'section') {
@@ -182,15 +183,15 @@ export default function ImportTasksModal({
 
       // Create the task
       const isCompleted = checkboxState[item.id] || item.checked || false;
-      
+
       const newTask = parentTaskId
         ? await createSubtask(parentTaskId, item.title, '')
         : await createTask({
-            title: item.title,
-            description: '',
-            project_id: projectId,
-            status: isCompleted ? 'completed' : 'incomplete',
-          });
+          title: item.title,
+          description: '',
+          project_id: projectId,
+          status: isCompleted ? 'completed' : 'incomplete',
+        });
 
       if (newTask) {
         onProgress(1);
@@ -238,9 +239,8 @@ export default function ImportTasksModal({
             />
             <label
               htmlFor={item.id}
-              className={`text-sm cursor-pointer flex-1 ${
-                isCompleted ? 'text-muted-foreground line-through' : ''
-              } ${item.bold ? 'font-semibold' : ''}`}
+              className={`text-sm cursor-pointer flex-1 ${isCompleted ? 'text-muted-foreground line-through' : ''
+                } ${item.bold ? 'font-semibold' : ''}`}
             >
               {item.title}
               {hasChildren && (
@@ -334,7 +334,7 @@ export default function ImportTasksModal({
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleImport}
                 disabled={getSelectedCount() === 0 || (projectSelection === 'existing' && !selectedProjectId)}
               >

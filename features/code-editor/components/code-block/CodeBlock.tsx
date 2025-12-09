@@ -13,6 +13,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { Globe, Loader2 } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
+import { toast } from "sonner";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
 import { ContextAwareCodeEditorModal } from "@/features/code-editor/components/ContextAwareCodeEditorModal";
@@ -58,7 +59,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const prismLanguage = mapLanguageForPrism(rawLanguage);
     const monacoLanguage = mapLanguageForMonaco(rawLanguage);
     const monacoFileExtension = getMonacoFileExtension(rawLanguage);
-    
+
     const [editedCode, setEditedCode] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
@@ -81,27 +82,27 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const isMobile = useIsMobile();
     const user = useAppSelector(selectUser);
     const { open: openCanvas } = useCanvas();
-    
+
     // Use edited code if available (when user is editing), otherwise use deferred prop value
     const code = editedCode ?? initialCode;
 
     // Function to detect if code is a complete HTML document
     const isCompleteHTMLDocument = (htmlCode: string): boolean => {
         if (!htmlCode || prismLanguage !== 'html') return false;
-        
+
         const trimmedCode = htmlCode.trim();
         const hasDoctype = /^\s*<!DOCTYPE\s+html/i.test(trimmedCode);
         const hasHtmlTag = /<html[^>]*>/i.test(trimmedCode) && /<\/html>/i.test(trimmedCode);
         const hasHead = /<head[^>]*>/i.test(trimmedCode) && /<\/head>/i.test(trimmedCode);
         const hasBody = /<body[^>]*>/i.test(trimmedCode) && /<\/body>/i.test(trimmedCode);
-        
+
         return hasDoctype && hasHtmlTag && hasHead && hasBody;
     };
 
     // Function to handle HTML document viewing in canvas
     const handleViewHTML = async () => {
         if (!user?.id) {
-            alert('You must be logged in to view HTML pages');
+            toast.error('You must be logged in to view HTML pages');
             return;
         }
 
@@ -113,18 +114,18 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 'Generated from code block',
                 user.id
             );
-            
+
             // Open the HTML page in the canvas
             openCanvas({
                 type: 'iframe',
                 data: result.url,
-                metadata: { 
+                metadata: {
                     title: 'HTML Preview',
                 }
             });
         } catch (error) {
             console.error('Failed to create HTML page:', error);
-            alert(`Failed to create HTML page: ${error.message}`);
+            toast.error(`Failed to create HTML page: ${error.message}`);
         } finally {
             setIsCreatingPage(false);
         }
@@ -183,7 +184,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const handleCopy = async (e: React.MouseEvent, withLineNumbers: boolean = false) => {
         e.stopPropagation();
         let textToCopy = code;
-        
+
         if (withLineNumbers) {
             // Add line numbers to each line
             const lines = code.split('\n');
@@ -193,7 +194,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             });
             textToCopy = paddedLines.join('\n');
         }
-        
+
         await navigator.clipboard.writeText(textToCopy);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -305,7 +306,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             className={cn(
                 "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-300 ease-in-out",
                 isFullScreen &&
-                    "fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[90%] z-50 bg-textured flex flex-col shadow-2xl",
+                "fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[90%] z-50 bg-textured flex flex-col shadow-2xl",
                 className
             )}
             style={{
@@ -356,11 +357,11 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             <div className={cn("relative", isFullScreen && "flex-1 overflow-hidden")}>
                 {isEditing ? (
                     <div className="w-full">
-                        <SmallCodeEditor 
+                        <SmallCodeEditor
                             language={monacoLanguage}
                             fileExtension={monacoFileExtension}
-                            initialCode={code} 
-                            onChange={handleCodeChange} 
+                            initialCode={code}
+                            onChange={handleCodeChange}
                             mode={mode}
                             height={isFullScreen ? "calc(100vh - 15rem)" : `${Math.max(400, code.split("\n").length * 20 + 100)}px`}
                             showCopyButton={false}
@@ -407,7 +408,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                             >
                                 {code}
                             </SyntaxHighlighter>
-                            
+
                             {/* Floating View Button for HTML Documents - Opens in Canvas */}
                             {isCompleteHTMLDocument(code) && !isCollapsed && (
                                 <button
@@ -468,7 +469,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                     allowPromptSelection={false}
                 />
             )}
-            
+
             {/* AI Code Editor Modal V3 (Context-Aware) - KEEP THIS! IT WORKS! */}
             {aiModalConfig?.version === 'v3' && (
                 <ContextAwareCodeEditorModal

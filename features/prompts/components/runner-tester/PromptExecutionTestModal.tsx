@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Code, FileText, Database, Check, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
 import { executeMessage } from '@/lib/redux/prompt-execution/thunks/executeMessageThunk';
@@ -44,21 +45,21 @@ export default function PromptExecutionTestModal({
   initialMessage = '',
 }: PromptExecutionTestModalProps) {
   const dispatch = useAppDispatch();
-  
+
   // Direct mode state
   const [directResult, setDirectResult] = useState<string>('');
   const [directLoading, setDirectLoading] = useState(false);
   const [directMetadata, setDirectMetadata] = useState<any>(null);
   const [directTaskId, setDirectTaskId] = useState<string | null>(null);
-  
+
   // Stream direct result in real-time
-  const directStreamingText = useAppSelector(state => 
+  const directStreamingText = useAppSelector(state =>
     directTaskId ? selectPrimaryResponseTextByTaskId(directTaskId)(state) : ''
   );
   const directStreamEnded = useAppSelector(state =>
     directTaskId ? selectPrimaryResponseEndedByTaskId(directTaskId)(state) : true
   );
-  
+
   // Update final result when streaming ends
   useEffect(() => {
     if (directTaskId && directStreamEnded && directStreamingText) {
@@ -67,14 +68,14 @@ export default function PromptExecutionTestModal({
       setDirectTaskId(null);
     }
   }, [directTaskId, directStreamEnded, directStreamingText]);
-  
+
   // Inline mode state
   const [editorText, setEditorText] = useState('Select some text in this editor and click "Run Inline Prompt" to see the inline overlay appear with the AI result.\n\nYou can then replace, insert before, or insert after the selected text.');
   const [selectedRange, setSelectedRange] = useState<{ start: number; end: number } | null>(null);
   const [inlineResult, setInlineResult] = useState<string>('');
   const [showInlineOverlay, setShowInlineOverlay] = useState(false);
   const [inlineLoading, setInlineLoading] = useState(false);
-  
+
   // Background mode state
   const [backgroundTasks, setBackgroundTasks] = useState<Array<{ id: string; name: string; result: string; timestamp: string }>>([]);
   const [backgroundLoading, setBackgroundLoading] = useState(false);
@@ -84,7 +85,7 @@ export default function PromptExecutionTestModal({
     setDirectResult('');
     setDirectMetadata(null);
     setDirectTaskId(null);
-    
+
     try {
       // ⭐ Use unified Redux system with resources
       const runId = await dispatch(startPromptInstance({
@@ -98,10 +99,10 @@ export default function PromptExecutionTestModal({
         resources: resources || [],
         initialMessage: initialMessage || '',
       })).unwrap();
-      
+
       // Execute via unified system
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
-      
+
       // Set taskId for real-time streaming
       setDirectTaskId(taskId);
       setDirectMetadata({ runId }); // Store runId for reference
@@ -114,22 +115,22 @@ export default function PromptExecutionTestModal({
   const handleInlineExecution = async () => {
     const textarea = document.querySelector<HTMLTextAreaElement>('#inline-editor');
     if (!textarea) return;
-    
+
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    
+
     if (start === end) {
-      alert('Please select some text first!');
+      toast.warning('Please select some text first!');
       return;
     }
-    
+
     setSelectedRange({ start, end });
     setInlineLoading(true);
     setShowInlineOverlay(true);
-    
+
     try {
       const selectedText = editorText.substring(start, end);
-      
+
       // ⭐ Use unified Redux system with resources
       const runId = await dispatch(startPromptInstance({
         promptId,
@@ -142,15 +143,15 @@ export default function PromptExecutionTestModal({
         resources: resources || [],
         initialMessage: selectedText,
       })).unwrap();
-      
+
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
-      
+
       // Wait for completion via selector
       // Note: In a real scenario, we'd use a proper async selector or callback
       // For testing, we'll poll the state
       let attempts = 0;
       const maxAttempts = 300; // 30 seconds
-      
+
       while (attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 100));
         const currentState = (window as any).__REDUX_STORE__?.getState();
@@ -173,7 +174,7 @@ export default function PromptExecutionTestModal({
 
   const handleInlineReplace = () => {
     if (!selectedRange) return;
-    
+
     const before = editorText.substring(0, selectedRange.start);
     const after = editorText.substring(selectedRange.end);
     setEditorText(before + inlineResult + after);
@@ -183,7 +184,7 @@ export default function PromptExecutionTestModal({
 
   const handleInlineInsertBefore = () => {
     if (!selectedRange) return;
-    
+
     const before = editorText.substring(0, selectedRange.start);
     const selected = editorText.substring(selectedRange.start, selectedRange.end);
     const after = editorText.substring(selectedRange.end);
@@ -194,7 +195,7 @@ export default function PromptExecutionTestModal({
 
   const handleInlineInsertAfter = () => {
     if (!selectedRange) return;
-    
+
     const before = editorText.substring(0, selectedRange.start);
     const selected = editorText.substring(selectedRange.start, selectedRange.end);
     const after = editorText.substring(selectedRange.end);
@@ -205,7 +206,7 @@ export default function PromptExecutionTestModal({
 
   const handleBackgroundExecution = async () => {
     setBackgroundLoading(true);
-    
+
     try {
       // ⭐ Use unified Redux system with resources
       const runId = await dispatch(startPromptInstance({
@@ -219,14 +220,14 @@ export default function PromptExecutionTestModal({
         resources: resources || [],
         initialMessage: initialMessage || '',
       })).unwrap();
-      
+
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
-      
+
       // Wait for completion
       let attempts = 0;
       const maxAttempts = 300;
       let response = '';
-      
+
       while (attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 100));
         const currentState = (window as any).__REDUX_STORE__?.getState();
@@ -239,7 +240,7 @@ export default function PromptExecutionTestModal({
         }
         attempts++;
       }
-      
+
       // Simulate storing in database/state
       const newTask = {
         id: taskId,
@@ -247,7 +248,7 @@ export default function PromptExecutionTestModal({
         result: response,
         timestamp: new Date().toLocaleString(),
       };
-      
+
       setBackgroundTasks(prev => [newTask, ...prev]);
     } catch (error: any) {
       console.error('Background task failed:', error);
@@ -277,7 +278,7 @@ export default function PromptExecutionTestModal({
           </Button>
         </div>
       </div>
-      
+
       {(directLoading || directResult) && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -341,7 +342,7 @@ export default function PromptExecutionTestModal({
           </Button>
         </div>
       </div>
-      
+
       <div className="relative">
         <Textarea
           id="inline-editor"
@@ -350,7 +351,7 @@ export default function PromptExecutionTestModal({
           className="min-h-[200px] font-mono text-sm"
           placeholder="Type some text here..."
         />
-        
+
         {showInlineOverlay && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-card border border-border rounded-lg shadow-xl max-w-lg w-full p-4 space-y-3">
@@ -358,13 +359,13 @@ export default function PromptExecutionTestModal({
                 <h4 className="text-sm font-semibold">AI Result</h4>
                 {inlineLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
               </div>
-              
+
               {inlineResult && (
                 <>
                   <div className="max-h-[150px] overflow-y-auto text-sm p-2 bg-muted rounded">
                     <BasicMarkdownContent content={inlineResult} showCopyButton={false} />
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Button onClick={handleInlineReplace} size="sm" variant="default">
                       Replace
@@ -409,7 +410,7 @@ export default function PromptExecutionTestModal({
           </Button>
         </div>
       </div>
-      
+
       {backgroundTasks.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Completed Background Tasks</h4>
@@ -442,7 +443,7 @@ export default function PromptExecutionTestModal({
             Testing: {testType === 'direct' ? 'Direct Execution' : testType === 'inline' ? 'Inline Overlay' : 'Background Tasks'}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="mt-4">
           {testType === 'direct' && renderDirectMode()}
           {testType === 'inline' && renderInlineMode()}

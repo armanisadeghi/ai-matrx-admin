@@ -3,13 +3,23 @@
 import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Edit, 
-  Play, 
-  Eye, 
-  Trash2, 
+import {
+  Edit,
+  Play,
+  Eye,
+  Trash2,
   Calendar,
   User,
   Plus
@@ -24,21 +34,28 @@ interface WorkflowsListProps {
   isLoading: boolean;
 }
 
-export const WorkflowsList: React.FC<WorkflowsListProps> = ({ 
-  workflows, 
-  isLoading 
+export const WorkflowsList: React.FC<WorkflowsListProps> = ({
+  workflows,
+  isLoading
 }) => {
   const dispatch = useAppDispatch();
 
-  const handleDelete = (workflowId: string) => {
-    if (confirm('Are you sure you want to delete this workflow?')) {
-      dispatch(deleteWorkflow(workflowId));
+  const [workflowIdToDelete, setWorkflowIdToDelete] = React.useState<string | null>(null);
+
+  const handleDeleteClick = (workflowId: string) => {
+    setWorkflowIdToDelete(workflowId);
+  };
+
+  const handleConfirmDelete = () => {
+    if (workflowIdToDelete) {
+      dispatch(deleteWorkflow(workflowIdToDelete));
+      setWorkflowIdToDelete(null);
     }
   };
 
   if (isLoading) {
     return (
-      <WorkflowLoading 
+      <WorkflowLoading
         title="Loading Workflows"
         subtitle="Fetching your workflows from the server..."
         step1="Loading"
@@ -83,7 +100,7 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
                   </p>
                 )}
               </div>
-              
+
               <div className="flex items-center space-x-1 ml-2">
                 {workflow.is_active && (
                   <Badge variant="default" className="bg-green-500 text-white text-xs">
@@ -98,7 +115,7 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent className="pt-0">
             <div className="space-y-3">
               {/* Metadata */}
@@ -136,23 +153,23 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
                     Edit
                   </Button>
                 </Link>
-                
+
                 <Link href={`/workflows-new/${workflow.id}?mode=view`}>
                   <Button size="sm" variant="outline">
                     <Eye className="h-3 w-3" />
                   </Button>
                 </Link>
-                
+
                 <Link href={`/workflows-new/${workflow.id}?mode=execute`}>
                   <Button size="sm" variant="outline">
                     <Play className="h-3 w-3" />
                   </Button>
                 </Link>
-                
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => handleDelete(workflow.id)}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDeleteClick(workflow.id)}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                 >
                   <Trash2 className="h-3 w-3" />
@@ -162,6 +179,25 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
           </CardContent>
         </Card>
       ))}
+      <AlertDialog open={!!workflowIdToDelete} onOpenChange={(open) => !open && setWorkflowIdToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the workflow.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }; 

@@ -6,6 +6,7 @@ import { UniversalPromptEditorProps, UniversalPromptData } from './types';
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from '@/features/prompts/types/core';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { sanitizeVariableName } from '@/features/prompts/utils/variable-utils';
+import { UnsavedChangesAlert } from '@/components/ui/unsaved-changes-alert';
 
 /**
  * UniversalPromptEditor - A self-contained prompt editor that works with
@@ -72,6 +73,7 @@ export function UniversalPromptEditor({
         promptData.variable_defaults || []
     );
     const [isDirty, setIsDirty] = useState(false);
+    const [showUnsavedAlert, setShowUnsavedAlert] = useState(false);
 
     // Reset state when promptData changes
     useEffect(() => {
@@ -79,12 +81,12 @@ export function UniversalPromptEditor({
             setDeveloperMessage(getSystemMessage());
             setMessages(getRegularMessages());
             setModel(getInitialModel());
-            
+
             const initialModel = models.find(m => m.id === getInitialModel());
             const defaults = getModelDefaults(initialModel || models[0]);
             const { model_id, ...config } = promptData.settings || {};
             setModelConfig({ ...defaults, ...config });
-            
+
             setVariableDefaults(promptData.variable_defaults || []);
             setIsDirty(false);
         }
@@ -146,7 +148,7 @@ export function UniversalPromptEditor({
     ) => {
         const sanitizedName = sanitizeVariableName(name);
         if (!sanitizedName) return;
-        
+
         setVariableDefaults(prev => {
             // Check for duplicates
             if (prev.some(v => v.name === sanitizedName)) return prev;
@@ -237,43 +239,53 @@ export function UniversalPromptEditor({
     // Handle close with dirty check
     const handleClose = useCallback(() => {
         if (isDirty) {
-            const confirmClose = window.confirm(
-                'You have unsaved changes. Are you sure you want to close?'
-            );
-            if (!confirmClose) return;
+            setShowUnsavedAlert(true);
+            return;
         }
         onClose();
     }, [isDirty, onClose]);
 
     return (
-        <FullScreenEditor
-            isOpen={isOpen}
-            onClose={handleClose}
-            developerMessage={developerMessage}
-            onDeveloperMessageChange={handleDeveloperMessageChange}
-            messages={messages}
-            onMessageContentChange={handleMessageContentChange}
-            onMessageRoleChange={handleMessageRoleChange}
-            initialSelection={initialSelection}
-            onAddMessage={handleAddMessage}
-            model={model}
-            models={models}
-            modelConfig={modelConfig}
-            onModelChange={handleModelChange}
-            onModelConfigChange={handleModelConfigChange}
-            variableDefaults={variableDefaults}
-            onAddVariable={handleAddVariable}
-            onUpdateVariable={handleUpdateVariable}
-            onRemoveVariable={handleRemoveVariable}
-            selectedTools={modelConfig.tools || []}
-            availableTools={availableTools}
-            onAddTool={handleAddTool}
-            onRemoveTool={handleRemoveTool}
-            modelSupportsTools={modelSupportsTools}
-            onSave={handleSave}
-            isSaving={isSaving}
-            isDirty={isDirty}
-        />
+        <>
+            <FullScreenEditor
+                isOpen={isOpen}
+                onClose={handleClose}
+                developerMessage={developerMessage}
+                onDeveloperMessageChange={handleDeveloperMessageChange}
+                messages={messages}
+                onMessageContentChange={handleMessageContentChange}
+                onMessageRoleChange={handleMessageRoleChange}
+                initialSelection={initialSelection}
+                onAddMessage={handleAddMessage}
+                model={model}
+                models={models}
+                modelConfig={modelConfig}
+                onModelChange={handleModelChange}
+                onModelConfigChange={handleModelConfigChange}
+                variableDefaults={variableDefaults}
+                onAddVariable={handleAddVariable}
+                onUpdateVariable={handleUpdateVariable}
+                onRemoveVariable={handleRemoveVariable}
+                selectedTools={modelConfig.tools || []}
+                availableTools={availableTools}
+                onAddTool={handleAddTool}
+                onRemoveTool={handleRemoveTool}
+                modelSupportsTools={modelSupportsTools}
+                onSave={handleSave}
+                isSaving={isSaving}
+                isDirty={isDirty}
+            />
+            <UnsavedChangesAlert
+                open={showUnsavedAlert}
+                onOpenChange={setShowUnsavedAlert}
+                onViewChanges={() => setShowUnsavedAlert(false)}
+                onContinue={() => {
+                    setShowUnsavedAlert(false);
+                    onClose();
+                }}
+                unsavedItemsCount={1}
+            />
+        </>
     );
 }
 
