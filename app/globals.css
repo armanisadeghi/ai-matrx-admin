@@ -309,7 +309,9 @@
         --header-height: 2.5rem;
         
         /* Base Background - Zinc-100 with texture (rgb 244 244 245) */
-        --background: 240 5% 96%;
+        /* -- red for testing */
+        --background: oklch(0.577 0.245 27.325);
+
         --background-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
         --card-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.04' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
         --matrx-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.15'/%3E%3C/svg%3E");
@@ -338,8 +340,8 @@
         --muted-foreground: 240 4% 40%;
         
         /* Accent - More visible for hover states and UI elements */
-        --accent:  oklch(0.967 0.001 286.375);
-        --accent-foreground:  oklch(0.21 0.006 285.885);
+        --accent: 240 5% 94%; /* zinc-150 - subtle for hover states */
+        --accent-foreground: 240 10% 10%; /* dark text on light accent */
              
         /* Status colors */
         --destructive: 0 84% 60%;
@@ -369,12 +371,12 @@
         /* Adjusted hover state colors for more contrast */
         --primary-hover: 240 5.9% 15%;
         --secondary-hover: 275 70% 50%; /* Slightly darker for hover state */
-        --accent-hover: 260 35% 88%; /* Slightly darker than accent for hover */
+        --accent-hover: 240 5% 90%; /* Slightly lighter than accent for hover */
 
         /* Adjusted active state colors */
         --primary-active: 240 5.9% 20%;
         --secondary-active: 275 70% 45%; /* Darker than hover for active state */
-        --accent-active: 260 40% 85%; /* Darker than hover for active state */
+        --accent-active: 240 5% 88%; /* Darker than hover for active state */
 
         /* Elevation colors for zinc theme */
         --elevation-1: 240 5% 98%; /* zinc-50 */
@@ -436,6 +438,7 @@
     .dark {
         /* Base Background - Zinc-850 with texture (rgb 39 39 42) */
         --background: 240 4% 16%;
+
         --background-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
         --card-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23fff' fill-opacity='0.02' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
         --matrx-card-background: url("/dark-turbulence-noise.svg");
@@ -464,9 +467,9 @@
         --muted-foreground: 240 5% 60%;
         
         /* Accent - More visible for hover states and UI elements */
-        --accent:  oklch(0.274 0.006 286.033);
-        --accent-foreground:  oklch(0.985 0 0);
-             
+        --accent: 240 4% 24%; /* zinc-775 - subtle for hover states in dark mode */
+        --accent-foreground: 240 5% 90%; /* light text on dark accent */
+                  
         /* Status colors - adjusted for dark mode */
         --destructive: 0 72% 60%;
         --destructive-foreground: 0 85.7% 97.3%;
@@ -495,12 +498,12 @@
         /* Hover state colors */
         --primary-hover: 0 0% 85%;
         --secondary-hover: 275 70% 55%; /* Slightly darker for hover state */
-        --accent-hover: 215 25% 30%; /* Slate-tinted, lighter than accent for hover */
+        --accent-hover: 240 4% 28%; /* Slightly lighter than accent for hover in dark mode */
 
         /* Active state colors */
         --primary-active: 0 0% 75%;
         --secondary-active: 275 70% 50%; /* Darker than hover for active state */
-        --accent-active: 215 30% 20%; /* Slate-tinted, darker than hover for active */
+        --accent-active: 240 4% 32%; /* Lighter than hover for active state in dark mode */
 
         /* Elevation colors for zinc theme */
         --elevation-1: 240 4% 18%; /* zinc-845 */
