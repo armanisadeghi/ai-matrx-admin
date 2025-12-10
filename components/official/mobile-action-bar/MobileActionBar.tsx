@@ -126,7 +126,18 @@ export function MobileActionBar({
         autoTranscribe: true,
     });
 
-    // Only show on mobile
+    // Show recording or transcribing state inline - no heavy modals
+    const isVoiceActive = isRecording || isTranscribing;
+    
+    // Auto-activate search when voice recording starts
+    // IMPORTANT: This hook must be called before any conditional returns (Rules of Hooks)
+    useEffect(() => {
+        if (isVoiceActive && !isSearchActive) {
+            setIsSearchActive(true);
+        }
+    }, [isVoiceActive, isSearchActive]);
+
+    // Only show on mobile - conditional return AFTER all hooks
     if (!isMobile) {
         return null;
     }
@@ -156,16 +167,6 @@ export function MobileActionBar({
 
     // Determine if there are active filters (filtered count differs from total)
     const hasActiveFilters = filteredCount !== totalCount || searchValue !== "";
-    
-    // Show recording or transcribing state inline - no heavy modals
-    const isVoiceActive = isRecording || isTranscribing;
-    
-    // Auto-activate search when voice recording starts
-    useEffect(() => {
-        if (isVoiceActive && !isSearchActive) {
-            setIsSearchActive(true);
-        }
-    }, [isVoiceActive, isSearchActive]);
 
     // Default state - compact bar
     if (!isSearchActive) {
@@ -189,9 +190,9 @@ export function MobileActionBar({
                         )}
 
                         {/* Compact Search Bar */}
-                        <button
+                        <div
                             onClick={handleSearchActivate}
-                            className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full bg-muted/50 hover:bg-muted/70 transition-colors"
+                            className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full bg-muted/50 hover:bg-muted/70 transition-colors cursor-pointer"
                         >
                             <Search className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm text-muted-foreground truncate">
@@ -209,7 +210,7 @@ export function MobileActionBar({
                                     <Mic className="h-4 w-4 text-muted-foreground" />
                                 </button>
                             )}
-                        </button>
+                        </div>
 
                         {/* Primary Action Button */}
                         {onPrimaryAction && (
