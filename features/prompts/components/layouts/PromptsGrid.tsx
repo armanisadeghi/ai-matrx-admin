@@ -2,14 +2,14 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { PromptCard } from "./PromptCard";
-import { FloatingActionBar } from "./FloatingActionBar";
+import { MobileActionBar, MobileFilterDrawer } from "@/components/official/mobile-action-bar";
 import { DesktopSearchBar } from "./DesktopSearchBar";
 import { NewPromptModal } from "./NewPromptModal";
-import { FilterModal } from "./FilterModal";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -153,6 +153,33 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
 
     const hasActiveFilters = searchTerm !== "" || sortBy !== "updated-desc";
 
+    // Filter configuration for MobileFilterDrawer
+    const filterConfig = {
+        fields: [
+            {
+                id: "sortBy",
+                label: "Sort By",
+                type: "select" as const,
+                options: [
+                    { value: "updated-desc", label: "Recently Updated" },
+                    { value: "name-asc", label: "Name (A-Z)" },
+                    { value: "name-desc", label: "Name (Z-A)" },
+                ],
+            },
+        ],
+        entityLabel: "prompts",
+        entityLabelSingular: "prompt",
+    };
+
+    // Active filters state for drawer
+    const activeFilters = { sortBy };
+
+    const handleFiltersChange = (filters: Record<string, string | string[] | boolean>) => {
+        if (filters.sortBy && typeof filters.sortBy === "string") {
+            setSortBy(filters.sortBy);
+        }
+    };
+
     if (prompts.length === 0) {
         return (
             <>
@@ -160,13 +187,20 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                     <p className="text-muted-foreground">No prompts found. Create your first prompt to get started!</p>
                 </div>
                 
-                {/* Floating Action Bar */}
-                <FloatingActionBar
+                {/* Mobile Action Bar */}
+                <MobileActionBar
                     searchValue={searchTerm}
                     onSearchChange={setSearchTerm}
-                    onFilterClick={() => setIsFilterModalOpen(true)}
-                    onNewClick={() => setIsNewModalOpen(true)}
-                    showFilterBadge={hasActiveFilters}
+                    totalCount={prompts.length}
+                    filteredCount={filteredPrompts.length}
+                    onPrimaryAction={() => setIsNewModalOpen(true)}
+                    primaryActionLabel="New Prompt"
+                    primaryActionIcon={<Plus className="h-5 w-5" />}
+                    showFilterButton={true}
+                    showVoiceSearch={true}
+                    isFilterModalOpen={isFilterModalOpen}
+                    setIsFilterModalOpen={setIsFilterModalOpen}
+                    searchPlaceholder="Search prompts..."
                 />
 
                 {/* Modals */}
@@ -174,11 +208,14 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                     isOpen={isNewModalOpen}
                     onClose={() => setIsNewModalOpen(false)}
                 />
-                <FilterModal
+                <MobileFilterDrawer
                     isOpen={isFilterModalOpen}
                     onClose={() => setIsFilterModalOpen(false)}
-                    sortBy={sortBy}
-                    onSortChange={setSortBy}
+                    filterConfig={filterConfig}
+                    activeFilters={activeFilters}
+                    onFiltersChange={handleFiltersChange}
+                    totalCount={prompts.length}
+                    filteredCount={filteredPrompts.length}
                 />
             </>
         );
@@ -232,13 +269,20 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                 </div>
             )}
 
-            {/* Mobile Floating Action Bar */}
-            <FloatingActionBar
+            {/* Mobile Action Bar */}
+            <MobileActionBar
                 searchValue={searchTerm}
                 onSearchChange={setSearchTerm}
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                onNewClick={() => setIsNewModalOpen(true)}
-                showFilterBadge={hasActiveFilters}
+                totalCount={prompts.length}
+                filteredCount={filteredPrompts.length}
+                onPrimaryAction={() => setIsNewModalOpen(true)}
+                primaryActionLabel="New Prompt"
+                primaryActionIcon={<Plus className="h-5 w-5" />}
+                showFilterButton={true}
+                showVoiceSearch={true}
+                isFilterModalOpen={isFilterModalOpen}
+                setIsFilterModalOpen={setIsFilterModalOpen}
+                searchPlaceholder="Search prompts..."
             />
 
             {/* Modals */}
@@ -246,11 +290,14 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                 isOpen={isNewModalOpen}
                 onClose={() => setIsNewModalOpen(false)}
             />
-            <FilterModal
+            <MobileFilterDrawer
                 isOpen={isFilterModalOpen}
                 onClose={() => setIsFilterModalOpen(false)}
-                sortBy={sortBy}
-                onSortChange={setSortBy}
+                filterConfig={filterConfig}
+                activeFilters={activeFilters}
+                onFiltersChange={handleFiltersChange}
+                totalCount={prompts.length}
+                filteredCount={filteredPrompts.length}
             />
 
             {/* Delete Confirmation Dialog */}
