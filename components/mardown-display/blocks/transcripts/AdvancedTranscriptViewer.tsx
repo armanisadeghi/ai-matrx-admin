@@ -849,7 +849,7 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center">
-                                            <Clock className="h-3.5 w-3.5" />
+                                            <Clock className="h-3.5 w-3.5 pr-1" />
                                             <span>{formatTime(stats.totalDuration)}</span>
                                         </div>
                                     </TooltipTrigger>
@@ -859,8 +859,8 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center">
-                                            <MessageSquare className="h-3.5 w-3.5" />
-                                            <span>{stats.segmentCount} segments</span>
+                                            <MessageSquare className="h-3.5 w-3.5 pr-1" />
+                                            <span>{stats.segmentCount} Segments</span>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent>Number of transcript segments</TooltipContent>
@@ -869,8 +869,8 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center">
-                                            <FileText className="h-3.5 w-3.5" />
-                                            <span>{stats.wordCount.toLocaleString()} words</span>
+                                            <FileText className="h-3.5 w-3.5 pr-1" />
+                                            <span>{stats.wordCount.toLocaleString()} Words</span>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent>Total word count</TooltipContent>
@@ -879,7 +879,7 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center hidden sm:flex">
-                                            <span>{stats.charCount.toLocaleString()} chars</span>
+                                            <span>{stats.charCount.toLocaleString()} Chars</span>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent>Total character count</TooltipContent>

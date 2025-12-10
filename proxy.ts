@@ -23,29 +23,30 @@ export const config = {
         /*
          * CRITICAL: This matcher defines which routes the proxy middleware checks.
          * 
-         * The negative lookahead (?!...) means "match everything EXCEPT these paths"
+         * The proxy runs on MOST routes to check authentication.
+         * The middleware code itself handles the logic for what to allow/block.
          * 
-         * Excluded routes (PUBLIC - no auth check):
+         * Excluded from proxy (never checked):
          * - api (API routes handle their own auth)
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - public (static assets folder)
-         * - login (login page itself)
          * - auth (auth callback routes - /auth/callback handles its own session)
-         * - sign-up, forgot-password, error, reset-password (public auth pages)
+         * - forgot-password, error, reset-password (special auth pages)
          * - contact, about, privacy-policy (public info pages)
          * - favicon.ico, sitemap.xml, robots.txt, manifest.webmanifest (static files)
-         * - $ (exact match of homepage "/" - handled separately in middleware)
          * 
-         * Everything else REQUIRES authentication and will be checked by this proxy.
+         * INCLUDED in proxy (middleware decides what to do):
+         * - / (homepage) - allows unauth, redirects auth users to /dashboard
+         * - /login - allows unauth, redirects auth users to /dashboard
+         * - /sign-up - allows unauth, redirects auth users to /dashboard
+         * - All other routes - requires authentication
          * 
-         * Note: The homepage (/) is in the excluded list, but the middleware code
-         * explicitly handles it to redirect authenticated users to /dashboard.
-         * 
-         * The middleware code also has a fast-path check for files with extensions
-         * (any path containing a dot) to allow static assets through efficiently.
+         * The middleware has smart logic:
+         * - Unauthenticated users: Can access /, /login, /sign-up; blocked from protected routes
+         * - Authenticated users: Redirected from /, /login, /sign-up to /dashboard; allowed on protected routes
          */
-        '/((?!api|_next/static|_next/image|public|login|auth|matrx|flash-cards|dash-test|app_redirect|app_callback|sign-up|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|$).*)',
+        '/((?!api|_next/static|_next/image|public|auth|matrx|flash-cards|dash-test|app_redirect|app_callback|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)',
     ],
 }
 

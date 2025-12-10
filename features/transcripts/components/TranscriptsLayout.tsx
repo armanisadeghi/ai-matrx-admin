@@ -48,25 +48,25 @@ export function TranscriptsLayout({ className }: TranscriptsLayoutProps) {
             />
 
             <div className={cn("flex h-page overflow-hidden", className)}>
-                {/* Desktop Sidebar */}
-                <div className="w-80 shrink-0 hidden md:block">
+            {/* Desktop Sidebar */}
+            <div className="w-80 shrink-0 hidden md:block">
                     <TranscriptsSidebar onCreateTranscript={handleCreateNew} />
-                </div>
+            </div>
 
-                {/* Main Content */}
-                <div className="flex-1 flex flex-col min-w-0">
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col min-w-0">
                     {/* Mobile: Show menu button and title */}
                     <div className="flex items-center border-b border-border bg-textured md:hidden h-9">
-                        <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
-                            <SheetTrigger asChild>
+                    <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+                        <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 m-1">
                                     <Menu className="h-3.5 w-3.5" />
-                                </Button>
-                            </SheetTrigger>
+                            </Button>
+                        </SheetTrigger>
                             <SheetContent side="left" className="p-0 w-[320px] pb-safe">
                                 <TranscriptsSidebar onCreateTranscript={handleCreateNew} />
-                            </SheetContent>
-                        </Sheet>
+                        </SheetContent>
+                    </Sheet>
 
                         {/* Mobile - Show active transcript title */}
                         {activeTranscript && (
@@ -74,18 +74,18 @@ export function TranscriptsLayout({ className }: TranscriptsLayoutProps) {
                                 {activeTranscript.title}
                             </div>
                         )}
-                    </div>
+                </div>
 
-                    {/* Transcript Viewer */}
-                    <TranscriptViewer />
+                {/* Transcript Viewer */}
+                <TranscriptViewer />
                 </div>
             </div>
 
             {/* Modals */}
-            <CreateTranscriptModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-            />
+                <CreateTranscriptModal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                />
 
             <DeleteTranscriptDialog
                 isOpen={isDeleteDialogOpen}

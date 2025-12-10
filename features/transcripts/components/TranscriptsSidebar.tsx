@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Transcript } from '../types';
 import { formatDuration, formatRelativeTime } from '../utils/dateFormatting';
+import { DraftIndicator } from './DraftIndicator';
 
 interface TranscriptsSidebarProps {
     onCreateTranscript?: () => void;
@@ -187,9 +188,14 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
                                         {getSourceIcon(transcript.source_type)}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate">
-                                            {transcript.title}
-                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate flex-1">
+                                                {transcript.title}
+                                            </h3>
+                                            {transcript.is_draft && (
+                                                <DraftIndicator size="sm" />
+                                            )}
+                                        </div>
                                         {transcript.description && (
                                             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
                                                 {transcript.description}

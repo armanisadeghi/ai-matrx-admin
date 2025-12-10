@@ -24,6 +24,7 @@ import {
     ClipboardType,
     LayoutDashboard,
     FolderOpen,
+    Mic,
 } from "lucide-react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
@@ -51,6 +52,8 @@ export interface NavigationLink {
     profileMenu?: boolean; // Show in profile dropdown menu
     dashboard?: boolean; // Show on dashboard
     favicon?: FaviconConfig; // Unique favicon configuration for this route
+    description?: string; // Description for dashboard cards
+    color?: string; // Color theme for dashboard cards (indigo, emerald, blue, etc.)
 }
 
 // All navigation links in the application
@@ -63,6 +66,8 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        description: "Your central hub for all activities and insights",
+        color: "cyan",
         favicon: { color: "#0ea5e9", letter: "D" }, // Sky blue
     },
     {
@@ -71,7 +76,9 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <Brain className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: true,
+        dashboard: false,
+        description: "Build Custom AI Agents & Recipes without code!",
+        color: "amber",
         favicon: { color: "#8b5cf6", letter: "AI" }, // Purple
     },
     {
@@ -80,7 +87,9 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: true,
+        dashboard: false,
+        description: "Browse and manage your AI recipes and templates",
+        color: "purple",
         favicon: { color: "#d946ef", letter: "R" }, // Fuchsia
     },
     {
@@ -88,6 +97,10 @@ export const allNavigationLinks: NavigationLink[] = [
         href: "/ai/prompts",
         icon: <FaIndent className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        description: "Create and manage AI prompts for better interactions",
+        color: "teal",
         favicon: { color: "#a855f7", letter: "P" }, // Light Purple
     },
     {
@@ -96,7 +109,9 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <IoChatboxOutline className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: true,
+        dashboard: false,
+        description: "Interact with our reimagined AI chat interface",
+        color: "indigo",
         favicon: { color: "#3b82f6", letter: "C" }, // Blue
     },
     {
@@ -106,6 +121,8 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        description: "Create and manage your notes and documents",
+        color: "amber",
         favicon: { color: "#f59e0b", letter: "N" }, // Amber
     },
     {
@@ -115,6 +132,8 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        description: "Organize and track your tasks and projects",
+        color: "green",
         favicon: { color: "#10b981", letter: "T" }, // Green
     },
     {
@@ -124,7 +143,20 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        description: "Browse and manage your files and documents",
+        color: "blue",
         favicon: { color: "#6366f1", letter: "F" }, // Indigo
+    },
+    {
+        label: "Transcripts",
+        href: "/transcripts",
+        icon: <Mic className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        description: "Record, transcribe and manage your audio conversations",
+        color: "purple",
+        favicon: { color: "#8b5cf6", letter: "T" }, // Violet
     },
     {
         label: "Tables",
@@ -133,6 +165,8 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        description: "Manage your custom data or create tables in a Chat",
+        color: "blue",
         favicon: { color: "#06b6d4", letter: "D" }, // Cyan
     },
     {
@@ -141,7 +175,9 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <IconNewSection className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: true,
+        dashboard: false,
+        description: "Browse a collection of Applets built by the community",
+        color: "emerald",
         favicon: { color: "#ec4899", letter: "A" }, // Pink
     },
     {
@@ -150,7 +186,9 @@ export const allNavigationLinks: NavigationLink[] = [
         href: "/demo/voice/voice-manager",
         section: "primary",
         profileMenu: true,
-        dashboard: true,
+        dashboard: false,
+        description: "Browse a collection of voices you can use in your projects",
+        color: "purple",
         favicon: { color: "#f97316", letter: "V" }, // Orange
     },
     {
@@ -159,7 +197,9 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: true,
+        dashboard: false,
+        description: "Browse a collection of images you can use in your projects",
+        color: "rose",
         favicon: { color: "#14b8a6", letter: "I" }, // Teal
     },
     {
@@ -167,6 +207,10 @@ export const allNavigationLinks: NavigationLink[] = [
         href: "/scraper",
         icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        description: "Extract and process data from web sources",
+        color: "amber",
         favicon: { color: "#6366f1", letter: "W" }, // Indigo
     },
     {
@@ -174,6 +218,10 @@ export const allNavigationLinks: NavigationLink[] = [
         href: "/workflows",
         icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
+        profileMenu: true,
+        dashboard: false,
+        description: "Design and automate complex workflows",
+        color: "purple",
         favicon: { color: "#8b5cf6", letter: "WF" }, // Purple
     },
     {

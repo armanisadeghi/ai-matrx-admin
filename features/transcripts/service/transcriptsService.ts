@@ -225,6 +225,103 @@ export async function permanentlyDeleteTranscript(id: string): Promise<void> {
 }
 
 /**
+ * Save transcript as draft (immediately after transcription)
+ */
+export async function saveDraftTranscript(input: CreateTranscriptInput): Promise<Transcript> {
+    const { data: userData } = await supabase.auth.getUser();
+
+    if (!userData?.user?.id) {
+        throw new Error('User not authenticated');
+    }
+
+    // Generate metadata from segments
+    const autoMetadata = generateMetadata(input.segments);
+    const metadata = {
+        ...autoMetadata,
+        ...input.metadata,
+    };
+
+    const { data, error } = await supabase
+        .from('transcripts')
+        .insert({
+            user_id: userData.user.id,
+            title: input.title || 'New Recording',
+            description: input.description || '',
+            segments: input.segments,
+            metadata,
+            audio_file_path: input.audio_file_path || null,
+            video_file_path: input.video_file_path || null,
+            source_type: input.source_type || 'audio',
+            tags: input.tags || [],
+            folder_name: input.folder_name || 'Recordings',
+            is_draft: true,
+            draft_saved_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error saving draft transcript:', error);
+        throw error;
+    }
+
+    return data;
+}
+
+/**
+ * Update draft to final (finalize a draft)
+ */
+export async function finalizeDraft(id: string, updates: UpdateTranscriptInput): Promise<Transcript> {
+    const finalUpdates = {
+        ...updates,
+        is_draft: false,
+        draft_saved_at: null,
+    };
+
+    // If segments are being updated, regenerate metadata
+    if (updates.segments) {
+        const autoMetadata = generateMetadata(updates.segments);
+        finalUpdates.metadata = {
+            ...autoMetadata,
+            ...updates.metadata,
+        };
+    }
+
+    const { data, error } = await supabase
+        .from('transcripts')
+        .update(finalUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error finalizing draft:', error);
+        throw error;
+    }
+
+    return data;
+}
+
+/**
+ * Get all draft transcripts for current user
+ */
+export async function getDraftTranscripts(): Promise<Transcript[]> {
+    const { data, error } = await supabase
+        .from('transcripts')
+        .select('*')
+        .eq('is_deleted', false)
+        .eq('is_draft', true)
+        .order('draft_saved_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching draft transcripts:', error);
+        throw error;
+    }
+
+    return data || [];
+}
+
+/**
  * Copy/duplicate a transcript
  */
 export async function copyTranscript(id: string): Promise<Transcript> {

@@ -28,6 +28,8 @@ export interface Transcript {
     tags: string[];
     folder_name: string;
     is_deleted: boolean;
+    is_draft: boolean; // Draft status for recordings
+    draft_saved_at?: string; // When draft was saved
     created_at: string;
     updated_at: string;
 }

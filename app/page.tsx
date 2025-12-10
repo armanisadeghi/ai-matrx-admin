@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Lock, Shield, Zap, Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LandingCTAs } from '@/features/landing/components/LandingCTAs';
+import { AuthAwareButton } from '@/features/landing/components/AuthAwareButton';
 
 // Enhanced metadata for SEO
 export const metadata: Metadata = {
@@ -71,15 +72,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
             <LandingCTAs />
-            <Link href="/login" className="w-full sm:w-auto">
-              <Button
-                variant="ghost"
-                size="lg"
-                className="w-full sm:w-auto text-base border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              >
-                Sign In
-              </Button>
-            </Link>
+            <AuthAwareButton />
           </div>
 
           {/* Feature Grid */}

@@ -6,4 +6,8 @@ export { TranscriptViewer } from './TranscriptViewer';
 export { TranscriptsHeader } from './TranscriptsHeader';
 export { DeleteTranscriptDialog } from './DeleteTranscriptDialog';
 export { CreateTranscriptModal } from './CreateTranscriptModal';
+export { RecordingInterface } from './RecordingInterface';
+export { RecordingPreview } from './RecordingPreview';
+export { DraftIndicator } from './DraftIndicator';
+export { ImportTranscriptModal } from './ImportTranscriptModal';
 

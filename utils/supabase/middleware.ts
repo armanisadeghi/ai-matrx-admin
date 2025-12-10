@@ -58,41 +58,40 @@ export async function updateSession(request: NextRequest) {
     console.log(`[${timestamp}] Auth Check - Path: ${request.nextUrl.pathname}, User: ${data.user ? 'authenticated' : 'not authenticated'}${error ? `, Error: ${error.message}` : ''}`);
   }
 
+  const pathname = request.nextUrl.pathname;
+  
+  // Define public pages that don't require authentication
+  const isHomepage = pathname === '/';
+  const isAuthPage = pathname === '/login' || pathname === '/sign-up';
+  const isPublicPage = isHomepage || isAuthPage;
+
+  // Handle authenticated users trying to access login/signup pages
+  // Redirect them to dashboard - no point showing login if already logged in
+  if (data.user && isAuthPage) {
+    console.log(`[${timestamp}] ↪ Authenticated user on ${pathname} → redirecting to /dashboard`);
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Note: Homepage is allowed for both authenticated and unauthenticated users
+  // The homepage component will show different UI based on auth status client-side
+
   // Handle unauthenticated users trying to access protected routes
   if (
       !data.user &&
-      !request.nextUrl.pathname.startsWith('/login') &&
-      !request.nextUrl.pathname.startsWith('/auth') &&
-      !request.nextUrl.pathname.startsWith('/_next') &&
-      !isStaticAsset // Don't redirect for static assets
+      !isPublicPage && // Allow access to public pages (/, /login, /sign-up)
+      !pathname.startsWith('/auth') && // Allow auth callbacks
+      !pathname.startsWith('/_next') && // Allow Next.js internals
+      !isStaticAsset // Allow static assets
   ) {
     // Get the full requested URL path and search params
-    const fullPath = request.nextUrl.pathname + request.nextUrl.search
+    const fullPath = pathname + request.nextUrl.search
     
-    // Only add redirectTo if it's not the homepage (/)
-    // Homepage should just go to login, then default to dashboard
+    // Redirect to login with the intended destination
     const loginUrl = new URL('/login', request.url)
-    if (fullPath !== '/') {
-      loginUrl.searchParams.set('redirectTo', fullPath)
-      console.log(`[${timestamp}] → Redirecting to /login with redirectTo: ${fullPath}`);
-    } else {
-      console.log(`[${timestamp}] → Redirecting to /login (homepage access)`);
-    }
+    loginUrl.searchParams.set('redirectTo', fullPath)
+    console.log(`[${timestamp}] → Redirecting to /login with redirectTo: ${fullPath}`);
     
     return NextResponse.redirect(loginUrl)
-  }
-
-  // Handle authenticated users trying to access homepage or auth pages
-  // Redirect them to dashboard instead
-  if (data.user) {
-    const pathname = request.nextUrl.pathname;
-    
-    // Redirect authenticated users away from public pages to dashboard
-    if (pathname === '/' || pathname === '/login' || pathname === '/sign-up') {
-      const timestamp2 = new Date().toISOString();
-      console.log(`[${timestamp2}] ↪ Authenticated user on ${pathname} → redirecting to /dashboard`);
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
   }
 
   return supabaseResponse

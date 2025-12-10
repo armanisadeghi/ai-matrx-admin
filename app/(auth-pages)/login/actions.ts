@@ -158,6 +158,7 @@ export async function loginWithGoogle(redirectToArg: string, formData?: FormData
 
     const callbackUrl = `${baseUrl}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`;
     console.log(`[${timestamp}] Google login - OAuth callback URL:`, callbackUrl);
+    console.log(`[${timestamp}] 🚨 IMPORTANT: This URL must be whitelisted in Supabase Dashboard → Authentication → URL Configuration`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -203,6 +204,7 @@ export async function loginWithGithub(redirectToArg: string, formData?: FormData
 
     const callbackUrl = `${baseUrl}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`;
     console.log(`[${timestamp}] GitHub login - OAuth callback URL:`, callbackUrl);
+    console.log(`[${timestamp}] 🚨 IMPORTANT: This URL must be whitelisted in Supabase Dashboard → Authentication → URL Configuration`);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",

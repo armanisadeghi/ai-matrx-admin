@@ -2,32 +2,28 @@
 
 import React from "react";
 import {
-    MessageSquare,
-    Grid3X3,
-    Database,
-    Cpu,
-    Image as ImageIcon,
     Zap,
     BarChart3,
     Clock,
+    Database,
+    Cpu,
+    MessageSquare,
     Brain,
     Settings,
     User,
-    FileText,
-    Workflow,
-    Scissors,
     Building2,
+    ImageIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AiFillAudio } from "react-icons/ai";
 import { useUserStats } from "./user-stats-fetch";
 import { FaTasks } from "react-icons/fa";
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
 import { LatestAiModels } from "@/components/animated/ExpandableCards/ExpandableCardDemo";
+import { dashboardLinks } from "@/constants/navigation-links";
 
 
 const DashboardPage = () => {
@@ -91,72 +87,16 @@ const DashboardPage = () => {
         },
     ];
 
-    // Feature cards data
-    const featureCards: CardProps[] = [
-        {
-            title: "Chat",
-            description: "Interact with our reimagined AI chat interface",
-            icon: <MessageSquare />,
-            color: "indigo",
-            path: "/chat",
-        },
-        {
-            title: "Cockpit",
-            description: "Build Custom AI Agents & Recipes without code!",
-            icon: <Cpu />,
-            color: "amber",
-            path: "/ai/cockpit",
-        },
-        {
-            title: "Applets",
-            description: "Brows a collection of Applets built by the community",
-            icon: <Grid3X3 />,
-            color: "emerald",
-            path: "/applets",
-        },
-        {
-            title: "Tables",
-            description: "Manage your custom data or create tables in a Chat",
-            icon: <Database />,
-            color: "blue",
-            path: "/data",
-        },
-        {
-            title: "Voices",
-            description: "Browse a collection of voices you can use in your projects",
-            icon: <AiFillAudio />,
-            color: "purple",
-            path: "/demo/voice/voice-manager",
-        },
-        {
-            title: "Image Gallery",
-            description: "Browse a collection of images you can use in your projects",
-            icon: <ImageIcon />,
-            color: "rose",
-            path: "/image-editing/public-image-search",
-        },
-        {
-            title: "Prompts",
-            description: "Create and manage AI prompts for better interactions",
-            icon: <FileText />,
-            color: "teal",
-            path: "/ai/prompts",
-        },
-        {
-            title: "Workflow",
-            description: "Design and automate complex workflows",
-            icon: <Workflow />,
-            color: "purple",
-            path: "/workflow",
-        },
-        {
-            title: "Scraper",
-            description: "Extract and process data from web sources",
-            icon: <Scissors />,
-            color: "amber",
-            path: "/scraper",
-        },
-    ];
+    // Feature cards data from single source of truth
+    const featureCards: CardProps[] = dashboardLinks
+        .filter(link => link.href !== "/dashboard") // Exclude dashboard itself
+        .map(link => ({
+            title: link.label,
+            description: link.description || "",
+            icon: link.icon as React.ReactElement,
+            color: (link.color || "gray") as CardProps["color"],
+            path: link.href,
+        }));
 
     // User settings cards
     const userSettingsCards: CardProps[] = [
