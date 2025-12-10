@@ -487,6 +487,19 @@ export const getIconComponent = (iconName: string | null, fallbackIcon: string =
     return staticLucideIconMap[fallbackIcon] || Zap;
 };
 
+/**
+ * Renders an icon element directly with optional props
+ * This is the preferred method for rendering icons in JSX
+ */
+export const renderIcon = (
+    iconName: string | null | undefined, 
+    props?: React.ComponentProps<any>,
+    fallbackIcon: string = "Zap"
+) => {
+    const IconComponent = getIconComponent(iconName, fallbackIcon);
+    return <IconComponent {...props} />;
+};
+
 
 /**
  * Utility to detect if a string is a hex color code

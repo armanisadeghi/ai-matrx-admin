@@ -96,8 +96,8 @@ export function CanvasNavigation({
         </Tooltip>
         
         {/* Canvas List Dropdown */}
-        <DropdownMenu>
-          <Tooltip>
+        <Tooltip>
+          <DropdownMenu>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -115,7 +115,6 @@ export function CanvasNavigation({
             <TooltipContent side="bottom" sideOffset={8}>
             View all canvas items
             </TooltipContent>
-          </Tooltip>
           
           <DropdownMenuContent align="start" className="w-64">
             <div className="px-2 py-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
@@ -169,7 +168,8 @@ export function CanvasNavigation({
               </>
             )}
           </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
+        </Tooltip>
         
         {/* Next Button */}
         <Tooltip>

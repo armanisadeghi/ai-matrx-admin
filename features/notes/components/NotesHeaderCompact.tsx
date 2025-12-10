@@ -69,9 +69,9 @@ export function NotesHeaderCompact({
             </TooltipProvider>
 
             {/* Sort Menu */}
-            <DropdownMenu>
-                <TooltipProvider>
-                    <Tooltip>
+            <TooltipProvider>
+                <Tooltip>
+                    <DropdownMenu>
                         <TooltipTrigger asChild>
                             <DropdownMenuTrigger asChild>
                                 <Button 
@@ -89,8 +89,6 @@ export function NotesHeaderCompact({
                             </DropdownMenuTrigger>
                         </TooltipTrigger>
                         <TooltipContent>Sort Options</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
                 <DropdownMenuContent align="start">
                     <DropdownMenuLabel>Sort By</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => onSortChange('label', sortConfig.order)}>
@@ -107,7 +105,9 @@ export function NotesHeaderCompact({
                         {sortConfig.order === 'asc' ? 'Ascending' : 'Descending'}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
-            </DropdownMenu>
+                    </DropdownMenu>
+                </Tooltip>
+            </TooltipProvider>
         </div>
     );
 }

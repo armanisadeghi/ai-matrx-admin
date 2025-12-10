@@ -130,8 +130,8 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                             onParamsChange={setAiCallParams}
                         />
                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DropdownMenu>
+                            <DropdownMenu>
+                                <TooltipTrigger asChild>
                                     <DropdownMenuTrigger asChild>
                                         <motion.button
                                             className="p-1.5 rounded-full bg-muted text-muted-foreground hover:text-foreground"
@@ -140,10 +140,10 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                                             <Database className="w-4 h-4" />
                                         </motion.button>
                                     </DropdownMenuTrigger>
-                                    {/* ... existing DropdownMenuContent ... */}
-                                </DropdownMenu>
-                            </TooltipTrigger>
-                            <TooltipContent>Insert saved data</TooltipContent>
+                                </TooltipTrigger>
+                                <TooltipContent>Insert saved data</TooltipContent>
+                                {/* ... existing DropdownMenuContent ... */}
+                            </DropdownMenu>
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>

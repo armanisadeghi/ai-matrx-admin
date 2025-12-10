@@ -65,61 +65,26 @@ export function MobileActionBar({
         onSearchChange(value);
     }, [onSearchChange]);
 
-    // Handle transcription completion - uses same pattern as VoiceTextarea
+    // Handle transcription completion - controlled input pattern
     const handleTranscriptionComplete = useCallback((result: TranscriptionResult) => {
-        console.log('[MobileActionBar] Transcription result:', result);
-        
         if (result.success && result.text) {
-            const newValue = result.text;
-            console.log('[MobileActionBar] Setting value:', newValue);
-            
-            // Activate search view first to ensure input exists
+            // Activate search view to show input
             setIsSearchActive(true);
             
-            // Update states immediately
+            // Update React state - let React handle the DOM
+            const newValue = result.text;
             setLocalSearchValue(newValue);
             onSearchChange(newValue);
-            
-            // Use setTimeout to ensure input ref is available after state update
-            setTimeout(() => {
-                if (searchInputRef.current) {
-                    console.log('[MobileActionBar] Input ref available, updating DOM');
-                    
-                    // Use native input value setter to ensure React detects the change
-                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-                        window.HTMLInputElement.prototype,
-                        'value'
-                    )?.set;
-                    
-                    if (nativeInputValueSetter) {
-                        nativeInputValueSetter.call(searchInputRef.current, newValue);
-                        
-                        // Dispatch synthetic input event to trigger onChange
-                        const event = new Event('input', { bubbles: true });
-                        searchInputRef.current.dispatchEvent(event);
-                        console.log('[MobileActionBar] DOM updated and event dispatched');
-                    }
-                } else {
-                    console.warn('[MobileActionBar] Input ref not available');
-                }
-            }, 100);
-        } else {
-            console.error('[MobileActionBar] Transcription failed or no text:', result);
         }
     }, [onSearchChange]);
 
     // Recording and transcription hook
     const {
         isRecording,
-        isPaused,
         isTranscribing,
-        duration,
         audioLevel,
         startRecording,
         stopRecording,
-        pauseRecording,
-        resumeRecording,
-        reset,
     } = useRecordAndTranscribe({
         onTranscriptionComplete: handleTranscriptionComplete,
         onError: (error) => console.error('Voice input error:', error),
@@ -137,6 +102,16 @@ export function MobileActionBar({
         }
     }, [isVoiceActive, isSearchActive]);
 
+    // All callbacks must be defined before conditional return (Rules of Hooks)
+    const handleMicClick = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isRecording) {
+            stopRecording();
+        } else if (!isTranscribing) {
+            await startRecording();
+        }
+    }, [isRecording, isTranscribing, startRecording, stopRecording]);
+
     // Only show on mobile - conditional return AFTER all hooks
     if (!isMobile) {
         return null;
@@ -150,13 +125,6 @@ export function MobileActionBar({
         setIsSearchActive(false);
         setLocalSearchValue("");
         onSearchChange("");
-    };
-
-    const handleMicClick = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!isRecording && !isTranscribing) {
-            await startRecording();
-        }
     };
 
     const handleFilterClick = () => {

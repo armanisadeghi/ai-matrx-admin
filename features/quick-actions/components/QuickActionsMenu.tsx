@@ -31,9 +31,9 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
     } = useQuickActions();
 
     return (
-        <TooltipProvider>
-            <Tooltip>
-                <DropdownMenu>
+        <DropdownMenu>
+            <TooltipProvider>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -46,8 +46,10 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                         </DropdownMenuTrigger>
                     </TooltipTrigger>
                     <TooltipContent>Quick Actions</TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
 
-                    <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         
@@ -137,9 +139,7 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                             </div>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
-                </DropdownMenu>
-            </Tooltip>
-        </TooltipProvider>
+        </DropdownMenu>
     );
 }
 

@@ -31,7 +31,7 @@ import {
     CreateCategoryInput,
     UpdateCategoryInput
 } from '@/lib/services/prompt-apps-admin-service';
-import { getIconComponent as resolveIcon } from '@/components/official/IconResolver';
+import { renderIcon } from '@/components/official/IconResolver';
 
 export function CategoriesAdmin() {
     const [categories, setCategories] = useState<PromptAppCategory[]>([]);
@@ -242,11 +242,6 @@ export function CategoriesAdmin() {
         }
     };
 
-    const getIconComponent = (iconName?: string) => {
-        if (!iconName) return Tag;
-        return resolveIcon(iconName, "Tag");
-    };
-
     const selectedCategory = selectedCategoryId ? categories.find(c => c.id === selectedCategoryId) : null;
 
     if (loading) {
@@ -296,7 +291,7 @@ export function CategoriesAdmin() {
                                     }`}
                             >
                                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    {getIconComponent(category.icon)}
+                                    {renderIcon(category.icon, { className: "w-4 h-4" }, "Tag")}
                                     <div className="flex-1 min-w-0">
                                         <div className="text-sm font-medium truncate">
                                             {category.name}
@@ -438,7 +433,7 @@ export function CategoriesAdmin() {
                                                 <Label htmlFor="edit-icon">Icon (Lucide React)</Label>
                                                 <div className="flex gap-2">
                                                     <div className="flex-shrink-0 w-10 h-10 border rounded-md flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                                                        {getIconComponent(editData.icon)}
+                                                        {renderIcon(editData.icon, { className: "w-5 h-5" }, "Tag")}
                                                     </div>
                                                     <Input
                                                         id="edit-icon"
@@ -525,7 +520,7 @@ export function CategoriesAdmin() {
                                 <Label htmlFor="create-icon">Icon (Lucide React)</Label>
                                 <div className="flex gap-2">
                                     <div className="flex-shrink-0 w-10 h-10 border rounded-md flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                                        {getIconComponent(createFormData.icon)}
+                                        {renderIcon(createFormData.icon, { className: "w-5 h-5" }, "Tag")}
                                     </div>
                                     <Input
                                         id="create-icon"
