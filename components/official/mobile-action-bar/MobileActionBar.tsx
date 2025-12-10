@@ -67,29 +67,44 @@ export function MobileActionBar({
 
     // Handle transcription completion - uses same pattern as VoiceTextarea
     const handleTranscriptionComplete = useCallback((result: TranscriptionResult) => {
-        if (result.success && result.text && searchInputRef.current) {
+        console.log('[MobileActionBar] Transcription result:', result);
+        
+        if (result.success && result.text) {
             const newValue = result.text;
+            console.log('[MobileActionBar] Setting value:', newValue);
             
-            // Use native input value setter to ensure React detects the change
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-                window.HTMLInputElement.prototype,
-                'value'
-            )?.set;
+            // Activate search view first to ensure input exists
+            setIsSearchActive(true);
             
-            if (nativeInputValueSetter) {
-                nativeInputValueSetter.call(searchInputRef.current, newValue);
-                
-                // Dispatch synthetic input event to trigger onChange
-                const event = new Event('input', { bubbles: true });
-                searchInputRef.current.dispatchEvent(event);
-            }
-            
-            // Update local state and parent state
+            // Update states immediately
             setLocalSearchValue(newValue);
             onSearchChange(newValue);
             
-            // Activate search view to show results
-            setIsSearchActive(true);
+            // Use setTimeout to ensure input ref is available after state update
+            setTimeout(() => {
+                if (searchInputRef.current) {
+                    console.log('[MobileActionBar] Input ref available, updating DOM');
+                    
+                    // Use native input value setter to ensure React detects the change
+                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                        window.HTMLInputElement.prototype,
+                        'value'
+                    )?.set;
+                    
+                    if (nativeInputValueSetter) {
+                        nativeInputValueSetter.call(searchInputRef.current, newValue);
+                        
+                        // Dispatch synthetic input event to trigger onChange
+                        const event = new Event('input', { bubbles: true });
+                        searchInputRef.current.dispatchEvent(event);
+                        console.log('[MobileActionBar] DOM updated and event dispatched');
+                    }
+                } else {
+                    console.warn('[MobileActionBar] Input ref not available');
+                }
+            }, 100);
+        } else {
+            console.error('[MobileActionBar] Transcription failed or no text:', result);
         }
     }, [onSearchChange]);
 
@@ -144,9 +159,16 @@ export function MobileActionBar({
     
     // Show recording or transcribing state inline - no heavy modals
     const isVoiceActive = isRecording || isTranscribing;
+    
+    // Auto-activate search when voice recording starts
+    useEffect(() => {
+        if (isVoiceActive && !isSearchActive) {
+            setIsSearchActive(true);
+        }
+    }, [isVoiceActive, isSearchActive]);
 
     // Default state - compact bar
-    if (!isSearchActive && !isVoiceActive) {
+    if (!isSearchActive) {
         return (
             <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
@@ -177,7 +199,11 @@ export function MobileActionBar({
                             </span>
                             {showVoiceSearch && (
                                 <button
-                                    onClick={handleMicClick}
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleMicClick(e);
+                                    }}
                                     className="ml-auto p-1 hover:bg-background/50 rounded-full transition-colors"
                                 >
                                     <Mic className="h-4 w-4 text-muted-foreground" />
@@ -202,63 +228,12 @@ export function MobileActionBar({
         );
     }
 
-    // Recording or Transcribing State - Expanded bar with inline indicators
-    if (isVoiceActive) {
-        return (
-            <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
-                <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                    <div className="flex items-center gap-2 p-3 rounded-2xl bg-background/95 backdrop-blur-xl border border-border shadow-2xl">
-                        {/* Voice Status Indicator */}
-                        <div className={cn(
-                            "flex items-center gap-2 px-3 py-2 rounded-full flex-1",
-                            isRecording 
-                                ? "bg-red-100 dark:bg-red-900/30" 
-                                : "bg-blue-100 dark:bg-blue-900/30"
-                        )}>
-                            {isRecording ? (
-                                <>
-                                    <motion.div
-                                        animate={{ scale: [1, 1.2, 1] }}
-                                        transition={{ repeat: Infinity, duration: 1.5 }}
-                                        className="w-2 h-2 bg-red-500 rounded-full"
-                                    />
-                                    <span className="text-sm text-red-600 dark:text-red-400 font-medium">
-                                        Recording...
-                                    </span>
-                                </>
-                            ) : (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
-                                    <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                                        Transcribing...
-                                    </span>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Stop/Cancel Button */}
-                        {isRecording && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={stopRecording}
-                                className="h-10 w-10 flex-shrink-0 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30"
-                            >
-                                <X className="h-5 w-5 text-red-600 dark:text-red-400" />
-                            </Button>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Search Active State - Full width search WITHOUT backdrop
-    // KEY UX FIX: No backdrop overlay, content remains visible and scrollable
+    // Search Active State - MOVED TO TOP for mobile keyboard visibility
+    // KEY UX FIX: Fixed to top instead of bottom so keyboard doesn't cover it
     return (
-        <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
-            <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                <div className="flex items-center gap-2 p-2 rounded-full bg-background/95 backdrop-blur-xl border border-border shadow-2xl">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
+            <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] py-3">
+                <div className="flex items-center gap-2 p-2 rounded-full bg-background/95 backdrop-blur-xl border border-border shadow-lg">
                     {/* Search Input Container */}
                     <div className="flex-1 flex items-center gap-2 h-10 px-3">
                         <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -274,6 +249,7 @@ export function MobileActionBar({
                         />
                         {showVoiceSearch && (
                             <button
+                                type="button"
                                 onClick={handleMicClick}
                                 disabled={isTranscribing}
                                 className={cn(
@@ -310,6 +286,7 @@ export function MobileActionBar({
 
                     {/* Clear/Cancel Button */}
                     <Button
+                        type="button"
                         variant="ghost"
                         size="icon"
                         onClick={localSearchValue ? () => handleSearchChange("") : handleSearchCancel}
@@ -318,6 +295,36 @@ export function MobileActionBar({
                         <X className="h-5 w-5" />
                     </Button>
                 </div>
+                
+                {/* Recording/Transcribing Indicator - Inline below search bar */}
+                {isVoiceActive && (
+                    <div className={cn(
+                        "mt-2 flex items-center gap-2 px-4 py-2 rounded-lg",
+                        isRecording 
+                            ? "bg-red-100 dark:bg-red-900/30" 
+                            : "bg-blue-100 dark:bg-blue-900/30"
+                    )}>
+                        {isRecording ? (
+                            <>
+                                <motion.div
+                                    animate={{ scale: [1, 1.2, 1] }}
+                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                    className="w-2 h-2 bg-red-500 rounded-full"
+                                />
+                                <span className="text-sm text-red-600 dark:text-red-400 font-medium">
+                                    Recording...
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+                                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                    Transcribing...
+                                </span>
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

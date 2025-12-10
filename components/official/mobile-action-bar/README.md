@@ -252,14 +252,48 @@ type FilterState = Record<string, string | string[] | boolean>;
 - Action bar expands to show status
 - No backdrop blocking content
 
-### 2. No Backdrop on Search
+### 2. Mobile Keyboard-Aware Positioning
+
+**Critical UX Fix:** When search is active, the bar moves to the **top** of the screen instead of staying at the bottom:
+
+**Inactive (Compact Bar):**
+```
+┌─────────────── Screen ─────────────────┐
+│                                         │
+│         Content here                    │
+│                                         │
+│                                         │
+└─────────────────────────────────────────┘
+ [Filter] [Search...🎤] [+] ← Bottom
+```
+
+**Active (Search Bar at Top):**
+```
+ [🔍 Search input 🎤] [X] ← Top (fixed)
+┌─────────────── Screen ─────────────────┐
+│         Filtered results                │
+│         visible here                    │
+│                                         │
+│                                         │
+└─────────────────────────────────────────┘
+      ⌨️  Keyboard appears here
+```
+
+**Why this matters:**
+- Mobile keyboards cover bottom-fixed elements
+- Top-fixed search stays visible when keyboard appears
+- Content can scroll naturally beneath the search bar
+- No content hidden behind keyboard
+- Standard mobile app pattern (iOS/Android)
+
+### 3. No Backdrop on Search
 
 Unlike traditional mobile search overlays, this component keeps the backdrop hidden when searching, allowing users to:
 - See filtered results in real-time
 - Scroll through content while searching
 - Maintain context of what they're filtering
 
-### 3. Live Filter Count
+### 4. Live Filter Count
 
 The filter drawer displays a live count of results:
 ```
@@ -270,7 +304,7 @@ The filter drawer displays a live count of results:
 
 This provides immediate feedback on how filters affect results without closing the drawer.
 
-### 4. Voice Search Integration
+### 5. Voice Search Integration
 
 Integrated voice-to-text transcription for hands-free search with **inline indicators** (same pattern as VoiceTextarea):
 - Click microphone icon to start recording
@@ -283,7 +317,7 @@ Integrated voice-to-text transcription for hands-free search with **inline indic
 - Search view automatically activates to show filtered results
 - Clean, minimal UX that keeps content visible
 
-### 5. Mobile-First Design
+### 6. Mobile-First Design
 
 - Uses `h-dvh` for proper viewport height on mobile
 - Safe area padding with `pb-safe` for iOS devices
@@ -305,15 +339,36 @@ const filterConfig = {
 
 This ensures the live count displays correctly: "Showing 1 of 5 prompts" vs "Showing 1 of 5 prompt".
 
-### 2. Add Bottom Padding to Content
+### 2. Add Bottom Padding to Content (Inactive State)
 
-Add `pb-24` to your content container to prevent the floating action bar from covering content:
+Add `pb-24` to your content container to prevent the floating action bar from covering content when inactive:
 
 ```tsx
-<div className="grid grid-cols-1 gap-4 pb-24">
+<div className={cn(
+  "grid grid-cols-1 gap-4",
+  isMobile && "pb-24" // Space for bottom action bar
+)}>
   {/* Your content */}
 </div>
 ```
+
+### 3. Add Top Padding When Search Active (Optional)
+
+If you want consistent spacing when search moves to top, add conditional top padding:
+
+```tsx
+const [isSearchActive, setIsSearchActive] = useState(false);
+
+<div className={cn(
+  "grid grid-cols-1 gap-4",
+  isMobile && isSearchActive && "pt-20", // Space for top search bar
+  isMobile && !isSearchActive && "pb-24" // Space for bottom action bar
+)}>
+  {/* Your content */}
+</div>
+```
+
+**Note:** The component handles its own positioning - you don't need to manage the search bar placement, only the content spacing.
 
 ### 3. Manage Filter State Properly
 
