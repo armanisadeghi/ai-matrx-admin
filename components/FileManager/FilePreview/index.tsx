@@ -1,16 +1,22 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useFileSystem } from '@/providers/FileSystemProvider';
 import { TextPreview } from './TextPreview';
 import { ImagePreview } from './ImagePreview';
 import { AudioPreview } from './AudioPreview';
 import { VideoPreview } from './VideoPreview';
 import { CodePreview } from './CodePreview';
-import { PDFPreview } from './PDFPreview';
 import { DefaultPreview } from './DefaultPreview';
 import { Loader2, FolderIcon } from 'lucide-react';
 import { getFileDetails } from "@/utils/file-operations";
+
+// Dynamic import for PDFPreview to avoid SSR issues with DOMMatrix
+const PDFPreview = dynamic(() => import('./PDFPreview').then(mod => ({ default: mod.PDFPreview })), { 
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+});
 
 type FilePreviewProps = {
   file?: {

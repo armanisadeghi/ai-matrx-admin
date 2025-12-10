@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useFileSystem } from "@/lib/redux/fileSystem/Provider";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { createFileSystemSelectors } from "@/lib/redux/fileSystem/selectors";
@@ -11,7 +12,6 @@ import TextPreview from "@/components/ui/file-preview/previews/TextPreview";
 import CodePreview from "@/components/ui/file-preview/previews/CodePreview";
 import VideoPreview from "@/components/ui/file-preview/previews/VideoPreview";
 import AudioPreview from "@/components/ui/file-preview/previews/AudioPreview";
-import PDFPreview from "@/components/ui/file-preview/previews/PDFPreview";
 import DataPreview from "@/components/ui/file-preview/previews/DataPreview";
 import GenericPreview from "@/components/ui/file-preview/previews/GenericPreview";
 import { getFileDetailsByUrl } from "@/utils/file-operations/constants";
@@ -19,6 +19,12 @@ import { FileIcon, Loader2, FolderOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatBytes } from "@/components/ui/file-preview/utils/formatting";
 import { useToast } from "@/components/ui";
+
+// Dynamic import for PDFPreview to avoid SSR issues with DOMMatrix
+const PDFPreview = dynamic(() => import("@/components/ui/file-preview/previews/PDFPreview"), { 
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+});
 
 interface FileDetailsPanelProps {
   bucketName?: AvailableBuckets;

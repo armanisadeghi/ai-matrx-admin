@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Download, ExternalLink, Info, X, Maximize, Minimize, Edit, Copy, FileInput, Link, Share2, Trash2, MinusCircle } from "lucide-react";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
 import { fetchWithUrlRefresh, createUrlMetadata } from "@/utils/file-operations/urlRefreshUtils";
@@ -11,12 +12,17 @@ import GenericPreview from "./previews/GenericPreview";
 import VideoPreview from "./previews/VideoPreview";
 import AudioPreview from "./previews/AudioPreview";
 import DataPreview from "./previews/DataPreview";
-import PDFPreview from "./previews/PDFPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { formatBytes } from "./utils/formatting";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui";
 import { Input } from "@/components/ui/input";
+
+// Dynamic import for PDFPreview to avoid SSR issues with DOMMatrix
+const PDFPreview = dynamic(() => import("./previews/PDFPreview"), { 
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full">Loading PDF preview...</div>
+});
 
 interface FilePreviewSheetProps {
     isOpen: boolean;
