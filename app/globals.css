@@ -35,6 +35,7 @@
   --color-warning-foreground: hsl(var(--warning-foreground));
   --color-info: hsl(var(--info));
   --color-border: hsl(var(--border));
+  --color-border-DEFAULT: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-chart-1: hsl(var(--chart-1));
@@ -541,6 +542,10 @@
 }
 
 @layer base {
+    * {
+        border-color: hsl(var(--border));
+    }
+    
     html {
         scroll-behavior: smooth;
         font-size: 16px; /* Base font size */
