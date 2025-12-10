@@ -135,7 +135,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
         ),
         table: () => {
             if (!tableData) return null;
-            return <div className="border-2 border-red-500"><MarkdownTable data={tableData.markdown} /></div>;
+            return <div className="border-2 border-border"><MarkdownTable data={tableData.markdown} /></div>;
         },
         thead: () => null,
         tbody: () => null,

@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, FileAudio, CheckCircle2, AlertTriangle, Upload, Mic } from 'lucide-react';
 import { useTranscriptsContext } from '../context/TranscriptsContext';
 import { useAudioTranscription } from '@/features/audio/hooks/useAudioTranscription';

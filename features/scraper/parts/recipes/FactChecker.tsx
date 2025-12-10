@@ -16,6 +16,7 @@ import {
     selectPrimaryResponseEndedByTaskId,
     selectTaskStatus,
 } from "@/lib/redux/socket-io";
+import MarkdownStream from "@/components/Markdown";
 
 interface FactCheckerPageProps {
     value: string;
@@ -148,12 +149,8 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
 
         return (
             <Card title="Complete Fact Check Analysis">
-                <MarkdownRenderer
+                <MarkdownStream
                     content={streamingResponse || "Analysis will appear here..."}
-                    type="message"
-                    fontSize={18}
-                    role="assistant"
-                    className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700"
                 />
             </Card>
         );
