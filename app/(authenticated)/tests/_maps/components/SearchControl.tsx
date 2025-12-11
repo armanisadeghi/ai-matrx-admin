@@ -32,7 +32,7 @@ export default function SearchControl({
         const container = L.DomUtil.create('div', 'leaflet-control-search leaflet-bar leaflet-control');
         
         const form = L.DomUtil.create('form', 'flex', container);
-        const input = L.DomUtil.create('input', `p-2 text-sm rounded-l-md border border-gray-300 dark:border-gray-700 dark:bg-zinc-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400`, form);
+        const input = L.DomUtil.create('input', `p-2 text-sm rounded-l-md border border-border dark:bg-zinc-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400`, form);
         searchInputRef.current = input as HTMLInputElement;
         
         const button = L.DomUtil.create('button', `p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400`, form);

@@ -179,7 +179,7 @@ const ResumeBuilder = () => {
             name="fullName"
             value={formData.personalInfo.fullName}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+            className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="John Smith"
           />
         </div>
@@ -190,7 +190,7 @@ const ResumeBuilder = () => {
             name="title"
             value={formData.personalInfo.title}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+            className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="Senior Legal Counsel"
           />
         </div>
@@ -204,7 +204,7 @@ const ResumeBuilder = () => {
             name="email"
             value={formData.personalInfo.email}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+            className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="john.smith@example.com"
           />
         </div>
@@ -215,7 +215,7 @@ const ResumeBuilder = () => {
             name="phone"
             value={formData.personalInfo.phone}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+            className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="(555) 123-4567"
           />
         </div>
@@ -228,7 +228,7 @@ const ResumeBuilder = () => {
           name="location"
           value={formData.personalInfo.location}
           onChange={handlePersonalInfoChange}
-          className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+          className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
           placeholder="New York, NY"
         />
       </div>
@@ -240,7 +240,7 @@ const ResumeBuilder = () => {
           value={formData.personalInfo.summary}
           onChange={handlePersonalInfoChange}
           rows={4}
-          className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+          className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
           placeholder="Briefly describe your professional background and key strengths..."
         />
       </div>
@@ -275,7 +275,7 @@ const ResumeBuilder = () => {
                 name="company"
                 value={exp.company}
                 onChange={(e) => handleExperienceChange(index, e)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="Company Name"
               />
             </div>
@@ -286,7 +286,7 @@ const ResumeBuilder = () => {
                 name="position"
                 value={exp.position}
                 onChange={(e) => handleExperienceChange(index, e)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="Job Title"
               />
             </div>
@@ -304,7 +304,7 @@ const ResumeBuilder = () => {
                   name="startDate"
                   value={exp.startDate}
                   onChange={(e) => handleExperienceChange(index, e)}
-                  className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  className="w-full p-3 pl-10 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                   placeholder="MM/YYYY"
                 />
               </div>
@@ -320,7 +320,7 @@ const ResumeBuilder = () => {
                   name="endDate"
                   value={exp.endDate}
                   onChange={(e) => handleExperienceChange(index, e)}
-                  className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  className="w-full p-3 pl-10 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                   placeholder="MM/YYYY or Present"
                 />
               </div>
@@ -334,7 +334,7 @@ const ResumeBuilder = () => {
               value={exp.description}
               onChange={(e) => handleExperienceChange(index, e)}
               rows={3}
-              className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
               placeholder="Describe your responsibilities and achievements..."
             />
           </div>
@@ -379,7 +379,7 @@ const ResumeBuilder = () => {
                 name="institution"
                 value={edu.institution}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="University or Institution Name"
               />
             </div>
@@ -390,7 +390,7 @@ const ResumeBuilder = () => {
                 name="degree"
                 value={edu.degree}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="e.g., Bachelor of Science, Juris Doctor"
               />
             </div>
@@ -404,7 +404,7 @@ const ResumeBuilder = () => {
                 name="field"
                 value={edu.field}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="e.g., Medicine, Law, Biochemistry"
               />
             </div>
@@ -415,7 +415,7 @@ const ResumeBuilder = () => {
                 name="gradYear"
                 value={edu.gradYear}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="YYYY"
               />
             </div>
@@ -450,7 +450,7 @@ const ResumeBuilder = () => {
                   name="name"
                   value={skill.name}
                   onChange={(e) => handleSkillChange(index, e)}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                   placeholder="Skill name (e.g., Clinical Research, Contract Negotiation)"
                 />
               </div>
@@ -459,7 +459,7 @@ const ResumeBuilder = () => {
                   name="level"
                   value={skill.level}
                   onChange={(e) => handleSkillChange(index, e)}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 >
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
@@ -519,7 +519,7 @@ const ResumeBuilder = () => {
                     name="name"
                     value={cert.name}
                     onChange={(e) => handleCertificationChange(index, e)}
-                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                    className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     placeholder="e.g., Board Certification, Bar Admission"
                   />
                 </div>
@@ -530,7 +530,7 @@ const ResumeBuilder = () => {
                     name="issuer"
                     value={cert.issuer}
                     onChange={(e) => handleCertificationChange(index, e)}
-                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                    className="w-full p-3 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     placeholder="e.g., American Board of Internal Medicine"
                   />
                 </div>
@@ -547,7 +547,7 @@ const ResumeBuilder = () => {
                     name="date"
                     value={cert.date}
                     onChange={(e) => handleCertificationChange(index, e)}
-                    className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                    className="w-full p-3 pl-10 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     placeholder="MM/YYYY"
                   />
                 </div>
@@ -729,7 +729,7 @@ const ResumeBuilder = () => {
           className={`flex items-center px-6 py-3 rounded-lg font-medium ${
             currentStep === 0
               ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-              : 'bg-textured border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              : 'bg-textured border border-border text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           <ChevronLeft className="mr-2" size={18} />

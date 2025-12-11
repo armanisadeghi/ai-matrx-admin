@@ -33,7 +33,7 @@ const TextareaField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-
     };
 
     const textareaClassName =
-        "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-inherit placeholder-gray-400 dark:placeholder-gray-400 placeholder-text-xs";
+        "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border border-border text-gray-700 dark:text-gray-300 bg-inherit placeholder-gray-400 dark:placeholder-gray-400 placeholder-text-xs";
 
     const resizeStyle = { resize: "vertical" } as React.CSSProperties;
 

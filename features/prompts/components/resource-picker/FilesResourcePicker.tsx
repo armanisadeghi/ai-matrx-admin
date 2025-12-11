@@ -340,7 +340,7 @@ export function FilesResourcePicker({ onBack, onSelect, allowedBuckets }: FilesR
                             placeholder="Search buckets..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="h-7 text-xs pl-7 pr-2 bg-gray-50 dark:bg-zinc-800 border-gray-300 dark:border-gray-700"
+                            className="h-7 text-xs pl-7 pr-2 bg-background border-gray-300 dark:border-gray-700"
                         />
                     </div>
                 </div>

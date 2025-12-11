@@ -55,7 +55,7 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
   }
   
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-gray-300 dark:border-gray-700 shadow-lg">
+    <div className="fixed bottom-4 right-4 z-50 w-96 max-h-96 overflow-auto bg-gray-50 dark:bg-gray-900 p-4 rounded-md border border-border shadow-lg">
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-medium text-gray-900 dark:text-gray-100">
           Broker State Debug - Updated: {changeCount}

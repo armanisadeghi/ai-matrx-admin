@@ -46,7 +46,7 @@ export function ToggleInput({
         </div>
       )}
       
-      <div className={compact ? "flex items-center justify-between p-2 bg-gray-50 dark:bg-zinc-800 rounded border-border" : "flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border"}>
+      <div className={compact ? "flex items-center justify-between p-2 bg-background rounded border-border" : "flex items-center justify-between p-4 bg-background rounded-lg border-border"}>
         <div className={compact ? "" : "space-y-1"}>
           <Label className={compact ? "text-xs font-medium" : "text-sm font-medium"}>
             {offLabel} / {onLabel}

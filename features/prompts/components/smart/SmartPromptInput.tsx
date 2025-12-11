@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight, Database, Crown, Bug } from "lucide-react";
+import { ArrowUp, CornerDownLeft, Mic, ChevronRight, Database, Crown, Bug, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -303,13 +303,13 @@ export function SmartPromptInput({
   // If no runId, show loading state or minimal UI
   if (!runId) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-border overflow-hidden">
         <div className="px-2 pt-1.5">
           <textarea
             disabled
             placeholder="Initializing..."
-            className="w-full bg-transparent border-none outline-none text-base text-gray-400 dark:text-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
-            style={{ minHeight: '40px', maxHeight: '200px', fontSize: '16px' }}
+            className="w-full bg-transparent border-none outline-none text-base md:text-xs text-gray-400 dark:text-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
+            style={{ minHeight: '40px', maxHeight: '200px' }}
             rows={1}
           />
         </div>
@@ -324,7 +324,7 @@ export function SmartPromptInput({
   }
 
   return (
-    <div className="relative bg-white dark:bg-zinc-900 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
+    <div className="relative bg-white dark:bg-zinc-900 rounded-lg border border-border overflow-hidden">
       {/* Debug Toolbar - Only shown in debug mode */}
       {isDebugMode && runId && (
         <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800">
@@ -372,14 +372,14 @@ export function SmartPromptInput({
                       >
                         <PopoverTrigger asChild>
                           <div
-                            className="w-full flex items-center gap-2 px-3 h-10 bg-gray-50 dark:bg-zinc-800 border-b border-gray-300 dark:border-gray-600 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
+                            className="w-full flex items-center gap-2 pl-1.5 pr-3 h-12 bg-background/50 border-b border-border cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
                             onClick={() => handleExpandedVariableChange(variable.name)}
                             tabIndex={index + 1}
                           >
                             <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer">
-                              {formatText(variable.name)}
+                              {formatText(variable.name)}:
                             </Label>
-                            <div className="flex-1 text-sm text-gray-900 dark:text-gray-200 min-w-0">
+                            <div className="flex-1 text-xs text-gray-900 dark:text-gray-200 min-w-0">
                               {value ? (
                                 <span className="whitespace-nowrap overflow-hidden text-ellipsis block">
                                   {value.replace(/\n/g, " ↵ ")}
@@ -390,7 +390,7 @@ export function SmartPromptInput({
                                 </span>
                               )}
                             </div>
-                            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0 transition-colors" />
+                            <ChevronUp className="w-5 h-5 text-blue-500 dark:text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 flex-shrink-0 transition-colors" />
                           </div>
                         </PopoverTrigger>
                         <PopoverContent
@@ -411,20 +411,19 @@ export function SmartPromptInput({
                         </PopoverContent>
                       </Popover>
                     ) : (
-                      <div className="flex items-center gap-2 px-3 h-10 bg-gray-50 dark:bg-zinc-800 border-b border-gray-300 dark:border-gray-600 hover:bg-gray-100 hover:dark:bg-zinc-700 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
+                      <div className="flex items-center gap-2 pl-1.5 pr-3 h-6 bg-background border-b border-border hover:bg-gray-100 hover:dark:bg-zinc-700 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
                         <Label 
                           className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer"
                           onClick={() => handleExpandedVariableChange(variable.name)}
                         >
-                          {formatText(variable.name)}
+                          {formatText(variable.name)}:
                         </Label>
                         <input
                           type="text"
                           value={value.includes('\n') ? value.replace(/\n/g, " ↵ ") : value}
                           onChange={(e) => handleVariableValueChange(variable.name, e.target.value)}
                           placeholder={variable.helpText || "Enter value..."}
-                          className="flex-1 text-xs bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
-                          style={{ fontSize: '16px' }}
+                          className="flex-1 text-base md:text-xs bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
                           tabIndex={index + 1}
                         />
                         <button
@@ -434,7 +433,7 @@ export function SmartPromptInput({
                           tabIndex={-1}
                           title="Expand to full editor"
                         >
-                          <ChevronRight className="w-4 h-4" />
+                          <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}
@@ -465,8 +464,8 @@ export function SmartPromptInput({
           onChange={(e) => handleChatInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholderText}
-          className="w-full bg-transparent border-none outline-none text-base text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto scrollbar-hide"
-          style={{ minHeight: '40px', maxHeight: '200px', fontSize: '16px' }}
+          className="w-full bg-transparent border-none outline-none text-base md:text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto scrollbar-hide"
+          style={{ minHeight: '40px', maxHeight: '200px' }}
           tabIndex={variableDefaults.length + 1}
           rows={1}
           autoFocus={!showVariablesFromRedux || variableDefaults.length === 0 || allVariablesHaveValues}

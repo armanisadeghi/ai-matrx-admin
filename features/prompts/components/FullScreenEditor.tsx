@@ -555,7 +555,7 @@ export function FullScreenEditor({
                                                                 onMessageRoleChange(selectedItem.index, e.target.value);
                                                             }
                                                         }}
-                                                        className="px-2 py-0.5 text-xs border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
+                                                        className="px-2 py-0.5 text-xs border border-border rounded bg-textured text-gray-900 dark:text-gray-100"
                                                     >
                                                         <option value="user">User</option>
                                                         <option value="assistant">Assistant</option>
@@ -653,13 +653,13 @@ export function FullScreenEditor({
                                                             ? "Enter system instructions for the AI..."
                                                             : "Enter message content..."
                                                     }
-                                                    className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
+                                                    className="w-full h-full bg-textured border border-border rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
                                                 />
                                             </PromptEditorContextMenu>
                                         )}
                                         {viewMode === "view" && (
                                             <div 
-                                                className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 overflow-y-auto cursor-text"
+                                                className="w-full h-full bg-textured border border-border rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 overflow-y-auto cursor-text"
                                                 onClick={() => setViewMode("edit")}
                                             >
                                                 <div className="whitespace-pre-wrap">
@@ -677,7 +677,7 @@ export function FullScreenEditor({
                                             </div>
                                         )}
                                         {viewMode === "pretty" && (
-                                            <div className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 overflow-y-auto">
+                                            <div className="w-full h-full bg-textured border border-border rounded-lg p-4 overflow-y-auto">
                                                 {getCurrentContent() ? (
                                                     <MarkdownStream
                                                         content={getCurrentContent()}
@@ -697,7 +697,7 @@ export function FullScreenEditor({
 
                             {selectedItem.type === "settings" && model && models && modelConfig && onModelConfigChange && onModelChange && (
                                 <div className="absolute inset-2 overflow-hidden">
-                                    <div className="h-full overflow-y-auto bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-6">
+                                    <div className="h-full overflow-y-auto bg-textured border border-border rounded-lg p-6">
                                         <div className="max-w-2xl space-y-4">
                                             {/* Model Selection */}
                                             <div className="pb-3 border-b border-border">
@@ -1256,7 +1256,7 @@ export function FullScreenEditor({
 
                             {selectedItem.type === "advanced" && (
                                 <div className="absolute inset-2 overflow-hidden flex flex-col">
-                                    <div className="flex-1 overflow-hidden flex flex-col bg-textured border border-gray-300 dark:border-gray-700 rounded-lg">
+                                    <div className="flex-1 overflow-hidden flex flex-col bg-textured border border-border rounded-lg">
                                         {/* Header with Apply Button */}
                                         <div className="flex-shrink-0 p-4 border-b border-border">
                                             <div className="flex items-start gap-3">

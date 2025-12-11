@@ -227,7 +227,7 @@ export function PromptBuilderHeaderCompact({
                             type="text"
                             value={promptName}
                             onChange={(e) => onPromptNameChange(e.target.value)}
-                            className="text-sm font-medium bg-transparent border border-gray-300 dark:border-gray-700 min-w-0 text-gray-900 dark:text-gray-100 px-2 py-1 rounded max-w-[180px] xl:max-w-[240px]"
+                            className="text-sm font-medium bg-transparent border border-border min-w-0 text-gray-900 dark:text-gray-100 px-2 py-1 rounded max-w-[180px] xl:max-w-[240px]"
                             placeholder="Untitled prompt"
                         />
                     </>
@@ -235,7 +235,7 @@ export function PromptBuilderHeaderCompact({
 
                 {/* Status indicators - compact */}
                 <div className="flex items-center gap-1">
-                    <span className="px-1.5 py-0.5 text-[10px] border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                    <span className="px-1.5 py-0.5 text-[10px] border border-border text-gray-600 dark:text-gray-400 rounded">
                         Draft
                     </span>
                     {isDirty && (

@@ -136,7 +136,7 @@ const StepperNumberField: React.FC<CommonFieldProps> = ({ field, sourceId="no-ap
         <div className={`${safeWidthClass} ${className}`}>
             <div
                 className={cn(
-                    "flex items-center h-10 rounded-md border border-gray-300 dark:border-gray-700",
+                    "flex items-center h-10 rounded-md border border-border",
                     hasValidationError && "border-red-500",
                     disabled && "opacity-60"
                 )}

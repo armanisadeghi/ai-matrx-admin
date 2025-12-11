@@ -38,7 +38,7 @@ export default function FetchReactPage() {
                         value={htmlId}
                         onChange={(e) => setHtmlId(e.target.value)}
                         placeholder="Enter HTML ID"
-                        className="flex-1 px-4 py-2 bg-textured border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                        className="flex-1 px-4 py-2 bg-textured border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     />
                     <button 
                         type="submit"

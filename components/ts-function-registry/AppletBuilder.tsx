@@ -161,13 +161,13 @@ export default function AppletBuilder() {
           type="text"
           value={applet.name}
           onChange={e => setApplet(prev => ({ ...prev, name: e.target.value }))}
-          className="w-full p-2 mb-2 rounded-md border border-gray-300 dark:border-gray-700 bg-textured text-gray-800 dark:text-gray-200"
+          className="w-full p-2 mb-2 rounded-md border border-border bg-textured text-gray-800 dark:text-gray-200"
           placeholder="Applet Name"
         />
         <textarea
           value={applet.description || ''}
           onChange={e => setApplet(prev => ({ ...prev, description: e.target.value }))}
-          className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-textured text-gray-800 dark:text-gray-200"
+          className="w-full p-2 rounded-md border border-border bg-textured text-gray-800 dark:text-gray-200"
           placeholder="Description"
           rows={2}
         />
@@ -178,7 +178,7 @@ export default function AppletBuilder() {
         <label className="block mb-2 text-gray-700 dark:text-gray-300">Add Function Step:</label>
         <div className="flex">
           <select 
-            className="flex-1 p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-textured text-gray-800 dark:text-gray-200 mr-2"
+            className="flex-1 p-2 rounded-md border border-border bg-textured text-gray-800 dark:text-gray-200 mr-2"
             onChange={e => e.target.value && addStep(e.target.value)}
             value=""
           >
@@ -211,7 +211,7 @@ export default function AppletBuilder() {
           return (
             <div 
               key={step.id} 
-              className="mb-3 p-3 rounded-md border border-gray-300 dark:border-gray-700 bg-textured"
+              className="mb-3 p-3 rounded-md border border-border bg-textured"
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-medium text-gray-800 dark:text-gray-200">
@@ -255,7 +255,7 @@ export default function AppletBuilder() {
                         }
                       }}
                       rows={3}
-                      className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-textured text-gray-800 dark:text-gray-200"
+                      className="w-full p-2 rounded-md border border-border bg-textured text-gray-800 dark:text-gray-200"
                     />
                   ) : (
                     <input
@@ -266,7 +266,7 @@ export default function AppletBuilder() {
                         param.name, 
                         param.type === 'number' ? Number(e.target.value) : e.target.value
                       )}
-                      className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-textured text-gray-800 dark:text-gray-200"
+                      className="w-full p-2 rounded-md border border-border bg-textured text-gray-800 dark:text-gray-200"
                     />
                   )}
                   

@@ -285,7 +285,7 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                                 onValueChange={(value) => handleSourceChange(input.arg_name, value)}
                                                 disabled={useSystemDefault}
                                             >
-                                                <SelectTrigger className={`h-7 w-full text-xs bg-transparent border border-gray-300 dark:border-gray-700 ${useSystemDefault ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                                <SelectTrigger className={`h-7 w-full text-xs bg-transparent border border-border ${useSystemDefault ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                                     <SelectValue placeholder="Select source..." />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -354,7 +354,7 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                                 value={input.type}
                                                 onValueChange={(value) => handleTypeChange(input.arg_name, value)}
                                             >
-                                                <SelectTrigger className="h-8 min-w-64 bg-transparent border border-gray-300 dark:border-gray-700">
+                                                <SelectTrigger className="h-8 min-w-64 bg-transparent border border-border">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -370,7 +370,7 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                                 value={input.ready?.toString()}
                                                 onValueChange={(value) => handleReadyChange(input.arg_name, value)}
                                             >
-                                                <SelectTrigger className="h-8 min-w-32 bg-transparent border border-gray-300 dark:border-gray-700">
+                                                <SelectTrigger className="h-8 min-w-32 bg-transparent border border-border">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>

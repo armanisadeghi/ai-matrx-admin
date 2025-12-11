@@ -104,7 +104,7 @@ const FieldPreviewAs: React.FC<FieldPreviewAsProps> = ({ fieldId, initialCompone
             </div>
 
             {viewAsComponentType && identifier && (
-                <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-textured shadow-sm rounded-xl min-h-[250px]">
+                <div className="border border-border rounded p-4 bg-textured shadow-sm rounded-xl min-h-[250px]">
                     <h3 className="text-md font-semibold mb-4 capitalize text-gray-900 dark:text-gray-100">
                         Rendered In Sample Container{"  "}
                     </h3>

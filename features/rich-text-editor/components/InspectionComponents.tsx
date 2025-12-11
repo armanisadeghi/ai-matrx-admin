@@ -157,7 +157,7 @@ export const InspectHtmlUtil = forwardRef<HTMLDivElement, { editorId: string }>(
             )}
 
             <textarea
-                className='flex-1 w-full p-2 font-mono text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-textured text-gray-900 dark:text-gray-100'
+                className='flex-1 w-full p-2 font-mono text-sm border border-border rounded-lg bg-textured text-gray-900 dark:text-gray-100'
                 value={html[viewMode]}
                 readOnly
             />

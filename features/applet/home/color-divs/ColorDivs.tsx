@@ -162,7 +162,7 @@ export const ColorDivs300 = () => {
       <div className="bg-pink-300 dark:bg-pink-700 border border-pink-300 dark:border-pink-700 text-pink-300 p-4 rounded-lg text-center">
         Pink
       </div>
-      <div className="bg-gray-300 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 text-gray-300 p-4 rounded-lg text-center">
+      <div className="bg-gray-300 dark:bg-gray-700 border border-border text-gray-300 p-4 rounded-lg text-center">
         Gray
       </div>
       <div className="bg-teal-300 dark:bg-teal-700 border border-teal-300 dark:border-teal-700 text-teal-300 p-4 rounded-lg text-center">

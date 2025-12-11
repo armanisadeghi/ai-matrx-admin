@@ -73,7 +73,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             >
                 <textarea
                     className={cn(
-                        `flex h-auto w-full border border-input bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-textarea rounded-md px-3 py-2 text-sm
+                        `flex h-auto w-full border border-input bg-background text-black dark:text-white shadow-textarea rounded-md px-3 py-2 text-sm
                 placeholder:text-neutral-500 dark:placeholder:text-neutral-400 
                 focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600
                 disabled:cursor-not-allowed disabled:opacity-50
@@ -268,7 +268,7 @@ const FancyTextarea = React.forwardRef<HTMLTextAreaElement, FancyTextareaProps>(
                 <textarea
                     ref={textareaRef}
                     className={cn(
-                        "flex w-full rounded-md border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-textarea px-3 py-2 text-sm resize-y",
+                        "flex w-full rounded-md border-none bg-background text-black dark:text-white shadow-textarea px-3 py-2 text-sm resize-y",
                         "placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
                         "focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600",
                         prefix && "pl-10",

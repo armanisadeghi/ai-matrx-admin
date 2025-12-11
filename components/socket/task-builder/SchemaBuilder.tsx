@@ -203,7 +203,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
             {fields.map((field, index) => (
               <div 
                 key={index}
-                className="w-full bg-textured rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm"
+                className="w-full bg-textured rounded-xl border border-border shadow-sm"
               >
                 <AccordionWrapper
                   title={`Field ${index + 1}: ${field.name || "New Field"}`}
@@ -359,7 +359,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
 
         {/* Right side - Code preview */}
         <div className="w-full lg:w-1/2 h-full p-4 border-t lg:border-t-0 lg:border-l border-gray-300 dark:border-gray-700">
-          <div className="h-full bg-textured rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+          <div className="h-full bg-textured rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
             <div className="p-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 flex justify-between items-center">
               <h3 className="font-medium text-gray-900 dark:text-gray-100">Generated Schema</h3>
               <button

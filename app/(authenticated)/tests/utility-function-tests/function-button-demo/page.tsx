@@ -129,7 +129,7 @@ export default function FunctionButtonDemo() {
             <select
               value={selectedFunction}
               onChange={e => setSelectedFunction(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800"
+              className="w-full px-3 py-2 rounded-md border border-border dark:bg-gray-800"
             >
               {availableFunctions.map(fn => (
                 <option key={fn.name} value={fn.name}>
@@ -147,7 +147,7 @@ export default function FunctionButtonDemo() {
             <textarea
               value={jsonData}
               onChange={e => handleJsonChange(e.target.value)}
-              className="w-full h-80 p-3 font-mono text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md"
+              className="w-full h-80 p-3 font-mono text-sm bg-gray-50 dark:bg-gray-800 border border-border rounded-md"
               placeholder="Enter JSON data here..."
             />
             

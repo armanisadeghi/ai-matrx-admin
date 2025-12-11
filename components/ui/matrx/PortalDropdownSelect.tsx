@@ -184,7 +184,7 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
   const defaultStyles = {
     container: "",
     trigger: `flex items-center justify-between w-full p-2 text-left rounded-md outline-none 
-      bg-textured border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 
+      bg-textured border border-border text-gray-700 dark:text-gray-300 
       hover:bg-gray-50 dark:hover:bg-gray-750 focus:bg-white dark:focus:bg-gray-800 
       focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500`,
     dropdown: "bg-textured border-border",

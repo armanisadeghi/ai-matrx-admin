@@ -94,7 +94,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
                         placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-7 text-xs pl-7 pr-2 bg-gray-50 dark:bg-zinc-800 border-gray-300 dark:border-gray-700"
+                        className="h-7 text-xs pl-7 pr-2 bg-background border-gray-300 dark:border-gray-700"
                     />
                 </div>
             </div>
@@ -168,7 +168,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
                                             </div>
                                             
                                             {isExpanded && (
-                                                <div className="px-2 pb-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50">
+                                                <div className="px-2 pb-2 space-y-2 bg-background/50">
                                                     <div className="max-h-32 overflow-y-auto scrollbar-thin rounded bg-white dark:bg-zinc-900 p-2 border-border">
                                                         <div className="text-[11px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                                                             {note.content || "Empty note"}

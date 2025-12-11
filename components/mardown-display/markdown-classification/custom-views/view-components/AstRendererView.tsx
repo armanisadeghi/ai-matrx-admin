@@ -48,7 +48,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
       
       case 'text - tableCell':
       case 'text - strong - tableCell':
-        return `${baseClasses} px-4 py-2 border border-gray-300 dark:border-gray-700`;
+        return `${baseClasses} px-4 py-2 border border-border`;
         
       default:
         if (type.startsWith('listItem')) {

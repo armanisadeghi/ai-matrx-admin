@@ -245,7 +245,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     value={tableName}
                     onChange={(e) => setTableName(e.target.value)}
                     placeholder="Enter table name"
-                    className="border border-gray-300 dark:border-gray-700 bg-textured"
+                    className="border border-border bg-textured"
                     disabled={isLoading}
                     onKeyDown={handleKeyDown}
                 />
@@ -261,7 +261,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     onChange={(e) => setTableDescription(e.target.value)}
                     placeholder="Enter table description"
                     rows={3}
-                    className="border border-gray-300 dark:border-gray-700 bg-textured resize-none"
+                    className="border border-border bg-textured resize-none"
                     disabled={isLoading}
                     onKeyDown={handleKeyDown}
                 />
@@ -303,7 +303,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                             toast.info("Save operation is continuing in the background");
                             onClose();
                         }}
-                        className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700"
+                        className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-border"
                     >
                         Close
                     </Button>
@@ -334,7 +334,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                         <Button
                             variant="outline"
                             onClick={onClose}
-                            className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700"
+                            className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-border"
                         >
                             Cancel
                         </Button>

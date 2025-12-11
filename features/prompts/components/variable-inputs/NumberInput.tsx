@@ -71,59 +71,36 @@ export function NumberInput({
         </div>
       )}
       
-      <div className={compact ? "" : "space-y-3"}>
-        {!compact && (
-          <div>
-            <Label className="text-sm font-medium mb-2 block">
-              Enter a number
-            </Label>
-            {(min !== undefined || max !== undefined) && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                {min !== undefined && max !== undefined && `Range: ${min} to ${max}`}
-                {min !== undefined && max === undefined && `Minimum: ${min}`}
-                {min === undefined && max !== undefined && `Maximum: ${max}`}
-              </p>
-            )}
-          </div>
-        )}
+      <div className={compact ? "flex items-center gap-1" : "flex items-center gap-2"}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleDecrement}
+          disabled={!canDecrement}
+          className={compact ? "h-7 w-7 p-0" : "h-10 w-10 p-0"}
+        >
+          <Minus className={compact ? "w-3 h-3" : "w-4 h-4"} />
+        </Button>
         
-        <div className={compact ? "flex items-center gap-1" : "flex items-center gap-2"}>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleDecrement}
-            disabled={!canDecrement}
-            className={compact ? "h-7 w-7 p-0" : "h-10 w-10 p-0"}
-          >
-            <Minus className={compact ? "w-3 h-3" : "w-4 h-4"} />
-          </Button>
-          
-          <Input
-            type="text"
-            value={value}
-            onChange={handleInputChange}
-            className={compact ? "text-center text-sm font-medium h-7" : "text-center text-lg font-medium"}
-            placeholder="0"
-          />
-          
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleIncrement}
-            disabled={!canIncrement}
-            className={compact ? "h-7 w-7 p-0" : "h-10 w-10 p-0"}
-          >
-            <Plus className={compact ? "w-3 h-3" : "w-4 h-4"} />
-          </Button>
-        </div>
+        <Input
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          className={compact ? "text-center text-sm font-medium h-7" : "text-center text-lg font-medium"}
+          placeholder="0"
+        />
         
-        {!compact && step !== 1 && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            Step: {step}
-          </p>
-        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleIncrement}
+          disabled={!canIncrement}
+          className={compact ? "h-7 w-7 p-0" : "h-10 w-10 p-0"}
+        >
+          <Plus className={compact ? "w-3 h-3" : "w-4 h-4"} />
+        </Button>
       </div>
     </div>
   );

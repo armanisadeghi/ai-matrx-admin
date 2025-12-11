@@ -116,7 +116,7 @@ export default function HtmlPageEditorExample() {
                 <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
                     Live Preview
                 </h2>
-                <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 bg-textured">
+                <div className="border border-border rounded-lg p-4 bg-textured">
                     <iframe
                         srcDoc={generateCombinedHtml()}
                         className="w-full h-96 border-0"

@@ -429,7 +429,7 @@ const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefi
             {/* Context Menu */}
             {contextMenu.open && (
                 <div
-                    className="fixed bg-textured shadow-md rounded border border-gray-300 dark:border-gray-700 z-50"
+                    className="fixed bg-textured shadow-md rounded border border-border z-50"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                 >
                     <button

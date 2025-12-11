@@ -123,7 +123,7 @@ export function RadioGroupInput({
             return (
               <div 
                 key={itemKey}
-                className={compact ? "flex items-center space-x-2 p-1 bg-gray-50 dark:bg-zinc-800 rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
+                className={compact ? "flex items-center space-x-2 p-1 bg-background rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-background rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
                 onClick={() => handleOptionChange(displayOption)}
               >
                 <RadioGroupItem value={displayOption} id={`${variableName}-${displayOption}-${index}`} />
@@ -141,7 +141,7 @@ export function RadioGroupInput({
           {allowOther && (
             <div className={compact ? "space-y-1" : "space-y-2"}>
               <div 
-                className={compact ? "flex items-center space-x-2 p-1 bg-gray-50 dark:bg-zinc-800 rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
+                className={compact ? "flex items-center space-x-2 p-1 bg-background rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-background rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
                 onClick={() => handleOptionChange('Other')}
               >
                 <RadioGroupItem value="Other" id={`${variableName}-other`} />

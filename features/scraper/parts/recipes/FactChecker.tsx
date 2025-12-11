@@ -170,7 +170,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                             type="message"
                             fontSize={18}
                             role="assistant"
-                            className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-6 border border-gray-300 dark:border-gray-700"
+                            className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-6 border border-border"
                         />
                     ) : (
                         <EmptyState message={streamingResponse ? "No summary found" : "Summary will appear here..."} />
@@ -182,7 +182,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                             type="message"
                             fontSize={18}
                             role="assistant"
-                            className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700"
+                            className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-border"
                         />
                     )}
                 </div>
@@ -203,7 +203,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                         type="message"
                         fontSize={18}
                         role="assistant"
-                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700"
+                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-border"
                     />
                 ) : (
                     <EmptyState message={streamingResponse ? "No general observations found" : "Observations will appear here..."} />
@@ -225,7 +225,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                         type="message"
                         fontSize={18}
                         role="assistant"
-                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700"
+                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-border"
                     />
                 ) : (
                     <EmptyState message={streamingResponse ? "No claims analysis found" : "Claims analysis will appear here..."} />
@@ -247,7 +247,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                         type="message"
                         fontSize={18}
                         role="assistant"
-                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700"
+                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-border"
                     />
                 ) : (
                     <EmptyState message={streamingResponse ? "No concerns identified" : "Concerns will appear here..."} />
@@ -269,7 +269,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                         type="message"
                         fontSize={18}
                         role="assistant"
-                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-gray-300 dark:border-gray-700"
+                        className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border border-border"
                     />
                 ) : (
                     <EmptyState message={streamingResponse ? "No recommendations found" : "Recommendations will appear here..."} />

@@ -107,7 +107,7 @@ export default function FetchRecordsTest() {
                         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Results</h2>
 
                         <div className="overflow-x-auto">
-                            <table className="min-w-full bg-textured border border-gray-300 dark:border-gray-700">
+                            <table className="min-w-full bg-textured border border-border">
                                 <thead>
                                     <tr className="bg-gray-100 dark:bg-gray-700">
                                         <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-600 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">

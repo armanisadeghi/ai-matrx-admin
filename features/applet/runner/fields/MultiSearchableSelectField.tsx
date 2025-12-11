@@ -297,7 +297,7 @@ const MultiSearchableSelectField: React.FC<CommonFieldProps> = ({
                                             >
                                                 <div
                                                     className={cn(
-                                                        "flex h-4 w-4 items-center justify-center rounded-sm border border-gray-300 dark:border-gray-700 mr-2",
+                                                        "flex h-4 w-4 items-center justify-center rounded-sm border border-border mr-2",
                                                         isSelected && "bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-500"
                                                     )}
                                                 >

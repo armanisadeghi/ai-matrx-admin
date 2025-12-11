@@ -33,7 +33,7 @@ export default function ViewWrapper({
           <select
             value={selectedViewId}
             onChange={(e) => setSelectedViewId(e.target.value as ViewId)}
-            className="p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-800 dark:text-gray-200"
+            className="p-2 border border-border rounded bg-textured text-gray-800 dark:text-gray-200"
           >
             {viewOptions.map((option) => (
               <option key={option.value} value={option.value}>

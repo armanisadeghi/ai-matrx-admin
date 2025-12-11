@@ -109,7 +109,7 @@ export function ModelSettings({
                                             handleSettingChange("temperature", val);
                                         }
                                     }}
-                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                 />
                             </>
                         )}
@@ -150,7 +150,7 @@ export function ModelSettings({
                                             handleSettingChange("max_tokens", val);
                                         }
                                     }}
-                                    className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                    className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                 />
                             </>
                         )}
@@ -191,7 +191,7 @@ export function ModelSettings({
                                             handleSettingChange("top_p", val);
                                         }
                                     }}
-                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                 />
                             </>
                         )}
@@ -232,7 +232,7 @@ export function ModelSettings({
                                             handleSettingChange("top_k", val);
                                         }
                                     }}
-                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                 />
                             </>
                         )}
