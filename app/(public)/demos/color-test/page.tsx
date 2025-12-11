@@ -9,31 +9,170 @@ export default function ColorTestPage() {
           <p className="text-muted-foreground">Comprehensive test for colors, hover states, and interactions</p>
         </div>
 
+        {/* Gray Color Palette Test */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Gray Color Palette Test</h2>
+          <p className="text-sm text-muted-foreground">Testing if default Tailwind gray colors work properly</p>
+          
+          {/* Background grays */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Background Grays</h3>
+            <div className="grid grid-cols-10 gap-2">
+              <div className="p-2 bg-gray-50 border rounded text-center text-gray-900">
+                <div className="text-xs font-mono">gray-50</div>
+              </div>
+              <div className="p-2 bg-gray-100 border rounded text-center text-gray-900 ">
+                <div className="text-xs font-mono">gray-100</div>
+              </div>
+              <div className="p-2 bg-gray-200 border rounded text-center text-gray-900">
+                <div className="text-xs font-mono">gray-200</div>
+              </div>
+              <div className="p-2 bg-gray-300 border rounded text-center text-gray-900">
+                <div className="text-xs font-mono">gray-300</div>
+              </div>
+              <div className="p-2 bg-gray-400 border rounded text-center text-gray-900">
+                <div className="text-xs font-mono">gray-400</div>
+              </div>
+              <div className="p-2 bg-gray-500 border rounded text-center text-white">
+                <div className="text-xs font-mono">gray-500</div>
+              </div>
+              <div className="p-2 bg-gray-600 border rounded text-center text-white">
+                <div className="text-xs font-mono">gray-600</div>
+              </div>
+              <div className="p-2 bg-gray-700 border rounded text-center text-white">
+                <div className="text-xs font-mono">gray-700</div>
+              </div>
+              <div className="p-2 bg-gray-800 border rounded text-center text-white">
+                <div className="text-xs font-mono">gray-800</div>
+              </div>
+              <div className="p-2 bg-gray-900 border rounded text-center text-white">
+                <div className="text-xs font-mono">gray-900</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Border grays */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Border Grays</h3>
+            <div className="grid grid-cols-10 gap-2">
+              <div className="py-2 px-1 bg-card border-2 border-gray-50 rounded text-center">
+                <div className="text-xs font-mono">border-gray-50</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-100 rounded text-center">
+                <div className="text-xs font-mono">border-gray-100</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-200 rounded text-center">
+                <div className="text-xs font-mono">border-gray-200</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-300 rounded text-center">
+                <div className="text-xs font-mono">border-gray-300</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-400 rounded text-center">
+                <div className="text-xs font-mono">border-gray-400</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-500 rounded text-center">
+                <div className="text-xs font-mono">border-gray-500</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-600 rounded text-center">
+                <div className="text-xs font-mono">border-gray-600</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-700 rounded text-center">
+                <div className="text-xs font-mono">border-gray-700</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-800 rounded text-center">
+                <div className="text-xs font-mono">border-gray-800</div>
+              </div>
+              <div className="py-2 px-1 bg-card border-2 border-gray-900 rounded text-center">
+                <div className="text-xs font-mono">border-gray-900</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Text grays */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Text Grays</h3>
+            <div className="grid grid-cols-10 gap-2">
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-50">text-gray-50</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-100">text-gray-100</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-200">text-gray-200</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-300">text-gray-300</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-400">text-gray-400</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-500">text-gray-500</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-600">text-gray-600</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-700">text-gray-700</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-800">text-gray-800</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-900">text-gray-900</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dark mode grays */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Dark Mode Grays (dark:)</h3>
+            <div className="grid grid-cols-5 gap-2">
+              <div className="p-2 bg-card border-2 border-gray-200 dark:border-gray-700 rounded text-center">
+                <div className="text-xs font-mono">dark:border-gray-700</div>
+              </div>
+              <div className="p-2 bg-card border-2 border-gray-300 dark:border-gray-600 rounded text-center">
+                <div className="text-xs font-mono">dark:border-gray-600</div>
+              </div>
+              <div className="p-2 bg-gray-100 dark:bg-gray-800 border rounded text-center">
+                <div className="text-xs font-mono">dark:bg-gray-800</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-600 dark:text-gray-400">dark:text-gray-400</div>
+              </div>
+              <div className="p-2 bg-card border rounded text-center">
+                <div className="text-xs font-mono text-gray-900 dark:text-gray-200">dark:text-gray-200</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Background Colors - Direct */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Background Colors (Direct)</h2>
           <div className="grid grid-cols-6 gap-4">
-            <div className="p-4 bg-background border rounded-lg">
+            <div className="p-2 bg-background border rounded-lg">
               <div className="text-xs font-mono mb-1">bg-background</div>
               <div className="text-xs text-muted-foreground">Should be zinc-100/850</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-xs font-mono mb-1">bg-card</div>
               <div className="text-xs text-muted-foreground">Should be white/zinc-800</div>
             </div>
-            <div className="p-4 bg-muted border rounded-lg">
+            <div className="p-2 bg-muted border rounded-lg">
               <div className="text-xs font-mono mb-1">bg-muted</div>
               <div className="text-xs text-muted-foreground">Should be zinc-200/750</div>
             </div>
-            <div className="p-4 bg-accent border rounded-lg">
+            <div className="p-2 bg-accent border rounded-lg">
               <div className="text-xs font-mono mb-1">bg-accent</div>
               <div className="text-xs">Should be subtle</div>
             </div>
-            <div className="p-4 bg-primary text-primary-foreground rounded-lg">
+            <div className="p-2 bg-primary text-primary-foreground rounded-lg">
               <div className="text-xs font-mono mb-1">bg-primary</div>
               <div className="text-xs">Should be blue</div>
             </div>
-            <div className="p-4 bg-secondary text-secondary-foreground rounded-lg">
+            <div className="p-2 bg-secondary text-secondary-foreground rounded-lg">
               <div className="text-xs font-mono mb-1">bg-secondary</div>
               <div className="text-xs">Should be purple</div>
             </div>
@@ -44,19 +183,19 @@ export default function ColorTestPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Background Colors (Hover States)</h2>
           <div className="grid grid-cols-4 gap-4">
-            <div className="p-4 bg-card hover:bg-accent border rounded-lg transition-colors cursor-pointer">
+            <div className="p-2 bg-card hover:bg-accent border rounded-lg transition-colors cursor-pointer">
               <div className="text-xs font-mono mb-1">hover:bg-accent</div>
               <div className="text-xs text-muted-foreground">card → accent</div>
             </div>
-            <div className="p-4 bg-card hover:bg-muted border rounded-lg transition-colors cursor-pointer">
+            <div className="p-2 bg-card hover:bg-muted border rounded-lg transition-colors cursor-pointer">
               <div className="text-xs font-mono mb-1">hover:bg-muted</div>
               <div className="text-xs text-muted-foreground">card → muted</div>
             </div>
-            <div className="p-4 bg-muted hover:bg-card border rounded-lg transition-colors cursor-pointer">
+            <div className="p-2 bg-muted hover:bg-card border rounded-lg transition-colors cursor-pointer">
               <div className="text-xs font-mono mb-1">hover:bg-card</div>
               <div className="text-xs text-muted-foreground">muted → card</div>
             </div>
-            <div className="p-4 bg-background hover:bg-accent border rounded-lg transition-colors cursor-pointer">
+            <div className="p-2 bg-background hover:bg-accent border rounded-lg transition-colors cursor-pointer">
               <div className="text-xs font-mono mb-1">hover:bg-accent</div>
               <div className="text-xs text-muted-foreground">background → accent</div>
             </div>
@@ -67,27 +206,27 @@ export default function ColorTestPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Text Colors (Direct)</h2>
           <div className="grid grid-cols-6 gap-4">
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-foreground text-sm font-mono mb-1">text-foreground</div>
               <div className="text-xs text-muted-foreground">Main text color</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-muted-foreground text-sm font-mono mb-1">text-muted-foreground</div>
               <div className="text-xs text-muted-foreground">Muted text</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-primary text-sm font-mono mb-1">text-primary</div>
               <div className="text-xs text-muted-foreground">Should be blue</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-secondary text-sm font-mono mb-1">text-secondary</div>
               <div className="text-xs text-muted-foreground">Should be purple</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-destructive text-sm font-mono mb-1">text-destructive</div>
               <div className="text-xs text-muted-foreground">Should be red</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-success text-sm font-mono mb-1">text-success</div>
               <div className="text-xs text-muted-foreground">Should be green</div>
             </div>
@@ -98,25 +237,25 @@ export default function ColorTestPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Text Colors (Hover States)</h2>
           <div className="grid grid-cols-4 gap-4">
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-foreground hover:text-primary text-sm font-mono cursor-pointer transition-colors">
                 hover:text-primary
               </div>
               <div className="text-xs text-muted-foreground">foreground → primary</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-foreground hover:text-secondary text-sm font-mono cursor-pointer transition-colors">
                 hover:text-secondary
               </div>
               <div className="text-xs text-muted-foreground">foreground → secondary</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-foreground hover:text-muted-foreground text-sm font-mono cursor-pointer transition-colors">
                 hover:text-muted-foreground
               </div>
               <div className="text-xs text-muted-foreground">foreground → muted</div>
             </div>
-            <div className="p-4 bg-card border rounded-lg">
+            <div className="p-2 bg-card border rounded-lg">
               <div className="text-muted-foreground hover:text-foreground text-sm font-mono cursor-pointer transition-colors">
                 hover:text-foreground
               </div>
@@ -129,19 +268,19 @@ export default function ColorTestPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Border Colors (Direct & Hover)</h2>
           <div className="grid grid-cols-4 gap-4">
-            <div className="p-4 bg-card border-2 border-border rounded-lg">
+            <div className="p-2 bg-card border-2 border-border rounded-lg">
               <div className="text-xs font-mono mb-1">border-border</div>
               <div className="text-xs text-muted-foreground">Default border</div>
             </div>
-            <div className="p-4 bg-card border-2 border-input rounded-lg">
+            <div className="p-2 bg-card border-2 border-input rounded-lg">
               <div className="text-xs font-mono mb-1">border-input</div>
               <div className="text-xs text-muted-foreground">Input border</div>
             </div>
-            <div className="p-4 bg-card border-2 border-primary rounded-lg">
+            <div className="p-2 bg-card border-2 border-primary rounded-lg">
               <div className="text-xs font-mono mb-1">border-primary</div>
               <div className="text-xs text-muted-foreground">Primary border</div>
             </div>
-            <div className="p-4 bg-card border-2 border-border hover:border-primary rounded-lg transition-colors cursor-pointer">
+            <div className="p-2 bg-card border-2 border-border hover:border-primary rounded-lg transition-colors cursor-pointer">
               <div className="text-xs font-mono mb-1">hover:border-primary</div>
               <div className="text-xs text-muted-foreground">border → primary</div>
             </div>
@@ -223,7 +362,7 @@ export default function ColorTestPage() {
           <h2 className="text-xl font-semibold">Custom Hover Variables (CSS)</h2>
           <div className="grid grid-cols-3 gap-4">
             <div 
-              className="p-4 rounded-lg cursor-pointer transition-colors"
+              className="p-2 rounded-lg cursor-pointer transition-colors"
               style={{
                 backgroundColor: 'hsl(var(--primary))',
                 color: 'hsl(var(--primary-foreground))'
@@ -235,7 +374,7 @@ export default function ColorTestPage() {
               <div className="text-xs">Custom var test</div>
             </div>
             <div 
-              className="p-4 rounded-lg cursor-pointer transition-colors"
+              className="p-2 rounded-lg cursor-pointer transition-colors"
               style={{
                 backgroundColor: 'hsl(var(--secondary))',
                 color: 'hsl(var(--secondary-foreground))'
@@ -247,7 +386,7 @@ export default function ColorTestPage() {
               <div className="text-xs">Custom var test</div>
             </div>
             <div 
-              className="p-4 rounded-lg cursor-pointer transition-colors"
+              className="p-2 rounded-lg cursor-pointer transition-colors"
               style={{
                 backgroundColor: 'hsl(var(--accent))',
                 color: 'hsl(var(--accent-foreground))'
@@ -265,15 +404,15 @@ export default function ColorTestPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Elevation Colors</h2>
           <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg" style={{ backgroundColor: 'hsl(var(--elevation-1))' }}>
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--elevation-1))' }}>
               <div className="text-xs font-mono mb-1">elevation-1</div>
               <div className="text-xs text-muted-foreground">Lightest</div>
             </div>
-            <div className="p-4 rounded-lg" style={{ backgroundColor: 'hsl(var(--elevation-2))' }}>
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--elevation-2))' }}>
               <div className="text-xs font-mono mb-1">elevation-2</div>
               <div className="text-xs text-muted-foreground">Medium</div>
             </div>
-            <div className="p-4 rounded-lg" style={{ backgroundColor: 'hsl(var(--elevation-3))' }}>
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--elevation-3))' }}>
               <div className="text-xs font-mono mb-1">elevation-3</div>
               <div className="text-xs text-muted-foreground">Highest</div>
             </div>
@@ -284,19 +423,19 @@ export default function ColorTestPage() {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Status Colors</h2>
           <div className="grid grid-cols-4 gap-4">
-            <div className="p-4 bg-success text-success-foreground rounded-lg">
+            <div className="p-2 bg-success text-success-foreground rounded-lg">
               <div className="text-xs font-mono mb-1">success</div>
               <div className="text-xs">Green status</div>
             </div>
-            <div className="p-4 bg-warning text-warning-foreground rounded-lg">
+            <div className="p-2 bg-warning text-warning-foreground rounded-lg">
               <div className="text-xs font-mono mb-1">warning</div>
               <div className="text-xs">Yellow status</div>
             </div>
-            <div className="p-4 bg-destructive text-destructive-foreground rounded-lg">
+            <div className="p-2 bg-destructive text-destructive-foreground rounded-lg">
               <div className="text-xs font-mono mb-1">destructive</div>
               <div className="text-xs">Red status</div>
             </div>
-            <div className="p-4 bg-info text-white rounded-lg">
+            <div className="p-2 bg-info text-white rounded-lg">
               <div className="text-xs font-mono mb-1">info</div>
               <div className="text-xs">Blue status</div>
             </div>

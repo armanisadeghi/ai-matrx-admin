@@ -9,6 +9,7 @@ interface RadioGroupInputProps {
   options: string[];
   variableName: string;
   allowOther?: boolean;
+  compact?: boolean;
 }
 
 // Placeholder for empty or whitespace-only values
@@ -43,7 +44,8 @@ export function RadioGroupInput({
   onChange, 
   options,
   variableName,
-  allowOther = false
+  allowOther = false,
+  compact = false
 }: RadioGroupInputProps) {
   // Convert options to display values for comparison
   const displayOptions = options.map(toDisplayValue);
@@ -94,24 +96,24 @@ export function RadioGroupInput({
   const showNonMatchingValue = value && !isValueInOptions && !isOtherValue;
   
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-0" : "space-y-4"}>
       {/* Show current value if it doesn't match any option */}
       {showNonMatchingValue && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <p className="text-xs font-medium text-amber-800 dark:text-amber-300 mb-1">
+        <div className={compact ? "p-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded" : "p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"}>
+          <p className={compact ? "text-[11px] font-medium text-amber-800 dark:text-amber-300 mb-0.5" : "text-xs font-medium text-amber-800 dark:text-amber-300 mb-1"}>
             Current value:
           </p>
-          <p className="text-sm text-amber-900 dark:text-amber-200">
+          <p className={compact ? "text-xs text-amber-900 dark:text-amber-200" : "text-sm text-amber-900 dark:text-amber-200"}>
             {value || '(empty)'}
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+          <p className={compact ? "text-[11px] text-amber-700 dark:text-amber-400 mt-0.5" : "text-xs text-amber-700 dark:text-amber-400 mt-1"}>
             Select an option below to replace
           </p>
         </div>
       )}
       
       <RadioGroup value={selectedOption} onValueChange={handleOptionChange}>
-        <div className="space-y-2">
+        <div className={compact ? "space-y-0" : "space-y-1"}>
           {options.map((option, index) => {
             // Convert empty/whitespace values to placeholder for RadioGroupItem
             const displayOption = toDisplayValue(option);
@@ -121,13 +123,13 @@ export function RadioGroupInput({
             return (
               <div 
                 key={itemKey}
-                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+                className={compact ? "flex items-center space-x-2 p-1 bg-gray-50 dark:bg-zinc-800 rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
                 onClick={() => handleOptionChange(displayOption)}
               >
                 <RadioGroupItem value={displayOption} id={`${variableName}-${displayOption}-${index}`} />
                 <Label 
                   htmlFor={`${variableName}-${displayOption}-${index}`}
-                  className="flex-1 text-sm cursor-pointer"
+                  className={compact ? "flex-1 text-xs cursor-pointer" : "flex-1 text-sm cursor-pointer"}
                 >
                   {displayOption}
                 </Label>
@@ -137,15 +139,15 @@ export function RadioGroupInput({
           
           {/* "Other" option */}
           {allowOther && (
-            <div className="space-y-2">
+            <div className={compact ? "space-y-1" : "space-y-2"}>
               <div 
-                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+                className={compact ? "flex items-center space-x-2 p-1 bg-gray-50 dark:bg-zinc-800 rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
                 onClick={() => handleOptionChange('Other')}
               >
                 <RadioGroupItem value="Other" id={`${variableName}-other`} />
                 <Label 
                   htmlFor={`${variableName}-other`}
-                  className="flex-1 text-sm cursor-pointer"
+                  className={compact ? "flex-1 text-xs cursor-pointer" : "flex-1 text-sm cursor-pointer"}
                 >
                   Other
                 </Label>
@@ -153,12 +155,12 @@ export function RadioGroupInput({
               
               {/* Custom text input when "Other" is selected */}
               {selectedOption === 'Other' && (
-                <div className="ml-9 pl-3">
+                <div className={compact ? "ml-6 pl-2" : "ml-9 pl-3"}>
                   <Textarea
                     value={customText}
                     onChange={(e) => handleCustomTextChange(e.target.value)}
                     placeholder="Enter custom value..."
-                    className="min-h-[80px] text-sm"
+                    className={compact ? "min-h-[60px] text-xs" : "min-h-[80px] text-sm"}
                     autoFocus
                   />
                 </div>

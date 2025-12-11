@@ -70,7 +70,6 @@ export function CompactPromptInput({
 }: CompactPromptInputProps) {
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement>(null);
-  const pendingVoiceSubmitRef = useRef(false);
 
   // ========== LOCAL STATE (UI-only) ==========
   const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
@@ -189,108 +188,119 @@ export function CompactPromptInput({
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-0 -mx-3">
       {/* Variable Inputs - Directly visible, scrollable */}
       {variableDefaults.length > 0 && (
-        <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-thin pr-1">
-          {variableDefaults.map((variable) => {
+        <div className="space-y-0 bg-background mb-0">
+          {variableDefaults.map((variable, index) => {
             const value = variableValues[variable.name] ?? variable.defaultValue ?? '';
+            const isLast = index === variableDefaults.length - 1;
+            const isFirst = index === 0;
 
             return (
-              <div key={variable.name}>
-                <VariableInputComponent
-                  value={value}
-                  onChange={(newValue) => handleVariableValueChange(variable.name, newValue)}
-                  variableName={formatText(variable.name)}
-                  customComponent={variable.customComponent}
-                />
+              <div
+                key={variable.name}
+                className={!isLast ? "py-1 border-b-2 border-border" : ""}
+              >
+                <div className={`px-3 ${isFirst ? 'pt-2.5' : 'pt-2'} ${!isLast ? 'pb-2' : 'pb-2.5'}`}>
+                  <VariableInputComponent
+                    value={value}
+                    onChange={(newValue) => handleVariableValueChange(variable.name, newValue)}
+                    variableName={formatText(variable.name)}
+                    customComponent={variable.customComponent}
+                    helpText={variable.helpText}
+                    compact={true}
+                  />
+                </div>
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Resource Chips Display */}
-      {resources.length > 0 && (
-        <div className="px-0">
-          <ResourceChips
-            resources={resources}
-            onRemove={handleRemoveResource}
-            onPreview={handlePreviewResource}
-          />
-        </div>
-      )}
+      {/* Input Footer Section - with subtle background */}
+      <div className="bg-background border-t border-border px-1 pt-3">
+        {/* Resource Chips Display */}
+        {resources.length > 0 && (
+          <div className="px-0 mb-2">
+            <ResourceChips
+              resources={resources}
+              onRemove={handleRemoveResource}
+              onPreview={handlePreviewResource}
+            />
+          </div>
+        )}
 
-      {/* Voice Input - Show transcription loader when processing */}
-      {isTranscribing ? (
-        <div className="px-1 py-0.5">
-          <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
-        </div>
-      ) : isRecording ? (
-        <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-md px-2 py-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-            Recording... {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')}
-          </span>
-          <button
-            type="button"
-            onClick={stopRecording}
-            className="ml-auto text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+        {/* Voice Input - Show transcription loader when processing */}
+        {isTranscribing ? (
+          <div className="px-1 py-0.5 mb-2">
+            <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
+          </div>
+        ) : isRecording ? (
+          <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-md px-2 py-1 mb-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+              Recording... {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')}
+            </span>
+            <button
+              type="button"
+              onClick={stopRecording}
+              className="ml-auto text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Stop
+            </button>
+          </div>
+        ) : null}
+
+        {/* Single-Line Input with controls - Execute button inline */}
+        <div className="flex items-stretch gap-1">
+          <div className="flex-1 flex items-center gap-0.5 border rounded-md px-1.5 h-8 bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
+            <input
+              ref={inputRef}
+              type="text"
+              value={chatInput}
+              onChange={(e) => handleChatInputChange(e.target.value)}
+              placeholder={placeholder}
+              className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 placeholder:text-xs placeholder:text-gray-400 dark:placeholder:text-gray-500 min-w-0"
+              style={{ fontSize: '16px' }} // iOS zoom prevention
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && onSubmit && !isSendDisabled) {
+                  e.preventDefault();
+                  onSubmit();
+                }
+              }}
+            />
+
+            {/* Voice Input Button */}
+            <PromptInputButton
+              icon={Mic}
+              tooltip="Record voice message"
+              onClick={handleMicClick}
+              active={false}
+            />
+
+            {/* Resource Picker */}
+            <SmartResourcePickerButton
+              runId={runId}
+              uploadBucket={uploadBucket}
+              uploadPath={uploadPath}
+            />
+          </div>
+
+          {/* Execute Button - Inline with input, exact same height */}
+          <Button
+            onClick={onSubmit}
+            disabled={isSendDisabled}
+            className="h-8 w-8 p-0 flex-shrink-0 min-h-8"
+            title="Execute (Enter)"
           >
-            Stop
-          </button>
+            {isExecuting ? (
+              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-3.5 h-3.5" />
+            )}
+          </Button>
         </div>
-      ) : null}
-
-      {/* Single-Line Input with controls - Execute button inline */}
-      <div className="flex items-center gap-1">
-        <div className="flex-1 flex items-center gap-0.5 border rounded-md px-1.5 h-8 bg-white dark:bg-zinc-900 border-gray-300 dark:border-gray-700">
-          <input
-            ref={inputRef}
-            type="text"
-            value={chatInput}
-            onChange={(e) => handleChatInputChange(e.target.value)}
-            placeholder={placeholder}
-            className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 min-w-0"
-            style={{ fontSize: '16px' }} // iOS zoom prevention
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && onSubmit && !isSendDisabled) {
-                e.preventDefault();
-                onSubmit();
-              }
-            }}
-          />
-
-          {/* Voice Input Button */}
-          <PromptInputButton
-            icon={Mic}
-            tooltip="Record voice message"
-            onClick={handleMicClick}
-            active={false}
-          />
-
-          {/* Resource Picker */}
-          <SmartResourcePickerButton
-            runId={runId}
-            uploadBucket={uploadBucket}
-            uploadPath={uploadPath}
-          />
-        </div>
-        
-        {/* Execute Button - Inline with input */}
-        <Button
-          onClick={onSubmit}
-          disabled={isSendDisabled}
-          size="sm"
-          className="h-8 w-8 p-0 flex-shrink-0"
-          title="Execute (Enter)"
-        >
-          {isExecuting ? (
-            <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Send className="w-3.5 h-3.5" />
-          )}
-        </Button>
       </div>
 
       {/* Resource Preview Sheet */}

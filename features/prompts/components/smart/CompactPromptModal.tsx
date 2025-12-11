@@ -3,6 +3,7 @@ import React, { useCallback } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import {
@@ -89,9 +90,13 @@ export function CompactPromptModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl p-2 gap-0 max-h-[80dvh] flex flex-col">
+      <DialogContent className="max-w-xl p-0 gap-0 max-h-[calc(100vh-4rem)] overflow-hidden">
+        {/* Minimal header for alignment with X button - invisible but provides spacing */}
+        <DialogTitle className="sr-only">Configure Options</DialogTitle>
+        <div className="h-10 flex-shrink-0" /> {/* Spacer to align with X button */}
+        
         {/* Scrollable content area - minimal padding */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin">
+        <div className="overflow-y-auto scrollbar-thin px-3 pb-3">
           <CompactPromptInput
             runId={runId}
             placeholder={placeholder}

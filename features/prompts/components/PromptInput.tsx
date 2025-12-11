@@ -49,6 +49,7 @@ interface PromptInputProps {
     enablePasteImages?: boolean;
     uploadBucket?: string;
     uploadPath?: string;
+    compact?: boolean;
 }
 
 export function PromptInput({
@@ -77,6 +78,7 @@ export function PromptInput({
     enablePasteImages = false,
     uploadBucket = "userContent",
     uploadPath = "prompt-attachments",
+    compact = false,
 }: PromptInputProps) {
     if (sendButtonVariant === 'default') sendButtonVariant = 'gray';
 
@@ -275,6 +277,8 @@ export function PromptInput({
                                                         variableName={variable.name}
                                                         customComponent={variable.customComponent}
                                                         onRequestClose={() => onExpandedVariableChange(null)}
+                                                        helpText={variable.helpText}
+                                                        compact={compact}
                                                     />
                                                 </PopoverContent>
                                             </Popover>

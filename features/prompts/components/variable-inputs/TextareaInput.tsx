@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { Label } from '@/components/ui/label';
 import { VoiceTextarea } from '@/components/official/VoiceTextarea';
 import { toast } from 'sonner';
 
@@ -8,6 +7,7 @@ interface TextareaInputProps {
   onChange: (value: string) => void;
   variableName: string;
   onRequestClose?: () => void;
+  compact?: boolean;
 }
 
 /**
@@ -18,7 +18,8 @@ export function TextareaInput({
   value, 
   onChange, 
   variableName,
-  onRequestClose
+  onRequestClose,
+  compact = false
 }: TextareaInputProps) {
   const hasSelectedRef = useRef(false);
 
@@ -31,30 +32,26 @@ export function TextareaInput({
   };
 
   return (
-    <div className="space-y-1.5">
-      <Label className="text-sm font-medium">
-        {variableName}
-      </Label>
-      <VoiceTextarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={handleFocus}
-        placeholder={`Enter ${variableName.toLowerCase()}... (hover for voice input)`}
-        className="min-h-[200px] text-sm"
-        autoFocus
-        appendTranscript={true}
-        onRequestClose={onRequestClose}
-        protectTranscription={true}
-        onTranscriptionComplete={(text) => {
-          toast.success('Voice input added');
-        }}
-        onTranscriptionError={(error) => {
-          toast.error('Voice input failed', {
-            description: error,
-          });
-        }}
-      />
-    </div>
+    <VoiceTextarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onFocus={handleFocus}
+      placeholder={`Enter ${variableName.toLowerCase()}... (hover for voice input)`}
+      className={compact ? "min-h-[65px] text-xs" : "min-h-[200px] text-sm"}
+      rows={compact ? 2 : undefined}
+      autoFocus
+      appendTranscript={true}
+      onRequestClose={onRequestClose}
+      protectTranscription={true}
+      onTranscriptionComplete={(text) => {
+        toast.success('Voice input added');
+      }}
+      onTranscriptionError={(error) => {
+        toast.error('Voice input failed', {
+          description: error,
+        });
+      }}
+    />
   );
 }
 

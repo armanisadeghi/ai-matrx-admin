@@ -57,6 +57,7 @@ interface SmartPromptInputProps {
   uploadBucket?: string;
   uploadPath?: string;
   enablePasteImages?: boolean;
+  compact?: boolean;
 }
 
 /**
@@ -79,6 +80,7 @@ export function SmartPromptInput({
   uploadBucket = "userContent",
   uploadPath = "prompt-attachments",
   enablePasteImages = true,
+  compact = false,
 }: SmartPromptInputProps) {
   if (sendButtonVariant === 'default') sendButtonVariant = 'gray';
   
@@ -403,6 +405,8 @@ export function SmartPromptInput({
                             variableName={variable.name}
                             customComponent={variable.customComponent}
                             onRequestClose={() => handleExpandedVariableChange(null)}
+                            helpText={variable.helpText}
+                            compact={compact}
                           />
                         </PopoverContent>
                       </Popover>

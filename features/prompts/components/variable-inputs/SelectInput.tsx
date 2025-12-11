@@ -9,6 +9,7 @@ interface SelectInputProps {
   options: string[];
   variableName: string;
   allowOther?: boolean;
+  compact?: boolean;
 }
 
 // Placeholder for empty or whitespace-only values
@@ -43,7 +44,8 @@ export function SelectInput({
   onChange, 
   options,
   variableName,
-  allowOther = false
+  allowOther = false,
+  compact = false
 }: SelectInputProps) {
   // Convert options to display values for comparison
   const displayOptions = options.map(toDisplayValue);
@@ -94,28 +96,30 @@ export function SelectInput({
   const showNonMatchingValue = value && !isValueInOptions && !isOtherValue;
   
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-1" : "space-y-4"}>
       {/* Show current value if it doesn't match any option */}
       {showNonMatchingValue && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <p className="text-xs font-medium text-amber-800 dark:text-amber-300 mb-1">
+        <div className={compact ? "p-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded" : "p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"}>
+          <p className={compact ? "text-[11px] font-medium text-amber-800 dark:text-amber-300 mb-0.5" : "text-xs font-medium text-amber-800 dark:text-amber-300 mb-1"}>
             Current value:
           </p>
-          <p className="text-sm text-amber-900 dark:text-amber-200">
+          <p className={compact ? "text-xs text-amber-900 dark:text-amber-200" : "text-sm text-amber-900 dark:text-amber-200"}>
             {value || '(empty)'}
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+          <p className={compact ? "text-[11px] text-amber-700 dark:text-amber-400 mt-0.5" : "text-xs text-amber-700 dark:text-amber-400 mt-1"}>
             Select an option below to replace
           </p>
         </div>
       )}
       
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">
-          Select an option
-        </Label>
+      <div className={compact ? "space-y-1" : "space-y-3"}>
+        {!compact && (
+          <Label className="text-sm font-medium">
+            Select an option
+          </Label>
+        )}
         <Select value={selectedOption} onValueChange={handleSelectChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className={compact ? "w-full h-8 text-xs" : "w-full"}>
             <SelectValue placeholder="Choose an option..." />
           </SelectTrigger>
           <SelectContent>
@@ -141,12 +145,12 @@ export function SelectInput({
         
         {/* Custom text input when "Other" is selected */}
         {selectedOption === 'Other' && (
-          <div className="pt-2">
+          <div className={compact ? "pt-1" : "pt-2"}>
             <Textarea
               value={customText}
               onChange={(e) => handleCustomTextChange(e.target.value)}
               placeholder="Enter custom value..."
-              className="min-h-[80px] text-sm"
+              className={compact ? "min-h-[60px] text-xs" : "min-h-[80px] text-sm"}
               autoFocus
             />
           </div>

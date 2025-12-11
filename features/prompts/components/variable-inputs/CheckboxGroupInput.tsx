@@ -9,6 +9,7 @@ interface CheckboxGroupInputProps {
   options: string[];
   variableName: string;
   allowOther?: boolean;
+  compact?: boolean;
 }
 
 // Placeholder for empty or whitespace-only values
@@ -43,7 +44,8 @@ export function CheckboxGroupInput({
   onChange, 
   options,
   variableName,
-  allowOther = false
+  allowOther = false,
+  compact = false
 }: CheckboxGroupInputProps) {
   // Parse current value into array of selected items
   const selectedItems = value ? value.split('\n').filter(Boolean) : [];
@@ -118,30 +120,30 @@ export function CheckboxGroupInput({
   };
   
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-1" : "space-y-4"}>
       {/* Show current value if it contains non-option values */}
       {value && hasNonOptionValues && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <p className="text-xs font-medium text-amber-800 dark:text-amber-300 mb-1">
+        <div className={compact ? "p-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded" : "p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"}>
+          <p className={compact ? "text-[11px] font-medium text-amber-800 dark:text-amber-300 mb-0.5" : "text-xs font-medium text-amber-800 dark:text-amber-300 mb-1"}>
             Current values:
           </p>
-          <div className="text-sm text-amber-900 dark:text-amber-200 space-y-0.5">
+          <div className={compact ? "text-xs text-amber-900 dark:text-amber-200 space-y-0.5" : "text-sm text-amber-900 dark:text-amber-200 space-y-0.5"}>
             {regularSelectedItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 {!options.includes(item) && (
-                  <span className="text-xs bg-amber-200 dark:bg-amber-800 px-1 rounded">Custom</span>
+                  <span className={compact ? "text-[11px] bg-amber-200 dark:bg-amber-800 px-1 rounded" : "text-xs bg-amber-200 dark:bg-amber-800 px-1 rounded"}>Custom</span>
                 )}
                 <span>{item}</span>
               </div>
             ))}
           </div>
-          <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+          <p className={compact ? "text-[11px] text-amber-700 dark:text-amber-400 mt-0.5" : "text-xs text-amber-700 dark:text-amber-400 mt-1"}>
             Select options below to replace
           </p>
         </div>
       )}
       
-      <div className="space-y-2">
+      <div className={compact ? "space-y-1" : "space-y-2"}>
         {options.map((option, index) => {
           // Convert empty/whitespace values to placeholder for display
           const displayOption = toDisplayValue(option);
@@ -157,7 +159,7 @@ export function CheckboxGroupInput({
           return (
             <div 
               key={itemKey}
-              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+              className={compact ? "flex items-center space-x-2 p-1 bg-gray-50 dark:bg-zinc-800 rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
               onClick={() => handleToggle(displayOption, !isChecked)}
             >
               <Checkbox 
@@ -167,7 +169,7 @@ export function CheckboxGroupInput({
               />
               <Label 
                 htmlFor={itemId}
-                className="flex-1 text-sm cursor-pointer"
+                className={compact ? "flex-1 text-xs cursor-pointer" : "flex-1 text-sm cursor-pointer"}
               >
                 {displayOption}
               </Label>
@@ -177,9 +179,9 @@ export function CheckboxGroupInput({
         
         {/* "Other" option */}
         {allowOther && (
-          <div className="space-y-2">
+          <div className={compact ? "space-y-1" : "space-y-2"}>
             <div 
-              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+              className={compact ? "flex items-center space-x-2 p-1 bg-gray-50 dark:bg-zinc-800 rounded border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer" : "flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border-border hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"}
               onClick={() => handleOtherToggle(!isOtherChecked)}
             >
               <Checkbox 
@@ -189,7 +191,7 @@ export function CheckboxGroupInput({
               />
               <Label 
                 htmlFor={`${variableName}-other`}
-                className="flex-1 text-sm cursor-pointer"
+                className={compact ? "flex-1 text-xs cursor-pointer" : "flex-1 text-sm cursor-pointer"}
               >
                 Other
               </Label>
@@ -197,12 +199,12 @@ export function CheckboxGroupInput({
             
             {/* Custom text input when "Other" is checked */}
             {isOtherChecked && (
-              <div className="ml-9 pl-3">
+              <div className={compact ? "ml-6 pl-2" : "ml-9 pl-3"}>
                 <Textarea
                   value={customText}
                   onChange={(e) => handleCustomTextChange(e.target.value)}
                   placeholder="Enter custom value..."
-                  className="min-h-[80px] text-sm"
+                  className={compact ? "min-h-[60px] text-xs" : "min-h-[80px] text-sm"}
                   autoFocus
                 />
               </div>
@@ -211,7 +213,7 @@ export function CheckboxGroupInput({
         )}
       </div>
       
-      {selectedItems.length > 0 && (
+      {!compact && selectedItems.length > 0 && (
         <div className="pt-2 border-t border-border">
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Selected: {selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''}
