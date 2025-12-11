@@ -32,6 +32,7 @@ import { getPrompt } from '@/lib/redux/thunks/promptSystemThunks';
  *   executionConfig: {
  *     auto_run: true,
  *     track_in_runs: true,
+ *     use_pre_execution_input: false,
  *   },
  *   variables: { text: selectedText },
  * })).unwrap();

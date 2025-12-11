@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import {
+  selectInstance,
   selectIsExecuting,
   selectIsLastMessageUser,
   selectCurrentInput,
@@ -28,6 +29,13 @@ interface CompactPromptModalProps {
   /** Optional callbacks */
   onSubmit?: () => void; // Called after successful submission
   
+  /**
+   * Mode of operation
+   * - 'execute': Execute the prompt and call onSubmit (default, standalone mode)
+   * - 'input-only': Only collect input and call onSubmit (used in pre-execution flow)
+   */
+  mode?: 'execute' | 'input-only';
+  
   /** CompactPromptInput props */
   placeholder?: string;
   uploadBucket?: string;
@@ -39,10 +47,14 @@ interface CompactPromptModalProps {
  * CompactPromptModal - Modal wrapper for CompactPromptInput
  * 
  * Provides a complete modal dialog with:
- * - Header with title
+ * - Header with prompt title
  * - Compact prompt input with variables and resources
- * - Footer with Cancel and Submit buttons
+ * - Inline execute button
  * - Redux-driven execution
+ * 
+ * Supports two modes:
+ * - 'execute' (default): Executes prompt directly on submit (standalone usage)
+ * - 'input-only': Only collects input, parent handles execution (pre-execution flow)
  * 
  * Ideal for inline AI triggers from context menus, toolbars, etc.
  */
@@ -51,6 +63,7 @@ export function CompactPromptModal({
   onClose,
   runId,
   onSubmit,
+  mode = 'execute',
   placeholder,
   uploadBucket,
   uploadPath,
@@ -59,9 +72,12 @@ export function CompactPromptModal({
   const dispatch = useAppDispatch();
 
   // Redux state
+  const instance = useAppSelector(state => runId ? selectInstance(state, runId) : null);
   const isExecuting = useAppSelector(state => runId ? selectIsExecuting(state, runId) : false);
   const isLastMessageUser = useAppSelector(state => runId ? selectIsLastMessageUser(state, runId) : false);
   const chatInput = useAppSelector(state => runId ? selectCurrentInput(state, runId) : '');
+  
+  const promptName = instance?.promptName || 'Configure Options';
 
   // Determine if submit should be disabled
   const isSendDisabled = !runId || isExecuting || (!isLastMessageUser && !chatInput.trim());
@@ -70,6 +86,13 @@ export function CompactPromptModal({
   const handleSubmit = useCallback(async () => {
     if (!runId || isSendDisabled) return;
 
+    // In 'input-only' mode, just call onSubmit and let parent handle execution
+    if (mode === 'input-only') {
+      onSubmit?.();
+      return;
+    }
+
+    // In 'execute' mode (default), execute the prompt directly
     try {
       await dispatch(executeMessage({
         runId,
@@ -86,14 +109,15 @@ export function CompactPromptModal({
       console.error('Failed to execute prompt:', error);
       // Toast error is handled by the thunk
     }
-  }, [runId, chatInput, isSendDisabled, dispatch, onSubmit]);
+  }, [runId, chatInput, isSendDisabled, dispatch, onSubmit, mode]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl p-0 gap-0 max-h-[calc(100vh-4rem)] overflow-hidden">
-        {/* Minimal header for alignment with X button - invisible but provides spacing */}
-        <DialogTitle className="sr-only">Configure Options</DialogTitle>
-        <div className="h-10 flex-shrink-0" /> {/* Spacer to align with X button */}
+        {/* Header with prompt name */}
+        <div className="h-10 flex-shrink-0 flex items-center px-3 border-b border-border">
+          <DialogTitle className="text-sm font-semibold truncate">{promptName}</DialogTitle>
+        </div>
         
         {/* Scrollable content area - minimal padding */}
         <div className="overflow-y-auto scrollbar-thin px-3 pb-3">

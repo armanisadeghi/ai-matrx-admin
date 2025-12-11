@@ -84,6 +84,7 @@ export const loadRun = createAsyncThunk<
             
             const instance: ExecutionInstance = {
                 runId: run.id,
+                promptName: run.name || 'Unknown Prompt',
                 promptId: run.source_id || 'unknown',
                 promptSource: validSource,
                 status: 'ready', // Or 'completed' if run is done? For now 'ready' allows continuing
@@ -100,6 +101,7 @@ export const loadRun = createAsyncThunk<
                     show_variables: false,
                     apply_variables: true,
                     track_in_runs: true,
+                    use_pre_execution_input: false,
                 },
 
                 variables: {

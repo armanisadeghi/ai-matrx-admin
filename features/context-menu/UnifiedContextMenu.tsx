@@ -549,6 +549,7 @@ export function UnifiedContextMenu({
         show_variables: shortcut.show_variables ?? false,
         apply_variables: shortcut.apply_variables ?? true,
         track_in_runs: true,
+        use_pre_execution_input: shortcut.use_pre_execution_input ?? false,
       };
 
       // ⭐ Call unified system with ONLY the prompt ID

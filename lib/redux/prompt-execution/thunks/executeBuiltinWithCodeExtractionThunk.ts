@@ -30,6 +30,7 @@ interface ExecuteBuiltinWithCodeExtractionPayload {
     show_variables?: boolean;
     apply_variables?: boolean;
     track_in_runs?: boolean;
+    use_pre_execution_input?: boolean;
   };
   
   /** Optional: Timeout in milliseconds (default: 120000 = 2 minutes) */
@@ -141,6 +142,7 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
           show_variables: false,
           apply_variables: true,
           track_in_runs: true,
+          use_pre_execution_input: false,
           ...executionConfig
         },
       })).unwrap();

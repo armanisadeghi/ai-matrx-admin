@@ -25,6 +25,8 @@ import {
  *     allow_chat: true,
  *     show_variables: false,
  *     apply_variables: true
+ *     track_in_runs: true,
+ *     use_pre_execution_input: false,
  *   },
  *   variables: { text: selectedText }
  * });
@@ -36,7 +38,9 @@ import {
  *     auto_run: false,
  *     allow_chat: true,
  *     show_variables: true,
- *     apply_variables: true
+ *     apply_variables: true,
+ *     track_in_runs: true,
+ *     use_pre_execution_input: false,
  *   },
  *   variables: { topic: 'AI' }
  * });

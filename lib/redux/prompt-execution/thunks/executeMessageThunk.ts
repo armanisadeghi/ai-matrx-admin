@@ -216,7 +216,7 @@ export const executeMessage = createAsyncThunk<
       // ========== ASYNC: Database Operations (NON-BLOCKING) ==========
       // These happen after API call, don't block response
 
-      if (instance.requiresVariableReplacement && instance.executionConfig.track_in_runs) {
+      if (instance.requiresVariableReplacement && instance.executionConfig.track_in_runs && !instance.executionConfig.use_pre_execution_input) {
         // First message: create run in DB
         const mergedVariables = selectMergedVariables(getState(), runId);
         const contextsToSave = selectDynamicContexts(getState(), runId);

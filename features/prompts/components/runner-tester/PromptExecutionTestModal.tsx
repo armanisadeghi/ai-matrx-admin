@@ -94,6 +94,7 @@ export default function PromptExecutionTestModal({
         executionConfig: {
           ...executionConfig,
           track_in_runs: false, // Don't track test executions
+          use_pre_execution_input: false,
         },
         variables: variables || {},
         resources: resources || [],
@@ -138,6 +139,7 @@ export default function PromptExecutionTestModal({
         executionConfig: {
           ...executionConfig,
           track_in_runs: false,
+          use_pre_execution_input: false,
         },
         variables: { ...variables, selected_text: selectedText },
         resources: resources || [],
@@ -215,6 +217,7 @@ export default function PromptExecutionTestModal({
         executionConfig: {
           ...executionConfig,
           track_in_runs: false,
+          use_pre_execution_input: false,
         },
         variables: variables || {},
         resources: resources || [],

@@ -30,7 +30,6 @@ export type {
 export type {
   ResultDisplay,
   PromptExecutionConfig,
-  LegacyPromptExecutionMode,
 } from './execution-modes';
 
 export {

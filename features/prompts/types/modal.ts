@@ -176,6 +176,7 @@ export function resolveExecutionConfig(
       show_variables: individualFlags.showVariables ?? false,
       apply_variables: individualFlags.applyVariables ?? true,
       track_in_runs: true,
+      use_pre_execution_input: false,
     };
   }
   
@@ -186,6 +187,7 @@ export function resolveExecutionConfig(
     show_variables: false,
     apply_variables: true,
     track_in_runs: true,
+    use_pre_execution_input: false,
   };
 }
 

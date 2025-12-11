@@ -23,7 +23,8 @@
  *     allow_chat: true,
  *     show_variables: false,
  *     apply_variables: true,
- *     track_in_runs: true
+ *     track_in_runs: true,
+ *     use_pre_execution_input: false,
  *   },
  *   variables: { text: selectedText, format: 'markdown' },
  *   resources: [

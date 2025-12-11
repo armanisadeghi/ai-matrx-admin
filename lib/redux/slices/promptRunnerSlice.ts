@@ -82,6 +82,13 @@ export interface PromptRunnerState {
     taskId?: string;
     isStreaming?: boolean;
   }>;
+  
+  // Pre-execution input modal (NEW)
+  preExecutionModal: {
+    isOpen: boolean;
+    config: PromptRunnerModalConfig | null;
+    targetResultDisplay: string | null; // Where to go after submission (ResultDisplay type)
+  };
 }
 
 const initialState: PromptRunnerState = {
@@ -127,6 +134,11 @@ const initialState: PromptRunnerState = {
     openedAt: null,
   },
   toastQueue: [],
+  preExecutionModal: {
+    isOpen: false,
+    config: null,
+    targetResultDisplay: null,
+  },
 };
 
 const promptRunnerSlice = createSlice({
@@ -471,6 +483,25 @@ const promptRunnerSlice = createSlice({
     clearAllToasts: (state) => {
       state.toastQueue = [];
     },
+    
+    // ========== PRE-EXECUTION MODAL ==========
+    openPreExecutionModal: (state, action: PayloadAction<{
+      config: PromptRunnerModalConfig;
+      targetResultDisplay: string;
+    }>) => {
+      state.preExecutionModal = {
+        isOpen: true,
+        config: action.payload.config,
+        targetResultDisplay: action.payload.targetResultDisplay,
+      };
+    },
+    closePreExecutionModal: (state) => {
+      state.preExecutionModal = {
+        isOpen: false,
+        config: null,
+        targetResultDisplay: null,
+      };
+    },
   },
 });
 
@@ -542,6 +573,14 @@ export const selectToastQueue = (state: RootState) =>
 export const selectHasActiveToasts = (state: RootState) =>
   (state.promptRunner?.toastQueue?.length || 0) > 0;
 
+// Pre-Execution Modal
+export const selectIsPreExecutionModalOpen = (state: RootState) =>
+  state.promptRunner?.preExecutionModal?.isOpen || false;
+export const selectPreExecutionModalConfig = (state: RootState) =>
+  state.promptRunner?.preExecutionModal?.config || null;
+export const selectPreExecutionTargetDisplay = (state: RootState) =>
+  state.promptRunner?.preExecutionModal?.targetResultDisplay || null;
+
 // ========== ACTIONS EXPORT ==========
 export const {
   // Modal-Full
@@ -573,6 +612,9 @@ export const {
   addToastResult,
   removeToast,
   clearAllToasts,
+  // Pre-Execution Modal
+  openPreExecutionModal,
+  closePreExecutionModal,
 } = promptRunnerSlice.actions;
 
 export default promptRunnerSlice.reducer;

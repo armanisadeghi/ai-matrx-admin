@@ -37,7 +37,8 @@ import { PromptRunnerModalConfig } from '@/features/prompts/types/modal';
  *     auto_run: true,
  *     allow_chat: true,
  *     show_variables: false,
- *     apply_variables: true
+ *     apply_variables: true,
+ *     use_pre_execution_input: false,
  *   },
  *   variables: { text: selectedText }
  * }));
@@ -49,7 +50,8 @@ import { PromptRunnerModalConfig } from '@/features/prompts/types/modal';
  *     auto_run: false,
  *     allow_chat: true,
  *     show_variables: true,
- *     apply_variables: false
+ *     apply_variables: false,
+ *     use_pre_execution_input: false,
  *   }
  * }));
  * ```

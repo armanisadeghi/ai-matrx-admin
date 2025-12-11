@@ -104,6 +104,7 @@ export interface PromptExecutionConfig {
   show_variables: boolean;
   apply_variables: boolean;
   track_in_runs: boolean;
+  use_pre_execution_input: boolean; // Show input modal before execution
 }
 
 export const DEFAULT_EXECUTION_CONFIG: PromptExecutionConfig = {
@@ -113,6 +114,7 @@ export const DEFAULT_EXECUTION_CONFIG: PromptExecutionConfig = {
   show_variables: false,
   apply_variables: true,
   track_in_runs: true,
+  use_pre_execution_input: false,
 };
 
 export function parseExecutionConfig(
@@ -121,7 +123,8 @@ export function parseExecutionConfig(
   allow_chat?: boolean | null,
   show_variables?: boolean | null,
   apply_variables?: boolean | null,
-  track_in_runs?: boolean | null
+  track_in_runs?: boolean | null,
+  use_pre_execution_input?: boolean | null
 ): PromptExecutionConfig {
   return {
     result_display: (result_display as ResultDisplay) || DEFAULT_EXECUTION_CONFIG.result_display,
@@ -130,6 +133,7 @@ export function parseExecutionConfig(
     show_variables: show_variables ?? DEFAULT_EXECUTION_CONFIG.show_variables,
     apply_variables: apply_variables ?? DEFAULT_EXECUTION_CONFIG.apply_variables,
     track_in_runs: track_in_runs ?? DEFAULT_EXECUTION_CONFIG.track_in_runs,
+    use_pre_execution_input: use_pre_execution_input ?? DEFAULT_EXECUTION_CONFIG.use_pre_execution_input,
   };
 }
 
@@ -164,86 +168,4 @@ export function getDisplayMeta(display: ResultDisplay) {
  */
 export function isTestMode(display: ResultDisplay): boolean {
   return RESULT_DISPLAY_META[display].testMode;
-}
-
-// ============================================================================
-// Legacy Mode Conversion
-// ============================================================================
-
-export type LegacyPromptExecutionMode = 
-  | 'auto-run'
-  | 'auto-run-one-shot'
-  | 'manual-with-hidden-variables'
-  | 'manual-with-visible-variables'
-  | 'manual';
-
-export function convertLegacyModeToConfig(mode: LegacyPromptExecutionMode): Omit<PromptExecutionConfig, 'result_display'> {
-  switch (mode) {
-    case 'auto-run':
-      return {
-        auto_run: true,
-        allow_chat: true,
-        show_variables: false,
-        apply_variables: true,
-        track_in_runs: true,
-      };
-    
-    case 'auto-run-one-shot':
-      return {
-        auto_run: true,
-        allow_chat: false,
-        show_variables: false,
-        apply_variables: true,
-        track_in_runs: true,
-      };
-    
-    case 'manual-with-hidden-variables':
-      return {
-        auto_run: false,
-        allow_chat: true,
-        show_variables: false,
-        apply_variables: true,
-        track_in_runs: true,
-      };
-    
-    case 'manual-with-visible-variables':
-      return {
-        auto_run: false,
-        allow_chat: true,
-        show_variables: true,
-        apply_variables: true,
-        track_in_runs: true,
-      };
-    
-    case 'manual':
-    default:
-      return {
-        auto_run: false,
-        allow_chat: true,
-        show_variables: false,
-        apply_variables: false,
-        track_in_runs: true,
-      };
-  }
-}
-
-export function convertConfigToLegacyMode(config: Omit<PromptExecutionConfig, 'result_display'>): LegacyPromptExecutionMode {
-  // Note: track_in_runs is ignored for legacy mode conversion
-  if (config.auto_run && config.allow_chat && !config.show_variables && config.apply_variables) {
-    return 'auto-run';
-  }
-  
-  if (config.auto_run && !config.allow_chat && !config.show_variables && config.apply_variables) {
-    return 'auto-run-one-shot';
-  }
-  
-  if (!config.auto_run && config.allow_chat && !config.show_variables && config.apply_variables) {
-    return 'manual-with-hidden-variables';
-  }
-  
-  if (!config.auto_run && config.allow_chat && config.show_variables && config.apply_variables) {
-    return 'manual-with-visible-variables';
-  }
-  
-  return 'manual';
 }

@@ -75,6 +75,7 @@ export function PromptExecutionCard({
                     show_variables: false,
                     apply_variables: true,
                     track_in_runs: true,
+                    use_pre_execution_input: false,
                 },
                 variables: {
                     title,

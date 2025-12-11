@@ -119,6 +119,8 @@ export function AICodeEditorModalV2({
                             allow_chat: true,
                             show_variables: false,
                             apply_variables: true,
+                            track_in_runs: true,
+                            use_pre_execution_input: false,
                         },
                         variables: {
                             current_code: currentCode,

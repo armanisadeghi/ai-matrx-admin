@@ -111,6 +111,7 @@ export function usePromptRunner(): UsePromptRunnerReturn {
         show_variables: false,
         apply_variables: true,
         track_in_runs: true,
+        use_pre_execution_input: false,
       },
       ...restOptions
     } = options;
@@ -151,6 +152,7 @@ export function openPromptImperative(
       show_variables: false,
       apply_variables: true,
       track_in_runs: true,
+      use_pre_execution_input: false,
     },
     ...restOptions
   } = options;

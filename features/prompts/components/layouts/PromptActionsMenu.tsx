@@ -135,6 +135,8 @@ export function PromptActionsMenu({
                 allow_chat: true,
                 show_variables: true,
                 apply_variables: false,
+                track_in_runs: true,
+                use_pre_execution_input: false,
             },
         });
     };

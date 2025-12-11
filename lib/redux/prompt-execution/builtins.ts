@@ -182,7 +182,7 @@ export interface PromptBuiltin {
    * dispatch(startPromptInstance(
    *   createBuiltinConfig('prompt-app-auto-create', {
    *     variables: { name: 'My App', description: 'Cool app' },
-   *     executionConfig: { track_in_runs: true }
+   *     executionConfig: { track_in_runs: true, use_pre_execution_input: false }
    *   })
    * ))
    * ```
@@ -202,6 +202,7 @@ export interface PromptBuiltin {
       show_variables: false,
       apply_variables: true,
       track_in_runs: true,
+      use_pre_execution_input: false,
     };
 
     return {

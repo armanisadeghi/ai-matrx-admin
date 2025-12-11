@@ -21,6 +21,7 @@
  *       show_variables: false,
  *       apply_variables: true,
  *       track_in_runs: true,
+ *       use_pre_execution_input: false,
  *     },
  *     variables: { text: selectedText },
  *   });
@@ -38,6 +39,7 @@
  *     show_variables: false,
  *     apply_variables: true,
  *     track_in_runs: false,
+ *     use_pre_execution_input: false,
  *   },
  *   resources: [
  *     { type: 'image', url: imageUrl, name: 'screenshot.png' }

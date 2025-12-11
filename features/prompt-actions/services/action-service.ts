@@ -215,6 +215,7 @@ export async function createAction(
       apply_variables: true,
       result_display: 'modal-full',
       track_in_runs: true,
+      use_pre_execution_input: false,
       ...payload.execution_config,
     };
 

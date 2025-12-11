@@ -129,6 +129,12 @@ const PromptToast = dynamic(
   { ssr: false }
 );
 
+// Pre-Execution Input Modal (NEW)
+const PreExecutionInputModalContainer = dynamic(
+  () => import("@/features/prompts/components/modals/PreExecutionInputModalContainer").then(mod => ({ default: mod.PreExecutionInputModalContainer })),
+  { ssr: false }
+);
+
 /**
  * OverlayController component renders different overlays based on redux state
  */
@@ -426,6 +432,9 @@ export const OverlayController: React.FC = () => {
       )}
 
       {/* ========== PROMPT RESULT DISPLAYS ========== */}
+      
+      {/* Pre-Execution Input Modal - Collects variables before execution */}
+      <PreExecutionInputModalContainer />
       
       {/* Modal Full - Requires runId to be initialized in Redux */}
       {isPromptModalOpen && promptModalConfig?.runId && (

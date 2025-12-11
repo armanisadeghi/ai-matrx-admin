@@ -16,6 +16,7 @@ export interface ExecutionConfig {
   show_variables: boolean;
   apply_variables: boolean;
   track_in_runs: boolean;
+  use_pre_execution_input: boolean; // Show input modal before execution
 }
 
 export interface ExecutionVariables {

@@ -141,6 +141,7 @@ export function useAICodeEditor({
                             show_variables: true,
                             apply_variables: true,
                             track_in_runs: false,
+                            use_pre_execution_input: false,
                         },
                     })).unwrap();
 

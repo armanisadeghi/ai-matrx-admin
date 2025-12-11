@@ -61,6 +61,7 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                     show_variables: true,
                     apply_variables: true,
                     track_in_runs: true,
+                    use_pre_execution_input: false,
                 },
             })).unwrap();
             

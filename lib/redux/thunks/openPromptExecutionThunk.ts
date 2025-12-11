@@ -141,7 +141,36 @@ export const openPromptExecution = createAsyncThunk<
       initialMessage,
       title: title || instance.promptName, // ✅ Use instance.promptName as fallback
       runId: createdRunId, // ⭐ Now all configs include runId
+      // Include optional callbacks for inline display
+      ...(onTextReplace && { onTextReplace }),
+      ...(onTextInsertBefore && { onTextInsertBefore }),
+      ...(onTextInsertAfter && { onTextInsertAfter }),
+      ...(originalText && { originalText }),
+      ...(sidebarPosition && { sidebarPosition }),
+      ...(sidebarSize && { sidebarSize }),
+      ...(onExecutionComplete && { onExecutionComplete }),
     };
+
+    // ============================================================================
+    // STEP 2.5: Check for Pre-Execution Input (NEW)
+    // ============================================================================
+    if (executionConfig.use_pre_execution_input && 
+        result_display !== 'direct' && 
+        result_display !== 'background') {
+      
+      // Import the action
+      const { openPreExecutionModal } = await import('../slices/promptRunnerSlice');
+      
+      // Open pre-execution input modal instead of final display
+      dispatch(openPreExecutionModal({
+        config: baseModalConfig,
+        targetResultDisplay: result_display, // Store where to go after
+      }));
+      
+      // Don't auto-execute yet - wait for user submission
+      // Pre-execution modal will handle the submission via submitPreExecutionThunk
+      return createdRunId;
+    }
 
     // ============================================================================
     // STEP 3: Route to Display Type

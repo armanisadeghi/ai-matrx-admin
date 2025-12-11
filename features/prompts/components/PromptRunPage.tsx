@@ -131,7 +131,8 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
                     allow_chat: true,
                     show_variables: true,
                     apply_variables: true,
-                    track_in_runs: true
+                    track_in_runs: true,
+                    use_pre_execution_input: false,
                 },
                 variables: {} // Defaults will be used
             })).unwrap().then((newRunId) => {

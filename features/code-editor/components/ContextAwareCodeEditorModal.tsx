@@ -311,6 +311,7 @@ export function ContextAwareCodeEditorModal({
                 show_variables: false,
                 apply_variables: true,
                 track_in_runs: true,
+                use_pre_execution_input: false,
             }}
             onResponseComplete={handleResponseComplete}
             onContextChange={handleContextChange}

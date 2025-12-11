@@ -25,6 +25,9 @@ export interface ActionExecutionConfig {
 
   /** Whether to track execution in ai_runs and ai_tasks tables */
   track_in_runs: boolean;
+
+  /** Whether to show the pre-execution input modal before execution */
+  use_pre_execution_input: boolean;
 }
 
 /**

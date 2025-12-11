@@ -220,6 +220,7 @@ export const startPromptAction = createAsyncThunk<
             show_variables: action.execution_config.show_variables,
             apply_variables: action.execution_config.apply_variables,
             track_in_runs: action.execution_config.track_in_runs,
+            use_pre_execution_input: action.execution_config.use_pre_execution_input,
           },
           initialMessage,
           runId,
