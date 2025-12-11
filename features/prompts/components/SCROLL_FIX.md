@@ -1,5 +1,7 @@
 # Scroll Position Fix
 
+DOCUMENT IS OUTDATED!
+
 ## Problem
 When clicking display text to enter edit mode (div → textarea), browser auto-scrolls to bring the newly focused textarea into view, causing jarring scroll jumps (often to top of container).
 

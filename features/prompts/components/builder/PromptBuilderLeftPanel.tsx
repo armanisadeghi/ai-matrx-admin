@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React, { RefObject, useRef } from "react";
 import { PromptMessage, PromptSettings, PromptVariable } from "@/features/prompts/types/core";
 import { ModelConfiguration } from "../configuration/ModelConfiguration";
 import { VariablesManager } from "../configuration/VariablesManager";
@@ -106,9 +106,12 @@ export function PromptBuilderLeftPanel({
     onCursorPositionChange,
     onOpenFullScreenEditor,
 }: PromptBuilderLeftPanelProps) {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    
     return (
         <div className="h-full w-full bg-textured flex flex-col overflow-x-hidden">
             <div 
+                ref={scrollContainerRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden pl-2 pr-1 space-y-3 scrollbar-thin" 
                 style={{ 
                     scrollbarGutter: "stable",
@@ -159,6 +162,7 @@ export function PromptBuilderLeftPanel({
                     isEditing={isEditingSystemMessage}
                     onIsEditingChange={onIsEditingSystemMessageChange}
                     onOpenFullScreenEditor={onOpenFullScreenEditor ? () => onOpenFullScreenEditor(-1) : undefined}
+                    scrollContainerRef={scrollContainerRef}
                 />
                 {/* Prompt Messages */}
                 <PromptMessages
@@ -178,6 +182,7 @@ export function PromptBuilderLeftPanel({
                     onCursorPositionChange={onCursorPositionChange}
                     variableDefaults={variableDefaults}
                     onOpenFullScreenEditor={onOpenFullScreenEditor}
+                    scrollContainerRef={scrollContainerRef}
                 />{" "}
             </div>
 

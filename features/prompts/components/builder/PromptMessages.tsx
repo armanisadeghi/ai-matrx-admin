@@ -30,6 +30,7 @@ interface PromptMessagesProps {
     onCursorPositionChange: (positions: Record<number, number>) => void;
     variableDefaults: PromptVariable[];
     onOpenFullScreenEditor?: (messageIndex: number) => void;
+    scrollContainerRef?: RefObject<HTMLDivElement>;
 }
 
 export function PromptMessages({
@@ -49,6 +50,7 @@ export function PromptMessages({
     onCursorPositionChange,
     variableDefaults,
     onOpenFullScreenEditor,
+    scrollContainerRef,
 }: PromptMessagesProps) {
     // Derive variable names from variableDefaults
     const variableNames = variableDefaults.map(v => v.name);
@@ -237,19 +239,61 @@ export function PromptMessages({
                                                         el.style.height = "auto";
                                                         el.style.height = el.scrollHeight + "px";
                                                         
-                                                        setTimeout(() => {
-                                                            el.focus({ preventScroll: true });
-                                                        }, 0);
+                                                        // Focus immediately with preventScroll (no setTimeout needed)
+                                                        el.focus({ preventScroll: true });
                                                     }
                                                 }}
                                                 value={message.content}
                                                 onChange={(e) => {
                                                     onMessageContentChange(index, e.target.value);
+                                                    
+                                                    if (!scrollContainerRef?.current) {
+                                                        // Fallback if no scroll container ref
+                                                        e.target.style.height = "auto";
+                                                        e.target.style.height = e.target.scrollHeight + "px";
+                                                        return;
+                                                    }
+                                                    
+                                                    // ⚠️ CRITICAL: Temporarily disable scroll to prevent browser auto-scroll
+                                                    const scrollContainer = scrollContainerRef.current;
+                                                    const savedScroll = scrollContainer.scrollTop;
+                                                    const savedOverflow = scrollContainer.style.overflow;
+                                                    
+                                                    // Lock scroll by hiding overflow temporarily
+                                                    scrollContainer.style.overflow = "hidden";
+                                                    
                                                     // Auto-resize textarea
                                                     e.target.style.height = "auto";
                                                     e.target.style.height = e.target.scrollHeight + "px";
+                                                    
+                                                    // Restore scroll position and overflow immediately
+                                                    scrollContainer.scrollTop = savedScroll;
+                                                    scrollContainer.style.overflow = savedOverflow;
+                                                }}
+                                                onMouseDown={(e) => {
+                                                    // ⚠️ CRITICAL: Prevent scroll BEFORE focus event
+                                                    // Save scroll position before any potential scroll
+                                                    if (scrollContainerRef?.current) {
+                                                        const savedScroll = scrollContainerRef.current.scrollTop;
+                                                        // Restore after any browser scroll attempts
+                                                        requestAnimationFrame(() => {
+                                                            if (scrollContainerRef.current) {
+                                                                scrollContainerRef.current.scrollTop = savedScroll;
+                                                            }
+                                                        });
+                                                    }
                                                 }}
                                                 onSelect={(e) => {
+                                                    // ⚠️ CRITICAL: Lock scroll position during cursor movement
+                                                    if (scrollContainerRef?.current) {
+                                                        const savedScroll = scrollContainerRef.current.scrollTop;
+                                                        requestAnimationFrame(() => {
+                                                            if (scrollContainerRef.current) {
+                                                                scrollContainerRef.current.scrollTop = savedScroll;
+                                                            }
+                                                        });
+                                                    }
+                                                    
                                                     // Track cursor position
                                                     const target = e.target as HTMLTextAreaElement;
                                                     onCursorPositionChange({
@@ -296,8 +340,10 @@ export function PromptMessages({
                                                 // This prevents browser auto-scroll when transitioning to edit mode.
                                                 // Removing or modifying will break scroll position preservation.
                                                 
-                                                const scrollContainer = document.querySelector('.scrollbar-thin') as HTMLElement;
-                                                const savedScrollPosition = scrollContainer?.scrollTop || 0;
+                                                if (!scrollContainerRef?.current) return;
+                                                
+                                                const scrollContainer = scrollContainerRef.current;
+                                                const savedScrollPosition = scrollContainer.scrollTop;
                                                 
                                                 // Calculate approximate cursor position from click
                                                 const target = e.target as HTMLElement;
@@ -314,19 +360,15 @@ export function PromptMessages({
                                                 
                                                 onEditingMessageIndexChange(index);
                                                 
-                                                // CRITICAL: Double requestAnimationFrame waits for React to render textarea
+                                                // CRITICAL: Single requestAnimationFrame waits for React to render textarea
                                                 requestAnimationFrame(() => {
-                                                    requestAnimationFrame(() => {
-                                                        if (scrollContainer) {
-                                                            scrollContainer.scrollTop = savedScrollPosition;
-                                                        }
-                                                        
-                                                        // Set cursor position in the textarea
-                                                        const textarea = textareaRefs.current[index];
-                                                        if (textarea && clickPosition > 0) {
-                                                            textarea.setSelectionRange(clickPosition, clickPosition);
-                                                        }
-                                                    });
+                                                    scrollContainer.scrollTop = savedScrollPosition;
+                                                    
+                                                    // Set cursor position in the textarea
+                                                    const textarea = textareaRefs.current[index];
+                                                    if (textarea && clickPosition > 0) {
+                                                        textarea.setSelectionRange(clickPosition, clickPosition);
+                                                    }
                                                 });
                                             }}
                                             style={{
