@@ -20,11 +20,12 @@ import {
 } from '@/lib/redux/prompt-execution/selectors';
 import { useProgrammaticPromptExecution } from '../../hooks/useProgrammaticPromptExecution';
 import PromptExecutionTestModal from './PromptExecutionTestModal';
+import { CompactPromptModal } from '../smart';
 import type { ResultDisplay } from '@/features/prompt-builtins/types/execution-modes';
 import { getAllDisplayTypes, getDisplayMeta } from '@/features/prompt-builtins/types/execution-modes';
 import {
     ChevronDown, Zap, Eye, Settings, TestTube2, Play, TestTube,
-    Database
+    Database, Minimize2
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
@@ -46,6 +47,11 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
     const [isOpen, setIsOpen] = useState(false);
     const [testModalOpen, setTestModalOpen] = useState(false);
     const [testModalType, setTestModalType] = useState<'direct' | 'inline' | 'background'>('direct');
+    
+    // CompactPromptModal testing (local state for now, will move to Redux later)
+    const [useCompactInput, setUseCompactInput] = useState(false);
+    const [compactModalOpen, setCompactModalOpen] = useState(false);
+    const [compactRunId, setCompactRunId] = useState<string | null>(null);
 
     // Execution config toggles (user controls)
     const [autoRun, setAutoRun] = useState(true);
@@ -62,6 +68,13 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
     const openWithDisplayType = async (resultDisplay: ResultDisplay) => {
         if (!instance) {
             console.warn('No active run instance - cannot test display type');
+            return;
+        }
+
+        // If CompactPromptModal is enabled, use the current runId to show compact input
+        if (useCompactInput && runId) {
+            setCompactRunId(runId);
+            setCompactModalOpen(true);
             return;
         }
 
@@ -135,6 +148,23 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
                 </CollapsibleTrigger>
 
                 <CollapsibleContent className="space-y-2">
+                    {/* CompactPromptModal Toggle */}
+                    <div className="space-y-2 pr-2 pl-4 pb-2">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="use-compact" className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Minimize2 className="w-3.5 h-3.5" />
+                                Use Compact Input
+                            </Label>
+                            <Switch
+                                id="use-compact"
+                                checked={useCompactInput}
+                                onCheckedChange={setUseCompactInput}
+                            />
+                        </div>
+                    </div>
+                    
+                    <Separator />
+
                     {/* Execution Config Toggles */}
                     <div className="space-y-2 pr-2 pl-4">
                         <div className="flex items-center justify-between">
@@ -248,6 +278,20 @@ export function PromptRunnerModalSidebarTester({ runId }: PromptRunnerModalSideb
                     initialMessage={currentInput}
                 />
             )}
+
+            {/* CompactPromptModal for testing */}
+            <CompactPromptModal
+                isOpen={compactModalOpen}
+                onClose={() => {
+                    setCompactModalOpen(false);
+                    setCompactRunId(null);
+                }}
+                runId={compactRunId || undefined}
+                onSubmit={() => {
+                    console.log('✅ Compact prompt submitted');
+                    // Keep modal open to see results
+                }}
+            />
         </Collapsible>
     );
 }

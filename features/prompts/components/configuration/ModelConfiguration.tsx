@@ -21,7 +21,7 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                 <div className="flex items-center gap-3">
                     <Label className="text-xs text-gray-600 dark:text-gray-400">Model</Label>
                     <Select value={model} onValueChange={onModelChange}>
-                        <SelectTrigger className="h-8 bg-transparent text-gray-700 dark:text-gray-500 border-none hover:bg-gray-200 dark:hover:bg-gray-700 w-auto min-w-[180px] text-xs focus-none">
+                        <SelectTrigger className="h-6 hover:bg-gray-200 dark:hover:bg-gray-700 w-auto min-w-[220px] text-xs focus-none">
                             <SelectValue>
                                 {models.find(m => m.id === model)?.common_name || model}
                             </SelectValue>

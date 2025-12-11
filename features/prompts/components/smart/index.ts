@@ -18,4 +18,6 @@
 
 export { SmartPromptInput } from './SmartPromptInput';
 export { SmartResourcePickerButton } from './SmartResourcePickerButton';
+export { CompactPromptInput } from './CompactPromptInput';
+export { CompactPromptModal } from './CompactPromptModal';
 

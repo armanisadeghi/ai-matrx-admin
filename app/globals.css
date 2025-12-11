@@ -732,7 +732,8 @@
     .border {
         border-width: 1px;
         border-style: solid;
-        border-color: hsl(var(--border));
+        /* In Tailwind v4, border defaults to currentColor to allow color utilities to work */
+        /* If you need the default border color, use: border border-border */
     }
     
     .border-0 {
