@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
-import { Upload, X, Loader2, CheckCircle2, AlertCircle, File as FileIcon } from "lucide-react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { Upload, X, Loader2, CheckCircle2, AlertCircle, File as FileIcon, Folder, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createFileSystemSlice } from "@/lib/redux/fileSystem/slice";
-import { AvailableBuckets } from "@/lib/redux/fileSystem/types";
+import { createFileSystemSelectors } from "@/lib/redux/fileSystem/selectors";
+import { AvailableBuckets, FileSystemNode } from "@/lib/redux/fileSystem/types";
 import { formatBytes } from "@/components/ui/file-preview/utils/formatting";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface FileUploadDialogProps {
     isOpen: boolean;
     onClose: () => void;
     bucket: AvailableBuckets;
+    initialPath?: string;
 }
 
 interface UploadingFile {
@@ -22,15 +25,101 @@ interface UploadingFile {
     error?: string;
 }
 
-export function FileUploadDialog({ isOpen, onClose, bucket }: FileUploadDialogProps) {
+interface FolderTreeItemProps {
+    node: FileSystemNode;
+    allNodes: FileSystemNode[];
+    selectedPath: string;
+    onSelect: (path: string) => void;
+    level: number;
+}
+
+function FolderTreeItem({ node, allNodes, selectedPath, onSelect, level }: FolderTreeItemProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const childFolders = allNodes.filter(n => n.parentId === node.itemId);
+    const hasChildren = childFolders.length > 0;
+    const isSelected = selectedPath === node.storagePath;
+
+    return (
+        <div>
+            <button
+                onClick={() => {
+                    if (hasChildren) {
+                        setIsExpanded(!isExpanded);
+                    }
+                    onSelect(node.storagePath);
+                }}
+                className={cn(
+                    "w-full flex items-center gap-1 px-2 py-1.5 rounded-sm text-sm hover:bg-accent transition-colors text-left",
+                    isSelected && "bg-accent",
+                )}
+                style={{ paddingLeft: `${(level + 1) * 12 + 8}px` }}
+            >
+                {hasChildren && (
+                    <span className="flex-shrink-0">
+                        {isExpanded ? (
+                            <ChevronDown className="h-3 w-3" />
+                        ) : (
+                            <ChevronRight className="h-3 w-3" />
+                        )}
+                    </span>
+                )}
+                {!hasChildren && <span className="w-3" />}
+                <Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span className="truncate">{node.name}</span>
+            </button>
+            {isExpanded && hasChildren && (
+                <div>
+                    {childFolders.map(childNode => (
+                        <FolderTreeItem
+                            key={childNode.itemId}
+                            node={childNode}
+                            allNodes={allNodes}
+                            selectedPath={selectedPath}
+                            onSelect={onSelect}
+                            level={level + 1}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export function FileUploadDialog({ isOpen, onClose, bucket, initialPath }: FileUploadDialogProps) {
     const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [showFolderPicker, setShowFolderPicker] = useState(false);
+    const [selectedFolderPath, setSelectedFolderPath] = useState<string>("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dispatch = useAppDispatch();
     
     const slice = createFileSystemSlice(bucket);
+    const selectors = createFileSystemSelectors(bucket);
     const { actions } = slice;
+    
+    const allNodes = useAppSelector(selectors.selectAllNodes);
+    const activeNode = useAppSelector(selectors.selectActiveNode);
+    
+    // Initialize selected folder path based on active node
+    useEffect(() => {
+        if (initialPath !== undefined) {
+            setSelectedFolderPath(initialPath);
+        } else if (activeNode) {
+            // If activeNode is a folder, use it; if it's a file, use its parent
+            if (activeNode.contentType === 'FOLDER') {
+                setSelectedFolderPath(activeNode.storagePath);
+            } else if (activeNode.parentId && activeNode.parentId !== 'root') {
+                const parentNode = allNodes.find(n => n.itemId === activeNode.parentId);
+                setSelectedFolderPath(parentNode?.storagePath || "");
+            } else {
+                setSelectedFolderPath("");
+            }
+        } else {
+            setSelectedFolderPath("");
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialPath, activeNode?.itemId, activeNode?.contentType, activeNode?.storagePath, activeNode?.parentId]);
 
     const handleFiles = useCallback((files: File[]) => {
         if (files.length === 0) return;
@@ -84,7 +173,12 @@ export function FileUploadDialog({ isOpen, onClose, bucket }: FileUploadDialogPr
             setUploadingFiles([...updatedFiles]);
 
             try {
-                await dispatch(actions.uploadFile({ file: updatedFiles[i].file })).unwrap();
+                await dispatch(actions.uploadFile({ 
+                    file: updatedFiles[i].file,
+                    options: {
+                        targetPath: selectedFolderPath // Pass the selected folder path
+                    }
+                })).unwrap();
                 updatedFiles[i] = { ...updatedFiles[i], status: "success" };
             } catch (error) {
                 console.error("Upload error:", error);
@@ -119,7 +213,7 @@ export function FileUploadDialog({ isOpen, onClose, bucket }: FileUploadDialogPr
                 handleClose();
             }, 1500);
         }
-    }, [uploadingFiles, dispatch, actions]);
+    }, [uploadingFiles, dispatch, actions, selectedFolderPath]);
 
     const handleClose = useCallback(() => {
         if (!isUploading) {
@@ -131,15 +225,87 @@ export function FileUploadDialog({ isOpen, onClose, bucket }: FileUploadDialogPr
 
     const allComplete = uploadingFiles.every(f => f.status === "success" || f.status === "error");
 
+    // Format the destination path for display
+    const displayPath = selectedFolderPath 
+        ? `${bucket}/${selectedFolderPath}` 
+        : `${bucket} (root)`;
+    
+    // Get folder nodes for the tree
+    const folderNodes = allNodes.filter(node => node.contentType === 'FOLDER');
+    
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Upload Files</DialogTitle>
                     <DialogDescription>
-                        Upload files to <span className="font-medium">{bucket}</span> bucket
+                        Choose files to upload to your storage
                     </DialogDescription>
                 </DialogHeader>
+
+                {/* Destination Path Display */}
+                <div className="border rounded-lg p-3 bg-muted/30">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground mb-1">Uploading to:</p>
+                            <div className="flex items-center gap-2">
+                                <Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                                <p className="text-sm font-medium truncate">{displayPath}</p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowFolderPicker(!showFolderPicker)}
+                            disabled={isUploading}
+                            className="flex-shrink-0"
+                        >
+                            {showFolderPicker ? <ChevronDown className="h-4 w-4 mr-1" /> : <ChevronRight className="h-4 w-4 mr-1" />}
+                            Change
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Folder Picker */}
+                {showFolderPicker && (
+                    <div className="border rounded-lg p-3 max-h-[200px] overflow-y-auto bg-background">
+                        <p className="text-xs text-muted-foreground mb-2">Select destination folder:</p>
+                        <div className="space-y-0.5">
+                            {/* Root option */}
+                            <button
+                                onClick={() => {
+                                    setSelectedFolderPath("");
+                                    setShowFolderPicker(false);
+                                }}
+                                className={cn(
+                                    "w-full flex items-center gap-2 px-2 py-1.5 rounded-sm text-sm hover:bg-accent transition-colors text-left",
+                                    selectedFolderPath === "" && "bg-accent"
+                                )}
+                            >
+                                <Folder className="h-4 w-4 text-blue-500" />
+                                <span>{bucket} (root)</span>
+                            </button>
+                            
+                            {/* Folder tree */}
+                            {folderNodes
+                                .filter(node => node.parentId === "root")
+                                .map(node => (
+                                    <FolderTreeItem
+                                        key={node.itemId}
+                                        node={node}
+                                        allNodes={folderNodes}
+                                        selectedPath={selectedFolderPath}
+                                        onSelect={(path) => {
+                                            setSelectedFolderPath(path);
+                                            setShowFolderPicker(false);
+                                        }}
+                                        level={0}
+                                    />
+                                ))
+                            }
+                        </div>
+                    </div>
+                )}
 
                 {/* Hidden file input */}
                 <input

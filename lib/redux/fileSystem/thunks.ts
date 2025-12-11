@@ -409,7 +409,22 @@ const uploadFileOperation = async (
   const { state, activeNode, parentId, parentPath, storagePath, cachedNodes } =
     getFileSystemDetails(bucketName, getState);
 
-  const uploadPath = `${parentPath}/${file.name}`.replace(/^\/+/, "");
+  // Use explicit targetPath if provided, otherwise use parentPath from context
+  // This allows the upload dialog to override the destination
+  const targetFolderPath = options.targetPath !== undefined ? options.targetPath : parentPath;
+  
+  // Validate that the target path is not a file path (safety check)
+  if (targetFolderPath) {
+    // Check if any node exists at this path and if it's a file
+    const nodeAtPath = Object.values(state.nodes).find(
+      node => node.storagePath === targetFolderPath && node.contentType === 'FILE'
+    );
+    if (nodeAtPath) {
+      throw new Error(`Cannot upload to file path: ${targetFolderPath}. Please select a folder.`);
+    }
+  }
+
+  const uploadPath = `${targetFolderPath}/${file.name}`.replace(/^\/+/, "");
 
   const uploadOptions: any = {
     upsert: options.overwrite || false,

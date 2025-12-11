@@ -30,10 +30,13 @@ export default function PromptCompactModal({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [showChat, setShowChat] = useState(false);
   
   const instance = useAppSelector((state) => selectInstance(state, runId));
   const executionConfig = useAppSelector((state) => selectExecutionConfig(state, runId));
+  
+  // Initialize showChat based on show_variables setting - if variables should be shown,
+  // the input area should be visible by default so users can see the variables
+  const [showChat, setShowChat] = useState(executionConfig?.show_variables ?? false);
   const prompt = useAppSelector((state) => 
     instance ? selectCachedPrompt(state, instance.promptId) : null
   );
@@ -55,6 +58,16 @@ export default function PromptCompactModal({
     console.warn('[PromptCompactModal] No instance found for runId:', runId);
     return null;
   }
+  
+  // Update showChat when runId changes or when show_variables setting changes
+  // This ensures the input area is shown by default when show_variables is true
+  useEffect(() => {
+    if (executionConfig?.show_variables) {
+      setShowChat(true);
+    } else {
+      setShowChat(false);
+    }
+  }, [runId, executionConfig?.show_variables]);
   
   // ========== STREAMING FINALIZATION ==========
   // When streaming ends, finalize execution to save message to Redux and DB

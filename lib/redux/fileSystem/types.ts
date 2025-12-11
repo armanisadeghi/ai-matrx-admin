@@ -174,6 +174,7 @@ export interface UploadOptions {
   preserveMetadata?: boolean;
   contentType?: string;
   cacheControl?: string;
+  targetPath?: string; // Explicit upload destination path (folder path)
 }
 
 export interface MoveOptions {

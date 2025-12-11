@@ -29,7 +29,14 @@ export function getFileSystemDetails(
     : null;
   const storagePath: string = activeNode?.storagePath || "";
   const parentId: NodeItemId | null = activeNode?.itemId || null;
-  const parentPath: string = activeNode?.storagePath || "";
+  
+  // CRITICAL FIX: Ensure parentPath always points to a FOLDER, not a FILE
+  // If activeNode is a FILE, use its parent folder's path instead
+  const parentPath: string = activeNode?.contentType === 'FOLDER' 
+    ? activeNode.storagePath 
+    : (activeNode?.parentId && activeNode.parentId !== 'root'
+        ? state.nodes[activeNode.parentId]?.storagePath || ""
+        : "");
 
   const cachedNodes: FileSystemNode[] | null = getCachedNodes(
     state.nodeCache,

@@ -32,6 +32,19 @@ export default function AllFilesPage() {
     setSelectedBucket(bucket);
   }, []);
 
+  // Get the current folder path for upload dialog
+  const getCurrentFolderPath = useCallback((): string => {
+    if (!selectedBucket) return "";
+    
+    // Get Redux selectors for the selected bucket
+    const { createFileSystemSelectors } = require('@/lib/redux/fileSystem/selectors');
+    const selectors = createFileSystemSelectors(selectedBucket);
+    
+    // This would need to be called within a component with access to useAppSelector
+    // For now, we'll pass undefined and let the dialog determine it from Redux state
+    return "";
+  }, [selectedBucket]);
+
   // Fetch file URL when preview file changes
   useEffect(() => {
     if (!previewFile || previewFile.url) {
@@ -164,6 +177,7 @@ export default function AllFilesPage() {
           isOpen={isUploadDialogOpen}
           onClose={() => setIsUploadDialogOpen(false)}
           bucket={selectedBucket}
+          initialPath={undefined} // Let dialog determine from Redux state
         />
       )}
     </>
