@@ -248,27 +248,38 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
                         }}
                     />
                 </div>
+            ) : isMobile ? (
+                /* Mobile Runner View - Direct rendering without AdaptiveLayout */
+                <div className="h-page w-full bg-textured overflow-x-hidden">
+                    {activeRunId ? (
+                        <PromptRunner
+                            runId={activeRunId}
+                            className="h-full w-full"
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                    )}
+                </div>
             ) : (
-                /* Main Layout with AdaptiveLayout */
+                /* Desktop Layout with AdaptiveLayout */
                 <AdaptiveLayout
                     className="h-page bg-textured"
-                    disableAutoCanvas={isMobile} // Disable auto canvas on mobile
                     leftPanelMaxWidth={280} // Compact sidebar for runs list
                     leftPanel={
-                        !isMobile ? (
-                            <PromptRunsSidebar
-                                promptId={promptData.id}
-                                promptName={promptData.name}
-                                currentRunId={urlRunId || undefined}
-                                onRunSelect={handleRunSelect}
-                                onNewRun={handleClearConversation}
-                                footer={
-                                    <PromptRunnerModalSidebarTester
-                                        runId={activeRunId || undefined}
-                                    />
-                                }
-                            />
-                        ) : undefined
+                        <PromptRunsSidebar
+                            promptId={promptData.id}
+                            promptName={promptData.name}
+                            currentRunId={urlRunId || undefined}
+                            onRunSelect={handleRunSelect}
+                            onNewRun={handleClearConversation}
+                            footer={
+                                <PromptRunnerModalSidebarTester
+                                    runId={activeRunId || undefined}
+                                />
+                            }
+                        />
                     }
                     rightPanel={
                         <div className="h-full flex flex-col overflow-hidden">

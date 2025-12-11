@@ -181,7 +181,7 @@ export function PromptRunner({
     }
 
     return (
-        <div className={`flex flex-col h-full overflow-hidden bg-textured ${className || ''}`}>
+        <div className={`flex flex-col h-full overflow-hidden bg-textured w-full ${className || ''}`}>
             {/* Header / Title if needed */}
             {title && (
                 <div className="flex items-center justify-between px-4 py-2 border-b">
@@ -189,9 +189,9 @@ export function PromptRunner({
                 </div>
             )}
 
-            <div className="flex-1 flex flex-row overflow-hidden px-2">
+            <div className={`flex-1 flex flex-row overflow-hidden px-2 ${isMobile ? 'w-full overflow-x-hidden' : ''}`}>
                 {/* Main Content Area - Messages Container */}
-                <div className="flex-1 min-w-[400px] flex flex-col overflow-hidden">
+                <div className={`flex-1 flex flex-col overflow-hidden ${isMobile ? 'min-w-0' : 'min-w-[400px]'}`}>
                     {/* Messages Area */}
                     <div className="flex-1 overflow-y-auto scrollbar-hide">
                         <SmartMessageList runId={runId} showSystemMessage={showSystemMessage} />
