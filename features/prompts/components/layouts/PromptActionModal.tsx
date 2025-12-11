@@ -2,7 +2,51 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Play, Pencil, X, Eye, Copy, Share2, Trash2, Loader2, AppWindow } from "lucide-react";
+import { Play, Pencil, X, Eye, Copy, Share2, Trash2, Loader2, AppWindow, LucideIcon } from "lucide-react";
+
+interface PrimaryActionButtonProps {
+    icon: LucideIcon;
+    title: string;
+    onClick: (e: React.MouseEvent) => void;
+    disabled?: boolean;
+    gradientFrom: string;
+    gradientTo: string;
+    iconBgColor: string;
+    iconTextColor: string;
+}
+
+function PrimaryActionButton({
+    icon: Icon,
+    title,
+    onClick,
+    disabled = false,
+    gradientFrom,
+    gradientTo,
+    iconBgColor,
+    iconTextColor,
+}: PrimaryActionButtonProps) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
+                disabled 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
+            }`}
+        >
+            <div className={`absolute inset-0 bg-gradient-to-r ${gradientFrom} ${gradientTo} transition-all duration-300`} />
+            <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
+                <div className={`p-2 ${iconBgColor} rounded-full group-hover:opacity-90 transition-colors duration-300 group-hover:scale-110 transform`}>
+                    <Icon className={`w-5 h-5 sm:w-7 sm:h-7 ${iconTextColor}`} />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
+                    {title}
+                </h3>
+            </div>
+        </button>
+    );
+}
 
 interface PromptActionModalProps {
     isOpen: boolean;
@@ -64,85 +108,50 @@ export function PromptActionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] my-4 overflow-y-auto bg-gradient-to-br from-card to-muted border-border">
+            <DialogContent className="sm:max-w-md max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] my-2 overflow-y-auto bg-gradient-to-br from-card to-muted border-border">
                 <DialogHeader>
-                    <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-foreground mb-2">
+                    <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-foreground">
                         {promptName || "Untitled Prompt"}
                     </DialogTitle>
-                    {promptDescription && (
-                        <DialogDescription className="text-center text-muted-foreground pt-2 text-sm line-clamp-2">
-                            {promptDescription}
-                        </DialogDescription>
-                    )}
                 </DialogHeader>
                 
-                <div className="space-y-2 sm:space-y-3 py-2 sm:py-4">
+                <div className="space-y-2">
                     {/* Run Prompt Option */}
-                    <button
+                    <PrimaryActionButton
+                        icon={Play}
+                        title="Run Prompt"
                         onClick={(e) => handleAction(e, 'run', onRun)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
-                            isAnyActionActive 
-                                ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
-                        }`}
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300" />
-                        <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
-                            <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-primary rounded-full group-hover:bg-primary/90 transition-colors duration-300 group-hover:scale-110 transform">
-                                <Play className="w-5 h-5 sm:w-7 sm:h-7 text-primary-foreground" />
-                            </div>
-                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
-                                Run Prompt
-                            </h3>
-                        </div>
-                    </button>
+                        gradientFrom="from-primary/10 group-hover:from-primary/20"
+                        gradientTo="to-secondary/10 group-hover:to-secondary/20"
+                        iconBgColor="bg-primary"
+                        iconTextColor="text-primary-foreground"
+                    />
 
                     {/* Edit Prompt Option */}
-                    <button
+                    <PrimaryActionButton
+                        icon={Pencil}
+                        title="Edit Prompt"
                         onClick={(e) => handleAction(e, 'edit', onEdit)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
-                            isAnyActionActive 
-                                ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
-                        }`}
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-accent/10 group-hover:from-secondary/20 group-hover:to-accent/20 transition-all duration-300" />
-                        <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
-                            <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-secondary rounded-full group-hover:bg-secondary/90 transition-colors duration-300 group-hover:scale-110 transform">
-                                <Pencil className="w-5 h-5 sm:w-7 sm:h-7 text-secondary-foreground" />
-                            </div>
-                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
-                                Edit Prompt
-                            </h3>
-                        </div>
-                    </button>
+                        gradientFrom="from-secondary/10 group-hover:from-secondary/20"
+                        gradientTo="to-accent/10 group-hover:to-accent/20"
+                        iconBgColor="bg-secondary"
+                        iconTextColor="text-secondary-foreground"
+                    />
 
                     {/* Create App Option */}
                     {showCreateApp && onCreateApp && (
-                        <button
+                        <PrimaryActionButton
+                            icon={AppWindow}
+                            title="Create App"
                             onClick={(e) => handleAction(e, 'create-app', onCreateApp)}
                             disabled={isAnyActionActive}
-                            className={`w-full group relative overflow-hidden rounded-lg border-2 border-border transition-all duration-300 ${
-                                isAnyActionActive 
-                                    ? 'opacity-50 cursor-not-allowed' 
-                                    : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
-                            }`}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-accent/10 to-primary/10 group-hover:from-accent/20 group-hover:to-primary/20 transition-all duration-300" />
-                            <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
-                                <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-accent rounded-full group-hover:bg-accent/90 transition-colors duration-300 group-hover:scale-110 transform">
-                                    <AppWindow className="w-5 h-5 sm:w-7 sm:h-7 text-accent-foreground" />
-                                </div>
-                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
-                                    Create App
-                                </h3>
-                                <p className="text-xs sm:text-sm text-muted-foreground">
-                                    Turn into shareable web app
-                                </p>
-                            </div>
-                        </button>
+                            gradientFrom="from-green-500/10 group-hover:from-green-500/20"
+                            gradientTo="to-green-500/10 group-hover:to-green-500/20"
+                            iconBgColor="bg-green-500"
+                            iconTextColor="text-secondary-foreground"
+                        />
                     )}
                 </div>
 
@@ -155,7 +164,7 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'view', onView)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-border hover:bg-accent"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent"
                                 >
                                     <Eye className="w-4 h-4 flex-shrink-0" />
                                     <span className="text-xs sm:text-sm font-medium">View</span>
@@ -167,7 +176,7 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'duplicate', onDuplicate)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-border hover:bg-accent relative"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent relative"
                                 >
                                     {isDuplicating && (
                                         <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm flex items-center justify-center rounded-md">
@@ -184,7 +193,7 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'share', onShare)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-border hover:bg-accent"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-border hover:bg-accent"
                                 >
                                     <Share2 className="w-4 h-4 flex-shrink-0" />
                                     <span className="text-xs sm:text-sm font-medium">Share</span>
@@ -196,7 +205,7 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'delete', onDelete)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-destructive/30 text-destructive hover:bg-destructive/10 relative"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2 px-3 sm:px-4 border-destructive/30 text-destructive hover:bg-destructive/10 relative"
                                 >
                                     {isDeleting && (
                                         <div className="absolute inset-0 bg-destructive/20 backdrop-blur-sm flex items-center justify-center rounded-md">

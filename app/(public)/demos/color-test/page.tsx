@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+
 export default function ColorTestPage() {
   return (
     <div className="min-h-dvh bg-background p-8">
@@ -438,6 +440,218 @@ export default function ColorTestPage() {
             <div className="p-2 bg-info text-white rounded-lg">
               <div className="text-xs font-mono mb-1">info</div>
               <div className="text-xs">Blue status</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Button Component Tests */}
+        <section className="space-y-6 border-t pt-8">
+          <h2 className="text-xl font-semibold">Button Component Tests (@/components/ui/button)</h2>
+          <p className="text-sm text-muted-foreground">Testing actual Button component with all variants, sizes, and states</p>
+          
+          {/* All Variants - Default Size */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">All Variants (Default Size)</h3>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="default">Default</Button>
+              <Button variant="destructive">Destructive</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="ghost">Ghost</Button>
+              <Button variant="link">Link</Button>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Hover over each button to test hover states. Expected hover classes documented below.
+            </div>
+            <div className="bg-card border rounded-lg p-3 text-xs font-mono space-y-1">
+              <div><span className="text-primary">default:</span> hover:bg-primary/90</div>
+              <div><span className="text-destructive">destructive:</span> hover:bg-destructive/90</div>
+              <div><span className="text-secondary">outline:</span> hover:bg-accent hover:text-accent-foreground</div>
+              <div><span className="text-secondary">secondary:</span> hover:bg-secondary/80</div>
+              <div><span className="text-muted-foreground">ghost:</span> hover:bg-accent hover:text-accent-foreground</div>
+              <div><span className="text-primary">link:</span> hover:underline</div>
+            </div>
+          </div>
+
+          {/* All Sizes - Default Variant */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">All Sizes (Default Variant)</h3>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button size="sm">Small</Button>
+              <Button size="default">Default</Button>
+              <Button size="lg">Large</Button>
+              <Button size="icon">🔍</Button>
+            </div>
+          </div>
+
+          {/* All Variants with All Sizes - Grid View */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">All Variants × All Sizes (Complete Matrix)</h3>
+            <div className="bg-card border rounded-lg p-4 overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-2">Variant ↓ / Size →</th>
+                    <th className="py-2 px-2">Small</th>
+                    <th className="py-2 px-2">Default</th>
+                    <th className="py-2 px-2">Large</th>
+                    <th className="py-2 px-2">Icon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="py-2 px-2 font-semibold">Default</td>
+                    <td className="py-2 px-2 text-center"><Button variant="default" size="sm">Sm</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="default" size="default">Default</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="default" size="lg">Large</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="default" size="icon">🔍</Button></td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-2 font-semibold">Destructive</td>
+                    <td className="py-2 px-2 text-center"><Button variant="destructive" size="sm">Sm</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="destructive" size="default">Default</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="destructive" size="lg">Large</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="destructive" size="icon">❌</Button></td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-2 font-semibold">Outline</td>
+                    <td className="py-2 px-2 text-center"><Button variant="outline" size="sm">Sm</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="outline" size="default">Default</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="outline" size="lg">Large</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="outline" size="icon">📝</Button></td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-2 font-semibold">Secondary</td>
+                    <td className="py-2 px-2 text-center"><Button variant="secondary" size="sm">Sm</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="secondary" size="default">Default</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="secondary" size="lg">Large</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="secondary" size="icon">⚙️</Button></td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="py-2 px-2 font-semibold">Ghost</td>
+                    <td className="py-2 px-2 text-center"><Button variant="ghost" size="sm">Sm</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="ghost" size="default">Default</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="ghost" size="lg">Large</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="ghost" size="icon">👻</Button></td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-2 font-semibold">Link</td>
+                    <td className="py-2 px-2 text-center"><Button variant="link" size="sm">Sm</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="link" size="default">Default</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="link" size="lg">Large</Button></td>
+                    <td className="py-2 px-2 text-center"><Button variant="link" size="icon">🔗</Button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Disabled States */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Disabled States (All Variants)</h3>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="default" disabled>Default Disabled</Button>
+              <Button variant="destructive" disabled>Destructive Disabled</Button>
+              <Button variant="outline" disabled>Outline Disabled</Button>
+              <Button variant="secondary" disabled>Secondary Disabled</Button>
+              <Button variant="ghost" disabled>Ghost Disabled</Button>
+              <Button variant="link" disabled>Link Disabled</Button>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Disabled buttons should have opacity-50 and no hover effect (disabled:pointer-events-none disabled:opacity-50)
+            </div>
+          </div>
+
+          {/* Buttons on Different Backgrounds */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Buttons on Different Backgrounds</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-background border rounded-lg space-y-2">
+                <div className="text-xs font-mono mb-2">bg-background</div>
+                <Button variant="default">Default</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+              </div>
+              <div className="p-4 bg-card border rounded-lg space-y-2">
+                <div className="text-xs font-mono mb-2">bg-card</div>
+                <Button variant="default">Default</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+              </div>
+              <div className="p-4 bg-muted border rounded-lg space-y-2">
+                <div className="text-xs font-mono mb-2">bg-muted</div>
+                <Button variant="default">Default</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Focus States */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Focus States (Click/Tab to test)</h3>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="default">Focus Me (Default)</Button>
+              <Button variant="outline">Focus Me (Outline)</Button>
+              <Button variant="ghost">Focus Me (Ghost)</Button>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Should show ring-ring on focus (focus-visible:ring-1 focus-visible:ring-ring)
+            </div>
+          </div>
+
+          {/* Button Groups */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Button Groups (Common Patterns)</h3>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Button variant="default">Save</Button>
+                <Button variant="outline">Cancel</Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="destructive">Delete</Button>
+                <Button variant="ghost">Cancel</Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="secondary">Edit</Button>
+                <Button variant="outline">Duplicate</Button>
+                <Button variant="ghost">View</Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Opacity Modifier Test */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Opacity Modifier Tests (Key Issue)</h3>
+            <p className="text-xs text-muted-foreground">
+              Testing if Tailwind 4 properly supports opacity modifiers (/90, /80) on CSS custom properties
+            </p>
+            <div className="bg-card border rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="text-xs font-semibold mb-2">Default Variant (hover:bg-primary/90)</div>
+                  <Button variant="default">Hover to Test Primary/90</Button>
+                  <div className="text-xs font-mono space-y-1 bg-muted p-2 rounded">
+                    <div>Expected: bg-primary → bg-primary/90 on hover</div>
+                    <div className="text-muted-foreground">Class: hover:bg-primary/90</div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="text-xs font-semibold mb-2">Secondary Variant (hover:bg-secondary/80)</div>
+                  <Button variant="secondary">Hover to Test Secondary/80</Button>
+                  <div className="text-xs font-mono space-y-1 bg-muted p-2 rounded">
+                    <div>Expected: bg-secondary → bg-secondary/80 on hover</div>
+                    <div className="text-muted-foreground">Class: hover:bg-secondary/80</div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded text-xs">
+                <div className="font-semibold mb-1">🔍 Debugging Hint:</div>
+                <div className="text-muted-foreground">
+                  If hover doesn't work, the issue is likely that Tailwind 4 isn't generating opacity modifiers for custom CSS variables. 
+                  Check if classes like `bg-primary/90` and `bg-secondary/80` exist in compiled CSS.
+                </div>
+              </div>
             </div>
           </div>
         </section>

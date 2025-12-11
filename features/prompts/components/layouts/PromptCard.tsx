@@ -214,14 +214,14 @@ export function PromptCard({
                     }`} />
                 </div>
             </div>
-            <div className="p-6 pl-12 flex-1 flex items-center justify-center">
+            <div className="p-4 pl-12 flex-1 flex items-center justify-center">
                 <h3 className={`text-lg font-semibold text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${
                     !isDisabled && 'group-hover:text-primary'
                 }`}>
                     {name || "Untitled Prompt"}
                 </h3>
             </div>
-            <div className="border-t border-border p-4 bg-muted rounded-b-lg">
+            <div className="border-t border-border p-1 bg-card rounded-b-lg">
                 <div className="flex gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
                     <IconButton
                         icon={Play}
