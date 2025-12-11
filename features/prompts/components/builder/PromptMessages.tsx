@@ -270,6 +270,31 @@ export function PromptMessages({
                                                     scrollContainer.scrollTop = savedScroll;
                                                     scrollContainer.style.overflow = savedOverflow;
                                                 }}
+                                                onKeyDown={(e) => {
+                                                    // ⚠️ CRITICAL: Lock scroll on keyboard input to prevent browser auto-scroll
+                                                    if (scrollContainerRef?.current) {
+                                                        const savedScroll = scrollContainerRef.current.scrollTop;
+                                                        // Use multiple RAF to catch any delayed scroll attempts
+                                                        requestAnimationFrame(() => {
+                                                            requestAnimationFrame(() => {
+                                                                if (scrollContainerRef.current) {
+                                                                    scrollContainerRef.current.scrollTop = savedScroll;
+                                                                }
+                                                            });
+                                                        });
+                                                    }
+                                                }}
+                                                onInput={(e) => {
+                                                    // ⚠️ CRITICAL: Lock scroll during input events (fires before onChange)
+                                                    if (scrollContainerRef?.current) {
+                                                        const savedScroll = scrollContainerRef.current.scrollTop;
+                                                        requestAnimationFrame(() => {
+                                                            if (scrollContainerRef.current) {
+                                                                scrollContainerRef.current.scrollTop = savedScroll;
+                                                            }
+                                                        });
+                                                    }
+                                                }}
                                                 onMouseDown={(e) => {
                                                     // ⚠️ CRITICAL: Prevent scroll BEFORE focus event
                                                     // Save scroll position before any potential scroll

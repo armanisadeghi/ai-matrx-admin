@@ -1,100 +1,181 @@
-# Scroll Position Fix
-
-DOCUMENT IS OUTDATED!
+# Scroll Lock Implementation
 
 ## Problem
-When clicking display text to enter edit mode (div → textarea), browser auto-scrolls to bring the newly focused textarea into view, causing jarring scroll jumps (often to top of container).
+Browser aggressively auto-scrolls parent container during textarea interactions (focus, typing, cursor movement, resize) to keep cursor in view. With multi-page textarea content, this causes jarring position loss.
 
-## Root Cause
-Browser's native "scroll-into-view" behavior on textarea focus during React state change and DOM swap.
+## Solution: Multi-Layer Scroll Lock
 
-## Solution (2 Parts)
-
-### 1. Click Handler (SystemMessage.tsx, PromptMessages.tsx)
+### 1. Ref-Based Container Access (PromptBuilderLeftPanel.tsx)
 ```typescript
-onClick={(e) => {
-    // Save scroll position BEFORE state change
-    const savedScrollPosition = scrollContainer?.scrollTop || 0;
-    
-    // Calculate click position for cursor placement
-    const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
-    // ... calculate clickPosition ...
-    
-    onIsEditingChange(true); // Trigger React re-render
-    
-    // CRITICAL: Double requestAnimationFrame
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            scrollContainer.scrollTop = savedScrollPosition; // Restore
-            textarea.setSelectionRange(clickPosition, clickPosition); // Cursor
-        });
-    });
-}}
+const scrollContainerRef = useRef<HTMLDivElement>(null);
+<div ref={scrollContainerRef} className="...scrollbar-thin">
+  <SystemMessage scrollContainerRef={scrollContainerRef} />
+  <PromptMessages scrollContainerRef={scrollContainerRef} />
+</div>
 ```
+**Why:** Direct ref access instead of `querySelector('.scrollbar-thin')` (unreliable with 38+ matching elements in codebase).
 
-**Why double RAF?**
-- First RAF: Browser has painted the DOM change (div removed, textarea mounted)
-- Second RAF: Browser has fully processed layout/reflow for the new textarea
-- Only then can we safely restore scroll without it being overridden
-
-### 2. Textarea Ref (SystemMessage.tsx, PromptMessages.tsx)
+### 2. Textarea Mount (SystemMessage.tsx, PromptMessages.tsx)
 ```typescript
 ref={(el) => {
-    if (el) {
-        // Set correct height BEFORE focusing to prevent glitch
-        el.style.height = "auto";
-        el.style.height = el.scrollHeight + "px";
-        
-        setTimeout(() => {
-            el.focus({ preventScroll: true }); // CRITICAL
-        }, 0);
-    }
+  if (el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+    el.focus({ preventScroll: true }); // No setTimeout
+  }
 }}
 ```
+**Critical:** Immediate focus with `preventScroll: true`. Height set before focus to prevent resize glitch.
 
-**Why set height first?**
-- Prevents visible resize glitch when focus triggers
-- Textarea appears at correct size immediately
-
-**Why preventScroll?**
-- Blocks browser's built-in scroll-on-focus behavior
-
-### 3. onFocus Handler (SystemMessage.tsx, PromptMessages.tsx)
+### 3. Display Div Click Handler
 ```typescript
-onFocus={(e) => {
-    // Note: Auto-resize handled in ref callback to prevent glitch
-    // Note: Cursor position set by click handler (see above)
-    // Only track the current cursor position on focus
-    onCursorPositionChange({
-        ...cursorPositions,
-        [index]: e.target.selectionStart,
-    });
+onClick={(e) => {
+  if (!scrollContainerRef?.current) return;
+  
+  const scrollContainer = scrollContainerRef.current;
+  const savedScrollPosition = scrollContainer.scrollTop;
+  
+  // Calculate cursor position from click
+  const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+  let clickPosition = 0;
+  if (range) {
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(e.target as HTMLElement);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    clickPosition = preCaretRange.toString().length;
+  }
+  
+  onIsEditingChange(true); // Trigger React re-render
+  
+  requestAnimationFrame(() => {
+    scrollContainer.scrollTop = savedScrollPosition;
+    const textarea = textareaRefs.current[index];
+    if (textarea && clickPosition > 0) {
+      textarea.setSelectionRange(clickPosition, clickPosition);
+    }
+  });
+}
+```
+**Why single RAF:** One frame delay sufficient for React render completion.
+
+### 4. Textarea Event Handlers (5 Scroll Locks)
+
+#### onChange - Auto-resize Protection
+```typescript
+onChange={(e) => {
+  onContentChange(e.target.value);
+  
+  if (!scrollContainerRef?.current) {
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
+    return;
+  }
+  
+  const scrollContainer = scrollContainerRef.current;
+  const savedScroll = scrollContainer.scrollTop;
+  const savedOverflow = scrollContainer.style.overflow;
+  
+  scrollContainer.style.overflow = "hidden"; // Temporarily disable scroll
+  e.target.style.height = "auto";
+  e.target.style.height = e.target.scrollHeight + "px";
+  scrollContainer.scrollTop = savedScroll;
+  scrollContainer.style.overflow = savedOverflow;
 }}
 ```
+**Critical:** Setting `height="auto"` triggers browser scroll. Must temporarily disable overflow.
 
-**Why NOT resize in onFocus?**
-- Causes visible glitch (shrink to auto → expand to scrollHeight)
-- Height already set correctly in ref callback
+#### onKeyDown - Keyboard Input Protection
+```typescript
+onKeyDown={(e) => {
+  if (scrollContainerRef?.current) {
+    const savedScroll = scrollContainerRef.current.scrollTop;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = savedScroll;
+        }
+      });
+    });
+  }
+}}
+```
+**Why double RAF:** Browser may scroll after key processing but before onChange. Double RAF catches delayed attempts (e.g., undo/redo).
 
-**Why NOT set cursor position in onFocus?**
-- Click handler sets cursor at exact click position
-- onFocus moving cursor to end would override user's click
+#### onInput - Pre-onChange Protection
+```typescript
+onInput={(e) => {
+  if (scrollContainerRef?.current) {
+    const savedScroll = scrollContainerRef.current.scrollTop;
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = savedScroll;
+      }
+    });
+  }
+}}
+```
+**Why:** Fires before onChange. Catches scroll attempts during input processing phase.
 
-## Files Modified
-- `configuration/SystemMessage.tsx` (lines ~213-228, ~250-259, ~280-307)
-- `builder/PromptMessages.tsx` (lines ~216-229, ~249-257, ~271-308)
+#### onMouseDown - Click Protection
+```typescript
+onMouseDown={(e) => {
+  if (scrollContainerRef?.current) {
+    const savedScroll = scrollContainerRef.current.scrollTop;
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = savedScroll;
+      }
+    });
+  }
+}}
+```
+**Why:** Fires before focus. Prevents scroll when clicking within already-focused textarea.
 
-## Do NOT
-- Remove double `requestAnimationFrame` (scroll will break)
-- Remove `{ preventScroll: true }` (scroll will break)
-- Remove height setting from ref callback (glitch will return)
-- Add auto-resize to onFocus (glitch will return)
-- Move cursor to end in onFocus (breaks click positioning)
-- Add scroll event listeners or CSS overrides in parent containers (causes jitter)
-- Use single RAF or `setTimeout` (timing unreliable)
+#### onSelect - Cursor Movement Protection
+```typescript
+onSelect={(e) => {
+  if (scrollContainerRef?.current) {
+    const savedScroll = scrollContainerRef.current.scrollTop;
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = savedScroll;
+      }
+    });
+  }
+  // Track cursor position...
+}}
+```
+**Why:** Fires on cursor position changes (clicks, arrow keys). Final safety net.
 
-## Test Cases
-1. **Scroll Position**: Open prompt with long system message (>3 screen heights), scroll down 2-3 page folds, click anywhere in visible text → Verify: Scroll position unchanged, cursor at click location
-2. **No Glitch**: Click to edit → Verify: No visible resize/jump, smooth transition from div to textarea
-3. **Cursor Position**: Click middle of line 5 → Verify: Cursor appears at exact click point, not at end
+## Event Sequence
+```
+User types "a":
+1. onKeyDown → Lock scroll (double RAF)
+2. onInput → Lock scroll (single RAF)
+3. onChange → Lock scroll + handle resize (overflow:hidden)
+4. onSelect → Lock scroll (single RAF)
+5. Browser attempts scroll → Prevented by all 4 locks
+```
 
+## Critical Rules
+
+### DO NOT:
+- ❌ Remove `preventScroll: true` from focus call
+- ❌ Remove any of the 5 scroll lock handlers
+- ❌ Remove overflow hiding from onChange
+- ❌ Use `querySelector` instead of direct ref
+- ❌ Add `setTimeout` to focus call
+- ❌ Remove height setting from ref callback
+- ❌ Reduce RAF count in onKeyDown (needs double for undo/redo)
+
+### Files:
+- `builder/PromptBuilderLeftPanel.tsx` - Creates and passes ref
+- `configuration/SystemMessage.tsx` - System message textarea
+- `builder/PromptMessages.tsx` - Prompt message textareas
+
+## Testing Checklist
+1. **Typing**: Scroll down, type multiple characters → no scroll
+2. **Undo/Redo**: Type, Ctrl+Z, Ctrl+Y → no scroll
+3. **Arrow keys**: Scroll down, use arrows → no scroll
+4. **Click within textarea**: Scroll down, click different position → no scroll
+5. **Enter edit mode**: Scroll down, click display text → no scroll, cursor at click point
