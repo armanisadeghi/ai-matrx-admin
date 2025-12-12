@@ -49,7 +49,7 @@ export function ModelSettingsDialog({
     return (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center" onClick={onClose}>
             <div 
-                className="bg-textured rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-hidden flex flex-col"
+                className="bg-textured rounded-lg shadow-xl max-w-xl w-full mx-4 max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
