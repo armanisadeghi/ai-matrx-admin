@@ -20,6 +20,7 @@ export interface NormalizedControls {
     max_tokens?: ControlDefinition;
     top_p?: ControlDefinition;
     top_k?: ControlDefinition;
+    thinking_budget?: ControlDefinition;
     reasoning_effort?: ControlDefinition;
     verbosity?: ControlDefinition;
     reasoning_summary?: ControlDefinition;
@@ -31,12 +32,14 @@ export interface NormalizedControls {
     store?: ControlDefinition;
     stream?: ControlDefinition;
     parallel_tool_calls?: ControlDefinition;
+    include_thoughts?: ControlDefinition;
 
     // Feature flags (allowed property)
     tools?: ControlDefinition;
     image_urls?: ControlDefinition;
     file_urls?: ControlDefinition;
     internal_web_search?: ControlDefinition;
+    internal_url_context?: ControlDefinition;
     youtube_videos?: ControlDefinition;
 
     // Raw controls for debugging
@@ -99,6 +102,7 @@ export function useModelControls(models: any[], selectedModelId: string) {
     // Known control keys we handle
     const knownKeys = new Set([
         'temperature', 'max_tokens', 'max_output_tokens', 'top_p', 'top_k',
+        'thinking_budget', 'include_thoughts', 'internal_url_context',
         'reasoning_effort', 'verbosity', 'reasoning_summary', 'output_format', 'tool_choice',
         'stop_sequences', 'tools', 'stream', 'store',
         'file_urls', 'image_urls', 'internal_web_search', 'parallel_tool_calls', 'youtube_videos'

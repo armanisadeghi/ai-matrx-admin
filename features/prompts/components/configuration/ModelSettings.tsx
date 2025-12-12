@@ -243,6 +243,71 @@ export function ModelSettings({
                 </div>
             </div>
 
+            {/* Include Thoughts & Thinking Budget - Grouped Section */}
+            <div className="space-y-2 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800">
+                {/* Include Thoughts Dropdown */}
+                <div className="flex items-center gap-3">
+                    <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.include_thoughts ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        Include thoughts
+                        {!normalizedControls.include_thoughts && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                    </Label>
+                    <Select
+                        value={settings.include_thoughts === true ? "true" : settings.include_thoughts === false ? "false" : normalizedControls.include_thoughts?.default === true ? "true" : "false"}
+                        onValueChange={(value) => handleSettingChange("include_thoughts", value === "true")}
+                        disabled={!normalizedControls.include_thoughts}
+                    >
+                        <SelectTrigger className="h-7 text-xs flex-1">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="text-xs">
+                            <SelectItem value="true" className="text-xs py-1">Yes</SelectItem>
+                            <SelectItem value="false" className="text-xs py-1">No</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Thinking Budget - Only enabled when include_thoughts is true AND model supports it */}
+                <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                        <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.thinking_budget && settings.include_thoughts ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                            Thinking budget
+                            {!normalizedControls.thinking_budget && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                            {normalizedControls.thinking_budget && !settings.include_thoughts && <span className="text-[10px] ml-1 opacity-60">(Requires thoughts)</span>}
+                        </Label>
+                        <div className="flex-1 flex items-center gap-2">
+                            {normalizedControls.thinking_budget && settings.include_thoughts ? (
+                                <>
+                                    <Slider
+                                        min={normalizedControls.thinking_budget?.min ?? -1}
+                                        max={normalizedControls.thinking_budget?.max ?? 24576}
+                                        step={1}
+                                        value={[settings.thinking_budget ?? normalizedControls.thinking_budget?.default ?? 1024]}
+                                        onValueChange={(value) => handleSettingChange("thinking_budget", value[0])}
+                                        className="flex-1"
+                                    />
+                                    <input
+                                        type="number"
+                                        min={normalizedControls.thinking_budget?.min ?? -1}
+                                        max={normalizedControls.thinking_budget?.max ?? 24576}
+                                        step={1}
+                                        value={settings.thinking_budget ?? normalizedControls.thinking_budget?.default ?? 1024}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value);
+                                            if (!isNaN(val)) {
+                                                handleSettingChange("thinking_budget", val);
+                                            }
+                                        }}
+                                        className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                    />
+                                </>
+                            ) : (
+                                <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Reasoning Effort */}
             <div className="flex items-center gap-3">
                 <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.reasoning_effort ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
@@ -515,6 +580,31 @@ export function ModelSettings({
                         <span
                             className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
                                 settings.internal_web_search ? "translate-x-[18px]" : "translate-x-0.5"
+                            }`}
+                        />
+                    </button>
+                </div>
+
+                {/* Internal URL Context */}
+                <div className="flex items-center justify-between gap-2">
+                    <Label className={`text-xs ${normalizedControls.internal_url_context ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        URL context
+                        {!normalizedControls.internal_url_context && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                    </Label>
+                    <button
+                        onClick={() => normalizedControls.internal_url_context && handleSettingChange("internal_url_context", !settings.internal_url_context)}
+                        disabled={!normalizedControls.internal_url_context}
+                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
+                            normalizedControls.internal_url_context 
+                                ? (settings.internal_url_context
+                                    ? "bg-blue-600 dark:bg-blue-500"
+                                    : "bg-gray-300 dark:bg-gray-700")
+                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
+                        }`}
+                    >
+                        <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
+                                settings.internal_url_context ? "translate-x-[18px]" : "translate-x-0.5"
                             }`}
                         />
                     </button>

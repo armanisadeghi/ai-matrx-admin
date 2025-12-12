@@ -96,7 +96,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
                     Parsed Controls (From Hook)
                 </h2>
                 <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border-border overflow-hidden">
-                    <pre className="p-4 overflow-auto text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words max-h-[400px]">
+                    <pre className="p-4 overflow-auto text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words max-h-[1200px]">
                         {JSON.stringify(normalizedControls, null, 2)}
                     </pre>
                 </div>
