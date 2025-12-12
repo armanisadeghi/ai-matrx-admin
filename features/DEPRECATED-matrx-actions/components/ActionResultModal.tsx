@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { useAppSelector } from '@/lib/redux';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 

@@ -4,7 +4,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 
 interface AutoCreateDebugViewProps {
   codeTaskId: string | null;

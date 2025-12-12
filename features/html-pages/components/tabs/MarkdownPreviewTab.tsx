@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 import type { MarkdownTabProps } from "../types";
 
 export function MarkdownPreviewTab({ state, analysisData, messageId }: MarkdownTabProps) {

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Play, RotateCcw, Zap } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 
 // Sample SEARCH/REPLACE content that would come from AI
 const SAMPLE_SEARCH_REPLACE = `Here are the edits to convert the button to green and add the React import:

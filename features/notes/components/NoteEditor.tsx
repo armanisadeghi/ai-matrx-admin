@@ -19,7 +19,7 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { UnifiedContextMenu } from '@/features/context-menu';
 
 // Dynamic imports for heavy components (only load when needed)

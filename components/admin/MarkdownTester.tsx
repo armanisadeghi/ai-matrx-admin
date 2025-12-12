@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
 import { AudioTestModal } from '@/components/admin/AudioTestModal';
 import { 

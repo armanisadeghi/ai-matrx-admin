@@ -10,7 +10,7 @@ import SectionViewerWithSidebar from "./analyzer/analyzer-options/SectionViewerW
 import SectionsViewer from "./analyzer/analyzer-options/sections-viewer";
 import LinesViewer from "./analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 import TuiEditorContent, { type TuiEditorContentRef } from "./tui/TuiEditorContent";
 
 interface FullScreenMarkdownEditorProps {

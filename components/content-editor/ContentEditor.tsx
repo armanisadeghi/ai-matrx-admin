@@ -14,7 +14,7 @@ import {
     SelectValue 
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import type { ContentEditorProps, EditorMode, EditorModeConfig } from './types';
 import type { TuiEditorContentRef } from '@/components/mardown-display/chat-markdown/tui/TuiEditorContent';
 import { CopyDropdownButton } from './CopyDropdownButton';

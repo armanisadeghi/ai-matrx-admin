@@ -17,7 +17,7 @@ import { formatText } from "@/utils/text/text-case-converter";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from "@/features/prompts/types/core";
 import { HighlightedText } from "./HighlightedText";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
 
 type MessageItem =

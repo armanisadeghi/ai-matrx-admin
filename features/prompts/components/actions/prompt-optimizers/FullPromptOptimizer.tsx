@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 

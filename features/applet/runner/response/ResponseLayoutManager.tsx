@@ -10,7 +10,7 @@ import {
     selectResponseInfoByListenerId,
     selectResponseErrorsByListenerId,
 } from "@/lib/redux/socket-io";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import AppletPostActionButtons from "./AppletPostActionButtons";

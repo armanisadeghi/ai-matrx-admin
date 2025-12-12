@@ -14,7 +14,7 @@ import { ContentBlockDB } from '@/types/content-blocks-db';
 import { ShortcutCategory } from '../types/core';
 import { updateContentBlock, deleteContentBlock } from '../services/admin-service';
 import { Save, X, Trash2, Columns2, PanelLeft, FileText } from 'lucide-react';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ContentBlockEditModalProps {

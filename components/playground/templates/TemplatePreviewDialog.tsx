@@ -15,7 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Code, Eye, Plus, FileText } from 'lucide-react';
 import { ContentBlock } from '@/features/rich-text-editor/config/contentBlocks';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { cn } from '@/lib/utils';
 
 interface TemplatePreviewDialogProps {

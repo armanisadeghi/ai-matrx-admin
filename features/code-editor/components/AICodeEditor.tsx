@@ -26,7 +26,7 @@ import {
   GitCompare,
 } from 'lucide-react';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { DiffView } from './DiffView';
 import { SmartPromptInput } from '@/features/prompts/components/smart';
 import { cn } from '@/lib/utils';

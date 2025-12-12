@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X, Tag, PanelLeft, Columns2 } from "lucide-react";
 import { MessageRole } from "@/features/content-templates/types/content-templates-db";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 import { createTemplate, clearTemplateCache } from "@/features/content-templates/services/content-templates-service";
 import { useToast } from "@/components/ui/use-toast";
 import { PromptEditorContextMenu } from "@/features/prompts/components/PromptEditorContextMenu";

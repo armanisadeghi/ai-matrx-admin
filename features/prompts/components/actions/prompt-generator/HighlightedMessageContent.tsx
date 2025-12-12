@@ -7,7 +7,7 @@
 "use client";
 
 import React from 'react';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 
 interface HighlightedMessageContentProps {
   content: string;

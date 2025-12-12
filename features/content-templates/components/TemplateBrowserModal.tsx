@@ -15,7 +15,7 @@ import { MessageRole, ContentTemplateDB } from "@/features/content-templates/typ
 import { fetchContentTemplates, getAllTags } from "@/features/content-templates/services/content-templates-service";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 
 interface TemplateBrowserModalProps {
     isOpen: boolean;

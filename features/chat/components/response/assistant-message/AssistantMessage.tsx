@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, Edit, Share2 } from "lucide-react";
 import MessageOptionsMenu from "./MessageOptionsMenu";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";

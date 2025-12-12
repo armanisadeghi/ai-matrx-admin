@@ -12,7 +12,7 @@ import { selectFirstPrimaryResponseDataByTaskId, selectTaskFirstListenerId } fro
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
 import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 
 interface ResultPanelProps {
     id: string;

@@ -43,7 +43,7 @@ import {
     getAllTags,
     clearTemplateCache
 } from '@/features/content-templates/services/content-templates-service';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 
 interface ContentTemplateManagerProps {

@@ -50,7 +50,7 @@ import {
     CategoryWithSubcategories
 } from '@/types/content-blocks-db';
 import { createClient } from '@/utils/supabase/client';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 
 interface ContentBlocksManagerProps {

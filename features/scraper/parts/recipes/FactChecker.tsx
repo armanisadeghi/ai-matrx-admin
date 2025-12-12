@@ -16,7 +16,7 @@ import {
     selectPrimaryResponseEndedByTaskId,
     selectTaskStatus,
 } from "@/lib/redux/socket-io";
-import MarkdownStream from "@/components/Markdown";
+import MarkdownStream from "@/components/MarkdownStream";
 
 interface FactCheckerPageProps {
     value: string;

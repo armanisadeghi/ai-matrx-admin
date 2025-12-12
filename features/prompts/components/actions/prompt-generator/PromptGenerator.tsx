@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
 import { VoiceTextarea } from '@/features/audio';
