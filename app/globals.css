@@ -8,9 +8,12 @@
 
 @theme inline {
   /* Custom color shades (extending Tailwind's default palette) */
-  --color-zinc-750: hsl(240, 5%, 23%);
-  --color-zinc-850: hsl(240, 4%, 13%);
-  --color-gray-850: hsl(240, 4%, 13%);
+  --color-zinc-750: hsl(240, 4%, 21%);
+  --color-zinc-850: hsl(240, 4%, 12%);
+  --color-gray-750: hsl(220, 9%, 23%);
+  --color-gray-850: hsl(220, 13%, 13%);
+  --color-slate-750: hsl(217, 19%, 23%);
+  --color-slate-850: hsl(215, 21%, 13%);  
   
   /* Theme colors - Using CSS variable references so they work with light/dark mode */
   --color-background: hsl(var(--background));

@@ -1,6 +1,6 @@
 const sampleSimplePromptAppCode = `import React, { useState, useMemo } from 'react';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import MarkdownStream from '@/components/Markdown';
+import MarkdownStream from '@/components/MarkdownStream';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

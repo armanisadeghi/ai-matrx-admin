@@ -40,7 +40,15 @@ export const ALLOWED_IMPORTS_CONFIG: AllowedImportConfig[] = [
   },
   {
     path: '@/components/Markdown',
-    loader: () => require('@/components/Markdown'),
+    loader: () => require('@/components/MarkdownStream'),
+    scopeStrategy: 'named',
+    exportMap: {
+      'default': 'MarkdownStream'
+    }
+  },
+  {
+    path: '@/components/MarkdownStream',
+    loader: () => require('@/components/MarkdownStream'),
     scopeStrategy: 'named',
     exportMap: {
       'default': 'MarkdownStream'
@@ -114,7 +122,7 @@ export function getDefaultImportsForNewApps(): string[] {
   return [
     'react',
     'lucide-react',
-    '@/components/Markdown',
+    '@/components/MarkdownStream', // Use new name for new apps
     '@/components/ui/button',
     '@/components/ui/input',
     '@/components/ui/textarea',
@@ -218,7 +226,8 @@ export function getImportDescription(importPath: string): string {
   const descriptions: Record<string, string> = {
     'react': 'React core (useState, useEffect, useMemo, useCallback, useRef)',
     'lucide-react': 'Lucide icons (all icons available)',
-    '@/components/Markdown': 'MarkdownStream component for rendering markdown',
+    '@/components/Markdown': 'MarkdownStream component for rendering markdown (legacy path)',
+    '@/components/MarkdownStream': 'MarkdownStream component for rendering markdown',
     '@/components/ui/button': 'Button component',
     '@/components/ui/input': 'Input component',
     '@/components/ui/textarea': 'Textarea component',

@@ -564,30 +564,12 @@ declare module '@/components/ui/radio-group' {
  * Custom component type definitions
  */
 export const customComponentTypes = `
-declare module '@/components/Markdown' {
-  import { FC } from 'react';
-
-  export interface MarkdownStreamProps {
-    content: string;
-    taskId?: string;
-    type?: 'flashcard' | 'message' | 'text' | 'image' | 'audio' | 'video' | 'file' | string;
-    role?: 'user' | 'assistant' | 'system' | 'tool' | string;
-    className?: string;
-    isStreamActive?: boolean;
-    onContentChange?: (newContent: string) => void;
-    analysisData?: any;
-    messageId?: string;
-    allowFullScreenEditor?: boolean;
-    hideCopyButton?: boolean;
-    useV2Parser?: boolean;
-  }
-
-  export const MarkdownStream: FC<MarkdownStreamProps>;
-  export default MarkdownStream;
+declare module '@/components/MarkdownStream' {
+  export { default, type MarkdownStreamProps } from '@/components/MarkdownStream';
 }
 
 declare module '@/components/Markdown' {
-  export { default, MarkdownStreamProps } from '@/components/Markdown';
+  export { default, type MarkdownStreamProps } from '@/components/MarkdownStream';
 }
 `;
 
