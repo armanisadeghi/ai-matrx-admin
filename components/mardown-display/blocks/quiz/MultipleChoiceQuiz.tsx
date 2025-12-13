@@ -1,4 +1,4 @@
-  import React, { useState, useEffect, useMemo } from 'react';
+  import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { useAppSelector } from '@/lib/redux';
@@ -18,6 +18,7 @@ import {
 } from './quiz-utils';
 import { useQuizPersistence } from '@/hooks/useQuizPersistence';
 import { parseQuizJSON, type RawQuizJSON } from './quiz-parser';
+import { InlineLatexRenderer } from '@/features/math/components';
 
 // Legacy type for backwards compatibility
 export type Question = OriginalQuestion;
@@ -34,26 +35,45 @@ interface MultipleChoiceQuizProps {
 // Component for expandable question text
 const QuestionText: React.FC<{question: string, isFullScreen: boolean}> = ({ question, isFullScreen }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const isLong = question.length > 100;
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const textRef = useRef<HTMLHeadingElement>(null);
   
-  if (isFullScreen || !isLong) {
+  useEffect(() => {
+    // Check if content is actually overflowing
+    const checkOverflow = () => {
+      if (textRef.current && !isExpanded && !isFullScreen) {
+        const element = textRef.current;
+        setIsOverflowing(element.scrollHeight > element.clientHeight);
+      } else {
+        setIsOverflowing(false);
+      }
+    };
+
+    checkOverflow();
+    // Recheck on window resize
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [question, isExpanded, isFullScreen]);
+  
+  if (isFullScreen) {
     return (
-      <h2 className={`font-bold mb-3 leading-tight ${
-        isFullScreen ? 'text-2xl' : 'text-lg'
-      }`}>
-        {question}
+      <h2 className="text-2xl font-bold mb-3 leading-tight">
+        <InlineLatexRenderer content={question} />
       </h2>
     );
   }
 
   return (
     <div className="mb-3">
-      <h2 className={`text-lg font-bold leading-tight transition-all duration-200 ${
-        isExpanded ? '' : 'line-clamp-2'
-      }`}>
-        {question}
+      <h2 
+        ref={textRef}
+        className={`text-lg font-bold leading-tight transition-all duration-200 ${
+          isExpanded ? '' : 'line-clamp-2'
+        }`}
+      >
+        <InlineLatexRenderer content={question} />
       </h2>
-      {isLong && (
+      {isOverflowing && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-1 flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
@@ -73,39 +93,52 @@ const QuestionText: React.FC<{question: string, isFullScreen: boolean}> = ({ que
 // Component for expandable explanation text
 const ExplanationText: React.FC<{explanation: string, isCorrect: boolean, isFullScreen: boolean}> = ({ explanation, isCorrect, isFullScreen }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const isLong = explanation.length > 120;
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
   
-  if (!isLong) {
-    return (
-      <p className={`leading-relaxed ${
-        isFullScreen ? 'text-base' : 'text-sm'
-      } ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-        {explanation}
-      </p>
-    );
-  }
+  useEffect(() => {
+    // Check if content is actually overflowing
+    const checkOverflow = () => {
+      if (textRef.current && !isExpanded) {
+        const element = textRef.current;
+        setIsOverflowing(element.scrollHeight > element.clientHeight);
+      } else {
+        setIsOverflowing(false);
+      }
+    };
+
+    checkOverflow();
+    // Recheck on window resize
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [explanation, isExpanded, isFullScreen]);
 
   return (
     <div>
-      <p className={`leading-relaxed transition-all duration-200 ${
-        isFullScreen ? 'text-base' : 'text-sm'
-      } ${isExpanded ? '' : 'line-clamp-3'
-      } ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-        {explanation}
-      </p>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={`mt-1 flex items-center gap-1 text-xs hover:underline transition-colors ${
-          isCorrect ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
-        }`}
-        title={isExpanded ? "Show less" : "Read more"}
+      <p 
+        ref={textRef}
+        className={`leading-relaxed transition-all duration-200 ${
+          isFullScreen ? 'text-base' : 'text-sm'
+        } ${isExpanded ? '' : 'line-clamp-3'
+        } ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}
       >
-        {isExpanded ? (
-          <ChevronUp className="h-3 w-3" />
-        ) : (
-          <ChevronDown className="h-3 w-3" />
-        )}
-      </button>
+        <InlineLatexRenderer content={explanation} />
+      </p>
+      {isOverflowing && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`mt-1 flex items-center gap-1 text-xs hover:underline transition-colors ${
+            isCorrect ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
+          }`}
+          title={isExpanded ? "Show less" : "Read more"}
+        >
+          {isExpanded ? (
+            <ChevronUp className="h-3 w-3" />
+          ) : (
+            <ChevronDown className="h-3 w-3" />
+          )}
+        </button>
+      )}
     </div>
   );
 };
@@ -709,7 +742,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="font-medium text-gray-800 dark:text-gray-200 flex-1 leading-snug">
-                  {option}
+                  <InlineLatexRenderer content={option} />
                 </span>
                 {isAnswered && index === currentQuestion.correctAnswerIndex && (
                   <Check className={`text-green-600 dark:text-green-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />

@@ -135,7 +135,11 @@ function detectJsonBlockType(content: string): keyof typeof JSON_BLOCK_PATTERNS 
 }
 
 function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTERNS): StreamingState {
-    const trimmed = content.trim();
+    // Aggressively clean content - remove trailing backticks, whitespace, etc.
+    let trimmed = content.trim();
+    
+    // Remove any trailing backticks that might have been included
+    trimmed = trimmed.replace(/```+\s*$/, '').trim();
     
     // Check for placeholder text that indicates malformed JSON
     if (type === 'math_problem') {
@@ -146,6 +150,23 @@ function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTER
         if (hasPlaceholderText) {
             return { isComplete: false, shouldShow: false };
         }
+    }
+    
+    // First, try to parse the JSON directly - if it parses and validates, it's complete
+    try {
+        const parsed = JSON.parse(trimmed);
+        const pattern = JSON_BLOCK_PATTERNS[type];
+        const isValid = pattern.validate(parsed);
+        
+        if (isValid) {
+            return {
+                isComplete: true,
+                shouldShow: true,
+                metadata: { isComplete: true }
+            };
+        }
+    } catch (error) {
+        // JSON parse failed, continue with brace analysis
     }
     
     // Count braces to determine completion
@@ -159,11 +180,12 @@ function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTER
     
     // Malformed - treat as complete to stop loading
     if (closeBraces > openBraces) {
-        return { isComplete: true, shouldShow: true };
+        return { isComplete: true, shouldShow: true, metadata: { isComplete: true } };
     }
     
-    // Likely complete
+    // Balanced braces and ends with }
     if (trimmed.endsWith("}") && openBraces === closeBraces) {
+        // Try parsing one more time
         try {
             const parsed = JSON.parse(trimmed);
             const pattern = JSON_BLOCK_PATTERNS[type];
@@ -175,7 +197,7 @@ function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTER
                 metadata: { isComplete: true }
             };
         } catch (error) {
-            // Parse failed with balanced braces - treat as complete
+            // Parse failed with balanced braces - treat as complete anyway
             return { isComplete: true, shouldShow: true, metadata: { isComplete: true } };
         }
     }
@@ -481,8 +503,27 @@ function extractCodeBlock(language: string | undefined, startIndex: number, line
     const content: string[] = [];
     let i = startIndex;
     
-    while (i < lines.length && !lines[i].trim().startsWith("```")) {
-        content.push(lines[i]);
+    while (i < lines.length) {
+        const line = lines[i];
+        const trimmedLine = line.trim();
+        
+        // Check if closing backticks are at the start of the line (normal case)
+        if (trimmedLine.startsWith("```")) {
+            break;
+        }
+        
+        // Check if closing backticks appear anywhere in the line (inline case: }```)
+        const backtickIndex = line.indexOf("```");
+        if (backtickIndex !== -1) {
+            // Include content before the backticks
+            const contentBeforeBackticks = line.substring(0, backtickIndex);
+            if (contentBeforeBackticks.trim()) {
+                content.push(contentBeforeBackticks);
+            }
+            break;
+        }
+        
+        content.push(line);
         i++;
     }
     

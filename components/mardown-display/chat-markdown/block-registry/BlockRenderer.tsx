@@ -19,6 +19,19 @@ interface BlockRendererProps {
 }
 
 /**
+ * Helper to determine if JSON content is genuinely incomplete (still streaming)
+ * or just marked incomplete due to formatting issues
+ */
+function isGenuinelyIncomplete(content: string): boolean {
+    const trimmed = content.trim();
+    const openBraces = (trimmed.match(/\{/g) || []).length;
+    const closeBraces = (trimmed.match(/\}/g) || []).length;
+    
+    // If braces are unbalanced, it's genuinely incomplete
+    return openBraces > closeBraces;
+}
+
+/**
  * Renders individual content blocks with lazy-loaded components
  * Extracted from MarkdownStream for better code splitting
  */
@@ -171,8 +184,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             return <BlockComponents.FlashcardsBlock key={index} content={block.content} taskId={taskId} />;
 
         case "quiz":
+            // Smart fallback: only show loading if genuinely incomplete
             if (!block.metadata?.isComplete) {
-                return <LoadingComponents.QuizLoading key={index} />;
+                // Check if content is genuinely incomplete (unbalanced braces)
+                if (isGenuinelyIncomplete(block.content)) {
+                    return <LoadingComponents.QuizLoading key={index} />;
+                }
+                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             try {
                 const quizData = JSON.parse(block.content);
@@ -186,8 +204,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             }
 
         case "presentation":
+            // Smart fallback: only show loading if genuinely incomplete
             if (!block.metadata?.isComplete) {
-                return <LoadingComponents.PresentationLoading key={index} />;
+                // Check if content is genuinely incomplete (unbalanced braces)
+                if (isGenuinelyIncomplete(block.content)) {
+                    return <LoadingComponents.PresentationLoading key={index} />;
+                }
+                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             try {
                 const presentationData = JSON.parse(block.content);
@@ -330,8 +353,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "comparison_table":
+            // Smart fallback: only show loading if genuinely incomplete
             if (block.metadata?.isComplete === false) {
-                return <LoadingComponents.ComparisonLoading key={index} />;
+                // Check if content is genuinely incomplete (unbalanced braces)
+                if (isGenuinelyIncomplete(block.content)) {
+                    return <LoadingComponents.ComparisonLoading key={index} />;
+                }
+                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             const ComparisonWithParser = React.lazy(async () => {
                 const { parseComparisonJSON } = await import("../../blocks/comparison/parseComparisonJSON");
@@ -376,8 +404,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "decision_tree":
+            // Smart fallback: only show loading if genuinely incomplete
             if (block.metadata?.isComplete === false) {
-                return <LoadingComponents.DecisionTreeLoading key={index} />;
+                // Check if content is genuinely incomplete (unbalanced braces)
+                if (isGenuinelyIncomplete(block.content)) {
+                    return <LoadingComponents.DecisionTreeLoading key={index} />;
+                }
+                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             const DecisionTreeWithParser = React.lazy(async () => {
                 const { parseDecisionTreeJSON } = await import("../../blocks/decision-tree/parseDecisionTreeJSON");
@@ -399,8 +432,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "diagram":
+            // Smart fallback: only show loading if genuinely incomplete
             if (block.metadata?.isComplete === false) {
-                return <LoadingComponents.DiagramLoading key={index} />;
+                // Check if content is genuinely incomplete (unbalanced braces)
+                if (isGenuinelyIncomplete(block.content)) {
+                    return <LoadingComponents.DiagramLoading key={index} />;
+                }
+                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             const DiagramWithParser = React.lazy(async () => {
                 const { parseDiagramJSON } = await import("../../blocks/diagram/parseDiagramJSON");
@@ -422,8 +460,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "math_problem":
+            // Smart fallback: only show loading if genuinely incomplete
             if (block.metadata?.isComplete === false) {
-                return <LoadingComponents.MathProblemLoading key={index} />;
+                // Check if content is genuinely incomplete (unbalanced braces)
+                if (isGenuinelyIncomplete(block.content)) {
+                    return <LoadingComponents.MathProblemLoading key={index} />;
+                }
+                // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             try {
                 const mathProblemData = JSON.parse(block.content);

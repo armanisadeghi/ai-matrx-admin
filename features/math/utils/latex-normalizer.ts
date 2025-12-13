@@ -2,7 +2,54 @@
  * LaTeX Normalization Utilities
  * 
  * Automatically fixes common AI mistakes in LaTeX formatting to be more forgiving.
+ * Includes fixes for:
+ * - Fraction notation (1/2 → \frac{1}{2})
+ * - Spacing around equals signs
+ * - Common notation issues (** → ^)
+ * - Escape sequence corruption (\text → [TAB]ext when from JSON)
  */
+
+/**
+ * Fix LaTeX escape sequences that were corrupted during JSON parsing
+ * When JSON contains single backslashes (should be double), they get interpreted
+ * as escape sequences: \t → tab, \n → newline, etc.
+ * 
+ * This function repairs common LaTeX commands that were corrupted this way.
+ * 
+ * Examples:
+ *   "$[TAB]ext{H}_2$" → "$\text{H}_2$"
+ *   "$[NEWLINE]abla$" → "$\nabla$"
+ */
+export function fixLatexEscapeSequences(content: string): string {
+    // Pattern to match math delimiters and their content
+    const mathPattern = /(\$\$?)((?:(?!\1)[\s\S])*?)(\$\$?)/g;
+    
+    return content.replace(mathPattern, (match, openDelim, mathContent, closeDelim) => {
+        // Fix common escape sequence issues in LaTeX commands
+        let fixed = mathContent;
+        
+        // Tab character (\t) - Common in: \text, \textbf, \textit, \textrm, etc.
+        const tabChar = '\t';
+        const newlineChar = '\n';
+        const carriageReturnChar = '\r';
+        const formFeedChar = '\f';
+        
+        // Fix \text commands that became [TAB]ext
+        fixed = fixed.replace(new RegExp(tabChar + '(ext[a-z]*)', 'gi'), '\\t$1');
+        
+        // Fix \n commands (newline became literal newline)
+        fixed = fixed.replace(new RegExp(newlineChar + '([a-z]+)', 'g'), '\\n$1');
+        
+        // Fix \r commands (carriage return became literal)
+        fixed = fixed.replace(new RegExp(carriageReturnChar + '([a-z]+)', 'g'), '\\r$1');
+        
+        // Fix \f commands (form feed became literal)
+        fixed = fixed.replace(new RegExp(formFeedChar + '([a-z]+)', 'g'), '\\f$1');
+        
+        // Reconstruct the math block
+        return `${openDelim}${fixed}${closeDelim}`;
+    });
+}
 
 /**
  * Convert plain fraction notation to LaTeX \frac{} notation
@@ -56,15 +103,31 @@ function fixCommonLatexIssues(text: string): string {
 /**
  * Normalize all LaTeX-related content in a text string
  * This is the main function to call for cleaning up AI-generated content
+ * 
+ * @param text - Text containing LaTeX notation
+ * @param options - Optional configuration
+ * @param options.fixEscapeSequences - Fix corrupted escape sequences from JSON (default: true)
  */
-export function normalizeLaTeX(text: string): string {
+export function normalizeLaTeX(text: string, options: { fixEscapeSequences?: boolean } = {}): string {
     if (!text || typeof text !== 'string') return text;
+    
+    const { fixEscapeSequences = true } = options;
     
     let normalized = text;
     
-    // Apply all normalizations
+    // Apply all normalizations in order
+    // 1. Fix escape sequences first (if content came from JSON with single backslashes)
+    if (fixEscapeSequences) {
+        normalized = fixLatexEscapeSequences(normalized);
+    }
+    
+    // 2. Convert fractions to LaTeX notation
     normalized = convertFractionsToLatex(normalized);
+    
+    // 3. Normalize spacing
     normalized = normalizeEqualsSpacing(normalized);
+    
+    // 4. Fix common notation issues
     normalized = fixCommonLatexIssues(normalized);
     
     return normalized;
