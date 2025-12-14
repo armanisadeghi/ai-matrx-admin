@@ -15,40 +15,76 @@
  * as escape sequences: \t → tab, \n → newline, etc.
  * 
  * This function repairs common LaTeX commands that were corrupted this way.
+ * Uses conservative pattern matching to avoid false positives.
  * 
  * Examples:
  *   "$[TAB]ext{H}_2$" → "$\text{H}_2$"
  *   "$[NEWLINE]abla$" → "$\nabla$"
  */
 export function fixLatexEscapeSequences(content: string): string {
-    // Pattern to match math delimiters and their content
-    const mathPattern = /(\$\$?)((?:(?!\1)[\s\S])*?)(\$\$?)/g;
-    
-    return content.replace(mathPattern, (match, openDelim, mathContent, closeDelim) => {
-        // Fix common escape sequence issues in LaTeX commands
-        let fixed = mathContent;
+    // Wrap in try-catch to ensure we never crash
+    try {
+        // Pattern to match math delimiters and their content
+        const mathPattern = /(\$\$?)((?:(?!\1)[\s\S])*?)(\$\$?)/g;
         
-        // Tab character (\t) - Common in: \text, \textbf, \textit, \textrm, etc.
-        const tabChar = '\t';
-        const newlineChar = '\n';
-        const carriageReturnChar = '\r';
-        const formFeedChar = '\f';
-        
-        // Fix \text commands that became [TAB]ext
-        fixed = fixed.replace(new RegExp(tabChar + '(ext[a-z]*)', 'gi'), '\\t$1');
-        
-        // Fix \n commands (newline became literal newline)
-        fixed = fixed.replace(new RegExp(newlineChar + '([a-z]+)', 'g'), '\\n$1');
-        
-        // Fix \r commands (carriage return became literal)
-        fixed = fixed.replace(new RegExp(carriageReturnChar + '([a-z]+)', 'g'), '\\r$1');
-        
-        // Fix \f commands (form feed became literal)
-        fixed = fixed.replace(new RegExp(formFeedChar + '([a-z]+)', 'g'), '\\f$1');
-        
-        // Reconstruct the math block
-        return `${openDelim}${fixed}${closeDelim}`;
-    });
+        return content.replace(mathPattern, (match, openDelim, mathContent, closeDelim) => {
+            try {
+                let fixed = mathContent;
+                
+                // Tab character (\t) - Common in: \text, \textbf, \textit, \textrm, etc.
+                // Only fix if followed by 'ext' (text commands)
+                const tabChar = '\t';
+                if (fixed.includes(tabChar)) {
+                    fixed = fixed.replace(new RegExp(tabChar + '(ext[a-z]*)', 'gi'), '\\t$1');
+                }
+                
+                // Newline character (\n) - More conservative: only fix known commands
+                // Common ones: \nabla, \neg, \neq, \nu, \natural
+                const newlineChar = '\n';
+                if (fixed.includes(newlineChar)) {
+                    // Only replace if followed by specific known commands
+                    const knownNCommands = ['abla', 'eg', 'eq', 'u', 'atural', 'egthinspace', 'eqslant'];
+                    knownNCommands.forEach(cmd => {
+                        const pattern = new RegExp(newlineChar + cmd + '(?![a-z])', 'g');
+                        fixed = fixed.replace(pattern, '\\n' + cmd);
+                    });
+                }
+                
+                // Carriage return (\r) - Conservative: only specific commands
+                // Common ones: \rho, \right, \rightarrow
+                const carriageReturnChar = '\r';
+                if (fixed.includes(carriageReturnChar)) {
+                    const knownRCommands = ['ho', 'ight', 'ightarrow', 'angle'];
+                    knownRCommands.forEach(cmd => {
+                        const pattern = new RegExp(carriageReturnChar + cmd + '(?![a-z])', 'g');
+                        fixed = fixed.replace(pattern, '\\r' + cmd);
+                    });
+                }
+                
+                // Form feed (\f) - Conservative: only specific commands
+                // Common ones: \frac, \forall
+                const formFeedChar = '\f';
+                if (fixed.includes(formFeedChar)) {
+                    const knownFCommands = ['rac', 'orall'];
+                    knownFCommands.forEach(cmd => {
+                        const pattern = new RegExp(formFeedChar + cmd + '(?![a-z])', 'g');
+                        fixed = fixed.replace(pattern, '\\f' + cmd);
+                    });
+                }
+                
+                // Reconstruct the math block
+                return `${openDelim}${fixed}${closeDelim}`;
+            } catch (innerError) {
+                // If processing this specific math block fails, return it unchanged
+                console.warn('[fixLatexEscapeSequences] Failed to process math block:', innerError);
+                return match;
+            }
+        });
+    } catch (error) {
+        // If the entire function fails, return content unchanged
+        console.warn('[fixLatexEscapeSequences] Function failed, returning original content:', error);
+        return content;
+    }
 }
 
 /**
@@ -104,33 +140,63 @@ function fixCommonLatexIssues(text: string): string {
  * Normalize all LaTeX-related content in a text string
  * This is the main function to call for cleaning up AI-generated content
  * 
+ * CRITICAL: This function is designed to NEVER crash. If any normalization step fails,
+ * it will skip that step and return the original or partially normalized content.
+ * 
  * @param text - Text containing LaTeX notation
  * @param options - Optional configuration
  * @param options.fixEscapeSequences - Fix corrupted escape sequences from JSON (default: true)
+ * @returns Normalized text, or original text if normalization fails
  */
 export function normalizeLaTeX(text: string, options: { fixEscapeSequences?: boolean } = {}): string {
     if (!text || typeof text !== 'string') return text;
     
-    const { fixEscapeSequences = true } = options;
-    
-    let normalized = text;
-    
-    // Apply all normalizations in order
-    // 1. Fix escape sequences first (if content came from JSON with single backslashes)
-    if (fixEscapeSequences) {
-        normalized = fixLatexEscapeSequences(normalized);
+    try {
+        const { fixEscapeSequences = true } = options;
+        
+        let normalized = text;
+        
+        // Apply all normalizations in order, with individual error handling
+        // 1. Fix escape sequences first (if content came from JSON with single backslashes)
+        if (fixEscapeSequences) {
+            try {
+                normalized = fixLatexEscapeSequences(normalized);
+            } catch (error) {
+                console.warn('[normalizeLaTeX] fixLatexEscapeSequences failed:', error);
+                // Continue with original text
+            }
+        }
+        
+        // 2. Convert fractions to LaTeX notation
+        try {
+            normalized = convertFractionsToLatex(normalized);
+        } catch (error) {
+            console.warn('[normalizeLaTeX] convertFractionsToLatex failed:', error);
+            // Continue with current state
+        }
+        
+        // 3. Normalize spacing
+        try {
+            normalized = normalizeEqualsSpacing(normalized);
+        } catch (error) {
+            console.warn('[normalizeLaTeX] normalizeEqualsSpacing failed:', error);
+            // Continue with current state
+        }
+        
+        // 4. Fix common notation issues
+        try {
+            normalized = fixCommonLatexIssues(normalized);
+        } catch (error) {
+            console.warn('[normalizeLaTeX] fixCommonLatexIssues failed:', error);
+            // Continue with current state
+        }
+        
+        return normalized;
+    } catch (error) {
+        // If the entire normalization fails, return original text
+        console.warn('[normalizeLaTeX] Complete normalization failed, returning original:', error);
+        return text;
     }
-    
-    // 2. Convert fractions to LaTeX notation
-    normalized = convertFractionsToLatex(normalized);
-    
-    // 3. Normalize spacing
-    normalized = normalizeEqualsSpacing(normalized);
-    
-    // 4. Fix common notation issues
-    normalized = fixCommonLatexIssues(normalized);
-    
-    return normalized;
 }
 
 /**

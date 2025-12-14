@@ -85,19 +85,43 @@ Uses ReactMarkdown with remarkMath/rehypeKatex for full markdown documents.
 **Problem:** AI writes `x=2` instead of `x = 2`
 **Solution:** `normalizeEqualsSpacing()` adds proper spacing
 
+## Safety & Error Handling
+
+**CRITICAL FEATURE**: This system is designed to NEVER crash your application.
+
+### Multi-Layer Protection:
+
+1. **Error Boundary** in `InlineLatexRenderer`
+   - Catches React rendering errors
+   - Falls back to plain text display
+
+2. **Try-Catch in Normalization**
+   - Each normalization step is wrapped
+   - Failed steps are skipped, not crashed
+
+3. **Graceful Degradation**
+   - If LaTeX rendering fails → shows plain text
+   - If normalization fails → uses original text
+   - If entire component fails → shows raw content
+
+### Result:
+**Your UI will NEVER break due to LaTeX issues.** Users always see content, even if rendering fails.
+
 ## Best Practices
 
 ### ✅ DO
 - Import from `/features/math/components` or `/features/math/utils`
 - Use `InlineLatexRenderer` for text with LaTeX
-- Let normalization run by default (it's smart and fast)
+- Let normalization run by default (it's smart, fast, and safe)
 - Add new normalizations to `latex-normalizer.ts`
+- Trust the error handling - it will always show something
 
 ### ❌ DON'T
 - Create new LaTeX renderers elsewhere in the codebase
 - Duplicate escape sequence fixes
 - Skip normalization unless you have a specific reason
-- Use raw KaTeX/react-katex without normalization
+- Use raw KaTeX/react-katex without error handling
+- Worry about LaTeX crashing your app (it won't!)
 
 ## Future Enhancements
 
