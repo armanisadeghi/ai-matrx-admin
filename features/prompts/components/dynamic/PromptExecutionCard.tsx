@@ -14,19 +14,22 @@ interface PromptExecutionCardProps {
     // Either provide the full system prompt object or just the ID
     systemPrompt?: SystemPromptDB;
     systemPromptId?: string;
-    
+
     // The actual content to display and pass as variables
     title: string;
     description: string;
     context: string;
-    
-    // Execution behavior
-    allowInitialMessage?: boolean;
-    allowChat?: boolean;
-    
+
+    auto_run?: boolean;
+    allow_chat?: boolean;
+    show_variables?: boolean;
+    apply_variables?: boolean;
+    track_in_runs?: boolean;
+    use_pre_execution_input?: boolean;
+
     // Styling
     className?: string;
-    
+
     // Optional callbacks
     onExecutionStart?: () => void;
     onExecutionComplete?: (result: any) => void;
@@ -38,8 +41,12 @@ export function PromptExecutionCard({
     title,
     description,
     context,
-    allowInitialMessage = false,
-    allowChat = false,
+    auto_run = true,
+    allow_chat = false,
+    show_variables = false,
+    apply_variables = true,
+    track_in_runs = true,
+    use_pre_execution_input = false,
     className,
     onExecutionStart,
     onExecutionComplete,
@@ -54,28 +61,28 @@ export function PromptExecutionCard({
 
     const handleCardClick = useCallback(async () => {
         if (isLoading || !promptId) return;
-        
+
         if (onExecutionStart) {
             onExecutionStart();
         }
-        
+
         setIsLoading(true);
-        
+
         try {
             // Initialize the run via Redux
             const newRunId = uuidv4();
-            
+
             await dispatch(startPromptInstance({
                 runId: newRunId,
                 promptId,
                 promptSource: 'prompts',
                 executionConfig: {
-                    auto_run: true,
-                    allow_chat: allowChat,
-                    show_variables: false,
-                    apply_variables: true,
-                    track_in_runs: true,
-                    use_pre_execution_input: false,
+                    auto_run: auto_run,
+                    allow_chat: allow_chat,
+                    show_variables: show_variables,
+                    apply_variables: apply_variables,
+                    track_in_runs: track_in_runs,
+                    use_pre_execution_input: use_pre_execution_input,
                 },
                 variables: {
                     title,
@@ -83,7 +90,7 @@ export function PromptExecutionCard({
                     context,
                 },
             })).unwrap();
-            
+
             setModalRunId(newRunId);
             setIsModalOpen(true);
         } catch (error) {
@@ -91,7 +98,7 @@ export function PromptExecutionCard({
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, promptId, onExecutionStart, dispatch, allowChat, title, description, context]);
+    }, [isLoading, promptId, onExecutionStart, dispatch, auto_run, allow_chat, show_variables, apply_variables, track_in_runs, use_pre_execution_input, title, description, context]);
 
     const handleModalClose = useCallback(() => {
         setIsModalOpen(false);
@@ -116,7 +123,7 @@ export function PromptExecutionCard({
 
     return (
         <>
-            <Card 
+            <Card
                 className={cn(
                     "group relative cursor-pointer transition-all duration-200",
                     "hover:shadow-lg hover:scale-[1.02]",
@@ -132,7 +139,7 @@ export function PromptExecutionCard({
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
                     </div>
                 )}
-                
+
                 <div className="p-4 space-y-2">
                     <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">
                         {title}
@@ -163,8 +170,12 @@ export function PromptExecutionCard({
  * @example
  * const ContentExpanderCard = createPromptCard({
  *   systemPromptId: "e95d37f4-e983-4f20-a5fd-0fccfe5253a9",
- *   allowInitialMessage: false,
- *   allowChat: true,
+ *   auto_run: true,
+ *   allow_chat: true,
+ *   show_variables: false,
+ *   apply_variables: true,
+ *   track_in_runs: true,
+ *   use_pre_execution_input: false,
  * });
  * 
  * // Then use it:
@@ -176,13 +187,17 @@ export function PromptExecutionCard({
  */
 interface CreatePromptCardConfig {
     systemPromptId: string;
-    allowInitialMessage?: boolean;
-    allowChat?: boolean;
+    auto_run?: boolean;
+    allow_chat?: boolean;
+    show_variables?: boolean;
+    apply_variables?: boolean;
+    track_in_runs?: boolean;
+    use_pre_execution_input?: boolean;
     className?: string;
 }
 
 export function createPromptCard(config: CreatePromptCardConfig) {
-    return function ConfiguredPromptCard(props: Omit<PromptExecutionCardProps, 'systemPromptId' | 'allowInitialMessage' | 'allowChat'>) {
+    return function ConfiguredPromptCard(props: Omit<PromptExecutionCardProps, 'systemPromptId' | 'auto_run' | 'allow_chat' | 'show_variables' | 'apply_variables' | 'track_in_runs' | 'use_pre_execution_input'>) {
         return (
             <PromptExecutionCard
                 {...config}

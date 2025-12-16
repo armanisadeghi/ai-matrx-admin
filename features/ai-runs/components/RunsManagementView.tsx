@@ -17,13 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -65,7 +58,7 @@ export function RunsManagementView() {
 
     // Route based on source type
     switch (run.source_type) {
-      case 'prompt':
+      case 'prompts':
         if (run.source_id) {
           router.push(`/ai/prompts/run/${run.source_id}?runId=${runId}`);
         }
@@ -182,11 +175,13 @@ export function RunsManagementView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Sources</SelectItem>
-                <SelectItem value="prompt">Prompts</SelectItem>
+                <SelectItem value="prompts">Prompts</SelectItem>
+                <SelectItem value="prompt_builtins">Prompt Builtins</SelectItem>
                 <SelectItem value="chat">Chat</SelectItem>
                 <SelectItem value="applet">Applets</SelectItem>
                 <SelectItem value="cockpit">Cockpit</SelectItem>
                 <SelectItem value="workflow">Workflows</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
               </SelectContent>
             </Select>
 

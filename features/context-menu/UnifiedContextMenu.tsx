@@ -117,8 +117,6 @@ interface UnifiedContextMenuProps {
   className?: string;
 }
 
-const DEBUG = false;
-
 export function UnifiedContextMenu({
   children,
   editorId,
@@ -140,14 +138,6 @@ export function UnifiedContextMenu({
 }: UnifiedContextMenuProps) {
   // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(p => p !== 'quick-action');
-
-  if (DEBUG) {
-    console.log('[UnifiedContextMenu] Config:', {
-      enabledPlacements,
-      dbPlacementTypes,
-      PLACEMENT_TYPES,
-    });
-  }
 
   // Load ALL menu items (shortcuts + content blocks) from unified view 
   // Extract contextFilter from contextData if provided
@@ -238,15 +228,6 @@ export function UnifiedContextMenu({
       });
       setMenuOpen(true);
 
-      if (DEBUG) {
-        console.log('[UnifiedContextMenu] EDITABLE selection captured:', { 
-          text, 
-          start, 
-          end, 
-          hasText: text.length > 0,
-          elementType: target.tagName
-        });
-      }
     } else {
       // NON-EDITABLE PATH: regular elements with text selection
       const selection = window.getSelection();
@@ -280,15 +261,6 @@ export function UnifiedContextMenu({
         containerElement,
       });
       setMenuOpen(true);
-
-      if (DEBUG) {
-        console.log('[UnifiedContextMenu] NON-EDITABLE selection captured:', { 
-          text,
-          hasRange: !!range,
-          hasText: text.length > 0,
-          containerElement: containerElement.tagName
-        });
-      }
     }
   };
 
@@ -321,9 +293,6 @@ export function UnifiedContextMenu({
           element.focus();
           element.setSelectionRange(start, end);
           
-          if (DEBUG) {
-            console.log('[UnifiedContextMenu] Restored EDITABLE selection:', { start, end });
-          }
         }, 150); // Increased delay for reliable restoration
       }
     } else {
@@ -337,9 +306,6 @@ export function UnifiedContextMenu({
               selection.removeAllRanges();
               selection.addRange(range);
               
-              if (DEBUG) {
-                console.log('[UnifiedContextMenu] Restored NON-EDITABLE selection');
-              }
             }
           } catch (error) {
             console.error('[UnifiedContextMenu] Failed to restore selection:', error);
@@ -442,9 +408,6 @@ export function UnifiedContextMenu({
           element.focus();
           element.select();
           
-          if (DEBUG) {
-            console.log('[UnifiedContextMenu] Select All - EDITABLE');
-          }
         });
       }
     } else {
@@ -461,9 +424,6 @@ export function UnifiedContextMenu({
               selection.removeAllRanges();
               selection.addRange(range);
               
-              if (DEBUG) {
-                console.log('[UnifiedContextMenu] Select All - NON-EDITABLE');
-              }
             }
           } catch (error) {
             console.error('[UnifiedContextMenu] Select all failed:', error);
@@ -509,16 +469,12 @@ export function UnifiedContextMenu({
         context: contextData?.context || '',
       };
 
-      console.log('[UnifiedContextMenu] Application scope:', JSON.stringify(applicationScope, null, 2));
-
       // Map application scopes to prompt variables using scope_mappings
       const variables = mapScopeToVariables(
         applicationScope,
         shortcut.scope_mappings || {},
         builtin.variableDefaults || []
       );
-
-      console.log('[UnifiedContextMenu] Mapped variables:', JSON.stringify(variables, null, 2));
 
       if (isDebugMode) {
         dispatch(showPromptDebugIndicator({
@@ -658,22 +614,6 @@ export function UnifiedContextMenu({
       }
       groups[placementType].push(group);
     });
-
-    if (DEBUG) {
-      console.log('[UnifiedContextMenu] Grouped by placement:', {
-        totalGroups: categoryGroups.length,
-        placementTypes: Object.keys(groups),
-        details: Object.entries(groups).map(([type, grps]) => ({
-          type,
-          categoryCount: grps.length,
-          categories: grps.map(g => ({
-            label: g.category.label,
-            itemCount: g.items.length,
-            itemTypes: [...new Set(g.items.map(i => i.type))],
-          })),
-        })),
-      });
-    }
 
     return groups;
   }, [categoryGroups]);
