@@ -181,6 +181,13 @@ export function UnifiedContextMenu({
     containerElement?: HTMLElement | null;
   } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Store selection before context menu to prevent Mac clearing issue
+  const selectionBeforeContextMenu = React.useRef<{
+    text: string;
+    selection: Selection | null;
+    range: Range | null;
+  } | null>(null);
 
   // Text result modal
   const [textResultModalOpen, setTextResultModalOpen] = useState(false);
@@ -202,6 +209,43 @@ export function UnifiedContextMenu({
     document.addEventListener('selectionchange', handleSelection);
     return () => document.removeEventListener('selectionchange', handleSelection);
   }, []);
+  
+  // Capture selection BEFORE context menu opens (fixes Mac issue where selection gets cleared)
+  const handleContextMenuCapture = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // For textareas and inputs, capture their selection immediately
+    if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+      const start = target.selectionStart || 0;
+      const end = target.selectionEnd || 0;
+      const text = target.value.substring(start, end);
+      
+      selectionBeforeContextMenu.current = {
+        text,
+        selection: null,
+        range: null,
+      };
+    } else {
+      // For non-editable elements, capture the current selection
+      const selection = window.getSelection();
+      const text = selection?.toString() || '';
+      let range: Range | null = null;
+      
+      if (selection && selection.rangeCount > 0) {
+        try {
+          range = selection.getRangeAt(0).cloneRange();
+        } catch (error) {
+          console.error('[UnifiedContextMenu] Failed to clone range:', error);
+        }
+      }
+      
+      selectionBeforeContextMenu.current = {
+        text,
+        selection,
+        range,
+      };
+    }
+  };
 
   // Keep ref in sync with state for reliable closure access
   React.useEffect(() => {
@@ -211,11 +255,15 @@ export function UnifiedContextMenu({
   const handleContextMenu = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     
+    // Use pre-captured selection (fixes Mac issue where selection gets cleared)
+    const capturedSelection = selectionBeforeContextMenu.current;
+    
     // EDITABLE PATH: textareas and inputs
     if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
       const start = target.selectionStart || 0;
       const end = target.selectionEnd || 0;
-      const text = target.value.substring(start, end);
+      // Use captured text if available (for Mac), otherwise get it now
+      const text = capturedSelection?.text || target.value.substring(start, end);
       
       setSelectedText(text);
       setSelectionRange({
@@ -230,13 +278,20 @@ export function UnifiedContextMenu({
 
     } else {
       // NON-EDITABLE PATH: regular elements with text selection
-      const selection = window.getSelection();
-      const text = selection?.toString() || '';
-      let range: Range | null = null;
+      // Use captured selection/range if available (for Mac), otherwise get it now
+      const text = capturedSelection?.text || window.getSelection()?.toString() || '';
+      let range: Range | null = capturedSelection?.range || null;
       
-      if (selection && selection.rangeCount > 0) {
-        // Clone the range so we can restore it later
-        range = selection.getRangeAt(0).cloneRange();
+      // Fallback if capture didn't work
+      if (!range) {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          try {
+            range = selection.getRangeAt(0).cloneRange();
+          } catch (error) {
+            console.error('[UnifiedContextMenu] Failed to clone range:', error);
+          }
+        }
       }
       
       // Find the closest context menu container
@@ -691,7 +746,11 @@ export function UnifiedContextMenu({
   return (
     <>
       <ContextMenu onOpenChange={(open) => !open && handleMenuClose()}>
-        <ContextMenuTrigger asChild onContextMenu={handleContextMenu}>
+        <ContextMenuTrigger 
+          asChild 
+          onContextMenuCapture={handleContextMenuCapture}
+          onContextMenu={handleContextMenu}
+        >
           {children}
         </ContextMenuTrigger>
 
