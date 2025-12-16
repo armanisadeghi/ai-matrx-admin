@@ -182,12 +182,16 @@ export function UnifiedContextMenu({
   } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // Store selection before context menu to prevent Mac clearing issue
-  const selectionBeforeContextMenu = React.useRef<{
+  // Store selection persistently to prevent Mac clearing issue
+  // This ref holds the selection and won't be overwritten by selectionchange events
+  const capturedSelection = React.useRef<{
     text: string;
     selection: Selection | null;
     range: Range | null;
   } | null>(null);
+  
+  // Lock to prevent selectionchange from overwriting captured selection
+  const selectionLocked = React.useRef(false);
 
   // Text result modal
   const [textResultModalOpen, setTextResultModalOpen] = useState(false);
@@ -198,9 +202,14 @@ export function UnifiedContextMenu({
   const [skipSelectionRestore, setSkipSelectionRestore] = useState(false);
   const findReplaceOpenRef = React.useRef(false);
 
-  // Track selection
+  // Track selection (but don't overwrite if locked for context menu)
   React.useEffect(() => {
     const handleSelection = () => {
+      // Don't update if selection is locked for context menu (Mac fix)
+      if (selectionLocked.current) {
+        return;
+      }
+      
       const selection = window.getSelection();
       const text = selection?.toString().trim() || '';
       setSelectedText(text);
@@ -210,9 +219,15 @@ export function UnifiedContextMenu({
     return () => document.removeEventListener('selectionchange', handleSelection);
   }, []);
   
-  // Capture selection BEFORE context menu opens (fixes Mac issue where selection gets cleared)
-  const handleContextMenuCapture = (e: React.MouseEvent) => {
+  // Capture selection on mousedown (right button) - EARLIEST possible point (Mac fix)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only capture on right mouse button (button 2)
+    if (e.button !== 2) return;
+    
     const target = e.target as HTMLElement;
+    
+    // Lock selection updates to prevent selectionchange from clearing our capture
+    selectionLocked.current = true;
     
     // For textareas and inputs, capture their selection immediately
     if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
@@ -220,11 +235,18 @@ export function UnifiedContextMenu({
       const end = target.selectionEnd || 0;
       const text = target.value.substring(start, end);
       
-      selectionBeforeContextMenu.current = {
+      capturedSelection.current = {
         text,
         selection: null,
         range: null,
       };
+      
+      // Also update state immediately
+      setSelectedText(text);
+      
+      if (isDebugMode) {
+        console.log('[UnifiedContextMenu] Captured editable selection on mousedown:', { text, length: text.length });
+      }
     } else {
       // For non-editable elements, capture the current selection
       const selection = window.getSelection();
@@ -239,11 +261,18 @@ export function UnifiedContextMenu({
         }
       }
       
-      selectionBeforeContextMenu.current = {
+      capturedSelection.current = {
         text,
         selection,
         range,
       };
+      
+      // Also update state immediately
+      setSelectedText(text);
+      
+      if (isDebugMode) {
+        console.log('[UnifiedContextMenu] Captured non-editable selection on mousedown:', { text, length: text.length, hasRange: !!range });
+      }
     }
   };
 
@@ -255,15 +284,63 @@ export function UnifiedContextMenu({
   const handleContextMenu = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     
-    // Use pre-captured selection (fixes Mac issue where selection gets cleared)
-    const capturedSelection = selectionBeforeContextMenu.current;
+    // Use captured selection from mousedown (Mac fix)
+    let captured = capturedSelection.current;
+    
+    if (isDebugMode) {
+      console.log('[UnifiedContextMenu] Context menu opened:', { 
+        capturedText: captured?.text, 
+        capturedLength: captured?.text?.length || 0,
+        hasRange: !!captured?.range 
+      });
+    }
+    
+    // ADDITIONAL SAFEGUARD: If mousedown didn't capture (possible on Mac), try again now
+    if (!captured || !captured.text) {
+      if (isDebugMode) {
+        console.log('[UnifiedContextMenu] No captured selection, trying to capture now (fallback)');
+      }
+      if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+        const start = target.selectionStart || 0;
+        const end = target.selectionEnd || 0;
+        const text = target.value.substring(start, end);
+        
+        captured = {
+          text,
+          selection: null,
+          range: null,
+        };
+        capturedSelection.current = captured;
+        selectionLocked.current = true;
+      } else {
+        const selection = window.getSelection();
+        const text = selection?.toString() || '';
+        let range: Range | null = null;
+        
+        if (selection && selection.rangeCount > 0) {
+          try {
+            range = selection.getRangeAt(0).cloneRange();
+          } catch (error) {
+            console.error('[UnifiedContextMenu] Failed to clone range:', error);
+          }
+        }
+        
+        captured = {
+          text,
+          selection,
+          range,
+        };
+        capturedSelection.current = captured;
+        selectionLocked.current = true;
+      }
+    }
     
     // EDITABLE PATH: textareas and inputs
     if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
       const start = target.selectionStart || 0;
       const end = target.selectionEnd || 0;
-      // Use captured text if available (for Mac), otherwise get it now
-      const text = capturedSelection?.text || target.value.substring(start, end);
+      // Use captured text
+      const text = captured?.text || '';
       
       setSelectedText(text);
       setSelectionRange({
@@ -278,21 +355,9 @@ export function UnifiedContextMenu({
 
     } else {
       // NON-EDITABLE PATH: regular elements with text selection
-      // Use captured selection/range if available (for Mac), otherwise get it now
-      const text = capturedSelection?.text || window.getSelection()?.toString() || '';
-      let range: Range | null = capturedSelection?.range || null;
-      
-      // Fallback if capture didn't work
-      if (!range) {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          try {
-            range = selection.getRangeAt(0).cloneRange();
-          } catch (error) {
-            console.error('[UnifiedContextMenu] Failed to clone range:', error);
-          }
-        }
-      }
+      // Use captured selection/range
+      const text = captured?.text || '';
+      let range: Range | null = captured?.range || null;
       
       // Find the closest context menu container
       let containerElement = e.currentTarget as HTMLElement;
@@ -322,6 +387,10 @@ export function UnifiedContextMenu({
   // Restore selection when menu closes
   const handleMenuClose = () => {
     setMenuOpen(false);
+    
+    // Unlock selection updates (Mac fix)
+    selectionLocked.current = false;
+    capturedSelection.current = null;
     
     // Skip restoration if a modal is opening (like Find/Replace)
     if (skipSelectionRestore) {
@@ -518,8 +587,10 @@ export function UnifiedContextMenu({
       const builtin = shortcut.prompt_builtin;
 
       // Build application scopes (standard + custom)
+      // Use captured selection if available (Mac fix), otherwise use state
+      const selectionText = capturedSelection.current?.text || selectedText || '';
       const applicationScope = {
-        selection: selectedText || '',
+        selection: selectionText,
         content: contextData?.content || '',
         context: contextData?.context || '',
       };
@@ -535,7 +606,7 @@ export function UnifiedContextMenu({
         dispatch(showPromptDebugIndicator({
           promptName: shortcut.label,
           placementType,
-          selectedText: selectedText,
+          selectedText: selectionText,
           availableContext: applicationScope,
           resolvedVariables: variables,
           canResolve: {
@@ -578,7 +649,7 @@ export function UnifiedContextMenu({
           onTextReplace,
           onTextInsertBefore,
           onTextInsertAfter,
-          originalText: selectedText || '',
+          originalText: selectionText,
         }),
       });
     } catch (error) {
@@ -748,7 +819,7 @@ export function UnifiedContextMenu({
       <ContextMenu onOpenChange={(open) => !open && handleMenuClose()}>
         <ContextMenuTrigger 
           asChild 
-          onContextMenuCapture={handleContextMenuCapture}
+          onMouseDown={handleMouseDown}
           onContextMenu={handleContextMenu}
         >
           {children}
@@ -973,7 +1044,7 @@ export function UnifiedContextMenu({
           isOpen={contextDebugOpen}
           onClose={() => setContextDebugOpen(false)}
           contextData={{
-            selection: selectedText,
+            selection: capturedSelection.current?.text || selectedText,
             content: contextData?.content || '',
             context: contextData?.context || '',
             ...contextData, // Include all custom variables
