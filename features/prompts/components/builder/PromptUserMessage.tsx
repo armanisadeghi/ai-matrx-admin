@@ -19,9 +19,11 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isCopied, setIsCopied] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [shouldBeCollapsible, setShouldBeCollapsible] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const measureRef = useRef<HTMLDivElement>(null);
 
     // Parse resources from content
     const hasResources = useMemo(() => messageContainsResources(content), [content]);
@@ -43,6 +45,25 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
             textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
         }
     }, [isEditing, editContent]);
+
+    // Determine if content is long enough to be collapsible
+    // ~96px (max-h-24) is roughly 3-4 lines of text
+    useEffect(() => {
+        if (measureRef.current && !isEditing) {
+            const COLLAPSE_THRESHOLD = 96; // 24 * 4px = 96px (max-h-24)
+            const contentHeight = measureRef.current.scrollHeight;
+            const isContentLongEnough = contentHeight > COLLAPSE_THRESHOLD;
+            setShouldBeCollapsible(isContentLongEnough);
+            
+            // If content is short, keep it expanded
+            if (!isContentLongEnough) {
+                setIsCollapsed(false);
+            } else {
+                // For long content, start collapsed
+                setIsCollapsed(true);
+            }
+        }
+    }, [textContent, isEditing]);
 
     const handleCopy = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -81,13 +102,13 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     };
 
     const toggleCollapse = () => {
-        if (!isEditing) {
+        if (!isEditing && shouldBeCollapsible) {
             setIsCollapsed(!isCollapsed);
         }
     };
 
     const handleHeaderClick = () => {
-        if (!isEditing) {
+        if (!isEditing && shouldBeCollapsible) {
             toggleCollapse();
         }
     };
@@ -99,7 +120,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     return (
         <div className={containerMargin}>
             {/* Unified container with border and background */}
-            <div className={`bg-muted border border-border ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
+            <div className={`bg-muted border border-border ${shouldBeCollapsible && isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
                 {/* Thin delicate header */}
                 <div
                     className={`flex items-center justify-end px-2 py-1 cursor-pointer`}
@@ -181,13 +202,13 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
                             {textContent.trim() && (
                                 <div className="relative">
                                     <div
-                                        ref={contentRef}
-                                        className={`${textSize} text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${isCollapsed ? "max-h-24" : ""
+                                        ref={measureRef}
+                                        className={`${textSize} text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${shouldBeCollapsible && isCollapsed ? "max-h-24" : ""
                                             }`}
                                     >
                                         {textContent}
                                     </div>
-                                    {isCollapsed && (
+                                    {shouldBeCollapsible && isCollapsed && (
                                         <>
                                             {/* Gradient fade overlay */}
                                             <div

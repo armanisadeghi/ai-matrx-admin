@@ -27,6 +27,17 @@ import {
   ContextMenuLabel,
 } from '@/components/ui/context-menu';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
+import {
   StickyNote,
   CheckSquare,
   MessageSquare,
@@ -115,6 +126,8 @@ interface UnifiedContextMenuProps {
     [key: string]: any;
   };
   className?: string;
+  /** Enable floating icon on text selection (default: true) */
+  enableFloatingIcon?: boolean;
 }
 
 export function UnifiedContextMenu({
@@ -135,6 +148,7 @@ export function UnifiedContextMenu({
   ],
   contextData = {},
   className,
+  enableFloatingIcon = true,
 }: UnifiedContextMenuProps) {
   // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(p => p !== 'quick-action');
@@ -201,6 +215,14 @@ export function UnifiedContextMenu({
   const [findReplaceOpen, setFindReplaceOpen] = useState(false);
   const [skipSelectionRestore, setSkipSelectionRestore] = useState(false);
   const findReplaceOpenRef = React.useRef(false);
+  
+  // Floating selection icon state
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showFloatingIcon, setShowFloatingIcon] = useState(false);
+  
+  // Track mouse position for fallback positioning (textareas)
+  const lastMousePos = React.useRef<{ x: number; y: number } | null>(null);
 
   // Track selection (but don't overwrite if locked for context menu)
   React.useEffect(() => {
@@ -213,11 +235,84 @@ export function UnifiedContextMenu({
       const selection = window.getSelection();
       const text = selection?.toString().trim() || '';
       setSelectedText(text);
+      
+      // Update selection rect for floating icon
+      // Always use window.getSelection() for positioning, even for textareas
+      if (text && selection && selection.rangeCount > 0) {
+        try {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          
+          // Only update if rect has valid dimensions (not collapsed/zero)
+          // This prevents overwriting a good rect with zeros
+          if (rect.width > 0 && rect.height > 0) {
+            if (isDebugMode) {
+              console.log('[UnifiedContextMenu] Selection rect (valid):', {
+                text,
+                rect: {
+                  top: rect.top,
+                  left: rect.left,
+                  width: rect.width,
+                  height: rect.height,
+                  bottom: rect.bottom,
+                  right: rect.right,
+                }
+              });
+            }
+            
+            setSelectionRect(rect);
+          } else {
+            // Fallback for textareas: use last mouse position
+            if (lastMousePos.current) {
+              // Create a fake rect at mouse position
+              const fakeRect = {
+                left: lastMousePos.current.x - 50, // Center the icon around cursor
+                right: lastMousePos.current.x + 50,
+                top: lastMousePos.current.y - 10,
+                bottom: lastMousePos.current.y + 10,
+                width: 100,
+                height: 20,
+                x: lastMousePos.current.x - 50,
+                y: lastMousePos.current.y - 10,
+                toJSON: () => ({}),
+              } as DOMRect;
+              
+              setSelectionRect(fakeRect);
+              
+              if (isDebugMode) {
+                console.log('[UnifiedContextMenu] Selection rect (fallback from mouse position):', {
+                  text,
+                  mousePos: lastMousePos.current,
+                  fakeRect: {
+                    top: fakeRect.top,
+                    left: fakeRect.left,
+                    width: fakeRect.width,
+                    height: fakeRect.height,
+                  }
+                });
+              }
+            } else if (isDebugMode) {
+              console.log('[UnifiedContextMenu] Selection rect (invalid - zero dimensions, no mouse pos):', {
+                text,
+                rect: {
+                  width: rect.width,
+                  height: rect.height,
+                }
+              });
+            }
+          }
+        } catch (error) {
+          console.error('[UnifiedContextMenu] Error getting selection rect:', error);
+          setSelectionRect(null);
+        }
+      } else {
+        setSelectionRect(null);
+      }
     };
 
     document.addEventListener('selectionchange', handleSelection);
     return () => document.removeEventListener('selectionchange', handleSelection);
-  }, []);
+  }, [isDebugMode]);
   
   // Capture selection on mousedown (right button) - EARLIEST possible point (Mac fix)
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -241,6 +336,54 @@ export function UnifiedContextMenu({
         range: null,
       };
       
+      // Capture selection bounds for floating icon
+      // Use window.getSelection() even for textareas to get actual selection position
+      if (text) {
+        try {
+          const selection = window.getSelection();
+          if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            
+            // Only set if rect has valid dimensions
+            if (rect.width > 0 && rect.height > 0) {
+              setSelectionRect(rect);
+              
+              if (isDebugMode) {
+                console.log('[UnifiedContextMenu] Captured textarea selection rect:', {
+                  text,
+                  rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+                });
+              }
+            } else if (lastMousePos.current) {
+              // Fallback: use mouse position for textareas
+              const fakeRect = {
+                left: lastMousePos.current.x - 50,
+                right: lastMousePos.current.x + 50,
+                top: lastMousePos.current.y - 10,
+                bottom: lastMousePos.current.y + 10,
+                width: 100,
+                height: 20,
+                x: lastMousePos.current.x - 50,
+                y: lastMousePos.current.y - 10,
+                toJSON: () => ({}),
+              } as DOMRect;
+              
+              setSelectionRect(fakeRect);
+              
+              if (isDebugMode) {
+                console.log('[UnifiedContextMenu] Captured textarea selection rect (fallback):', {
+                  text,
+                  mousePos: lastMousePos.current,
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[UnifiedContextMenu] Failed to get selection bounds:', error);
+        }
+      }
+      
       // Also update state immediately
       setSelectedText(text);
       
@@ -256,6 +399,22 @@ export function UnifiedContextMenu({
       if (selection && selection.rangeCount > 0) {
         try {
           range = selection.getRangeAt(0).cloneRange();
+          // Capture selection bounds for floating icon
+          if (text) {
+            const rect = range.getBoundingClientRect();
+            
+            // Only set if rect has valid dimensions
+            if (rect.width > 0 && rect.height > 0) {
+              setSelectionRect(rect);
+              
+              if (isDebugMode) {
+                console.log('[UnifiedContextMenu] Captured non-editable selection rect:', {
+                  text,
+                  rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+                });
+              }
+            }
+          }
         } catch (error) {
           console.error('[UnifiedContextMenu] Failed to clone range:', error);
         }
@@ -280,6 +439,46 @@ export function UnifiedContextMenu({
   React.useEffect(() => {
     findReplaceOpenRef.current = findReplaceOpen;
   }, [findReplaceOpen]);
+  
+  // Show/hide floating icon with debouncing
+  React.useEffect(() => {
+    const shouldShow = 
+      enableFloatingIcon &&
+      selectedText.length > 0 &&
+      selectionRect !== null &&
+      !menuOpen &&
+      !dropdownOpen;
+    
+    // Debounce showing the icon to prevent flickering during selection
+    const timer = setTimeout(() => {
+      setShowFloatingIcon(shouldShow);
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, [enableFloatingIcon, selectedText, selectionRect, menuOpen, dropdownOpen]);
+  
+  // Hide floating icon on scroll
+  React.useEffect(() => {
+    if (!showFloatingIcon) return;
+    
+    const handleScroll = () => {
+      setShowFloatingIcon(false);
+      setSelectionRect(null);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [showFloatingIcon]);
+  
+  // Track mouse position for fallback positioning (needed for textareas)
+  React.useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      lastMousePos.current = { x: e.clientX, y: e.clientY };
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -749,7 +948,409 @@ export function UnifiedContextMenu({
     return enabledPlacements.includes(placementType);
   };
 
-  // Recursive function to render category hierarchy
+  // Shared menu content renderer - works for both ContextMenu and DropdownMenu
+  const renderMenuContent = (MenuComponents: {
+    Item: typeof ContextMenuItem | typeof DropdownMenuItem;
+    Separator: typeof ContextMenuSeparator | typeof DropdownMenuSeparator;
+    Sub: typeof ContextMenuSub | typeof DropdownMenuSub;
+    SubTrigger: typeof ContextMenuSubTrigger | typeof DropdownMenuSubTrigger;
+    SubContent: typeof ContextMenuSubContent | typeof DropdownMenuSubContent;
+    Label: typeof ContextMenuLabel | typeof DropdownMenuLabel;
+  }) => {
+    const { Item: MenuItem, Separator, Sub, SubTrigger, SubContent, Label } = MenuComponents;
+    
+    // Recursive function to render category hierarchy
+    const renderCategoryGroupInternal = (group: typeof categoryGroups[0], placementType: string) => {
+      const { category, items, children } = group;
+      const CategoryIcon = getIcon(category.icon_name);
+      const hasContent = items.length > 0 || (children && children.length > 0);
+
+      return (
+        <React.Fragment key={category.id}>
+          <Sub>
+            <SubTrigger className={!hasContent ? 'opacity-50 cursor-not-allowed' : ''}>
+              <CategoryIcon
+                className="h-4 w-4 mr-2"
+                style={{ color: category.color || 'currentColor' }}
+              />
+              {category.label}
+            </SubTrigger>
+            <SubContent className="w-64">
+              {!hasContent && (
+                <div className="px-2 py-6 text-center">
+                  <p className="text-sm text-muted-foreground">No items in {category.label}</p>
+                </div>
+              )}
+
+              {items.map(item => {
+                const ItemIcon = item.type === 'content_block'
+                  ? item.icon
+                  : getIcon(item.icon_name);
+                const isDisabled = item.type === 'prompt_shortcut'
+                  && (!item.prompt_builtin || !item.prompt_builtin_id);
+
+                return (
+                  <MenuItem
+                    key={item.id}
+                    onSelect={() => handleMenuItemSelect(item, placementType)}
+                    disabled={isDisabled}
+                  >
+                    <ItemIcon className="h-4 w-4 mr-2" />
+                    {item.label}
+                    {isDisabled && (
+                      <span className="ml-auto text-xs text-muted-foreground">Not configured</span>
+                    )}
+                  </MenuItem>
+                );
+              })}
+
+              {children && children.length > 0 && (
+                <>
+                  {items.length > 0 && <Separator />}
+                  {children.map(childGroup => renderCategoryGroupInternal(childGroup, placementType))}
+                </>
+              )}
+            </SubContent>
+          </Sub>
+        </React.Fragment>
+      );
+    };
+    
+    return (
+      <>
+        {loading && (
+          <Label className="text-xs text-muted-foreground">Loading...</Label>
+        )}
+
+        {/* Selection Indicator */}
+        {selectedText && (
+          <>
+            <div className="px-2 py-2 border-b border-border bg-primary/5">
+              <div className="flex items-start gap-2">
+                <Type className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium text-primary mb-0.5">
+                    Selected ({selectedText.length} char{selectedText.length !== 1 ? 's' : ''})
+                  </div>
+                  <div className="text-xs text-muted-foreground font-mono break-all leading-tight">
+                    {selectedText.length <= 50 
+                      ? `"${selectedText}"`
+                      : `"${selectedText.substring(0, 20)}...${selectedText.substring(selectedText.length - 20)}"`
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Browser Actions */}
+        <MenuItem onSelect={handleCopy} disabled={!selectedText}>
+          <Copy className="h-4 w-4 mr-2" />
+          Copy
+        </MenuItem>
+        <MenuItem onSelect={handleCut} disabled={!selectedText || !isEditable}>
+          <Scissors className="h-4 w-4 mr-2" />
+          Cut
+        </MenuItem>
+        <MenuItem onSelect={handlePaste} disabled={!isEditable}>
+          <Clipboard className="h-4 w-4 mr-2" />
+          Paste
+        </MenuItem>
+        <MenuItem onSelect={handleSelectAll}>
+          <Type className="h-4 w-4 mr-2" />
+          Select All
+        </MenuItem>
+        <MenuItem onSelect={handleFind}>
+          <Search className="h-4 w-4 mr-2" />
+          Find...
+        </MenuItem>
+        <Separator />
+
+        {/* Placement type sections */}
+        {enabledPlacements.filter(p => p !== 'quick-action').map((placementType) => {
+          const groups = groupedByPlacement[placementType] || [];
+          const hasItemsRecursive = (group: typeof groups[0]): boolean => {
+            if (group.items.length > 0) return true;
+            if (group.children && group.children.length > 0) {
+              return group.children.some(child => hasItemsRecursive(child));
+            }
+            return false;
+          };
+          const hasItems = groups.length > 0 && groups.some(g => hasItemsRecursive(g));
+          const PlacementIcon = getPlacementIcon(placementType);
+          const placementMeta = PLACEMENT_TYPE_META[placementType as keyof typeof PLACEMENT_TYPE_META];
+          const label = placementMeta?.label || placementType;
+
+          return (
+            <React.Fragment key={placementType}>
+              <Sub>
+                <SubTrigger 
+                  disabled={!hasItems}
+                  className={!hasItems ? 'opacity-50 cursor-not-allowed' : ''}
+                >
+                  <PlacementIcon className="h-4 w-4 mr-2" />
+                  {label}
+                </SubTrigger>
+                <SubContent className="w-64">
+                  {groups.length === 0 || !hasItems ? (
+                    <div className="px-2 py-6 text-center">
+                      <p className="text-sm text-muted-foreground">No {label}</p>
+                    </div>
+                  ) : (
+                    <>
+                      {groups.map(group => renderCategoryGroupInternal(group, placementType))}
+                    </>
+                  )}
+                </SubContent>
+              </Sub>
+            </React.Fragment>
+          );
+        })}
+
+        {/* Quick Actions */}
+        {shouldShowPlacement('quick-action') && (
+          <>
+            <Sub>
+              <SubTrigger>
+                <Zap className="h-4 w-4 mr-2" />
+                Quick Actions
+              </SubTrigger>
+              <SubContent className="w-56">
+                <MenuItem onSelect={() => openQuickNotes()}>
+                  <StickyNote className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Notes</span>
+                    <span className="text-xs text-muted-foreground">Quick capture</span>
+                  </div>
+                </MenuItem>
+                <MenuItem onSelect={() => openQuickTasks()}>
+                  <CheckSquare className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Tasks</span>
+                    <span className="text-xs text-muted-foreground">Manage tasks</span>
+                  </div>
+                </MenuItem>
+                <MenuItem onSelect={() => openQuickChat()}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Chat</span>
+                    <span className="text-xs text-muted-foreground">AI assistant</span>
+                  </div>
+                </MenuItem>
+                <MenuItem onSelect={() => openQuickData()}>
+                  <Database className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Data</span>
+                    <span className="text-xs text-muted-foreground">View tables</span>
+                  </div>
+                </MenuItem>
+                <MenuItem onSelect={() => openQuickFiles()}>
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Files</span>
+                    <span className="text-xs text-muted-foreground">Browse files</span>
+                  </div>
+                </MenuItem>
+              </SubContent>
+            </Sub>
+          </>
+        )}
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <>
+            <Separator />
+            <Sub>
+              <SubTrigger>
+                <Shield className="h-4 w-4 mr-2" />
+                Admin Tools
+              </SubTrigger>
+              <SubContent className="w-56">
+                <MenuItem onSelect={() => dispatch(toggleDebugMode())}>
+                  {isDebugMode ? (
+                    <EyeOff className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 mr-2" />
+                  )}
+                  <div className="flex flex-col">
+                    <span>{isDebugMode ? "Disable" : "Enable"} Debug Mode</span>
+                    <span className="text-xs text-muted-foreground">
+                      {isDebugMode ? "Hide debug info" : "Show debug info"}
+                    </span>
+                  </div>
+                </MenuItem>
+                {isDebugMode && (
+                  <MenuItem 
+                    onSelect={() => setContextDebugOpen(true)}
+                    className="text-amber-600 dark:text-amber-400"
+                  >
+                    <Bug className="h-4 w-4 mr-2" />
+                    <div className="flex flex-col">
+                      <span>Inspect Context</span>
+                      <span className="text-xs text-muted-foreground">View available data</span>
+                    </div>
+                  </MenuItem>
+                )}
+                <Separator />
+                <MenuItem 
+                  onSelect={() => dispatch(toggleOverlay({ overlayId: "adminIndicator" }))}
+                >
+                  {isAdminIndicatorOpen ? (
+                    <Eye className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <EyeOff className="h-4 w-4 mr-2" />
+                  )}
+                  <div className="flex flex-col">
+                    <span>{isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator</span>
+                    <span className="text-xs text-muted-foreground">
+                      {isAdminIndicatorOpen ? "Hide overlay" : "Show overlay"}
+                    </span>
+                  </div>
+                </MenuItem>
+              </SubContent>
+            </Sub>
+          </>
+        )}
+      </>
+    );
+  };
+
+  // Floating selection icon component (returns null if should not show, otherwise returns the button element)
+  const renderFloatingSelectionIcon = () => {
+    // Keep the button visible if dropdown is open (even if showFloatingIcon is false)
+    // This prevents the menu from losing its anchor
+    const shouldRender = (showFloatingIcon || dropdownOpen) && selectionRect;
+    
+    if (!shouldRender) return null;
+    
+    // Additional validation: ensure rect has valid dimensions
+    // Note: We allow small dimensions (like our fake rect) as long as they're not zero
+    if (selectionRect.width <= 0 || selectionRect.height <= 0) {
+      if (isDebugMode) {
+        console.log('[UnifiedContextMenu] FloatingSelectionIcon: Invalid rect dimensions, not rendering', {
+          width: selectionRect.width,
+          height: selectionRect.height,
+        });
+      }
+      return null;
+    }
+    
+    // Detect mobile/touch device
+    const isMobile = typeof window !== 'undefined' && (
+      'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 ||
+      window.innerWidth < 768
+    );
+    
+    // Calculate position: centered above selection
+    // Larger touch target on mobile (48x48 vs 40x40)
+    const iconWidth = isMobile ? 48 : 40;
+    const iconHeight = isMobile ? 48 : 40;
+    const offsetAbove = isMobile ? 12 : 8; // More space on mobile
+    
+    // Since we're using 'fixed' positioning, selectionRect is already viewport-relative
+    // Don't add scroll offsets - getBoundingClientRect() returns viewport coordinates
+    const centerX = selectionRect.left + (selectionRect.width / 2);
+    const left = centerX - (iconWidth / 2);
+    const top = selectionRect.top - iconHeight - offsetAbove;
+    
+    // Check if there's space above, otherwise position below
+    const shouldPositionBelow = top < 10;
+    const finalTop = shouldPositionBelow 
+      ? selectionRect.bottom + offsetAbove
+      : top;
+    
+    // Ensure icon stays within viewport horizontally
+    const viewportWidth = window.innerWidth;
+    const horizontalPadding = isMobile ? 16 : 10;
+    const finalLeft = Math.max(
+      horizontalPadding, 
+      Math.min(left, viewportWidth - iconWidth - horizontalPadding)
+    );
+    
+    if (isDebugMode) {
+      console.log('[UnifiedContextMenu] FloatingSelectionIcon position:', {
+        selectionRect: {
+          top: selectionRect.top,
+          left: selectionRect.left,
+          width: selectionRect.width,
+          height: selectionRect.height,
+          bottom: selectionRect.bottom,
+        },
+        calculated: {
+          centerX,
+          left,
+          top,
+          shouldPositionBelow,
+          finalTop,
+          finalLeft,
+        },
+        viewport: {
+          width: viewportWidth,
+          scrollX: window.scrollX,
+          scrollY: window.scrollY,
+        }
+      });
+    }
+    
+    const handleOpen = (e: React.MouseEvent | React.TouchEvent | React.KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Lock selection before opening dropdown
+      selectionLocked.current = true;
+      setDropdownOpen(true);
+    };
+    
+    return (
+      <button
+        onClick={handleOpen}
+        onTouchEnd={(e) => {
+          // Handle touch events for mobile
+          e.preventDefault();
+          handleOpen(e);
+        }}
+        className={`fixed z-[9999] flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-200 ${
+          dropdownOpen ? 'opacity-0 pointer-events-none' : 'hover:shadow-xl hover:scale-110 active:scale-95 animate-in fade-in slide-in-from-top-2'
+        } ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
+        style={{
+          left: `${finalLeft}px`,
+          top: `${finalTop}px`,
+          touchAction: 'manipulation', // Prevent double-tap zoom on mobile
+        }}
+        aria-label="Open text actions menu"
+        role="button"
+        tabIndex={dropdownOpen ? -1 : 0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleOpen(e);
+          }
+          if (e.key === 'Escape') {
+            setShowFloatingIcon(false);
+          }
+        }}
+      >
+        <Sparkles className={isMobile ? 'h-6 w-6' : 'h-5 w-5'} />
+      </button>
+    );
+  };
+
+  // Handle dropdown close
+  const handleDropdownClose = (open: boolean) => {
+    setDropdownOpen(open);
+    if (!open) {
+      // Unlock selection when dropdown closes
+      selectionLocked.current = false;
+      capturedSelection.current = null;
+      // Hide floating icon after dropdown closes
+      setTimeout(() => {
+        setShowFloatingIcon(false);
+        setSelectionRect(null);
+      }, 100);
+    }
+  };
+  
+  // Recursive function to render category hierarchy (kept for backwards compatibility, but now uses renderMenuContent)
   const renderCategoryGroup = (group: typeof categoryGroups[0], placementType: string) => {
     const { category, items, children } = group;
     const CategoryIcon = getIcon(category.icon_name);
@@ -826,217 +1427,40 @@ export function UnifiedContextMenu({
         </ContextMenuTrigger>
 
         <ContextMenuContent className={`w-64 ${className}`}>
-          {loading && (
-            <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
-          )}
-
-          {/* Selection Indicator - Show whenever text is selected */}
-          {selectedText && (
-            <>
-              <div className="px-2 py-2 border-b border-border bg-primary/5">
-                <div className="flex items-start gap-2">
-                  <Type className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-primary mb-0.5">
-                      Selected ({selectedText.length} char{selectedText.length !== 1 ? 's' : ''})
-                    </div>
-                    <div className="text-xs text-muted-foreground font-mono break-all leading-tight">
-                      {selectedText.length <= 50 
-                        ? `"${selectedText}"`
-                        : `"${selectedText.substring(0, 20)}...${selectedText.substring(selectedText.length - 20)}"`
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Browser Actions - Always show, but disable when not applicable */}
-          <ContextMenuItem onSelect={handleCopy} disabled={!selectedText}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copy
-          </ContextMenuItem>
-          <ContextMenuItem onSelect={handleCut} disabled={!selectedText || !isEditable}>
-            <Scissors className="h-4 w-4 mr-2" />
-            Cut
-          </ContextMenuItem>
-          <ContextMenuItem onSelect={handlePaste} disabled={!isEditable}>
-            <Clipboard className="h-4 w-4 mr-2" />
-            Paste
-          </ContextMenuItem>
-          <ContextMenuItem onSelect={handleSelectAll}>
-            <Type className="h-4 w-4 mr-2" />
-            Select All
-          </ContextMenuItem>
-          <ContextMenuItem onSelect={handleFind}>
-            <Search className="h-4 w-4 mr-2" />
-            Find...
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-
-          {/* Dynamically render placement type sections - Always show, disable if empty */}
-          {enabledPlacements.filter(p => p !== 'quick-action').map((placementType) => {
-            const groups = groupedByPlacement[placementType] || [];
-            
-            // Recursively check if any group or its children have items
-            const hasItemsRecursive = (group: typeof groups[0]): boolean => {
-              if (group.items.length > 0) return true;
-              if (group.children && group.children.length > 0) {
-                return group.children.some(child => hasItemsRecursive(child));
-              }
-              return false;
-            };
-            
-            const hasItems = groups.length > 0 && groups.some(g => hasItemsRecursive(g));
-            
-            const PlacementIcon = getPlacementIcon(placementType);
-            const placementMeta = PLACEMENT_TYPE_META[placementType as keyof typeof PLACEMENT_TYPE_META];
-            const label = placementMeta?.label || placementType;
-
-            return (
-              <React.Fragment key={placementType}>
-                <ContextMenuSub>
-                  <ContextMenuSubTrigger 
-                    disabled={!hasItems}
-                    className={!hasItems ? 'opacity-50 cursor-not-allowed' : ''}
-                  >
-                    <PlacementIcon className="h-4 w-4 mr-2" />
-                    {label}
-                  </ContextMenuSubTrigger>
-                  <ContextMenuSubContent className="w-64">
-                    {groups.length === 0 || !hasItems ? (
-                      <div className="px-2 py-6 text-center">
-                        <p className="text-sm text-muted-foreground">No {label}</p>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Render hierarchical categories recursively */}
-                        {groups.map(group => renderCategoryGroup(group, placementType))}
-                      </>
-                    )}
-                  </ContextMenuSubContent>
-                </ContextMenuSub>
-              </React.Fragment>
-            );
+          {renderMenuContent({
+            Item: ContextMenuItem,
+            Separator: ContextMenuSeparator,
+            Sub: ContextMenuSub,
+            SubTrigger: ContextMenuSubTrigger,
+            SubContent: ContextMenuSubContent,
+            Label: ContextMenuLabel,
           })}
-
-          {/* Quick Actions Section - Always show if enabled */}
-          {shouldShowPlacement('quick-action') && (
-            <>
-              <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Quick Actions
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent className="w-56">
-                  <ContextMenuItem onSelect={() => openQuickNotes()}>
-                    <StickyNote className="h-4 w-4 mr-2" />
-                    <div className="flex flex-col">
-                      <span>Notes</span>
-                      <span className="text-xs text-muted-foreground">Quick capture</span>
-                    </div>
-                  </ContextMenuItem>
-
-                  <ContextMenuItem onSelect={() => openQuickTasks()}>
-                    <CheckSquare className="h-4 w-4 mr-2" />
-                    <div className="flex flex-col">
-                      <span>Tasks</span>
-                      <span className="text-xs text-muted-foreground">Manage tasks</span>
-                    </div>
-                  </ContextMenuItem>
-
-                  <ContextMenuItem onSelect={() => openQuickChat()}>
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    <div className="flex flex-col">
-                      <span>Chat</span>
-                      <span className="text-xs text-muted-foreground">AI assistant</span>
-                    </div>
-                  </ContextMenuItem>
-
-                  <ContextMenuItem onSelect={() => openQuickData()}>
-                    <Database className="h-4 w-4 mr-2" />
-                    <div className="flex flex-col">
-                      <span>Data</span>
-                      <span className="text-xs text-muted-foreground">View tables</span>
-                    </div>
-                  </ContextMenuItem>
-
-                  <ContextMenuItem onSelect={() => openQuickFiles()}>
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    <div className="flex flex-col">
-                      <span>Files</span>
-                      <span className="text-xs text-muted-foreground">Browse files</span>
-                    </div>
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-            </>
-          )}
-
-          {/* Admin Section */}
-          {isAdmin && (
-            <>
-              <ContextMenuSeparator />
-              <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                  <Shield className="h-4 w-4 mr-2" />
-                  Admin Tools
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent className="w-56">
-                  {/* Toggle Debug Mode */}
-                  <ContextMenuItem onSelect={() => dispatch(toggleDebugMode())}>
-                    {isDebugMode ? (
-                      <EyeOff className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 mr-2" />
-                    )}
-                    <div className="flex flex-col">
-                      <span>{isDebugMode ? "Disable" : "Enable"} Debug Mode</span>
-                      <span className="text-xs text-muted-foreground">
-                        {isDebugMode ? "Hide debug info" : "Show debug info"}
-                      </span>
-                    </div>
-                  </ContextMenuItem>
-
-                  {/* Inspect Context (only when debug mode is on) */}
-                  {isDebugMode && (
-                    <ContextMenuItem 
-                      onSelect={() => setContextDebugOpen(true)}
-                      className="text-amber-600 dark:text-amber-400"
-                    >
-                      <Bug className="h-4 w-4 mr-2" />
-                      <div className="flex flex-col">
-                        <span>Inspect Context</span>
-                        <span className="text-xs text-muted-foreground">View available data</span>
-                      </div>
-                    </ContextMenuItem>
-                  )}
-
-                  <ContextMenuSeparator />
-
-                  {/* Toggle Admin Indicator */}
-                  <ContextMenuItem 
-                    onSelect={() => dispatch(toggleOverlay({ overlayId: "adminIndicator" }))}
-                  >
-                    {isAdminIndicatorOpen ? (
-                      <Eye className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <EyeOff className="h-4 w-4 mr-2" />
-                    )}
-                    <div className="flex flex-col">
-                      <span>{isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator</span>
-                      <span className="text-xs text-muted-foreground">
-                        {isAdminIndicatorOpen ? "Hide overlay" : "Show overlay"}
-                      </span>
-                    </div>
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-            </>
-          )}
         </ContextMenuContent>
       </ContextMenu>
+
+      {/* Floating Selection Icon and Dropdown Menu */}
+      {enableFloatingIcon && (
+        <DropdownMenu open={dropdownOpen} onOpenChange={handleDropdownClose}>
+          <DropdownMenuTrigger asChild>
+            {renderFloatingSelectionIcon() || <div style={{ display: 'none' }} />}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            className="w-64"
+            align="center"
+            side="bottom"
+            sideOffset={5}
+          >
+            {renderMenuContent({
+              Item: DropdownMenuItem,
+              Separator: DropdownMenuSeparator,
+              Sub: DropdownMenuSub,
+              SubTrigger: DropdownMenuSubTrigger,
+              SubContent: DropdownMenuSubContent,
+              Label: DropdownMenuLabel,
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {/* Context Debug Modal */}
       {isDebugMode && (
