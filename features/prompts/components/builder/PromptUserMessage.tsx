@@ -24,6 +24,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     const contentRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const measureRef = useRef<HTMLDivElement>(null);
+    const previousContentRef = useRef<string>("");
 
     // Parse resources from content
     const hasResources = useMemo(() => messageContainsResources(content), [content]);
@@ -47,20 +48,26 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     }, [isEditing, editContent]);
 
     // Determine if content is long enough to be collapsible
-    // ~96px (max-h-24) is roughly 3-4 lines of text
+    // ~96px (max-h-24) is roughly 3 lines of text
     useEffect(() => {
         if (measureRef.current && !isEditing) {
-            const COLLAPSE_THRESHOLD = 96; // 24 * 4px = 96px (max-h-24)
+            const COLLAPSE_THRESHOLD = 48; // 12 * 4px = 48px (max-h-12)
             const contentHeight = measureRef.current.scrollHeight;
             const isContentLongEnough = contentHeight > COLLAPSE_THRESHOLD;
+            const contentChanged = previousContentRef.current !== textContent;
+            
             setShouldBeCollapsible(isContentLongEnough);
             
-            // If content is short, keep it expanded
-            if (!isContentLongEnough) {
-                setIsCollapsed(false);
-            } else {
-                // For long content, start collapsed
-                setIsCollapsed(true);
+            // If content changed, reset collapse state
+            if (contentChanged) {
+                if (isContentLongEnough) {
+                    // Long content: start collapsed
+                    setIsCollapsed(true);
+                } else {
+                    // Short content: keep expanded
+                    setIsCollapsed(false);
+                }
+                previousContentRef.current = textContent;
             }
         }
     }, [textContent, isEditing]);
@@ -120,10 +127,10 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     return (
         <div className={containerMargin}>
             {/* Unified container with border and background */}
-            <div className={`bg-muted border border-border ${shouldBeCollapsible && isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
+            <div className={`bg-muted border border-border rounded-lg`}>
                 {/* Thin delicate header */}
                 <div
-                    className={`flex items-center justify-end px-2 py-1 cursor-pointer`}
+                    className={`flex items-center justify-end px-2 pt-1 pb-0 cursor-pointer rounded-lg`}
                     onClick={handleHeaderClick}
                 >
                     <div className="flex items-center gap-1">
@@ -133,18 +140,18 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleSave}
-                                    className="h-6 px-2 text-xs text-success hover:text-success/90"
+                                    className="h-5 px-2 text-xs text-success hover:text-success/90"
                                 >
-                                    <Check className="w-3.5 h-3.5 mr-1" />
+                                    <Check className="w-3.0 h-3.0 mr-1" />
                                     Save
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleCancel}
-                                    className="h-6 px-2 text-xs text-muted-foreground"
+                                    className="h-5 px-2 text-xs text-muted-foreground"
                                 >
-                                    <X className="w-3.5 h-3.5 mr-1" />
+                                    <X className="w-3.0 h-3.0 mr-1" />
                                     Cancel
                                 </Button>
                             </>
@@ -183,7 +190,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
                                 ref={textareaRef}
                                 value={editContent}
                                 onChange={handleTextareaChange}
-                                className={`w-full ${textSize} text-foreground bg-card border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden`}
+                                className={`w-full ${textSize} text-foreground bg-muted border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden`}
                             />
                             {hasUnsavedChanges && (
                                 <div className="text-xs text-warning">
@@ -203,7 +210,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
                                 <div className="relative">
                                     <div
                                         ref={measureRef}
-                                        className={`${textSize} text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${shouldBeCollapsible && isCollapsed ? "max-h-24" : ""
+                                        className={`${textSize} text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${shouldBeCollapsible && isCollapsed ? "max-h-12" : ""
                                             }`}
                                     >
                                         {textContent}
