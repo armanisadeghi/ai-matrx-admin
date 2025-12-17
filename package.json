@@ -118,6 +118,7 @@
     "groq-sdk": "latest",
     "html2canvas": "^1.4.1",
     "idb": "^8.0.3",
+    "js-tiktoken": "^1.0.21",
     "json-edit-react": "^1.29.0",
     "json5": "^2.2.3",
     "jsonlint-mod": "latest",
