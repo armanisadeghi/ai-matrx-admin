@@ -2,10 +2,10 @@ import {
     IconAccessible,
     IconAdjustmentsBolt,
     IconAlertOctagon,
-    IconApi, IconBox,
+    IconApi, 
     IconBrandCloudflare,
     IconBug,
-    IconCalendar, IconChartBar,
+    IconCalendar, 
     IconChartLine,
     IconClipboard,
     IconCloud,
@@ -38,10 +38,7 @@ import {
     IconUsers
 } from "@tabler/icons-react";
 import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminComponetOne";
-import React from "react";
 import {CiFloppyDisk} from "react-icons/ci";
-// import LocalFileAccess from "@/app/(authenticated)/admin/components/LocalFileAccess";
-import CommandTestPage from "@/app/(authenticated)/admin/components/command-testers/CommandTestPage";
 import EntityTestingLab from "@/app/(authenticated)/admin/components/entities/EntityTestingLab";
 import EntityTester from "@/app/(authenticated)/admin/components/entities/EntityTester";
 import EntityMetrics from "../components/entities/EntityMetrics";
@@ -173,30 +170,6 @@ export const adminCategories = [
         name: "Feature Testing",
         icon: <IconTestPipe className="w-6 h-6" />,
         features: [
-            {
-                title: "Entity Command Tester",
-                description: "Test the powerful Entity Commands which are directly plugged into Redux state.",
-                icon: <IconSquareToggle />,
-                component: <CommandTestPage />
-            },
-            // {
-            //     title: "Entity Command GPT",
-            //     description: "Test the interaction and state management of new UI components.",
-            //     icon: <IconBox />,
-            //     component: <AdminTestPage  entityKey={"registeredFunction"}/>
-            // },
-            // {
-            //     title: "Entity Command 3",
-            //     description: "Test the interaction and state management of new UI components.",
-            //     icon: <IconBox />,
-            //     component: <CommandTestPage5 />
-            // },
-            // {
-            //     title: "Component Interaction Testing",
-            //     description: "Test the interaction and state management of new UI components.",
-            //     icon: <IconBox />,
-            //     component: <AdminTestPage  entityKey={"registeredFunction"}/>
-            // },
             {
                 title: "Animation & Motion Testing",
                 description: "Evaluate animations and transitions for smoothness and user experience.",

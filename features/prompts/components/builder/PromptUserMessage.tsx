@@ -21,7 +21,6 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [shouldBeCollapsible, setShouldBeCollapsible] = useState(false);
 
-    const contentRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const measureRef = useRef<HTMLDivElement>(null);
     const previousContentRef = useRef<string>("");
@@ -55,9 +54,9 @@ export function PromptUserMessage({ content, messageIndex, onContentChange, comp
             const contentHeight = measureRef.current.scrollHeight;
             const isContentLongEnough = contentHeight > COLLAPSE_THRESHOLD;
             const contentChanged = previousContentRef.current !== textContent;
-            
+
             setShouldBeCollapsible(isContentLongEnough);
-            
+
             // If content changed, reset collapse state
             if (contentChanged) {
                 if (isContentLongEnough) {
