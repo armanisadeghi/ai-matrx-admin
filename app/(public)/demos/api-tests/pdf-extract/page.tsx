@@ -6,6 +6,7 @@ import { BasicInput } from '@/components/ui/input';
 import { Loader2, Upload, X, FileText, Clock, Database, AlertCircle, CheckCircle2, Info, Hash } from 'lucide-react';
 import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import { extractTextFromPdf } from '@/utils/pdf/pdf-extractor';
+import { countTokens } from '@/utils/token-counter';
 
 type ServerType = 'local' | 'production';
 
@@ -237,32 +238,22 @@ export default function PdfExtractTestPage() {
         isCountingTokens: true,
       });
 
-      // Count tokens (async, don't block UI)
+      // Count tokens (local, instant)
       if (finalExtractedText) {
-        fetch('/api/count-tokens', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: finalExtractedText }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.tokens !== undefined) {
-              setResult(prev => prev ? {
-                ...prev,
-                tokens: data.tokens,
-                isCountingTokens: false,
-              } : null);
-            }
-          })
-          .catch(err => {
-            console.error('Error counting tokens:', err);
-            setResult(prev => prev ? {
-              ...prev,
-              isCountingTokens: false,
-            } : null);
-          });
+        try {
+          const tokenResult = countTokens(finalExtractedText);
+          setResult(prev => prev ? {
+            ...prev,
+            tokens: tokenResult.tokens,
+            isCountingTokens: false,
+          } : null);
+        } catch (err) {
+          console.error('Error counting tokens:', err);
+          setResult(prev => prev ? {
+            ...prev,
+            isCountingTokens: false,
+          } : null);
+        }
       }
 
     } catch (error) {

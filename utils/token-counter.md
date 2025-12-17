@@ -39,21 +39,19 @@ const result = countTokens(longText);
 console.log(formatTokenCount(result.tokens)); // "1,234,567"
 ```
 
-## API Endpoint
+## Direct Usage (No API Needed!)
 
-The utility is also available via API at `/api/count-tokens`:
+Since the utility works locally and synchronously, just import and use it directly:
 
 ```typescript
-const response = await fetch('/api/count-tokens', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ text: 'Your text here' }),
-});
+import { countTokens } from '@/utils/token-counter';
 
-const data = await response.json();
-console.log(data.tokens); // Token count
-console.log(data.characters); // Character count
+const result = countTokens(extractedText);
+console.log(result.tokens); // Token count
+console.log(result.characters); // Character count
 ```
+
+No need for API routes, fetch calls, or async/await!
 
 ## What Encoding?
 
@@ -69,6 +67,13 @@ This is the exact same tokenizer that OpenAI's API uses, so you get 100% accurat
 
 Using `js-tiktoken/lite` with only the o200k_base encoding keeps the bundle size minimal. The full js-tiktoken library includes all encodings (gpt2, cl100k_base, etc.) which significantly increases bundle size.
 
+## Why No API Route?
+
+Since `js-tiktoken` runs **locally and synchronously**, there's no need for API routes or fetch calls. Just import and use the function directly in your components. This makes it:
+- ⚡ **Faster** - No network roundtrip
+- 🎯 **Simpler** - Fewer files, less complexity
+- 🔒 **More reliable** - No HTTP errors to handle
+
 ## Notes
 
 - **OpenAI only**: This utility is designed for OpenAI models only
@@ -76,6 +81,7 @@ Using `js-tiktoken/lite` with only the o200k_base encoding keeps the bundle size
 - **Synchronous**: Returns results instantly since everything is local
 - **Fallback**: Automatically falls back to simple estimation (text.length / 4) if tiktoken fails
 - **Singleton**: Tokenizer instance is reused for performance
+- **No API needed**: Import and use directly - no API routes required
 
 ## Example Integration
 
