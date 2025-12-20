@@ -4,9 +4,9 @@ import { VariableSelector } from "../VariableSelector";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { PromptMessage } from "@/features/prompts/types/core";
+import { PromptMessage, PromptSettings } from "@/features/prompts/types/core";
 import { HighlightedText } from "../HighlightedText";
-import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
+import { UnifiedContextMenu } from "@/features/context-menu";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 import { MessageRole } from "@/features/content-templates/types/content-templates-db";
@@ -31,6 +31,9 @@ interface PromptMessagesProps {
     variableDefaults: PromptVariable[];
     onOpenFullScreenEditor?: (messageIndex: number) => void;
     scrollContainerRef?: RefObject<HTMLDivElement>;
+    // Context data for UnifiedContextMenu
+    systemMessage?: string;
+    modelConfig?: PromptSettings;
 }
 
 export function PromptMessages({
@@ -51,6 +54,8 @@ export function PromptMessages({
     variableDefaults,
     onOpenFullScreenEditor,
     scrollContainerRef,
+    systemMessage = "",
+    modelConfig,
 }: PromptMessagesProps) {
     // Derive variable names from variableDefaults
     const variableNames = variableDefaults.map(v => v.name);
@@ -223,8 +228,69 @@ export function PromptMessages({
                                 {/* Content */}
                                 <div className="px-2 pb-2">
                                     {isEditing ? (
-                                        <PromptEditorContextMenu
+                                        <UnifiedContextMenu
                                             getTextarea={() => textareaRefs.current[index]}
+                                            contextData={{
+                                                content: message.content,
+                                                context: JSON.stringify({
+                                                    messages,
+                                                    systemMessage,
+                                                    variableDefaults,
+                                                    settings: modelConfig,
+                                                }),
+                                                currentMessageRole: message.role,
+                                                allMessages: JSON.stringify(messages),
+                                                systemMessage: systemMessage,
+                                                promptVariables: JSON.stringify(variableDefaults),
+                                            }}
+                                            enabledPlacements={['ai-action', 'content-block', 'quick-action']}
+                                            isEditable={true}
+                                            enableFloatingIcon={true}
+                                            onTextReplace={(newText) => {
+                                                const textarea = textareaRefs.current[index];
+                                                if (textarea) {
+                                                    const start = textarea.selectionStart;
+                                                    const end = textarea.selectionEnd;
+                                                    const before = message.content.substring(0, start);
+                                                    const after = message.content.substring(end);
+                                                    onMessageContentChange(index, before + newText + after);
+                                                    
+                                                    setTimeout(() => {
+                                                        textarea.focus();
+                                                        textarea.setSelectionRange(start, start + newText.length);
+                                                    }, 0);
+                                                }
+                                            }}
+                                            onTextInsertBefore={(text) => {
+                                                const textarea = textareaRefs.current[index];
+                                                if (textarea) {
+                                                    const start = textarea.selectionStart;
+                                                    const before = message.content.substring(0, start);
+                                                    const after = message.content.substring(start);
+                                                    const insertText = text + '\n\n';
+                                                    onMessageContentChange(index, before + insertText + after);
+                                                    
+                                                    setTimeout(() => {
+                                                        textarea.focus();
+                                                        textarea.setSelectionRange(start + insertText.length, start + insertText.length);
+                                                    }, 0);
+                                                }
+                                            }}
+                                            onTextInsertAfter={(text) => {
+                                                const textarea = textareaRefs.current[index];
+                                                if (textarea) {
+                                                    const end = textarea.selectionEnd;
+                                                    const before = message.content.substring(0, end);
+                                                    const after = message.content.substring(end);
+                                                    const insertText = '\n\n' + text;
+                                                    onMessageContentChange(index, before + insertText + after);
+                                                    
+                                                    setTimeout(() => {
+                                                        textarea.focus();
+                                                        textarea.setSelectionRange(end + insertText.length, end + insertText.length);
+                                                    }, 0);
+                                                }
+                                            }}
                                             onContentInserted={() => {
                                                 // Reset context menu flag after insertion
                                                 contextMenuOpenRef.current = false;
@@ -356,7 +422,7 @@ export function PromptMessages({
                                                     lineHeight: "1.5",
                                                 }}
                                             />
-                                        </PromptEditorContextMenu>
+                                        </UnifiedContextMenu>
                                     ) : (
                                         <div
                                             className="text-xs text-muted-foreground whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"

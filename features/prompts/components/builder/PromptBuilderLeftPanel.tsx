@@ -163,6 +163,8 @@ export function PromptBuilderLeftPanel({
                     onIsEditingChange={onIsEditingSystemMessageChange}
                     onOpenFullScreenEditor={onOpenFullScreenEditor ? () => onOpenFullScreenEditor(-1) : undefined}
                     scrollContainerRef={scrollContainerRef}
+                    allMessages={messages}
+                    modelConfig={modelConfig}
                 />
                 {/* Prompt Messages */}
                 <PromptMessages
@@ -183,6 +185,8 @@ export function PromptBuilderLeftPanel({
                     variableDefaults={variableDefaults}
                     onOpenFullScreenEditor={onOpenFullScreenEditor}
                     scrollContainerRef={scrollContainerRef}
+                    systemMessage={developerMessage}
+                    modelConfig={modelConfig}
                 />{" "}
             </div>
 

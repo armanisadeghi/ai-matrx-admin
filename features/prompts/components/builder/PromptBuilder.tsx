@@ -521,7 +521,9 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         }
 
         // Determine if this is the first message in the conversation
-        const isFirstMessage = apiConversationHistory.length === 0;
+        // When autoClearResponsesInEditMode is enabled, always treat as first message
+        // since we just cleared the history (state update is async, so length check would be stale)
+        const isFirstMessage = autoClearResponsesInEditMode || apiConversationHistory.length === 0;
 
         let userMessageContent: string;
         let displayUserMessage: string;
@@ -616,7 +618,12 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             }));
 
             // Add the new user message with metadata to the API conversation history
-            setApiConversationHistory((prev) => [...prev, userMessage]);
+            // When autoClearResponsesInEditMode is enabled, start fresh (don't use prev, it's stale)
+            if (autoClearResponsesInEditMode) {
+                setApiConversationHistory([userMessage]);
+            } else {
+                setApiConversationHistory((prev) => [...prev, userMessage]);
+            }
 
             // Build chat_config for direct_chat task
             const chatConfig: Record<string, any> = {

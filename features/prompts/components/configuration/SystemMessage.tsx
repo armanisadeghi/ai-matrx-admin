@@ -3,9 +3,9 @@ import { Maximize2, Braces, Edit2, Wand2, Eraser, FileText, Eye } from "lucide-r
 import { VariableSelector } from "../VariableSelector";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
+import { UnifiedContextMenu } from "@/features/context-menu";
 import { HighlightedText } from "../HighlightedText";
-import { PromptVariable } from "@/features/prompts/types/core";
+import { PromptMessage, PromptVariable, PromptSettings } from "@/features/prompts/types/core";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { TemplateSelector } from "../../../content-templates/components/TemplateSelector";
 import { ResponsiveIconButtonGroup, IconButtonConfig } from "@/components/official/ResponsiveIconButtonGroup";
@@ -25,6 +25,9 @@ interface SystemMessageProps {
     isEditing?: boolean;
     onIsEditingChange?: (isEditing: boolean) => void;
     scrollContainerRef?: RefObject<HTMLDivElement>;
+    // Context data for UnifiedContextMenu
+    allMessages?: PromptMessage[];
+    modelConfig?: PromptSettings;
 }
 
 export function SystemMessage({
@@ -42,6 +45,8 @@ export function SystemMessage({
     isEditing = false,
     onIsEditingChange,
     scrollContainerRef,
+    allMessages = [],
+    modelConfig,
 }: SystemMessageProps) {
     // System message uses index -1 in textareaRefs
     const systemMessageIndex = -1;
@@ -220,8 +225,69 @@ export function SystemMessage({
                 {/* Content */}
                 <div className="p-4">
                     {isEditing ? (
-                        <PromptEditorContextMenu 
+                        <UnifiedContextMenu 
                             getTextarea={() => textareaRefs?.current[systemMessageIndex] || null}
+                            contextData={{
+                                content: developerMessage,
+                                context: JSON.stringify({
+                                    messages: allMessages,
+                                    systemMessage: developerMessage,
+                                    variableDefaults,
+                                    settings: modelConfig,
+                                }),
+                                currentMessageRole: "system",
+                                allMessages: JSON.stringify(allMessages),
+                                systemMessage: developerMessage,
+                                promptVariables: JSON.stringify(variableDefaults),
+                            }}
+                            enabledPlacements={['ai-action', 'content-block', 'quick-action']}
+                            isEditable={true}
+                            enableFloatingIcon={true}
+                            onTextReplace={(newText) => {
+                                const textarea = textareaRefs?.current[systemMessageIndex];
+                                if (textarea) {
+                                    const start = textarea.selectionStart;
+                                    const end = textarea.selectionEnd;
+                                    const before = developerMessage.substring(0, start);
+                                    const after = developerMessage.substring(end);
+                                    onDeveloperMessageChange(before + newText + after);
+                                    
+                                    setTimeout(() => {
+                                        textarea.focus();
+                                        textarea.setSelectionRange(start, start + newText.length);
+                                    }, 0);
+                                }
+                            }}
+                            onTextInsertBefore={(text) => {
+                                const textarea = textareaRefs?.current[systemMessageIndex];
+                                if (textarea) {
+                                    const start = textarea.selectionStart;
+                                    const before = developerMessage.substring(0, start);
+                                    const after = developerMessage.substring(start);
+                                    const insertText = text + '\n\n';
+                                    onDeveloperMessageChange(before + insertText + after);
+                                    
+                                    setTimeout(() => {
+                                        textarea.focus();
+                                        textarea.setSelectionRange(start + insertText.length, start + insertText.length);
+                                    }, 0);
+                                }
+                            }}
+                            onTextInsertAfter={(text) => {
+                                const textarea = textareaRefs?.current[systemMessageIndex];
+                                if (textarea) {
+                                    const end = textarea.selectionEnd;
+                                    const before = developerMessage.substring(0, end);
+                                    const after = developerMessage.substring(end);
+                                    const insertText = '\n\n' + text;
+                                    onDeveloperMessageChange(before + insertText + after);
+                                    
+                                    setTimeout(() => {
+                                        textarea.focus();
+                                        textarea.setSelectionRange(end + insertText.length, end + insertText.length);
+                                    }, 0);
+                                }
+                            }}
                             onContentInserted={() => {
                                 // Reset context menu flag after insertion
                                 contextMenuOpenRef.current = false;
@@ -359,7 +425,7 @@ export function SystemMessage({
                                     lineHeight: "1.5",
                                 }}
                             />
-                        </PromptEditorContextMenu>
+                        </UnifiedContextMenu>
                     ) : (
                         <div
                             className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"

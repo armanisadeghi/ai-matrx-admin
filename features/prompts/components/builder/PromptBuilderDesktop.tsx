@@ -206,14 +206,17 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
 
             {/* Shared Modals */}
             <ModelSettingsDialog
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-            modelId={model}
-            models={models}
-            settings={modelConfig}
-            onSettingsChange={setModelConfig}
-            availableTools={availableTools}
-        />
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                modelId={model}
+                models={models}
+                settings={modelConfig}
+                onSettingsChange={(config) => {
+                    setModelConfig(config);
+                    setIsDirty(true);
+                }}
+                availableTools={availableTools}
+            />
 
             <FullScreenEditor
                 isOpen={isFullScreenEditorOpen}

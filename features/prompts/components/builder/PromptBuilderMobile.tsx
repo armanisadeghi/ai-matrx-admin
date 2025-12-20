@@ -215,7 +215,10 @@ export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
                 modelId={model}
                 models={models}
                 settings={modelConfig}
-                onSettingsChange={setModelConfig}
+                onSettingsChange={(config) => {
+                    setModelConfig(config);
+                    setIsDirty(true);
+                }}
                 availableTools={availableTools}
             />
 

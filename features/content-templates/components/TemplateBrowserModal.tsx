@@ -170,7 +170,7 @@ export function TemplateBrowserModal({
                     </Select>
 
                     {/* Tag Filter */}
-                    <Popover open={tagSearchOpen} onOpenChange={setTagSearchOpen}>
+                    <Popover modal={true} open={tagSearchOpen} onOpenChange={setTagSearchOpen}>
                         <PopoverTrigger asChild>
                             <Button 
                                 variant="outline" 
@@ -181,11 +181,15 @@ export function TemplateBrowserModal({
                                 Tags {selectedTags.length > 0 && `(${selectedTags.length})`}
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0" align="start">
+                        <PopoverContent 
+                            className="w-[200px] p-0" 
+                            align="start"
+                            onWheel={(e) => e.stopPropagation()}
+                        >
                             <Command>
                                 <CommandInput placeholder="Search tags..." />
                                 <CommandEmpty>No tags found.</CommandEmpty>
-                                <CommandGroup className="max-h-[200px] overflow-auto">
+                                <CommandGroup className="max-h-[200px] overflow-y-auto overscroll-contain">
                                     {availableTags.map(tag => (
                                         <CommandItem
                                             key={tag}
@@ -384,14 +388,11 @@ export function TemplateBrowserModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl w-[90vw] max-h-[85vh] p-0 overflow-hidden flex flex-col">
-                <DialogHeader className="px-6 py-4 border-b border-border/50 flex-shrink-0">
+            <DialogContent className="max-w-4xl w-[90vw] max-h-[85vh] p-0 gap-0 overflow-hidden flex flex-col">
+                <DialogHeader className="px-6 py-3 border-b border-border/50 flex-shrink-0">
                     <DialogTitle>Content Templates</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
-                        Browse and filter templates for your messages
-                    </p>
                 </DialogHeader>
-                <div className="flex-1 overflow-hidden min-h-0">
+                <div className="flex-1 overflow-auto min-h-0">
                     {content}
                 </div>
             </DialogContent>
