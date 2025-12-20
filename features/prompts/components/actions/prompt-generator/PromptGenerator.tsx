@@ -24,13 +24,12 @@ import { useRouter } from 'next/navigation';
 import { VoiceTextarea } from '@/features/audio';
 import { PromptJsonDisplay } from './PromptJsonDisplay';
 import { extractNonJsonContent } from './progressive-json-parser';
+import { PROMPT_BUILTINS } from '@/lib/redux/prompt-execution/builtins';
 
 interface PromptGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const PROMPT_GENERATOR_PROMPT_ID = 'fbdb6b57-8b4e-44fe-8354-6286251f638a';
 
 export function PromptGenerator({
   isOpen,
@@ -101,26 +100,33 @@ export function PromptGenerator({
     try {
       // 1. Fetch prompt template
       const { data: prompt, error: promptError } = await supabase
-        .from('prompts')
+        .from('prompt_builtins')
         .select('*')
-        .eq('id', PROMPT_GENERATOR_PROMPT_ID)
+        .eq('id', PROMPT_BUILTINS.FULL_PROMPT_STRUCTURE_BUILDER.id)
         .single();
 
       if (promptError || !prompt) {
-        throw new Error('Prompt generator template not found');
+        throw new Error('Full Prompt Structure Builder not found');
       }
 
-      // 2. Build the full prompt_purpose value
-      let fullPurpose = `**Primary Purpose:**\n${promptPurpose}`;
-      
-      if (additionalContext.trim()) {
-        fullPurpose += `\n\n**Additional Context & Requirements:**\n${additionalContext}`;
-      }
+      // 2. Find the last user message index
+      const lastUserIndex = prompt.messages.reduce(
+        (lastIdx: number, msg: any, idx: number) => msg.role === 'user' ? idx : lastIdx,
+        -1
+      );
 
-      // 3. Replace variables in messages
-      const messages = prompt.messages.map((msg: any) => {
+      // 3. Replace variables and append context to last user message
+      const messages = prompt.messages.map((msg: any, idx: number) => {
         let content = msg.content;
-        content = content.replace(/{{prompt_purpose}}/g, fullPurpose);
+        
+        // Directly replace prompt_purpose variable
+        content = content.replace(/{{prompt_purpose}}/g, promptPurpose);
+        
+        // Append additional context only to the last user message
+        if (idx === lastUserIndex && additionalContext.trim()) {
+          content += `\n\n${additionalContext}`;
+        }
+        
         return {
           role: msg.role,
           content

@@ -88,6 +88,14 @@ export interface PromptBuiltin {
       context: false,
       icon: 'MessageSquare',
     },
+    FULL_PROMPT_STRUCTURE_BUILDER: {
+      id: '62895ef4-1f3a-499d-9af3-148944462769',
+      name: 'Full Prompt Structure Builder',
+      description: 'Build a full prompt structure from a current prompt or a concept.',
+      key: 'full-prompt-structure-builder',
+      context: false,
+      icon: 'Brain',
+    },
   } as const;
   
   // Create reverse lookups for O(1) access
@@ -105,10 +113,17 @@ export interface PromptBuiltin {
   
   /** 
    * Get builtin UUID by key
-   * @returns UUID string (defaults to GENERIC_CODE if key not found)
+   * @returns UUID string
+   * @throws Error if key not found
    */
   export function getBuiltinId(key: string): string {
-    return keyToId[key] ?? PROMPT_BUILTINS.GENERIC_CODE.id;
+    const id = keyToId[key];
+    if (!id) {
+      throw new Error(
+        `Unknown builtin key: "${key}". Valid keys: ${Object.keys(keyToId).join(', ')}`
+      );
+    }
+    return id;
   }
   
   /** 
