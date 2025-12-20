@@ -11,6 +11,7 @@ interface BlockRendererProps {
     onContentChange?: (newContent: string) => void;
     messageId?: string;
     taskId?: string; // Add taskId for canvas deduplication
+    isLastReasoningBlock?: boolean; // Whether this is the last reasoning block in the content
     // Handlers
     handleCodeChange: (newCode: string, originalCode: string) => void;
     handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
@@ -121,6 +122,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     onContentChange,
     messageId,
     taskId,
+    isLastReasoningBlock,
     handleCodeChange,
     handleTableChange,
     handleMatrxBrokerChange,
@@ -168,6 +170,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     key={index} 
                     thinkingText={block.content} 
                     showThinking={true} 
+                    isStreaming={isStreamActive}
                 />
             );
 
@@ -177,6 +180,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                     key={index} 
                     reasoningText={block.content} 
                     showReasoning={true} 
+                    isStreaming={isStreamActive && isLastReasoningBlock}
                 />
             );
 

@@ -21,7 +21,7 @@ const getRandomMessage = (tagType) => {
   return messages[Math.floor(Math.random() * messages.length)];
 };
 
-const ThinkingVisualization = ({ thinkingText, showThinking = true }) => {
+const ThinkingVisualization = ({ thinkingText, showThinking = true, isStreaming = false }) => {
   const [expanded, setExpanded] = useState(false);
   const [particleCount, setParticleCount] = useState(30);
   const [displayFragment, setDisplayFragment] = useState("Thoughts...");

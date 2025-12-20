@@ -93,6 +93,7 @@ const SafeBlockRenderer: React.FC<{
     onContentChange?: (newContent: string) => void;
     messageId?: string;
     taskId?: string;
+    isLastReasoningBlock?: boolean;
     handleCodeChange: (newCode: string, originalCode: string) => void;
     handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
     handleMatrxBrokerChange: (updatedBrokerContent: string, originalBrokerContent: string) => void;
@@ -180,6 +181,16 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
             return [{ type: "text" as const, content: currentContent, startLine: 0, endLine: 0 }];
         }
     }, [currentContent, isWaitingForContent, useV2Parser]);
+
+    // Find the index of the last reasoning block for animation purposes
+    const lastReasoningBlockIndex = useMemo(() => {
+        for (let i = blocks.length - 1; i >= 0; i--) {
+            if (blocks[i].type === "reasoning") {
+                return i;
+            }
+        }
+        return -1;
+    }, [blocks]);
 
     // Note: Table parsing removed - StreamingTableRenderer handles it directly from block content
 
@@ -281,6 +292,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                         onContentChange={onContentChange}
                         messageId={messageId}
                         taskId={taskId}
+                        isLastReasoningBlock={index === lastReasoningBlockIndex}
                         handleCodeChange={handleCodeChange}
                         handleTableChange={handleTableChange}
                         handleMatrxBrokerChange={handleMatrxBrokerChange}
@@ -300,6 +312,8 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
             isStreamActive,
             onContentChange,
             messageId,
+            taskId,
+            lastReasoningBlockIndex,
             handleCodeChange,
             handleTableChange,
             handleMatrxBrokerChange,

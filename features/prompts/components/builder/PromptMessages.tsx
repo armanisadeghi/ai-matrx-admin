@@ -74,7 +74,7 @@ export function PromptMessages({
                                 {/* Header */}
                                 <div className="flex items-center justify-between px-2 py-1">
                                     <Select value={message.role} onValueChange={(role) => onMessageRoleChange(index, role)}>
-                                        <SelectTrigger className="h-8 bg-transparent text-foreground border-none hover:bg-accent w-auto min-w-[180px] text-xs focus-none [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
+                                        <SelectTrigger className="h-6 bg-transparent text-foreground !border-none hover:bg-accent w-auto min-w-[180px] text-xs !shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
