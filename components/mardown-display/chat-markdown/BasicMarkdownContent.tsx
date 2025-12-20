@@ -163,6 +163,16 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             return match;
         });
         
+        // Normalize asterisk bullets (*) to dash bullets (-) to avoid ambiguity with bold markers (**)
+        // Both render identically, but dash bullets don't conflict with bold syntax
+        // Preserve exact whitespace after the bullet marker
+        processed = processed.replace(/^(\s*)\*([ \t]+)/gm, '$1-$2');
+        
+        // Force list termination before bold text that starts with a number (like **4. Test**)
+        // CommonMark treats single blank lines as "loose list" continuations
+        // The HTML comment forces the list to terminate properly
+        processed = processed.replace(/(^[ \t]*-[ \t]+[^\n]+)\n\n(\*\*\d)/gm, '$1\n\n<!-- -->\n$2');
+        
         // Fix setext-style heading patterns by ensuring there's a blank line before ---
         // This prevents paragraph text from being interpreted as h2 headings
         processed = processed.replace(/([^\n])\n---/g, '$1\n\n---');

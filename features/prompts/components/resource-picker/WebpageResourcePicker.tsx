@@ -141,6 +141,9 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
     };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        // Prevent default paste behavior to avoid duplication
+        e.preventDefault();
+        
         // Get the pasted text from clipboard
         const pastedText = e.clipboardData.getData('text');
         
