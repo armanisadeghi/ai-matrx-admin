@@ -3,10 +3,27 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { BasicInput } from '@/components/ui/input';
-import { Loader2, Upload, X, FileText, Clock, Database, AlertCircle, CheckCircle2, Info, Hash } from 'lucide-react';
+import { Loader2, Upload, X, FileText, Clock, Database, AlertCircle, CheckCircle2, Info, Hash, Image as ImageIcon } from 'lucide-react';
 import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import { extractTextFromPdf } from '@/utils/pdf/pdf-extractor';
 import { countTokens } from '@/utils/token-counter';
+
+// Supported file types
+const ACCEPTED_FILE_TYPES = {
+  pdf: 'application/pdf',
+  images: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'],
+};
+
+const ACCEPT_STRING = `${ACCEPTED_FILE_TYPES.pdf},image/*`;
+
+const isValidFileType = (file: File): boolean => {
+  if (file.type === ACCEPTED_FILE_TYPES.pdf) return true;
+  if (file.type.startsWith('image/')) return true;
+  return false;
+};
+
+const isPdfFile = (file: File): boolean => file.type === ACCEPTED_FILE_TYPES.pdf;
+const isImageFile = (file: File): boolean => file.type.startsWith('image/');
 
 type ServerType = 'local' | 'production';
 
@@ -47,7 +64,7 @@ interface RequestMetrics {
 type InputMode = 'upload' | 'url';
 
 export default function PdfExtractTestPage() {
-  const [serverType, setServerType] = useState<ServerType>('local');
+  const [serverType, setServerType] = useState<ServerType>('production');
   const [authToken, setAuthToken] = useState<string>(TEST_ADMIN_TOKEN);
   const [inputMode, setInputMode] = useState<InputMode>('upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -68,8 +85,13 @@ export default function PdfExtractTestPage() {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.type !== 'application/pdf') {
-        alert('Please select a PDF file');
+      if (!isValidFileType(file)) {
+        // Using console.error instead of alert per UI guidelines
+        console.error('Invalid file type:', file.type);
+        setResult({
+          success: false,
+          error: `Invalid file type: ${file.type}. Please select a PDF or image file (JPEG, PNG, GIF, WebP, HEIC).`,
+        });
         return;
       }
       setSelectedFile(file);
@@ -124,8 +146,8 @@ export default function PdfExtractTestPage() {
         fileToUpload = selectedFile;
         requestSize = selectedFile.size;
       } else {
-        // URL mode - download the PDF first
-        setProcessingStatus('Downloading PDF from URL...');
+        // URL mode - download the file first
+        setProcessingStatus('Downloading file from URL...');
         const downloadStart = Date.now();
         
         try {
@@ -135,22 +157,28 @@ export default function PdfExtractTestPage() {
             throw new Error(`Failed to download PDF: HTTP ${pdfResponse.status}`);
           }
 
-          const contentType = pdfResponse.headers.get('content-type');
-          if (contentType && !contentType.includes('pdf')) {
-            throw new Error(`URL does not point to a PDF file (Content-Type: ${contentType})`);
+          const contentType = pdfResponse.headers.get('content-type') || '';
+          const isPdf = contentType.includes('pdf');
+          const isImage = contentType.startsWith('image/');
+          
+          if (contentType && !isPdf && !isImage) {
+            throw new Error(`URL does not point to a PDF or image file (Content-Type: ${contentType})`);
           }
 
           const blob = await pdfResponse.blob();
           downloadTime = Date.now() - downloadStart;
           
-          setProcessingStatus('PDF downloaded, preparing upload...');
+          setProcessingStatus('File downloaded, preparing upload...');
           
           // Extract filename from URL or use default
           const urlPath = new URL(pdfUrl.trim()).pathname;
-          const filename = urlPath.split('/').pop() || 'downloaded.pdf';
+          const urlFilename = urlPath.split('/').pop();
+          const defaultExt = isPdf ? '.pdf' : (contentType.split('/')[1] || 'jpg');
+          const filename = urlFilename || `downloaded.${defaultExt}`;
           
-          // Convert blob to File
-          fileToUpload = new File([blob], filename, { type: 'application/pdf' });
+          // Convert blob to File with correct type
+          const mimeType = isPdf ? 'application/pdf' : (contentType || 'image/jpeg');
+          fileToUpload = new File([blob], filename, { type: mimeType });
           requestSize = fileToUpload.size;
           
         } catch (error) {
@@ -291,8 +319,8 @@ export default function PdfExtractTestPage() {
       <div className="flex-1 overflow-y-auto p-3 pb-48">
         <div className="w-full space-y-2">
           <div>
-            <h1 className="text-lg font-bold">PDF Text Extraction Test</h1>
-            <p className="text-xs text-muted-foreground">Test endpoint: /api/pdf/extract-text</p>
+            <h1 className="text-lg font-bold">Document Text Extraction Test</h1>
+            <p className="text-xs text-muted-foreground">Test endpoint: /api/pdf/extract-text (supports PDF and images)</p>
           </div>
 
           {/* Server Selection */}
@@ -360,11 +388,11 @@ export default function PdfExtractTestPage() {
           {inputMode === 'upload' && (
             <div className="py-1.5 border-b">
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-xs font-semibold w-24">PDF File:</span>
+                <span className="text-xs font-semibold w-24">File:</span>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="application/pdf"
+                  accept={ACCEPT_STRING}
                   onChange={handleFileSelect}
                   className="hidden"
                 />
@@ -375,13 +403,18 @@ export default function PdfExtractTestPage() {
                   className="h-7 text-xs px-2"
                 >
                   <Upload className="mr-1 h-3 w-3" />
-                  Select PDF
+                  Select File
                 </Button>
+                <span className="text-xs text-muted-foreground">PDF or Image</span>
                 
                 {selectedFile && (
                   <div className="flex items-center gap-2 flex-1">
                     <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded text-xs">
-                      <FileText className="h-3 w-3 text-muted-foreground" />
+                      {isPdfFile(selectedFile) ? (
+                        <FileText className="h-3 w-3 text-muted-foreground" />
+                      ) : (
+                        <ImageIcon className="h-3 w-3 text-muted-foreground" />
+                      )}
                       <span className="font-mono">{selectedFile.name}</span>
                       <span className="text-muted-foreground">({formatBytes(selectedFile.size)})</span>
                       <Button
@@ -403,13 +436,13 @@ export default function PdfExtractTestPage() {
           {inputMode === 'url' && (
             <div className="py-1.5 border-b">
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-xs font-semibold w-24">PDF URL:</span>
+                <span className="text-xs font-semibold w-24">File URL:</span>
                 <div className="flex-1 flex gap-2">
                   <BasicInput
                     type="url"
                     value={pdfUrl}
                     onChange={(e) => setPdfUrl(e.target.value)}
-                    placeholder="https://example.com/document.pdf"
+                    placeholder="https://example.com/document.pdf or image.jpg"
                     className="h-7 text-xs flex-1"
                   />
                   {pdfUrl && (
@@ -426,11 +459,11 @@ export default function PdfExtractTestPage() {
               </div>
               <div className="ml-28 space-y-1">
                 <div className="text-xs text-muted-foreground">
-                  Enter a publicly accessible URL to a PDF file
+                  Enter a publicly accessible URL to a PDF or image file
                 </div>
                 <div className="text-xs text-blue-600 dark:text-blue-400 flex items-start gap-1.5">
                   <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                  <span>PDF will be downloaded in your browser, then sent to the API (current workaround until API supports URLs)</span>
+                  <span>File will be downloaded in your browser, then sent to the API (current workaround until API supports URLs)</span>
                 </div>
               </div>
             </div>
@@ -530,7 +563,7 @@ export default function PdfExtractTestPage() {
                   <div className="p-2 bg-muted/50 border rounded">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                       <Database className="h-3 w-3" />
-                      <span>PDF Size</span>
+                      <span>File Size</span>
                     </div>
                     <div className="font-mono font-semibold text-sm">{formatBytes(metrics.requestSize)}</div>
                   </div>

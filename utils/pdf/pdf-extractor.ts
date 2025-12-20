@@ -1,9 +1,16 @@
 /**
- * PDF Text Extraction Utility
+ * Document Text Extraction Utility
  * 
- * Simple utility for extracting text from PDF files using the API.
+ * Simple utility for extracting text from PDF and image files using the API.
  * Can be called from anywhere in the app on the client side.
  */
+
+// Helper to check if file type is valid for extraction
+const isValidExtractionFile = (file: File): boolean => {
+  if (file.type === 'application/pdf') return true;
+  if (file.type.startsWith('image/')) return true;
+  return false;
+};
 
 export interface PdfExtractionResult {
   success: boolean;
@@ -23,15 +30,15 @@ export interface PdfExtractionOptions {
 }
 
 /**
- * Extract text from a PDF file
+ * Extract text from a PDF or image file
  * 
- * @param file - The PDF File object to extract text from
+ * @param file - The PDF or image File object to extract text from
  * @param options - Optional configuration (auth token, server URL)
  * @returns Promise with extraction result
  * 
  * @example
  * ```ts
- * const result = await extractTextFromPdf(pdfFile);
+ * const result = await extractTextFromPdf(file);
  * if (result.success) {
  *   console.log(result.text);
  * } else {
@@ -54,12 +61,12 @@ export async function extractTextFromPdf(
       };
     }
 
-    if (file.type !== 'application/pdf') {
+    if (!isValidExtractionFile(file)) {
       return {
         success: false,
         text: '',
         filename: file.name,
-        error: 'File must be a PDF',
+        error: 'File must be a PDF or image (JPEG, PNG, GIF, WebP, HEIC)',
       };
     }
 
@@ -148,9 +155,9 @@ export async function extractTextFromPdf(
 }
 
 /**
- * Extract text from multiple PDF files
+ * Extract text from multiple PDF or image files
  * 
- * @param files - Array of PDF File objects
+ * @param files - Array of PDF or image File objects
  * @param options - Optional configuration
  * @returns Promise with array of extraction results
  * 
