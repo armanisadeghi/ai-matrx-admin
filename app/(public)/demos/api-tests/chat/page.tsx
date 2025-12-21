@@ -231,7 +231,14 @@ export default function ChatTestPage() {
         let errorMsg = `HTTP ${response.status}`;
         try {
           const errorData = await response.json();
-          errorMsg = errorData.error || errorData.message || errorData.details || errorMsg;
+          // Handle nested error objects
+          if (typeof errorData.error === 'object' && errorData.error !== null) {
+            errorMsg = errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
+          } else if (typeof errorData.message === 'object' && errorData.message !== null) {
+            errorMsg = errorData.message.user_visible_message || errorData.message.message || JSON.stringify(errorData.message);
+          } else {
+            errorMsg = errorData.error || errorData.message || errorData.details || errorMsg;
+          }
         } catch (e) {
           // If can't parse JSON, try to get text
           try {
@@ -283,7 +290,12 @@ export default function ChatTestPage() {
                 }
                 // Check for error events
                 if (json.event === 'error') {
-                  setErrorMessage(json.data || 'Unknown error from stream');
+                  const errData = json.data;
+                  if (typeof errData === 'object' && errData !== null) {
+                    setErrorMessage(errData.user_visible_message || errData.message || JSON.stringify(errData));
+                  } else {
+                    setErrorMessage(errData || 'Unknown error from stream');
+                  }
                 }
               } catch (e) {
                 setStreamOutput(prev => prev + line + '\n');

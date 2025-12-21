@@ -33,11 +33,41 @@ export function ModelSettings({
     const { normalizedControls, error } = useModelControls(models, modelId);
 
     const handleSettingChange = (key: keyof PromptSettings, value: any) => {
-        onSettingsChange({
-            ...settings,
-            [key]: value,
-        });
+        // Special handling for include_thoughts
+        if (key === "include_thoughts") {
+            if (value === false) {
+                // If disabling thoughts, set thinking_budget to -1
+                onSettingsChange({
+                    ...settings,
+                    [key]: value,
+                    thinking_budget: -1,
+                });
+            } else if (value === true && settings.thinking_budget === -1) {
+                // If enabling thoughts and budget is -1, set it to a reasonable default (1024)
+                onSettingsChange({
+                    ...settings,
+                    [key]: value,
+                    thinking_budget: normalizedControls?.thinking_budget?.default ?? 1024,
+                });
+            } else {
+                // Otherwise just update include_thoughts
+                onSettingsChange({
+                    ...settings,
+                    [key]: value,
+                });
+            }
+        } else {
+            onSettingsChange({
+                ...settings,
+                [key]: value,
+            });
+        }
     };
+
+    // Determine if include_thoughts is effectively enabled
+    // True if explicitly set to true OR if undefined and model default is true
+    const includeThoughtsEnabled = settings.include_thoughts === true || 
+        (settings.include_thoughts === undefined && normalizedControls?.include_thoughts?.default === true);
 
     if (error || !normalizedControls) {
         return (
@@ -269,13 +299,13 @@ export function ModelSettings({
                 {/* Thinking Budget - Only enabled when include_thoughts is true AND model supports it */}
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                        <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.thinking_budget && settings.include_thoughts ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.thinking_budget && includeThoughtsEnabled ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                             Thinking budget
                             {!normalizedControls.thinking_budget && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                            {normalizedControls.thinking_budget && !settings.include_thoughts && <span className="text-[10px] ml-1 opacity-60">(Requires thoughts)</span>}
+                            {normalizedControls.thinking_budget && !includeThoughtsEnabled && <span className="text-[10px] ml-1 opacity-60">(Requires thoughts)</span>}
                         </Label>
                         <div className="flex-1 flex items-center gap-2">
-                            {normalizedControls.thinking_budget && settings.include_thoughts ? (
+                            {normalizedControls.thinking_budget && includeThoughtsEnabled ? (
                                 <>
                                     <Slider
                                         min={normalizedControls.thinking_budget?.min ?? -1}
