@@ -7,6 +7,7 @@ import { Loader2, Upload, X, FileText, Clock, Database, AlertCircle, CheckCircle
 import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import { extractTextFromPdf } from '@/utils/pdf/pdf-extractor';
 import { countTokens } from '@/utils/token-counter';
+import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 
 // Supported file types
 const ACCEPTED_FILE_TYPES = {
@@ -24,8 +25,6 @@ const isValidFileType = (file: File): boolean => {
 
 const isPdfFile = (file: File): boolean => file.type === ACCEPTED_FILE_TYPES.pdf;
 const isImageFile = (file: File): boolean => file.type.startsWith('image/');
-
-type ServerType = 'local' | 'production';
 
 interface ExtractResult {
   success: boolean;
@@ -64,8 +63,10 @@ interface RequestMetrics {
 type InputMode = 'upload' | 'url';
 
 export default function PdfExtractTestPage() {
-  const [serverType, setServerType] = useState<ServerType>('production');
-  const [authToken, setAuthToken] = useState<string>(TEST_ADMIN_TOKEN);
+  const apiConfig = useApiTestConfig({
+    defaultServerType: 'production',
+    defaultAuthToken: TEST_ADMIN_TOKEN,
+  });
   const [inputMode, setInputMode] = useState<InputMode>('upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string>('');
@@ -74,13 +75,6 @@ export default function PdfExtractTestPage() {
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [metrics, setMetrics] = useState<RequestMetrics | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const getBaseUrl = () => {
-    if (serverType === 'local') {
-      return process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000';
-    }
-    return process.env.NEXT_PUBLIC_PRODUCTION_SOCKET_URL || 'https://server.app.matrxserver.com';
-  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -209,8 +203,8 @@ export default function PdfExtractTestPage() {
       const uploadStart = Date.now();
       
       const extractionResult = await extractTextFromPdf(fileToUpload, {
-        authToken,
-        serverUrl: getBaseUrl(),
+        authToken: apiConfig.authToken,
+        serverUrl: apiConfig.baseUrl,
         includeRawResponse: true, // Get raw response for admin debugging
       });
       
@@ -323,43 +317,8 @@ export default function PdfExtractTestPage() {
             <p className="text-xs text-muted-foreground">Test endpoint: /api/pdf/extract-text (supports PDF and images)</p>
           </div>
 
-          {/* Server Selection */}
-          <div className="flex items-center gap-3 py-1.5 border-b">
-            <span className="text-xs font-semibold w-24">Server:</span>
-            <div className="flex gap-1.5">
-              <Button
-                size="sm"
-                variant={serverType === 'local' ? 'default' : 'outline'}
-                onClick={() => setServerType('local')}
-                className="h-7 text-xs px-2"
-              >
-                Localhost
-              </Button>
-              <Button
-                size="sm"
-                variant={serverType === 'production' ? 'default' : 'outline'}
-                onClick={() => setServerType('production')}
-                className="h-7 text-xs px-2"
-              >
-                Production
-              </Button>
-            </div>
-            <span className="text-xs text-muted-foreground font-mono ml-auto">
-              {getBaseUrl()}
-            </span>
-          </div>
-
-          {/* Auth Token */}
-          <div className="flex items-center gap-3 py-1.5 border-b">
-            <span className="text-xs font-semibold w-24">Auth Token:</span>
-            <BasicInput
-              type="text"
-              value={authToken}
-              onChange={(e) => setAuthToken(e.target.value)}
-              placeholder="Enter auth token"
-              className="h-7 text-xs flex-1"
-            />
-          </div>
+          {/* API Configuration */}
+          <ApiTestConfigPanel config={apiConfig} />
 
           {/* Input Mode Selection */}
           <div className="flex items-center gap-3 py-1.5 border-b">
@@ -537,7 +496,7 @@ export default function PdfExtractTestPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground w-20">Full URL:</span>
-                    <span className="font-mono text-xs">{getBaseUrl()}{metrics.endpoint}</span>
+                    <span className="font-mono text-xs">{apiConfig.baseUrl}{metrics.endpoint}</span>
                   </div>
                   {metrics.statusCode && (
                     <div className="flex items-center gap-2">

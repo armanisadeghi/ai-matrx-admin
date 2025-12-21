@@ -17,9 +17,9 @@ import { PublicHeader } from "@/components/matrx/PublicHeader";
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
     return (
         <PublicProviders>
-            <div className="min-h-dvh flex flex-col">
+            <div className="h-dvh flex flex-col overflow-hidden">
                 <PublicHeader />
-                <main className="flex-1">
+                <main className="flex-1 min-h-0">
                     {children}
                 </main>
             </div>

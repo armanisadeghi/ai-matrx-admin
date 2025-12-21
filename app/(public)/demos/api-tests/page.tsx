@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BasicInput } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { get_prompt_sample, TEST_ADMIN_TOKEN } from './sample-prompt';
 import MarkdownStream from '@/components/MarkdownStream';
-
-type ServerType = 'local' | 'production';
+import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 
 interface ApiResponse {
   success: boolean;
@@ -17,12 +15,14 @@ interface ApiResponse {
 }
 
 export default function ApiTestsPage() {
-  const [serverType, setServerType] = useState<ServerType>('local');
+  const apiConfig = useApiTestConfig({
+    defaultServerType: 'local',
+    defaultAuthToken: TEST_ADMIN_TOKEN,
+  });
   const [loading, setLoading] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, ApiResponse>>({});
   const [streamOutput, setStreamOutput] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [authToken, setAuthToken] = useState<string>(TEST_ADMIN_TOKEN);
   const [chatStreamOutput, setChatStreamOutput] = useState<string>('');
   const [chatStreamText, setChatStreamText] = useState<string>('');
   const [isChatStreaming, setIsChatStreaming] = useState(false);
@@ -33,21 +33,13 @@ export default function ApiTestsPage() {
     jsonEventCount: number;
   }>({ chunkCount: 0, totalBytes: 0, lastChunkTime: null, jsonEventCount: 0 });
 
-  const getBaseUrl = () => {
-    if (serverType === 'local') {
-        
-      return process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000';
-    }
-    return process.env.NEXT_PUBLIC_PRODUCTION_SOCKET_URL || 'https://server.app.matrxserver.com';
-  };
-
   const testEndpoint = async (endpoint: string, method: string = 'GET', body?: any) => {
     const key = `${method} ${endpoint}`;
     setLoading(key);
     setResults(prev => ({ ...prev, [key]: { success: false, error: 'Loading...' } }));
 
     try {
-      const url = `${getBaseUrl()}${endpoint}`;
+      const url = `${apiConfig.baseUrl}${endpoint}`;
       const options: RequestInit = {
         method,
         headers: {
@@ -86,7 +78,7 @@ export default function ApiTestsPage() {
 
   const testStreamingEndpoint = async () => {
     const endpoint = '/api/stream/text?message=React+Streaming+Test&chunks=50&delay=0.1';
-    const url = `${getBaseUrl()}${endpoint}`;
+    const url = `${apiConfig.baseUrl}${endpoint}`;
     
     setStreamOutput('');
     setIsStreaming(true);
@@ -123,7 +115,7 @@ export default function ApiTestsPage() {
 
   const testChatDirectEndpoint = async () => {
     const endpoint = '/api/chat/direct';
-    const url = `${getBaseUrl()}${endpoint}`;
+    const url = `${apiConfig.baseUrl}${endpoint}`;
     
     setChatStreamOutput('');
     setChatStreamText('');
@@ -146,7 +138,7 @@ export default function ApiTestsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${apiConfig.authToken}`,
         },
         body: JSON.stringify(requestBody),
       });
@@ -250,43 +242,8 @@ export default function ApiTestsPage() {
           <h1 className="text-lg font-bold">FastAPI Test Page</h1>
         </div>
 
-        {/* Server Selection */}
-        <div className="flex items-center gap-3 py-1.5 border-b">
-          <span className="text-xs font-semibold w-24">Server:</span>
-          <div className="flex gap-1.5">
-            <Button
-              size="sm"
-              variant={serverType === 'local' ? 'default' : 'outline'}
-              onClick={() => setServerType('local')}
-              className="h-7 text-xs px-2"
-            >
-              Localhost
-            </Button>
-            <Button
-              size="sm"
-              variant={serverType === 'production' ? 'default' : 'outline'}
-              onClick={() => setServerType('production')}
-              className="h-7 text-xs px-2"
-            >
-              Production
-            </Button>
-          </div>
-          <span className="text-xs text-muted-foreground font-mono ml-auto">
-            {getBaseUrl()}
-          </span>
-        </div>
-
-        {/* Auth Token */}
-        <div className="flex items-center gap-3 py-1.5 border-b">
-          <span className="text-xs font-semibold w-24">Auth Token:</span>
-          <BasicInput
-            type="text"
-            value={authToken}
-            onChange={(e) => setAuthToken(e.target.value)}
-            placeholder="Enter auth token"
-            className="h-7 text-xs flex-1"
-          />
-        </div>
+        {/* API Configuration */}
+        <ApiTestConfigPanel config={apiConfig} />
 
         {/* Health Check */}
         <div className="flex items-center gap-3 py-1.5 border-b">
