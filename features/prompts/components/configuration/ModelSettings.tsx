@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -497,11 +496,11 @@ export function ModelSettings({
                         {!normalizedControls.stream && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
                     <button
-                        onClick={() => normalizedControls.stream && handleSettingChange("stream", !settings.stream)}
+                        onClick={() => normalizedControls.stream && handleSettingChange("stream", !(settings.stream ?? true))}
                         disabled={!normalizedControls.stream}
                         className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
                             normalizedControls.stream 
-                                ? (settings.stream
+                                ? ((settings.stream ?? true)
                                     ? "bg-blue-600 dark:bg-blue-500"
                                     : "bg-gray-300 dark:bg-gray-700")
                                 : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
@@ -509,7 +508,7 @@ export function ModelSettings({
                     >
                         <span
                             className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.stream ? "translate-x-[18px]" : "translate-x-0.5"
+                                (settings.stream ?? true) ? "translate-x-[18px]" : "translate-x-0.5"
                             }`}
                         />
                     </button>
@@ -669,16 +668,15 @@ export function ModelSettings({
             {/* Tools Section */}
             {availableTools.length > 0 && normalizedControls.tools && (
                 <>
-                    <div className="pt-1 border-t border-border" />
+                    <div className="border-t border-border" />
                     
                     <div className="space-y-2">
-                        <Label className="text-xs text-gray-700 dark:text-gray-300">
-                            Tools {!normalizedControls.tools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                        </Label>
-                        
-                        {/* Add Tool Dropdown */}
+                        {/* Add Tool Dropdown - Single Line */}
                         {availableTools.filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name)).length > 0 && (
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-2">
+                                <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">
+                                    Tools {!normalizedControls.tools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                                </Label>
                                 <Select
                                     value=""
                                     onValueChange={(toolName) => {
@@ -705,6 +703,13 @@ export function ModelSettings({
                                     </SelectContent>
                                 </Select>
                             </div>
+                        )}
+                        
+                        {/* Show label when no tools available to add but tools are selected */}
+                        {availableTools.filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name)).length === 0 && settings.tools && settings.tools.length > 0 && (
+                            <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                Tools {!normalizedControls.tools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                            </Label>
                         )}
                         
                         {/* Selected Tools List */}

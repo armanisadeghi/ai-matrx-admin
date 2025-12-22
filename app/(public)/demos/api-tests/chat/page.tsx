@@ -211,9 +211,8 @@ export default function ChatTestPage() {
       // Build request body - flatten settings into root level
       const requestBody = {
         messages: messages,
-        model_id: selectedModelId,
+        ai_model_id: selectedModelId,
         ...modelConfig,
-        stream: true,
         debug: debugMode,
       };
 
@@ -343,7 +342,6 @@ export default function ChatTestPage() {
     setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: null, endTime: null });
   };
 
-  const modelSupportsTools = normalizedControls?.tools?.default ?? false;
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-background">
@@ -373,12 +371,12 @@ export default function ChatTestPage() {
           {/* Left: Configuration Panel */}
           {showSettings && (
             <Card className="col-span-3 p-3 h-full overflow-y-auto space-y-3">
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {/* Prompt Selection */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">Load Prompt (Optional)</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Load Prompt</Label>
                   <Select value={selectedPromptId} onValueChange={handlePromptSelect}>
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-7 text-xs">
                       <SelectValue placeholder={prompts.length > 0 ? "Select a prompt..." : "No prompts available"} />
                     </SelectTrigger>
                     <SelectContent>
@@ -400,18 +398,18 @@ export default function ChatTestPage() {
                       size="sm" 
                       variant="ghost" 
                       onClick={() => handlePromptSelect('')}
-                      className="h-6 text-xs px-2 w-full"
+                      className="h-7 text-xs px-2 flex-shrink-0"
                     >
-                      Clear Selection
+                      <X className="h-3 w-3" />
                     </Button>
                   )}
                 </div>
 
                 {/* Model Selection */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">Model</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Model</Label>
                   <Select value={selectedModelId} onValueChange={handleModelChange}>
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-7 text-xs">
                       <SelectValue placeholder="Select model..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -425,25 +423,19 @@ export default function ChatTestPage() {
                 </div>
 
                 {/* Debug Mode Toggle */}
-                <div className="space-y-1.5 border-t pt-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox 
-                      id="debug-mode" 
-                      checked={debugMode} 
-                      onCheckedChange={(checked) => setDebugMode(checked as boolean)}
-                    />
-                    <Label htmlFor="debug-mode" className="text-xs font-medium cursor-pointer">
-                      Debug Mode
-                    </Label>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Include additional debugging information in the API request
-                  </p>
+                <div className="flex items-center gap-2 border-t pt-2">
+                  <Checkbox 
+                    id="debug-mode" 
+                    checked={debugMode} 
+                    onCheckedChange={(checked) => setDebugMode(checked as boolean)}
+                  />
+                  <Label htmlFor="debug-mode" className="text-xs font-medium cursor-pointer">
+                    Debug Mode
+                  </Label>
                 </div>
 
                 {/* Model Settings */}
-                <div className="space-y-1.5 border-t pt-3">
-                  <Label className="text-xs font-semibold">Model Settings</Label>
+                <div className="space-y-1.5 pt-1">
                   <ModelSettings
                     modelId={selectedModelId}
                     models={models}
@@ -637,9 +629,8 @@ export default function ChatTestPage() {
                 <pre className="text-xs font-mono whitespace-pre-wrap">
                   {JSON.stringify({
                     messages: messages,
-                    model_id: selectedModelId,
+                    ai_model_id: selectedModelId,
                     ...modelConfig,
-                    stream: true,
                     debug: debugMode,
                   }, null, 2)}
                 </pre>
