@@ -16,8 +16,9 @@
  * 2. Code blocks (with JSON special types)
  * 3. XML tag blocks
  * 4. Images
- * 5. Tables
- * 6. Text (fallback)
+ * 5. Videos
+ * 6. Tables
+ * 7. Text (fallback)
  * 
  * Legacy V1 parser available in content-splitter.ts for rollback if needed.
  */
@@ -31,6 +32,7 @@ export interface ContentBlock {
         | "thinking"
         | "reasoning"
         | "image"
+        | "video"
         | "tasks"
         | "transcript"
         | "structured_info"
@@ -706,6 +708,18 @@ function detectImageMarkdown(line: string): { isImage: boolean; src?: string; al
     return { isImage: false };
 }
 
+function detectVideoMarkdown(line: string): { isVideo: boolean; src?: string; alt?: string } {
+    const trimmed = line.trim();
+    
+    const customMatch = trimmed.match(/\[Video URL: (https?:\/\/[^\s\]]+)\]/);
+    
+    if (customMatch) {
+        return { isVideo: true, alt: "Video", src: customMatch[1] };
+    }
+    
+    return { isVideo: false };
+}
+
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
@@ -856,6 +870,25 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
                 content: trimmedLine,
                 src: imageCheck.src,
                 alt: imageCheck.alt
+            });
+            
+            i++;
+            continue;
+        }
+        
+        // 4.5. Check for video markdown
+        const videoCheck = detectVideoMarkdown(line);
+        if (videoCheck.isVideo) {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+            
+            blocks.push({
+                type: "video",
+                content: trimmedLine,
+                src: videoCheck.src,
+                alt: videoCheck.alt
             });
             
             i++;

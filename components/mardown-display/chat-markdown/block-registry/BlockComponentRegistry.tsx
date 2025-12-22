@@ -14,6 +14,7 @@ import { QuestionnaireProvider } from "../../blocks/questionnaire/QuestionnaireC
 const ThinkingVisualization = lazy(() => import("../../blocks/thinking-reasoning/ThinkingVisualization"));
 const ReasoningVisualization = lazy(() => import("../../blocks/thinking-reasoning/ReasoningVisualization"));
 const ImageBlock = lazy(() => import("../../blocks/images/ImageBlock"));
+const VideoBlock = lazy(() => import("../../blocks/videos/VideoBlock"));
 const TranscriptBlock = lazy(() => import("../../blocks/transcripts/TranscriptBlock"));
 const TasksBlock = lazy(() => import("../../blocks/tasks/TasksBlock"));
 const StructuredPlanBlock = lazy(() => import("../../blocks/plan/StructuredPlanBlock"));
@@ -95,6 +96,11 @@ export const BlockComponents = {
     ImageBlock: (props: any) => (
         <LazyBlockWrapper>
             <ImageBlock {...props} />
+        </LazyBlockWrapper>
+    ),
+    VideoBlock: (props: any) => (
+        <LazyBlockWrapper>
+            <VideoBlock {...props} />
         </LazyBlockWrapper>
     ),
     TranscriptBlock: (props: any) => (

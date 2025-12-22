@@ -57,28 +57,28 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                 )}
                 
                 {/* Temperature */}
-                {modelConfig.temperature !== undefined && (
+                {typeof modelConfig.temperature === 'number' && (
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded font-mono">
                         temp: <span className="text-green-600 dark:text-green-400">{modelConfig.temperature.toFixed(2)}</span>
                     </span>
                 )}
                 
                 {/* Max Tokens */}
-                {modelConfig.max_tokens !== undefined && (
+                {typeof modelConfig.max_output_tokens === 'number' && (
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded font-mono">
-                        tokens: <span className="text-green-600 dark:text-green-400">{modelConfig.max_tokens}</span>
+                        tokens: <span className="text-green-600 dark:text-green-400">{modelConfig.max_output_tokens}</span>
                     </span>
                 )}
                 
                 {/* Top P */}
-                {modelConfig.top_p !== undefined && (
+                {typeof modelConfig.top_p === 'number' && (
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded font-mono">
                         top_p: <span className="text-green-600 dark:text-green-400">{modelConfig.top_p.toFixed(2)}</span>
                     </span>
                 )}
                 
                 {/* Top K */}
-                {modelConfig.top_k !== undefined && (
+                {typeof modelConfig.top_k === 'number' && (
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded font-mono">
                         top_k: <span className="text-green-600 dark:text-green-400">{modelConfig.top_k}</span>
                     </span>

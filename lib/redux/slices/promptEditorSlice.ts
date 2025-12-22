@@ -163,7 +163,7 @@ export const switchModel = createAsyncThunk(
         // List of keys to try to preserve
         const keysToPreserve: (keyof PromptSettings)[] = [
             'temperature',
-            'max_tokens',
+            'max_output_tokens',
             'top_p',
             'top_k',
             'stream',

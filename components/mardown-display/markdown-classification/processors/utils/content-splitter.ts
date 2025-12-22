@@ -19,6 +19,7 @@ export interface ContentBlock {
         | "thinking"
         | "reasoning"
         | "image"
+        | "video"
         | "tasks"
         | "transcript"
         | "structured_info"
@@ -1082,6 +1083,28 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 content: trimmedLine,
                 src,
                 alt: alt || "Image",
+            });
+            i++;
+            continue;
+        }
+
+        // Detect video markdown syntax (e.g., [Video URL: url])
+        const videoMatch = trimmedLine.match(/\[Video URL: (https?:\/\/[^\s\]]+)\]/);
+
+        if (videoMatch) {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+
+            const src = videoMatch[1];
+            const alt = "Video";
+
+            blocks.push({
+                type: "video",
+                content: trimmedLine,
+                src,
+                alt,
             });
             i++;
             continue;

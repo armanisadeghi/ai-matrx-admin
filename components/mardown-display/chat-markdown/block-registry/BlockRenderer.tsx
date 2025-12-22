@@ -164,6 +164,15 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 />
             );
 
+        case "video":
+            return (
+                <BlockComponents.VideoBlock 
+                    key={index} 
+                    src={block.src!} 
+                    alt={block.alt} 
+                />
+            );
+
         case "thinking":
             return (
                 <BlockComponents.ThinkingVisualization 

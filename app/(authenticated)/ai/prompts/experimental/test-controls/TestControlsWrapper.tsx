@@ -21,7 +21,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
         output_format: "text",
         tool_choice: "auto",
         temperature: 0.5,
-        max_tokens: 16000,
+        max_output_tokens: 16000,
         store: false,
         stream: true,
         tools: [],

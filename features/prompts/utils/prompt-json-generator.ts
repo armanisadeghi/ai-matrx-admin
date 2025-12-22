@@ -64,7 +64,7 @@ export function variable(name: string, defaultValue: string = ''): PromptVariabl
 export function defaultSettings(overrides?: Partial<PromptSettings>): PromptSettings {
   return {
     temperature: 0.7,
-    max_tokens: 2000,
+    max_output_tokens: 2000,
     ...overrides
   };
 }

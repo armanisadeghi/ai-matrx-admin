@@ -513,16 +513,16 @@ export default function ChatTestPage() {
                         {debugMode ? 'Enabled' : 'Disabled'}
                       </span>
                     </div>
-                    {modelConfig.temperature !== undefined && (
+                    {typeof modelConfig.temperature === 'number' && (
                       <div className="flex justify-between">
                         <span>Temperature:</span>
                         <span className="text-foreground">{modelConfig.temperature.toFixed(2)}</span>
                       </div>
                     )}
-                    {modelConfig.max_tokens !== undefined && (
+                    {typeof modelConfig.max_output_tokens === 'number' && (
                       <div className="flex justify-between">
                         <span>Max Tokens:</span>
-                        <span className="text-foreground">{modelConfig.max_tokens}</span>
+                        <span className="text-foreground">{modelConfig.max_output_tokens}</span>
                       </div>
                     )}
                     {modelConfig.tools && modelConfig.tools.length > 0 && (

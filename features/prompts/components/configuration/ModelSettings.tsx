@@ -80,7 +80,7 @@ export function ModelSettings({
         <div className="space-y-2.5">
             {/* Output Format */}
             <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.output_format ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.output_format ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                     Output format
                     {!normalizedControls.output_format && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                 </Label>
@@ -111,7 +111,7 @@ export function ModelSettings({
             {/* Temperature */}
             <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.temperature ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.temperature ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                         Temperature
                         {!normalizedControls.temperature && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
@@ -152,38 +152,38 @@ export function ModelSettings({
             {/* Max Tokens */}
             <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.max_tokens ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Max tokens
-                        {!normalizedControls.max_tokens && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.max_output_tokens ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        Max Output Tokens
+                        {!normalizedControls.max_output_tokens && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
                     <div className="flex-1 flex items-center gap-2">
-                        {normalizedControls.max_tokens && (
+                        {normalizedControls.max_output_tokens && (
                             <>
                                 <Slider
-                                    min={normalizedControls.max_tokens?.min ?? 1}
-                                    max={normalizedControls.max_tokens?.max ?? 16000}
+                                    min={normalizedControls.max_output_tokens?.min ?? 1}
+                                    max={normalizedControls.max_output_tokens?.max ?? 16000}
                                     step={1}
-                                    value={[settings.max_tokens ?? normalizedControls.max_tokens?.default ?? normalizedControls.max_tokens?.min ?? 4096]}
-                                    onValueChange={(value) => handleSettingChange("max_tokens", value[0])}
+                                    value={[settings.max_output_tokens ?? normalizedControls.max_output_tokens?.default ?? normalizedControls.max_output_tokens?.min ?? 4096]}
+                                    onValueChange={(value) => handleSettingChange("max_output_tokens", value[0])}
                                     className="flex-1"
                                 />
                                 <input
                                     type="number"
-                                    min={normalizedControls.max_tokens?.min ?? 1}
-                                    max={normalizedControls.max_tokens?.max ?? 16000}
+                                    min={normalizedControls.max_output_tokens?.min ?? 1}
+                                    max={normalizedControls.max_output_tokens?.max ?? 16000}
                                     step={1}
-                                    value={settings.max_tokens ?? normalizedControls.max_tokens?.default ?? normalizedControls.max_tokens?.min ?? 4096}
+                                    value={settings.max_output_tokens ?? normalizedControls.max_output_tokens?.default ?? normalizedControls.max_output_tokens?.min ?? 4096}
                                     onChange={(e) => {
                                         const val = parseInt(e.target.value);
                                         if (!isNaN(val)) {
-                                            handleSettingChange("max_tokens", val);
+                                            handleSettingChange("max_output_tokens", val);
                                         }
                                     }}
                                     className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                 />
                             </>
                         )}
-                        {!normalizedControls.max_tokens && (
+                        {!normalizedControls.max_output_tokens && (
                             <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
                         )}
                     </div>
@@ -193,7 +193,7 @@ export function ModelSettings({
             {/* Top P */}
             <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.top_p ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.top_p ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                         Top P
                         {!normalizedControls.top_p && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
@@ -234,7 +234,7 @@ export function ModelSettings({
             {/* Top K */}
             <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.top_k ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.top_k ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                         Top K
                         {!normalizedControls.top_k && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
@@ -276,7 +276,7 @@ export function ModelSettings({
             <div className="space-y-2 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800">
                 {/* Include Thoughts Dropdown */}
                 <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.include_thoughts ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.include_thoughts ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                         Include thoughts
                         {!normalizedControls.include_thoughts && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
@@ -298,7 +298,7 @@ export function ModelSettings({
                 {/* Thinking Budget - Only enabled when include_thoughts is true AND model supports it */}
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                        <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.thinking_budget && includeThoughtsEnabled ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.thinking_budget && includeThoughtsEnabled ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                             Thinking budget
                             {!normalizedControls.thinking_budget && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                             {normalizedControls.thinking_budget && !includeThoughtsEnabled && <span className="text-[10px] ml-1 opacity-60">(Requires thoughts)</span>}
@@ -339,7 +339,7 @@ export function ModelSettings({
 
             {/* Reasoning Effort */}
             <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.reasoning_effort ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.reasoning_effort ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                         Reasoning effort
                     {!normalizedControls.reasoning_effort && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
@@ -368,9 +368,39 @@ export function ModelSettings({
                     </Select>
                 </div>
 
+            {/* Summary */}
+            <div className="flex items-center gap-3">
+                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.reasoning_summary ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        Show Reasoning
+                    {!normalizedControls.reasoning_summary && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                    </Label>
+                    <Select
+                    value={settings.reasoning_summary || normalizedControls.reasoning_summary?.default || "auto"}
+                    onValueChange={(value) => handleSettingChange("reasoning_summary", value)}
+                    disabled={!normalizedControls.reasoning_summary}
+                    >
+                    <SelectTrigger className="h-7 text-xs flex-1">
+                            <SelectValue />
+                        </SelectTrigger>
+                    <SelectContent className="text-xs">
+                        {normalizedControls.reasoning_summary?.enum?.map((option) => (
+                            <SelectItem key={option} value={option} className="text-xs py-1">
+                                {option}
+                            </SelectItem>
+                        )) || (
+                            <>
+                            <SelectItem value="auto" className="text-xs py-1">auto</SelectItem>
+                            <SelectItem value="enabled" className="text-xs py-1">enabled</SelectItem>
+                            <SelectItem value="disabled" className="text-xs py-1">disabled</SelectItem>
+                            </>
+                        )}
+                        </SelectContent>
+                    </Select>
+                </div>
+
             {/* Verbosity */}
             <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.verbosity ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.verbosity ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                         Verbosity
                     {!normalizedControls.verbosity && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                     </Label>
@@ -398,39 +428,10 @@ export function ModelSettings({
                     </Select>
                 </div>
 
-            {/* Summary */}
-            <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.reasoning_summary ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Summary
-                    {!normalizedControls.reasoning_summary && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <Select
-                    value={settings.reasoning_summary || normalizedControls.reasoning_summary?.default || "auto"}
-                    onValueChange={(value) => handleSettingChange("reasoning_summary", value)}
-                    disabled={!normalizedControls.reasoning_summary}
-                    >
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                            <SelectValue />
-                        </SelectTrigger>
-                    <SelectContent className="text-xs">
-                        {normalizedControls.reasoning_summary?.enum?.map((option) => (
-                            <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
-                            </SelectItem>
-                        )) || (
-                            <>
-                            <SelectItem value="auto" className="text-xs py-1">auto</SelectItem>
-                            <SelectItem value="enabled" className="text-xs py-1">enabled</SelectItem>
-                            <SelectItem value="disabled" className="text-xs py-1">disabled</SelectItem>
-                            </>
-                        )}
-                        </SelectContent>
-                    </Select>
-                </div>
 
             {/* Tool Choice */}
             <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-32 ${normalizedControls.tool_choice ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.tool_choice ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
                     Tool choice
                     {!normalizedControls.tool_choice && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
                 </Label>

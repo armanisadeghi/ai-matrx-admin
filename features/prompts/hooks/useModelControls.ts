@@ -116,8 +116,8 @@ export function useModelControls(models: any[], selectedModelId: string) {
             return;
         }
 
-        // Handle max_output_tokens alias for max_tokens
-        const normalizedKey = key === 'max_output_tokens' ? 'max_tokens' : key;
+        // Handle max_tokens alias for max_output_tokens
+        const normalizedKey = key === 'max_tokens' ? 'max_output_tokens' : key;
 
         // Parse the control definition based on its structure
         const controlDef: ControlDefinition = {
@@ -177,7 +177,7 @@ export function getModelDefaults(model: any) {
     const controls = model.controls;
 
     // Keys that represent UI capabilities, not submission values
-    const uiOnlyKeys = new Set(['tools', 'image_urls', 'file_urls', 'internal_web_search', 'youtube_videos']);
+    const uiOnlyKeys = new Set(['tools']);
 
     Object.entries(controls).forEach(([key, value]: [string, any]) => {
         // Normalize key

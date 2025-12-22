@@ -658,7 +658,7 @@ export function RecipeTemplatesGallery({
                                                                 <span className="font-medium">{previewTemplate.settings.model}</span>
                                                             </div>
                                                         )}
-                                                        {previewTemplate.settings.temperature !== undefined && (
+                                                        {typeof previewTemplate.settings.temperature === 'number' && (
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-600 dark:text-gray-400">Temperature:</span>
                                                                 <span className="font-medium">{previewTemplate.settings.temperature}</span>

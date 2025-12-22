@@ -5,7 +5,7 @@ export interface PromptSettings {
     output_format?: string;
     tool_choice?: string;
     temperature?: number;
-    max_tokens?: number;
+    max_output_tokens?: number;
     top_p?: number;
     top_k?: number;
     thinking_budget?: number;
