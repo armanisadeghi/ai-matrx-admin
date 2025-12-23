@@ -155,6 +155,43 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                         youtube: <span className="text-green-600 dark:text-green-400">true</span>
                     </span>
                 )}
+
+                {/* Image/Video Model Settings */}
+                {typeof modelConfig.steps === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        steps: <span className="text-purple-700 dark:text-purple-300">{modelConfig.steps}</span>
+                    </span>
+                )}
+                {typeof modelConfig.guidance_scale === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        guidance: <span className="text-purple-700 dark:text-purple-300">{modelConfig.guidance_scale.toFixed(1)}</span>
+                    </span>
+                )}
+                {typeof modelConfig.seed === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        seed: <span className="text-purple-700 dark:text-purple-300">{modelConfig.seed}</span>
+                    </span>
+                )}
+                {typeof modelConfig.width === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        {modelConfig.width}x{modelConfig.height ?? '?'}
+                    </span>
+                )}
+                {typeof modelConfig.fps === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        fps: <span className="text-purple-700 dark:text-purple-300">{modelConfig.fps}</span>
+                    </span>
+                )}
+                {modelConfig.negative_prompt && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        negative_prompt
+                    </span>
+                )}
+                {modelConfig.reference_images && Array.isArray(modelConfig.reference_images) && modelConfig.reference_images.length > 0 && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        ref_images: <span className="text-purple-700 dark:text-purple-300">{modelConfig.reference_images.length}</span>
+                    </span>
+                )}
             </div>
             )}
         </div>

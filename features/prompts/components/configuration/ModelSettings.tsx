@@ -1,8 +1,12 @@
 "use client";
 
-import { X } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { X, FileJson, AlertCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
     SelectContent,
@@ -10,8 +14,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useModelControls } from "@/features/prompts/hooks/useModelControls";
+import { useModelControls, ControlDefinition } from "@/features/prompts/hooks/useModelControls";
 import { PromptSettings } from "@/features/prompts/types/core";
+import { SettingsJsonEditor } from "./SettingsJsonEditor";
+import { getUnrecognizedSettings } from "@/features/prompts/utils/settings-filter";
 
 interface ModelSettingsProps {
     modelId: string;
@@ -31,25 +37,71 @@ export function ModelSettings({
     // Get normalized controls for the selected model
     const { normalizedControls, error } = useModelControls(models, modelId);
 
+    // Track which settings are enabled
+    const [enabledSettings, setEnabledSettings] = useState<Set<string>>(() => {
+        const enabled = new Set<string>();
+        Object.entries(settings).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                enabled.add(key);
+            }
+        });
+        return enabled;
+    });
+
+    // CRITICAL: Sync enabledSettings when settings change from outside
+    // This ensures checkboxes accurately reflect what's in settings and prevents
+    // sending disabled settings to the API. Without this, settings could have values
+    // but appear unchecked, leading to silent inclusion of "disabled" settings.
+    useEffect(() => {
+        const enabled = new Set<string>();
+        Object.entries(settings).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                enabled.add(key);
+            }
+        });
+        setEnabledSettings(enabled);
+    }, [settings]);
+
+    // JSON editor modal state
+    const [showJsonEditor, setShowJsonEditor] = useState(false);
+
+    // Get all recognized keys from normalizedControls
+    const recognizedKeys = useMemo(() => {
+        if (!normalizedControls) return new Set<string>();
+        const keys = new Set<string>();
+        Object.keys(normalizedControls).forEach(key => {
+            if (key !== 'rawControls' && key !== 'unmappedControls') {
+                keys.add(key);
+            }
+        });
+        return keys;
+    }, [normalizedControls]);
+
+    // Get unrecognized settings
+    const unrecognizedSettings = useMemo(() => {
+        return getUnrecognizedSettings(settings, recognizedKeys);
+    }, [settings, recognizedKeys]);
+
     const handleSettingChange = (key: keyof PromptSettings, value: any) => {
+        if (!enabledSettings.has(key)) {
+            setEnabledSettings(new Set(enabledSettings).add(key));
+        }
+
         // Special handling for include_thoughts
         if (key === "include_thoughts") {
             if (value === false) {
-                // If disabling thoughts, set thinking_budget to -1
                 onSettingsChange({
                     ...settings,
                     [key]: value,
                     thinking_budget: -1,
                 });
             } else if (value === true && settings.thinking_budget === -1) {
-                // If enabling thoughts and budget is -1, set it to a reasonable default (1024)
                 onSettingsChange({
                     ...settings,
                     [key]: value,
                     thinking_budget: normalizedControls?.thinking_budget?.default ?? 1024,
                 });
             } else {
-                // Otherwise just update include_thoughts
                 onSettingsChange({
                     ...settings,
                     [key]: value,
@@ -63,10 +115,46 @@ export function ModelSettings({
         }
     };
 
-    // Determine if include_thoughts is effectively enabled
-    // True if explicitly set to true OR if undefined and model default is true
-    const includeThoughtsEnabled = settings.include_thoughts === true || 
-        (settings.include_thoughts === undefined && normalizedControls?.include_thoughts?.default === true);
+    const handleToggleSetting = (key: keyof PromptSettings, enabled: boolean) => {
+        const newEnabled = new Set(enabledSettings);
+        if (enabled) {
+            newEnabled.add(key);
+            const control = (normalizedControls as any)[key];
+            if (control) {
+                let defaultValue: any = control.default;
+                if (defaultValue === null || defaultValue === undefined) {
+                    if (control.type === 'number' || control.type === 'integer') {
+                        defaultValue = control.min ?? 0;
+                    } else if (control.type === 'string' || control.type === 'string_array') {
+                        defaultValue = '';
+                    } else if (control.type === 'boolean') {
+                        defaultValue = false;
+                    } else if (control.type === 'enum' && control.enum && control.enum.length > 0) {
+                        defaultValue = control.enum[0];
+                    } else if (control.type === 'array' || control.type === 'object_array') {
+                        defaultValue = [];
+                    }
+                }
+                onSettingsChange({ ...settings, [key]: defaultValue });
+            }
+        } else {
+            newEnabled.delete(key);
+            const { [key]: removed, ...rest } = settings;
+            onSettingsChange(rest as PromptSettings);
+        }
+        setEnabledSettings(newEnabled);
+    };
+
+    const handleJsonSave = (newSettings: PromptSettings) => {
+        onSettingsChange(newSettings);
+        const newEnabled = new Set<string>();
+        Object.entries(newSettings).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                newEnabled.add(key);
+            }
+        });
+        setEnabledSettings(newEnabled);
+    };
 
     if (error || !normalizedControls) {
         return (
@@ -76,674 +164,395 @@ export function ModelSettings({
         );
     }
 
+    // Helper to render a setting control consistently
+    const renderControl = (
+        key: keyof PromptSettings,
+        label: string,
+        control: ControlDefinition
+    ) => {
+        const isEnabled = enabledSettings.has(key);
+        const value = (settings as any)[key];
+        const checkboxId = `setting-${key}`;
+
+        return (
+            <div key={key} className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleToggleSetting(key, !isEnabled)}>
+                    <Checkbox
+                        id={checkboxId}
+                        checked={isEnabled}
+                        onCheckedChange={(checked) => handleToggleSetting(key, checked as boolean)}
+                        className="cursor-pointer"
+                    />
+                    <Label htmlFor={checkboxId} className={`text-xs flex-shrink-0 w-36 cursor-pointer ${isEnabled ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                        {label}
+                    </Label>
+                </div>
+                <div className={`flex-1 ${!isEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                    {renderControlInput(key, control, value, isEnabled)}
+                </div>
+            </div>
+        );
+    };
+
+    const renderControlInput = (
+        key: keyof PromptSettings,
+        control: ControlDefinition,
+        value: any,
+        isEnabled: boolean
+    ) => {
+        const actualValue = value ?? control.default ?? (control.type === 'number' || control.type === 'integer' ? control.min ?? 0 : '');
+
+        // Enum / Select
+        if (control.type === 'enum' && control.enum) {
+            return (
+                <Select
+                    value={actualValue}
+                    onValueChange={(val) => handleSettingChange(key, val)}
+                    disabled={!isEnabled}
+                >
+                    <SelectTrigger className="h-7 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="text-xs">
+                        {control.enum.map((option) => (
+                            <SelectItem key={option} value={option} className="text-xs py-1">
+                                {option}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            );
+        }
+
+        // Boolean / Checkbox
+        if (control.type === 'boolean') {
+            const boolCheckboxId = `bool-${key}`;
+            return (
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        id={boolCheckboxId}
+                        checked={actualValue}
+                        onCheckedChange={(checked) => handleSettingChange(key, checked)}
+                        disabled={!isEnabled}
+                        className="cursor-pointer"
+                    />
+                    <Label htmlFor={boolCheckboxId} className="text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                        {actualValue ? 'Enabled' : 'Disabled'}
+                    </Label>
+                </div>
+            );
+        }
+
+        // Number with slider
+        if ((control.type === 'number' || control.type === 'integer') && control.min !== undefined && control.max !== undefined) {
+            const step = control.type === 'integer' ? 1 : 0.01;
+            return (
+                <div className="flex items-center gap-2">
+                    <Slider
+                        min={control.min}
+                        max={control.max}
+                        step={step}
+                        value={[actualValue]}
+                        onValueChange={(val) => handleSettingChange(key, val[0])}
+                        disabled={!isEnabled}
+                        className="flex-1"
+                    />
+                    <input
+                        type="number"
+                        min={control.min}
+                        max={control.max}
+                        step={step}
+                        value={actualValue}
+                        onChange={(e) => {
+                            const val = control.type === 'integer' ? parseInt(e.target.value) : parseFloat(e.target.value);
+                            if (!isNaN(val)) handleSettingChange(key, val);
+                        }}
+                        disabled={!isEnabled}
+                        className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded disabled:opacity-50"
+                    />
+                </div>
+            );
+        }
+
+        // Number without slider
+        if (control.type === 'number' || control.type === 'integer') {
+            return (
+                <input
+                    type="number"
+                    min={control.min}
+                    max={control.max}
+                    value={actualValue}
+                    onChange={(e) => {
+                        const val = control.type === 'integer' ? parseInt(e.target.value) : parseFloat(e.target.value);
+                        if (!isNaN(val)) handleSettingChange(key, val);
+                    }}
+                    disabled={!isEnabled}
+                    className="h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded disabled:opacity-50 w-full"
+                />
+            );
+        }
+
+        // String array - textarea
+        if (control.type === 'string_array') {
+            const arrayValue = Array.isArray(value) ? value.join('\n') : '';
+            return (
+                <Textarea
+                    value={arrayValue}
+                    onChange={(e) => handleSettingChange(key, e.target.value.split('\n').filter(s => s.trim()))}
+                    disabled={!isEnabled}
+                    className="min-h-[60px] text-xs font-mono disabled:opacity-50"
+                    placeholder="One value per line..."
+                />
+            );
+        }
+
+        // String / Default
+        return (
+            <input
+                type="text"
+                value={actualValue}
+                onChange={(e) => handleSettingChange(key, e.target.value)}
+                disabled={!isEnabled}
+                className="h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded disabled:opacity-50 w-full"
+            />
+        );
+    };
+
+    // Define setting groups and order
+    const textModelSettings = [
+        { key: 'output_format', label: 'Output Format' },
+        { key: 'temperature', label: 'Temperature' },
+        { key: 'max_output_tokens', label: 'Max Output Tokens' },
+        { key: 'max_tokens', label: 'Max Tokens (Legacy)' },
+        { key: 'top_p', label: 'Top P' },
+        { key: 'top_k', label: 'Top K' },
+        { key: 'thinking_budget', label: 'Thinking Budget' },
+        { key: 'reasoning_effort', label: 'Reasoning Effort' },
+        { key: 'verbosity', label: 'Verbosity' },
+        { key: 'reasoning_summary', label: 'Reasoning Summary' },
+        { key: 'tool_choice', label: 'Tool Choice' },
+    ];
+
+    const imageVideoSettings = [
+        { key: 'steps', label: 'Steps' },
+        { key: 'guidance_scale', label: 'Guidance Scale' },
+        { key: 'seed', label: 'Seed' },
+        { key: 'n', label: 'Number of Outputs' },
+        { key: 'width', label: 'Width' },
+        { key: 'height', label: 'Height' },
+        { key: 'fps', label: 'FPS' },
+        { key: 'seconds', label: 'Duration (seconds)' },
+        { key: 'output_quality', label: 'Output Quality' },
+        { key: 'negative_prompt', label: 'Negative Prompt' },
+        { key: 'reference_images', label: 'Reference Images' },
+        { key: 'response_format', label: 'Response Format' },
+    ];
+
+    const booleanSettings = [
+        { key: 'store', label: 'Store Conversation' },
+        { key: 'stream', label: 'Stream Response' },
+        { key: 'parallel_tool_calls', label: 'Parallel Tool Calls' },
+        { key: 'include_thoughts', label: 'Include Thoughts' },
+        { key: 'image_urls', label: 'Image URLs' },
+        { key: 'file_urls', label: 'File URLs' },
+        { key: 'internal_web_search', label: 'Internal Web Search' },
+        { key: 'internal_url_context', label: 'Internal URL Context' },
+        { key: 'youtube_videos', label: 'YouTube Videos' },
+        { key: 'disable_safety_checker', label: 'Disable Safety Checker' },
+    ];
+
     return (
         <div className="space-y-2.5">
-            {/* Output Format */}
-            <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.output_format ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                    Output format
-                    {!normalizedControls.output_format && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                </Label>
-                <Select
-                    value={settings.output_format || normalizedControls.output_format?.default || "text"}
-                    onValueChange={(value) => handleSettingChange("output_format", value)}
-                    disabled={!normalizedControls.output_format}
-                >
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="text-xs">
-                        {normalizedControls.output_format?.enum?.map((option) => (
-                            <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
-                            </SelectItem>
-                        )) || (
-                            <>
-                        <SelectItem value="text" className="text-xs py-1">text</SelectItem>
-                        <SelectItem value="json_object" className="text-xs py-1">json_object</SelectItem>
-                        <SelectItem value="json_schema" className="text-xs py-1">json_schema</SelectItem>
-                            </>
-                        )}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {/* Temperature */}
-            <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.temperature ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Temperature
-                        {!normalizedControls.temperature && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <div className="flex-1 flex items-center gap-2">
-                        {normalizedControls.temperature && (
-                            <>
-                                <Slider
-                                    min={normalizedControls.temperature?.min ?? 0}
-                                    max={normalizedControls.temperature?.max ?? 2}
-                                    step={0.01}
-                                    value={[settings.temperature ?? normalizedControls.temperature?.default ?? normalizedControls.temperature?.min ?? 1]}
-                                    onValueChange={(value) => handleSettingChange("temperature", value[0])}
-                                    className="flex-1"
-                                />
-                                <input
-                                    type="number"
-                                    min={normalizedControls.temperature?.min ?? 0}
-                                    max={normalizedControls.temperature?.max ?? 2}
-                                    step={0.01}
-                                    value={settings.temperature ?? normalizedControls.temperature?.default ?? normalizedControls.temperature?.min ?? 1}
-                                    onChange={(e) => {
-                                        const val = parseFloat(e.target.value);
-                                        if (!isNaN(val)) {
-                                            handleSettingChange("temperature", val);
-                                        }
-                                    }}
-                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
-                                />
-                            </>
-                        )}
-                        {!normalizedControls.temperature && (
-                            <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Max Tokens */}
-            <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.max_output_tokens ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Max Output Tokens
-                        {!normalizedControls.max_output_tokens && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <div className="flex-1 flex items-center gap-2">
-                        {normalizedControls.max_output_tokens && (
-                            <>
-                                <Slider
-                                    min={normalizedControls.max_output_tokens?.min ?? 1}
-                                    max={normalizedControls.max_output_tokens?.max ?? 16000}
-                                    step={1}
-                                    value={[settings.max_output_tokens ?? normalizedControls.max_output_tokens?.default ?? normalizedControls.max_output_tokens?.min ?? 4096]}
-                                    onValueChange={(value) => handleSettingChange("max_output_tokens", value[0])}
-                                    className="flex-1"
-                                />
-                                <input
-                                    type="number"
-                                    min={normalizedControls.max_output_tokens?.min ?? 1}
-                                    max={normalizedControls.max_output_tokens?.max ?? 16000}
-                                    step={1}
-                                    value={settings.max_output_tokens ?? normalizedControls.max_output_tokens?.default ?? normalizedControls.max_output_tokens?.min ?? 4096}
-                                    onChange={(e) => {
-                                        const val = parseInt(e.target.value);
-                                        if (!isNaN(val)) {
-                                            handleSettingChange("max_output_tokens", val);
-                                        }
-                                    }}
-                                    className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
-                                />
-                            </>
-                        )}
-                        {!normalizedControls.max_output_tokens && (
-                            <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Top P */}
-            <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.top_p ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Top P
-                        {!normalizedControls.top_p && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <div className="flex-1 flex items-center gap-2">
-                        {normalizedControls.top_p && (
-                            <>
-                                <Slider
-                                    min={normalizedControls.top_p?.min ?? 0}
-                                    max={normalizedControls.top_p?.max ?? 1}
-                                    step={0.01}
-                                    value={[settings.top_p ?? normalizedControls.top_p?.default ?? normalizedControls.top_p?.min ?? 1]}
-                                    onValueChange={(value) => handleSettingChange("top_p", value[0])}
-                                    className="flex-1"
-                                />
-                                <input
-                                    type="number"
-                                    min={normalizedControls.top_p?.min ?? 0}
-                                    max={normalizedControls.top_p?.max ?? 1}
-                                    step={0.01}
-                                    value={settings.top_p ?? normalizedControls.top_p?.default ?? normalizedControls.top_p?.min ?? 1}
-                                    onChange={(e) => {
-                                        const val = parseFloat(e.target.value);
-                                        if (!isNaN(val)) {
-                                            handleSettingChange("top_p", val);
-                                        }
-                                    }}
-                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
-                                />
-                            </>
-                        )}
-                        {!normalizedControls.top_p && (
-                            <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Top K */}
-            <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.top_k ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Top K
-                        {!normalizedControls.top_k && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <div className="flex-1 flex items-center gap-2">
-                        {normalizedControls.top_k && (
-                            <>
-                                <Slider
-                                    min={normalizedControls.top_k?.min ?? 1}
-                                    max={normalizedControls.top_k?.max ?? 100}
-                                    step={1}
-                                    value={[settings.top_k ?? normalizedControls.top_k?.default ?? normalizedControls.top_k?.min ?? 50]}
-                                    onValueChange={(value) => handleSettingChange("top_k", value[0])}
-                                    className="flex-1"
-                                />
-                                <input
-                                    type="number"
-                                    min={normalizedControls.top_k?.min ?? 1}
-                                    max={normalizedControls.top_k?.max ?? 100}
-                                    step={1}
-                                    value={settings.top_k ?? normalizedControls.top_k?.default ?? normalizedControls.top_k?.min ?? 50}
-                                    onChange={(e) => {
-                                        const val = parseInt(e.target.value);
-                                        if (!isNaN(val)) {
-                                            handleSettingChange("top_k", val);
-                                        }
-                                    }}
-                                    className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
-                                />
-                            </>
-                        )}
-                        {!normalizedControls.top_k && (
-                            <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Include Thoughts & Thinking Budget - Grouped Section */}
-            <div className="space-y-2 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800">
-                {/* Include Thoughts Dropdown */}
-                <div className="flex items-center gap-3">
-                    <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.include_thoughts ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Include thoughts
-                        {!normalizedControls.include_thoughts && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <Select
-                        value={settings.include_thoughts === true ? "true" : settings.include_thoughts === false ? "false" : normalizedControls.include_thoughts?.default === true ? "true" : "false"}
-                        onValueChange={(value) => handleSettingChange("include_thoughts", value === "true")}
-                        disabled={!normalizedControls.include_thoughts}
-                    >
-                        <SelectTrigger className="h-7 text-xs flex-1">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="text-xs">
-                            <SelectItem value="true" className="text-xs py-1">Yes</SelectItem>
-                            <SelectItem value="false" className="text-xs py-1">No</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Thinking Budget - Only enabled when include_thoughts is true AND model supports it */}
-                <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                        <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.thinking_budget && includeThoughtsEnabled ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                            Thinking budget
-                            {!normalizedControls.thinking_budget && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                            {normalizedControls.thinking_budget && !includeThoughtsEnabled && <span className="text-[10px] ml-1 opacity-60">(Requires thoughts)</span>}
-                        </Label>
-                        <div className="flex-1 flex items-center gap-2">
-                            {normalizedControls.thinking_budget && includeThoughtsEnabled ? (
-                                <>
-                                    <Slider
-                                        min={normalizedControls.thinking_budget?.min ?? -1}
-                                        max={normalizedControls.thinking_budget?.max ?? 24576}
-                                        step={1}
-                                        value={[settings.thinking_budget ?? normalizedControls.thinking_budget?.default ?? 1024]}
-                                        onValueChange={(value) => handleSettingChange("thinking_budget", value[0])}
-                                        className="flex-1"
-                                    />
-                                    <input
-                                        type="number"
-                                        min={normalizedControls.thinking_budget?.min ?? -1}
-                                        max={normalizedControls.thinking_budget?.max ?? 24576}
-                                        step={1}
-                                        value={settings.thinking_budget ?? normalizedControls.thinking_budget?.default ?? 1024}
-                                        onChange={(e) => {
-                                            const val = parseInt(e.target.value);
-                                            if (!isNaN(val)) {
-                                                handleSettingChange("thinking_budget", val);
-                                            }
-                                        }}
-                                        className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
-                                    />
-                                </>
-                            ) : (
-                                <div className="h-1.5 flex-1 bg-gray-200 dark:bg-gray-800 rounded opacity-50"></div>
-                            )}
+            {/* Unrecognized Settings Warning */}
+            {unrecognizedSettings.length > 0 && (
+                <div className="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
+                    <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                        <div className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                            Unrecognized Settings Detected
                         </div>
+                        <div className="text-yellow-700 dark:text-yellow-300 mb-1">
+                            The following settings are not shown in the UI: {unrecognizedSettings.join(', ')}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowJsonEditor(true)}
+                            className="h-6 text-[10px] px-2"
+                        >
+                            <FileJson className="h-3 w-3 mr-1" />
+                            View in JSON Editor
+                        </Button>
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* Reasoning Effort */}
-            <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.reasoning_effort ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Reasoning effort
-                    {!normalizedControls.reasoning_effort && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <Select
-                    value={settings.reasoning_effort || normalizedControls.reasoning_effort?.default || "medium"}
-                    onValueChange={(value) => handleSettingChange("reasoning_effort", value)}
-                    disabled={!normalizedControls.reasoning_effort}
-                    >
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                            <SelectValue />
-                        </SelectTrigger>
-                    <SelectContent className="text-xs">
-                        {normalizedControls.reasoning_effort?.enum?.map((option) => (
-                            <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
-                            </SelectItem>
-                        )) || (
-                            <>
-                            <SelectItem value="none" className="text-xs py-1">none</SelectItem>
-                            <SelectItem value="low" className="text-xs py-1">low</SelectItem>
-                            <SelectItem value="medium" className="text-xs py-1">medium</SelectItem>
-                            <SelectItem value="high" className="text-xs py-1">high</SelectItem>
-                            </>
-                        )}
-                        </SelectContent>
-                    </Select>
-                </div>
+            {/* Text Model Settings */}
+            {textModelSettings.map(({ key, label }) => {
+                const control = (normalizedControls as any)[key];
+                if (!control) return null;
+                return renderControl(key as keyof PromptSettings, label, control);
+            })}
 
-            {/* Summary */}
-            <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.reasoning_summary ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Show Reasoning
-                    {!normalizedControls.reasoning_summary && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <Select
-                    value={settings.reasoning_summary || normalizedControls.reasoning_summary?.default || "auto"}
-                    onValueChange={(value) => handleSettingChange("reasoning_summary", value)}
-                    disabled={!normalizedControls.reasoning_summary}
-                    >
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                            <SelectValue />
-                        </SelectTrigger>
-                    <SelectContent className="text-xs">
-                        {normalizedControls.reasoning_summary?.enum?.map((option) => (
-                            <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
-                            </SelectItem>
-                        )) || (
-                            <>
-                            <SelectItem value="auto" className="text-xs py-1">auto</SelectItem>
-                            <SelectItem value="enabled" className="text-xs py-1">enabled</SelectItem>
-                            <SelectItem value="disabled" className="text-xs py-1">disabled</SelectItem>
-                            </>
-                        )}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-            {/* Verbosity */}
-            <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.verbosity ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Verbosity
-                    {!normalizedControls.verbosity && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <Select
-                    value={settings.verbosity || normalizedControls.verbosity?.default || "medium"}
-                        onValueChange={(value) => handleSettingChange("verbosity", value)}
-                    disabled={!normalizedControls.verbosity}
-                    >
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                            <SelectValue />
-                        </SelectTrigger>
-                    <SelectContent className="text-xs">
-                        {normalizedControls.verbosity?.enum?.map((option) => (
-                            <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
-                            </SelectItem>
-                        )) || (
-                            <>
-                            <SelectItem value="low" className="text-xs py-1">low</SelectItem>
-                            <SelectItem value="medium" className="text-xs py-1">medium</SelectItem>
-                            <SelectItem value="high" className="text-xs py-1">high</SelectItem>
-                            </>
-                        )}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-
-            {/* Tool Choice */}
-            <div className="flex items-center gap-3">
-                <Label className={`text-xs flex-shrink-0 w-36 ${normalizedControls.tool_choice ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                    Tool choice
-                    {!normalizedControls.tool_choice && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                </Label>
-                <Select
-                    value={settings.tool_choice || normalizedControls.tool_choice?.default || "auto"}
-                    onValueChange={(value) => handleSettingChange("tool_choice", value)}
-                    disabled={!normalizedControls.tool_choice}
-                >
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="text-xs">
-                        {normalizedControls.tool_choice?.enum?.map((option) => (
-                            <SelectItem key={option} value={option} className="text-xs py-1">
-                                {option}
-                            </SelectItem>
-                        )) || (
-                            <>
-                            <SelectItem value="auto" className="text-xs py-1">auto</SelectItem>
-                            <SelectItem value="required" className="text-xs py-1">required</SelectItem>
-                            <SelectItem value="none" className="text-xs py-1">none</SelectItem>
-                            </>
-                        )}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {/* Divider for toggle section */}
-            <div className="pt-1 border-t border-border" />
-
-            {/* Toggle Switches Grid - Note: Tools selection is handled in ToolsManager, not here */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-
-                {/* Store */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.store ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Store
-                        {!normalizedControls.store && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                        </Label>
-                    <button
-                        onClick={() => normalizedControls.store && handleSettingChange("store", !settings.store)}
-                        disabled={!normalizedControls.store}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.store 
-                                ? (settings.store
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.store ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
+            {/* Image/Video Settings */}
+            {imageVideoSettings.some(({ key }) => (normalizedControls as any)[key]) && (
+                <div className="border-t pt-2.5 mt-2.5">
+                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Image/Video Settings
                     </div>
-
-                {/* Stream */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.stream ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Stream
-                        {!normalizedControls.stream && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <button
-                        onClick={() => normalizedControls.stream && handleSettingChange("stream", !(settings.stream ?? true))}
-                        disabled={!normalizedControls.stream}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.stream 
-                                ? ((settings.stream ?? true)
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                (settings.stream ?? true) ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
+                    {imageVideoSettings.map(({ key, label }) => {
+                        const control = (normalizedControls as any)[key];
+                        if (!control) return null;
+                        return renderControl(key as keyof PromptSettings, label, control);
+                    })}
                 </div>
+            )}
 
-                {/* Parallel Tool Calls */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.parallel_tool_calls ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Parallel tools
-                        {!normalizedControls.parallel_tool_calls && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                        </Label>
-                    <button
-                        onClick={() => normalizedControls.parallel_tool_calls && handleSettingChange("parallel_tool_calls", !settings.parallel_tool_calls)}
-                        disabled={!normalizedControls.parallel_tool_calls}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.parallel_tool_calls 
-                                ? (settings.parallel_tool_calls
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.parallel_tool_calls ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
+            {/* Boolean Settings */}
+            {booleanSettings.some(({ key }) => (normalizedControls as any)[key]) && (
+                <div className="border-t pt-2.5 mt-2.5">
+                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Feature Flags
                     </div>
-
-                {/* Image URLs */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.image_urls ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Image URLs
-                        {!normalizedControls.image_urls && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <button
-                        onClick={() => normalizedControls.image_urls && handleSettingChange("image_urls", !settings.image_urls)}
-                        disabled={!normalizedControls.image_urls}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.image_urls 
-                                ? (settings.image_urls
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.image_urls ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
+                    {booleanSettings.map(({ key, label }) => {
+                        const control = (normalizedControls as any)[key];
+                        if (!control) return null;
+                        return renderControl(key as keyof PromptSettings, label, control);
+                    })}
                 </div>
-
-                {/* File URLs */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.file_urls ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        File URLs
-                        {!normalizedControls.file_urls && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                        </Label>
-                    <button
-                        onClick={() => normalizedControls.file_urls && handleSettingChange("file_urls", !settings.file_urls)}
-                        disabled={!normalizedControls.file_urls}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.file_urls 
-                                ? (settings.file_urls
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.file_urls ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
-                    </div>
-
-                {/* Internal Web Search */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.internal_web_search ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        Web search
-                        {!normalizedControls.internal_web_search && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <button
-                        onClick={() => normalizedControls.internal_web_search && handleSettingChange("internal_web_search", !settings.internal_web_search)}
-                        disabled={!normalizedControls.internal_web_search}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.internal_web_search 
-                                ? (settings.internal_web_search
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.internal_web_search ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
-                </div>
-
-                {/* Internal URL Context */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.internal_url_context ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        URL context
-                        {!normalizedControls.internal_url_context && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                    </Label>
-                    <button
-                        onClick={() => normalizedControls.internal_url_context && handleSettingChange("internal_url_context", !settings.internal_url_context)}
-                        disabled={!normalizedControls.internal_url_context}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.internal_url_context 
-                                ? (settings.internal_url_context
-                                    ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.internal_url_context ? "translate-x-[18px]" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
-                </div>
-
-                {/* YouTube Videos */}
-                <div className="flex items-center justify-between gap-2">
-                    <Label className={`text-xs ${normalizedControls.youtube_videos ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                        YouTube
-                        {!normalizedControls.youtube_videos && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                </Label>
-                <button
-                        onClick={() => normalizedControls.youtube_videos && handleSettingChange("youtube_videos", !settings.youtube_videos)}
-                        disabled={!normalizedControls.youtube_videos}
-                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                            normalizedControls.youtube_videos 
-                                ? (settings.youtube_videos
-                            ? "bg-blue-600 dark:bg-blue-500"
-                                    : "bg-gray-300 dark:bg-gray-700")
-                                : "bg-gray-200 dark:bg-gray-800 opacity-50 cursor-not-allowed"
-                    }`}
-                >
-                    <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
-                                settings.youtube_videos ? "translate-x-[18px]" : "translate-x-0.5"
-                        }`}
-                    />
-                </button>
-                </div>
-            </div>
+            )}
 
             {/* Tools Section */}
-            {availableTools.length > 0 && normalizedControls.tools && (
-                <>
-                    <div className="border-t border-border" />
-                    
-                    <div className="space-y-2">
-                        {/* Add Tool Dropdown - Single Line */}
-                        {availableTools.filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name)).length > 0 && (
-                            <div className="flex items-center gap-2">
-                                <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">
-                                    Tools {!normalizedControls.tools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
-                                </Label>
-                                <Select
-                                    value=""
-                                    onValueChange={(toolName) => {
-                                        if (toolName) {
-                                            const newTools = [...(settings.tools || []), toolName];
-                                            handleSettingChange("tools", newTools);
+            {normalizedControls.tools && availableTools.length > 0 && (
+                <div className="border-t pt-2.5 mt-2.5">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div 
+                            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => {
+                                const checked = !enabledSettings.has('tools');
+                                if (checked) {
+                                    setEnabledSettings(new Set(enabledSettings).add('tools'));
+                                    if (!settings.tools) {
+                                        onSettingsChange({ ...settings, tools: [] });
+                                    }
+                                } else {
+                                    const newEnabled = new Set(enabledSettings);
+                                    newEnabled.delete('tools');
+                                    setEnabledSettings(newEnabled);
+                                    const { tools, ...rest } = settings;
+                                    onSettingsChange(rest as PromptSettings);
+                                }
+                            }}
+                        >
+                            <Checkbox
+                                id="setting-tools"
+                                checked={enabledSettings.has('tools')}
+                                onCheckedChange={(checked) => {
+                                    if (checked) {
+                                        setEnabledSettings(new Set(enabledSettings).add('tools'));
+                                        if (!settings.tools) {
+                                            onSettingsChange({ ...settings, tools: [] });
                                         }
-                                    }}
-                                >
-                                    <SelectTrigger className="h-7 text-xs flex-1">
-                                        <SelectValue placeholder="Select a tool to add..." />
-                                    </SelectTrigger>
-                                    <SelectContent className="text-xs max-h-[200px]">
-                                        {availableTools
-                                            .filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name))
-                                            .map((tool, index) => {
-                                                const toolName = typeof tool === 'string' ? tool : tool.name;
-                                                return (
-                                                    <SelectItem key={index} value={toolName} className="text-xs py-1">
-                                                        {toolName}
-                                                    </SelectItem>
-                                                );
-                                            })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                        
-                        {/* Show label when no tools available to add but tools are selected */}
-                        {availableTools.filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name)).length === 0 && settings.tools && settings.tools.length > 0 && (
-                            <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                Tools {!normalizedControls.tools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                                    } else {
+                                        const newEnabled = new Set(enabledSettings);
+                                        newEnabled.delete('tools');
+                                        setEnabledSettings(newEnabled);
+                                        const { tools, ...rest } = settings;
+                                        onSettingsChange(rest as PromptSettings);
+                                    }
+                                }}
+                                className="cursor-pointer"
+                            />
+                            <Label htmlFor="setting-tools" className={`text-xs font-semibold flex-shrink-0 w-36 cursor-pointer ${enabledSettings.has('tools') ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                                Tools
                             </Label>
-                        )}
-                        
-                        {/* Selected Tools List */}
-                        {settings.tools && settings.tools.length > 0 ? (
-                            <div className="space-y-1">
-                                {settings.tools.map((toolName, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center justify-between px-2 py-1.5 rounded text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                                    >
-                                        <span className="text-green-700 dark:text-green-300 font-medium">{toolName}</span>
-                                        <button
-                                            onClick={() => {
-                                                const newTools = settings.tools?.filter((_, i) => i !== index) || [];
-                                                handleSettingChange("tools", newTools);
-                                            }}
-                                            className="text-green-600 dark:text-green-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                            title="Remove tool"
-                                        >
-                                            <X className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center py-2">
-                                No tools selected
-                            </div>
-                        )}
+                        </div>
                     </div>
-                </>
+
+                    {enabledSettings.has('tools') && (
+                        <>
+                            {availableTools.filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name)).length > 0 && (
+                                <div className="flex items-center gap-2 mb-2 ml-10">
+                                    <Select
+                                        value=""
+                                        onValueChange={(toolName) => {
+                                            const currentTools = settings.tools || [];
+                                            if (!currentTools.includes(toolName)) {
+                                                handleSettingChange("tools", [...currentTools, toolName]);
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-7 text-xs flex-1">
+                                            <SelectValue placeholder="Add tool..." />
+                                        </SelectTrigger>
+                                        <SelectContent className="text-xs">
+                                            {availableTools
+                                                .filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name))
+                                                .map((tool) => {
+                                                    const toolName = typeof tool === 'string' ? tool : tool.name;
+                                                    return (
+                                                        <SelectItem key={toolName} value={toolName} className="text-xs py-1">
+                                                            {toolName}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            {settings.tools && settings.tools.length > 0 ? (
+                                <div className="space-y-1 ml-10">
+                                    {settings.tools.map((toolName, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between px-2 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs"
+                                        >
+                                            <span className="text-green-700 dark:text-green-300 font-mono">
+                                                {toolName}
+                                            </span>
+                                            <button
+                                                onClick={() => {
+                                                    const newTools = settings.tools?.filter((_, i) => i !== index) || [];
+                                                    handleSettingChange("tools", newTools);
+                                                }}
+                                                className="text-green-600 dark:text-green-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center py-2 ml-10">
+                                    No tools selected
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             )}
+
+            {/* JSON Editor Button */}
+            <div className="border-t pt-2.5 mt-2.5">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowJsonEditor(true)}
+                    className="w-full"
+                >
+                    <FileJson className="h-4 w-4 mr-2" />
+                    Edit as JSON
+                </Button>
+            </div>
+
+            {/* JSON Editor Modal */}
+            <SettingsJsonEditor
+                isOpen={showJsonEditor}
+                onClose={() => setShowJsonEditor(false)}
+                settings={settings}
+                onSave={handleJsonSave}
+            />
         </div>
     );
 }
-

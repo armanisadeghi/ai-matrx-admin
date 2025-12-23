@@ -8,13 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, X, Play, Settings2, FileText } from 'lucide-react';
+import { Loader2, Plus, Trash2, X, Play, Settings2, FileText, FileJson } from 'lucide-react';
 import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
+import { SettingsJsonEditor } from '@/features/prompts/components/configuration/SettingsJsonEditor';
+import { removeNullSettings } from '@/features/prompts/utils/settings-filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -69,6 +71,7 @@ export default function ChatTestPage() {
 
   // Settings panel state
   const [showSettings, setShowSettings] = useState(true);
+  const [showJsonEditor, setShowJsonEditor] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -209,10 +212,12 @@ export default function ChatTestPage() {
       const url = `${apiConfig.baseUrl}/api/chat/direct`;
 
       // Build request body - flatten settings into root level
+      // Filter out null/undefined values before sending
+      const cleanedConfig = removeNullSettings(modelConfig);
       const requestBody = {
         messages: messages,
         ai_model_id: selectedModelId,
-        ...modelConfig,
+        ...cleanedConfig,
         debug: debugMode,
       };
 
@@ -554,9 +559,28 @@ export default function ChatTestPage() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+
+                {/* JSON Editor Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowJsonEditor(true)}
+                  className="w-full mt-2"
+                >
+                  <FileJson className="mr-2 h-4 w-4" />
+                  Edit Config as JSON
+                </Button>
               </div>
             </Card>
           )}
+
+          {/* JSON Editor Modal */}
+          <SettingsJsonEditor
+            isOpen={showJsonEditor}
+            onClose={() => setShowJsonEditor(false)}
+            settings={modelConfig}
+            onSave={setModelConfig}
+          />
 
           {/* Right: Results Panel */}
           <Card className={`${showSettings ? 'col-span-9' : 'col-span-12'} p-3 h-full overflow-hidden flex flex-col`}>

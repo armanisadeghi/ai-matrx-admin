@@ -22,6 +22,23 @@ export interface PromptSettings {
     reasoning_effort?: string;
     verbosity?: string;
     reasoning_summary?: string;
+    
+    // Image/Video model settings
+    n?: number; // Number of outputs
+    seed?: number;
+    steps?: number;
+    width?: number;
+    height?: number;
+    guidance_scale?: number;
+    negative_prompt?: string;
+    response_format?: string;
+    fps?: number; // Video: frames per second
+    seconds?: string; // Video: duration
+    output_quality?: number;
+    image_loras?: any[]; // Object array for image LoRAs
+    frame_images?: any[]; // Object array for video frame images
+    reference_images?: string[]; // String array of image URLs
+    disable_safety_checker?: boolean;
 }
 
 /**

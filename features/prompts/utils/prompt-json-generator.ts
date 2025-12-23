@@ -6,9 +6,11 @@
 
 import { PromptMessage, PromptVariable, PromptData } from '@/features/prompts/types/core';
 import { PromptSettings } from '../types/core';
+import { removeNullSettings } from './settings-filter';
 
 /**
  * Create a prompt JSON object
+ * Automatically filters out null/undefined settings values
  */
 export function createPromptJSON(
   name: string,
@@ -20,13 +22,16 @@ export function createPromptJSON(
     settings?: PromptSettings;
   }
 ): PromptData {
+  // Clean settings to remove null/undefined values
+  const cleanedSettings = options?.settings ? removeNullSettings(options.settings) : undefined;
+  
   return {
     id: options?.id,
     name,
     description: options?.description,
     messages,
     variableDefaults: options?.variableDefaults,
-    settings: options?.settings
+    settings: cleanedSettings
   };
 }
 
@@ -71,9 +76,15 @@ export function defaultSettings(overrides?: Partial<PromptSettings>): PromptSett
 
 /**
  * Format prompt JSON as a string
+ * Cleans settings before formatting
  */
 export function formatPromptJSON(prompt: PromptData, pretty: boolean = true): string {
-  return JSON.stringify(prompt, null, pretty ? 2 : 0);
+  // Clean the prompt settings before formatting
+  const cleanedPrompt = {
+    ...prompt,
+    settings: prompt.settings ? removeNullSettings(prompt.settings) : undefined
+  };
+  return JSON.stringify(cleanedPrompt, null, pretty ? 2 : 0);
 }
 
 /**

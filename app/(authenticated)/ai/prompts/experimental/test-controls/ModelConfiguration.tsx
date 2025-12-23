@@ -84,6 +84,23 @@ export function ModelConfiguration({ model, models, onModelChange, modelConfig, 
                         store: <span className="text-green-600 dark:text-green-400">{modelConfig.store.toString()}</span>
                     </span>
                 )}
+
+                {/* Image/Video Model Settings */}
+                {typeof modelConfig.steps === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        steps: <span className="text-purple-700 dark:text-purple-300">{modelConfig.steps}</span>
+                    </span>
+                )}
+                {typeof modelConfig.guidance_scale === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        guidance: <span className="text-purple-700 dark:text-purple-300">{modelConfig.guidance_scale.toFixed(1)}</span>
+                    </span>
+                )}
+                {typeof modelConfig.width === 'number' && (
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded font-mono">
+                        {modelConfig.width}x{modelConfig.height ?? '?'}
+                    </span>
+                )}
             </div>
         </div>
     );

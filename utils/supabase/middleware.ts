@@ -24,19 +24,17 @@ export async function updateSession(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
-            supabaseResponse = NextResponse.next({
-              request: {
-                headers: requestHeaders,
-              },
+            // CRITICAL FIX: Don't recreate the response object!
+            // Just update cookies on both the request and the existing response.
+            // Creating a new NextResponse here was causing all previously set cookies to be lost.
+            // This was causing users to be logged out after token refresh because
+            // only the last cookie would survive, and other auth cookies would be dropped.
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Update the request cookies for downstream handlers
+              request.cookies.set(name, value);
+              // Update the response cookies that will be sent to the client
+              supabaseResponse.cookies.set(name, value, options);
             });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set({
-                name,
-                value,
-                ...options,
-              })
-            );
           },
         },
       }

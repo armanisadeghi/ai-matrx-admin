@@ -6,7 +6,7 @@
  */
 
 export interface ControlDefinition {
-    type: 'number' | 'integer' | 'boolean' | 'string' | 'enum' | 'array';
+    type: 'number' | 'integer' | 'boolean' | 'string' | 'enum' | 'array' | 'string_array' | 'object_array';
     min?: number;
     max?: number;
     default?: any;
@@ -17,7 +17,8 @@ export interface ControlDefinition {
 export interface NormalizedControls {
     // Core controls (snake_case for Python compatibility)
     temperature?: ControlDefinition;
-    max_tokens?: ControlDefinition;
+    max_tokens?: ControlDefinition; // Legacy - older APIs
+    max_output_tokens?: ControlDefinition; // Modern - preferred
     top_p?: ControlDefinition;
     top_k?: ControlDefinition;
     thinking_budget?: ControlDefinition;
@@ -41,6 +42,23 @@ export interface NormalizedControls {
     internal_web_search?: ControlDefinition;
     internal_url_context?: ControlDefinition;
     youtube_videos?: ControlDefinition;
+
+    // Image/Video model controls
+    n?: ControlDefinition;
+    seed?: ControlDefinition;
+    steps?: ControlDefinition;
+    width?: ControlDefinition;
+    height?: ControlDefinition;
+    guidance_scale?: ControlDefinition;
+    negative_prompt?: ControlDefinition;
+    response_format?: ControlDefinition;
+    fps?: ControlDefinition;
+    seconds?: ControlDefinition;
+    output_quality?: ControlDefinition;
+    image_loras?: ControlDefinition;
+    frame_images?: ControlDefinition;
+    reference_images?: ControlDefinition;
+    disable_safety_checker?: ControlDefinition;
 
     // Raw controls for debugging
     rawControls: Record<string, any>;
@@ -105,7 +123,11 @@ export function useModelControls(models: any[], selectedModelId: string) {
         'thinking_budget', 'include_thoughts', 'internal_url_context',
         'reasoning_effort', 'verbosity', 'reasoning_summary', 'output_format', 'tool_choice',
         'stop_sequences', 'tools', 'stream', 'store',
-        'file_urls', 'image_urls', 'internal_web_search', 'parallel_tool_calls', 'youtube_videos'
+        'file_urls', 'image_urls', 'internal_web_search', 'parallel_tool_calls', 'youtube_videos',
+        // Image/Video model controls
+        'n', 'seed', 'steps', 'width', 'height', 'guidance_scale', 'negative_prompt',
+        'response_format', 'fps', 'seconds', 'output_quality', 'image_loras',
+        'frame_images', 'reference_images', 'disable_safety_checker'
     ]);
 
     // Parse each control
@@ -116,8 +138,8 @@ export function useModelControls(models: any[], selectedModelId: string) {
             return;
         }
 
-        // Handle max_tokens alias for max_output_tokens
-        const normalizedKey = key === 'max_tokens' ? 'max_output_tokens' : key;
+        // Keep the key as-is - max_tokens and max_output_tokens are separate settings
+        const normalizedKey = key;
 
         // Parse the control definition based on its structure
         const controlDef: ControlDefinition = {
@@ -167,6 +189,7 @@ export function useModelControls(models: any[], selectedModelId: string) {
  * Get default settings from a model's controls
  * Returns ONLY the actual config values that should be submitted/saved
  * UI-only flags (like tools: true) are converted to their proper submission format
+ * CRITICAL: Controls with default: null are NOT included (opt-in only)
  */
 export function getModelDefaults(model: any) {
     if (!model?.controls) {
@@ -180,8 +203,9 @@ export function getModelDefaults(model: any) {
     const uiOnlyKeys = new Set(['tools']);
 
     Object.entries(controls).forEach(([key, value]: [string, any]) => {
-        // Normalize key
-        const normalizedKey = key === 'max_output_tokens' ? 'max_tokens' : key;
+        // Don't normalize keys here - keep them as the API expects them
+        // PromptSettings uses max_output_tokens to match the API
+        const normalizedKey = key;
 
         // Skip UI-only capability flags - these should be managed separately
         // Tools should be initialized as empty array, not boolean
@@ -194,7 +218,8 @@ export function getModelDefaults(model: any) {
         }
 
         // Extract default value for actual submission parameters
-        if (value.default !== undefined) {
+        // SKIP if default is null - these are opt-in only controls
+        if (value.default !== undefined && value.default !== null) {
             defaults[normalizedKey] = value.default;
         } else if ('allowed' in value && !uiOnlyKeys.has(normalizedKey)) {
             // Only use 'allowed' for non-UI flags
