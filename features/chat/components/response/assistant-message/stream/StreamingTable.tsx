@@ -27,9 +27,9 @@ const StreamingTable = ({
         };
 
         return (
-            <div className="w-full space-y-4 my-4">
-                <div className={cn("overflow-x-auto rounded-xl border-3 border-gray-300 dark:border-gray-900")}>
-                    <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${fontSize}px` }}>
+            <div className="w-full min-w-0 space-y-4 my-4">
+                <div className={cn("overflow-x-auto rounded-xl border-3 border-gray-300 dark:border-gray-900 min-w-0")}>
+                    <table className={cn("w-full border-collapse min-w-0", className)} style={{ fontSize: `${fontSize}px` }}>
                         <thead>
                             <tr
                                 className={cn(
@@ -70,9 +70,9 @@ const StreamingTable = ({
 
     // Otherwise, render children (for react-markdown AST nodes)
     return (
-        <div className="w-full space-y-4 my-4">
-            <div className={cn("overflow-x-auto rounded-xl border-3 border-gray-300 dark:border-gray-900")}>
-                <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${fontSize}px` }}>
+        <div className="w-full min-w-0 space-y-4 my-4">
+            <div className={cn("overflow-x-auto rounded-xl border-3 border-gray-300 dark:border-gray-900 min-w-0")}>
+                <table className={cn("w-full border-collapse min-w-0", className)} style={{ fontSize: `${fontSize}px` }}>
                     {children}
                 </table>
             </div>

@@ -161,8 +161,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     };
 
     return (
-        <div className={`flex ${isAppearing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
-            <div className="max-w-full w-full relative">
+        <div className={`flex min-w-0 overflow-x-hidden ${isAppearing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+            <div className="max-w-full min-w-0 w-full relative overflow-x-hidden">
                 <MarkdownStream
                     content={content}
                     taskId={taskId}

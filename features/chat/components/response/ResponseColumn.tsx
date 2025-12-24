@@ -172,8 +172,8 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     }, [infoResponse]);
 
     return (
-        <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
-            <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden">
+        <div className="w-full min-w-0 pt-0 pb-24 relative overflow-x-hidden" ref={containerRef}>
+            <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden min-w-0">
                 {messagesToDisplay.map((message) => (
                     <MessageItem
                         key={message.id}

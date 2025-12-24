@@ -493,7 +493,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
 
     return (
         <div 
-            className={`relative my-2 group ${directionClasses} math-content-wrapper`}
+            className={`relative my-2 group ${directionClasses} math-content-wrapper overflow-x-hidden min-w-0 break-words`}
             dir={textDirection}
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}

@@ -237,7 +237,7 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                         className="p-2 rounded-full text-xs border border-zinc-300 dark:border-zinc-600 text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 flex items-center"
                         onClick={toggleDropdown}
                     >
-                        <span className="mr-1 text-sm font-small truncate max-w-[100px]">{selectedModelName}</span>
+                        <span className="mr-1 text-xs truncate max-w-[150px]">{selectedModelName}</span>
                     </button>
                 ) : (
                     // Desktop button - keeping this unchanged

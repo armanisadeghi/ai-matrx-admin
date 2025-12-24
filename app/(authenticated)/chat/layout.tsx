@@ -30,10 +30,10 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                         <AdaptiveLayout
                             header={null}
                             rightPanel={
-                                <div className="h-full w-full flex flex-col bg-textured relative">
+                                <div className="h-full w-full min-w-0 flex flex-col bg-textured relative overflow-x-hidden">
                                     {/* ResponseColumn is here but will be empty on welcome screen */}
-                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
-                                        <div className="w-full max-w-[800px] mx-auto pt-0">
+                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide min-w-0">
+                                        <div className="w-full min-w-0 max-w-[800px] mx-auto pt-0">
                                             <ResponseColumn />
                                         </div>
                                     </div>
@@ -49,17 +49,17 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                         <AdaptiveLayout
                             header={null}
                             rightPanel={
-                                <div className="h-full w-full flex flex-col bg-textured relative">
+                                <div className="h-full w-full min-w-0 flex flex-col bg-textured relative overflow-x-hidden">
                                     {/* Messages - Scrollable area - pb-32 to prevent content hiding under input */}
-                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-32 lg:pb-32">
-                                        <div className="w-full max-w-[800px] mx-auto pt-0">
+                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-32 lg:pb-32 min-w-0">
+                                        <div className="w-full min-w-0 max-w-[800px] mx-auto pt-0">
                                             <ResponseColumn />
                                         </div>
                                     </div>
                                     
                                     {/* Input Container - Fixed at bottom with safe area padding */}
-                                    <div className="absolute bottom-0 left-0 right-0 bg-textured pb-safe pt-2">
-                                        <div className="w-full max-w-[800px] mx-auto px-4">
+                                    <div className="absolute bottom-0 left-0 right-0 bg-textured pb-safe pt-2 overflow-x-hidden min-w-0">
+                                        <div className="w-full min-w-0 max-w-[800px] mx-auto px-1">
                                             {children}
                                         </div>
                                     </div>

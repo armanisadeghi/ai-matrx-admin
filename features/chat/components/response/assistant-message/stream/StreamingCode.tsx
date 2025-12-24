@@ -65,7 +65,7 @@ const StreamingCode: React.FC<StreamingCodeProps> = ({ code, language, fontSize 
     return (
         <div
             className={cn(
-                "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-200",
+                "w-full min-w-0 my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-200",
                 className
             )}
         >
@@ -85,8 +85,8 @@ const StreamingCode: React.FC<StreamingCodeProps> = ({ code, language, fontSize 
                 isMobile={false}
             />
 
-            <div className="relative">
-                <div className={cn("overflow-hidden transition-all duration-200 max-h-none")}>
+            <div className="relative overflow-x-auto min-w-0">
+                <div className={cn("overflow-x-auto transition-all duration-200 max-h-none min-w-0")}>
                     <SyntaxHighlighter
                         language={language}
                         style={mode === "dark" ? vscDarkPlus : vs}
@@ -101,6 +101,8 @@ const StreamingCode: React.FC<StreamingCodeProps> = ({ code, language, fontSize 
                             fontSize: `${fontSize}px`,
                             height: "auto",
                             minHeight: "auto",
+                            maxWidth: "100%",
+                            overflowX: "auto",
                         }}
                     >
                         {code}

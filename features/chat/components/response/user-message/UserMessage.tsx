@@ -124,11 +124,11 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
 
     return (
         <div
-            className="flex justify-end my-3 transition-all duration-200"
+            className="flex justify-end my-3 transition-all duration-200 overflow-x-hidden min-w-0"
             onMouseEnter={() => canCollapse && setIsHovered(true)}
             onMouseLeave={() => canCollapse && setIsHovered(false)}
         >
-            <div className="max-w-[90%] relative w-full shadow-sm hover:shadow-md rounded-2xl border border-neutral-200 dark:border-neutral-700 transition-shadow duration-200">
+            <div className="max-w-[90%] min-w-0 relative w-full shadow-sm hover:shadow-md rounded-2xl border border-neutral-200 dark:border-neutral-700 transition-shadow duration-200 overflow-x-hidden">
                 <MessageHeader
                     formattedDateTime={formattedDateTime}
                     isCollapsed={isCollapsed}
@@ -144,7 +144,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                 />
 
                 <div
-                    className={`rounded-b-2xl rounded-t-none text-sm bg-zinc-200 dark:bg-zinc-800 px-4 py-2 text-gray-900 dark:text-gray-100 relative w-full transition-all duration-200
+                    className={`rounded-b-2xl rounded-t-none text-sm bg-zinc-200 dark:bg-zinc-800 px-4 py-2 text-gray-900 dark:text-gray-100 relative w-full min-w-0 transition-all duration-200 overflow-x-hidden
                                 ${isCollapsed ? "pb-2" : ""}
                                 `}
                 >
@@ -161,9 +161,9 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                             <div
                                 ref={contentRef}
                                 className={`text-sm rounded-b-2xl
-                                  prose dark:prose-invert prose-lg max-w-none
+                                  prose dark:prose-invert prose-lg max-w-none min-w-0
                                   transition-all duration-300
-                                  ${isCollapsed ? "overflow-hidden fade-bottom" : "overflow-visible"}
+                                  ${isCollapsed ? "overflow-hidden fade-bottom" : "overflow-x-hidden"}
                                   whitespace-pre-wrap break-words
                                 `}
                             >

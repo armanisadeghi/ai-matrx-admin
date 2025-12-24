@@ -34,7 +34,7 @@ export const PlainTextFallback: React.FC<{ content: string; className?: string; 
     type 
 }) => {
     const containerStyles = cn(
-        "py-3 px-4 space-y-2 font-sans text-md antialiased leading-relaxed tracking-wide whitespace-pre-wrap break-words",
+        "py-3 px-4 space-y-2 font-sans text-md antialiased leading-relaxed tracking-wide whitespace-pre-wrap break-words overflow-x-hidden min-w-0",
         type === "flashcard"
             ? "text-left mb-1 text-white"
             : `block rounded-lg w-full ${
@@ -46,7 +46,7 @@ export const PlainTextFallback: React.FC<{ content: string; className?: string; 
     );
 
     return (
-        <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+        <div className={`${type === "message" ? "mb-3 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}>
             <div className={containerStyles}>
                 {content || "No content available"}
             </div>
@@ -322,7 +322,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     );
 
     const containerStyles = cn(
-        "pt-1 pb-0 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide",
+        "pt-1 pb-0 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide overflow-x-hidden min-w-0 break-words",
         type === "flashcard"
             ? "text-left mb-0 text-white"
             : `block rounded-lg w-full ${
@@ -342,7 +342,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     if (isWaitingForContent && toolUpdates.length === 0) {
         try {
             return (
-                <div className={`${type === "message" ? "mb-1 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+                <div className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}>
                     <div className={containerStyles}>
                         <div className="flex items-center justify-start py-6">
                             <MatrxMiniLoader />
@@ -358,7 +358,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
 
     try {
         return (
-            <div className={`${type === "message" ? "mb-1 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+            <div className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}>
                 {/* Tool Call Visualization - show if we have tool updates */}
                 {toolUpdates.length > 0 && (
                     <MarkdownErrorBoundary

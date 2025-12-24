@@ -25,17 +25,18 @@ export const useConversationRouting = ({
     const [currentModelId, setCurrentModelId] = useState<string>(paramsModelId);
     const [currentMode, setCurrentMode] = useState<ChatMode | undefined>(paramsMode);
     
+    // Sync from URL params only if they differ from current state (e.g., browser back/forward)
     useEffect(() => {
-        if (paramsMode) {
+        if (paramsMode && paramsMode !== currentMode) {
             setCurrentMode(paramsMode);
         }
-    }, [paramsMode]);
+    }, [paramsMode, currentMode]);
     
     useEffect(() => {
-        if (paramsModelId) {
+        if (paramsModelId && paramsModelId !== currentModelId) {
             setCurrentModelId(paramsModelId);
         }
-    }, [paramsModelId]);
+    }, [paramsModelId, currentModelId]);
     
     // Function to update search params
     const createQueryString = useCallback(
@@ -55,13 +56,22 @@ export const useConversationRouting = ({
     
     // Update URL when model or mode changes without navigation
     useEffect(() => {
-        const queryString = createQueryString({
-            model: currentModelId,
-            mode: currentMode,
-        });
-        // Update the URL without causing a navigation
-        router.replace(`${pathname}?${queryString}`, { scroll: false });
-    }, [currentModelId, currentMode, pathname, router, createQueryString]);
+        // Construct query string inline to avoid dependency on createQueryString
+        const params = new URLSearchParams();
+        if (currentModelId) {
+            params.set('model', currentModelId);
+        }
+        if (currentMode) {
+            params.set('mode', currentMode);
+        }
+        const queryString = params.toString();
+        const currentQueryString = searchParams.toString();
+        
+        // Only update URL if it actually changed
+        if (queryString !== currentQueryString) {
+            router.replace(`${pathname}?${queryString}`, { scroll: false });
+        }
+    }, [currentModelId, currentMode, pathname, router, searchParams]);
     
     // Navigate to a specific conversation while maintaining parameters
     const navigateToConversation = useCallback(

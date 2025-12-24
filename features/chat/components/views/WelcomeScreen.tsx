@@ -31,7 +31,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
                 chatActions.updateMode({ value: initialMode });
             }
         }
-    }, [initialModelId, initialMode, initialLoadComplete, chatActions]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialModelId, initialMode, initialLoadComplete]);
 
     const isDisabled = !initialLoadComplete || isSubmitting;
 
@@ -73,8 +74,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
         // After first message - show input at bottom like normal chat
         return (
             <div className="absolute bottom-0 left-0 right-0 bg-textured pb-4 pt-2">
-                <div className="w-full max-w-[800px] mx-auto px-4">
-                    <div className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-gray-950">
+                <div className="w-full max-w-[800px] mx-auto px-1">
+                    <div className="w-full rounded-3xl border border-border">
                         <PromptInputContainer disabled={isDisabled} onSubmit={handleActualSubmit} />
                     </div>
                 </div>
@@ -84,10 +85,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
 
     // Before first message - show welcome screen centered in parent's scrollable area
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 pointer-events-none bg-textured">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-1 md:px-8 pointer-events-none bg-textured">
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">Chat reimagined.</h1>
-                <p className="text-xl text-gray-600 dark:text-gray-400">Artificial Intelligence with Matrx Superpowers.</p>
+                <p className="text-xl text-gray-600 dark:text-gray-400">Artificial Intelligence with Superpowers.</p>
             </div>
             <div className="w-full max-w-3xl pointer-events-auto">
                 <PromptInputContainer disabled={isDisabled} onSubmit={handleActualSubmit} />

@@ -1625,3 +1625,66 @@
 .react-flow__attribution a {
   color: hsl(var(--primary));
 }
+
+/* ===== MOBILE OVERFLOW PREVENTION ===== */
+/* Ensure absolutely no horizontal scroll on mobile devices */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll at the root level */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Apply overflow prevention to all major containers */
+  #__next, 
+  main,
+  [class*="h-page"],
+  [class*="h-dvh"],
+  [class*="h-screen"] {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Force all direct children to respect container width */
+  * {
+    max-width: 100%;
+  }
+  
+  /* Ensure pre and code blocks wrap properly */
+  pre, code {
+    overflow-x: auto;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Ensure tables are scrollable within their container */
+  table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  
+  /* Ensure images respect container width */
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Force text content to break properly */
+  p, div, span, li, td, th {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  
+  /* Ensure flexbox children don't overflow */
+  [class*="flex"] > * {
+    min-width: 0;
+  }
+  
+  /* Ensure grid children don't overflow */
+  [class*="grid"] > * {
+    min-width: 0;
+  }
+}

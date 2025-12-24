@@ -23,7 +23,8 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
   // Critical initialization that was in the old header
   useEffect(() => {
     dispatch(chatActions.initialize());
-  }, [dispatch, chatActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
 
   const handleOpenSearch = () => {
     setIsSearchOpen(true);
