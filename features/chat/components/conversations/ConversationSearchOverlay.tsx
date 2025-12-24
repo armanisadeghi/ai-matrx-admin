@@ -29,7 +29,7 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
     } = useConversationPanel();
     // Local state for the overlay
     const [selectedForPreview, setSelectedForPreview] = useState<string | null>(null);
-    const [expanded, setExpanded] = useState(false); // Start collapsed with larger preview area
+    const [expanded, setExpanded] = useState(true);
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
     const [contextMenuConversationId, setContextMenuConversationId] = useState<string | null>(null);

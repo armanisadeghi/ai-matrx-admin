@@ -72,8 +72,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
 
     if (submitSuccess) {
         // After first message - show input at bottom like normal chat
+        // Mobile: fixed to viewport, Desktop: absolute within container
         return (
-            <div className="absolute bottom-0 left-0 right-0 bg-textured pb-4 pt-2">
+            <div className="fixed md:absolute bottom-0 left-0 right-0 md:left-auto md:right-auto md:w-full bg-textured pb-safe pt-2 z-10">
                 <div className="w-full max-w-[800px] mx-auto px-1">
                     <div className="w-full rounded-3xl border border-border">
                         <PromptInputContainer disabled={isDisabled} onSubmit={handleActualSubmit} />

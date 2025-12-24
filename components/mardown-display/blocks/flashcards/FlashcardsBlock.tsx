@@ -93,8 +93,8 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) =>
 
     const renderFlashcards = () => (
         <div className={cn(
-            "gap-4",
-            isFullscreen ? "p-2 sm:p-4" : "p-4",
+            "gap-2",
+            isFullscreen ? "p-2 sm:p-4" : "p-0.5",
             layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2" : "flex flex-col"
         )}>
             {flashcards.map((card, index) => (

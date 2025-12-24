@@ -103,7 +103,7 @@ const SafeBlockRenderer: React.FC<{
         return (
             <MarkdownErrorBoundary
                 fallback={
-                    <div className="py-2 px-3 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+                    <div className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
                         {props.block.content || "[Block rendering failed]"}
                     </div>
                 }
@@ -114,7 +114,7 @@ const SafeBlockRenderer: React.FC<{
     } catch (error) {
         console.error("[MarkdownStream] Error rendering block:", error);
         return (
-            <div className="py-2 px-3 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+            <div className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
                 {props.block.content || "[Block rendering failed]"}
             </div>
         );
@@ -302,7 +302,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
             } catch (error) {
                 console.error("[MarkdownStream] Error in renderBlock at index:", index, error);
                 return (
-                    <div key={index} className="py-2 px-3 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20">
+                    <div key={index} className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20">
                         {block?.content || "[Render error]"}
                     </div>
                 );
