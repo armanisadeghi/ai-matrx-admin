@@ -190,17 +190,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) =>
             icon={<BookOpen className="h-4 w-4 text-primary" />}
             title={
                 <span>
-                    Flashcards
-                    {!isComplete && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                            ({completeCount} ready{partialCard ? ', 1 loading...' : ''})
-                        </span>
-                    )}
-                    {isComplete && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                            ({completeCount} {completeCount === 1 ? 'card' : 'cards'})
-                        </span>
-                    )}
+                    {completeCount} {completeCount === 1 ? 'Flashcard' : 'Flashcards'}
                 </span>
             }
             controls={
@@ -253,7 +243,6 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) =>
             {flashcards.length > 0 && (
                 <div className="flex justify-center items-center gap-3 pb-4 pt-2">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Layout:</span>
                         <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
                     </div>
                     <div className="h-4 w-px bg-border" />
@@ -271,7 +260,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) =>
                         })}
                     >
                         <ExternalLink className="h-3 w-3" />
-                        Side Panel
+                        Side
                     </Button>
                     <Button
                         variant="ghost"
@@ -280,7 +269,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) =>
                         onClick={() => setIsFullscreen(true)}
                     >
                         <Maximize2 className="h-3 w-3" />
-                        Fullscreen
+                        Full
                     </Button>
                 </div>
             )}
