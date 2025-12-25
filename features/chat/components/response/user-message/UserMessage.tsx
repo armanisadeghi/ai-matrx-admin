@@ -160,7 +160,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                         <>
                             <div
                                 ref={contentRef}
-                                className={`text-sm rounded-b-2xl
+                                className={`text-sm rounded-b-2xl pl-2
                                   prose dark:prose-invert prose-lg max-w-none min-w-0
                                   transition-all duration-300
                                   ${isCollapsed ? "overflow-hidden fade-bottom" : "overflow-x-hidden"}

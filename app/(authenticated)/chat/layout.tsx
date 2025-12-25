@@ -59,7 +59,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                                     
                                     {/* Input Container - Fixed at bottom with safe area padding */}
                                     {/* Mobile: fixed to viewport, Desktop: absolute within container */}
-                                    <div className="fixed md:absolute bottom-0 left-0 right-0 md:left-auto md:right-auto md:w-full bg-textured pb-safe pt-2 overflow-x-hidden min-w-0 z-10">
+                                    <div className="fixed md:absolute bottom-0 md:bottom-4 left-0 right-0 md:left-auto md:right-auto md:w-full bg-textured pb-safe pt-2 overflow-x-hidden min-w-0 z-10">
                                         <div className="w-full min-w-0 max-w-[800px] mx-auto px-1">
                                             {children}
                                         </div>
