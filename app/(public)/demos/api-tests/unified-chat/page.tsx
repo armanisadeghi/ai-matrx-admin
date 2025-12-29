@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, X, Play, Settings2, FileText, FileJson } from 'lucide-react';
+import { Loader2, Plus, Trash2, X, Play, Settings2, FileText, FileJson, BarChart3 } from 'lucide-react';
 import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
+import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
@@ -19,6 +20,7 @@ import { SettingsJsonEditor } from '@/features/prompts/components/configuration/
 import { removeNullSettings } from '@/features/prompts/utils/settings-filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { UsageStatsModal } from '@/components/chat/UsageStatsModal';
 
 interface Prompt {
   id: string;
@@ -51,8 +53,9 @@ export default function ChatTestPage() {
   const [selectedModelId, setSelectedModelId] = useState<string>('2d637e2d-4e9f-4490-bae2-5bbdf5eb0ef4');
   const [modelConfig, setModelConfig] = useState<PromptSettings>({});
   const [messages, setMessages] = useState<PromptMessage[]>([
-    { role: 'system', content: "You're a helpful assistant. Always search the web to ensure you include recent and relevant facts in your response." },
-    { role: 'user', content: 'Hello! Can you help me? What is the latest us news?' }
+    { role: 'system', content: "You're a helpful assistant. Today's date is " + new Date().toLocaleDateString() + ". Ensure you always include recent and relevant facts in your response." },
+    // { role: 'user', content: 'Hello! Can you help me? What is the latest us news?' }
+    { role: 'user', content: 'Hello! Can you help me with some great metadata ideas for a website for it asset disposition?' }
   ]);
   const [debugMode, setDebugMode] = useState(true);
   const [streamEnabled, setStreamEnabled] = useState(true);
@@ -61,6 +64,7 @@ export default function ChatTestPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [streamOutput, setStreamOutput] = useState<string>('');
   const [streamText, setStreamText] = useState<string>('');
+  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [debugInfo, setDebugInfo] = useState<{
     chunkCount: number;
@@ -73,6 +77,10 @@ export default function ChatTestPage() {
   // Settings panel state
   const [showSettings, setShowSettings] = useState(true);
   const [showJsonEditor, setShowJsonEditor] = useState(false);
+  
+  // Usage stats modal state
+  const [usageStatsData, setUsageStatsData] = useState<any>(null);
+  const [showUsageStats, setShowUsageStats] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -206,7 +214,9 @@ export default function ChatTestPage() {
     setIsRunning(true);
     setStreamOutput('');
     setStreamText('');
+    setStreamEvents([]);
     setErrorMessage('');
+    setUsageStatsData(null);
     setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: Date.now(), endTime: null });
 
     try {
@@ -265,7 +275,6 @@ export default function ChatTestPage() {
       let chunkCount = 0;
       let totalBytes = 0;
       let eventCount = 0;
-      let lastEventTime: number | null = null;
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
@@ -288,16 +297,13 @@ export default function ChatTestPage() {
                 const json = JSON.parse(line);
                 eventCount++;
 
-                // Append to JSON output with timestamp and delta
-                const currentTime = Date.now();
-                const timestamp = new Date(currentTime).toISOString();
-                const delta = lastEventTime ? currentTime - lastEventTime : 0;
-                const deltaFormatted = delta > 0 ? ` (+${delta}ms)` : '';
-                lastEventTime = currentTime;
-                
-                setStreamOutput(prev => prev + `[${timestamp}${deltaFormatted}]\n` + JSON.stringify(json, null, 2) + '\n\n');
+                // Append to JSON output
+                setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
 
-                // Extract text chunks
+                // Accumulate the event for StreamAwareChatMarkdown
+                setStreamEvents(prev => [...prev, json as StreamEvent]);
+
+                // Extract text chunks (keep for backward compatibility with debug view)
                 if (json.event === 'chunk' && typeof json.data === 'string') {
                   setStreamText(prev => prev + json.data);
                 }
@@ -309,6 +315,10 @@ export default function ChatTestPage() {
                   } else {
                     setErrorMessage(errData || 'Unknown error from stream');
                   }
+                }
+                // Capture usage stats data
+                if (json.event === 'data' && json.data?.status === 'complete') {
+                  setUsageStatsData(json.data);
                 }
               } catch (e) {
                 setStreamOutput(prev => prev + line + '\n');
@@ -329,14 +339,14 @@ export default function ChatTestPage() {
       if (buffer.trim()) {
         try {
           const json = JSON.parse(buffer);
-          const currentTime = Date.now();
-          const timestamp = new Date(currentTime).toISOString();
-          const delta = lastEventTime ? currentTime - lastEventTime : 0;
-          const deltaFormatted = delta > 0 ? ` (+${delta}ms)` : '';
-          
-          setStreamOutput(prev => prev + `[${timestamp}${deltaFormatted}]\n` + JSON.stringify(json, null, 2) + '\n\n');
+          setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
+          setStreamEvents(prev => [...prev, json as StreamEvent]);
           if (json.event === 'chunk' && typeof json.data === 'string') {
             setStreamText(prev => prev + json.data);
+          }
+          // Capture usage stats from remaining buffer
+          if (json.event === 'data' && json.data?.status === 'complete') {
+            setUsageStatsData(json.data);
           }
         } catch (e) {
           setStreamOutput(prev => prev + buffer + '\n');
@@ -357,6 +367,7 @@ export default function ChatTestPage() {
   const clearAll = () => {
     setStreamOutput('');
     setStreamText('');
+    setStreamEvents([]);
     setErrorMessage('');
     setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: null, endTime: null });
   };
@@ -614,6 +625,13 @@ export default function ChatTestPage() {
             onSave={setModelConfig}
           />
 
+          {/* Usage Stats Modal */}
+          <UsageStatsModal
+            isOpen={showUsageStats}
+            onClose={() => setShowUsageStats(false)}
+            data={usageStatsData}
+          />
+
           {/* Right: Results Panel */}
           <Card className={`${showSettings ? 'col-span-9' : 'col-span-12'} p-3 h-full overflow-hidden flex flex-col`}>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -642,6 +660,17 @@ export default function ChatTestPage() {
                     )}
                   </div>
                 )}
+                {usageStatsData && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setShowUsageStats(true)} 
+                    className="h-7 text-xs px-2"
+                  >
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Usage Stats
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" onClick={clearAll} className="h-7 text-xs px-2">
                   <X className="h-3 w-3 mr-1" />
                   Clear
@@ -663,12 +692,14 @@ export default function ChatTestPage() {
                     <div className="font-mono">{errorMessage}</div>
                   </div>
                 )}
-                {streamText ? (
+                {streamEvents.length > 0 ? (
                   <MarkdownStream
-                    content={streamText}
+                    events={streamEvents}
                     isStreamActive={isRunning}
                     role="assistant"
                     className="text-sm"
+                    onError={(error) => setErrorMessage(error)}
+                    hideCopyButton={false}
                   />
                 ) : !errorMessage ? (
                   <div className="text-xs text-muted-foreground">No response yet...</div>

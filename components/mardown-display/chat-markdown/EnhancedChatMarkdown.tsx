@@ -24,6 +24,7 @@ export interface ChatMarkdownDisplayProps {
     allowFullScreenEditor?: boolean;
     hideCopyButton?: boolean;
     useV2Parser?: boolean; // Default: true (V2 parser). Set to false to use legacy V1 parser.
+    toolUpdates?: any[]; // Optional: Pass tool updates directly (bypasses Redux selector)
 }
 
 // Fallback component that renders plain text with basic formatting
@@ -134,6 +135,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     allowFullScreenEditor = true,
     hideCopyButton = false,
     useV2Parser = true,
+    toolUpdates: toolUpdatesProp,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [currentContent, setCurrentContent] = useState(content);
@@ -143,15 +145,19 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     const isWaitingForContent = taskId && !content.trim();
 
     // Safe selector usage with error handling (gracefully handles missing Redux provider)
-    let toolUpdates: any[] = [];
+    // If tool updates are passed directly, use those instead of Redux
+    let toolUpdatesFromRedux: any[] = [];
     let hasReduxProvider = true;
     try {
-        toolUpdates = useAppSelector(selectPrimaryResponseToolUpdatesByTaskId(taskId)) || [];
+        toolUpdatesFromRedux = useAppSelector(selectPrimaryResponseToolUpdatesByTaskId(taskId)) || [];
     } catch (error) {
         // Expected in public context without Redux provider - not critical
         hasReduxProvider = false;
-        toolUpdates = [];
+        toolUpdatesFromRedux = [];
     }
+
+    // Use directly passed tool updates if provided, otherwise fall back to Redux
+    const toolUpdates = toolUpdatesProp !== undefined ? toolUpdatesProp : toolUpdatesFromRedux;
 
     // Update internal content when prop changes - but prevent infinite loops
     useEffect(() => {

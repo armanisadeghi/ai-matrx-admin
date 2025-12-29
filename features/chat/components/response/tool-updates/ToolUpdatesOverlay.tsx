@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
-import { getRegisteredComponent } from "./stepDataRegistry";
+import { getToolName, getOverlayRenderer, hasCustomRenderer } from "@/features/chat/components/response/tool-renderers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, MessageSquare } from "lucide-react";
@@ -15,34 +15,24 @@ interface ToolUpdatesOverlayProps {
     initialTab?: string;
 }
 
-const renderToolUpdateContent = (update: ToolCallObject, index: number): React.ReactNode => {
-    // Handle step_data with registered components
-    if (update.type === "step_data" && update.step_data) {
-        const stepType = update.step_data.type;
-        const RegisteredComponent = getRegisteredComponent(stepType);
-
-        if (RegisteredComponent) {
-            return <RegisteredComponent data={update.step_data} />;
-        }
-
-        // Fallback for unregistered step types
+const renderToolUpdateContent = (
+    update: ToolCallObject, 
+    index: number, 
+    toolUpdates: ToolCallObject[]
+): React.ReactNode => {
+    const toolName = getToolName(toolUpdates);
+    
+    // For step_data and mcp_output updates, use custom overlay renderer if registered
+    if ((update.type === "step_data" || update.type === "mcp_output") && hasCustomRenderer(toolName)) {
+        const OverlayRenderer = getOverlayRenderer(toolName);
+        
+        // Render using the overlay renderer with full context
         return (
             <div className="p-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <Badge variant="outline">{stepType}</Badge>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                                (No custom component registered)
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto max-h-[70vh]">
-                            {JSON.stringify(update.step_data.content, null, 2)}
-                        </pre>
-                    </CardContent>
-                </Card>
+                <OverlayRenderer 
+                    toolUpdates={toolUpdates}
+                    currentIndex={index}
+                />
             </div>
         );
     }
@@ -321,7 +311,7 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
             return {
                 id: `tool-update-${index}`,
                 label,
-                content: renderToolUpdateContent(update, index),
+                content: renderToolUpdateContent(update, index, toolUpdates),
             };
         });
     }, [toolUpdates]);

@@ -1,0 +1,2 @@
+export { BraveSearchInline } from "./BraveSearchInline";
+

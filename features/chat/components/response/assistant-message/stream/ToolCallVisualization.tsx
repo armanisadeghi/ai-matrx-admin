@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Wrench, Search, Globe, CheckCircle, Loader2, Sparkles, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
+import { CheckCircle, Loader2, Sparkles, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import { cn } from "@/lib/utils";
 import { ToolUpdatesOverlay } from "@/features/chat/components/response/tool-updates";
-import { GiArchiveResearch } from "react-icons/gi";
+import { getToolName, getInlineRenderer, shouldKeepExpandedOnStream, getToolDisplayName } from "@/features/chat/components/response/tool-renderers";
 
 interface ToolCallVisualizationProps {
     toolUpdates: ToolCallObject[];
@@ -51,163 +51,116 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
         }
     }, [toolUpdates]);
 
-    // Auto-collapse when content starts streaming
+    // Group updates by tool call ID to handle multiple tools
+    const toolGroups = useMemo(() => {
+        const groups = new Map<string, ToolCallObject[]>();
+        
+        toolUpdates.forEach(update => {
+            const id = update.id || 'default';
+            if (!groups.has(id)) {
+                groups.set(id, []);
+            }
+            groups.get(id)!.push(update);
+        });
+        
+        return Array.from(groups.values());
+    }, [toolUpdates]);
+    
+    // Get info for the first tool (for header display)
+    const firstToolGroup = toolGroups[0] || [];
+    const toolName = useMemo(() => {
+        const inputUpdate = firstToolGroup.find((u) => u.type === "mcp_input");
+        return inputUpdate?.mcp_input?.name || null;
+    }, [firstToolGroup]);
+    
+    // Get the pretty display name
+    const toolDisplayName = useMemo(() => {
+        if (toolGroups.length > 1) {
+            return `${toolGroups.length} Tools`; // Multiple tools
+        }
+        return getToolDisplayName(toolName);
+    }, [toolName, toolGroups.length]);
+
+    // Auto-collapse when content starts streaming (unless any tool wants to stay expanded)
     useEffect(() => {
         if (hasContent && currentPhase === "complete") {
-            setIsExpanded(false);
+            // Check if ANY tool should stay expanded
+            const anyToolShouldStayExpanded = toolGroups.some(group => {
+                const groupInputUpdate = group.find((u) => u.type === "mcp_input");
+                const groupToolName = groupInputUpdate?.mcp_input?.name || null;
+                return shouldKeepExpandedOnStream(groupToolName);
+            });
+            
+            if (!anyToolShouldStayExpanded) {
+                setIsExpanded(false);
+            }
         }
-    }, [hasContent, currentPhase]);
+    }, [hasContent, currentPhase, toolGroups]);
 
-    // Get the tool name from first mcp_input
-    const toolName = useMemo(() => {
-        const inputUpdate = toolUpdates.find((u) => u.type === "mcp_input");
-        return inputUpdate?.mcp_input?.name || "Tool";
-    }, [toolUpdates]);
-
-    // Get query from mcp_input arguments
+    // Get query from mcp_input arguments (for first tool)
     const query = useMemo(() => {
-        const inputUpdate = toolUpdates.find((u) => u.type === "mcp_input");
+        const inputUpdate = firstToolGroup.find((u) => u.type === "mcp_input");
         if (inputUpdate?.mcp_input?.arguments) {
             const args = inputUpdate.mcp_input.arguments;
             const queryValue = args.query || args.q || args.search;
             return typeof queryValue === "string" ? queryValue : null;
         }
         return null;
-    }, [toolUpdates]);
+    }, [firstToolGroup]);
 
-    // Render all updates in chronological order
+    // Render all tool groups with their appropriate renderers
     const renderAllUpdates = () => {
-        // Track shown hostnames across all updates to avoid duplicates
-        const shownHostnames = new Set<string>();
+        if (visibleUpdates === 0) return null;
         
+        // Callback to open overlay with specific tab
+        const handleOpenOverlay = (initialTab?: string) => {
+            setInitialOverlayTab(initialTab);
+            setIsOverlayOpen(true);
+        };
+        
+        // Calculate how many updates to show from each group
         const visibleToolUpdates = toolUpdates.slice(0, visibleUpdates);
         
-        if (visibleToolUpdates.length === 0) return null;
-        
         return (
-            <>
-                {visibleToolUpdates.map((update, index) => {
-                    // Since visibleToolUpdates is sliced from the start (0 to visibleUpdates),
-                    // the index here matches the original toolUpdates array index
+            <div className="space-y-4">
+                {toolGroups.map((group, groupIndex) => {
+                    // Get tool name for this group
+                    const groupInputUpdate = group.find((u) => u.type === "mcp_input");
+                    const groupToolName = groupInputUpdate?.mcp_input?.name || null;
+                    const groupDisplayName = getToolDisplayName(groupToolName);
                     
-                    // Render brave search results with message
-                    if (update.type === "step_data" && update.step_data?.type === "brave_default_page") {
-                        const content = update.step_data.content as any;
-                        const webResults = content?.web?.results || [];
-                        
-                        // Filter out duplicates and get up to 5 unique sites for this batch
-                        const uniqueSitesForThisBatch: Array<{
-                            hostname: string;
-                            favicon?: string;
-                            url: string;
-                        }> = [];
-                        
-                        for (const result of webResults) {
-                            if (uniqueSitesForThisBatch.length >= 5) break;
-                            
-                            try {
-                                const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
-                                
-                                // Only add if we haven't shown this hostname yet
-                                if (!shownHostnames.has(hostname)) {
-                                    shownHostnames.add(hostname);
-                                    uniqueSitesForThisBatch.push({
-                                        hostname,
-                                        favicon: result.meta_url?.favicon,
-                                        url: result.url
-                                    });
-                                }
-                            } catch (e) {
-                                // Skip invalid URLs
-                            }
-                        }
-                        
-                        return (
-                            <div key={`brave-${index}`} className="space-y-2">
-                                {/* Always show user visible message first */}
-                                {update.user_visible_message && (
-                                    <div className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300">
-                                        {update.user_visible_message}
+                    // Get the appropriate renderer for this tool
+                    const InlineRenderer = getInlineRenderer(groupToolName);
+                    
+                    // Filter visible updates for this group
+                    const groupVisibleUpdates = group.filter(update => 
+                        visibleToolUpdates.some(v => v.id === update.id)
+                    );
+                    
+                    if (groupVisibleUpdates.length === 0) return null;
+                    
+                    // Calculate current index for this group
+                    const currentIndex = groupVisibleUpdates.length - 1;
+                    
+                    return (
+                        <div key={groupIndex}>
+                            {/* Tool label if multiple tools */}
+                            {toolGroups.length > 1 && (
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                                        {groupDisplayName}
                                     </div>
-                                )}
-                                
-                                {/* Then show the custom brave search visualization if we have sites */}
-                                {uniqueSitesForThisBatch.length > 0 && (
-                                    <div className="space-y-2 animate-in fade-in slide-in-from-left duration-500">
-                                        <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">
-                                            Analyzing {webResults.length} sources:
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {uniqueSitesForThisBatch.map((site, i) => (
-                                                <div
-                                                    key={site.hostname}
-                                                    className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-bottom"
-                                                    style={{ animationDelay: `${i * 100}ms` }}
-                                                    title={site.url}
-                                                >
-                                                    {site.favicon ? (
-                                                        <img
-                                                            src={site.favicon}
-                                                            alt=""
-                                                            className="w-4 h-4 rounded"
-                                                            onError={(e) => {
-                                                                // Fallback to Globe icon on error
-                                                                (e.target as HTMLImageElement).style.display = "none";
-                                                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                                                            }}
-                                                        />
-                                                    ) : (
-                                                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                                    )}
-                                                    <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 hidden" />
-                                                    <span className="text-xs text-slate-700 dark:text-slate-300 truncate max-w-[150px]">
-                                                        {site.hostname}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                            
-                                            {/* Show "+X more" indicator if there are additional sites */}
-                                            {webResults.length > uniqueSitesForThisBatch.length && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        // Set the initial tab to this specific update
-                                                        setInitialOverlayTab(`tool-update-${index}`);
-                                                        setIsOverlayOpen(true);
-                                                    }}
-                                                    className="flex items-center gap-1.5 px-2 py-0 rounded-md bg-blue-50 dark:bg-blue-900/20 animate-in fade-in slide-in-from-bottom hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
-                                                    style={{ animationDelay: `${uniqueSitesForThisBatch.length * 100}ms` }}
-                                                    title={`Click to view all ${webResults.length} sources`}
-                                                >
-                                                    <GiArchiveResearch className="w-4 h-4" />
-                                                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                                                        +{webResults.length - uniqueSitesForThisBatch.length} more...
-                                                    </span>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    }
-                    
-                    // Render user visible messages (for non-step_data updates)
-                    if (update.user_visible_message && update.type !== "step_data") {
-                        return (
-                            <div
-                                key={`message-${index}`}
-                                className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300"
-                            >
-                                {update.user_visible_message}
-                            </div>
-                        );
-                    }
-                    
-                    // Return null for other update types we don't render
-                    return null;
+                                </div>
+                            )}
+                            <InlineRenderer 
+                                toolUpdates={group}
+                                currentIndex={currentIndex}
+                                onOpenOverlay={handleOpenOverlay}
+                            />
+                        </div>
+                    );
                 })}
-            </>
+            </div>
         );
     };
 
@@ -239,7 +192,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                     <div className="flex flex-col items-start">
                         <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
-                                {toolName}
+                                {toolDisplayName}
                             </span>
                             {currentPhase === "complete" && (
                                 <span className="text-xs text-green-600 dark:text-green-400">Complete</span>

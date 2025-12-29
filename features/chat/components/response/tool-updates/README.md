@@ -1,74 +1,39 @@
 # Tool Updates Overlay
 
-This component system displays MCP (Model Context Protocol) tool updates in a dynamic tabbed overlay.
+> **⚠️ DEPRECATED DOCUMENTATION**: This README describes the old `step_data` type-based system.  
+> **Please use the new tool-renderers system instead**: See `features/chat/components/response/tool-renderers/README.md`
 
-## Features
+This component displays MCP (Model Context Protocol) tool updates in a dynamic tabbed overlay. It now uses the tool-renderers registry system for custom displays.
 
-- **Dynamic Tabs**: Each tool update automatically generates its own tab
-- **Type-Based Rendering**: Different visual treatments for each update type
-- **Custom Components**: Registered components for specific step_data types
-- **Space Efficient**: Minimal chrome, maximum content
+## Migration Notice
 
-## Tool Update Types
+The old `stepDataRegistry.tsx` system has been replaced with a more powerful tool-name-based registry system located at:
 
-### 1. `mcp_input` - Tool Input
-Shows tool name and arguments with blue styling
+**`features/chat/components/response/tool-renderers/`**
 
-### 2. `mcp_output` - Tool Output  
-Shows results with green success styling
+### Key Changes
 
-### 3. `mcp_error` - Tool Error
-Shows error messages with red error styling
+- **Old**: Matched on `step_data.type` (e.g., `"brave_default_page"`)
+- **New**: Matches on `mcp_input.name` (e.g., `"brave_search"`)
+- **Old**: Only overlay components
+- **New**: Both inline (compact) and overlay (detailed) components
 
-### 4. `step_data` - Step Data
-Uses custom registered components when available, otherwise shows raw JSON
+## Adding New Tool Displays
 
-### 5. `user_visible_message` - User Message
-Shows messages with purple styling
+**Please refer to the new documentation:**
 
-## Adding New Step Data Components
+📚 **[Tool Renderers README](../tool-renderers/README.md)**
 
-To add a new custom component for a `step_data` type:
+This new system provides:
+- Inline and overlay renderers for each tool
+- Better organization and scalability
+- Easier to add new tools
+- Full TypeScript support
+- Comprehensive examples
 
-### 1. Create Your Component
+## Legacy `stepDataRegistry.tsx`
 
-Create your component in `features/workflows/results/registered-components/`:
-
-```tsx
-// YourComponent.tsx
-interface YourDataType {
-    type: string;
-    content: {
-        // your specific content structure
-    };
-}
-
-interface YourComponentProps {
-    data: YourDataType;
-}
-
-const YourComponent: React.FC<YourComponentProps> = ({ data }) => {
-    // Your custom rendering logic
-    return <div>...</div>;
-};
-
-export default YourComponent;
-```
-
-### 2. Register Your Component
-
-Add it to `stepDataRegistry.tsx`:
-
-```tsx
-import YourComponent from "@/features/workflows/results/registered-components/YourComponent";
-
-export const stepDataRegistry: Record<string, React.ComponentType<{ data: any }>> = {
-    "brave_search": BraveSearchDisplay,
-    "your_step_type": YourComponent,  // Add this line
-};
-```
-
-**That's it!** The overlay will automatically use your component when it encounters step_data with `type: "your_step_type"`.
+The old file is kept for backward compatibility but should not be used for new tools.
 
 ## Usage Example
 
