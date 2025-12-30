@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from "@/lib/utils";
 import { Copy, Check, Bookmark, ExternalLink, FileText } from 'lucide-react';
+import { addUtmSource } from '@/utils/url-utm';
 
 // Error Boundary for Link Component
 class LinkErrorBoundary extends React.Component<
@@ -25,9 +26,10 @@ class LinkErrorBoundary extends React.Component<
         if (this.state.hasError) {
             // Graceful fallback to a simple link
             const { href, fallbackChildren } = this.props;
+            const safeHref = href ? addUtmSource(href) : '#';
             return (
                 <a
-                    href={href || '#'}
+                    href={safeHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 dark:text-blue-400 underline"
@@ -78,6 +80,9 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
     if (!href || typeof href !== 'string') {
         return <span className="text-blue-600 dark:text-blue-400">{children || 'Invalid Link'}</span>;
     }
+
+    // Add UTM source to all external links
+    const finalHref = addUtmSource(href);
 
     // Generate stable component ID using useMemo equivalent
     const componentIdRef = useRef<string | null>(null);
@@ -188,7 +193,7 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
             return;
         }
         
-        navigator.clipboard.writeText(href)
+        navigator.clipboard.writeText(finalHref)
             .then(() => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
@@ -196,26 +201,26 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
             .catch(err => {
                 console.error('Failed to copy link:', err);
             });
-    }, [href]);
+    }, [finalHref]);
     
     const handleOpenInNewTab = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
         try {
-            window.open(href, '_blank', 'noopener,noreferrer');
+            window.open(finalHref, '_blank', 'noopener,noreferrer');
         } catch (error) {
             console.error('Failed to open link:', error);
         }
-    }, [href]);
+    }, [finalHref]);
     
     const handleAddToFavorites = useCallback(() => {
-        console.log('Added to favorites:', { url: href, title: children });
+        console.log('Added to favorites:', { url: finalHref, title: children });
         // Could be expanded to save to localStorage or Redux
-    }, [href, children]);
+    }, [finalHref, children]);
     
     const handleGetContent = useCallback(() => {
-        console.log('Getting content from:', href);
+        console.log('Getting content from:', finalHref);
         // Could be expanded later
-    }, [href]);
+    }, [finalHref]);
 
     // Calculate menu position - stable function
     const getMenuStyle = useCallback(() => {
@@ -319,8 +324,8 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
 
             {/* URL Footer */}
             <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
-                <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono" title={href}>
-                    {truncateUrl(href, 40)}
+                <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono" title={finalHref}>
+                    {truncateUrl(finalHref, 40)}
                 </div>
             </div>
         </div>
@@ -334,7 +339,7 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
                 ref={linkRef}
             >
                 <a
-                    href={href}
+                    href={finalHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(

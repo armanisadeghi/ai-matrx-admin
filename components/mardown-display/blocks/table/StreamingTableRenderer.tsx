@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { addUtmSource } from "@/utils/url-utm";
 import { 
   Download, 
   Copy, 
@@ -315,9 +316,9 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                 parts.push(processedBefore);
             }
 
-            // Add the link as a clickable element
+            // Add the link as a clickable element with UTM source
             const linkText = match[1];
-            const linkUrl = match[2];
+            const linkUrl = addUtmSource(match[2]);
             parts.push(
                 `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">${linkText}</a>`
             );

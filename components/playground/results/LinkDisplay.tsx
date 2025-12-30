@@ -1,5 +1,6 @@
 import React from "react";
 import { Link as LinkIcon } from "lucide-react";
+import { addUtmSource } from "@/utils/url-utm";
 
 export const extractUrls = (text: string): { urls: string[]; cleanText: string } => {
     // Enhanced regex to capture URLs within markdown links, parentheses, and brackets
@@ -56,7 +57,8 @@ export const formatUrlForDisplay = (url: string) => {
 };
 
 export const LinkDisplay = ({ url, children, className = "" }) => {
-    const { domain, fullUrl } = formatUrlForDisplay(url);
+    const finalUrl = addUtmSource(url);
+    const { domain, fullUrl } = formatUrlForDisplay(finalUrl);
 
     return (
         <div className={`relative flex flex-col ${className}`}>
@@ -68,7 +70,7 @@ export const LinkDisplay = ({ url, children, className = "" }) => {
             {/* Link container - always at bottom right */}
             <div className="mt-2 self-end">
                 <a
-                    href={url}
+                    href={finalUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"

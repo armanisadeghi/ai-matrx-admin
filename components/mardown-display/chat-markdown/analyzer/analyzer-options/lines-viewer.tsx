@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Check, FileText, Hash, Type, List, Minus, Quote, Link, CornerDownLeft } from 'lucide-react';
+import { addUtmSource } from '@/utils/url-utm';
 
 export interface LineItem {
   type: string;
@@ -195,7 +196,7 @@ const renderLineItem = (item: LineItem) => {
   
   if (type === "link") {
     return (
-      <a href={content} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
+      <a href={addUtmSource(content)} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
         {content}
       </a>
     );
