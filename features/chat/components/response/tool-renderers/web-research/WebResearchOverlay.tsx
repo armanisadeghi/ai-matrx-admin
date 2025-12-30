@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Globe, ExternalLink, FileSearch } from "lucide-react";
+import React, { useState } from "react";
+import { Globe, ExternalLink, FileSearch, LayoutGrid, FileText, Copy, Check } from "lucide-react";
 import { ToolRendererProps } from "../types";
 
 /**
@@ -12,6 +12,9 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
     toolUpdates,
     currentIndex 
 }) => {
+    const [viewMode, setViewMode] = useState<'cards' | 'fulltext'>('cards');
+    const [copySuccess, setCopySuccess] = useState(false);
+    
     const visibleUpdates = currentIndex !== undefined 
         ? toolUpdates.slice(0, currentIndex + 1) 
         : toolUpdates;
@@ -111,6 +114,44 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
         }
     };
     
+    // Generate full text version for copying/reading
+    const generateFullText = () => {
+        let text = '';
+        
+        if (intro) {
+            text += `RESEARCH QUERY\n${'='.repeat(80)}\n${intro}\n\n\n`;
+        }
+        
+        text += `RESEARCH FINDINGS (${findings.length} Sources)\n${'='.repeat(80)}\n\n`;
+        
+        findings.forEach((finding, index) => {
+            text += `${index + 1}. ${finding.title}\n`;
+            if (finding.date) {
+                text += `   Date: ${finding.date}\n`;
+            }
+            text += `   Source: ${finding.url}\n`;
+            text += `   Domain: ${getDomain(finding.url)}\n\n`;
+            if (finding.preview) {
+                text += `   ${finding.preview.replace(/\n/g, '\n   ')}\n\n`;
+            }
+            text += `${'-'.repeat(80)}\n\n`;
+        });
+        
+        return text;
+    };
+    
+    const fullText = generateFullText();
+    
+    const handleCopyFullText = async () => {
+        try {
+            await navigator.clipboard.writeText(fullText);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text:', err);
+        }
+    };
+    
     return (
         <div className="p-6 space-y-6">
             {/* Research Context */}
@@ -130,15 +171,42 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                 </div>
             )}
             
-            {/* Summary Stats */}
-            <div className="flex items-center gap-6 text-sm text-slate-600 dark:text-slate-400">
-                <div className="flex items-center gap-2">
+            {/* Header with Stats and View Toggle */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <Globe className="w-4 h-4" />
                     <span className="font-medium">{findings.length} Sources Researched</span>
                 </div>
+                
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setViewMode('cards')}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            viewMode === 'cards'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                    >
+                        <LayoutGrid className="w-4 h-4" />
+                        <span>Cards</span>
+                    </button>
+                    <button
+                        onClick={() => setViewMode('fulltext')}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            viewMode === 'fulltext'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                    >
+                        <FileText className="w-4 h-4" />
+                        <span>Full Text</span>
+                    </button>
+                </div>
             </div>
             
-            {/* All Findings - Full Content */}
+            {/* Card View - Individual Findings */}
+            {viewMode === 'cards' && (
             <div className="space-y-4">
                 {findings.map((finding, index) => (
                     <div
@@ -193,6 +261,43 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                     </div>
                 ))}
             </div>
+            )}
+            
+            {/* Full Text View - Complete Document */}
+            {viewMode === 'fulltext' && (
+            <div className="space-y-4">
+                {/* Copy Button */}
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleCopyFullText}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            copySuccess
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                    >
+                        {copySuccess ? (
+                            <>
+                                <Check className="w-4 h-4" />
+                                <span>Copied!</span>
+                            </>
+                        ) : (
+                            <>
+                                <Copy className="w-4 h-4" />
+                                <span>Copy All Text</span>
+                            </>
+                        )}
+                    </button>
+                </div>
+                
+                {/* Full Text Content */}
+                <div className="p-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
+                    <pre className="whitespace-pre-wrap font-mono text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+{fullText}
+                    </pre>
+                </div>
+            </div>
+            )}
             
             {/* Footer Note */}
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700">

@@ -10,6 +10,7 @@ import { SeoMetaTagsInline, SeoMetaTagsOverlay } from "./seo-meta-tags";
 import { SeoMetaTitlesInline } from "./seo-meta-titles";
 import { SeoMetaDescriptionsInline } from "./seo-meta-descriptions";
 import { WebResearchInline, WebResearchOverlay } from "./web-research";
+import { CoreWebSearchInline, CoreWebSearchOverlay } from "./core-web-search";
 import BraveSearchDisplay from "@/features/workflows/results/registered-components/BraveSearchDisplay";
 
 /**
@@ -71,6 +72,14 @@ export const toolRendererRegistry: ToolRegistry = {
         inline: WebResearchInline,
         overlay: WebResearchOverlay,
         keepExpandedOnStream: true, // Keep research visible
+    },
+    
+    // Core Web Search - Multi-query parallel web search
+    "core_web_search": {
+        displayName: "Multi-Query Search",
+        inline: CoreWebSearchInline,
+        overlay: CoreWebSearchOverlay,
+        keepExpandedOnStream: true, // Keep search results visible
     },
 };
 

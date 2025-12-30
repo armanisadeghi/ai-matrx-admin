@@ -50,12 +50,12 @@ export default function ChatTestPage() {
 
   // Configuration states
   const [selectedPromptId, setSelectedPromptId] = useState<string>('');
-  const [selectedModelId, setSelectedModelId] = useState<string>('2d637e2d-4e9f-4490-bae2-5bbdf5eb0ef4');
+  const [selectedModelId, setSelectedModelId] = useState<string>('e407ba1d-34b4-4a2d-bdca-0566d3171d58');
   const [modelConfig, setModelConfig] = useState<PromptSettings>({});
   const [messages, setMessages] = useState<PromptMessage[]>([
     { role: 'system', content: "You're a helpful assistant. Today's date is " + new Date().toLocaleDateString() + ". Ensure you always include recent and relevant facts in your response." },
     // { role: 'user', content: 'Hello! Can you help me? What is the latest us news?' }
-    { role: 'user', content: 'Hello! Can you help me with some great metadata ideas for a website for it asset disposition?' }
+    { role: 'user', content: 'Hello! Can you tell me the biggest AI LLM advancements of 2025 and an outlook for 2026?' }
   ]);
   const [debugMode, setDebugMode] = useState(true);
   const [streamEnabled, setStreamEnabled] = useState(true);
@@ -598,7 +598,7 @@ export default function ChatTestPage() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="text-xs">Ctrl/Cmd + Enter</p>
+                      Ctrl/Cmd + Enter
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

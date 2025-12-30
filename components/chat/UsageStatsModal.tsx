@@ -27,7 +27,7 @@ interface UsageStatsData {
       total_tokens: number;
       api: string;
       request_count: number;
-      cost: number;
+      cost: number | null;
     }>;
     total: {
       input_tokens: number;
@@ -36,7 +36,7 @@ interface UsageStatsData {
       total_tokens: number;
       total_requests: number;
       unique_models: number;
-      total_cost: number;
+      total_cost: number | null;
     };
   };
   timing_stats: {
@@ -69,7 +69,9 @@ function formatDuration(seconds: number): string {
   return `${seconds.toFixed(2)}s`;
 }
 
-function formatCost(cost: number): string {
+function formatCost(cost: number | null | undefined): string {
+  if (cost == null) return 'N/A';
+  if (cost === 0) return 'Free';
   if (cost < 0.01) return `$${cost.toFixed(6)}`;
   return `$${cost.toFixed(4)}`;
 }

@@ -555,7 +555,7 @@ export default function ChatTestPage() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="text-xs">Ctrl/Cmd + Enter</p>
+                      Ctrl/Cmd + Enter
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

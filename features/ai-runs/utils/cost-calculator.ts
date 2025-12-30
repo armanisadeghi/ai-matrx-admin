@@ -90,8 +90,8 @@ export function calculateCostFromText(
 /**
  * Format cost for display
  */
-export function formatCost(cost: number): string {
-  if (cost === 0) return 'Free';
+export function formatCost(cost: number | null | undefined): string {
+  if (cost == null || cost === 0) return 'Free';
   if (cost < 0.001) return '< $0.001';
   if (cost < 0.01) return `$${cost.toFixed(4)}`;
   if (cost < 1) return `$${cost.toFixed(3)}`;

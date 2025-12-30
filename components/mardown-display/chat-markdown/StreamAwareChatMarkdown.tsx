@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps } from "./EnhancedChatMarkdown";
-import { StreamEvent, ToolUpdateData, ChunkData } from "./types";
+import { StreamEvent, ToolUpdateData } from "./types";
 
 /**
  * Extended props that include stream event handling
@@ -48,38 +48,86 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   const [processedContent, setProcessedContent] = useState<string>(content || '');
   const [toolUpdatesInternal, setToolUpdatesInternal] = useState<any[]>([]);
   const [hasStreamError, setHasStreamError] = useState(false);
+  
+  // Use refs to always have the latest callbacks without triggering rerenders
+  const onErrorRef = React.useRef(onError);
+  const onStatusUpdateRef = React.useRef(onStatusUpdate);
+  
+  // Track which events we've already processed (by index)
+  const lastProcessedIndexRef = React.useRef(-1);
+  
+  // Accumulate content in a ref to avoid reprocessing everything
+  const accumulatedContentRef = React.useRef('');
+  const toolUpdatesRef = React.useRef<any[]>([]);
+  
+  // Throttle state updates using RAF to batch rapid chunks
+  const rafIdRef = React.useRef<number | null>(null);
+  const pendingContentUpdateRef = React.useRef(false);
+  const pendingToolsUpdateRef = React.useRef(false);
+  
+  useEffect(() => {
+    onErrorRef.current = onError;
+    onStatusUpdateRef.current = onStatusUpdate;
+  }, [onError, onStatusUpdate]);
+  
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
 
-  // Process events when they change
+  // Process ONLY new events (delta processing for efficiency)
   useEffect(() => {
     if (!events || events.length === 0) {
       // Legacy mode - just use the content prop directly
-      if (content !== undefined) {
+      if (content !== undefined && content !== accumulatedContentRef.current) {
         setProcessedContent(content);
+        accumulatedContentRef.current = content;
+        lastProcessedIndexRef.current = -1; // Reset for next stream
+        toolUpdatesRef.current = [];
       }
       return;
     }
 
-    // Event mode - process all events
-    let accumulatedContent = '';
-    const toolUpdates: any[] = [];
-    let hasError = false;
+    // Check if this is a new stream (events were cleared/reset)
+    // This happens when events.length is less than what we've processed
+    if (events.length <= lastProcessedIndexRef.current) {
+      // Reset and start fresh
+      lastProcessedIndexRef.current = -1;
+      accumulatedContentRef.current = '';
+      toolUpdatesRef.current = [];
+    }
 
-    events.forEach((event) => {
+    // Event mode - process only NEW events since last render
+    const startIndex = lastProcessedIndexRef.current + 1;
+    
+    if (startIndex >= events.length) {
+      // No new events to process
+      return;
+    }
+    
+    // Process only the delta (new events)
+    let hasNewContent = false;
+    let hasNewTools = false;
+    
+    for (let i = startIndex; i < events.length; i++) {
+      const event = events[i];
+      
       switch (event.event) {
         case 'chunk':
-          // Accumulate text chunks
-          if (typeof event.data === 'string') {
-            accumulatedContent += event.data;
-          } else if (event.data && typeof event.data === 'object' && 'chunk' in event.data) {
-            accumulatedContent += (event.data as ChunkData).chunk;
-          }
+          // Accumulate text chunks (always strings)
+          accumulatedContentRef.current += event.data as string;
+          hasNewContent = true;
           break;
 
         case 'tool_update':
           // Collect tool updates for visualization
           const toolData = event.data as ToolUpdateData;
-          toolUpdates.push({
-            id: toolData.id || `tool-${toolUpdates.length}`,
+          toolUpdatesRef.current.push({
+            id: toolData.id || `tool-${toolUpdatesRef.current.length}`,
             type: toolData.type,
             mcp_input: toolData.mcp_input,
             mcp_output: toolData.mcp_output,
@@ -87,21 +135,21 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
             step_data: toolData.step_data,
             user_visible_message: toolData.user_visible_message,
           });
+          hasNewTools = true;
           break;
 
         case 'error':
           // Handle error events
-          hasError = true;
           const errorData = event.data as any;
           const errorMessage = errorData?.user_visible_message || errorData?.message || 'An error occurred';
-          onError?.(errorMessage);
+          onErrorRef.current?.(errorMessage);
           setHasStreamError(true);
           break;
 
         case 'status_update':
           // Handle status updates
           const statusData = event.data as any;
-          onStatusUpdate?.(statusData?.status, statusData?.user_visible_message || statusData?.system_message);
+          onStatusUpdateRef.current?.(statusData?.status, statusData?.user_visible_message || statusData?.system_message);
           break;
 
         case 'data':
@@ -109,7 +157,6 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         case 'broker':
           // These might contain additional information
           // For now, we'll log them but not process
-          // You can extend this based on specific needs
           break;
 
         case 'end':
@@ -120,11 +167,37 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           // Unknown event type - log for debugging
           console.debug('[StreamAwareChatMarkdown] Unknown event type:', event.event);
       }
-    });
-
-    setProcessedContent(accumulatedContent);
-    setToolUpdatesInternal(toolUpdates);
-  }, [events, content, onError, onStatusUpdate]);
+    }
+    
+    // Update the last processed index
+    lastProcessedIndexRef.current = events.length - 1;
+    
+    // Mark what needs updating
+    if (hasNewContent) {
+      pendingContentUpdateRef.current = true;
+    }
+    if (hasNewTools) {
+      pendingToolsUpdateRef.current = true;
+    }
+    
+    // Batch state updates using RAF to avoid overwhelming React
+    // Only schedule if not already scheduled
+    if ((hasNewContent || hasNewTools) && rafIdRef.current === null) {
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        
+        // Apply batched updates
+        if (pendingContentUpdateRef.current) {
+          setProcessedContent(accumulatedContentRef.current);
+          pendingContentUpdateRef.current = false;
+        }
+        if (pendingToolsUpdateRef.current) {
+          setToolUpdatesInternal([...toolUpdatesRef.current]);
+          pendingToolsUpdateRef.current = false;
+        }
+      });
+    }
+  }, [events, content]);
 
   // Determine if we're using events or legacy mode
   const isEventMode = events && events.length > 0;
