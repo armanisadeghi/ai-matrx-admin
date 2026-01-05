@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { VALID_DATA_TYPES, type FieldDefinition } from '@/utils/user-table-utls/table-utils';
 import { createSchemaTemplate } from '@/utils/user-table-utls/template-utils';
+import { sanitizeFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -54,10 +55,7 @@ export default function CreateTemplateModal({ isOpen, onClose, onSuccess }: Crea
 
   // Handle field name generation from display name
   const generateFieldName = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .replace(/\s+/g, '_');
+    return sanitizeFieldName(name);
   };
 
   // Add a new field
@@ -367,27 +365,16 @@ export default function CreateTemplateModal({ isOpen, onClose, onSuccess }: Crea
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="field-display-name">Display Name</Label>
+                          <Label htmlFor="field-display-name">Field Name</Label>
                           <Input
                             id="field-display-name"
                             value={fields[currentField].display_name}
                             onChange={(e) => updateField(currentField, 'display_name', e.target.value)}
-                            placeholder="e.g. First Name"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="field-name">Field Name</Label>
-                          <Input
-                            id="field-name"
-                            value={fields[currentField].field_name}
-                            onChange={(e) => updateField(currentField, 'field_name', e.target.value)}
-                            placeholder="e.g. first_name"
+                            placeholder="e.g. Total Revenue"
                             required
                           />
                           <p className="text-xs text-muted-foreground">
-                            Database field name (lowercase, no spaces)
+                            Internal field name: <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">{fields[currentField].field_name || 'auto-generated'}</code>
                           </p>
                         </div>
                         

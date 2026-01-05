@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { FieldDefinition, normalizeDataType } from './table-utils';
+import { sanitizeFieldName, validateFieldName } from './field-name-sanitizer';
 
 export interface SchemaTemplate {
   id: string;
@@ -47,14 +48,27 @@ export async function createSchemaTemplate(
       return { success: false, error: 'At least one field is required' };
     }
     
-    // Normalize field data types and ensure proper structure
+    // Normalize field data types, sanitize field names, and ensure proper structure
     const normalizedFields = fields.map((field, index) => {
       // Ensure field order is set correctly if not specified
       const fieldOrder = field.field_order !== undefined ? field.field_order : index + 1;
       
+      // Sanitize field name to ensure database compatibility
+      const sanitizedFieldName = sanitizeFieldName(field.field_name);
+      
+      // Log warning if field name was modified
+      if (field.field_name !== sanitizedFieldName) {
+        console.warn(`Field name "${field.field_name}" was sanitized to "${sanitizedFieldName}"`);
+      }
+      
+      // Validate the sanitized field name
+      if (!validateFieldName(sanitizedFieldName)) {
+        throw new Error(`Invalid field name: "${field.field_name}". Field names must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`);
+      }
+      
       // Create a properly formatted field object
       return {
-        field_name: field.field_name,
+        field_name: sanitizedFieldName,
         display_name: field.display_name,
         data_type: normalizeDataType(field.data_type),
         field_order: fieldOrder,

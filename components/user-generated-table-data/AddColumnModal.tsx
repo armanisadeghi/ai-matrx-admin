@@ -20,6 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { supabase } from '@/utils/supabase/client';
 import { addColumn, VALID_DATA_TYPES } from '@/utils/user-table-utls/table-utils';
+import { sanitizeFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
 
 interface AddColumnModalProps {
   tableId: string;
@@ -39,10 +40,7 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
 
   // Generate field name from display name
   const generateFieldName = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .replace(/\s+/g, '_');
+    return sanitizeFieldName(name);
   };
 
   // Handle display name change
@@ -112,7 +110,7 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="displayName">Display Name</Label>
+            <Label htmlFor="displayName">Column Name</Label>
             <Input
               id="displayName"
               value={displayName}
@@ -120,19 +118,8 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
               placeholder="e.g. Total Revenue"
               required
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="fieldName">Field Name</Label>
-            <Input
-              id="fieldName"
-              value={fieldName}
-              onChange={(e) => setFieldName(e.target.value)}
-              placeholder="e.g. total_revenue"
-              required
-            />
             <p className="text-xs text-muted-foreground">
-              Internal field name used in the database
+              Internal field name: <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">{fieldName || 'auto-generated'}</code>
             </p>
           </div>
           

@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { sanitizeFieldName, validateFieldName } from './field-name-sanitizer';
 
 // Valid data types according to the backend schema
 export const VALID_DATA_TYPES = [
@@ -154,20 +155,39 @@ export async function createTable(
       return { success: false, error: 'Table name is required' };
     }
     
-    // Normalize data types in fields if provided
-    const normalizedFields = fields?.map(field => ({
-      ...field,
-      data_type: normalizeDataType(field.data_type)
-    }));
+    // Normalize data types and sanitize field names if provided
+    const normalizedFields = fields?.map(field => {
+      const sanitizedFieldName = sanitizeFieldName(field.field_name);
+      
+      // Log warning if field name was modified
+      if (field.field_name !== sanitizedFieldName) {
+        console.warn(`Field name "${field.field_name}" was sanitized to "${sanitizedFieldName}"`);
+      }
+      
+      return {
+        ...field,
+        field_name: sanitizedFieldName,
+        data_type: normalizeDataType(field.data_type)
+      };
+    });
     
-    // Call the RPC function
-    const { data, error } = await supabase.rpc('create_new_user_table_dynamic', {
+    // Log the parameters being sent
+    const rpcParams = {
       p_table_name: tableName,
       p_description: description,
       p_is_public: isPublic,
       p_authenticated_read: authenticatedRead,
       p_initial_fields: normalizedFields
-    });
+    };
+    
+    console.log('=== CREATE TABLE RPC CALL ===');
+    console.log('Parameters:', JSON.stringify(rpcParams, null, 2));
+    
+    // Call the RPC function
+    const { data, error } = await supabase.rpc('create_new_user_table_dynamic', rpcParams);
+    
+    console.log('RPC Response:', { data, error });
+    console.log('=== END CREATE TABLE RPC ===');
     
     if (error) {
       console.error("Supabase RPC error:", error);
@@ -195,7 +215,8 @@ export async function addColumn(
   params: AddColumnParams
 ): Promise<AddColumnResult> {
   try {
-    const { tableId, fieldName, displayName, dataType, isRequired, defaultValue } = params;
+    const { tableId, displayName, dataType, isRequired, defaultValue } = params;
+    let { fieldName } = params;
     
     if (!fieldName.trim()) {
       return { success: false, error: 'Field name is required' };
@@ -203,6 +224,20 @@ export async function addColumn(
     
     if (!displayName.trim()) {
       return { success: false, error: 'Display name is required' };
+    }
+    
+    // Sanitize the field name to ensure it's valid
+    const sanitizedFieldName = sanitizeFieldName(fieldName);
+    
+    // Log warning if field name was modified
+    if (fieldName !== sanitizedFieldName) {
+      console.warn(`Field name "${fieldName}" was sanitized to "${sanitizedFieldName}"`);
+      fieldName = sanitizedFieldName;
+    }
+    
+    // Validate the sanitized field name
+    if (!validateFieldName(fieldName)) {
+      return { success: false, error: `Invalid field name: "${fieldName}". Field names must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.` };
     }
     
     // Normalize the data type

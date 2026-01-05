@@ -32,6 +32,7 @@ import {
   VALID_DATA_TYPES,
   normalizeDataType
 } from '@/utils/user-table-utls/table-utils';
+import { sanitizeFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
 
 interface ImportTableModalProps {
   isOpen: boolean;
@@ -112,7 +113,7 @@ function analyzeData(data: Record<string, any>[]): ImportFieldDefinition[] {
     }
     
     fields.push({
-      field_name: column.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '_'),
+      field_name: sanitizeFieldName(column),
       display_name: column,
       data_type: inferredType,
       field_order: index,

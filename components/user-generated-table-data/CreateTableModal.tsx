@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import {
   Dialog,
@@ -26,6 +26,7 @@ import {
   type FieldDefinition, 
   VALID_DATA_TYPES 
 } from '@/utils/user-table-utls/table-utils';
+import { sanitizeFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
 
 
 interface CreateTableModalProps {
@@ -43,14 +44,53 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
   const [fields, setFields] = useState<FieldDefinition[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tableNameWarning, setTableNameWarning] = useState<string | null>(null);
+  const [checkingName, setCheckingName] = useState(false);
 
   // Handle generating field name from display name
   const generateFieldName = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .replace(/\s+/g, '_');
+    return sanitizeFieldName(name);
   };
+
+  // Check if table name already exists (real-time validation)
+  const checkTableNameAvailability = async (name: string) => {
+    if (!name.trim()) {
+      setTableNameWarning(null);
+      return;
+    }
+
+    setCheckingName(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_tables')
+        .select('id')
+        .eq('table_name', name)
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .maybeSingle();
+
+      if (data) {
+        setTableNameWarning(`A table named "${name}" already exists. Please choose a different name.`);
+      } else {
+        setTableNameWarning(null);
+      }
+    } catch (err) {
+      console.error('Error checking table name:', err);
+      setTableNameWarning(null);
+    } finally {
+      setCheckingName(false);
+    }
+  };
+
+  // Debounced table name check
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (tableName) {
+        checkTableNameAvailability(tableName);
+      }
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [tableName]);
 
   // Add a new field
   const addField = () => {
@@ -169,7 +209,16 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
               onChange={(e) => setTableName(e.target.value)}
               placeholder="e.g. Customer Data"
               required
+              className={tableNameWarning ? 'border-orange-500 focus:ring-orange-500' : ''}
             />
+            {checkingName && (
+              <p className="text-xs text-muted-foreground">Checking availability...</p>
+            )}
+            {tableNameWarning && !checkingName && (
+              <p className="text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                <span>⚠️</span> {tableNameWarning}
+              </p>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -254,25 +303,17 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                         </Button>
                         
                         <div className="space-y-2">
-                          <Label htmlFor={`field-${index}-display`}>Display Name</Label>
+                          <Label htmlFor={`field-${index}-display`}>Field Name</Label>
                           <Input
                             id={`field-${index}-display`}
                             value={field.display_name}
                             onChange={(e) => updateField(index, 'display_name', e.target.value)}
-                            placeholder="e.g. First Name"
+                            placeholder="e.g. Total Revenue"
                             required
                           />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`field-${index}-name`}>Field Name</Label>
-                          <Input
-                            id={`field-${index}-name`}
-                            value={field.field_name}
-                            onChange={(e) => updateField(index, 'field_name', e.target.value)}
-                            placeholder="e.g. first_name"
-                            required
-                          />
+                          <p className="text-xs text-muted-foreground">
+                            Internal field name: <code className="bg-muted px-1 py-0.5 rounded font-mono text-xs">{field.field_name || 'auto-generated'}</code>
+                          </p>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-3">
@@ -316,7 +357,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !!tableNameWarning || checkingName}>
               {loading ? 'Creating...' : 'Create Table'}
             </Button>
           </DialogFooter>

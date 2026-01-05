@@ -34,6 +34,7 @@ import {
   Save,
   X
 } from 'lucide-react';
+import { sanitizeFieldName, validateFieldName } from '@/utils/user-table-utls/field-name-sanitizer';
 
 interface TableField {
   id: string;
@@ -209,7 +210,23 @@ export default function TableConfigModal({
 
         const updates: any = { id: field.id };
         
-        if (field.field_name !== originalField.field_name) updates.field_name = field.field_name;
+        // CRITICAL: Sanitize field_name before allowing updates
+        if (field.field_name !== originalField.field_name) {
+          const sanitizedFieldName = sanitizeFieldName(field.field_name);
+          
+          // Validate the sanitized field name
+          if (!validateFieldName(sanitizedFieldName)) {
+            throw new Error(`Invalid field name: "${field.field_name}". Field names must start with a lowercase letter and contain only lowercase letters, numbers, and underscores.`);
+          }
+          
+          // Log warning if field name was modified during sanitization
+          if (field.field_name !== sanitizedFieldName) {
+            console.warn(`Field name "${field.field_name}" was sanitized to "${sanitizedFieldName}"`);
+          }
+          
+          updates.field_name = sanitizedFieldName;
+        }
+        
         if (field.display_name !== originalField.display_name) updates.display_name = field.display_name;
         if (field.data_type !== originalField.data_type) updates.data_type = field.data_type;
         if (field.field_order !== originalField.field_order) updates.field_order = field.field_order;
