@@ -71,6 +71,7 @@ export default function TableReferenceOverlay({
   const [referenceType, setReferenceType] = useState<ReferenceType>(defaultReferenceType);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(defaultRowId);
   const [selectedColumnName, setSelectedColumnName] = useState<string | null>(defaultColumnName);
+  const [displayColumnName, setDisplayColumnName] = useState<string | null>(null);
   const [copiedReference, setCopiedReference] = useState<string | null>(null);
   const [rows, setRows] = useState<TableRow[]>(preloadedRows);
   const [loadingRows, setLoadingRows] = useState(false);
@@ -107,6 +108,30 @@ export default function TableReferenceOverlay({
       loadRows();
     }
   }, [isOpen, tableId]);
+
+  // Auto-select a display column based on heuristics when rows are loaded
+  useEffect(() => {
+    if (rows.length > 0 && !displayColumnName) {
+      // Try to find a meaningful field to display (name, title, etc.)
+      const meaningfulFields = ['name', 'title', 'label', 'description'];
+      const firstRow = rows[0];
+      
+      for (const fieldName of meaningfulFields) {
+        if (firstRow.data[fieldName] !== null && firstRow.data[fieldName] !== undefined) {
+          setDisplayColumnName(fieldName);
+          return;
+        }
+      }
+      
+      // Fallback to first non-null field
+      const firstNonNullField = Object.keys(firstRow.data).find(
+        key => firstRow.data[key] !== null && firstRow.data[key] !== undefined
+      );
+      if (firstNonNullField) {
+        setDisplayColumnName(firstNonNullField);
+      }
+    }
+  }, [rows]);
 
   // Reset selections when reference type changes
   useEffect(() => {
@@ -191,17 +216,19 @@ export default function TableReferenceOverlay({
     const row = rows.find(r => r.id === rowId);
     if (!row) return rowId;
     
-    // Try to find a meaningful field to display (name, title, etc.)
-    const meaningfulFields = ['name', 'title', 'label', 'description'];
-    for (const fieldName of meaningfulFields) {
-      if (row.data[fieldName]) {
-        return `${row.data[fieldName]} (${rowId})`;
-      }
+    // For table_cell, use the selected column if available
+    const columnToUse = referenceType === 'table_cell' && selectedColumnName 
+      ? selectedColumnName 
+      : displayColumnName;
+    
+    // Use the specified display column
+    if (columnToUse && row.data[columnToUse] !== null && row.data[columnToUse] !== undefined) {
+      return `${row.data[columnToUse]} (ID: ${rowId})`;
     }
     
     // Fallback to first non-null field value
     const firstValue = Object.values(row.data).find(val => val !== null && val !== undefined);
-    return firstValue ? `${firstValue} (${rowId})` : rowId;
+    return firstValue ? `${firstValue} (ID: ${rowId})` : rowId;
   };
 
   return (
@@ -235,10 +262,55 @@ export default function TableReferenceOverlay({
             </Select>
           </div>
 
+          {/* Column Selection (for column and cell types) - Show first for cells */}
+          {(referenceType === 'table_column' || referenceType === 'table_cell') && (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Select Column</Label>
+              <Select value={selectedColumnName || ''} onValueChange={setSelectedColumnName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a column..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {fields.map((field) => (
+                    <SelectItem key={field.id} value={field.field_name}>
+                      {field.display_name} ({field.data_type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Display Column Override (for row selection) */}
+          {referenceType === 'table_row' && rows.length > 0 && (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Display Column (for row identification)</Label>
+              <Select value={displayColumnName || ''} onValueChange={setDisplayColumnName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose which column to display..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {fields.map((field) => (
+                    <SelectItem key={field.id} value={field.field_name}>
+                      {field.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Row Selection (for row and cell types) */}
           {(referenceType === 'table_row' || referenceType === 'table_cell') && (
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Select Row</Label>
+              <Label className="text-sm font-medium">
+                Select Row
+                {referenceType === 'table_cell' && selectedColumnName && (
+                  <span className="text-xs font-normal text-gray-500 ml-2">
+                    (showing {fields.find(f => f.field_name === selectedColumnName)?.display_name || selectedColumnName} values)
+                  </span>
+                )}
+              </Label>
               {loadingRows ? (
                 <div className="text-sm text-gray-500">Loading rows...</div>
               ) : (
@@ -258,18 +330,27 @@ export default function TableReferenceOverlay({
             </div>
           )}
 
-          {/* Column Selection (for column and cell types) */}
-          {(referenceType === 'table_column' || referenceType === 'table_cell') && (
+          {/* Display Column Override (for cell selection, shown after column is selected) */}
+          {referenceType === 'table_cell' && selectedColumnName && rows.length > 0 && (
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Select Column</Label>
-              <Select value={selectedColumnName || ''} onValueChange={setSelectedColumnName}>
+              <Label className="text-sm font-medium">
+                Display Column (optional override)
+                <span className="text-xs font-normal text-gray-500 ml-2">
+                  (currently using selected column)
+                </span>
+              </Label>
+              <Select 
+                value={displayColumnName || selectedColumnName} 
+                onValueChange={(value) => setDisplayColumnName(value === selectedColumnName ? null : value)}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a column..." />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {fields.map((field) => (
                     <SelectItem key={field.id} value={field.field_name}>
-                      {field.display_name} ({field.data_type})
+                      {field.display_name}
+                      {field.field_name === selectedColumnName && ' (default)'}
                     </SelectItem>
                   ))}
                 </SelectContent>
