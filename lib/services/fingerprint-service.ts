@@ -12,14 +12,23 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 let fpPromise: Promise<any> | null = null;
 let cachedFingerprint: string | null = null;
 
+// Storage configuration
+const STORAGE_KEY = 'ai_matrx_guest_fp';
+const STORAGE_VERSION = '1';
+
+interface FingerprintData {
+    fingerprint: string;
+    version: string;
+    createdAt: number;
+    lastUsed: number;
+}
+
 /**
  * Initialize FingerprintJS
  */
 function initFingerprint() {
     if (!fpPromise) {
-        fpPromise = FingerprintJS.load({
-            monitoring: false // Disable monitoring in production for privacy
-        });
+        fpPromise = FingerprintJS.load();
     }
     return fpPromise;
 }
@@ -30,11 +39,36 @@ function initFingerprint() {
  * @returns Unique visitor ID that persists across sessions
  */
 export async function getFingerprint(): Promise<string> {
-    // Return cached if available
+    // Layer 1: Return memory cache if available
     if (cachedFingerprint) {
         return cachedFingerprint;
     }
 
+    // Layer 2: Try to load from localStorage with version validation
+    if (typeof window !== 'undefined') {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const data: FingerprintData = JSON.parse(stored);
+                
+                // Validate version and fingerprint existence
+                if (data.version === STORAGE_VERSION && data.fingerprint) {
+                    cachedFingerprint = data.fingerprint;
+                    
+                    // Update lastUsed timestamp
+                    data.lastUsed = Date.now();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    
+                    console.log('✅ Loaded cached fingerprint from localStorage');
+                    return data.fingerprint;
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Failed to parse cached fingerprint, regenerating:', error);
+        }
+    }
+
+    // Layer 3: Generate new fingerprint
     try {
         const fp = await initFingerprint();
         const result = await fp.get();
@@ -42,21 +76,36 @@ export async function getFingerprint(): Promise<string> {
         // Use visitor ID as primary fingerprint
         cachedFingerprint = result.visitorId;
         
-        // Store in sessionStorage for faster subsequent calls
+        // Store in localStorage with metadata for persistence
         if (typeof window !== 'undefined') {
-            sessionStorage.setItem('guest_fingerprint', cachedFingerprint);
+            const fpData: FingerprintData = {
+                fingerprint: cachedFingerprint,
+                version: STORAGE_VERSION,
+                createdAt: Date.now(),
+                lastUsed: Date.now()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(fpData));
+            console.log('✅ Generated and stored new fingerprint in localStorage');
         }
         
         return cachedFingerprint;
     } catch (error) {
         console.error('❌ Fingerprint generation failed:', error);
         
-        // Fallback: Try to get from sessionStorage
+        // Fallback: Try to get from localStorage (even if version mismatch)
         if (typeof window !== 'undefined') {
-            const stored = sessionStorage.getItem('guest_fingerprint');
-            if (stored) {
-                cachedFingerprint = stored;
-                return stored;
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    if (data.fingerprint) {
+                        cachedFingerprint = data.fingerprint;
+                        console.warn('⚠️ Using old version fingerprint as fallback');
+                        return data.fingerprint;
+                    }
+                }
+            } catch (parseError) {
+                console.error('Failed to parse fallback fingerprint:', parseError);
             }
         }
         
@@ -76,12 +125,24 @@ export function getCachedFingerprint(): string | null {
         return cachedFingerprint;
     }
     
-    // Try sessionStorage
+    // Try localStorage with version validation
     if (typeof window !== 'undefined') {
-        const stored = sessionStorage.getItem('guest_fingerprint');
-        if (stored) {
-            cachedFingerprint = stored;
-            return stored;
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const data: FingerprintData = JSON.parse(stored);
+                if (data.version === STORAGE_VERSION && data.fingerprint) {
+                    cachedFingerprint = data.fingerprint;
+                    
+                    // Update lastUsed timestamp
+                    data.lastUsed = Date.now();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    
+                    return data.fingerprint;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to parse cached fingerprint:', error);
         }
     }
     
@@ -94,7 +155,7 @@ export function getCachedFingerprint(): string | null {
 export function clearCachedFingerprint(): void {
     cachedFingerprint = null;
     if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('guest_fingerprint');
+        localStorage.removeItem(STORAGE_KEY);
     }
 }
 

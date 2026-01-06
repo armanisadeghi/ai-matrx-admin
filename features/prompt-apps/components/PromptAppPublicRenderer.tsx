@@ -72,10 +72,16 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 // Dynamically import socket.io-client (client-side only)
                 const { io } = await import('socket.io-client');
                 const { createClient } = await import('@/utils/supabase/client');
+                const { v5: uuidv5 } = await import('uuid');
                 
                 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
                 const SOCKET_NAMESPACE = '/UserSession';
-                const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000001';
+                const GUEST_NAMESPACE = '00000000-0000-0000-0000-000000000001'; // UUID namespace for guests
+                
+                // Create deterministic UUID from fingerprint for Python backend
+                const fingerprintToUUID = (fp: string): string => {
+                    return uuidv5(fp, GUEST_NAMESPACE);
+                };
                 
                 // Try to get auth token if user is logged in
                 let authToken: string | null = null;
@@ -103,13 +109,16 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                     socketOptions.auth = { token: authToken };
                     console.log('✅ Using authenticated user token');
                 } else {
-                    // Public/anonymous user: use public system user + fingerprint for tracking
+                    // Public/anonymous user: use unique UUID derived from fingerprint
+                    // This allows Python backend to distinguish between different guests
+                    const guestUserId = fingerprintToUUID(fingerprint);
                     socketOptions.auth = { 
-                        user_id: PUBLIC_USER_ID,
+                        user_id: guestUserId,           // Unique UUID per guest
+                        fingerprint: fingerprint,        // Original fingerprint for reference
                         public_access: true,
-                        fingerprint: fingerprint
+                        is_guest: true
                     };
-                    console.log('🌐 Using public system user with fingerprint:', fingerprint.substring(0, 8) + '...');
+                    console.log('🌐 Using guest UUID:', guestUserId.substring(0, 8) + '...', 'from fingerprint:', fingerprint.substring(0, 8) + '...');
                 }
                 
                 const newSocket = io(`${BACKEND_URL}${SOCKET_NAMESPACE}`, socketOptions);

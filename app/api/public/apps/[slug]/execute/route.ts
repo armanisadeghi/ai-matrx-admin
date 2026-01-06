@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkGuestLimit, recordGuestExecution } from '@/lib/services/guest-limit-service';
+import { isValidFingerprint, isTempFingerprint } from '@/lib/services/fingerprint-service';
+import { checkIPRateLimit, recordIPExecution } from '@/lib/services/ip-rate-limiter';
+import crypto from 'crypto';
+
+/**
+ * Create backup identifier from IP + User Agent
+ * Used when fingerprint is temp or invalid
+ */
+function createBackupIdentifier(ip: string, userAgent: string): string {
+    const combined = `${ip}:${userAgent}`;
+    return crypto.createHash('sha256').update(combined).digest('hex').substring(0, 32);
+}
 
 /**
  * OPTIMIZED Public API endpoint for executing prompt apps
@@ -74,8 +86,27 @@ export async function POST(
         // Get current user (if authenticated)
         const { data: { user } } = await supabase.auth.getUser();
         
-        // REQUIRE fingerprint for non-authenticated users
+        // Check IP-based rate limit for non-authenticated users (prevents single-source abuse)
         const isPublicAccess = !user?.id;
+        if (isPublicAccess && ip_address !== 'unknown') {
+            const ipLimit = checkIPRateLimit(ip_address);
+            
+            if (!ipLimit.allowed) {
+                console.warn('⚠️ IP rate limit exceeded:', ip_address);
+                return NextResponse.json({
+                    success: false,
+                    error: {
+                        type: 'ip_rate_limit_exceeded',
+                        message: 'Too many requests from this network. Please try again later or sign up for unlimited access.',
+                        details: {
+                            resetAt: new Date(ipLimit.resetAt).toISOString()
+                        }
+                    }
+                }, { status: 429 });
+            }
+        }
+        
+        // REQUIRE fingerprint for non-authenticated users
         if (isPublicAccess && !fingerprint) {
             return NextResponse.json({
                 success: false,
@@ -86,11 +117,38 @@ export async function POST(
             }, { status: 400 });
         }
 
+        // Validate fingerprint format
+        if (isPublicAccess && !isValidFingerprint(fingerprint)) {
+            console.warn('⚠️ Invalid fingerprint rejected:', fingerprint?.substring(0, 10));
+            return NextResponse.json({
+                success: false,
+                error: {
+                    type: 'invalid_fingerprint',
+                    message: 'Invalid guest identification. Please refresh the page.'
+                }
+            }, { status: 400 });
+        }
+
+        // Create backup identifier from IP + User Agent
+        const backupIdentifier = createBackupIdentifier(ip_address, user_agent);
+
+        // Determine primary identifier and flag temp fingerprints
+        let primaryIdentifier = fingerprint || '';
+        let identifierType: 'fingerprint' | 'ip_hash' | 'temp' = 'fingerprint';
+
+        if (isPublicAccess) {
+            if (isTempFingerprint(fingerprint)) {
+                primaryIdentifier = backupIdentifier;
+                identifierType = 'ip_hash';
+                console.warn('⚠️ Temp fingerprint detected - using IP+UA backup identifier:', fingerprint);
+            }
+        }
+
         // OPTIMIZATION: Check guest limit (for tracking, not blocking - client already checked)
         let guestLimitResult = null;
         if (isPublicAccess) {
             try {
-                guestLimitResult = await checkGuestLimit(supabase, fingerprint!);
+                guestLimitResult = await checkGuestLimit(supabase, primaryIdentifier);
                 
                 // If limit exceeded, still log but return error
                 if (!guestLimitResult.allowed || guestLimitResult.is_blocked) {
@@ -100,7 +158,7 @@ export async function POST(
                     supabase.from('prompt_app_executions').insert({
                         app_id,
                         user_id: null,
-                        fingerprint,
+                        fingerprint: primaryIdentifier,
                         ip_address,
                         user_agent,
                         task_id: taskId,
@@ -113,7 +171,9 @@ export async function POST(
                         metadata: {
                             ...metadata,
                             guest_limit_hit: true,
-                            total_used: guestLimitResult.total_used
+                            total_used: guestLimitResult.total_used,
+                            identifier_type: identifierType,
+                            backup_identifier: backupIdentifier
                         }
                     }).then(({ error }) => {
                         if (error) console.error('Failed to log rate limit:', error);
@@ -155,7 +215,7 @@ export async function POST(
             .insert({
                 app_id,
                 user_id: user?.id || null,
-                fingerprint: isPublicAccess ? fingerprint : null,
+                fingerprint: isPublicAccess ? primaryIdentifier : null,
                 ip_address,
                 user_agent,
                 task_id: taskId,
@@ -165,7 +225,9 @@ export async function POST(
                 referer,
                 metadata: {
                     ...metadata,
-                    is_public_access: isPublicAccess
+                    is_public_access: isPublicAccess,
+                    identifier_type: isPublicAccess ? identifierType : undefined,
+                    backup_identifier: isPublicAccess ? backupIdentifier : undefined
                 }
             })
             .then(({ error: executionError }) => {
@@ -177,7 +239,7 @@ export async function POST(
         // OPTIMIZATION: Record guest execution for tracking (non-authenticated only) - FIRE AND FORGET (non-blocking)
         if (isPublicAccess) {
             recordGuestExecution(supabase, {
-                fingerprint: fingerprint!,
+                fingerprint: primaryIdentifier,
                 resourceType: 'prompt_app',
                 resourceId: app_id,
                 resourceName: slug, // Use slug as name for now
@@ -189,6 +251,11 @@ export async function POST(
                 console.error('Failed to record guest execution:', error);
                 // Continue anyway - tracking failure shouldn't break the execution
             });
+            
+            // Record IP execution for rate limiting
+            if (ip_address !== 'unknown') {
+                recordIPExecution(ip_address);
+            }
         }
 
         // OPTIMIZATION: Return task ID IMMEDIATELY (client already has socket_config built)
