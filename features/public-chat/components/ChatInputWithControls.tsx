@@ -10,14 +10,14 @@ import {
     Search,
     Mic,
     Paperclip,
-    Settings2,
 } from 'lucide-react';
 import { LuBrain, LuBrainCircuit, LuSearchCheck } from 'react-icons/lu';
 import { FaMicrophoneLines } from 'react-icons/fa6';
-import { CgAttachment } from 'react-icons/cg';
 import { useChatContext } from '../context/ChatContext';
-import { PasteImageHandler } from '@/components/ui/file-upload/PasteImageHandler';
 import ToggleButton from '@/components/matrx/toggles/ToggleButton';
+
+// Note: PasteImageHandler removed - it requires Redux which isn't available in public routes
+// TODO: Add Redux-free file upload support later
 
 // ============================================================================
 // TEXT INPUT COMPONENT
@@ -30,13 +30,10 @@ interface TextInputProps {
     onContentChange: (content: string) => void;
     onSubmit: () => void;
     className?: string;
-    onImagePasted?: (result: { url: string; type: string }) => void;
-    bucket?: string;
-    path?: string;
 }
 
 const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
-    ({ content, placeholder = 'What do you want to know?', disabled = false, onContentChange, onSubmit, className = '', onImagePasted, bucket = 'userContent', path }, forwardedRef) => {
+    ({ content, placeholder = 'What do you want to know?', disabled = false, onContentChange, onSubmit, className = '' }, forwardedRef) => {
         const localRef = useRef<HTMLTextAreaElement>(null);
 
         useEffect(() => {
@@ -52,8 +49,6 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
         const [textareaHeight, setTextareaHeight] = useState('110px');
         const [isExpanded, setIsExpanded] = useState(false);
         const [maxHeight] = useState(800);
-        const [isPasteProcessing, setIsPasteProcessing] = useState(false);
-        const [pasteProcessRef, setPasteProcessRef] = useState<any>(null);
 
         const adjustTextareaHeight = useCallback(() => {
             if (localRef.current) {
@@ -109,30 +104,13 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
             }
         }, [maxHeight]);
 
-        const handleProcessingChange = useCallback((isProcessing: boolean, processRef?: any) => {
-            setIsPasteProcessing(isProcessing);
-            if (processRef) {
-                setPasteProcessRef(processRef);
-            } else if (!isProcessing) {
-                setPasteProcessRef(null);
-            }
-        }, []);
-
-        const handleCancelUpload = useCallback(() => {
-            if (pasteProcessRef && typeof pasteProcessRef.cancel === 'function') {
-                pasteProcessRef.cancel();
-            }
-            setIsPasteProcessing(false);
-            setPasteProcessRef(null);
-        }, [pasteProcessRef]);
-
         return (
             <div
                 className={`relative rounded-3xl bg-zinc-200 dark:bg-zinc-800 transition-all overflow-hidden ${
                     isFocused ? 'ring-1 ring-zinc-400 dark:ring-zinc-700 ring-opacity-50' : ''
                 } ${className}`}
             >
-                {!isPasteProcessing && isExpanded && parseInt(textareaHeight) > 200 && (
+                {isExpanded && parseInt(textareaHeight) > 200 && (
                     <button
                         onClick={handleMinimize}
                         className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
@@ -141,40 +119,13 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
                     </button>
                 )}
 
-                {!isPasteProcessing && !isExpanded && content.length > 0 && (
+                {!isExpanded && content.length > 0 && (
                     <button
                         onClick={handleMaximize}
                         className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
                     >
                         <Maximize2 size={16} />
                     </button>
-                )}
-
-                {isPasteProcessing && (
-                    <div className="absolute top-2 right-2 z-20">
-                        <div className="flex items-center bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1.5 text-sm rounded-full shadow-md">
-                            <Loader2 size={16} className="animate-spin mr-2 text-white" />
-                            <span>Processing image</span>
-                            <button
-                                onClick={handleCancelUpload}
-                                className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
-                                aria-label="Cancel upload"
-                            >
-                                <X size={14} className="text-white" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {onImagePasted && (
-                    <PasteImageHandler
-                        bucket={bucket}
-                        path={path}
-                        targetElement={localRef.current}
-                        onImagePasted={onImagePasted}
-                        disabled={disabled}
-                        onProcessingChange={handleProcessingChange}
-                    />
                 )}
 
                 <textarea
@@ -341,10 +292,8 @@ export function ChatInputWithControls({
     onSubmit,
     disabled = false,
     placeholder,
-    conversationId,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
-    const [files, setFiles] = useState<FilePreview[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -356,39 +305,27 @@ export function ChatInputWithControls({
         setContent(newContent);
     }, []);
 
-    const handleImagePasted = useCallback((result: { url: string; type: string }) => {
-        setFiles((prev) => [...prev, result]);
-    }, []);
-
-    const handleRemoveFile = useCallback((index: number) => {
-        setFiles((prev) => prev.filter((_, i) => i !== index));
-    }, []);
-
     const handleSubmit = useCallback(async () => {
-        if (!content.trim() && files.length === 0) return;
+        if (!content.trim()) return;
         if (isSubmitting || disabled) return;
 
         setIsSubmitting(true);
-        const fileUrls = files.map((f) => f.url);
 
         try {
-            const success = await onSubmit(content, fileUrls);
+            const success = await onSubmit(content);
             if (success) {
                 setContent('');
-                setFiles([]);
                 textInputRef.current?.focus();
             }
         } finally {
             setIsSubmitting(false);
         }
-    }, [content, files, onSubmit, isSubmitting, disabled]);
+    }, [content, onSubmit, isSubmitting, disabled]);
 
     const isDisabled = disabled || isSubmitting;
 
     return (
         <div className="relative">
-            <FileChips files={files} onRemove={handleRemoveFile} />
-
             <div className="relative rounded-3xl border border-zinc-300 dark:border-zinc-700">
                 <TextInput
                     ref={textInputRef}
@@ -396,16 +333,13 @@ export function ChatInputWithControls({
                     disabled={isDisabled}
                     onContentChange={handleContentChange}
                     onSubmit={handleSubmit}
-                    onImagePasted={handleImagePasted}
                     placeholder={placeholder}
-                    bucket="userContent"
-                    path={conversationId ? `chat-attachments/conversation-${conversationId}` : undefined}
                 />
 
                 <InputBottomControls
                     disabled={isDisabled}
                     onSendMessage={handleSubmit}
-                    hasFiles={files.length > 0}
+                    hasFiles={false}
                 />
             </div>
         </div>
