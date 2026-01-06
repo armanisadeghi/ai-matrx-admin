@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback, ErrorInfo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, ErrorInfo, useContext } from "react";
 import { cn } from "@/styles/themes/utils";
 import { ContentBlock, splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
-import { useAppSelector } from "@/lib/redux";
+import { ReactReduxContext } from 'react-redux';
 import { selectPrimaryResponseToolUpdatesByTaskId } from "@/lib/redux/socket-io";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import { BlockRenderer } from "./block-registry/BlockRenderer";
@@ -144,17 +144,25 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     // Check if we should show loading state (taskId exists but no content yet)
     const isWaitingForContent = taskId && !content.trim();
 
-    // Safe selector usage with error handling (gracefully handles missing Redux provider)
-    // If tool updates are passed directly, use those instead of Redux
-    let toolUpdatesFromRedux: any[] = [];
-    let hasReduxProvider = true;
-    try {
-        toolUpdatesFromRedux = useAppSelector(selectPrimaryResponseToolUpdatesByTaskId(taskId)) || [];
-    } catch (error) {
-        // Expected in public context without Redux provider - not critical
-        hasReduxProvider = false;
-        toolUpdatesFromRedux = [];
-    }
+    // Safely check if Redux is available before using selector
+    // This allows the component to work in both Redux and non-Redux contexts
+    const reduxContext = useContext(ReactReduxContext);
+    const hasReduxProvider = reduxContext !== null && reduxContext.store !== undefined;
+
+    // Get tool updates from Redux only if Redux is available and we don't have direct prop
+    const toolUpdatesFromRedux = useMemo(() => {
+        if (!hasReduxProvider || toolUpdatesProp !== undefined) {
+            return [];
+        }
+        try {
+            const state = reduxContext.store.getState();
+            const selector = selectPrimaryResponseToolUpdatesByTaskId(taskId);
+            return selector(state) || [];
+        } catch (error) {
+            // Gracefully handle any selector errors
+            return [];
+        }
+    }, [hasReduxProvider, reduxContext?.store, taskId, toolUpdatesProp]);
 
     // Use directly passed tool updates if provided, otherwise fall back to Redux
     const toolUpdates = toolUpdatesProp !== undefined ? toolUpdatesProp : toolUpdatesFromRedux;
