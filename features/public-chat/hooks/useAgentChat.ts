@@ -59,10 +59,18 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         }
     }, []);
 
+    // Get backend URL (admin can override to localhost)
+    const getBackendUrl = useCallback(() => {
+        if (state.isAdmin && state.useLocalhost) {
+            return 'http://localhost:8000';
+        }
+        return process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+    }, [state.isAdmin, state.useLocalhost]);
+
     // Warm up agent (pre-cache prompt)
     const warmAgent = useCallback(async (promptId: string) => {
         try {
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+            const BACKEND_URL = getBackendUrl();
             const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
             if (state.authToken) {
@@ -84,7 +92,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         } catch (err) {
             console.warn('Failed to pre-warm agent (non-critical):', err);
         }
-    }, [state.authToken]);
+    }, [state.authToken, getBackendUrl]);
 
     // Send message to agent
     const sendMessage = useCallback(async ({ content, variables = {}, files = [] }: SendMessageParams) => {
@@ -126,7 +134,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setStreaming(true);
 
         try {
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+            const BACKEND_URL = getBackendUrl();
             const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
             if (state.authToken) {
@@ -290,6 +298,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setExecuting,
         setError,
         convertAgentEventToStreamEvent,
+        getBackendUrl,
         options,
     ]);
 

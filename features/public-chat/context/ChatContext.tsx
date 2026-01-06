@@ -50,6 +50,8 @@ export interface ChatState {
     modelOverride?: string;
     authToken: string | null;
     isAuthenticated: boolean;
+    isAdmin: boolean;
+    useLocalhost: boolean;
 }
 
 // ============================================================================
@@ -57,7 +59,7 @@ export interface ChatState {
 // ============================================================================
 
 type ChatAction =
-    | { type: 'SET_AUTH'; payload: { token: string | null; isAuthenticated: boolean } }
+    | { type: 'SET_AUTH'; payload: { token: string | null; isAuthenticated: boolean; isAdmin?: boolean } }
     | { type: 'SET_AGENT'; payload: AgentConfig }
     | { type: 'ADD_MESSAGE'; payload: ChatMessage }
     | { type: 'UPDATE_MESSAGE'; payload: { id: string; updates: Partial<ChatMessage> } }
@@ -68,7 +70,8 @@ type ChatAction =
     | { type: 'SET_MODEL_OVERRIDE'; payload: string | undefined }
     | { type: 'CLEAR_MESSAGES' }
     | { type: 'START_NEW_CONVERSATION' }
-    | { type: 'APPEND_TO_LAST_MESSAGE'; payload: string };
+    | { type: 'APPEND_TO_LAST_MESSAGE'; payload: string }
+    | { type: 'SET_USE_LOCALHOST'; payload: boolean };
 
 // ============================================================================
 // INITIAL STATE
@@ -94,6 +97,10 @@ const createInitialState = (): ChatState => ({
     modelOverride: undefined,
     authToken: null,
     isAuthenticated: false,
+    isAdmin: false,
+    useLocalhost: typeof window !== 'undefined' 
+        ? localStorage.getItem('admin_use_localhost') === 'true' 
+        : false,
 });
 
 // ============================================================================
@@ -107,7 +114,15 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
                 ...state,
                 authToken: action.payload.token,
                 isAuthenticated: action.payload.isAuthenticated,
+                isAdmin: action.payload.isAdmin ?? state.isAdmin,
             };
+
+        case 'SET_USE_LOCALHOST':
+            // Persist to localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('admin_use_localhost', String(action.payload));
+            }
+            return { ...state, useLocalhost: action.payload };
 
         case 'SET_AGENT':
             return {
@@ -185,7 +200,7 @@ interface ChatContextValue {
     state: ChatState;
     dispatch: React.Dispatch<ChatAction>;
     // Convenience actions
-    setAuth: (token: string | null, isAuthenticated: boolean) => void;
+    setAuth: (token: string | null, isAuthenticated: boolean, isAdmin?: boolean) => void;
     setAgent: (agent: AgentConfig) => void;
     addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
     updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
@@ -197,6 +212,7 @@ interface ChatContextValue {
     setModelOverride: (model: string | undefined) => void;
     clearMessages: () => void;
     startNewConversation: () => void;
+    setUseLocalhost: (useLocalhost: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -219,8 +235,12 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         return initial;
     });
 
-    const setAuth = useCallback((token: string | null, isAuthenticated: boolean) => {
-        dispatch({ type: 'SET_AUTH', payload: { token, isAuthenticated } });
+    const setAuth = useCallback((token: string | null, isAuthenticated: boolean, isAdmin?: boolean) => {
+        dispatch({ type: 'SET_AUTH', payload: { token, isAuthenticated, isAdmin } });
+    }, []);
+
+    const setUseLocalhost = useCallback((useLocalhost: boolean) => {
+        dispatch({ type: 'SET_USE_LOCALHOST', payload: useLocalhost });
     }, []);
 
     const setAgent = useCallback((agent: AgentConfig) => {
@@ -287,6 +307,7 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         setModelOverride,
         clearMessages,
         startNewConversation,
+        setUseLocalhost,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
@@ -323,6 +344,7 @@ export function useChatActions() {
         setModelOverride,
         clearMessages,
         startNewConversation,
+        setUseLocalhost,
     } = useChatContext();
 
     return {
@@ -338,5 +360,6 @@ export function useChatActions() {
         setModelOverride,
         clearMessages,
         startNewConversation,
+        setUseLocalhost,
     };
 }

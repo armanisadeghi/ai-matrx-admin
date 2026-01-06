@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Bot, RefreshCw, Settings2 } from 'lucide-react';
+import { Bot, RefreshCw, Settings2, Server } from 'lucide-react';
 import { useChatContext } from '../context/ChatContext';
 import { useAgentChat } from '../hooks/useAgentChat';
 import { ChatInputWithControls } from './ChatInputWithControls';
@@ -24,7 +24,7 @@ interface ChatContainerProps {
 // ============================================================================
 
 export function ChatContainer({ className = '' }: ChatContainerProps) {
-    const { state, setAgent, setAuth, startNewConversation } = useChatContext();
+    const { state, setAgent, setAuth, startNewConversation, setUseLocalhost } = useChatContext();
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [showSettings, setShowSettings] = useState(false);
@@ -43,16 +43,29 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         },
     });
 
-    // Check for authentication on mount
+    // Check for authentication and admin status on mount
     useEffect(() => {
         async function checkAuth() {
             try {
                 const { createClient } = await import('@/utils/supabase/client');
                 const supabase = createClient();
                 const { data: { session } } = await supabase.auth.getSession();
-                setAuth(session?.access_token || null, !!session);
+                
+                let isAdmin = false;
+                if (session?.user?.id) {
+                    // Check if user is an admin
+                    const { data: adminData } = await supabase
+                        .from('admins')
+                        .select('user_id')
+                        .eq('user_id', session.user.id)
+                        .maybeSingle();
+                    
+                    isAdmin = !!adminData;
+                }
+                
+                setAuth(session?.access_token || null, !!session, isAdmin);
             } catch (err) {
-                setAuth(null, false);
+                setAuth(null, false, false);
             }
         }
         checkAuth();
@@ -119,12 +132,32 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         setVariableValues({});
     }, [startNewConversation]);
 
+    const handleToggleLocalhost = useCallback(() => {
+        setUseLocalhost(!state.useLocalhost);
+    }, [setUseLocalhost, state.useLocalhost]);
+
     const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
     const hasVariables = state.currentAgent?.variables && state.currentAgent.variables.length > 0;
     const isWelcomeScreen = messages.length === 0;
 
     return (
         <div className={`h-full flex flex-col ${className}`}>
+            {/* Admin localhost toggle */}
+            {state.isAdmin && (
+                <div className="flex-shrink-0 px-4 pt-2">
+                    <button
+                        onClick={handleToggleLocalhost}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 transition-colors"
+                        title={state.useLocalhost ? 'Using localhost:8000' : 'Using production server'}
+                    >
+                        <Server className="h-3.5 w-3.5" />
+                        <span className="font-medium">
+                            {state.useLocalhost ? '🏠 localhost:8000' : '🌐 Production'}
+                        </span>
+                    </button>
+                </div>
+            )}
+
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto scrollbar-hide">
                 {isWelcomeScreen ? (
