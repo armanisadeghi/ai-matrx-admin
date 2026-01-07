@@ -10,14 +10,21 @@ import {
     Search,
     Mic,
     Paperclip,
+    Image as ImageIcon,
+    FileText,
+    Video,
+    Music,
+    Youtube,
+    Globe,
 } from 'lucide-react';
+import { CgAttachment } from 'react-icons/cg';
 import { LuBrain, LuBrainCircuit, LuSearchCheck } from 'react-icons/lu';
 import { FaMicrophoneLines } from 'react-icons/fa6';
 import { useChatContext } from '../context/ChatContext';
 import ToggleButton from '@/components/matrx/toggles/ToggleButton';
-
-// Note: PasteImageHandler removed - it requires Redux which isn't available in public routes
-// TODO: Add Redux-free file upload support later
+import { usePublicFileUpload, PublicUploadResult } from '@/hooks/usePublicFileUpload';
+import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste';
+import type { PublicResource, PublicResourceType } from '../types/content';
 
 // ============================================================================
 // TEXT INPUT COMPONENT
@@ -144,7 +151,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className="w-full p-4 rounded-3xl border-none resize-none outline-none bg-zinc-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder-gray-600 dark:placeholder-gray-400 overflow-auto"
+                    className="w-full p-4 rounded-3xl border-none resize-none outline-none bg-zinc-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder-gray-600 dark:placeholder-gray-400 overflow-auto text-base"
                     disabled={disabled}
                 />
             </div>
@@ -155,49 +162,79 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
 TextInput.displayName = 'TextInput';
 
 // ============================================================================
-// FILE PREVIEW COMPONENT
+// RESOURCE CHIP COMPONENT
 // ============================================================================
 
-interface FilePreview {
-    url: string;
-    type: string;
-    name?: string;
+/**
+ * Get icon for resource type
+ */
+function getResourceIcon(type: PublicResourceType) {
+    switch (type) {
+        case 'image_url':
+            return ImageIcon;
+        case 'file':
+        case 'file_url':
+            return FileText;
+        case 'audio':
+            return Music;
+        case 'youtube':
+            return Youtube;
+        case 'webpage':
+            return Globe;
+        default:
+            return Paperclip;
+    }
 }
 
-interface FileChipsProps {
-    files: FilePreview[];
+interface ResourceChipsProps {
+    resources: PublicResource[];
     onRemove: (index: number) => void;
+    isUploading?: boolean;
 }
 
-function FileChips({ files, onRemove }: FileChipsProps) {
-    if (files.length === 0) return null;
+function ResourceChips({ resources, onRemove, isUploading }: ResourceChipsProps) {
+    if (resources.length === 0 && !isUploading) return null;
 
     return (
         <div className="flex flex-wrap gap-2 mb-2 px-2">
-            {files.map((file, index) => (
-                <div
-                    key={index}
-                    className="relative group rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700"
-                >
-                    {file.type.startsWith('image/') ? (
-                        <img
-                            src={file.url}
-                            alt={file.name || 'Uploaded image'}
-                            className="h-16 w-16 object-cover"
-                        />
-                    ) : (
-                        <div className="h-16 w-16 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
-                            <Paperclip className="h-6 w-6 text-zinc-500" />
-                        </div>
-                    )}
-                    <button
-                        onClick={() => onRemove(index)}
-                        className="absolute top-0.5 right-0.5 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            {resources.map((resource, index) => {
+                const Icon = getResourceIcon(resource.type);
+                const isImage = resource.type === 'image_url' || 
+                    (resource.type === 'file' && resource.data.mime_type?.startsWith('image/'));
+                
+                return (
+                    <div
+                        key={index}
+                        className="relative group rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700"
                     >
-                        <X size={12} />
-                    </button>
+                        {isImage && resource.data.url ? (
+                            <img
+                                src={resource.data.url}
+                                alt={resource.data.filename || 'Uploaded image'}
+                                className="h-16 w-16 object-cover"
+                            />
+                        ) : (
+                            <div className="h-16 w-16 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 p-1">
+                                <Icon className="h-5 w-5 text-zinc-500 mb-1" />
+                                <span className="text-[8px] text-zinc-500 text-center truncate w-full px-1">
+                                    {resource.data.filename || resource.type}
+                                </span>
+                            </div>
+                        )}
+                        <button
+                            onClick={() => onRemove(index)}
+                            className="absolute top-0.5 right-0.5 p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <X size={12} />
+                        </button>
+                    </div>
+                );
+            })}
+            {isUploading && (
+                <div className="h-16 w-16 flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800">
+                    <Loader2 className="h-6 w-6 text-zinc-500 animate-spin" />
                 </div>
-            ))}
+            )}
         </div>
     );
 }
@@ -209,11 +246,12 @@ function FileChips({ files, onRemove }: FileChipsProps) {
 interface InputBottomControlsProps {
     disabled: boolean;
     onSendMessage: () => void;
-    hasFiles: boolean;
-    onToggleFileUpload?: () => void;
+    hasResources: boolean;
+    onFileUploadClick?: () => void;
+    isUploading?: boolean;
 }
 
-function InputBottomControls({ disabled, onSendMessage, hasFiles, onToggleFileUpload }: InputBottomControlsProps) {
+function InputBottomControls({ disabled, onSendMessage, hasResources, onFileUploadClick, isUploading }: InputBottomControlsProps) {
     const { state, updateSettings } = useChatContext();
     const { settings } = state;
 
@@ -221,11 +259,11 @@ function InputBottomControls({ disabled, onSendMessage, hasFiles, onToggleFileUp
         <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5 rounded-full">
             {/* Left side controls */}
             <div className="absolute bottom-2 left-4 flex items-center space-x-2">
-                {onToggleFileUpload && (
+                {onFileUploadClick && (
                     <ToggleButton
-                        isEnabled={hasFiles}
-                        onClick={onToggleFileUpload}
-                        disabled={disabled}
+                        isEnabled={hasResources}
+                        onClick={onFileUploadClick}
+                        disabled={disabled || isUploading}
                         label=""
                         defaultIcon={<CgAttachment />}
                         enabledIcon={<Paperclip />}
@@ -282,20 +320,73 @@ function InputBottomControls({ disabled, onSendMessage, hasFiles, onToggleFileUp
 // ============================================================================
 
 interface ChatInputWithControlsProps {
-    onSubmit: (content: string, files?: string[]) => Promise<boolean>;
+    onSubmit: (content: string, resources?: PublicResource[]) => Promise<boolean>;
     disabled?: boolean;
     placeholder?: string;
     conversationId?: string;
+    enableFileUpload?: boolean;
 }
 
 export function ChatInputWithControls({
     onSubmit,
     disabled = false,
     placeholder,
+    enableFileUpload = true,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [resources, setResources] = useState<PublicResource[]>([]);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Public file upload hook - no Redux needed
+    const { uploadFile, isUploading, error: uploadError } = usePublicFileUpload({
+        bucket: 'public-chat-uploads',
+        path: 'chat-attachments',
+        maxSizeMB: 10,
+    });
+
+    // Convert upload result to PublicResource
+    const uploadResultToResource = useCallback((result: PublicUploadResult): PublicResource => {
+        const mimeType = result.type || '';
+        
+        // Determine resource type based on mime type
+        let resourceType: PublicResourceType = 'file';
+        if (mimeType.startsWith('image/')) {
+            resourceType = 'image_url';
+        } else if (mimeType.startsWith('audio/')) {
+            resourceType = 'audio';
+        } else if (mimeType.startsWith('video/')) {
+            resourceType = 'file'; // Will be converted to input_video in content
+        }
+
+        return {
+            type: resourceType,
+            data: {
+                url: result.url,
+                filename: result.filename,
+                mime_type: mimeType,
+                size: result.size,
+                type: mimeType,
+            }
+        };
+    }, []);
+
+    // Handle pasted images
+    const handlePasteImage = useCallback(async (file: File) => {
+        const result = await uploadFile(file);
+        if (result) {
+            const resource = uploadResultToResource(result);
+            setResources(prev => [...prev, resource]);
+        }
+    }, [uploadFile, uploadResultToResource]);
+
+    // Setup clipboard paste handler
+    useClipboardPaste({
+        textareaRef: textInputRef,
+        onPasteImage: handlePasteImage,
+        disabled: !enableFileUpload || disabled,
+    });
 
     useEffect(() => {
         textInputRef.current?.focus();
@@ -305,28 +396,84 @@ export function ChatInputWithControls({
         setContent(newContent);
     }, []);
 
+    const handleRemoveResource = useCallback((index: number) => {
+        setResources(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const handleFileUploadClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        for (const file of files) {
+            const result = await uploadFile(file);
+            if (result) {
+                const resource = uploadResultToResource(result);
+                setResources(prev => [...prev, resource]);
+            }
+        }
+        // Reset input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }, [uploadFile, uploadResultToResource]);
+
     const handleSubmit = useCallback(async () => {
-        if (!content.trim()) return;
-        if (isSubmitting || disabled) return;
+        if (!content.trim() && resources.length === 0) return;
+        if (isSubmitting || disabled || isUploading) return;
 
         setIsSubmitting(true);
 
         try {
-            const success = await onSubmit(content);
+            // Make a copy of resources to ensure we send what's visible
+            const resourcesToSend = [...resources];
+            const success = await onSubmit(content, resourcesToSend.length > 0 ? resourcesToSend : undefined);
             if (success) {
                 setContent('');
+                setResources([]);
                 textInputRef.current?.focus();
             }
         } finally {
             setIsSubmitting(false);
         }
-    }, [content, onSubmit, isSubmitting, disabled]);
+    }, [content, resources, onSubmit, isSubmitting, disabled, isUploading]);
 
-    const isDisabled = disabled || isSubmitting;
+    const isDisabled = disabled || isSubmitting || isUploading;
 
     return (
         <div className="relative">
+            {/* Hidden file input */}
+            {enableFileUpload && (
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,audio/*,video/*,application/pdf,text/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                />
+            )}
+
             <div className="relative rounded-3xl border border-zinc-300 dark:border-zinc-700">
+                {/* Resource chips display */}
+                {(resources.length > 0 || isUploading) && (
+                    <div className="pt-2">
+                        <ResourceChips 
+                            resources={resources} 
+                            onRemove={handleRemoveResource}
+                            isUploading={isUploading}
+                        />
+                    </div>
+                )}
+
+                {/* Upload error display */}
+                {uploadError && (
+                    <div className="px-4 py-2 text-sm text-red-500">
+                        {uploadError}
+                    </div>
+                )}
+
                 <TextInput
                     ref={textInputRef}
                     content={content}
@@ -339,7 +486,9 @@ export function ChatInputWithControls({
                 <InputBottomControls
                     disabled={isDisabled}
                     onSendMessage={handleSubmit}
-                    hasFiles={false}
+                    hasResources={resources.length > 0}
+                    onFileUploadClick={enableFileUpload ? handleFileUploadClick : undefined}
+                    isUploading={isUploading}
                 />
             </div>
         </div>

@@ -1,0 +1,105 @@
+import { createClient } from '@/utils/supabase/server';
+import { notFound } from 'next/navigation';
+import { PromptAppPublicRendererFastAPI } from '@/features/prompt-apps/components/PromptAppPublicRendererFastAPI';
+import type { Metadata } from 'next';
+
+// Import the test component directly (swap this out to test different UIs)
+import BalancedNewsAnalysis from '@/features/prompt-apps/sample-code/news-app-code';
+
+export const revalidate = 0; // No cache for test route
+
+// Helper to check if string is a valid UUID
+function isUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+}
+
+export async function generateMetadata({
+    params
+}: {
+    params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+    const { slug } = await params;
+    const supabase = await createClient();
+
+    // Determine if we're searching by ID or slug
+    const isId = isUUID(slug);
+    const column = isId ? 'id' : 'slug';
+
+    const { data: app } = await supabase
+        .from('prompt_apps')
+        .select('name, tagline, description, preview_image_url')
+        .eq(column, slug)
+        .eq('status', 'published')
+        .single();
+
+    if (!app) {
+        return {
+            title: 'App Not Found',
+        };
+    }
+
+    return {
+        title: `${app.name} (TEST) | AI Matrx Apps`,
+        description: app.tagline || app.description || `Testing ${app.name}`,
+        openGraph: {
+            title: `${app.name} (TEST)`,
+            description: app.tagline || app.description || `Testing ${app.name}`,
+            images: app.preview_image_url ? [app.preview_image_url] : [],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${app.name} (TEST)`,
+            description: app.tagline || app.description || `Testing ${app.name}`,
+            images: app.preview_image_url ? [app.preview_image_url] : [],
+        },
+    };
+}
+
+export default async function PromptAppFastAPITestPage({
+    params
+}: {
+    params: Promise<{ slug: string }>;
+}) {
+    const { slug } = await params;
+    const supabase = await createClient();
+
+    // Determine if we're searching by ID or slug
+    const isId = isUUID(slug);
+
+    // OPTIMIZATION: Fetch app + prompt in a single optimized query
+    const { data: appWithPromptRaw, error } = await supabase
+        .rpc('get_published_app_with_prompt', {
+            p_slug: !isId ? slug : null,
+            p_app_id: isId ? slug : null
+        })
+        .single();
+
+    if (error || !appWithPromptRaw) {
+        notFound();
+    }
+
+    // Transform database response to match PromptApp type
+    const appWithPrompt = appWithPromptRaw as any;
+    const app = {
+        ...appWithPrompt,
+        prompt: {
+            messages: appWithPrompt.prompt_messages,
+            settings: appWithPrompt.prompt_settings,
+            variable_defaults: appWithPrompt.prompt_variable_defaults
+        }
+    };
+
+    // Remove the raw fields (keep the data clean)
+    delete app.prompt_messages;
+    delete app.prompt_settings;
+    delete app.prompt_variable_defaults;
+
+    return (
+        <PromptAppPublicRendererFastAPI
+            app={app}
+            slug={app.slug}
+            TestComponent={BalancedNewsAnalysis}
+        />
+    );
+}

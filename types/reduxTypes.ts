@@ -11,6 +11,16 @@ export interface InitialReduxState {
     globalCache: GlobalCacheState;
 }
 
+/**
+ * Lightweight initial state for lite Redux store.
+ * Does NOT require globalCache/schema - all fields are optional.
+ * Use this for public routes or lite authenticated routes.
+ */
+export interface LiteInitialReduxState {
+    user?: Partial<UserData>;
+    userPreferences?: Record<string, any>;
+}
+
 
 
 

@@ -10,6 +10,7 @@ import { MessageList } from './MessageDisplay';
 import { VariableInputs, type VariableSchema } from './VariableInputs';
 import { AgentSelector, AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import type { PublicResource } from '../types/content';
 
 // ============================================================================
 // TYPES
@@ -115,12 +116,12 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     }, []);
 
     const handleSubmit = useCallback(
-        async (content: string, files?: string[]) => {
+        async (content: string, resources?: PublicResource[]) => {
             setStreamEvents([]);
             return sendMessage({
                 content,
                 variables: variableValues,
-                files,
+                resources,
             });
         },
         [sendMessage, variableValues]

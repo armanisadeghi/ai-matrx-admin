@@ -5,6 +5,25 @@
 export { ChatProvider, useChatContext, useChatState, useChatActions } from './context/ChatContext';
 export type { ChatMessage, ChatSettings, AgentConfig, ChatState } from './context/ChatContext';
 
+// Types
+export type {
+    ContentItem,
+    TextContentItem,
+    ImageContentItem,
+    AudioContentItem,
+    VideoContentItem,
+    DocumentContentItem,
+    YouTubeContentItem,
+    FileContentItem,
+    WebpageContentItem,
+    NoteContentItem,
+    TaskContentItem,
+    TableContentItem,
+    PublicResource,
+    PublicResourceType,
+} from './types/content';
+export { resourceToContentItem, buildContentArray } from './types/content';
+
 // Hooks
 export { useAgentChat } from './hooks/useAgentChat';
 

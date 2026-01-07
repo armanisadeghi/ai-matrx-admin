@@ -1,25 +1,31 @@
-import React, { useState, useMemo } from 'react';
-import { Sparkles, Loader2, Scale, AlertCircle } from 'lucide-react';
+'use client';
+
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Rss, Loader2, Scale, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import MarkdownStream from '@/components/MarkdownStream';
 
-export default function BalancedNewsAnalysis({ 
-  onExecute, 
-  response, 
-  isExecuting, 
-  isStreaming, 
+export default function BalancedNewsAnalysis({
+  onExecute,
+  response,
+  isExecuting,
+  isStreaming,
   error,
-  rateLimitInfo 
+  rateLimitInfo
 }) {
   const [variables, setVariables] = useState({
     topic: ''
   });
-  
+
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const isFormValid = useMemo(() => {
     return variables.topic.trim().length > 0;
@@ -28,13 +34,14 @@ export default function BalancedNewsAnalysis({
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (isFormValid) {
-      await onExecute(variables);
       setIsFormCollapsed(true);
+      await onExecute(variables);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && isFormValid) {
+    if (e.key === 'Enter' && !e.shiftKey && isFormValid) {
+      e.preventDefault();
       handleSubmit();
     }
   };
@@ -42,17 +49,19 @@ export default function BalancedNewsAnalysis({
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 pb-12 space-y-6">
       {/* Header Section */}
-      <div className="text-center space-y-2 pt-1">
-        <div className="flex items-center justify-center gap-2">
-          <Scale className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">
-            Balanced News Analysis
-          </h1>
+      {!isFormCollapsed && (
+        <div className="text-center space-y-2 pt-1">
+          <div className="flex items-center justify-center gap-2">
+            <Scale className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">
+              Balanced News Analysis
+            </h1>
+          </div>
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+            Explore complex issues through multiple perspectives and make your own informed conclusions.
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-          Explore complex issues through multiple perspectives with objective analysis
-        </p>
-      </div>
+      )}
 
       {/* Rate Limit Warning */}
       {rateLimitInfo && rateLimitInfo.remaining <= 2 && rateLimitInfo.remaining > 0 && (
@@ -68,11 +77,11 @@ export default function BalancedNewsAnalysis({
 
       {/* Input Form Card */}
       <Card className="bg-card border-border shadow-md">
-        {isFormCollapsed && response ? (
+        {isFormCollapsed ? (
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-muted-foreground">Analyzing:</p>
+                <p className="text-sm font-medium text-muted-foreground">News Analysis Topic:</p>
                 <p className="text-sm text-foreground truncate">{variables.topic}</p>
               </div>
               <Button
@@ -80,7 +89,7 @@ export default function BalancedNewsAnalysis({
                 variant="outline"
                 size="sm"
               >
-                New Analysis
+                Change Topic
               </Button>
             </div>
           </CardContent>
@@ -88,51 +97,49 @@ export default function BalancedNewsAnalysis({
           <>
             <CardHeader className="bg-muted/50 border-b border-border">
               <CardTitle className="flex items-center gap-2 text-xl">
-                <Sparkles className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <Rss className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                 Analysis Configuration
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-          {/* Topic Input */}
-          <div className="space-y-2">
-            <Label htmlFor="topic" className="text-base font-semibold">
-              News Topic or Current Event
-            </Label>
-            <Textarea
-              id="topic"
-              value={variables.topic}
-              onChange={(e) => setVariables({...variables, topic: e.target.value})}
-              onKeyDown={handleKeyDown}
-              placeholder="Enter a news topic or current event to analyze..."
-              rows={4}
-              disabled={isExecuting || isStreaming}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground hidden sm:block">
-              Press <kbd className="px-1.5 py-0.5 bg-muted border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-muted border border-border rounded text-xs">Enter</kbd> to analyze
-            </p>
-          </div>
+            <CardContent className="pt-6 space-y-2">
+              {/* Topic Input */}
+              <div className="space-y-2">
+                <Label htmlFor="topic" className="text-base font-semibold">
+                  News Topic or Current Event
+                </Label>
+                <Textarea
+                  ref={textareaRef}
+                  id="topic"
+                  value={variables.topic}
+                  onChange={(e) => setVariables({ ...variables, topic: e.target.value })}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Enter a news topic, current event, issue , or entire article to analyze..."
+                  rows={4}
+                  disabled={isExecuting || isStreaming}
+                  className="resize-none"
+                />
+              </div>
 
-          {/* Submit Button */}
-          <Button 
-            onClick={handleSubmit}
-            disabled={!isFormValid || isExecuting || isStreaming}
-            className="w-full sm:w-auto"
-            size="lg"
-          >
-            {isExecuting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Analyzing Perspectives...
-              </>
-            ) : (
-              <>
-                <Scale className="w-4 h-4 mr-2" />
-                Generate Balanced Analysis
-              </>
-            )}
-          </Button>
-        </CardContent>
+              {/* Submit Button */}
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!isFormValid || isExecuting || isStreaming}
+                >
+                  {isExecuting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Scale className="w-4 h-4 mr-1" />
+                      Analyze
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
           </>
         )}
       </Card>
@@ -189,11 +196,11 @@ export default function BalancedNewsAnalysis({
       {/* Information Footer */}
       {!response && !isStreaming && (
         <Card className="bg-muted/30 border-border">
-          <CardContent className="pt-6">
+          <CardContent className="p-2">
             <div className="space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <Scale className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                How This Works
+                Balanced & Unbiased Analysis
               </h3>
               <div className="grid sm:grid-cols-3 gap-4 text-sm">
                 <div className="space-y-1">

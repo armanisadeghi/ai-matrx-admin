@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import type { PublicResource, ContentItem } from '../types/content';
 
 // ============================================================================
 // TYPES
@@ -13,7 +14,12 @@ export interface ChatMessage {
     content: string;
     timestamp: Date;
     status: 'pending' | 'sending' | 'streaming' | 'complete' | 'error';
+    /** @deprecated Use resources instead */
     files?: string[];
+    /** Resources attached to this message */
+    resources?: PublicResource[];
+    /** Content items sent to API (for reference) */
+    contentItems?: ContentItem[];
     variables?: Record<string, any>;
 }
 

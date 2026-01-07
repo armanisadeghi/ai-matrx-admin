@@ -17,9 +17,19 @@ import type { AgentStreamEvent, AgentExecuteRequest, AgentWarmRequest } from '@/
 interface PromptAppPublicRendererFastAPIProps {
     app: PromptApp;
     slug: string;
+    /** Optional: Provide a pre-built component for testing instead of using dynamic component_code */
+    TestComponent?: React.ComponentType<{
+        onExecute: (variables: Record<string, any>, userInput?: string) => Promise<void>;
+        response: string;
+        streamEvents: StreamEvent[];
+        isStreaming: boolean;
+        isExecuting: boolean;
+        error: any;
+        rateLimitInfo: { remaining: number; total: number } | null;
+    }>;
 }
 
-export function PromptAppPublicRendererFastAPI({ app, slug }: PromptAppPublicRendererFastAPIProps) {
+export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: PromptAppPublicRendererFastAPIProps) {
     // Simple local state - NO Redux or Socket.IO! Uses Agent API (/api/agent/execute)
     const [isExecuting, setIsExecuting] = useState(false);
     const [error, setError] = useState<any>(null);
@@ -448,7 +458,13 @@ export function PromptAppPublicRendererFastAPI({ app, slug }: PromptAppPublicRen
     }, [app, slug, authToken, fingerprint, conversationId, guestLimit, validateVariables, convertAgentEventToStreamEvent]);
 
     // Transform and render custom UI component
+    // If TestComponent is provided, use it directly (for testing purposes)
     const CustomUIComponent = useMemo(() => {
+        // If a test component is provided, use it directly (bypasses dynamic transformation)
+        if (TestComponent) {
+            return TestComponent;
+        }
+        
         if (!app.component_code) return null;
 
         try {
@@ -481,7 +497,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug }: PromptAppPublicRen
             console.error('Failed to transform custom UI:', error);
             return null;
         }
-    }, [app.component_code]);
+    }, [app.component_code, TestComponent]);
 
     // Extract response text from stream events for backward compatibility
     const responseText = useMemo(() => {
@@ -578,7 +594,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug }: PromptAppPublicRen
                         </div>
 
                         {streamEvents.length > 0 && (
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <div className="bg-textured">
                                 <MarkdownStream
                                     events={streamEvents}
                                     isStreamActive={isExecuting && !isStreamComplete}

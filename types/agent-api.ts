@@ -21,6 +21,18 @@ export interface AgentWarmRequest {
 }
 
 /**
+ * Content part for multimodal user input
+ */
+export interface UserInputContentPart {
+  type: "input_text" | "input_image" | "input_audio" | "input_file";
+  text?: string;
+  image_url?: string;
+  audio_url?: string;
+  file_url?: string;
+  [key: string]: unknown;
+}
+
+/**
  * Request to execute an agent
  */
 export interface AgentExecuteRequest {
@@ -31,8 +43,14 @@ export interface AgentExecuteRequest {
    * Use the same ID across calls to continue the conversation.
    */
   conversation_id: string;
-  /** User message to send to the agent */
-  user_input?: string;
+  /** 
+   * User message to send to the agent.
+   * Can be a simple string or an array of content parts for multimodal input.
+   * 
+   * @example Simple text: "What is the weather today?"
+   * @example Multimodal: [{ type: "input_text", text: "What's in this image?" }, { type: "input_image", image_url: "https://..." }]
+   */
+  user_input?: string | UserInputContentPart[];
   /** Template variables to inject into the prompt (e.g., { topic: "AI Safety" }) */
   variables?: Record<string, unknown>;
   /** Override agent config settings (e.g., { temperature: 0.7, model: "gpt-4" }) */
@@ -43,6 +61,8 @@ export interface AgentExecuteRequest {
   stream?: boolean; // default: true
   /** Enable debug logging */
   debug?: boolean; // default: false
+  /** FingerprintJS visitor ID for guest user tracking (optional) */
+  fingerprint_id?: string;
 }
 
 // ============================================================================

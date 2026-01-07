@@ -3,7 +3,8 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useChatContext, ChatMessage } from '../context/ChatContext';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
-import type { AgentExecuteRequest, AgentStreamEvent, AgentWarmRequest } from '@/types/agent-api';
+import { buildContentArray, ContentItem, PublicResource } from '../types/content';
+import type { AgentStreamEvent, AgentWarmRequest } from '@/types/agent-api';
 
 // ============================================================================
 // TYPES
@@ -18,7 +19,24 @@ interface UseAgentChatOptions {
 interface SendMessageParams {
     content: string;
     variables?: Record<string, any>;
+    /** @deprecated Use resources instead */
     files?: string[];
+    /** Resources to attach to the message */
+    resources?: PublicResource[];
+}
+
+/**
+ * Agent Execute Request with content array support
+ */
+interface AgentExecuteRequestWithContent {
+    prompt_id: string;
+    conversation_id: string;
+    user_input: string | ContentItem[];
+    variables?: Record<string, any>;
+    config_overrides?: Record<string, unknown>;
+    stream: boolean;
+    debug: boolean;
+    is_builtin: boolean;
 }
 
 // ============================================================================
@@ -95,7 +113,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     }, [state.authToken, getBackendUrl]);
 
     // Send message to agent
-    const sendMessage = useCallback(async ({ content, variables = {}, files = [] }: SendMessageParams) => {
+    const sendMessage = useCallback(async ({ content, variables = {}, files = [], resources = [] }: SendMessageParams) => {
         if (!state.currentAgent) {
             setError({ type: 'config_error', message: 'No agent configured' });
             return false;
@@ -111,12 +129,30 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setError(null);
         streamEventsRef.current = [];
 
-        // Add user message
+        // Convert legacy files to resources if needed
+        const allResources: PublicResource[] = [...resources];
+        if (files.length > 0 && resources.length === 0) {
+            // Legacy support: convert file URLs to resources
+            files.forEach(url => {
+                // Try to determine type from URL
+                const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+                allResources.push({
+                    type: isImage ? 'image_url' : 'file_url',
+                    data: { url }
+                });
+            });
+        }
+
+        // Build content array for API
+        const contentItems = buildContentArray(content, allResources);
+
+        // Add user message with resources
         const userMessageId = addMessage({
             role: 'user',
             content,
             status: 'complete',
-            files,
+            resources: allResources.length > 0 ? allResources : undefined,
+            contentItems: contentItems.length > 1 ? contentItems : undefined,
             variables,
         });
 
@@ -153,14 +189,19 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 configOverrides.thinking_enabled = true;
             }
 
-            const agentRequest: AgentExecuteRequest = {
+            // Build request - use content array if we have resources, otherwise just text
+            const userInput = contentItems.length > 1 
+                ? contentItems 
+                : content;
+
+            const agentRequest: AgentExecuteRequestWithContent = {
                 prompt_id: promptId,
                 conversation_id: state.conversationId,
-                user_input: content,
+                user_input: userInput,
                 variables: Object.keys(variables).length > 0 ? variables : undefined,
                 config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
                 stream: true,
-                debug: false,
+                debug: true,
                 is_builtin: false,
             };
 
