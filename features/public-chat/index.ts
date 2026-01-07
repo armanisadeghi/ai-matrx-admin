@@ -35,3 +35,13 @@ export { MessageList } from './components/MessageDisplay';
 export { VariableInputs } from './components/VariableInputs';
 export type { VariableSchema } from './components/VariableInputs';
 export { AgentSelector, AgentActionButtons, DEFAULT_AGENTS } from './components/AgentSelector';
+
+// Resource Picker Components
+export { 
+    PublicResourcePickerMenu,
+    PublicUploadResourcePicker,
+    PublicImageUrlPicker,
+    PublicFileUrlPicker,
+    PublicYouTubePicker,
+    PublicWebpagePicker,
+} from './components/resource-picker';

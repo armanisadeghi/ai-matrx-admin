@@ -4,10 +4,33 @@ import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
 const TooltipProvider = TooltipPrimitive.Provider
 
-const Tooltip = TooltipPrimitive.Root
+/**
+ * Hydration-safe Tooltip wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const Tooltip = React.forwardRef<
+  React.ComponentRef<typeof TooltipPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <TooltipPrimitive.Root {...props}>
+      {children}
+    </TooltipPrimitive.Root>
+  )
+})
+Tooltip.displayName = "Tooltip"
 
 const TooltipTrigger = TooltipPrimitive.Trigger
 

@@ -5,8 +5,31 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const AlertDialog = AlertDialogPrimitive.Root
+/**
+ * Hydration-safe AlertDialog wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const AlertDialog = React.forwardRef<
+  React.ComponentRef<typeof AlertDialogPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <AlertDialogPrimitive.Root {...props}>
+      {children}
+    </AlertDialogPrimitive.Root>
+  )
+})
+AlertDialog.displayName = "AlertDialog"
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger
 

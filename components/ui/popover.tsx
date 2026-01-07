@@ -4,8 +4,31 @@ import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const Popover = PopoverPrimitive.Root
+/**
+ * Hydration-safe Popover wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const Popover = React.forwardRef<
+  React.ComponentRef<typeof PopoverPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <PopoverPrimitive.Root {...props}>
+      {children}
+    </PopoverPrimitive.Root>
+  )
+})
+Popover.displayName = "Popover"
 
 const PopoverTrigger = PopoverPrimitive.Trigger
 

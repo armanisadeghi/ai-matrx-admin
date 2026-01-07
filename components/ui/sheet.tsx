@@ -6,8 +6,31 @@ import { Cross2Icon } from "@radix-ui/react-icons"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const Sheet = SheetPrimitive.Root
+/**
+ * Hydration-safe Sheet wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const Sheet = React.forwardRef<
+  React.ComponentRef<typeof SheetPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <SheetPrimitive.Root {...props}>
+      {children}
+    </SheetPrimitive.Root>
+  )
+})
+Sheet.displayName = "Sheet"
 
 const SheetTrigger = SheetPrimitive.Trigger
 

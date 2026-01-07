@@ -16,6 +16,7 @@ import {
     Music,
     Youtube,
     Globe,
+    Database,
 } from 'lucide-react';
 import { CgAttachment } from 'react-icons/cg';
 import { LuBrain, LuBrainCircuit, LuSearchCheck } from 'react-icons/lu';
@@ -24,6 +25,9 @@ import { useChatContext } from '../context/ChatContext';
 import ToggleButton from '@/components/matrx/toggles/ToggleButton';
 import { usePublicFileUpload, PublicUploadResult } from '@/hooks/usePublicFileUpload';
 import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { PublicResourcePickerMenu } from './resource-picker/PublicResourcePickerMenu';
 import type { PublicResource, PublicResourceType } from '../types/content';
 
 // ============================================================================
@@ -247,29 +251,61 @@ interface InputBottomControlsProps {
     disabled: boolean;
     onSendMessage: () => void;
     hasResources: boolean;
-    onFileUploadClick?: () => void;
+    onResourceSelected: (resource: PublicResource) => void;
     isUploading?: boolean;
+    isAuthenticated?: boolean;
 }
 
-function InputBottomControls({ disabled, onSendMessage, hasResources, onFileUploadClick, isUploading }: InputBottomControlsProps) {
+function InputBottomControls({ 
+    disabled, 
+    onSendMessage, 
+    hasResources, 
+    onResourceSelected,
+    isUploading,
+    isAuthenticated = false,
+}: InputBottomControlsProps) {
     const { state, updateSettings } = useChatContext();
     const { settings } = state;
+    const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
 
     return (
         <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5 rounded-full">
             {/* Left side controls */}
             <div className="absolute bottom-2 left-4 flex items-center space-x-2">
-                {onFileUploadClick && (
-                    <ToggleButton
-                        isEnabled={hasResources}
-                        onClick={onFileUploadClick}
-                        disabled={disabled || isUploading}
-                        label=""
-                        defaultIcon={<CgAttachment />}
-                        enabledIcon={<Paperclip />}
-                        tooltip="Upload Files"
-                    />
-                )}
+                {/* Resource Picker Popover */}
+                <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
+                    <PopoverTrigger asChild>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={`h-7 w-7 p-0 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
+                                hasResources 
+                                    ? 'text-primary bg-primary/10' 
+                                    : 'text-gray-500 dark:text-gray-400'
+                            }`}
+                            disabled={disabled || isUploading}
+                            title="Add resources"
+                        >
+                            <Database className="w-4 h-4" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                        className="w-80 p-0 border-gray-300 dark:border-gray-700" 
+                        align="start" 
+                        side="top"
+                        sideOffset={8}
+                    >
+                        <PublicResourcePickerMenu 
+                            onResourceSelected={(resource) => {
+                                onResourceSelected(resource);
+                                setIsResourcePickerOpen(false);
+                            }}
+                            onClose={() => setIsResourcePickerOpen(false)}
+                            isAuthenticated={isAuthenticated}
+                        />
+                    </PopoverContent>
+                </Popover>
+
                 <ToggleButton
                     isEnabled={settings.searchEnabled}
                     onClick={() => updateSettings({ searchEnabled: !settings.searchEnabled })}
@@ -324,22 +360,23 @@ interface ChatInputWithControlsProps {
     disabled?: boolean;
     placeholder?: string;
     conversationId?: string;
-    enableFileUpload?: boolean;
+    enableResourcePicker?: boolean;
+    isAuthenticated?: boolean;
 }
 
 export function ChatInputWithControls({
     onSubmit,
     disabled = false,
     placeholder,
-    enableFileUpload = true,
+    enableResourcePicker = true,
+    isAuthenticated = false,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [resources, setResources] = useState<PublicResource[]>([]);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Public file upload hook - no Redux needed
+    // Public file upload hook - for clipboard paste
     const { uploadFile, isUploading, error: uploadError } = usePublicFileUpload({
         bucket: 'public-chat-uploads',
         path: 'chat-attachments',
@@ -385,7 +422,7 @@ export function ChatInputWithControls({
     useClipboardPaste({
         textareaRef: textInputRef,
         onPasteImage: handlePasteImage,
-        disabled: !enableFileUpload || disabled,
+        disabled: !enableResourcePicker || disabled,
     });
 
     useEffect(() => {
@@ -400,24 +437,10 @@ export function ChatInputWithControls({
         setResources(prev => prev.filter((_, i) => i !== index));
     }, []);
 
-    const handleFileUploadClick = useCallback(() => {
-        fileInputRef.current?.click();
+    // Handle resource selected from picker
+    const handleResourceSelected = useCallback((resource: PublicResource) => {
+        setResources(prev => [...prev, resource]);
     }, []);
-
-    const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        for (const file of files) {
-            const result = await uploadFile(file);
-            if (result) {
-                const resource = uploadResultToResource(result);
-                setResources(prev => [...prev, resource]);
-            }
-        }
-        // Reset input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    }, [uploadFile, uploadResultToResource]);
 
     const handleSubmit = useCallback(async () => {
         if (!content.trim() && resources.length === 0) return;
@@ -443,18 +466,6 @@ export function ChatInputWithControls({
 
     return (
         <div className="relative">
-            {/* Hidden file input */}
-            {enableFileUpload && (
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*,audio/*,video/*,application/pdf,text/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                />
-            )}
-
             <div className="relative rounded-3xl border border-zinc-300 dark:border-zinc-700">
                 {/* Resource chips display */}
                 {(resources.length > 0 || isUploading) && (
@@ -487,8 +498,9 @@ export function ChatInputWithControls({
                     disabled={isDisabled}
                     onSendMessage={handleSubmit}
                     hasResources={resources.length > 0}
-                    onFileUploadClick={enableFileUpload ? handleFileUploadClick : undefined}
+                    onResourceSelected={handleResourceSelected}
                     isUploading={isUploading}
+                    isAuthenticated={isAuthenticated}
                 />
             </div>
         </div>

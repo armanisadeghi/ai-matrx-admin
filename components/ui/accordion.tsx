@@ -5,8 +5,31 @@ import * as AccordionPrimitive from "@radix-ui/react-accordion"
 import {ChevronDownIcon} from "@radix-ui/react-icons"
 
 import {cn} from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const Accordion = AccordionPrimitive.Root
+/**
+ * Hydration-safe Accordion wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const Accordion = React.forwardRef<
+  React.ComponentRef<typeof AccordionPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <AccordionPrimitive.Root ref={ref} {...props}>
+      {children}
+    </AccordionPrimitive.Root>
+  )
+})
+Accordion.displayName = "Accordion"
 
 const AccordionItem = React.forwardRef<
     React.ComponentRef<typeof AccordionPrimitive.Item>,

@@ -4,8 +4,31 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const Tabs = TabsPrimitive.Root
+/**
+ * Hydration-safe Tabs wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const Tabs = React.forwardRef<
+  React.ComponentRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <TabsPrimitive.Root ref={ref} {...props}>
+      {children}
+    </TabsPrimitive.Root>
+  )
+})
+Tabs.displayName = "Tabs"
 
 const TabsList = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.List>,

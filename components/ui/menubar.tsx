@@ -9,6 +9,7 @@ import {
 import * as MenubarPrimitive from "@radix-ui/react-menubar"
 
 import { cn } from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
 const MenubarMenu = MenubarPrimitive.Menu
 
@@ -20,20 +21,34 @@ const MenubarSub = MenubarPrimitive.Sub
 
 const MenubarRadioGroup = MenubarPrimitive.RadioGroup
 
+/**
+ * Hydration-safe Menubar wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
 const Menubar = React.forwardRef<
   React.ComponentRef<typeof MenubarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <MenubarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "flex h-9 items-center space-x-1 rounded-md border bg-background p-1 shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
-Menubar.displayName = MenubarPrimitive.Root.displayName
+>(({ className, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <MenubarPrimitive.Root
+      ref={ref}
+      className={cn(
+        "flex h-9 items-center space-x-1 rounded-md border bg-background p-1 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+})
+Menubar.displayName = "Menubar"
 
 const MenubarTrigger = React.forwardRef<
   React.ComponentRef<typeof MenubarPrimitive.Trigger>,

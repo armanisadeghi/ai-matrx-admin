@@ -9,8 +9,31 @@ import {
 } from "@radix-ui/react-icons"
 
 import { cn } from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const ContextMenu = ContextMenuPrimitive.Root
+/**
+ * Hydration-safe ContextMenu wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const ContextMenu = React.forwardRef<
+  React.ComponentRef<typeof ContextMenuPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <ContextMenuPrimitive.Root {...props}>
+      {children}
+    </ContextMenuPrimitive.Root>
+  )
+})
+ContextMenu.displayName = "ContextMenu"
 
 const ContextMenuTrigger = ContextMenuPrimitive.Trigger
 

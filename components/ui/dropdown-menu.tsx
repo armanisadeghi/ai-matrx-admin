@@ -9,8 +9,31 @@ import {
 } from "@radix-ui/react-icons"
 
 import { cn } from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const DropdownMenu = DropdownMenuPrimitive.Root
+/**
+ * Hydration-safe DropdownMenu wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const DropdownMenu = React.forwardRef<
+  React.ComponentRef<typeof DropdownMenuPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <DropdownMenuPrimitive.Root {...props}>
+      {children}
+    </DropdownMenuPrimitive.Root>
+  )
+})
+DropdownMenu.displayName = "DropdownMenu"
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
 

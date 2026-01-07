@@ -11,8 +11,31 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/styles/themes/utils"
+import { useIsMounted } from "@/hooks/use-is-mounted"
 
-const Select = SelectPrimitive.Root
+/**
+ * Hydration-safe Select wrapper.
+ * Radix UI generates dynamic IDs for aria-controls that can differ between
+ * SSR and client, causing hydration mismatches. This wrapper defers rendering
+ * until after hydration to prevent these errors.
+ */
+const Select = React.forwardRef<
+  React.ComponentRef<typeof SelectPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>
+>(({ children, ...props }, ref) => {
+  const isMounted = useIsMounted()
+  
+  if (!isMounted) {
+    return null
+  }
+  
+  return (
+    <SelectPrimitive.Root {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  )
+})
+Select.displayName = "Select"
 
 const SelectGroup = SelectPrimitive.Group
 
