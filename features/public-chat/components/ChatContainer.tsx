@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { RefreshCw, Server } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { selectUser, selectIsAdmin } from '@/lib/redux/slices/userSlice';
+import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { useChatContext } from '../context/ChatContext';
 import { useAgentChat } from '../hooks/useAgentChat';
 import { ChatInputWithControls } from './ChatInputWithControls';
@@ -26,15 +26,14 @@ interface ChatContainerProps {
 // ============================================================================
 
 export function ChatContainer({ className = '' }: ChatContainerProps) {
-    const { state, setAgent, setAuth, startNewConversation, setUseLocalhost } = useChatContext();
+    const { state, setAgent, startNewConversation, setUseLocalhost } = useChatContext();
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [showSettings, setShowSettings] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    // Read auth state from Redux (populated by AuthSyncWrapper in PublicProviders)
-    const reduxUser = useSelector(selectUser);
-    const isAdmin = useSelector(selectIsAdmin);
+    
+    // Read server preference from Redux (set via AdminMenu in header)
+    const useLocalhost = useSelector(selectIsUsingLocalhost);
 
     const { sendMessage, warmAgent, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
         onStreamEvent: (event) => {
@@ -49,14 +48,11 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         },
     });
 
-    // Sync Redux auth state to chat context (for API token)
-    // No redundant Supabase call - just reads from Redux
+    // Sync Redux server preference to chat context
+    // AdminMenu in header controls this via Redux
     useEffect(() => {
-        const isAuthenticated = !!reduxUser.id;
-        // Note: Access token comes from Redux if needed, or we can get session token separately
-        // For now, we set auth based on Redux state - API calls can use session from Supabase client
-        setAuth(null, isAuthenticated, isAdmin);
-    }, [reduxUser.id, isAdmin, setAuth]);
+        setUseLocalhost(useLocalhost);
+    }, [useLocalhost, setUseLocalhost]);
 
     // Set default agent on mount
     useEffect(() => {
@@ -119,32 +115,12 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         setVariableValues({});
     }, [startNewConversation]);
 
-    const handleToggleLocalhost = useCallback(() => {
-        setUseLocalhost(!state.useLocalhost);
-    }, [setUseLocalhost, state.useLocalhost]);
-
     const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
     const hasVariables = state.currentAgent?.variables && state.currentAgent.variables.length > 0;
     const isWelcomeScreen = messages.length === 0;
 
     return (
         <div className={`h-full flex flex-col ${className}`}>
-            {/* Admin localhost toggle - reads from Redux */}
-            {isAdmin && (
-                <div className="flex-shrink-0 px-4 pt-2">
-                    <button
-                        onClick={handleToggleLocalhost}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 transition-colors"
-                        title={state.useLocalhost ? 'Using localhost:8000' : 'Using production server'}
-                    >
-                        <Server className="h-3.5 w-3.5" />
-                        <span className="font-medium">
-                            {state.useLocalhost ? '🏠 localhost:8000' : '🌐 Production'}
-                        </span>
-                    </button>
-                </div>
-            )}
-
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto scrollbar-hide">
                 {isWelcomeScreen ? (

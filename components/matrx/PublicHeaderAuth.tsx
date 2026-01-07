@@ -1,19 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, LogIn, Shield } from 'lucide-react';
+import { LayoutDashboard, LogIn } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { selectUser, selectDisplayName, selectProfilePhoto, selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { cn } from '@/lib/utils';
 
-// ===== PERFORMANCE TIMING LOGS =====
-const AUTH_MODULE_LOAD = typeof window !== 'undefined' ? performance.now() : 0;
-if (typeof window !== 'undefined') {
-  console.log(`[PERF] PublicHeaderAuth module loaded at: ${AUTH_MODULE_LOAD.toFixed(2)}ms`);
-}
+// Lazy load AdminMenu - only loads when user is admin
+const AdminMenu = lazy(() => import('./AdminMenu'));
 
 /**
  * Public Header Auth - Redux-powered
@@ -22,10 +19,9 @@ if (typeof window !== 'undefined') {
  * No direct Supabase calls - single source of truth.
  * 
  * Shows:
- * - Loading skeleton while auth syncing
  * - Sign In button for unauthenticated users
  * - User avatar + Dashboard button for authenticated users
- * - Admin badge for admin users
+ * - AdminMenu dropdown for admin users (lazy loaded)
  */
 export function PublicHeaderAuth() {
   const user = useSelector(selectUser);
@@ -33,11 +29,6 @@ export function PublicHeaderAuth() {
   const profilePhoto = useSelector(selectProfilePhoto);
   const isAdmin = useSelector(selectIsAdmin);
   const router = useRouter();
-
-  // ===== PERFORMANCE TIMING LOGS =====
-  React.useEffect(() => {
-    console.log(`[PERF] PublicHeaderAuth hydrated at: ${performance.now().toFixed(2)}ms`);
-  }, []);
 
   const isAuthenticated = !!user.id;
 
@@ -53,25 +44,21 @@ export function PublicHeaderAuth() {
   if (isAuthenticated) {
     return (
       <div className="flex items-center gap-1.5">
-        {/* Admin Badge - Only for admins */}
+        {/* Admin Menu - Lazy loaded, only for admins */}
         {isAdmin && (
-          <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md bg-orange-500/10 border border-orange-500/20">
-            <Shield className="h-3 w-3 text-orange-500" />
-            <span className="text-[10px] font-medium text-orange-500">Admin</span>
-          </div>
+          <Suspense fallback={<div className="w-16 h-7" />}>
+            <AdminMenu />
+          </Suspense>
         )}
 
         {/* User Avatar - Hidden on mobile */}
-        <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+        <div className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
           <Avatar className="h-5 w-5">
             <AvatarImage src={profilePhoto || undefined} alt={displayName} />
             <AvatarFallback className="text-[10px] bg-gradient-to-r from-blue-600 to-violet-600 text-white">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="text-xs font-medium text-foreground">
-            {displayName}
-          </span>
         </div>
 
         {/* Dashboard Button */}

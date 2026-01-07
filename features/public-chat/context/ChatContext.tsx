@@ -54,10 +54,9 @@ export interface ChatState {
     currentAgent: AgentConfig | null;
     settings: ChatSettings;
     modelOverride?: string;
-    authToken: string | null;
-    isAuthenticated: boolean;
-    isAdmin: boolean;
-    useLocalhost: boolean;
+    // Note: Auth (token, isAdmin, fingerprint) is now centralized in Redux via useApiAuth hook
+    // useLocalhost is also in Redux via adminPreferencesSlice
+    useLocalhost: boolean; // Kept for backward compat, reads from Redux
 }
 
 // ============================================================================
@@ -65,7 +64,6 @@ export interface ChatState {
 // ============================================================================
 
 type ChatAction =
-    | { type: 'SET_AUTH'; payload: { token: string | null; isAuthenticated: boolean; isAdmin?: boolean } }
     | { type: 'SET_AGENT'; payload: AgentConfig }
     | { type: 'ADD_MESSAGE'; payload: ChatMessage }
     | { type: 'UPDATE_MESSAGE'; payload: { id: string; updates: Partial<ChatMessage> } }
@@ -101,12 +99,7 @@ const createInitialState = (): ChatState => ({
     currentAgent: null,
     settings: defaultSettings,
     modelOverride: undefined,
-    authToken: null,
-    isAuthenticated: false,
-    isAdmin: false,
-    useLocalhost: typeof window !== 'undefined' 
-        ? localStorage.getItem('admin_use_localhost') === 'true' 
-        : false,
+    useLocalhost: false, // Synced from Redux
 });
 
 // ============================================================================
@@ -115,19 +108,8 @@ const createInitialState = (): ChatState => ({
 
 function chatReducer(state: ChatState, action: ChatAction): ChatState {
     switch (action.type) {
-        case 'SET_AUTH':
-            return {
-                ...state,
-                authToken: action.payload.token,
-                isAuthenticated: action.payload.isAuthenticated,
-                isAdmin: action.payload.isAdmin ?? state.isAdmin,
-            };
-
         case 'SET_USE_LOCALHOST':
-            // Persist to localStorage
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('admin_use_localhost', String(action.payload));
-            }
+            // Synced from Redux adminPreferencesSlice
             return { ...state, useLocalhost: action.payload };
 
         case 'SET_AGENT':
@@ -206,7 +188,6 @@ interface ChatContextValue {
     state: ChatState;
     dispatch: React.Dispatch<ChatAction>;
     // Convenience actions
-    setAuth: (token: string | null, isAuthenticated: boolean, isAdmin?: boolean) => void;
     setAgent: (agent: AgentConfig) => void;
     addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
     updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
@@ -240,10 +221,6 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         }
         return initial;
     });
-
-    const setAuth = useCallback((token: string | null, isAuthenticated: boolean, isAdmin?: boolean) => {
-        dispatch({ type: 'SET_AUTH', payload: { token, isAuthenticated, isAdmin } });
-    }, []);
 
     const setUseLocalhost = useCallback((useLocalhost: boolean) => {
         dispatch({ type: 'SET_USE_LOCALHOST', payload: useLocalhost });
@@ -301,7 +278,6 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
     const value: ChatContextValue = {
         state,
         dispatch,
-        setAuth,
         setAgent,
         addMessage,
         updateMessage,
@@ -338,7 +314,6 @@ export function useChatState() {
 
 export function useChatActions() {
     const {
-        setAuth,
         setAgent,
         addMessage,
         updateMessage,
@@ -354,7 +329,6 @@ export function useChatActions() {
     } = useChatContext();
 
     return {
-        setAuth,
         setAgent,
         addMessage,
         updateMessage,

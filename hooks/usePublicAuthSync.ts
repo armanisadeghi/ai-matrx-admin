@@ -4,19 +4,25 @@
 
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { setUser, clearUser } from '@/lib/redux/slices/userSlice';
+import { setUser, setFingerprintId } from '@/lib/redux/slices/userSlice';
 import { createClient } from '@/utils/supabase/client';
+import { getFingerprint } from '@/lib/services/fingerprint-service';
 
 /**
- * Syncs Supabase auth state to Redux.
+ * Syncs authentication state to Redux for ALL public routes.
+ * 
+ * For authenticated users: stores user info + access token
+ * For guests: stores fingerprint ID (for API authentication)
  * 
  * Call this ONCE at the top level (PublicProviders).
- * All other components read from Redux - no redundant auth checks.
+ * All other components read from Redux via useApiAuth hook.
  * 
  * Features:
  * - Delayed start (100ms) to not block initial render
+ * - Gets session (includes access token) for authenticated users
+ * - Gets fingerprint for guests (for guest API access)
  * - Checks admin status from database
- * - Dispatches to Redux user slice
+ * - Sets authReady=true when complete (either path)
  * - Non-blocking, runs after hydration
  */
 export function usePublicAuthSync() {
@@ -33,9 +39,18 @@ export function usePublicAuthSync() {
             
             try {
                 const supabase = createClient();
-                const { data: { user } } = await supabase.auth.getUser();
                 
-                if (user) {
+                // Get session (includes access token) - not just user
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) {
+                    console.error('Session error:', sessionError);
+                }
+                
+                if (session?.user) {
+                    // AUTHENTICATED USER PATH
+                    const user = session.user;
+                    
                     // Check admin status
                     let isAdmin = false;
                     try {
@@ -49,7 +64,7 @@ export function usePublicAuthSync() {
                         // Admin check failed, default to false
                     }
 
-                    // Dispatch to Redux
+                    // Dispatch to Redux with access token (authReady set automatically)
                     dispatch(setUser({
                         id: user.id,
                         email: user.email || null,
@@ -81,18 +96,32 @@ export function usePublicAuthSync() {
                             name: i.identity_data?.name || null,
                         })) || [],
                         isAdmin,
-                        accessToken: null, // Session token handled separately if needed
-                        tokenExpiresAt: null,
+                        accessToken: session.access_token,
+                        tokenExpiresAt: session.expires_at || null,
                     }));
-
-                    console.log(`[PERF] Auth sync completed at: ${performance.now().toFixed(2)}ms (took ${(performance.now() - startTime).toFixed(2)}ms, admin: ${isAdmin})`);
                 } else {
-                    dispatch(clearUser());
-                    console.log(`[PERF] Auth sync: No user (took ${(performance.now() - startTime).toFixed(2)}ms)`);
+                    // GUEST USER PATH - get fingerprint for API authentication
+                    try {
+                        const fingerprintId = await getFingerprint();
+                        dispatch(setFingerprintId(fingerprintId));
+                    } catch (fpError) {
+                        console.error('Fingerprint error:', fpError);
+                        // Still set a temporary fingerprint so authReady becomes true
+                        dispatch(setFingerprintId(`temp_${Date.now()}_${Math.random().toString(36).substring(7)}`));
+                    }
                 }
+                
+                // Single consolidated log - route is now fully ready
+                console.log(`[Public Route Ready] ${(performance.now() - startTime).toFixed(0)}ms`);
             } catch (error) {
                 console.error('Auth sync error:', error);
-                dispatch(clearUser());
+                // Even on error, try to get fingerprint so guests can still use the site
+                try {
+                    const fingerprintId = await getFingerprint();
+                    dispatch(setFingerprintId(fingerprintId));
+                } catch {
+                    dispatch(setFingerprintId(`temp_${Date.now()}_${Math.random().toString(36).substring(7)}`));
+                }
             }
         };
 

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { transform } from '@babel/standalone';
-import { AlertCircle, Server } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import { getFingerprint } from '@/lib/services/fingerprint-service';
+import { useApiAuth } from '@/hooks/useApiAuth';
 import { useGuestLimit } from '@/hooks/useGuestLimit';
 import { GuestLimitWarning } from '@/components/guest/GuestLimitWarning';
 import { SignupConversionModal } from '@/components/guest/SignupConversionModal';
@@ -13,6 +13,8 @@ import MarkdownStream from '@/components/MarkdownStream';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import type { PromptApp } from '../types';
 import type { AgentStreamEvent, AgentExecuteRequest, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
+import { useSelector } from 'react-redux';
+import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 
 interface PromptAppPublicRendererFastAPIProps {
     app: PromptApp;
@@ -30,67 +32,31 @@ interface PromptAppPublicRendererFastAPIProps {
 }
 
 export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: PromptAppPublicRendererFastAPIProps) {
-    // Simple local state - NO Redux or Socket.IO! Uses Agent API (/api/agent/execute)
+    // Local state for execution
     const [isExecuting, setIsExecuting] = useState(false);
     const [error, setError] = useState<any>(null);
-    const [fingerprint, setFingerprint] = useState('');
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isStreamComplete, setIsStreamComplete] = useState(false);
-    const [authToken, setAuthToken] = useState<string | null>(null);
     const [conversationId] = useState(() => uuidv4()); // Generate once per component instance
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [useLocalhost, setUseLocalhost] = useState(() => {
-        // Load from localStorage on mount
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('admin_use_localhost') === 'true';
-        }
-        return false;
-    });
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    
+    // Centralized auth - handles both authenticated users and guests
+    const { getHeaders, waitForAuth, isAuthenticated, isAdmin, fingerprintId } = useApiAuth();
+    
+    // Server preference from Redux (admin feature)
+    const useLocalhost = useSelector(selectIsUsingLocalhost);
     
     // Use guest limit hook for tracking and UI
     const guestLimit = useGuestLimit();
     
-    // Generate fingerprint on mount using centralized service
-    useEffect(() => {
-        getFingerprint().then(fp => setFingerprint(fp));
-    }, []);
-    
-    // Check for authentication token and admin status on mount
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const { createClient } = await import('@/utils/supabase/client');
-                const supabase = createClient();
-                const { data: { session } } = await supabase.auth.getSession();
-                setAuthToken(session?.access_token || null);
-                
-                // Check if user is an admin
-                if (session?.user?.id) {
-                    const { data: adminData } = await supabase
-                        .from('admins')
-                        .select('user_id')
-                        .eq('user_id', session.user.id)
-                        .maybeSingle();
-                    
-                    setIsAdmin(!!adminData);
-                }
-            } catch (err) {
-                setAuthToken(null);
-                setIsAdmin(false);
-            }
-        }
-        checkAuth();
-    }, []);
-    
     // OPTIMIZATION: Proactively check guest limit in background (after fingerprint ready)
     useEffect(() => {
-        if (!fingerprint) return;
+        if (!fingerprintId) return;
         // This caches the guest limit status for instant checking during execution
         guestLimit.refresh();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fingerprint]);
+    }, [fingerprintId]);
     
     // OPTIMIZATION: Pre-warm the agent on mount (cache the prompt for faster execution)
     useEffect(() => {
@@ -103,13 +69,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 const BACKEND_URL = (isAdmin && useLocalhost) 
                     ? 'http://localhost:8000' 
                     : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
-                const headers: Record<string, string> = {
-                    'Content-Type': 'application/json',
-                };
-                
-                if (authToken) {
-                    headers['Authorization'] = `Bearer ${authToken}`;
-                }
                 
                 const warmRequest: AgentWarmRequest = {
                     prompt_id: promptId,
@@ -118,19 +77,18 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 
                 await fetch(`${BACKEND_URL}/api/agent/warm`, {
                     method: 'POST',
-                    headers,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(warmRequest),
                 });
                 
-                console.log('✅ Agent pre-warmed and cached');
+                console.log('Agent pre-warmed:', promptId);
             } catch (err) {
-                // Non-critical error, just log it
-                console.warn('⚠️ Failed to pre-warm agent (non-critical):', err);
+                console.warn('Failed to pre-warm agent (non-critical):', err);
             }
         };
         
         warmAgent();
-    }, [app.prompt_id, authToken, isAdmin, useLocalhost]);
+    }, [app.prompt_id, isAdmin, useLocalhost]);
     
     // Cleanup timeout and abort controller on unmount
     useEffect(() => {
@@ -264,7 +222,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             
             // STEP 2: Check guest limit from CACHE
-            if (!authToken && !guestLimit.allowed) {
+            if (!isAuthenticated && !guestLimit.allowed) {
                 logTiming('✗ Guest limit exceeded');
                 setError({
                     type: 'execution_error',
@@ -287,19 +245,24 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             logTiming('✓ Prompt ID verified');
             
-            // STEP 4: Build Agent API request (much simpler!)
+            // STEP 4: Wait for auth to be ready and get headers
+            const authReady = await waitForAuth();
+            if (!authReady) {
+                setError({
+                    type: 'auth_error',
+                    message: 'Unable to verify access. Please refresh the page.'
+                });
+                setIsExecuting(false);
+                return;
+            }
+            
             // Admin can override to use localhost
             const BACKEND_URL = (isAdmin && useLocalhost) 
                 ? 'http://localhost:8000' 
                 : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
             
-            const headers: Record<string, string> = {
-                'Content-Type': 'application/json',
-            };
-            
-            if (authToken) {
-                headers['Authorization'] = `Bearer ${authToken}`;
-            }
+            // Get auth headers (handles both authenticated users and guests)
+            const headers = getHeaders();
             
             const agentRequest: AgentExecuteRequest = {
                 prompt_id: promptId,
@@ -328,10 +291,11 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 let errorMsg = `HTTP ${fetchResponse.status}`;
                 try {
                     const errorData = await fetchResponse.json();
+                    console.log('errorData', JSON.stringify(errorData, null, 2));
                     if (typeof errorData.error === 'object' && errorData.error !== null) {
                         errorMsg = errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
                     } else {
-                        errorMsg = errorData.error || errorData.message || errorData.details || errorMsg;
+                        errorMsg = errorData.error || errorData.message || errorData.detail || errorData.details || errorMsg;
                     }
                 } catch (e) {
                     // Use default error
@@ -352,7 +316,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     app_id: app.id,
                     variables_provided: variables,
                     variables_used: validVariables,
-                    fingerprint,
+                    fingerprint: fingerprintId,
                     chat_config: { prompt_id: promptId, conversation_id: conversationId },
                     metadata: {
                         timestamp: new Date().toISOString(),
@@ -455,7 +419,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             setIsExecuting(false);
             abortControllerRef.current = null;
         }
-    }, [app, slug, authToken, fingerprint, conversationId, guestLimit, validateVariables, convertAgentEventToStreamEvent]);
+    }, [app, slug, conversationId, isAdmin, useLocalhost, isAuthenticated, fingerprintId, guestLimit, waitForAuth, getHeaders, validateVariables, convertAgentEventToStreamEvent]);
 
     // Transform and render custom UI component
     // If TestComponent is provided, use it directly (for testing purposes)
@@ -507,31 +471,11 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             .join('');
     }, [streamEvents]);
 
-    // Toggle localhost handler
-    const handleToggleLocalhost = useCallback(() => {
-        const newValue = !useLocalhost;
-        setUseLocalhost(newValue);
-        localStorage.setItem('admin_use_localhost', String(newValue));
-    }, [useLocalhost]);
+    // Admin localhost toggle is now in the header (AdminMenu)
+    // No need for local toggle - reads from Redux
 
     return (
         <div className="h-full flex flex-col">
-            {/* Admin localhost toggle */}
-            {isAdmin && (
-                <div className="flex-shrink-0 px-4 pt-2">
-                    <button
-                        onClick={handleToggleLocalhost}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 transition-colors"
-                        title={useLocalhost ? 'Using localhost:8000' : 'Using production server'}
-                    >
-                        <Server className="h-3.5 w-3.5" />
-                        <span className="font-medium">
-                            {useLocalhost ? '🏠 localhost:8000' : '🌐 Production'}
-                        </span>
-                    </button>
-                </div>
-            )}
-            
             {/* Guest limit warning */}
             {guestLimit.showWarning && (
                 <div className="flex-shrink-0 p-4">
@@ -559,7 +503,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                         isStreaming={!isStreamComplete && isExecuting}
                         isExecuting={isExecuting}
                         error={error}
-                        rateLimitInfo={!authToken ? {
+                        rateLimitInfo={!isAuthenticated ? {
                             remaining: guestLimit.remaining,
                             total: 5
                         } : null}

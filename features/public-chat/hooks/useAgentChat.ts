@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useRef, useEffect } from 'react';
-import { useChatContext, ChatMessage } from '../context/ChatContext';
+import { useChatContext } from '../context/ChatContext';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
 import type { AgentStreamEvent, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
+import { useApiAuth } from '@/hooks/useApiAuth';
 
 // ============================================================================
 // TYPES
@@ -47,6 +48,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     const { state, addMessage, updateMessage, setStreaming, setExecuting, setError } = useChatContext();
     const abortControllerRef = useRef<AbortController | null>(null);
     const streamEventsRef = useRef<StreamEvent[]>([]);
+    
+    // Centralized auth - handles both authenticated users and guests
+    const { getHeaders, waitForAuth, isAdmin } = useApiAuth();
 
     // Cleanup on unmount
     useEffect(() => {
@@ -77,24 +81,19 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         }
     }, []);
 
-    // Get backend URL (admin can override to localhost)
+    // Get backend URL (admin can override to localhost via Redux)
     const getBackendUrl = useCallback(() => {
-        if (state.isAdmin && state.useLocalhost) {
+        if (isAdmin && state.useLocalhost) {
             return 'http://localhost:8000';
         }
         return process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
-    }, [state.isAdmin, state.useLocalhost]);
+    }, [isAdmin, state.useLocalhost]);
 
-    // Warm up agent (pre-cache prompt)
+    // Warm up agent (pre-cache prompt) - no auth required
     const warmAgent = useCallback(async (promptId: string) => {
         try {
             const BACKEND_URL = getBackendUrl();
-            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-            if (state.authToken) {
-                headers['Authorization'] = `Bearer ${state.authToken}`;
-            }
-
+            
             const warmRequest: AgentWarmRequest = {
                 prompt_id: promptId,
                 is_builtin: false,
@@ -102,7 +101,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             await fetch(`${BACKEND_URL}/api/agent/warm`, {
                 method: 'POST',
-                headers,
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(warmRequest),
             });
 
@@ -110,7 +109,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         } catch (err) {
             console.warn('Failed to pre-warm agent (non-critical):', err);
         }
-    }, [state.authToken, getBackendUrl]);
+    }, [getBackendUrl]);
 
     // Send message to agent
     const sendMessage = useCallback(async ({ content, variables = {}, files = [], resources = [] }: SendMessageParams) => {
@@ -122,6 +121,13 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         const promptId = state.currentAgent.promptId;
         if (!promptId) {
             setError({ type: 'config_error', message: 'No prompt ID configured' });
+            return false;
+        }
+
+        // Wait for auth to be ready (handles both authenticated users and guests)
+        const authReady = await waitForAuth();
+        if (!authReady) {
+            setError({ type: 'auth_error', message: 'Unable to verify access. Please refresh the page.' });
             return false;
         }
 
@@ -171,11 +177,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
         try {
             const BACKEND_URL = getBackendUrl();
-            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-            if (state.authToken) {
-                headers['Authorization'] = `Bearer ${state.authToken}`;
-            }
+            
+            // Get auth headers (handles both authenticated users and guests)
+            const headers = getHeaders();
 
             // Build config overrides
             const configOverrides: Record<string, unknown> = {};
@@ -330,9 +334,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     }, [
         state.currentAgent,
         state.conversationId,
-        state.authToken,
         state.modelOverride,
         state.settings,
+        waitForAuth,
+        getHeaders,
         addMessage,
         updateMessage,
         setStreaming,
