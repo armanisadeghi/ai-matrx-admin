@@ -4,12 +4,12 @@
 /**
  * BACKEND SUPPORTED TYPES (from types/agent-api.ts):
  * - input_text: { type, text }
- * - input_image: { type, image_url }
- * - input_audio: { type, audio_url }
- * - input_file: { type, file_url }
+ * - input_image: { type, url }
+ * - input_audio: { type, url }
+ * - input_file: { type, url }
  * 
- * Backend accepts [key: string]: unknown, so additional fields won't break,
- * but only the above are officially processed.
+ * All file/media types use a consistent 'url' field for the resource location.
+ * Backend accepts [key: string]: unknown, so additional fields won't break.
  */
 
 /**
@@ -30,29 +30,29 @@ export interface TextContentItem extends BaseContentItem {
 
 /**
  * Image input content
- * Backend field: image_url
+ * Backend field: url
  */
 export interface ImageContentItem extends BaseContentItem {
     type: 'input_image';
-    image_url: string;
+    url: string;
 }
 
 /**
  * Audio input content
- * Backend field: audio_url
+ * Backend field: url
  */
 export interface AudioContentItem extends BaseContentItem {
     type: 'input_audio';
-    audio_url: string;
+    url: string;
 }
 
 /**
  * Generic file input (server will determine type)
- * Backend field: file_url
+ * Backend field: url
  */
 export interface FileContentItem extends BaseContentItem {
     type: 'input_file';
-    file_url: string;
+    url: string;
 }
 
 // Video and Document types are handled as input_file by the backend
@@ -134,8 +134,8 @@ export type ContentItem =
  */
 export type PublicResourceType =
     | 'file'        // Uploaded file
-    | 'image_url'   // Direct image URL
-    | 'file_url'    // Direct file URL
+    | 'image_link'  // Direct image URL
+    | 'file_link'   // Direct file URL
     | 'audio'       // Audio file
     | 'youtube'     // YouTube video
     | 'webpage'     // Scraped webpage
@@ -171,21 +171,21 @@ export interface PublicResource {
 /**
  * Convert a PublicResource to a ContentItem for the API
  * 
- * IMPORTANT: Only include fields the backend expects:
+ * All media/file types use a consistent 'url' field:
  * - input_text: { type, text }
- * - input_image: { type, image_url }
- * - input_audio: { type, audio_url }
- * - input_file: { type, file_url }
+ * - input_image: { type, url }
+ * - input_audio: { type, url }
+ * - input_file: { type, url }
  */
 export function resourceToContentItem(resource: PublicResource): ContentItem | null {
     const { type, data } = resource;
 
     switch (type) {
-        case 'image_url':
+        case 'image_link':
             if (!data.url) return null;
             return {
                 type: 'input_image',
-                image_url: data.url,
+                url: data.url,
             };
 
         case 'file':
@@ -196,33 +196,33 @@ export function resourceToContentItem(resource: PublicResource): ContentItem | n
             if (mimeType.startsWith('image/')) {
                 return {
                     type: 'input_image',
-                    image_url: data.url,
+                    url: data.url,
                 };
             }
             if (mimeType.startsWith('audio/')) {
                 return {
                     type: 'input_audio',
-                    audio_url: data.url,
+                    url: data.url,
                 };
             }
             // Video, document, and other files all go as input_file
             return {
                 type: 'input_file',
-                file_url: data.url,
+                url: data.url,
             };
 
-        case 'file_url':
+        case 'file_link':
             if (!data.url) return null;
             return {
                 type: 'input_file',
-                file_url: data.url,
+                url: data.url,
             };
 
         case 'audio':
             if (!data.url) return null;
             return {
                 type: 'input_audio',
-                audio_url: data.url,
+                url: data.url,
             };
 
         case 'youtube':

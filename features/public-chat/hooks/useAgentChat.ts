@@ -4,7 +4,7 @@ import { useCallback, useRef, useEffect } from 'react';
 import { useChatContext, ChatMessage } from '../context/ChatContext';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
-import type { AgentStreamEvent, AgentWarmRequest } from '@/types/agent-api';
+import type { AgentStreamEvent, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
 
 // ============================================================================
 // TYPES
@@ -137,7 +137,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 // Try to determine type from URL
                 const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
                 allResources.push({
-                    type: isImage ? 'image_url' : 'file_url',
+                    type: isImage ? 'image_link' : 'file_link',
                     data: { url }
                 });
             });

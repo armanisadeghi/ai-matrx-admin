@@ -1,8 +1,10 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
-import PresentationExportMenu from './PresentationExportMenu';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+
+// Lazy load PresentationExportMenu to avoid loading GoogleAPIProvider on initial render
+const PresentationExportMenu = lazy(() => import('./PresentationExportMenu'));
 
 
 // Helper to parse markdown bold syntax
@@ -99,13 +101,15 @@ const Slideshow = (presentationData: PresentationData & { taskId?: string }) => 
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Export Menu */}
-              <PresentationExportMenu
-                presentationData={presentationData}
-                presentationTitle={slides[0]?.title || 'presentation'}
-                slideContainerRef={slideContainerRef}
-                slides={slides}
-              />
+              {/* Export Menu - Lazy loaded to avoid GoogleAPIProvider on initial render */}
+              <Suspense fallback={<div className="w-8 h-8" />}>
+                <PresentationExportMenu
+                  presentationData={presentationData}
+                  presentationTitle={slides[0]?.title || 'presentation'}
+                  slideContainerRef={slideContainerRef}
+                  slides={slides}
+                />
+              </Suspense>
               
               {/* Canvas Button - Only show when not in fullscreen */}
               {!isFullScreen && (

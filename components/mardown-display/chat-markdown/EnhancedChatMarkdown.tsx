@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useEffect, useMemo, useCallback, ErrorInfo, useContext } from "react";
+import React, { useState, useEffect, useMemo, useCallback, ErrorInfo, useContext, useRef } from "react";
 import { cn } from "@/styles/themes/utils";
 import { ContentBlock, splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
 import { ReactReduxContext } from 'react-redux';
-import { selectPrimaryResponseToolUpdatesByTaskId } from "@/lib/redux/socket-io";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import { BlockRenderer } from "./block-registry/BlockRenderer";
 
@@ -149,20 +148,36 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     const reduxContext = useContext(ReactReduxContext);
     const hasReduxProvider = reduxContext !== null && reduxContext.store !== undefined;
 
-    // Get tool updates from Redux only if Redux is available and we don't have direct prop
+    // Cache for the dynamically imported selector
+    const selectorRef = useRef<((taskId?: string) => (state: any) => any[]) | null>(null);
+    const [selectorLoaded, setSelectorLoaded] = useState(false);
+
+    // Dynamically import the selector only when needed (has Redux + taskId + no direct prop)
+    useEffect(() => {
+        if (hasReduxProvider && taskId && toolUpdatesProp === undefined && !selectorRef.current) {
+            import("@/lib/redux/socket-io").then((module) => {
+                selectorRef.current = module.selectPrimaryResponseToolUpdatesByTaskId;
+                setSelectorLoaded(true);
+            }).catch(() => {
+                // Silently fail - tool updates just won't be available
+            });
+        }
+    }, [hasReduxProvider, taskId, toolUpdatesProp]);
+
+    // Get tool updates from Redux only if Redux is available, selector is loaded, and we don't have direct prop
     const toolUpdatesFromRedux = useMemo(() => {
-        if (!hasReduxProvider || toolUpdatesProp !== undefined) {
+        if (!hasReduxProvider || toolUpdatesProp !== undefined || !selectorRef.current) {
             return [];
         }
         try {
             const state = reduxContext.store.getState();
-            const selector = selectPrimaryResponseToolUpdatesByTaskId(taskId);
+            const selector = selectorRef.current(taskId);
             return selector(state) || [];
         } catch (error) {
             // Gracefully handle any selector errors
             return [];
         }
-    }, [hasReduxProvider, reduxContext?.store, taskId, toolUpdatesProp]);
+    }, [hasReduxProvider, reduxContext?.store, taskId, toolUpdatesProp, selectorLoaded]);
 
     // Use directly passed tool updates if provided, otherwise fall back to Redux
     const toolUpdates = toolUpdatesProp !== undefined ? toolUpdatesProp : toolUpdatesFromRedux;

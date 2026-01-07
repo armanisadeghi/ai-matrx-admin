@@ -1,7 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { useTheme } from "@/styles/themes/ThemeProvider";
-import MarkdownAnalyzer from "./analyzer/MarkdownAnalyzer";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
@@ -12,6 +11,11 @@ import LinesViewer from "./analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
 import MarkdownStream from "@/components/MarkdownStream";
 import TuiEditorContent, { type TuiEditorContentRef } from "./tui/TuiEditorContent";
+
+
+import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+const MarkdownAnalyzer = lazy(() => import("./analyzer/MarkdownAnalyzer"));
+
 
 interface FullScreenMarkdownEditorProps {
     isOpen: boolean;
@@ -161,7 +165,11 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         tabDefinitions.push({
             id: "analysis",
             label: "Analysis",
-            content: <MarkdownAnalyzer messageId={messageId} />,
+            content: (
+                <Suspense fallback={<SuspenseLoader />}>
+                    <MarkdownAnalyzer messageId={messageId} />
+                </Suspense>
+            ),
             className: "p-4"
         });
     }

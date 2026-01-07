@@ -9,7 +9,7 @@ import type { PublicResource } from "../../types/content";
 interface PublicImageUrlPickerProps {
     onBack: () => void;
     onSelect: (resource: PublicResource) => void;
-    onSwitchTo?: (type: 'webpage' | 'youtube' | 'file_url', url: string) => void;
+    onSwitchTo?: (type: 'webpage' | 'youtube' | 'file_link', url: string) => void;
     initialUrl?: string;
 }
 
@@ -44,7 +44,7 @@ function detectUrlType(url: string): 'youtube' | 'image' | 'webpage' | 'file' | 
 }
 
 // Validate if URL is an image
-function validateImageUrl(url: string): { isValid: boolean; type?: string; error?: string; suggestedType?: 'webpage' | 'youtube' | 'file_url' } {
+function validateImageUrl(url: string): { isValid: boolean; type?: string; error?: string; suggestedType?: 'webpage' | 'youtube' | 'file_link' } {
     try {
         const urlObj = new URL(url);
         if (!urlObj.protocol.startsWith('http')) {
@@ -58,7 +58,7 @@ function validateImageUrl(url: string): { isValid: boolean; type?: string; error
         }
         
         if (detectedType === 'file') {
-            return { isValid: false, error: 'This appears to be a file URL', suggestedType: 'file_url' };
+            return { isValid: false, error: 'This appears to be a file URL', suggestedType: 'file_link' };
         }
         
         if (detectedType === 'webpage') {
@@ -83,7 +83,7 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
     const [url, setUrl] = useState(initialUrl || "");
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [suggestedType, setSuggestedType] = useState<'webpage' | 'youtube' | 'file_url' | null>(null);
+    const [suggestedType, setSuggestedType] = useState<'webpage' | 'youtube' | 'file_link' | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [mimeType, setMimeType] = useState<string>('image/jpeg');
     const inputRef = useRef<HTMLInputElement>(null);
@@ -127,7 +127,7 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
     const handleSelect = () => {
         if (previewUrl) {
             const resource: PublicResource = {
-                type: 'image_url',
+                type: 'image_link',
                 data: {
                     url: previewUrl,
                     mime_type: mimeType,

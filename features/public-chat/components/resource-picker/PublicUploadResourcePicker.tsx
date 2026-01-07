@@ -29,7 +29,7 @@ export function PublicUploadResourcePicker({ onBack, onSelect }: PublicUploadRes
         // Determine resource type based on mime type
         let resourceType: PublicResourceType = 'file';
         if (mimeType.startsWith('image/')) {
-            resourceType = 'image_url';
+            resourceType = 'image_link';
         } else if (mimeType.startsWith('audio/')) {
             resourceType = 'audio';
         }

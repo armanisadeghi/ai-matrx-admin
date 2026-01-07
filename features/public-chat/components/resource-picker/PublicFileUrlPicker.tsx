@@ -9,7 +9,7 @@ import type { PublicResource } from "../../types/content";
 interface PublicFileUrlPickerProps {
     onBack: () => void;
     onSelect: (resource: PublicResource) => void;
-    onSwitchTo?: (type: 'webpage' | 'youtube' | 'image_url', url: string) => void;
+    onSwitchTo?: (type: 'webpage' | 'youtube' | 'image_link', url: string) => void;
     initialUrl?: string;
 }
 
@@ -72,7 +72,7 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
     const [url, setUrl] = useState(initialUrl || "");
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [suggestedType, setSuggestedType] = useState<'webpage' | 'youtube' | 'image_url' | null>(null);
+    const [suggestedType, setSuggestedType] = useState<'webpage' | 'youtube' | 'image_link' | null>(null);
     const [fileInfo, setFileInfo] = useState<{ url: string; filename: string; mimeType: string } | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -117,7 +117,7 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
             
             if (detectedType === 'image') {
                 setError('This appears to be an image URL');
-                setSuggestedType('image_url');
+                setSuggestedType('image_link');
                 setIsValidating(false);
                 return;
             }
@@ -147,7 +147,7 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
     const handleSelect = () => {
         if (fileInfo) {
             const resource: PublicResource = {
-                type: 'file_url',
+                type: 'file_link',
                 data: {
                     url: fileInfo.url,
                     filename: fileInfo.filename,

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { Bot, RefreshCw, Settings2, Server } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { RefreshCw, Server } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { selectUser, selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { useChatContext } from '../context/ChatContext';
 import { useAgentChat } from '../hooks/useAgentChat';
 import { ChatInputWithControls } from './ChatInputWithControls';
@@ -31,6 +32,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const [showSettings, setShowSettings] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Read auth state from Redux (populated by AuthSyncWrapper in PublicProviders)
+    const reduxUser = useSelector(selectUser);
+    const isAdmin = useSelector(selectIsAdmin);
+
     const { sendMessage, warmAgent, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
         onStreamEvent: (event) => {
             setStreamEvents((prev) => [...prev, event]);
@@ -44,33 +49,14 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         },
     });
 
-    // Check for authentication and admin status on mount
+    // Sync Redux auth state to chat context (for API token)
+    // No redundant Supabase call - just reads from Redux
     useEffect(() => {
-        async function checkAuth() {
-            try {
-                const { createClient } = await import('@/utils/supabase/client');
-                const supabase = createClient();
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                let isAdmin = false;
-                if (session?.user?.id) {
-                    // Check if user is an admin
-                    const { data: adminData } = await supabase
-                        .from('admins')
-                        .select('user_id')
-                        .eq('user_id', session.user.id)
-                        .maybeSingle();
-                    
-                    isAdmin = !!adminData;
-                }
-                
-                setAuth(session?.access_token || null, !!session, isAdmin);
-            } catch (err) {
-                setAuth(null, false, false);
-            }
-        }
-        checkAuth();
-    }, [setAuth]);
+        const isAuthenticated = !!reduxUser.id;
+        // Note: Access token comes from Redux if needed, or we can get session token separately
+        // For now, we set auth based on Redux state - API calls can use session from Supabase client
+        setAuth(null, isAuthenticated, isAdmin);
+    }, [reduxUser.id, isAdmin, setAuth]);
 
     // Set default agent on mount
     useEffect(() => {
@@ -143,8 +129,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
     return (
         <div className={`h-full flex flex-col ${className}`}>
-            {/* Admin localhost toggle */}
-            {state.isAdmin && (
+            {/* Admin localhost toggle - reads from Redux */}
+            {isAdmin && (
                 <div className="flex-shrink-0 px-4 pt-2">
                     <button
                         onClick={handleToggleLocalhost}

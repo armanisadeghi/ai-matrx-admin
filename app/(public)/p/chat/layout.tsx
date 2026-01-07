@@ -1,6 +1,5 @@
 // app/(public)/p/chat/layout.tsx
 import type { Metadata } from 'next';
-import { LiteProviders } from '@/app/LiteProviders';
 
 export const metadata: Metadata = {
     title: 'Chat | AI Matrx',
@@ -12,8 +11,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * Chat Layout - Uses LiteProviders (lightweight Redux without entities/socket/sagas)
+ * Chat Layout
+ * 
+ * Redux (LiteStoreProvider) is now available from PublicProviders in the parent layout.
+ * No additional providers needed here.
  */
 export default function PublicChatLayout({ children }: { children: React.ReactNode }) {
-    return <LiteProviders>{children}</LiteProviders>;
+    return <>{children}</>;
 }

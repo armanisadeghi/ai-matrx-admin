@@ -1,11 +1,13 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { copyToClipboard } from "./markdown-copy-utils";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
 import { Copy, CheckCircle2, FileText, FileType2, Code, Brain } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
-import HtmlPreviewModal from '../../../features/html-pages/components/HtmlPreviewModal';
+import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+
+const HtmlPreviewModal = lazy(() => import('../../../features/html-pages/components/HtmlPreviewModal'));
 
 /**
  * Simple Copy Button Component
@@ -187,12 +189,14 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
             )}
             
             {/* HTML Preview Modal */}
-            <HtmlPreviewModal
-                isOpen={showHtmlModal}
-                onClose={() => setShowHtmlModal(false)}
-                htmlContent={htmlContent}
-                title={htmlTitle}
-            />
+            <Suspense fallback={<SuspenseLoader />}>
+                <HtmlPreviewModal
+                    isOpen={showHtmlModal}
+                    onClose={() => setShowHtmlModal(false)}
+                    htmlContent={htmlContent}
+                    title={htmlTitle}
+                />
+            </Suspense>
         </div>
     );
 }
@@ -441,12 +445,14 @@ export function InlineCopyButton({
             )}
             
             {/* HTML Preview Modal */}
-            <HtmlPreviewModal
-                isOpen={showHtmlModal}
-                onClose={() => setShowHtmlModal(false)}
-                htmlContent={htmlContent}
-                title={htmlTitle}
-            />
+            <Suspense fallback={<SuspenseLoader />}>
+                <HtmlPreviewModal
+                    isOpen={showHtmlModal}
+                    onClose={() => setShowHtmlModal(false)}
+                    htmlContent={htmlContent}
+                    title={htmlTitle}
+                />
+            </Suspense>
         </div>
     );
 }

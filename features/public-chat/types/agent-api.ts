@@ -22,13 +22,12 @@ export interface AgentWarmRequest {
 
 /**
  * Content part for multimodal user input
+ * All media/file types use a consistent 'url' field
  */
 export interface UserInputContentPart {
   type: "input_text" | "input_image" | "input_audio" | "input_file";
   text?: string;
-  image_url?: string;
-  audio_url?: string;
-  file_url?: string;
+  url?: string;
   [key: string]: unknown;
 }
 
@@ -48,7 +47,7 @@ export interface AgentExecuteRequest {
    * Can be a simple string or an array of content parts for multimodal input.
    * 
    * @example Simple text: "What is the weather today?"
-   * @example Multimodal: [{ type: "input_text", text: "What's in this image?" }, { type: "input_image", image_url: "https://..." }]
+   * @example Multimodal: [{ type: "input_text", text: "What's in this image?" }, { type: "input_image", url: "https://..." }]
    */
   user_input?: string | UserInputContentPart[];
   /** Template variables to inject into the prompt (e.g., { topic: "AI Safety" }) */

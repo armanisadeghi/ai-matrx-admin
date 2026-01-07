@@ -32,8 +32,8 @@ type ResourceType =
     | "tables" 
     | "webpage" 
     | "youtube" 
-    | "image_url" 
-    | "file_url" 
+    | "image_link" 
+    | "file_link" 
     | "brokers" 
     | null;
 
@@ -82,8 +82,8 @@ export function PublicResourcePickerMenu({
             category: "Web",
             items: [
                 { id: "webpage", label: "Webpage", icon: Globe, requiresAuth: false },
-                { id: "image_url", label: "Image URL", icon: Image, requiresAuth: false },
-                { id: "file_url", label: "File URL", icon: File, requiresAuth: false },
+                { id: "image_link", label: "Image URL", icon: Image, requiresAuth: false },
+                { id: "file_link", label: "File URL", icon: File, requiresAuth: false },
                 { id: "youtube", label: "YouTube", icon: Youtube, requiresAuth: false },
             ]
         },
@@ -163,7 +163,7 @@ export function PublicResourcePickerMenu({
             );
         }
 
-        if (activeView === "image_url") {
+        if (activeView === "image_link") {
             return (
                 <PublicImageUrlPicker 
                     onBack={() => setActiveView(null)}
@@ -174,7 +174,7 @@ export function PublicResourcePickerMenu({
             );
         }
 
-        if (activeView === "file_url") {
+        if (activeView === "file_link") {
             return (
                 <PublicFileUrlPicker 
                     onBack={() => setActiveView(null)}

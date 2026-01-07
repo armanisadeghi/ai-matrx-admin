@@ -1,15 +1,45 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { PublicHeaderAuth } from './PublicHeaderAuth';
-import { PublicHeaderThemeToggle } from './PublicHeaderThemeToggle';
+import { LogIn } from 'lucide-react';
+
+// Dynamic imports with SSR disabled - these load AFTER initial page render
+const PublicHeaderAuth = dynamic(
+    () => import('./PublicHeaderAuth').then(mod => ({ default: mod.PublicHeaderAuth })),
+    { 
+        ssr: false,
+        loading: () => (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1.5 px-2 text-xs opacity-50 cursor-default"
+                disabled
+            >
+                <LogIn className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sign In</span>
+            </Button>
+        )
+    }
+);
+
+const PublicHeaderThemeToggle = dynamic(
+    () => import('./PublicHeaderThemeToggle').then(mod => ({ default: mod.PublicHeaderThemeToggle })),
+    { 
+        ssr: false,
+        loading: () => <div className="w-7 h-7" aria-hidden="true" />
+    }
+);
 
 /**
  * Public Header - Server Component
  * 
- * Renders server-side for maximum performance. Only interactive elements 
- * (theme toggle, auth button) are client components that hydrate after page load.
+ * Renders server-side for maximum performance. Interactive elements 
+ * (theme toggle, auth button) are dynamically imported with ssr: false,
+ * meaning they load AFTER the initial page render, not blocking it.
  * 
  * This ensures lightning-fast initial page loads on public routes.
  */
@@ -54,10 +84,10 @@ export function PublicHeader() {
                         </Button>
                     </Link>
 
-                    {/* Theme Toggle - Client Component (lazy hydrates) */}
+                    {/* Theme Toggle - Dynamically loaded (ssr: false) */}
                     <PublicHeaderThemeToggle />
 
-                    {/* Auth-Aware Button - Client Component (lazy hydrates) */}
+                    {/* Auth Button - Dynamically loaded (ssr: false) */}
                     <PublicHeaderAuth />
                 </div>
             </div>

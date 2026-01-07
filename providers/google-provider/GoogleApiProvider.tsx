@@ -2,6 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 
+// ===== PERFORMANCE TIMING LOGS =====
+const GOOGLE_PROVIDER_MODULE_LOAD = typeof window !== 'undefined' ? performance.now() : 0;
+if (typeof window !== 'undefined') {
+    console.log(`[PERF] GoogleAPIProvider module loaded at: ${GOOGLE_PROVIDER_MODULE_LOAD.toFixed(2)}ms`);
+}
+
 // Type definitions for Google Identity Services
 declare global {
     interface Window {
@@ -171,6 +177,9 @@ export default function GoogleAPIProvider({ children, scopes }: GoogleAPIProvide
 
     // Load Google Identity Services
     useEffect(() => {
+        // ===== PERFORMANCE TIMING LOGS =====
+        console.log(`[PERF] GoogleAPIProvider useEffect started at: ${performance.now().toFixed(2)}ms`);
+
         if (!clientId) {
             setError("Missing Google API Client ID.");
             setIsInitializing(false);

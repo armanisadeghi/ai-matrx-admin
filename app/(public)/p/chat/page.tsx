@@ -1,14 +1,15 @@
 // app/(public)/p/chat/page.tsx
 'use client';
 
-import { ChatProvider, ChatContainer } from '@/features/public-chat';
 import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+import ChatContainer from '@/features/public-chat/components/ChatContainer';
+import { ChatProvider } from '@/features/public-chat/context/ChatContext';
 
 /**
  * Public Chat Page
  * 
- * Uses LiteProviders from layout (lightweight Redux without entities/socket/sagas).
- * The main performance win is the lite store - no need for complex lazy loading here.
+ * Redux (LiteStoreProvider) available from PublicProviders in the public layout.
+ * Lightweight store - no entities/socket/sagas.
  */
 export default function PublicChatPage() {
     const defaultAgent = {

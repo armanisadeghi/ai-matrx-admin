@@ -3,53 +3,53 @@
 "use client";
 
 import { combineReducers } from "@reduxjs/toolkit";
-import layoutReducer from "./slices/layoutSlice";
 import userReducer from "./slices/userSlice";
 import userPreferencesReducer from "./slices/userPreferencesSlice";
-import { themeReducer } from "@/styles/themes";
-import uiReducer from "./ui/uiSlice";
+// Import directly from themeSlice to avoid loading ThemeProvider (which imports full store)
+import themeReducer from "@/styles/themes/themeSlice";
 import overlaySlice from "./slices/overlaySlice";
-import canvasReducer from "../../features/canvas/redux/canvasSlice";
-import textDiffReducer from "./slices/textDiffSlice";
-import noteVersionsReducer from "./slices/noteVersionsSlice";
 
-// Prompt system
-import promptCacheReducer from "./slices/promptCacheSlice";
-import promptRunnerReducer from "./slices/promptRunnerSlice";
-import promptExecutionReducer from "./prompt-execution/slice";
-import modelRegistryReducer from "./slices/modelRegistrySlice";
+// ============================================================================
+// LITE ROOT REDUCER - Core slices for public routes
+// ============================================================================
+// Includes user-related state that's needed across public routes.
+// Excludes feature-specific slices that are only needed in certain contexts.
+//
+// INCLUDED (essential for public routes):
+// - layout, theme, overlays: Core UI state
+// - user: User identity and auth state
+// - userPreferences: User settings (theme, voice, AI prefs, etc.)
+//
+// EXCLUDED (feature-specific, add via feature providers if needed):
+// - uiReducer: References full RootState (problematic)
+// - canvasReducer: Only for chat+canvas features
+// - promptCache, promptRunner, promptExecution: Only for prompt system
+// - modelRegistry: Only for AI model selection
+// - textDiff, noteVersions: Only for note editing
+// ============================================================================
 
 /**
- * Creates a lightweight root reducer for routes that don't need:
- * - Entity system (50+ dynamic slices based on schema)
- * - Socket.io integration
- * - Redux Saga middleware
- * - File system reducers
- * - Global schema cache
+ * Creates a lightweight root reducer for public routes.
  * 
- * This reducer is ~70-80% smaller than the full root reducer.
+ * Core slices for user-aware public pages:
+ * - layout: Window/layout state
+ * - theme: Light/dark mode
+ * - user: User identity (id, email, metadata)
+ * - userPreferences: User settings and preferences
+ * - overlays: Modal/overlay state
+ * 
+ * This is ~80% smaller than the full root reducer.
+ * Slices initialize with empty/default state - no blocking fetches.
  */
 export const createLiteRootReducer = () => {
     return combineReducers({
         // Core UI state
-        layout: layoutReducer,
         theme: themeReducer,
-        ui: uiReducer,
         overlays: overlaySlice,
-
-        // User state (optional - can be empty for public routes)
+        
+        // User state (initializes empty, populated after auth)
         user: userReducer,
         userPreferences: userPreferencesReducer,
-        // Prompt system
-        promptCache: promptCacheReducer,
-        promptRunner: promptRunnerReducer,
-        promptExecution: promptExecutionReducer,
-        modelRegistry: modelRegistryReducer,
-
-        // Feature-specific state
-        canvas: canvasReducer,
-        textDiff: textDiffReducer,
-        noteVersions: noteVersionsReducer,
     });
 };
 

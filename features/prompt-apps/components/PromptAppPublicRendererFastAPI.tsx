@@ -12,7 +12,7 @@ import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowe
 import MarkdownStream from '@/components/MarkdownStream';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import type { PromptApp } from '../types';
-import type { AgentStreamEvent, AgentExecuteRequest, AgentWarmRequest } from '@/types/agent-api';
+import type { AgentStreamEvent, AgentExecuteRequest, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
 
 interface PromptAppPublicRendererFastAPIProps {
     app: PromptApp;

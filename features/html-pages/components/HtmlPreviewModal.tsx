@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: Fix loading inefficiency.
+
 import React, { useState, useRef, useEffect } from "react";
 import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Save, ExternalLink, Loader2, Edit, ChevronDown, ChevronRight } from "lucide-react";
 import { useHTMLPages } from "@/features/html-pages/hooks/useHTMLPages";

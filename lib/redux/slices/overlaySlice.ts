@@ -1,7 +1,6 @@
 // lib/redux/slices/overlaySlice.ts
 
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from '../store';
 
 // Define interface for overlay state
 export interface OverlayState {
@@ -68,14 +67,17 @@ const overlaySlice = createSlice({
   },
 });
 
-// Selectors
-export const selectOverlay = (state: RootState, overlayId: string) => 
+// Selectors - use generic state type to avoid importing full RootState
+// which would pull in the entire store.ts and its dependencies
+type StateWithOverlays = { overlays: OverlayState };
+
+export const selectOverlay = (state: StateWithOverlays, overlayId: string) => 
   state.overlays.overlays[overlayId] || { isOpen: false, data: null };
 
-export const selectIsOverlayOpen = (state: RootState, overlayId: string) => 
+export const selectIsOverlayOpen = (state: StateWithOverlays, overlayId: string) => 
   selectOverlay(state, overlayId).isOpen;
 
-export const selectOverlayData = (state: RootState, overlayId: string) =>
+export const selectOverlayData = (state: StateWithOverlays, overlayId: string) =>
   selectOverlay(state, overlayId).data;
 
 export const { openOverlay, closeOverlay, closeAllOverlays, toggleOverlay } = overlaySlice.actions;

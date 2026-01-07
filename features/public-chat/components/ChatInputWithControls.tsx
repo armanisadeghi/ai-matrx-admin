@@ -174,10 +174,10 @@ TextInput.displayName = 'TextInput';
  */
 function getResourceIcon(type: PublicResourceType) {
     switch (type) {
-        case 'image_url':
+        case 'image_link':
             return ImageIcon;
         case 'file':
-        case 'file_url':
+        case 'file_link':
             return FileText;
         case 'audio':
             return Music;
@@ -203,7 +203,7 @@ function ResourceChips({ resources, onRemove, isUploading }: ResourceChipsProps)
         <div className="flex flex-wrap gap-2 mb-2 px-2">
             {resources.map((resource, index) => {
                 const Icon = getResourceIcon(resource.type);
-                const isImage = resource.type === 'image_url' || 
+                const isImage = resource.type === 'image_link' || 
                     (resource.type === 'file' && resource.data.mime_type?.startsWith('image/'));
                 
                 return (
@@ -390,11 +390,11 @@ export function ChatInputWithControls({
         // Determine resource type based on mime type
         let resourceType: PublicResourceType = 'file';
         if (mimeType.startsWith('image/')) {
-            resourceType = 'image_url';
+            resourceType = 'image_link';
         } else if (mimeType.startsWith('audio/')) {
             resourceType = 'audio';
         } else if (mimeType.startsWith('video/')) {
-            resourceType = 'file'; // Will be converted to input_video in content
+            resourceType = 'file'; // Will be converted to input_file in content
         }
 
         return {
