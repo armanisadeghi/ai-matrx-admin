@@ -237,31 +237,13 @@ export function useSetGlobalBasics() {
         // Update on Change
         mediaQuery.addEventListener("change", updateColorScheme);
         
-        // Geolocation
-        if (nav.geolocation) {
-            nav.geolocation.getCurrentPosition(
-                (position) => {
-                    dispatch(
-                        brokerActions.setValue({
-                            brokerId: "GLOBAL_USER_COORDINATES",
-                            value: {
-                                latitude: position.coords.latitude,
-                                longitude: position.coords.longitude,
-                            },
-                        })
-                    );
-                },
-                (error) => {
-                    console.warn("Geolocation unavailable:", error);
-                    dispatch(
-                        brokerActions.setValue({
-                            brokerId: "GLOBAL_USER_COORDINATES",
-                            value: null,
-                        })
-                    );
-                }
-            );
-        }
+        // Initialize geolocation to null (will be fetched lazily when needed)
+        dispatch(
+            brokerActions.setValue({
+                brokerId: "GLOBAL_USER_COORDINATES",
+                value: null,
+            })
+        );
 
         // Cleanup function
         return () => {
