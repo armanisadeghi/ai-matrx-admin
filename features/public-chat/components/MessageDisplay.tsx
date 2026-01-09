@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { Copy, Check, ChevronDown, MessageSquare, AlertCircle } from 'lucide-react';
+import React, { useRef, useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { Copy, Check, ChevronDown, MessageSquare, AlertCircle, Edit, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
+
+// ============================================================================
+// LAZY LOADED COMPONENTS (Heavy dependencies - only load when needed)
+// ============================================================================
+
+const FullScreenMarkdownEditor = lazy(() => import('@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor'));
+const PublicMessageOptionsMenu = lazy(() => import('./PublicMessageOptionsMenu'));
+const HtmlPreviewModal = lazy(() => import('./HtmlPreviewModal'));
 
 // ============================================================================
 // USER MESSAGE (Matching PromptUserMessage UI)
@@ -160,10 +168,15 @@ interface AssistantMessageProps {
     message: ChatMessage;
     streamEvents?: StreamEvent[];
     isStreaming?: boolean;
+    onContentChange?: (messageId: string, newContent: string) => void;
 }
 
-function AssistantMessage({ message, streamEvents, isStreaming = false }: AssistantMessageProps) {
+function AssistantMessage({ message, streamEvents, isStreaming = false, onContentChange }: AssistantMessageProps) {
     const [isCopied, setIsCopied] = useState(false);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+    const [showHtmlModal, setShowHtmlModal] = useState(false);
+    const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const showLoading = message.status === 'pending' || (message.status === 'streaming' && !message.content);
 
     const handleCopy = async () => {
@@ -174,6 +187,33 @@ function AssistantMessage({ message, streamEvents, isStreaming = false }: Assist
         } catch (err) {
             console.error("Failed to copy: ", err);
         }
+    };
+
+    const handleEditClick = () => {
+        setIsEditorOpen(true);
+    };
+
+    const handleSaveEdit = (newContent: string) => {
+        if (onContentChange) {
+            onContentChange(message.id, newContent);
+        }
+        setIsEditorOpen(false);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditorOpen(false);
+    };
+
+    const toggleOptionsMenu = () => {
+        setShowOptionsMenu(!showOptionsMenu);
+    };
+
+    const handleShowHtmlPreview = () => {
+        setShowHtmlModal(true);
+    };
+
+    const handleCloseHtmlModal = () => {
+        setShowHtmlModal(false);
     };
 
     // Check if this is an error message
@@ -238,7 +278,67 @@ function AssistantMessage({ message, streamEvents, isStreaming = false }: Assist
                     >
                         {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     </Button>
+                    {onContentChange && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleEditClick}
+                            className="h-6 w-6 p-0 text-muted-foreground"
+                            title="Edit in full screen"
+                        >
+                            <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                    )}
+                    <Button
+                        ref={moreOptionsButtonRef}
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleOptionsMenu}
+                        className="h-6 w-6 p-0 text-muted-foreground"
+                        title="More options"
+                    >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                    </Button>
+                    
+                    {/* Lazy load menu only when opened */}
+                    {showOptionsMenu && (
+                        <Suspense fallback={null}>
+                            <PublicMessageOptionsMenu
+                                isOpen={showOptionsMenu}
+                                content={message.content}
+                                onClose={() => setShowOptionsMenu(false)}
+                                onShowHtmlPreview={handleShowHtmlPreview}
+                                onEditContent={handleEditClick}
+                                anchorElement={moreOptionsButtonRef.current}
+                            />
+                        </Suspense>
+                    )}
                 </div>
+            )}
+
+            {/* Lazy load editor only when opened */}
+            {isEditorOpen && (
+                <Suspense fallback={null}>
+                    <FullScreenMarkdownEditor
+                        isOpen={isEditorOpen}
+                        initialContent={message.content}
+                        onSave={handleSaveEdit}
+                        onCancel={handleCancelEdit}
+                        tabs={["write", "markdown", "wysiwyg", "preview"]}
+                        initialTab="write"
+                    />
+                </Suspense>
+            )}
+
+            {/* Lazy load HTML preview only when opened */}
+            {showHtmlModal && (
+                <Suspense fallback={null}>
+                    <HtmlPreviewModal
+                        isOpen={showHtmlModal}
+                        onClose={handleCloseHtmlModal}
+                        content={message.content}
+                    />
+                </Suspense>
             )}
         </div>
     );
@@ -256,6 +356,8 @@ interface MessageListProps {
     className?: string;
     /** Compact mode: reduces spacing and simplifies message display */
     compact?: boolean;
+    /** Callback when a message content is edited */
+    onMessageContentChange?: (messageId: string, newContent: string) => void;
 }
 
 export function MessageList({ 
@@ -265,6 +367,7 @@ export function MessageList({
     emptyStateMessage = "Ready to start chatting",
     className = "",
     compact = false,
+    onMessageContentChange,
 }: MessageListProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -306,6 +409,7 @@ export function MessageList({
                                 message={message}
                                 streamEvents={isLastAssistant ? streamEvents : undefined}
                                 isStreaming={isLastAssistant && isStreaming}
+                                onContentChange={onMessageContentChange}
                             />
                         )}
                     </div>

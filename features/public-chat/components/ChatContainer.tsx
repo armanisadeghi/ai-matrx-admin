@@ -27,7 +27,7 @@ interface ChatContainerProps {
 // ============================================================================
 
 export function ChatContainer({ className = '' }: ChatContainerProps) {
-    const { state, setAgent, startNewConversation, setUseLocalhost } = useChatContext();
+    const { state, setAgent, startNewConversation, setUseLocalhost, updateMessage } = useChatContext();
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [showSettings, setShowSettings] = useState(false);
@@ -170,6 +170,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         setVariableValues({});
     }, [startNewConversation]);
 
+    const handleMessageContentChange = useCallback((messageId: string, newContent: string) => {
+        updateMessage(messageId, { content: newContent });
+    }, [updateMessage]);
+
     const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
     const hasVariables = state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0;
     const isWelcomeScreen = messages.length === 0;
@@ -241,6 +245,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             messages={messages}
                             streamEvents={streamEvents.length > 0 ? streamEvents : undefined}
                             isStreaming={isStreaming}
+                            onMessageContentChange={handleMessageContentChange}
                         />
                         <div ref={messagesEndRef} />
                     </div>
