@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Globe, Loader2, Send, ExternalLink, FileText, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
+import { usePublicScraperStream } from "@/features/scraper/hooks/usePublicScraperStream";
 
 // Types for scraper response
 interface ScraperOverview {
@@ -264,125 +265,95 @@ function RenderedContent({ data }: { data: ScraperResponse }) {
 
 export default function QuickScrapeDemoPage() {
     const [url, setUrl] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [response, setResponse] = useState<ScraperResponse | null>(null);
+    const [scraperData, setScraperData] = useState<ScraperResponse | null>(null);
 
-    const handleScrape = useCallback(async () => {
+    const {
+        isLoading,
+        error,
+        results,
+        quickScrape,
+        reset,
+    } = usePublicScraperStream({
+        onData: (data) => {
+            console.log('[Quick Scrape] Data received:', data);
+            // Transform to old format
+            if (data && typeof data === 'object' && 'response_type' in data) {
+                setScraperData(data as ScraperResponse);
+            } else {
+                // Wrap in expected format
+                setScraperData({
+                    response_type: 'scraped_pages',
+                    results: results.map(r => ({
+                        status: 'success',
+                        url: r.overview?.url || url,
+                        overview: r.overview,
+                        text_data: r.text_data,
+                        structured_data: r.structured_data,
+                        organized_data: r.organized_data,
+                        links: r.links,
+                        main_image: r.main_image,
+                        scraped_at: r.scraped_at,
+                    }))
+                });
+            }
+        },
+    });
+
+    const handleScrape = async () => {
         if (!url.trim()) return;
 
         // Validate URL
         try {
             new URL(url);
         } catch {
-            setError("Please enter a valid URL");
             return;
         }
 
-        setIsLoading(true);
-        setError(null);
-        setResponse(null);
-
-        try {
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
-            
-            const scraperRequest = {
-                urls: [url.trim()],
-                anchor_size: 100,
-                get_content_filter_removal_details: true,
-                get_links: true,
-                get_main_image: true,
-                get_organized_data: true,
-                get_overview: true,
-                get_structured_data: true,
-                get_text_data: true,
-                include_anchors: true,
-                include_highlighting_markers: false,
-                include_media: true,
-                include_media_description: true,
-                include_media_links: true,
-                use_cache: false,
-            };
-
-            const res = await fetch(`${BACKEND_URL}/api/scraper/quick-scrape`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(scraperRequest),
-            });
-
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-            }
-
-            // Handle streaming NDJSON response
-            if (!res.body) {
-                throw new Error('No response body');
-            }
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let scraperData: ScraperResponse | null = null;
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                
-                for (const line of lines) {
-                    if (line.trim()) {
-                        try {
-                            const event = JSON.parse(line);
-                            if (event.response_type === 'scraped_pages') {
-                                scraperData = event;
-                            } else if (event.event === 'data' && event.data?.response_type === 'scraped_pages') {
-                                scraperData = event.data;
-                            } else if (event.event === 'error') {
-                                throw new Error(event.data?.message || 'Scraping failed');
-                            }
-                        } catch (e) {
-                            if (e instanceof SyntaxError) continue;
-                            throw e;
-                        }
-                    }
-                }
-            }
-
-            // Process remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const event = JSON.parse(buffer);
-                    if (event.response_type === 'scraped_pages') {
-                        scraperData = event;
-                    } else if (event.event === 'data' && event.data?.response_type === 'scraped_pages') {
-                        scraperData = event.data;
-                    }
-                } catch (e) {
-                    // Ignore parse errors for partial data
-                }
-            }
-
-            if (!scraperData) {
-                throw new Error('No valid response received');
-            }
-
-            setResponse(scraperData);
-        } catch (err) {
-            console.error('Scrape error:', err);
-            setError(err instanceof Error ? err.message : 'Failed to scrape URL');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [url]);
+        setScraperData(null);
+        await quickScrape({
+            urls: [url.trim()],
+            anchor_size: 100,
+            get_content_filter_removal_details: true,
+            get_links: true,
+            get_main_image: true,
+            get_organized_data: true,
+            get_overview: true,
+            get_structured_data: true,
+            get_text_data: true,
+            include_anchors: true,
+            include_highlighting_markers: false,
+            include_media: true,
+            include_media_description: true,
+            include_media_links: true,
+            use_cache: false,
+        });
+    };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !isLoading) {
             handleScrape();
         }
     };
+
+    // Sync results to response format
+    useEffect(() => {
+        if (results.length > 0 && !scraperData) {
+            setScraperData({
+                response_type: 'scraped_pages',
+                results: results.map(r => ({
+                    status: 'success',
+                    url: r.overview?.url || url,
+                    overview: r.overview,
+                    text_data: r.text_data,
+                    structured_data: r.structured_data,
+                    organized_data: r.organized_data,
+                    links: r.links,
+                    main_image: r.main_image,
+                    scraped_at: r.scraped_at,
+                }))
+            });
+        }
+    }, [results, scraperData, url]);
 
     const inputSection = (
         <div className="flex gap-3 items-center">
@@ -424,7 +395,7 @@ export default function QuickScrapeDemoPage() {
             inputSection={inputSection}
         >
             <ResponseViewer
-                data={response}
+                data={scraperData}
                 isLoading={isLoading}
                 error={error}
                 title="Scrape Results"

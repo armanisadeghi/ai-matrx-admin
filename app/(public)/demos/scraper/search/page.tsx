@@ -1,24 +1,26 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Loader2, Send, ExternalLink, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
+import { usePublicScraperStream } from "@/features/scraper/hooks/usePublicScraperStream";
+import type { SearchResult } from "@/features/scraper/types/scraper-api";
 
-// Search result type (based on typical search API responses)
-interface SearchResult {
+// Individual search result item (nested within SearchResult.results)
+interface SearchResultItem {
     title?: string;
     url?: string;
     snippet?: string;
-    position?: number;
+    rank?: number;
 }
 
 interface SearchResponse {
     response_type?: string;
-    results?: SearchResult[];
+    results?: SearchResultItem[];
     query?: string;
     total_results?: number;
     [key: string]: unknown;
@@ -26,7 +28,7 @@ interface SearchResponse {
 
 // Rendered content component for search results
 function RenderedContent({ data }: { data: SearchResponse }) {
-    const results = data?.results || [];
+    const results: SearchResultItem[] = data?.results || [];
     
     if (results.length === 0) {
         return (
@@ -93,96 +95,40 @@ function RenderedContent({ data }: { data: SearchResponse }) {
 export default function SearchDemoPage() {
     const [keywords, setKeywords] = useState("");
     const [maxResults, setMaxResults] = useState("10");
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [response, setResponse] = useState<SearchResponse | null>(null);
+    const [searchData, setSearchData] = useState<SearchResponse | null>(null);
 
-    const handleSearch = useCallback(async () => {
+    const {
+        isLoading,
+        error,
+        searchResults,
+        searchKeywords,
+    } = usePublicScraperStream({
+        onData: (data) => {
+            console.log('[Search] Data received:', data);
+            setSearchData(data as SearchResponse);
+        },
+    });
+
+    const handleSearch = async () => {
         if (!keywords.trim()) return;
 
-        setIsLoading(true);
-        setError(null);
-        setResponse(null);
+        setSearchData(null);
+        await searchKeywords({
+            keywords: [keywords.trim()],
+            total_results_per_keyword: parseInt(maxResults) || 10,
+        });
+    };
 
-        try {
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
-            
-            const searchRequest = {
-                keywords: [keywords.trim()],
-                max_results: parseInt(maxResults) || 10,
-            };
-
-            const res = await fetch(`${BACKEND_URL}/api/scraper/search`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(searchRequest),
-            });
-
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-            }
-
-            // Handle streaming NDJSON response
-            if (!res.body) {
-                throw new Error('No response body');
-            }
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let searchData: SearchResponse | null = null;
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                
-                for (const line of lines) {
-                    if (line.trim()) {
-                        try {
-                            const event = JSON.parse(line);
-                            // Capture any data response
-                            if (event.event === 'data') {
-                                searchData = event.data;
-                            } else if (event.event === 'error') {
-                                throw new Error(event.data?.message || 'Search failed');
-                            } else if (!event.event) {
-                                // Direct response without event wrapper
-                                searchData = event;
-                            }
-                        } catch (e) {
-                            if (e instanceof SyntaxError) continue;
-                            throw e;
-                        }
-                    }
-                }
-            }
-
-            // Process remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const event = JSON.parse(buffer);
-                    if (event.event === 'data') {
-                        searchData = event.data;
-                    } else if (!event.event) {
-                        searchData = event;
-                    }
-                } catch (e) {
-                    // Ignore
-                }
-            }
-
-            setResponse(searchData || { results: [] });
-        } catch (err) {
-            console.error('Search error:', err);
-            setError(err instanceof Error ? err.message : 'Search failed');
-        } finally {
-            setIsLoading(false);
+    // Sync searchResults to response format
+    useEffect(() => {
+        if (searchResults.length > 0 && !searchData) {
+            // Flatten SearchResult[] (which has nested results arrays) to SearchResultItem[]
+            const flatResults: SearchResultItem[] = searchResults.flatMap(
+                (sr) => sr.results || []
+            );
+            setSearchData({ results: flatResults });
         }
-    }, [keywords, maxResults]);
+    }, [searchResults, searchData]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !isLoading) {
@@ -245,7 +191,7 @@ export default function SearchDemoPage() {
             inputSection={inputSection}
         >
             <ResponseViewer
-                data={response}
+                data={searchData}
                 isLoading={isLoading}
                 error={error}
                 title="Search Results"

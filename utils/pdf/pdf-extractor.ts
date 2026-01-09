@@ -2,15 +2,10 @@
  * Document Text Extraction Utility
  * 
  * Simple utility for extracting text from PDF and image files using the API.
- * Can be called from anywhere in the app on the client side.
+ * Uses centralized auth handling via useApiAuth hook.
+ * 
+ * Backend URL is passed dynamically to support admin localhost override.
  */
-
-// Helper to check if file type is valid for extraction
-const isValidExtractionFile = (file: File): boolean => {
-  if (file.type === 'application/pdf') return true;
-  if (file.type.startsWith('image/')) return true;
-  return false;
-};
 
 export interface PdfExtractionResult {
   success: boolean;
@@ -23,22 +18,22 @@ export interface PdfExtractionResult {
   textFieldUsed?: string;
 }
 
-export interface PdfExtractionOptions {
-  authToken?: string;
-  serverUrl?: string;
-  includeRawResponse?: boolean; // For admin/debug purposes
-}
-
 /**
  * Extract text from a PDF or image file
  * 
  * @param file - The PDF or image File object to extract text from
- * @param options - Optional configuration (auth token, server URL)
+ * @param headers - Auth headers from useApiAuth
+ * @param backendUrl - Backend URL (localhost or production)
  * @returns Promise with extraction result
  * 
  * @example
  * ```ts
- * const result = await extractTextFromPdf(file);
+ * const { getHeaders, waitForAuth } = useApiAuth();
+ * await waitForAuth();
+ * const headers = getHeaders();
+ * const backendUrl = getBackendUrl(); // from your component
+ * 
+ * const result = await extractTextFromPdf(file, headers, backendUrl);
  * if (result.success) {
  *   console.log(result.text);
  * } else {
@@ -48,102 +43,74 @@ export interface PdfExtractionOptions {
  */
 export async function extractTextFromPdf(
   file: File,
-  options: PdfExtractionOptions = {}
+  headers: Record<string, string>,
+  backendUrl: string
 ): Promise<PdfExtractionResult> {
+  // Validate file type
+  const isValidFile = file.type === 'application/pdf' || file.type.startsWith('image/');
+  if (!isValidFile) {
+    return {
+      success: false,
+      text: '',
+      filename: file.name,
+      error: `Unsupported file type: ${file.type}. Supported types: PDF and images.`,
+    };
+  }
+
   try {
-    // Validate input
-    if (!file) {
-      return {
-        success: false,
-        text: '',
-        filename: '',
-        error: 'No file provided',
-      };
-    }
-
-    if (!isValidExtractionFile(file)) {
-      return {
-        success: false,
-        text: '',
-        filename: file.name,
-        error: 'File must be a PDF or image (JPEG, PNG, GIF, WebP, HEIC)',
-      };
-    }
-
-    // Get server URL
-    const serverUrl = options.serverUrl || 
-                     process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 
-                     'http://localhost:8000';
-    
-    const endpoint = `${serverUrl}/api/pdf/extract-text`;
-
-    // Prepare request
     const formData = new FormData();
     formData.append('file', file);
 
-    const headers: HeadersInit = {};
-    if (options.authToken) {
-      headers['Authorization'] = `Bearer ${options.authToken}`;
-    }
-
-    // Make API request
-    const response = await fetch(endpoint, {
+    const response = await fetch(`${backendUrl}/api/pdf/extract-text`, {
       method: 'POST',
-      headers,
+      headers: {
+        // Don't set Content-Type - browser will set it with boundary for FormData
+        ...Object.fromEntries(
+          Object.entries(headers).filter(([key]) => key.toLowerCase() !== 'content-type')
+        ),
+      },
       body: formData,
     });
 
-    // Handle response
-    const statusCode = response.status;
-    
+    const responseData = await response.json();
+
     if (!response.ok) {
-      const errorText = await response.text();
       return {
         success: false,
         text: '',
         filename: file.name,
-        error: `API error (${response.status}): ${errorText}`,
-        statusCode,
+        error: responseData.detail || `HTTP ${response.status}: ${response.statusText}`,
+        statusCode: response.status,
+        rawResponse: responseData,
       };
     }
 
-    const data = await response.json();
+    // Extract text from response
+    let extractedText = '';
+    let textFieldUsed = '';
 
-    // Extract text from response (check multiple possible field names)
-    const fieldChecks = [
-      { key: 'text_content', value: data.text_content },
-      { key: 'text', value: data.text },
-      { key: 'content', value: data.content },
-      { key: 'extracted_text', value: data.extracted_text },
-    ];
-
-    const matchedField = fieldChecks.find(f => f.value);
-    const text = matchedField?.value || '';
-
-    if (!text) {
-      return {
-        success: false,
-        text: '',
-        filename: file.name,
-        error: 'No text content found in API response',
-        statusCode,
-        rawResponse: options.includeRawResponse ? data : undefined,
-      };
+    if (typeof responseData === 'string') {
+      extractedText = responseData;
+      textFieldUsed = 'direct_string';
+    } else if (responseData.text_content) {
+      extractedText = responseData.text_content;
+      textFieldUsed = 'text_content';
+    } else if (responseData.text) {
+      extractedText = responseData.text;
+      textFieldUsed = 'text';
+    } else if (responseData.content) {
+      extractedText = responseData.content;
+      textFieldUsed = 'content';
     }
-
-    // Clean up text
-    const cleanedText = text.trim().replace(/\n{3,}/g, '\n\n');
 
     return {
       success: true,
-      text: cleanedText,
-      filename: data.filename || file.name,
-      pageCount: data.page_count || data.pages || data.num_pages,
-      statusCode,
-      rawResponse: options.includeRawResponse ? data : undefined,
-      textFieldUsed: matchedField?.key,
+      text: extractedText,
+      filename: responseData.filename || file.name,
+      statusCode: response.status,
+      textFieldUsed,
+      rawResponse: responseData,
     };
-
   } catch (error) {
     return {
       success: false,
@@ -153,30 +120,3 @@ export async function extractTextFromPdf(
     };
   }
 }
-
-/**
- * Extract text from multiple PDF or image files
- * 
- * @param files - Array of PDF or image File objects
- * @param options - Optional configuration
- * @returns Promise with array of extraction results
- * 
- * @example
- * ```ts
- * const results = await extractTextFromMultiplePdfs([file1, file2]);
- * results.forEach(result => {
- *   if (result.success) {
- *     console.log(`${result.filename}: ${result.text.length} chars`);
- *   }
- * });
- * ```
- */
-export async function extractTextFromMultiplePdfs(
-  files: File[],
-  options: PdfExtractionOptions = {}
-): Promise<PdfExtractionResult[]> {
-  return Promise.all(
-    files.map(file => extractTextFromPdf(file, options))
-  );
-}
-

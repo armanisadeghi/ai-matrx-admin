@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Zap, Loader2, Search, Globe, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
+import { usePublicScraperStream } from "@/features/scraper/hooks/usePublicScraperStream";
 
 interface SearchAndScrapeResponse {
     response_type?: string;
@@ -165,100 +166,48 @@ export default function SearchAndScrapeDemoPage() {
     const [keyword, setKeyword] = useState("");
     const [maxPages, setMaxPages] = useState("5");
     const [useCache, setUseCache] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [response, setResponse] = useState<SearchAndScrapeResponse | null>(null);
+    const [responseData, setResponseData] = useState<SearchAndScrapeResponse | null>(null);
 
-    const handleSearchAndScrape = useCallback(async () => {
+    const {
+        isLoading,
+        error,
+        results,
+        searchAndScrapeLimited,
+    } = usePublicScraperStream({
+        onData: (data) => {
+            console.log('[Search & Scrape] Data received:', data);
+            setResponseData(data as SearchAndScrapeResponse);
+        },
+    });
+
+    const handleSearchAndScrape = async () => {
         if (!keyword.trim()) return;
 
-        setIsLoading(true);
-        setError(null);
-        setResponse(null);
+        setResponseData(null);
+        await searchAndScrapeLimited({
+            keyword: keyword.trim(),
+            max_page_read: parseInt(maxPages) || 5,
+            get_text_data: true,
+            get_overview: true,
+            get_links: true,
+        });
+    };
 
-        try {
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
-            
-            const request = {
-                keyword: keyword.trim(),
-                max_pages: parseInt(maxPages) || 5,
-                scrape_options: {
-                    get_text_data: true,
-                    get_overview: true,
-                    get_links: true,
-                    use_cache: useCache,
-                },
-            };
-
-            const res = await fetch(`${BACKEND_URL}/api/scraper/search-and-scrape-limited`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(request),
+    // Sync results to response format
+    useEffect(() => {
+        if (results.length > 0 && !responseData) {
+            setResponseData({
+                response_type: 'scraped_pages',
+                results: results.map(r => ({
+                    url: r.overview?.url,
+                    status: 'success',
+                    overview: r.overview,
+                    text_data: r.text_data,
+                    links: r.links,
+                }))
             });
-
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-            }
-
-            // Handle streaming NDJSON response
-            if (!res.body) {
-                throw new Error('No response body');
-            }
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let responseData: SearchAndScrapeResponse | null = null;
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                
-                for (const line of lines) {
-                    if (line.trim()) {
-                        try {
-                            const event = JSON.parse(line);
-                            if (event.response_type === 'scraped_pages') {
-                                responseData = event;
-                            } else if (event.event === 'data' && event.data?.response_type === 'scraped_pages') {
-                                responseData = event.data;
-                            } else if (event.event === 'error') {
-                                throw new Error(event.data?.message || 'Operation failed');
-                            } else if (!event.event && event.results) {
-                                responseData = event;
-                            }
-                        } catch (e) {
-                            if (e instanceof SyntaxError) continue;
-                            throw e;
-                        }
-                    }
-                }
-            }
-
-            // Process remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const event = JSON.parse(buffer);
-                    if (event.response_type === 'scraped_pages' || event.results) {
-                        responseData = event;
-                    }
-                } catch (e) {
-                    // Ignore
-                }
-            }
-
-            setResponse(responseData || { results: [] });
-        } catch (err) {
-            console.error('Search and scrape error:', err);
-            setError(err instanceof Error ? err.message : 'Operation failed');
-        } finally {
-            setIsLoading(false);
         }
-    }, [keyword, maxPages, useCache]);
+    }, [results, responseData]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !isLoading) {
@@ -330,7 +279,7 @@ export default function SearchAndScrapeDemoPage() {
             inputSection={inputSection}
         >
             <ResponseViewer
-                data={response}
+                data={responseData}
                 isLoading={isLoading}
                 error={error}
                 title="Search & Scrape Results"

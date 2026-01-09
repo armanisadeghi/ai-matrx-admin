@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Mic, Loader2, CheckCircle, Clock, Server, Wifi, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DemoPageLayout } from "../_components/DemoPageLayout";
 import { ResponseViewer } from "../_components/ResponseViewer";
+import { usePublicScraperStream } from "@/features/scraper/hooks/usePublicScraperStream";
 
 interface MicCheckResponse {
     status?: string;
@@ -111,94 +112,32 @@ function RenderedContent({ data }: { data: MicCheckResponse }) {
 }
 
 export default function MicCheckDemoPage() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [response, setResponse] = useState<MicCheckResponse | null>(null);
     const [latency, setLatency] = useState<number | null>(null);
+    const [micCheckData, setMicCheckData] = useState<MicCheckResponse | null>(null);
 
-    const handleMicCheck = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        setResponse(null);
+    const {
+        isLoading,
+        error,
+        micCheck,
+    } = usePublicScraperStream({
+        onData: (data) => {
+            console.log('[Mic Check] Data received:', data);
+            setMicCheckData(data as MicCheckResponse);
+        },
+        onError: (err) => {
+            console.error('[Mic Check] Error:', err);
+        },
+    });
+
+    const handleMicCheck = async () => {
         setLatency(null);
-
+        setMicCheckData(null);
+        
         const startTime = performance.now();
-
-        try {
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
-            
-            const res = await fetch(`${BACKEND_URL}/api/scraper/mic-check`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}),
-            });
-
-            const endTime = performance.now();
-            setLatency(Math.round(endTime - startTime));
-
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${await res.text()}`);
-            }
-
-            // Handle streaming NDJSON response
-            if (!res.body) {
-                throw new Error('No response body');
-            }
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let responseData: MicCheckResponse | null = null;
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                
-                for (const line of lines) {
-                    if (line.trim()) {
-                        try {
-                            const event = JSON.parse(line);
-                            if (event.event === 'data') {
-                                responseData = event.data;
-                            } else if (event.event === 'error') {
-                                throw new Error(event.data?.message || 'Mic check failed');
-                            } else if (!event.event) {
-                                responseData = event;
-                            }
-                        } catch (e) {
-                            if (e instanceof SyntaxError) continue;
-                            throw e;
-                        }
-                    }
-                }
-            }
-
-            // Process remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const event = JSON.parse(buffer);
-                    if (event.event === 'data') {
-                        responseData = event.data;
-                    } else if (!event.event) {
-                        responseData = event;
-                    }
-                } catch (e) {
-                    // Ignore
-                }
-            }
-
-            setResponse(responseData || { status: 'unknown', message: 'No data in response' });
-        } catch (err) {
-            console.error('Mic check error:', err);
-            setError(err instanceof Error ? err.message : 'Mic check failed');
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+        await micCheck();
+        const endTime = performance.now();
+        setLatency(Math.round(endTime - startTime));
+    };
 
     const inputSection = (
         <div className="flex gap-4 items-center">
@@ -237,11 +176,11 @@ export default function MicCheckDemoPage() {
     return (
         <DemoPageLayout
             title="Mic Check"
-            description="Test the scraper API connection and view sample response"
+            description="Test the scraper API connection and view sample response (with auth headers)"
             inputSection={inputSection}
         >
             <ResponseViewer
-                data={response}
+                data={micCheckData}
                 isLoading={isLoading}
                 error={error}
                 title="Mic Check Response"
