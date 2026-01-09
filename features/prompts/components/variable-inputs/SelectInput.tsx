@@ -113,11 +113,6 @@ export function SelectInput({
       )}
       
       <div className={compact ? "space-y-1" : "space-y-3"}>
-        {!compact && (
-          <Label className="text-sm font-medium">
-            Select an option
-          </Label>
-        )}
         <Select value={selectedOption} onValueChange={handleSelectChange}>
           <SelectTrigger className={compact ? "w-full h-8 text-xs" : "w-full"}>
             <SelectValue placeholder="Choose an option..." />

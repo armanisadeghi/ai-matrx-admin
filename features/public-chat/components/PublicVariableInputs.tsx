@@ -80,7 +80,7 @@ export function PublicVariableInputs({
                                     >
                                         <PopoverTrigger asChild>
                                             <div
-                                                className="w-full flex items-center gap-2 pl-3 pr-3 h-12 bg-background/50 border-b border-zinc-200 dark:border-zinc-800 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
+                                                className="w-full flex items-center gap-2 pl-3 pr-3 h-10 bg-background/50 border-b border-border cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
                                                 onClick={() => handleExpandedVariableChange(variable.name)}
                                             >
                                                 <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer">
@@ -97,7 +97,7 @@ export function PublicVariableInputs({
                                                         </span>
                                                     )}
                                                 </div>
-                                                <ChevronUp className="w-5 h-5 text-blue-500 dark:text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 flex-shrink-0 transition-colors" />
+                                                <ChevronUp className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 flex-shrink-0 transition-colors" />
                                             </div>
                                         </PopoverTrigger>
                                         <PopoverContent
@@ -118,7 +118,7 @@ export function PublicVariableInputs({
                                         </PopoverContent>
                                     </Popover>
                                 ) : (
-                                    <div className="flex items-center gap-2 pl-3 pr-3 h-10 bg-background border-b border-zinc-200 dark:border-zinc-800 last:border-b-0 hover:bg-gray-50 hover:dark:bg-zinc-800 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
+                                    <div className="flex items-center gap-2 pl-3 pr-3 h-10 bg-background border-b border-border hover:bg-gray-50 hover:dark:bg-zinc-800 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
                                         <Label
                                             className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer"
                                             onClick={() => handleExpandedVariableChange(variable.name)}
@@ -153,14 +153,14 @@ export function PublicVariableInputs({
     if (minimal) {
         // Minimal mode: no outer wrapper, direct border on each item
         return (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden">
                 {variableInputs}
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden">
             {variableInputs}
         </div>
     );

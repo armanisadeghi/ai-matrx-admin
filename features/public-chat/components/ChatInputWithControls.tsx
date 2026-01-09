@@ -254,6 +254,7 @@ interface InputBottomControlsProps {
     isUploading?: boolean;
     isAuthenticated?: boolean;
     onAgentSelect?: (agent: AgentConfig) => void;
+    selectedAgent?: AgentConfig | null;
 }
 
 function InputBottomControls({ 
@@ -264,6 +265,7 @@ function InputBottomControls({
     isUploading,
     isAuthenticated = false,
     onAgentSelect,
+    selectedAgent,
 }: InputBottomControlsProps) {
     const { state, updateSettings } = useChatContext();
     const { settings } = state;
@@ -311,6 +313,7 @@ function InputBottomControls({
                     <PromptPickerMenu
                         onSelect={onAgentSelect}
                         disabled={disabled}
+                        selectedAgent={selectedAgent}
                     />
                 )}
             </div>
@@ -354,6 +357,8 @@ interface ChatInputWithControlsProps {
     onAgentSelect?: (agent: AgentConfig) => void;
     /** Whether the current agent has variables (allows submission without content) */
     hasVariables?: boolean;
+    /** Currently selected agent */
+    selectedAgent?: AgentConfig | null;
 }
 
 export function ChatInputWithControls({
@@ -364,6 +369,7 @@ export function ChatInputWithControls({
     isAuthenticated = false,
     onAgentSelect,
     hasVariables = false,
+    selectedAgent,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -500,6 +506,7 @@ export function ChatInputWithControls({
                     isUploading={isUploading}
                     isAuthenticated={isAuthenticated}
                     onAgentSelect={onAgentSelect}
+                    selectedAgent={selectedAgent}
                 />
             </div>
         </div>

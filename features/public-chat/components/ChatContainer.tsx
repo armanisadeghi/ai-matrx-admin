@@ -9,7 +9,7 @@ import { useAgentChat } from '../hooks/useAgentChat';
 import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
-import { AgentSelector, AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
+import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
@@ -194,16 +194,6 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
                         {/* Main Input Area */}
                         <div className="w-full max-w-3xl">
-                            {/* Agent Selector */}
-                            <div className="flex justify-center mb-4">
-                                <AgentSelector
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
-                            </div>
-
                             {/* Variables (if agent has them) */}
                             {hasVariables && (
                                 <div className="mb-6">
@@ -230,6 +220,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                     conversationId={conversationId}
                                     onAgentSelect={handleAgentSelect}
                                     hasVariables={hasVariables}
+                                    selectedAgent={state.currentAgent}
                                 />
                             </div>
 
@@ -293,6 +284,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 conversationId={conversationId}
                                 onAgentSelect={handleAgentSelect}
                                 hasVariables={hasVariables}
+                                selectedAgent={state.currentAgent}
                             />
                         </div>
                     </div>
