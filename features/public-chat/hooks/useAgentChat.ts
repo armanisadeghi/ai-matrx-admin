@@ -209,6 +209,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 is_builtin: false,
             };
 
+            // Debug log to verify variables are being sent
+            if (variables && Object.keys(variables).length > 0) {
+                console.log('📝 Sending variables to API:', variables);
+            }
+
             updateMessage(assistantMessageId, { status: 'streaming' });
 
             const response = await fetch(`${BACKEND_URL}/api/agent/execute`, {

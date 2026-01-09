@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import type { PromptVariable } from '@/features/prompts/types/core';
 import type { PublicResource, ContentItem } from '../types/content';
 
 // ============================================================================
@@ -36,13 +37,7 @@ export interface AgentConfig {
     promptId: string;
     name: string;
     description?: string;
-    variables?: Array<{
-        name: string;
-        type: string;
-        required: boolean;
-        default?: any;
-        description?: string;
-    }>;
+    variableDefaults?: PromptVariable[];
 }
 
 export interface ChatState {

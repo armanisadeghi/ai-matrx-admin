@@ -7,8 +7,8 @@ import {
     X,
     Minimize2,
     Maximize2,
-    Search,
     Mic,
+    Plus,
     Paperclip,
     Image as ImageIcon,
     FileText,
@@ -16,10 +16,7 @@ import {
     Music,
     Youtube,
     Globe,
-    Database,
 } from 'lucide-react';
-import { CgAttachment } from 'react-icons/cg';
-import { LuBrain, LuBrainCircuit, LuSearchCheck } from 'react-icons/lu';
 import { FaMicrophoneLines } from 'react-icons/fa6';
 import { useChatContext } from '../context/ChatContext';
 import ToggleButton from '@/components/matrx/toggles/ToggleButton';
@@ -28,7 +25,9 @@ import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { PublicResourcePickerMenu } from './resource-picker/PublicResourcePickerMenu';
+import { PromptPickerMenu } from './PromptPickerMenu';
 import type { PublicResource, PublicResourceType } from '../types/content';
+import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
 // TEXT INPUT COMPONENT
@@ -254,6 +253,7 @@ interface InputBottomControlsProps {
     onResourceSelected: (resource: PublicResource) => void;
     isUploading?: boolean;
     isAuthenticated?: boolean;
+    onAgentSelect?: (agent: AgentConfig) => void;
 }
 
 function InputBottomControls({ 
@@ -263,6 +263,7 @@ function InputBottomControls({
     onResourceSelected,
     isUploading,
     isAuthenticated = false,
+    onAgentSelect,
 }: InputBottomControlsProps) {
     const { state, updateSettings } = useChatContext();
     const { settings } = state;
@@ -286,7 +287,7 @@ function InputBottomControls({
                             disabled={disabled || isUploading}
                             title="Add resources"
                         >
-                            <Database className="w-4 h-4" />
+                            <Plus className="w-5 h-5" />
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent 
@@ -306,24 +307,12 @@ function InputBottomControls({
                     </PopoverContent>
                 </Popover>
 
-                <ToggleButton
-                    isEnabled={settings.searchEnabled}
-                    onClick={() => updateSettings({ searchEnabled: !settings.searchEnabled })}
-                    disabled={disabled}
-                    label=""
-                    defaultIcon={<Search />}
-                    enabledIcon={<LuSearchCheck />}
-                    tooltip="Allow Web Search"
-                />
-                <ToggleButton
-                    isEnabled={settings.thinkEnabled}
-                    onClick={() => updateSettings({ thinkEnabled: !settings.thinkEnabled })}
-                    disabled={disabled}
-                    label=""
-                    defaultIcon={<LuBrain />}
-                    enabledIcon={<LuBrainCircuit />}
-                    tooltip="Enable Thinking"
-                />
+                {onAgentSelect && (
+                    <PromptPickerMenu
+                        onSelect={onAgentSelect}
+                        disabled={disabled}
+                    />
+                )}
             </div>
 
             {/* Right side controls */}
@@ -362,6 +351,9 @@ interface ChatInputWithControlsProps {
     conversationId?: string;
     enableResourcePicker?: boolean;
     isAuthenticated?: boolean;
+    onAgentSelect?: (agent: AgentConfig) => void;
+    /** Whether the current agent has variables (allows submission without content) */
+    hasVariables?: boolean;
 }
 
 export function ChatInputWithControls({
@@ -370,6 +362,8 @@ export function ChatInputWithControls({
     placeholder,
     enableResourcePicker = true,
     isAuthenticated = false,
+    onAgentSelect,
+    hasVariables = false,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -443,7 +437,11 @@ export function ChatInputWithControls({
     }, []);
 
     const handleSubmit = useCallback(async () => {
-        if (!content.trim() && resources.length === 0) return;
+        // Allow submission if:
+        // - Has content, OR
+        // - Has resources, OR
+        // - Has variables (user can submit with variables only)
+        if (!content.trim() && resources.length === 0 && !hasVariables) return;
         if (isSubmitting || disabled || isUploading) return;
 
         setIsSubmitting(true);
@@ -460,7 +458,7 @@ export function ChatInputWithControls({
         } finally {
             setIsSubmitting(false);
         }
-    }, [content, resources, onSubmit, isSubmitting, disabled, isUploading]);
+    }, [content, resources, onSubmit, isSubmitting, disabled, isUploading, hasVariables]);
 
     const isDisabled = disabled || isSubmitting || isUploading;
 
@@ -501,6 +499,7 @@ export function ChatInputWithControls({
                     onResourceSelected={handleResourceSelected}
                     isUploading={isUploading}
                     isAuthenticated={isAuthenticated}
+                    onAgentSelect={onAgentSelect}
                 />
             </div>
         </div>

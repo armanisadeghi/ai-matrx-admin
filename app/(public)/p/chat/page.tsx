@@ -16,7 +16,7 @@ export default function PublicChatPage() {
         promptId: DEFAULT_AGENTS[0].promptId,
         name: DEFAULT_AGENTS[0].name,
         description: DEFAULT_AGENTS[0].description,
-        variables: DEFAULT_AGENTS[0].variables,
+        variableDefaults: DEFAULT_AGENTS[0].variableDefaults,
     };
 
     return (

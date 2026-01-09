@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { ChevronDown, Bot, Sparkles, Search, BookOpen, Code, Image } from 'lucide-react';
+import { ChevronDown, Bot, Sparkles, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb } from 'lucide-react';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -14,7 +14,7 @@ interface AgentOption {
     description?: string;
     icon?: React.ReactNode;
     promptId: string;
-    variables?: AgentConfig['variables'];
+    variableDefaults?: AgentConfig['variableDefaults'];
 }
 
 interface AgentSelectorProps {
@@ -32,23 +32,94 @@ export const DEFAULT_AGENTS: AgentOption[] = [
     {
         id: 'general-chat',
         name: 'General Chat',
-        description: 'A helpful AI assistant for general questions',
-        icon: <Bot size={18} />,
+        description: 'Helpful general assistant.',
+        icon: <MessageCircle size={18} />,
         promptId: '35d8f884-5178-4c3e-858d-c5b7adfa186a',
-        variables: [],
+        variableDefaults: [],
     },
     {
         id: 'deep-research',
         name: 'Deep Research',
-        description: 'In-depth research and analysis on any topic',
+        description: 'In-depth research and analysis.',
         icon: <Search size={18} />,
         promptId: 'f76a6b8f-b720-4730-87de-606e0bfa0e0c',
-        variables: [
+        variableDefaults: [
             {
                 name: 'topic',
-                type: 'string',
+                defaultValue: '',
                 required: false,
-                description: 'The topic to research',
+                helpText: 'The topic to research',
+                customComponent: {
+                    type: 'textarea',
+                },
+            },
+        ],
+    },
+    {
+        id: 'balanced-news-analysis',
+        name: 'Balanced News',
+        description: 'Get balanced, multi-perspective analysis of any news topic.',
+        icon: <Newspaper size={18} />,
+        promptId: '35461e07-bbd1-46cc-81a7-910850815703',
+        variableDefaults: [
+            {
+                name: 'topic',
+                defaultValue: '',
+                required: true,
+                helpText: 'Enter any news topic or recent news clip or data',
+                customComponent: {
+                    type: 'textarea',
+                },
+            },
+        ],
+    },
+    {
+        id: 'get-ideas',
+        name: 'Get Ideas',
+        description: 'Generate creative, actionable ideas tailored to your needs.',
+        icon: <Lightbulb size={18} />,
+        promptId: 'fc8fd18c-9324-48ca-85d4-faf1b1954945',
+        variableDefaults: [
+            {
+                name: 'topic',
+                defaultValue: 'Building a powerful ai app for attorneys',
+                required: true,
+                helpText: 'What topic or concept do you want ideas for?',
+                customComponent: {
+                    type: 'textarea',
+                },
+            },
+            {
+                name: 'creativity_level',
+                defaultValue: 'Balanced - Mix of practical and innovative',
+                required: false,
+                helpText: 'How creative do you want to get?',
+                customComponent: {
+                    type: 'radio',
+                    options: [
+                        'Grounded - Practical and immediately actionable',
+                        'Balanced - Mix of practical and innovative',
+                        'Experimental - Push boundaries and explore wild ideas',
+                        'Visionary - Think big, ignore current constraints',
+                    ],
+                    allowOther: false,
+                },
+            },
+            {
+                name: 'idea_count',
+                defaultValue: '10-15 (Standard set)',
+                required: false,
+                helpText: 'How many ideas would you like?',
+                customComponent: {
+                    type: 'radio',
+                    options: [
+                        '5-8 (Quick brainstorm)',
+                        '10-15 (Standard set)',
+                        '20-30 (Comprehensive exploration)',
+                        'As many as possible',
+                    ],
+                    allowOther: true,
+                },
             },
         ],
     },
@@ -116,11 +187,11 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
                                                 {agent.description}
                                             </div>
                                         )}
-                                        {agent.variables && agent.variables.length > 0 && (
+                                        {agent.variableDefaults && agent.variableDefaults.length > 0 && (
                                             <div className="flex items-center gap-1 mt-1.5">
                                                 <Sparkles size={12} className="text-amber-500" />
                                                 <span className="text-xs text-amber-600 dark:text-amber-400">
-                                                    {agent.variables.length} variable{agent.variables.length > 1 ? 's' : ''}
+                                                    {agent.variableDefaults.length} variable{agent.variableDefaults.length > 1 ? 's' : ''}
                                                 </span>
                                             </div>
                                         )}

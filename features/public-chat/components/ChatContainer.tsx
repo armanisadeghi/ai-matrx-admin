@@ -8,9 +8,10 @@ import { useChatContext } from '../context/ChatContext';
 import { useAgentChat } from '../hooks/useAgentChat';
 import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
-import { VariableInputs, type VariableSchema } from './VariableInputs';
+import { PublicVariableInputs } from './PublicVariableInputs';
 import { AgentSelector, AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
 
 // ============================================================================
@@ -62,8 +63,19 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 promptId: defaultAgent.promptId,
                 name: defaultAgent.name,
                 description: defaultAgent.description,
-                variables: defaultAgent.variables,
+                variableDefaults: defaultAgent.variableDefaults,
             });
+            
+            // Initialize variables with default values
+            const initialValues: Record<string, string> = {};
+            if (defaultAgent.variableDefaults) {
+                defaultAgent.variableDefaults.forEach(variable => {
+                    if (variable.defaultValue) {
+                        initialValues[variable.name] = variable.defaultValue;
+                    }
+                });
+            }
+            setVariableValues(initialValues);
         }
     }, [state.currentAgent, setAgent]);
 
@@ -85,28 +97,71 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 promptId: agent.promptId,
                 name: agent.name,
                 description: agent.description,
-                variables: agent.variables,
+                variableDefaults: agent.variableDefaults,
             });
-            setVariableValues({});
+            
+            // Initialize variables with default values
+            const initialValues: Record<string, string> = {};
+            if (agent.variableDefaults) {
+                agent.variableDefaults.forEach(variable => {
+                    if (variable.defaultValue) {
+                        initialValues[variable.name] = variable.defaultValue;
+                    }
+                });
+            }
+            setVariableValues(initialValues);
             setStreamEvents([]);
         },
         [setAgent]
     );
 
-    const handleVariableChange = useCallback((name: string, value: any) => {
+    const handleVariableChange = useCallback((name: string, value: string) => {
         setVariableValues((prev) => ({ ...prev, [name]: value }));
     }, []);
 
     const handleSubmit = useCallback(
         async (content: string, resources?: PublicResource[]) => {
             setStreamEvents([]);
+            console.log('📤 Submitting with variables:', variableValues);
+            
+            // Format message content with variables for display
+            let displayContent = '';
+            
+            // Add variables if they exist (show all variables, including defaults)
+            if (state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0) {
+                const variableLines: string[] = [];
+                state.currentAgent.variableDefaults.forEach(varDef => {
+                    // Use the value from variableValues, or fall back to defaultValue
+                    const value = variableValues[varDef.name] || varDef.defaultValue || '';
+                    if (value) {
+                        const formattedName = formatText(varDef.name);
+                        variableLines.push(`${formattedName}: ${value}`);
+                    }
+                });
+                
+                if (variableLines.length > 0) {
+                    displayContent = variableLines.join('\n');
+                    
+                    // Add user input below variables if it exists
+                    if (content.trim()) {
+                        displayContent += '\n\n' + content;
+                    }
+                } else {
+                    // No variables with values, just use content
+                    displayContent = content;
+                }
+            } else {
+                // No variables, just use content
+                displayContent = content;
+            }
+            
             return sendMessage({
-                content,
+                content: displayContent,
                 variables: variableValues,
                 resources,
             });
         },
-        [sendMessage, variableValues]
+        [sendMessage, variableValues, state.currentAgent]
     );
 
     const handleNewChat = useCallback(() => {
@@ -116,7 +171,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     }, [startNewConversation]);
 
     const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
-    const hasVariables = state.currentAgent?.variables && state.currentAgent.variables.length > 0;
+    const hasVariables = state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0;
     const isWelcomeScreen = messages.length === 0;
 
     return (
@@ -128,10 +183,12 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                         {/* Welcome Header */}
                         <div className="text-center mb-8">
                             <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">
-                                Chat reimagined.
+                                {hasVariables ? state.currentAgent?.name || 'Chat reimagined.' : 'Chat reimagined.'}
                             </h1>
                             <p className="text-xl text-gray-600 dark:text-gray-400">
-                                Artificial Intelligence with Matrx Superpowers.
+                                {hasVariables && state.currentAgent?.description
+                                    ? state.currentAgent.description
+                                    : 'Artificial Intelligence with Matrx Superpowers.'}
                             </p>
                         </div>
 
@@ -149,12 +206,13 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
                             {/* Variables (if agent has them) */}
                             {hasVariables && (
-                                <div className="mb-4">
-                                    <VariableInputs
-                                        variables={state.currentAgent!.variables as VariableSchema[]}
+                                <div className="mb-6">
+                                    <PublicVariableInputs
+                                        variableDefaults={state.currentAgent!.variableDefaults!}
                                         values={variableValues}
                                         onChange={handleVariableChange}
                                         disabled={isExecuting}
+                                        minimal
                                     />
                                 </div>
                             )}
@@ -170,6 +228,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                             : 'What do you want to know?'
                                     }
                                     conversationId={conversationId}
+                                    onAgentSelect={handleAgentSelect}
+                                    hasVariables={hasVariables}
                                 />
                             </div>
 
@@ -215,8 +275,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                         {/* Variables (collapsed by default in conversation mode) */}
                         {hasVariables && showSettings && (
                             <div className="mb-3">
-                                <VariableInputs
-                                    variables={state.currentAgent!.variables as VariableSchema[]}
+                                <PublicVariableInputs
+                                    variableDefaults={state.currentAgent!.variableDefaults!}
                                     values={variableValues}
                                     onChange={handleVariableChange}
                                     disabled={isExecuting}
@@ -231,6 +291,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 onSubmit={handleSubmit}
                                 disabled={isExecuting}
                                 conversationId={conversationId}
+                                onAgentSelect={handleAgentSelect}
+                                hasVariables={hasVariables}
                             />
                         </div>
                     </div>
