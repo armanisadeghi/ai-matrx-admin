@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useMemo, lazy, Suspense } from 'react';
-import { Copy, Check, ChevronDown, MessageSquare, AlertCircle, Edit, MoreHorizontal } from 'lucide-react';
+import { Copy, Check, ChevronDown, MessageSquare, AlertCircle, Edit, MoreHorizontal, FileText, Image as ImageIcon, Music, Youtube, Globe, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
+import type { PublicResource, PublicResourceType } from '../types/content';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
@@ -16,6 +17,68 @@ import { ResourcesContainer } from '@/features/prompts/components/resource-displ
 const FullScreenMarkdownEditor = lazy(() => import('@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor'));
 const PublicMessageOptionsMenu = lazy(() => import('./PublicMessageOptionsMenu'));
 const HtmlPreviewModal = lazy(() => import('./HtmlPreviewModal'));
+
+// ============================================================================
+// ATTACHED RESOURCES DISPLAY (for PublicResource[] from message.resources)
+// ============================================================================
+
+function getResourceIcon(type: PublicResourceType) {
+    switch (type) {
+        case 'image_link':
+            return ImageIcon;
+        case 'file':
+        case 'file_link':
+            return FileText;
+        case 'audio':
+            return Music;
+        case 'youtube':
+            return Youtube;
+        case 'webpage':
+            return Globe;
+        default:
+            return Paperclip;
+    }
+}
+
+interface AttachedResourcesDisplayProps {
+    resources: PublicResource[];
+}
+
+function AttachedResourcesDisplay({ resources }: AttachedResourcesDisplayProps) {
+    if (resources.length === 0) return null;
+
+    return (
+        <div className="flex flex-wrap gap-2">
+            {resources.map((resource, index) => {
+                const Icon = getResourceIcon(resource.type);
+                const isImage = resource.type === 'image_link' || 
+                    (resource.type === 'file' && resource.data.mime_type?.startsWith('image/'));
+                
+                return (
+                    <div
+                        key={index}
+                        className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700"
+                    >
+                        {isImage && resource.data.url ? (
+                            <img
+                                src={resource.data.url}
+                                alt={resource.data.filename || 'Attached image'}
+                                className="h-10 w-10 object-cover"
+                            />
+                        ) : (
+                            <div className="h-10 w-12 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 py-1">
+                                <Icon className="h-6 w-6 text-zinc-500 mb-1" />
+                                <span className="text-[8px] text-zinc-500 text-center truncate w-full px-1">
+                                    {resource.data.filename || resource.type}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
 
 // ============================================================================
 // USER MESSAGE (Matching PromptUserMessage UI)
@@ -82,26 +145,24 @@ function UserMessage({ message }: UserMessageProps) {
         <div className="ml-12">
             {/* Unified container with border and background - matching PromptUserMessage */}
             <div className="bg-muted border border-border rounded-lg">
-                {/* Thin header with copy button */}
-                <div
-                    className="flex items-center justify-end px-2 pt-1 pb-0 cursor-pointer rounded-lg"
+                {/* Content with click handler for collapse/expand */}
+                <div 
+                    className={`p-2 relative group ${shouldBeCollapsible ? 'cursor-pointer' : ''}`}
                     onClick={handleHeaderClick}
                 >
-                    <div className="flex items-center gap-1">
+                    {/* Copy button - absolute positioned, only visible on hover */}
+                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleCopy}
-                            className="h-6 w-6 p-0 text-muted-foreground"
+                            className="h-6 w-6 p-0 text-muted-foreground bg-muted/80 hover:bg-muted"
                             title="Copy"
                         >
                             {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                         </Button>
                     </div>
-                </div>
 
-                {/* Content */}
-                <div className="px-2 pb-2 relative">
                     <div className="space-y-2">
                         {/* Display resources first if any */}
                         {resources.length > 0 && (
@@ -122,9 +183,9 @@ function UserMessage({ message }: UserMessageProps) {
                                 {shouldBeCollapsible && isCollapsed && (
                                     <>
                                         {/* Gradient fade overlay */}
-                                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted via-muted/60 to-transparent pointer-events-none" />
+                                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-muted via-muted/60 to-transparent pointer-events-none" />
                                         {/* Expand chevron button */}
-                                        <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-1">
+                                        <div className="absolute -bottom-2 left-0 right-0 flex justify-center">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -140,18 +201,9 @@ function UserMessage({ message }: UserMessageProps) {
                             </div>
                         )}
 
-                        {/* Display attached files if any */}
-                        {message.files && message.files.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {message.files.map((file, index) => (
-                                    <div
-                                        key={index}
-                                        className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700"
-                                    >
-                                        <img src={file} alt="Attachment" className="h-20 w-20 object-cover" />
-                                    </div>
-                                ))}
-                            </div>
+                        {/* Display attached resources if any (from message.resources, not embedded in content) */}
+                        {message.resources && message.resources.length > 0 && (
+                            <AttachedResourcesDisplay resources={message.resources} />
                         )}
                     </div>
                 </div>
@@ -358,6 +410,8 @@ interface MessageListProps {
     compact?: boolean;
     /** Callback when a message content is edited */
     onMessageContentChange?: (messageId: string, newContent: string) => void;
+    /** Ref to attach at the position of the latest assistant message (for scroll targeting) */
+    latestAssistantRef?: React.RefObject<HTMLDivElement>;
 }
 
 export function MessageList({ 
@@ -368,13 +422,8 @@ export function MessageList({
     className = "",
     compact = false,
     onMessageContentChange,
+    latestAssistantRef,
 }: MessageListProps) {
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    // Auto-scroll to bottom when messages change
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, isStreaming]);
 
     // Empty state - matching SmartMessageList
     if (messages.length === 0 && !isStreaming) {
@@ -394,14 +443,29 @@ export function MessageList({
         ? "space-y-2 pt-0 pb-2" 
         : "space-y-6 pt-0 pb-4";
 
+    // Find the index of the last assistant message
+    const lastAssistantIndex = messages.reduce((acc, msg, idx) => 
+        msg.role === 'assistant' ? idx : acc, -1);
+
     return (
         <div className={`${spacingClasses} ${className}`}>
             {messages.map((message, index) => {
                 const isLastMessage = index === messages.length - 1;
                 const isLastAssistant = isLastMessage && message.role === 'assistant';
+                const isLatestAssistant = index === lastAssistantIndex;
 
                 return (
-                    <div key={message.id}>
+                    <div 
+                        key={message.id}
+                        // Latest assistant message gets min-height so it can scroll to top
+                        // but user can't scroll past the content itself
+                        className={isLatestAssistant ? 'min-h-[calc(100dvh-var(--header-height))]' : ''}
+                    >
+                        {/* Scroll anchor: placed right before the latest assistant message */}
+                        {/* h-4 creates breathing room below the header when scrolled to top */}
+                        {isLatestAssistant && latestAssistantRef && (
+                            <div ref={latestAssistantRef} className="h-2" />
+                        )}
                         {message.role === 'user' ? (
                             <UserMessage message={message} />
                         ) : (
@@ -415,9 +479,9 @@ export function MessageList({
                     </div>
                 );
             })}
-
-            {/* Invisible div for auto-scrolling */}
-            <div ref={messagesEndRef} className="h-4" />
+            
+            {/* Breathing room: allows user to scroll content a bit higher */}
+            <div className="h-64" aria-hidden="true" />
         </div>
     );
 }

@@ -31,7 +31,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [showSettings, setShowSettings] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const latestAssistantRef = useRef<HTMLDivElement>(null);
+    const prevAssistantCountRef = useRef(0);
     
     // Read server preference from Redux (set via AdminMenu in header)
     const useLocalhost = useSelector(selectIsUsingLocalhost);
@@ -86,10 +87,18 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         }
     }, [state.currentAgent?.promptId, warmAgent]);
 
-    // Auto scroll to bottom
+    // One-time scroll when a NEW assistant message appears
+    // Positions the assistant message at the top of the viewport
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, streamEvents]);
+        const assistantCount = messages.filter(m => m.role === 'assistant').length;
+        
+        // Only scroll when a NEW assistant message is added (count increased)
+        if (assistantCount > prevAssistantCountRef.current && latestAssistantRef.current) {
+            latestAssistantRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+        }
+        
+        prevAssistantCountRef.current = assistantCount;
+    }, [messages]);
 
     const handleAgentSelect = useCallback(
         (agent: typeof DEFAULT_AGENTS[0]) => {
@@ -240,14 +249,14 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                         </div>
                     </div>
                 ) : (
-                    <div className="w-full max-w-[800px] mx-auto px-4 md:px-3 py-6 pb-40">
+                    <div className="w-full max-w-[800px] mx-auto px-4 md:px-3 py-6">
                         <MessageList
                             messages={messages}
                             streamEvents={streamEvents.length > 0 ? streamEvents : undefined}
                             isStreaming={isStreaming}
                             onMessageContentChange={handleMessageContentChange}
+                            latestAssistantRef={latestAssistantRef}
                         />
-                        <div ref={messagesEndRef} />
                     </div>
                 )}
             </div>

@@ -29,11 +29,9 @@ export { useAgentChat } from './hooks/useAgentChat';
 
 // Components
 export { ChatContainer } from './components/ChatContainer';
-export { ChatInput } from './components/ChatInput';
 export { ChatInputWithControls } from './components/ChatInputWithControls';
 export { MessageList } from './components/MessageDisplay';
-export { VariableInputs } from './components/VariableInputs';
-export type { VariableSchema } from './components/VariableInputs';
+export { PublicVariableInputs } from './components/PublicVariableInputs';
 export { AgentSelector, AgentActionButtons, DEFAULT_AGENTS } from './components/AgentSelector';
 
 // Resource Picker Components

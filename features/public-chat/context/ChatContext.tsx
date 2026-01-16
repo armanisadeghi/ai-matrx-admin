@@ -15,8 +15,6 @@ export interface ChatMessage {
     content: string;
     timestamp: Date;
     status: 'pending' | 'sending' | 'streaming' | 'complete' | 'error';
-    /** @deprecated Use resources instead */
-    files?: string[];
     /** Resources attached to this message */
     resources?: PublicResource[];
     /** Content items sent to API (for reference) */

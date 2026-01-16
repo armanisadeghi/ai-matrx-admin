@@ -20,8 +20,6 @@ interface UseAgentChatOptions {
 interface SendMessageParams {
     content: string;
     variables?: Record<string, any>;
-    /** @deprecated Use resources instead */
-    files?: string[];
     /** Resources to attach to the message */
     resources?: PublicResource[];
 }
@@ -112,7 +110,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     }, [getBackendUrl]);
 
     // Send message to agent
-    const sendMessage = useCallback(async ({ content, variables = {}, files = [], resources = [] }: SendMessageParams) => {
+    const sendMessage = useCallback(async ({ content, variables = {}, resources = [] }: SendMessageParams) => {
         if (!state.currentAgent) {
             setError({ type: 'config_error', message: 'No agent configured' });
             return false;
@@ -135,29 +133,15 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setError(null);
         streamEventsRef.current = [];
 
-        // Convert legacy files to resources if needed
-        const allResources: PublicResource[] = [...resources];
-        if (files.length > 0 && resources.length === 0) {
-            // Legacy support: convert file URLs to resources
-            files.forEach(url => {
-                // Try to determine type from URL
-                const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
-                allResources.push({
-                    type: isImage ? 'image_link' : 'file_link',
-                    data: { url }
-                });
-            });
-        }
-
         // Build content array for API
-        const contentItems = buildContentArray(content, allResources);
+        const contentItems = buildContentArray(content, resources);
 
         // Add user message with resources
         const userMessageId = addMessage({
             role: 'user',
             content,
             status: 'complete',
-            resources: allResources.length > 0 ? allResources : undefined,
+            resources: resources.length > 0 ? resources : undefined,
             contentItems: contentItems.length > 1 ? contentItems : undefined,
             variables,
         });
