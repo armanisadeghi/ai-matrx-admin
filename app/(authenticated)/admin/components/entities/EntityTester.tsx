@@ -26,6 +26,9 @@ import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {JsonViewer, EditableJsonViewer} from '@/components/ui';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
+import {FlexibleQueryOptions} from '@/lib/redux/entity/types/stateTypes';
+import {v4 as uuidv4} from 'uuid';
+import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 
 
 const EntityTester: React.FC = () => {
@@ -39,6 +42,7 @@ const EntityTester: React.FC = () => {
 
     // Use the full entity hook
     const entity = useEntity(selectedEntity);
+    const quickReference = useQuickReference(selectedEntity);
 
     // Memoize records array
     const records = useMemo(() => Object.values(entity.allRecords), [entity.allRecords]);
@@ -61,7 +65,13 @@ const EntityTester: React.FC = () => {
 
     const handleCreateRecord = useCallback(async () => {
         try {
-            entity.createRecord(formData as EntityData<EntityKeys>);
+            const tempRecordId = uuidv4();
+            const createPayload: FlexibleQueryOptions = {
+                entityNameAnyFormat: selectedEntity,
+                tempRecordId,
+                data: formData,
+            };
+            entity.createRecord([createPayload]);
             toast({
                 title: "Success",
                 description: "Record created successfully",
@@ -76,10 +86,10 @@ const EntityTester: React.FC = () => {
                 variant: "destructive",
             });
         }
-    }, [entity, formData, toast]);
+    }, [entity, formData, toast, selectedEntity]);
 
     const handleUpdateRecord = useCallback(async () => {
-        if (!entity.activeRecord) {
+        if (!entity.activeRecord || !entity.activeRecordId) {
             toast({
                 title: "Error",
                 description: "No record selected for update",
@@ -89,12 +99,7 @@ const EntityTester: React.FC = () => {
         }
 
         try {
-            const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce((acc, field) => {
-                acc[field] = entity.activeRecord![field];
-                return acc;
-            }, {} as Record<string, MatrxRecordId>);
-
-            await entity.updateRecord(primaryKeyValues, formData);
+            quickReference.updateRecord(entity.activeRecordId, formData);
             toast({
                 title: "Success",
                 description: "Record updated successfully",
@@ -109,7 +114,7 @@ const EntityTester: React.FC = () => {
                 variant: "destructive",
             });
         }
-    }, [entity, formData, toast]);
+    }, [entity, quickReference, formData, toast]);
 
     const handleDeleteRecord = useCallback(async () => {
         if (!entity.activeRecord) {
@@ -234,7 +239,7 @@ const EntityTester: React.FC = () => {
                                                             className="w-4 h-4"
                                                         />
                                                     </TableCell>
-                                                    {entity.entityMetadata.fields.map(field => (
+                                                    {Object.values(entity.entityMetadata.entityFields).map(field => (
                                                         <TableCell key={field.name}>
                                                             {String(record[field.name] ?? '')}
                                                         </TableCell>

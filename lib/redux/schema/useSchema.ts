@@ -65,6 +65,7 @@ import {
 import { KeyMapping, UnifiedQueryOptions } from './globalCacheSelectors';
 import { SchemaEntity } from '@/types/schema';
 import { SchemaField } from './concepts/types';
+import { QueryOptions } from '../entity/types/stateTypes';
 
 
 export const useSchema = () => {

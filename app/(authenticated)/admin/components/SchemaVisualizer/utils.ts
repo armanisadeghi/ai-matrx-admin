@@ -37,7 +37,7 @@ export function createNodesAndEdges(schema: AutomationEntities) {
         const column = index % numColumns;
 
         // Calculate node height
-        const nodeHeight = calculateNodeHeight(entity);
+        const nodeHeight = calculateNodeHeight(entity as AutomationEntity<EntityKeys>);
 
         // Calculate x position with stagger for odd columns
         const xBase = column * horizontalSpacing;
@@ -57,7 +57,7 @@ export function createNodesAndEdges(schema: AutomationEntities) {
             },
             data: {
                 label: entityName,
-                entity
+                entity: entity as AutomationEntity<EntityKeys>
             },
             sourcePosition: Position.Bottom,
             targetPosition: Position.Top,

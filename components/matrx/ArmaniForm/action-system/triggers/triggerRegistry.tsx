@@ -1,6 +1,5 @@
 import React from "react";
 import {cn} from "@/utils/cn";
-import {Link} from "lucide-react";
 import {EntityDropdownMenu} from "./EntityDropdownMenu";
 import {
     Button,
@@ -12,6 +11,22 @@ import {
 } from "@/components/ui";
 import {CustomTriggerComponentProps, TriggerProps} from "./types";
 import {iconRegistry} from "../icons/iconRegistry";
+import {MatrxVariant} from "../../field-components/types";
+
+// Helper function to map MatrxVariant to Button's variant type
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+const mapVariantToButton = (variant?: MatrxVariant): ButtonVariant => {
+    if (!variant) return "default";
+    // Map MatrxVariant values to Button variant values
+    if (variant === "primary" || variant === "success") {
+        return "default";
+    }
+    // For valid Button variants, pass through
+    if (["default", "destructive", "outline", "secondary", "ghost", "link"].includes(variant)) {
+        return variant as ButtonVariant;
+    }
+    return "default";
+};
 
 
 export const ButtonTrigger = (
@@ -29,7 +44,7 @@ export const ButtonTrigger = (
 
     return (
         <Button
-            variant={variant}
+            variant={mapVariantToButton(variant)}
             size="sm"
             className={className}
             onClick={onClick}
@@ -59,7 +74,7 @@ export const IconTrigger = (
 
     return (
         <Button
-            variant={variant}
+            variant={mapVariantToButton(variant)}
             size="sm"
             className={`h-8 w-8 p-0 ${className}`}
             onClick={onClick}
@@ -83,9 +98,10 @@ export const LinkTrigger = (
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
 
     return (
-        <Link
+        <a
             className={`flex items-center gap-2 ${className} ${disabled ? 'pointer-events-none opacity-50' : ''}`}
             onClick={disabled ? undefined : onClick}
+            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
         >
             {children || (
                 <>
@@ -93,7 +109,7 @@ export const LinkTrigger = (
                     {label}
                 </>
             )}
-        </Link>
+        </a>
     );
 };
 
@@ -226,7 +242,7 @@ export const FloatingButtonTrigger = (
 
     return (
         <Button
-            variant={variant}
+            variant={mapVariantToButton(variant)}
             className={`fixed bottom-4 right-4 rounded-full shadow-lg ${className}`}
             onClick={onClick}
             disabled={disabled}
@@ -263,7 +279,7 @@ export const ToggleTrigger = (
                 <>
                     <Switch
                         checked={checked}
-                        onChange={onChange}
+                        onCheckedChange={(newChecked) => onChange?.(newChecked)}
                         disabled={disabled}
                     />
                     {ResolvedIcon && <ResolvedIcon className="w-4 h-4" />}
@@ -300,7 +316,7 @@ export const DropdownTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariantToButton(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -345,7 +361,7 @@ export const DropdownBasicTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariantToButton(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -393,7 +409,7 @@ export const DropdownCheckboxTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariantToButton(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -445,7 +461,7 @@ export const DropdownRadioTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariantToButton(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >

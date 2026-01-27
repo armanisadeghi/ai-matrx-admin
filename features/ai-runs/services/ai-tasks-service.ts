@@ -100,6 +100,55 @@ export const aiTasksService = {
   },
 
   /**
+   * List all tasks with pagination and filters
+   */
+  async list(filters?: {
+    run_id?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+    order_by?: 'created_at' | 'updated_at';
+    order_direction?: 'asc' | 'desc';
+  }): Promise<{ tasks: AiTask[]; total: number; hasMore: boolean }> {
+    const supabase = createClient();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const limit = filters?.limit || 20;
+    const offset = filters?.offset || 0;
+    const orderBy = filters?.order_by || 'created_at';
+    const orderDirection = filters?.order_direction || 'desc';
+
+    let query = supabase
+      .from("ai_tasks")
+      .select("*", { count: 'exact' })
+      .eq("user_id", user.id);
+
+    if (filters?.run_id) {
+      query = query.eq("run_id", filters.run_id);
+    }
+
+    if (filters?.status) {
+      query = query.eq("status", filters.status);
+    }
+
+    query = query
+      .order(orderBy, { ascending: orderDirection === 'asc' })
+      .range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    const tasks = data || [];
+    const total = count || 0;
+    const hasMore = offset + limit < total;
+
+    return { tasks, total, hasMore };
+  },
+
+  /**
    * Update a task (used during streaming)
    */
   async update(taskId: string, input: UpdateAiTaskInput): Promise<AiTask> {

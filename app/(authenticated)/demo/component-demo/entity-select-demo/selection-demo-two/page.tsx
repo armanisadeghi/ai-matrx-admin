@@ -90,14 +90,14 @@ export default function EntitySelectDemo() {
                         label="Wrapper"
                         icon={Layout}
                         value={wrapperStyle}
-                        options={WRAPPER_OPTIONS}
+                        options={WRAPPER_OPTIONS as any}
                         onChange={(value) => setWrapperStyle(value as WrapperStyle)}
                     />
                     <CompactSelectControl
                         label="Selector"
                         icon={Box}
                         value={selectorStyle}
-                        options={SELECTOR_OPTIONS}
+                        options={SELECTOR_OPTIONS as any}
                         onChange={(value) => setSelectorStyle(value as SelectorStyle)}
                     />
                 </ControlGroup>

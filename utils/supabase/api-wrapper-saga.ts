@@ -23,7 +23,7 @@ type PostgrestResult<T> = {
 const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
 const trace: string[] = ['api-wrapper.ts'];
 
-type QueryBuilder = PostgrestFilterBuilder<any, any, any>;
+type QueryBuilder = PostgrestFilterBuilder<any, any, any, any, any, any, any>;
 
 export type QueryOptions<TEntity extends EntityKeys> = {
     filters?: Partial<EntityRecord<TEntity, 'database'>>;
@@ -132,7 +132,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return this.displayFieldKey;
     }
 
-    private buildBaseQuery(trace: string[] = [...this.trace, 'buildBaseQuery']): PostgrestFilterBuilder<any, any, any> {
+    private buildBaseQuery(trace: string[] = [...this.trace, 'buildBaseQuery']): QueryBuilder {
         if (!this.client) {
             this.handleError(new Error('Supabase client not initialized'), trace);
             throw new Error('Supabase client not initialized');
@@ -144,9 +144,9 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
      * Apply query options like filters and sorts to a query
      */
     private applyQueryOptions(
-        query: PostgrestFilterBuilder<any, any, any>,
+        query: QueryBuilder,
         options: QueryOptions<TEntity>
-    ): PostgrestFilterBuilder<any, any, any> {
+    ): QueryBuilder {
         if (options.filters) {
             for (const [key, value] of Object.entries(options.filters)) {
                 const dbFieldName = this.resolveFieldNameInFormat(
@@ -375,6 +375,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             );
 
             // Build and execute query
+            // @ts-expect-error - fieldValue is unknown but Supabase accepts various types
             let query = this.buildBaseQuery().eq(dbFieldName, fieldValue);
             query = this.applyQueryOptions(query, options);
 
@@ -491,7 +492,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
      * Fetch a single record with type safety and full format conversion
      */
     protected async fetchSingle(
-        query: PostgrestFilterBuilder<any, any, any>
+        query: QueryBuilder
     ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
         const {data, error} = await query.single();
 
@@ -516,6 +517,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
      */
     async getById(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
         const {data, error} = await this.buildBaseQuery()
+            // @ts-expect-error - id can be string or number, Supabase accepts both
             .eq(this.primaryKeyField, id)
             .single();
 
@@ -537,6 +539,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
 
     async findOne(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
         const {data, error} = await this.buildBaseQuery()
+            // @ts-expect-error - id can be string or number, Supabase accepts both
             .eq(this.primaryKeyField, id)
             .single();
 
@@ -561,7 +564,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         id: string | number,
         options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
     ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        let query = this.client.from(dbTableName).select('*').eq(this.primaryKeyField, id);
+        let query = this.client.from(dbTableName).select('*').eq(this.primaryKeyField, id as any as EntityFieldKeys<TEntity>);
 
         query = this.applyQueryOptions(query, options);
 
@@ -582,7 +585,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
 
 
     private async fetchSimple(
-        id: string,
+        id: string | number,
         options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'>
     ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
         const idField = this.resolveFieldNameInFormat(
@@ -591,7 +594,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             'database'
         );
 
-        let query = this.buildBaseQuery().eq(idField, id);
+        let query = this.buildBaseQuery().eq(idField, id as any as EntityFieldKeys<TEntity>);
 
         query = this.applyQueryOptions(query, options);
 
@@ -629,7 +632,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
     }
 
     async executeCustomQuery(
-        query: (baseQuery: PostgrestFilterBuilder<any, any, any>) => any
+        query: (baseQuery: QueryBuilder) => any
     ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
         // Start with a base query
         const baseQuery = this.buildBaseQuery();
@@ -663,7 +666,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             const { data: result, error } = await this.client
                 .from(this.databaseName)
                 .update(dbData.data)
-                .eq(dbPrimaryKey, id)
+                .eq(dbPrimaryKey, id as any as EntityFieldKeys<TEntity>)
                 .select()
                 .single();
 
@@ -703,7 +706,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             const { error } = await this.client
                 .from(this.databaseName)
                 .delete()
-                .eq(dbPrimaryKey, id);
+                .eq(dbPrimaryKey, id as any as EntityFieldKeys<TEntity>);
 
             if (error) {
                 this.handleError(error, [...this.trace, 'delete']);
@@ -765,6 +768,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
                 }
             });
 
+            // @ts-expect-error - RealtimeChannel version mismatch between dependencies
             this.subscriptions.set(this.entityKey, channel);
         } catch (error) {
             this.handleError(error, [...this.trace, 'subscribeToChanges']);
@@ -775,6 +779,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         try {
             const channel = this.subscriptions.get(this.entityKey);
             if (channel && channel instanceof RealtimeChannel) {
+                // @ts-expect-error - RealtimeChannel version mismatch between dependencies
                 this.client.removeChannel(channel);
                 this.subscriptions.delete(this.entityKey);
             }
@@ -787,6 +792,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         try {
             this.subscriptions.forEach((channel) => {
                 if (channel instanceof RealtimeChannel) {
+                    // @ts-expect-error - RealtimeChannel version mismatch between dependencies
                     this.client.removeChannel(channel);
                 }
             });

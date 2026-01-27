@@ -21,7 +21,7 @@ export default function SchemaAdmin() {
     const handleSchemaFetched = useCallback(<TEntity extends EntityKeys>(
         schema: AutomationEntity<TEntity>
     ) => {
-        setSelectedSchemaDetails(schema);
+        setSelectedSchemaDetails(schema as any);
     }, []);
 
     const renderFieldNameVariations = (fieldNameFormats?: Record<string, string>) => {
@@ -87,7 +87,7 @@ export default function SchemaAdmin() {
                         <label className="block text-sm font-medium">Registered Schemas</label>
                         <SchemaSelect
                             onSchemaSelect={handleSchemaSelect}
-                            onSchemaFetched={handleSchemaFetched}
+                            onSchemaFetched={handleSchemaFetched as any}
                             selectedSchema={selectedSchema}
                         />
                     </div>

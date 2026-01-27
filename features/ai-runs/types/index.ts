@@ -147,7 +147,10 @@ export interface CreateAiTaskInput {
   task_id: string; // Must match socket.io task ID
   service: string;
   task_name: string;
-  model_id?: string;
+  provider?: string | null;
+  endpoint?: string | null;
+  model?: string | null;
+  model_id?: string | null;
   request_data: Record<string, any>;
 }
 
@@ -286,5 +289,27 @@ export interface UseAiRunsListReturn {
   loadMore: () => Promise<void>;
   refresh: () => Promise<void>;
   setFilters: (filters: Partial<AiRunsListFilters>) => void;
+}
+
+export interface AiTasksListFilters {
+  run_id?: string;
+  status?: TaskStatus;
+  limit?: number;
+  offset?: number;
+  order_by?: 'created_at' | 'updated_at';
+  order_direction?: 'asc' | 'desc';
+}
+
+export interface UseAiTasksReturn {
+  tasks: AiTask[];
+  isLoading: boolean;
+  error: Error | null;
+  hasMore: boolean;
+  total: number;
+  
+  // Actions
+  loadMore: () => Promise<void>;
+  refresh: () => Promise<void>;
+  setFilters: (filters: Partial<AiTasksListFilters>) => void;
 }
 

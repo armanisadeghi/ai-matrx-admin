@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { brokerActions, brokerSelectors, useServerBrokerSync } from '@/lib/redux/brokerSlice';
+import { brokerActions, brokerSelectors, useServerBrokerSync, BrokerIdentifier } from '@/lib/redux/brokerSlice';
 import { SlackChannel } from '../../../slack/slackClientUtils';
 
 // Define broker identifiers
 export const SLACK_BROKER_IDS = {
-  token: { source: 'api', itemId: 'slack_token' },
-  channels: { source: 'slack', itemId: 'slack_channels' },
-  selectedChannel: { source: 'slack', itemId: 'selected_channel' },
-  filename: { source: 'slack', itemId: 'slack_filename' },
-  title: { source: 'slack', itemId: 'slack_title' },
-  initialComment: { source: 'slack', itemId: 'slack_initial_comment' },
-} as const;
+  token: { source: 'api', mappedItemId: 'slack_token' } as BrokerIdentifier,
+  channels: { source: 'slack', mappedItemId: 'slack_channels' } as BrokerIdentifier,
+  selectedChannel: { source: 'slack', mappedItemId: 'selected_channel' } as BrokerIdentifier,
+  filename: { source: 'slack', mappedItemId: 'slack_filename' } as BrokerIdentifier,
+  title: { source: 'slack', mappedItemId: 'slack_title' } as BrokerIdentifier,
+  initialComment: { source: 'slack', mappedItemId: 'slack_initial_comment' } as BrokerIdentifier,
+};
 
 interface BrokerSlackClientProps {
   children: React.ReactNode;

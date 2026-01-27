@@ -1,18 +1,15 @@
 'use client';
 
 import DynamicForm from "@/components/socket/form-builder/DynamicForm";
-import { SOCKET_TASKS } from "@/constants/socket-schema"
 
 export default function SocketFormBuilder() {
-    const quickScrapeTask = SOCKET_TASKS.quick_scrape;
-
-    const handleChange = (data: any) => {
+    const handleChange = (data: Record<string, any>) => {
         console.log("Data changed:", data);
     };
 
-    const handleSubmit = (data: any) => {
+    const handleSubmit = (data: Record<string, any>) => {
         console.log("Data submitted:", data);
     };
 
-    return <DynamicForm schema={quickScrapeTask} onChange={handleChange} onSubmit={handleSubmit} />;
+    return <DynamicForm taskType="quick_scrape" onChange={handleChange} onSubmit={handleSubmit} />;
 }

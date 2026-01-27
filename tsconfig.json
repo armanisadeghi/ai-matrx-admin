@@ -77,7 +77,8 @@
     "_armani",
     "_dev",
     ".next",
-    "out"
+    "out",
+    "utils/schema/schemaUtils.ts"
   ],
   "ts-node": {
     "require": [

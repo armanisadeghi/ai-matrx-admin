@@ -6,7 +6,7 @@ import {IconName} from "../icons/iconRegistry";
 export type TriggerComponent = typeof TRIGGER_COMPONENTS[keyof typeof TRIGGER_COMPONENTS];
 
 
-// Rest of the interfaces remain the same
+// Flattened TriggerProps interface - all properties at top level
 export interface TriggerProps {
     iconName?: IconName;
     label?: string;
@@ -15,35 +15,32 @@ export interface TriggerProps {
     variant?: MatrxVariant;
     disabled?: boolean;
 
-    eventHandlers?: {
-        onClick?: ((...args: any[]) => void) | undefined;
-        onChange?: ((...args: any[]) => void) | undefined;
-        onValueChange?: ((value: any) => void) | undefined;
-        onCheckedChange?: ((checked: boolean) => void) | undefined;
-    };
+    // Event handlers
+    onClick?: ((...args: any[]) => void) | undefined;
+    onChange?: ((...args: any[]) => void) | undefined;
+    onValueChange?: ((value: any) => void) | undefined;
+    onCheckedChange?: ((checked: boolean) => void) | undefined;
 
-    uiProps?: {
-        menuLabel?: string;
-        src?: string;
-        alt?: string;
-        tooltip?: string;
-        side?: "top" | "bottom" | "left" | "right";
-        component?: React.ReactNode;
-        active?: boolean;
-    };
+    // UI props
+    menuLabel?: string;
+    src?: string;
+    alt?: string;
+    tooltip?: string;
+    side?: "top" | "bottom" | "left" | "right";
+    component?: React.ReactNode;
+    active?: boolean;
 
-    dataProps?: {
-        checked?: boolean;
+    // Data props
+    checked?: boolean;
+    value?: string;
+    options?: {
+        label: string;
         value?: string;
-        options?: {
-            label: string;
-            value?: string;
-            disabled?: boolean;
-            checked?: boolean;
-            onClick?: (value?: string) => void;
-            onCheckedChange?: (checked: boolean) => void;
-        }[];
-    }
+        disabled?: boolean;
+        checked?: boolean;
+        onClick?: (value?: string) => void;
+        onCheckedChange?: (checked: boolean) => void;
+    }[];
 }
 
 

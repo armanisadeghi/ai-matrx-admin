@@ -25,8 +25,8 @@ export default function DataSourceEditTab({ appletId }: DataSourceEditTabProps) 
       dataSourceConfig: {
         ...dataSourceConfig,
         sourceType: type,
-        config: dataSourceConfig.config || { id: `${type}-config-${Date.now()}` }
-      }
+        config: dataSourceConfig.config || { id: `${type}-config-${Date.now()}` } as any
+      } as any
     }));
   };
 

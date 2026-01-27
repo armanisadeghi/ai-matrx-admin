@@ -50,7 +50,12 @@ export function registerComponent(
     ComponentRegistry.set(key, enhancedDefinition);
 }
 
-class UseFieldActionsProps {
+interface UseFieldActionsProps {
+    field: any;
+    matrxAction: ActionRegistryEntry[];
+    value: any;
+    onChange?: (value: any) => void;
+    onActionComplete?: (value: any) => void;
 }
 
 // Now, let's create an enhanced hook that uses the gateway system
@@ -69,7 +74,10 @@ export const useFieldActions = (
     // Register the action when the component mounts
     useEffect(() => {
         const cleanupFns = matrxAction.map(action =>
-            gateway.registerAction(action.actionComponentConfig.resource, action)
+            gateway.registerAction(
+                action.actionComponentConfig?.resource || action.presentationConfig.resource || 'default',
+                action
+            )
         );
 
         return () => {
@@ -93,14 +101,14 @@ export const useFieldActions = (
 
         // Resolve presentation props
         const presentationProps = await gateway.resolveAllProps(
-            presentationConfig.resource,
+            presentationConfig.resource || 'presentation',
             'presentation',
             fieldContext
         );
 
         // Resolve trigger props
         const triggerProps = await gateway.resolveAllProps(
-            triggerConfig.resource,
+            triggerConfig.resource || 'trigger',
             'trigger',
             fieldContext
         );
@@ -108,7 +116,7 @@ export const useFieldActions = (
         // Resolve action component props
         const actionComponentProps = actionComponentConfig ?
                                      await gateway.resolveAllProps(
-                                         actionComponentConfig.resource,
+                                         actionComponentConfig.resource || 'component',
                                          'component',
                                          fieldContext
                                      ) : null;
@@ -130,13 +138,13 @@ export const useFieldActions = (
         };
 
         // Add handlers to props
-        if (actionComponentConfig) {
+        if (actionComponentConfig && actionComponentProps) {
             const onSelectionChange = resolveHandler(
-                actionComponentConfig.resource,
+                actionComponentConfig.resource || 'component',
                 'onSelectionChange'
             );
             const onAnyChange = resolveHandler(
-                actionComponentConfig.resource,
+                actionComponentConfig.resource || 'component',
                 'onAnyChange'
             );
 

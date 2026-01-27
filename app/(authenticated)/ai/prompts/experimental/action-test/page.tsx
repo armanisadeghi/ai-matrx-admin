@@ -64,7 +64,7 @@ export default function ActionTestPage() {
       ).unwrap();
 
       setExecutionResult(result);
-      setInstanceId(result.instanceId);
+      setInstanceId(result.runId);
 
       console.log('✅ Action executed:', result);
     } catch (err: any) {

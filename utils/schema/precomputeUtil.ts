@@ -33,7 +33,7 @@ export type FieldNameVariant<TEntity extends EntityKeys> = StringFieldKey<TEntit
 
 export function resolveEntityName(entityNameVariant: AllEntityNameVariations, trace: string[] = ['unknownCaller']): EntityKeys {
     trace = [...trace, 'resolveEntityName'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (!globalCache) {
         schemaLogger.logResolution({
@@ -82,7 +82,7 @@ export function resolveFieldName<TEntity extends EntityKeys>(
     trace: string[] = ['unknownCaller']
 ): StringFieldKey<TEntity> {
     trace = [...trace, 'resolveFieldName'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     const fieldNameString = String(fieldNameVariant);
 
@@ -156,7 +156,7 @@ export function resolveFieldNameSafe<TEntity extends EntityKeys>(
  */
 export function getEntityKey(entityNameVariant: AllEntityNameVariations, trace: string[] = ['unknownCaller']): EntityKeys {
     trace = [...trace, 'getEntityKey'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (!globalCache) {
         schemaLogger.logResolution({
@@ -188,7 +188,7 @@ export type UnknownNameString = string;
  */
 export function isKnownEntityVariant(unknownEntity: unknown, trace: string[] = ['unknownCaller']): unknownEntity is AllEntityNameVariations {
     trace = [...trace, 'isKnownEntityVariant'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (typeof unknownEntity !== 'string') return false;
 
@@ -206,7 +206,7 @@ export function isKnownFieldVariant<TEntity extends EntityKeys>(
     trace: string[] = ['unknownCaller']
 ): unknownField is AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>> {
     trace = [...trace, 'isKnownFieldVariant'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (typeof unknownField !== 'string') return false;
     if (!globalCache) return false;
@@ -226,7 +226,7 @@ export function isKnownEntityAndFieldVariant<TEntity extends EntityKeys>(
     trace: string[] = ['unknownCaller']
 ): unknownEntity is AllEntityNameVariations {
     trace = [...trace, 'isKnownEntityAndFieldVariant'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (typeof unknownEntity !== 'string' || typeof unknownField !== 'string') {
         return false;
@@ -269,7 +269,7 @@ export function getFieldKey<TEntity extends EntityKeys>(
     trace: string[] = ['unknownCaller']
 ): StringFieldKey<TEntity> {
     trace = [...trace, 'getFieldKey'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (!globalCache) {
         schemaLogger.logResolution({
@@ -551,7 +551,7 @@ export function getEntitySchemaFromFormat<TEntity extends EntityKeys, TFormat ex
 
     try {
         // Get cache and validate
-        const globalCache = getGlobalCache(trace);
+        const globalCache = getGlobalCache();
         if (!globalCache) return null;
 
         // Resolve entity key
@@ -860,7 +860,7 @@ export function createBatchOperations<TEntity extends EntityKeys>(entityKey: TEn
 export function getFrontendEntityName(entityName: AllEntityNameVariations, trace: string[] = ['unknownCaller']): string {
     trace = [...trace, 'getFrontendEntityName'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return entityName;
 
     for (const [key, schema] of Object.entries(globalCache.schema)) {
@@ -878,7 +878,7 @@ export function getFrontendEntityName(entityName: AllEntityNameVariations, trace
 export function getEntityNameByFormat(entityName: AllEntityNameVariations, format: NameFormat, trace: string[] = ['unknownCaller']): string {
     trace = [...trace, 'getEntityNameByFormat'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return entityName;
 
     for (const [key, schema] of Object.entries(globalCache.schema)) {
@@ -899,11 +899,11 @@ export function getEntity<TEntity extends EntityKeys>(
 ): AutomationEntity<TEntity> | null {
     trace = [...trace, 'getEntity'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return null;
 
     const entityKey = getEntityKey(entityName, trace);
-    return (globalCache.schema[entityKey] as AutomationEntity<TEntity>) || null;
+    return (globalCache.schema[entityKey] as unknown as AutomationEntity<TEntity>) || null;
 }
 
 /**
@@ -919,7 +919,7 @@ export function getField<TEntity extends EntityKeys>(
 ): EntityField<TEntity, EntityFieldKeys<TEntity>> | null {
     trace = [...trace, 'getField'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return null;
 
     const entityKey = getEntityKey(entityName, trace);
@@ -935,7 +935,7 @@ export function getField<TEntity extends EntityKeys>(
 export function fieldExists(entityName: AllEntityNameVariations, fieldName: string, trace: string[] = ['unknownCaller']): boolean {
     trace = [...trace, 'fieldExists'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return false;
 
     const entityKey = getEntityKey(entityName, trace);
@@ -952,7 +952,7 @@ export function fieldExists(entityName: AllEntityNameVariations, fieldName: stri
 export function entityExists(entityName: AllEntityNameVariations, trace: string[] = ['unknownCaller']): boolean {
     trace = [...trace, 'entityExists'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return false;
 
     const entityKey = getEntityKey(entityName, trace);
@@ -968,7 +968,7 @@ export function getPrimaryKeys<TEntity extends EntityKeys>(
 ): EntityFieldKeys<TEntity>[] {
     trace = [...trace, 'getPrimaryKeys'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return [];
 
     const entityKey = getEntityKey(entityName, trace);
@@ -989,7 +989,7 @@ export function getDisplayFields<TEntity extends EntityKeys>(
 ): EntityFieldKeys<TEntity>[] {
     trace = [...trace, 'getDisplayFields'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return [];
 
     const entityKey = getEntityKey(entityName, trace);
@@ -1229,7 +1229,7 @@ export async function getRelationships(
 export function getEntityListInFormat(format: keyof EntityNameFormats<EntityKeys> = 'database', trace: string[] = ['unknownCaller']): Array<string> {
     trace = [...trace, 'getRegisteredSchemaNames'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return [];
 
     return Object.keys(globalCache.schema).map((entityKey) => {
@@ -1244,7 +1244,7 @@ function getEntityNameInFormat<TEntity extends EntityKeys, TFormat extends keyof
     trace: string[] = ['unknownCaller']
 ): EntityNameFormat<TEntity, TFormat> {
     trace = [...trace, 'getEntityNameInFormat'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (!globalCache) {
         throw new Error('Schema system not initialized');
@@ -1273,7 +1273,7 @@ function getFieldNameInFormat<TEntity extends EntityKeys, TField extends EntityF
     trace: string[] = ['unknownCaller']
 ): FieldNameFormat<TEntity, TField, TFormat> {
     trace = [...trace, 'getFieldNameInFormat'];
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
 
     if (!globalCache) {
         throw new Error('Schema system not initialized');
@@ -1307,7 +1307,7 @@ export function getEntityFieldListInFormat<TEntity extends EntityKeys>(
 ): Array<string> {
     trace = [...trace, 'getEntityFieldListInFormat'];
 
-    const globalCache = getGlobalCache(trace);
+    const globalCache = getGlobalCache();
     if (!globalCache) return [];
 
     const entityKey = resolveEntityKey(entityName);

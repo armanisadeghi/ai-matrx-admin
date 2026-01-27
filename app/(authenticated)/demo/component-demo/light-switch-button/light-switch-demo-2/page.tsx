@@ -104,7 +104,7 @@ const Slider3D = () => {
                 min="0"
                 max="100"
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onChange={(e) => setValue(Number(e.target.value))}
                 className="absolute inset-0 opacity-0 cursor-pointer"
             />
             <div className="absolute inset-0 flex items-center justify-center text-white font-medium mix-blend-difference">

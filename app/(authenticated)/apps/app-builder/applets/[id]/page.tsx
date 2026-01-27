@@ -328,7 +328,7 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       id: 'config',
       label: 'Config',
       icon: <FileCode className="h-4 w-4" />,
-      content: <ConfigTab applet={applet} />,
+      content: <ConfigTab applet={applet as unknown as CustomAppletConfig} />,
     },
     {
       id: 'info',

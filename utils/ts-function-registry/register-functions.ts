@@ -1,8 +1,8 @@
 'use client';
 
 import { registerFunction, FunctionDependencies } from './function-registry';
-import { createSchemaTemplate, getSchemaTemplates, getSchemaTemplateById, deleteSchemaTemplate, updateSchemaTemplate } from '../user-table-utls/template-utils';
-import { createTable, addColumn, getTableDetails, addRow } from '../user-table-utls/table-utils';
+import { createSchemaTemplate, getSchemaTemplates, getSchemaTemplateById, deleteSchemaTemplate, updateSchemaTemplate, CreateTemplateParams } from '../user-table-utls/template-utils';
+import { createTable, addColumn, getTableDetails, addRow, CreateTableParams, AddColumnParams, AddRowParams } from '../user-table-utls/table-utils';
 
 /**
  * Register all database operation functions for use in applets
@@ -45,7 +45,7 @@ export function registerDatabaseFunctions() {
       returnType: 'CreateTemplateResult'
     },
     async (params: Record<string, any>, dependencies: FunctionDependencies) => {
-      return await createSchemaTemplate(dependencies.supabase, params);
+      return await createSchemaTemplate(dependencies.supabase, params as CreateTemplateParams);
     },
     ['supabase']
   );
@@ -202,7 +202,7 @@ export function registerDatabaseFunctions() {
       returnType: 'CreateTableResult'
     },
     async (params: Record<string, any>, dependencies: FunctionDependencies) => {
-      return await createTable(dependencies.supabase, params);
+      return await createTable(dependencies.supabase, params as CreateTableParams);
     },
     ['supabase']
   );
@@ -254,7 +254,7 @@ export function registerDatabaseFunctions() {
       returnType: 'AddColumnResult'
     },
     async (params: Record<string, any>, dependencies: FunctionDependencies) => {
-      return await addColumn(dependencies.supabase, params);
+      return await addColumn(dependencies.supabase, params as AddColumnParams);
     },
     ['supabase']
   );
@@ -304,7 +304,7 @@ export function registerDatabaseFunctions() {
       returnType: 'AddRowResult'
     },
     async (params: Record<string, any>, dependencies: FunctionDependencies) => {
-      return await addRow(dependencies.supabase, params);
+      return await addRow(dependencies.supabase, params as AddRowParams);
     },
     ['supabase']
   );

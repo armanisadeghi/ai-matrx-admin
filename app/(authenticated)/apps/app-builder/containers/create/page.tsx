@@ -44,7 +44,7 @@ const containerFormSchema = z.object({
   isPublic: z.boolean().default(true),
 });
 
-type ContainerFormValues = z.infer<typeof containerFormSchema>;
+type ContainerFormValues = z.input<typeof containerFormSchema>;
 
 export default function ContainerCreatePage() {
   const dispatch = useAppDispatch();

@@ -1,8 +1,9 @@
 'use client';
 
-import { FunctionNode } from '@/features/workflows/types';
+import { FunctionNode, DbFunctionNode } from '@/features/workflows/types';
 import { NodeDataMethods, ValidationMode } from '../custom-workflow-nodes/types';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
+import { reactFlowToDatabase, databaseToReactFlow } from '@/features/workflows/service/functionNodeService';
 
 // Import our centralized utilities
 import {
@@ -44,11 +45,26 @@ export function createNodeDataMethods(
 ): NodeDataMethods {
 
     /**
+     * Convert FunctionNode to DbFunctionNode for utilities that require it
+     */
+    const toDbNode = (node: FunctionNode): DbFunctionNode => {
+        return reactFlowToDatabase(node);
+    };
+
+    /**
+     * Convert DbFunctionNode back to FunctionNode for update callback
+     */
+    const toReactFlowNode = (dbNode: DbFunctionNode): FunctionNode => {
+        return databaseToReactFlow(dbNode);
+    };
+
+    /**
      * Wrapper for validation that respects the validation mode
      */
     const validateUpdate = (updatedNode: FunctionNode): boolean => {
         try {
-            validateNodeUpdate(updatedNode);
+            const dbNode = toDbNode(updatedNode);
+            validateNodeUpdate(dbNode);
             return true;
         } catch (error) {
             if (validationMode === 'strict') {
@@ -66,6 +82,15 @@ export function createNodeDataMethods(
     const enhancedUpdateCallback = (updatedNode: FunctionNode): void => {
         validateUpdate(updatedNode);
         updateCallback(updatedNode);
+    };
+
+    /**
+     * Enhanced update callback for DbFunctionNode that converts back to FunctionNode
+     */
+    const enhancedUpdateCallbackFromDb = (updatedDbNode: DbFunctionNode): void => {
+        const reactFlowNode = toReactFlowNode(updatedDbNode);
+        validateUpdate(reactFlowNode);
+        updateCallback(reactFlowNode);
     };
 
     return {
@@ -165,24 +190,28 @@ export function createNodeDataMethods(
         // ===== DEPENDENCIES MANAGEMENT =====
         // Use our centralized dependency utilities
         addDependency: (sourceBrokerId: string, targetBrokerId?: string) => {
-            addWorkflowDependency(currentNode, enhancedUpdateCallback);
+            const dbNode = toDbNode(currentNode);
+            // Add the dependency and get the updated node
+            const updatedDbNode = addWorkflowDependency(dbNode, enhancedUpdateCallbackFromDb);
             // Update the last added dependency with the actual values
-            const dependencies = [...(currentNode.data.additional_dependencies || [])];
+            const dependencies = [...(updatedDbNode.additional_dependencies || [])];
             const lastIndex = dependencies.length - 1;
             if (lastIndex >= 0) {
-                updateWorkflowDependency(currentNode, enhancedUpdateCallback, lastIndex, 'source_broker_id', sourceBrokerId);
+                updateWorkflowDependency(updatedDbNode, enhancedUpdateCallbackFromDb, lastIndex, 'source_broker_id', sourceBrokerId);
                 if (targetBrokerId) {
-                    updateWorkflowDependency(currentNode, enhancedUpdateCallback, lastIndex, 'target_broker_id', targetBrokerId);
+                    updateWorkflowDependency(updatedDbNode, enhancedUpdateCallbackFromDb, lastIndex, 'target_broker_id', targetBrokerId);
                 }
             }
         },
 
         updateDependency: (index: number, field: 'source_broker_id' | 'target_broker_id', value: string) => {
-            updateWorkflowDependency(currentNode, enhancedUpdateCallback, index, field, value);
+            const dbNode = toDbNode(currentNode);
+            updateWorkflowDependency(dbNode, enhancedUpdateCallbackFromDb, index, field, value);
         },
 
         removeDependency: (index: number) => {
-            removeWorkflowDependency(currentNode, enhancedUpdateCallback, index);
+            const dbNode = toDbNode(currentNode);
+            removeWorkflowDependency(dbNode, enhancedUpdateCallbackFromDb, index);
         },
 
         getDependencies: () => {
@@ -230,7 +259,7 @@ export function createNodeDataMethods(
         },
 
         getNodeSnapshot: () => {
-            return { ...currentNode };
+            return toDbNode(currentNode);
         },
 
         hasUnsavedChanges: () => {
@@ -248,7 +277,8 @@ export function createNodeDataMethods(
 
         getArgumentsWithMappings: () => {
             const functionData = getFunctionData(currentNode.data.function_id);
-            const argumentsWithData = getArgumentsWithData(currentNode, functionData);
+            const dbNode = toDbNode(currentNode);
+            const argumentsWithData = getArgumentsWithData(dbNode, functionData);
             return argumentsWithData.map(arg => ({
                 arg,
                 mappings: getBrokerMappingsForArg(currentNode, arg.name),
@@ -258,12 +288,14 @@ export function createNodeDataMethods(
 
         getAllReturnBrokers: () => {
             const functionData = getFunctionData(currentNode.data.function_id);
-            return getAllReturnBrokers(currentNode, functionData);
+            const dbNode = toDbNode(currentNode);
+            return getAllReturnBrokers(dbNode, functionData);
         },
 
         getNodeValidationErrors: () => {
             try {
-                validateNodeUpdate(currentNode);
+                const dbNode = toDbNode(currentNode);
+                validateNodeUpdate(dbNode);
                 return [];
             } catch (error) {
                 return [error instanceof Error ? error.message : 'Validation failed'];

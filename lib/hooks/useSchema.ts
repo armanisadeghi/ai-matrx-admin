@@ -3,32 +3,31 @@
 
 import {useContext, useCallback, useMemo} from 'react';
 import {useSchemaResolution, useSchema as useBaseSchema} from '@/providers/SchemaProvider';
-// import type {
-//     AutomationTableStructure,
-//     AutomationTable,
-//     TableNames,
-//     AllTableNameVariations,
-//     AllFieldNameVariations,
-//     TableFields,
-//     TableNameBackend,
-//     TableNameFrontend,
-//     TableNameDatabase,
-//     FieldNameFrontend, FieldNameBackend, FieldNameDatabase
-// } from '@/types/automationTableTypes';
+import type {
+    AutomationTableStructure,
+    AutomationTable,
+    TableNames,
+    AllTableNameVariations,
+    AllFieldNameVariations,
+    TableFields,
+    TableNameBackend,
+    TableNameFrontend,
+    TableNameDatabase,
+    FieldNameFrontend, FieldNameBackend, FieldNameDatabase
+} from '@/types/junk/automationTableTypes';
 import {v4 as uuidv4} from 'uuid';
 
 
 import type {AutomationTableName, NameFormat} from '@/types/AutomationSchemaTypes';
-import { AutomationTable } from '@/types/junk/automationTableTypes';
 
-interface FormattedSchema extends AutomationTable {
+interface FormattedSchema<T extends AutomationTableName = AutomationTableName> extends AutomationTable<T> {
     formattedNames: Record<string, string>;
 }
 
-interface ApiWrapperSchema {
-    schema: AutomationTable;
-    frontend: FormattedSchema;
-    database: FormattedSchema;
+interface ApiWrapperSchema<T extends AutomationTableName = AutomationTableName> {
+    schema: AutomationTable<T>;
+    frontend: FormattedSchema<T>;
+    database: FormattedSchema<T>;
 }
 
 type FieldType =

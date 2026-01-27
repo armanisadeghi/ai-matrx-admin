@@ -16,15 +16,46 @@ export type TriggerType = typeof TRIGGER_COMPONENTS[keyof typeof TRIGGER_COMPONE
 export type ActionType = typeof ACTION_TYPES[keyof typeof ACTION_TYPES];
 export type ActionComponent = typeof ACTION_COMPONENTS[keyof typeof ACTION_COMPONENTS];
 
+export interface PropSource {
+    type: 'context' | 'redux' | 'computed' | 'direct' | 'static';
+    path?: string;
+    resolver?: string;
+    value?: any;
+}
+
+export interface PropDefinitions {
+    staticProps: Record<string, any>;
+    requiredProps: Record<string, PropSource>;
+    optionalProps: Record<string, any>;
+}
+
+export interface HandlerDefinition {
+    type: 'event' | 'callback' | 'async';
+    handler: (...args: any[]) => any;
+    isResultHandler?: boolean;
+    metadata?: {
+        description?: string;
+        parameters?: Record<string, any>;
+        returnType?: string;
+    };
+}
 
 export interface PresentationConfig {
     component: PresentationType;
     props: Record<string, any>;
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 export interface TriggerConfig {
     component: TriggerType;
     props: TriggerProps;
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 export interface ActionComponentConfig {
@@ -32,28 +63,47 @@ export interface ActionComponentConfig {
     onResultHandler?: string;
     props: Record<string, any>;
     propConfig?: any;
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 export interface ReduxActionConfig {
     actionType: string;
     payload?: Record<string, any>;
     props: Record<string, any>;
-
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 export interface HookActionConfig {
     handler: (...args: any[]) => void;
     props: Record<string, any>;
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 export interface CommandActionConfig {
     execute: () => void;
     props: Record<string, any>;
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 export interface DirectActionConfig {
     handler: (...args: unknown[]) => unknown;
     props?: Record<string, any>;
+    // Extended properties for gateway system
+    resource?: string;
+    propDefinitions?: PropDefinitions;
+    handlers?: Record<string, HandlerDefinition>;
 }
 
 

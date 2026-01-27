@@ -41,16 +41,20 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
 
   // Find related components (same category as current component)
   const relatedComponents = useMemo(() => {
-    if (!currentComponent) return [];
+    if (!currentComponent || currentComponent.categories.length === 0) return [];
+    // Get the first category as the primary category for related components
+    const primaryCategory = currentComponent.categories[0];
     return componentList
-      .filter(c => c.category === currentComponent.category && c.id !== currentComponent.id)
+      .filter(c => c.categories.includes(primaryCategory) && c.id !== currentComponent.id)
       .slice(0, 4); // Limit to 4 related components
   }, [currentComponent]);
 
   // Get all categories for the category pills
   const allCategories = useMemo(() => {
     const categories = new Set<ComponentCategory>();
-    componentList.forEach(c => categories.add(c.category));
+    componentList.forEach(c => {
+      c.categories.forEach(cat => categories.add(cat));
+    });
     return Array.from(categories);
   }, []);
 
@@ -76,9 +80,9 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
              currentComponent?.name || title || 'Component Details'}
           </h1>
           
-          {currentComponent && (
+          {currentComponent && currentComponent.categories.length > 0 && (
             <Badge className="ml-2">
-              {categoryNames[currentComponent.category]}
+              {categoryNames[currentComponent.categories[0]]}
             </Badge>
           )}
         </div>
@@ -110,7 +114,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
                 href={`/admin/official-components?category=${category}`}
               >
                 <Badge 
-                  variant={(currentComponent?.category === category) ? "default" : "outline"}
+                  variant={(currentComponent?.categories.includes(category)) ? "default" : "outline"}
                   className="cursor-pointer whitespace-nowrap flex items-center"
                 >
                   {categoryIcons[category]}
@@ -123,9 +127,9 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
       </div>
       
       {/* Related components cards (only shown on component detail pages) */}
-      {currentComponent && relatedComponents.length > 0 && (
+      {currentComponent && relatedComponents.length > 0 && currentComponent.categories.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-sm font-medium mb-2">More {categoryNames[currentComponent.category]} Components:</h3>
+          <h3 className="text-sm font-medium mb-2">More {categoryNames[currentComponent.categories[0]]} Components:</h3>
           <ScrollArea className="w-full" dir="ltr">
             <div className="flex space-x-3 pb-2">
               {relatedComponents.map(component => (
@@ -136,7 +140,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
                 >
                   <div className="border-border rounded-md p-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer h-full">
                     <h4 className="font-medium mb-1 flex items-center">
-                      {categoryIcons[component.category]}
+                      {component.categories.length > 0 && categoryIcons[component.categories[0]]}
                       <span className="ml-1">{component.name}</span>
                     </h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">

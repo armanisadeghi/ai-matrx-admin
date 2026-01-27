@@ -12,13 +12,38 @@ import {
 } from "@/components/ui";
 import {CustomTriggerComponentProps, TriggerProps} from "./types";
 import {iconRegistry} from "../icons/iconRegistry";
+import type { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "@/components/ui/button";
+
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+
+// Map MatrxVariant to Button variant
+const mapVariant = (variant?: string): ButtonVariant => {
+    switch (variant) {
+        case 'primary':
+        case 'success':
+            return 'default';
+        case 'destructive':
+            return 'destructive';
+        case 'outline':
+            return 'outline';
+        case 'secondary':
+            return 'secondary';
+        case 'ghost':
+            return 'ghost';
+        case 'link':
+            return 'link';
+        default:
+            return 'ghost';
+    }
+};
 
 
 export const ButtonTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className,
         variant = "ghost",
         disabled,
@@ -26,10 +51,11 @@ export const ButtonTrigger = (
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <Button
-            variant={variant}
+            variant={mapVariant(variant)}
             size="sm"
             className={className}
             onClick={onClick}
@@ -48,7 +74,7 @@ export const ButtonTrigger = (
 export const IconTrigger = (
     {
         iconName = 'link',
-        onClick,
+        eventHandlers,
         className = '',
         variant = 'ghost',
         disabled,
@@ -56,10 +82,11 @@ export const IconTrigger = (
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconRegistry[iconName];
+    const onClick = eventHandlers?.onClick;
 
     return (
         <Button
-            variant={variant}
+            variant={mapVariant(variant)}
             size="sm"
             className={`h-8 w-8 p-0 ${className}`}
             onClick={onClick}
@@ -74,13 +101,14 @@ export const LinkTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className = '',
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <Link
@@ -101,13 +129,14 @@ export const TextTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className = '',
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <span
@@ -128,13 +157,14 @@ export const ChipTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className = '',
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <div
@@ -156,7 +186,7 @@ export const BadgeTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className = '',
         disabled,
         variant = "primary",
@@ -164,6 +194,7 @@ export const BadgeTrigger = (
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <div
@@ -186,13 +217,14 @@ export const CardTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className = '',
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <div
@@ -215,7 +247,7 @@ export const FloatingButtonTrigger = (
     {
         iconName,
         label,
-        onClick,
+        eventHandlers,
         className = '',
         variant = "primary",
         disabled,
@@ -223,10 +255,11 @@ export const FloatingButtonTrigger = (
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <Button
-            variant={variant}
+            variant={mapVariant(variant)}
             className={`fixed bottom-4 right-4 rounded-full shadow-lg ${className}`}
             onClick={onClick}
             disabled={disabled}
@@ -245,14 +278,16 @@ export const ToggleTrigger = (
     {
         iconName,
         label,
-        checked,
-        onChange,
+        dataProps,
+        eventHandlers,
         className = '',
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const checked = dataProps?.checked;
+    const onChange = eventHandlers?.onChange;
 
     return (
         <div
@@ -263,7 +298,7 @@ export const ToggleTrigger = (
                 <>
                     <Switch
                         checked={checked}
-                        onChange={onChange}
+                        onCheckedChange={(checked) => onChange?.(checked)}
                         disabled={disabled}
                     />
                     {ResolvedIcon && <ResolvedIcon className="w-4 h-4" />}
@@ -279,20 +314,22 @@ export const DropdownTrigger = (
     {
         iconName,
         label = "Menu",
-        options = [],
+        dataProps,
         className = '',
         variant = "ghost",
-        menuLabel,
+        uiProps,
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const options = dataProps?.options || [];
+    const menuLabel = uiProps?.menuLabel;
 
     return (
         <EntityDropdownMenu
             triggerText={label}
-            variant={variant}
+            variant={mapVariant(variant)}
             label={menuLabel}
             className={className}
             disabled={disabled}
@@ -300,7 +337,7 @@ export const DropdownTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariant(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -323,21 +360,24 @@ export const DropdownBasicTrigger = (
     {
         iconName,
         label = "Menu",
-        options = [],
+        dataProps,
         className = '',
         variant = "ghost",
-        menuLabel,
+        uiProps,
+        eventHandlers,
         disabled,
-        onValueChange,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const options = dataProps?.options || [];
+    const menuLabel = uiProps?.menuLabel;
+    const onValueChange = eventHandlers?.onValueChange;
 
     return (
         <EntityDropdownMenu
             triggerText={label}
-            variant={variant}
+            variant={mapVariant(variant)}
             label={menuLabel}
             className={className}
             disabled={disabled}
@@ -345,7 +385,7 @@ export const DropdownBasicTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariant(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -371,21 +411,24 @@ export const DropdownCheckboxTrigger = (
     {
         iconName,
         label = "Options",
-        options = [],
+        dataProps,
         className = '',
         variant = "ghost",
-        menuLabel,
+        uiProps,
+        eventHandlers,
         disabled,
         children,
-        onCheckedChange,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const options = dataProps?.options || [];
+    const menuLabel = uiProps?.menuLabel;
+    const onCheckedChange = eventHandlers?.onCheckedChange;
 
     return (
         <EntityDropdownMenu
             triggerText={label}
-            variant={variant}
+            variant={mapVariant(variant)}
             label={menuLabel}
             className={className}
             disabled={disabled}
@@ -393,7 +436,7 @@ export const DropdownCheckboxTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariant(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -422,22 +465,25 @@ export const DropdownRadioTrigger = (
     {
         iconName,
         label = "Select",
-        options = [],
-        value,
-        onValueChange,
+        dataProps,
+        eventHandlers,
         className = '',
         variant = "ghost",
-        menuLabel,
+        uiProps,
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const options = dataProps?.options || [];
+    const value = dataProps?.value;
+    const menuLabel = uiProps?.menuLabel;
+    const onValueChange = eventHandlers?.onValueChange;
 
     return (
         <EntityDropdownMenu
             triggerText={label}
-            variant={variant}
+            variant={mapVariant(variant)}
             label={menuLabel}
             className={className}
             disabled={disabled}
@@ -445,7 +491,7 @@ export const DropdownRadioTrigger = (
                 children || (
                     ResolvedIcon && (
                         <Button
-                            variant={variant}
+                            variant={mapVariant(variant)}
                             className="flex items-center gap-2"
                             disabled={disabled}
                         >
@@ -476,44 +522,51 @@ export const DropdownRadioTrigger = (
 
 export const ImageTrigger = (
     {
-        src,
-        alt,
-        onClick,
+        uiProps,
+        eventHandlers,
         className,
         disabled,
         children,
-    }: TriggerProps) => (
-    <div className={cn(
-        disabled ? "opacity-50" : "cursor-pointer",
-        className
-    )}>
-        {children || (
-            <img
-                src={src}
-                alt={alt}
-                onClick={disabled ? undefined : onClick}
-                className={cn(
-                    "w-full h-full object-cover",
-                    disabled ? "pointer-events-none" : "hover:opacity-90"
-                )}
-            />
-        )}
-    </div>
-);
+    }: TriggerProps) => {
+    const src = uiProps?.src;
+    const alt = uiProps?.alt;
+    const onClick = eventHandlers?.onClick;
+
+    return (
+        <div className={cn(
+            disabled ? "opacity-50" : "cursor-pointer",
+            className
+        )}>
+            {children || (
+                <img
+                    src={src}
+                    alt={alt}
+                    onClick={disabled ? undefined : onClick}
+                    className={cn(
+                        "w-full h-full object-cover",
+                        disabled ? "pointer-events-none" : "hover:opacity-90"
+                    )}
+                />
+            )}
+        </div>
+    );
+};
 
 export const TooltipActionTrigger = (
     {
         iconName,
         label,
-        tooltip,
-        onClick,
+        uiProps,
+        eventHandlers,
         className = '',
-        side = "top",
         disabled,
         children,
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const tooltip = uiProps?.tooltip;
+    const side = uiProps?.side || "top";
+    const onClick = eventHandlers?.onClick;
 
     return (
         <TooltipProvider>
@@ -547,8 +600,8 @@ export const TabTrigger = (
     {
         iconName,
         label,
-        active,
-        onClick,
+        uiProps,
+        eventHandlers,
         className = '',
         disabled,
         variant = "primary",
@@ -556,6 +609,8 @@ export const TabTrigger = (
     }: TriggerProps
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
+    const active = uiProps?.active;
+    const onClick = eventHandlers?.onClick;
 
     return (
         <div
@@ -579,11 +634,14 @@ export const TabTrigger = (
 
 export const CustomTrigger = (
     {
-        component,
-        onClick,
+        uiProps,
+        eventHandlers,
         disabled,
         className,
     }: TriggerProps) => {
+    const component = uiProps?.component;
+    const onClick = eventHandlers?.onClick;
+
     if (!component) {
         throw new Error("CustomTrigger requires a 'component' prop.");
     }

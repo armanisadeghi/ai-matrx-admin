@@ -1,7 +1,7 @@
 // File: actions/ai.ts
 'use server'
 
-import MultiApiBaseAdapter from '@/lib/ai/adapters/MultiApiBaseAdapter'
+import MultiApiBaseAdapter, { type Message } from '@/lib/ai/adapters/MultiApiBaseAdapter'
 // https://claude.ai/chat/af737380-96d6-47ac-931e-cd7e7ef81e5b
 
 import { revalidatePath } from 'next/cache'
@@ -15,8 +15,8 @@ export async function generateAIResponse(formData: FormData) {
     const model = formData.get('model') as string
     const maxTokens = parseInt(formData.get('maxTokens') as string)
 
-    const messages = [
-        { role: 'user', content: message }
+    const messages: Message[] = [
+        { role: 'user' as const, content: message }
     ]
 
     const options = {
@@ -43,7 +43,12 @@ export async function generateAIResponse(formData: FormData) {
 
 export async function generateFromRecipe(formData: FormData) {
     const recipeId = formData.get('recipeId') as string
-    const variables = Object.fromEntries(formData.entries())
+    const variables: { [key: string]: string } = {}
+    for (const [key, value] of formData.entries()) {
+        if (typeof value === 'string') {
+            variables[key] = value
+        }
+    }
 
     // Fetch the recipe from your database using recipeId
     const recipe = await fetchRecipeFromDatabase(recipeId)
@@ -67,11 +72,11 @@ export async function generateFromRecipe(formData: FormData) {
 }
 
 // Helper function to fetch recipe from database
-async function fetchRecipeFromDatabase(recipeId: string) {
+async function fetchRecipeFromDatabase(recipeId: string): Promise<Message[]> {
     // Implementation depends on your database setup
     // This is just a placeholder
     return [
-        { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: 'Hello, {name}!' }
+        { role: 'assistant' as const, content: 'You are a helpful assistant.' },
+        { role: 'user' as const, content: 'Hello, {name}!' }
     ]
 }

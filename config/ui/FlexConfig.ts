@@ -20,61 +20,85 @@ interface DensityConfigType {
 export const densityConfig: Record<ComponentDensity, DensityConfigType> = {
     compact: {
         padding: {
+            default: 'px-2 py-1',
             xs: 'px-1 py-0.5',
             sm: 'px-2 py-1',
             md: 'px-3 py-1.5',
             lg: 'px-4 py-2',
-            xl: 'px-5 py-2.5'
+            xl: 'px-5 py-2.5',
+            '2xl': 'px-6 py-3',
+            '3xl': 'px-7 py-3.5',
+            icon: 'p-1'
         },
         spacing: 'space-y-2',
         fontSize: 'text-sm',
         borderRadius: 'rounded',
         height: {
+            default: 'h-8',
             xs: 'h-6',
             sm: 'h-8',
             md: 'h-9',
             lg: 'h-10',
-            xl: 'h-11'
+            xl: 'h-11',
+            '2xl': 'h-12',
+            '3xl': 'h-14',
+            icon: 'h-4 w-4'
         },
         gap: '2' // This represents a gap of 0.5rem (8px)
     },
     normal: {
         padding: {
+            default: 'px-3 py-1.5',
             xs: 'px-2 py-1',
             sm: 'px-3 py-1.5',
             md: 'px-4 py-2',
             lg: 'px-5 py-2.5',
-            xl: 'px-6 py-3'
+            xl: 'px-6 py-3',
+            '2xl': 'px-7 py-3.5',
+            '3xl': 'px-8 py-4',
+            icon: 'p-1.5'
         },
         spacing: 'space-y-4',
         fontSize: 'text-base',
         borderRadius: 'rounded-md',
         height: {
+            default: 'h-9',
             xs: 'h-7',
             sm: 'h-9',
             md: 'h-10',
             lg: 'h-11',
-            xl: 'h-12'
+            xl: 'h-12',
+            '2xl': 'h-14',
+            '3xl': 'h-16',
+            icon: 'h-5 w-5'
         },
         gap: '3' // This represents a gap of 0.75rem (12px)
     },
     comfortable: {
         padding: {
+            default: 'px-4 py-2',
             xs: 'px-3 py-1.5',
             sm: 'px-4 py-2',
             md: 'px-5 py-2.5',
             lg: 'px-6 py-3',
-            xl: 'px-7 py-3.5'
+            xl: 'px-7 py-3.5',
+            '2xl': 'px-8 py-4',
+            '3xl': 'px-9 py-4.5',
+            icon: 'p-2'
         },
         spacing: 'space-y-6',
         fontSize: 'text-lg',
         borderRadius: 'rounded-lg',
         height: {
+            default: 'h-10',
             xs: 'h-8',
             sm: 'h-10',
             md: 'h-11',
             lg: 'h-12',
-            xl: 'h-14'
+            xl: 'h-14',
+            '2xl': 'h-16',
+            '3xl': 'h-18',
+            icon: 'h-6 w-6'
         },
         gap: '4' // This represents a gap of 1rem (16px)
     }
@@ -124,6 +148,22 @@ export const animationPresets: Record<AnimationPreset, {
         transition: { type: "spring", stiffness: 300, damping: 20 },
         hover: { rotate: [-1, 1, -1], transition: { repeat: Infinity } },
         tap: { scale: 0.95, rotate: 0 }
+    },
+    feedback: {
+        initial: { opacity: 0, scale: 0.98 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.98 },
+        transition: { duration: 0.15 },
+        hover: { scale: 1.01 },
+        tap: { scale: 0.99 }
+    },
+    error: {
+        initial: { opacity: 0, x: -5 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: 5 },
+        transition: { duration: 0.2 },
+        hover: { x: 2 },
+        tap: { x: 0 }
     }
 };
 
@@ -182,18 +222,26 @@ export const jsonViewerConfig: Record<ComponentDensity, {
         truncateThreshold: 3,
         indentSize: 'pl-2',
         fontSize: {
+            default: 'text-sm',
             xs: 'text-xs',
             sm: 'text-sm',
             md: 'text-sm',
             lg: 'text-base',
-            xl: 'text-lg'
+            xl: 'text-lg',
+            '2xl': 'text-xl',
+            '3xl': 'text-2xl',
+            icon: 'text-xs'
         },
         iconSize: {
+            default: 'h-4 w-4',
             xs: 'h-3 w-3',
             sm: 'h-3.5 w-3.5',
             md: 'h-4 w-4',
             lg: 'h-5 w-5',
-            xl: 'h-6 w-6'
+            xl: 'h-6 w-6',
+            '2xl': 'h-7 w-7',
+            '3xl': 'h-8 w-8',
+            icon: 'h-3 w-3'
         },
         spacing: 'gap-1',
         itemPadding: 'py-0.5 px-1',
@@ -204,18 +252,26 @@ export const jsonViewerConfig: Record<ComponentDensity, {
         truncateThreshold: 4,
         indentSize: 'pl-3',
         fontSize: {
+            default: 'text-sm',
             xs: 'text-xs',
             sm: 'text-sm',
             md: 'text-sm',
             lg: 'text-base',
-            xl: 'text-lg'
+            xl: 'text-lg',
+            '2xl': 'text-xl',
+            '3xl': 'text-2xl',
+            icon: 'text-xs'
         },
         iconSize: {
+            default: 'h-4 w-4',
             xs: 'h-3 w-3',
             sm: 'h-3.5 w-3.5',
             md: 'h-4 w-4',
             lg: 'h-5 w-5',
-            xl: 'h-6 w-6'
+            xl: 'h-6 w-6',
+            '2xl': 'h-7 w-7',
+            '3xl': 'h-8 w-8',
+            icon: 'h-3 w-3'
         },
         spacing: 'space-y-1',
         itemPadding: 'py-1 px-2',
@@ -226,18 +282,26 @@ export const jsonViewerConfig: Record<ComponentDensity, {
         truncateThreshold: 5,
         indentSize: 'pl-2',
         fontSize: {
+            default: 'text-base',
             xs: 'text-xs',
             sm: 'text-sm',
             md: 'text-sm',
             lg: 'text-base',
-            xl: 'text-lg'
+            xl: 'text-lg',
+            '2xl': 'text-xl',
+            '3xl': 'text-2xl',
+            icon: 'text-xs'
         },
         iconSize: {
+            default: 'h-5 w-5',
             xs: 'h-3 w-3',
             sm: 'h-3.5 w-3.5',
             md: 'h-4 w-4',
             lg: 'h-5 w-5',
-            xl: 'h-6 w-6'
+            xl: 'h-6 w-6',
+            '2xl': 'h-7 w-7',
+            '3xl': 'h-8 w-8',
+            icon: 'h-3 w-3'
         },
         spacing: 'space-y-2',
         itemPadding: 'py-1.5 px-3',

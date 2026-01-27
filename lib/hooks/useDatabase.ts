@@ -1,7 +1,7 @@
 // File: hooks/useDatabase.ts
 
 import { useState, useCallback, useEffect } from 'react';
-import { QueryOptions } from "@/utils/supabase/api-wrapper";
+import { databaseApi, QueryOptions, TableOrView } from "@/utils/supabase/api-wrapper";
 import { FlexibleId, flexibleIdToString, isValidFlexibleId } from '@/types/FlexibleId';
 import {
     getPrettyNameForTable,
@@ -13,6 +13,7 @@ import {
     generateJsonTemplate,
     ensureId
 } from "@/utils/schema/schemaUtils";
+import { TableName } from '@/types/junk/automationTableTypes';
 
 interface PaginationInfo {
     currentPage: number;

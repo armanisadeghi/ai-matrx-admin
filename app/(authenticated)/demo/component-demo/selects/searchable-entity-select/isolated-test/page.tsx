@@ -1,6 +1,6 @@
 "use client";
 
-import SearchableSelect from '@/components/matrx/SearchableSelect';
+import SearchableSelect, { type Option } from '@/components/matrx/SearchableSelect';
 import React, { useState } from 'react';
 
 

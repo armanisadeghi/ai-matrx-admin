@@ -1,14 +1,20 @@
 import React, { Suspense, useState } from "react";
-// import useDatabase from "@/lib/hooks/useDatabase";
+import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import { Button, Input } from "@/components/ui";
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
+import { AutomationTableName } from "@/types/AutomationSchemaTypes";
+import { EntityKeys } from "@/types/entityTypes";
 
 const FetchOperations = () => {
-    const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
+    const [selectedSchema, setSelectedSchema] = useState<AutomationTableName | null>(null);
     const [id, setId] = useState('');
-    // const { data, loading, error, fetchOne, fetchAll, fetchPaginated, getForeignKeys, getInverseForeignKeys, getAllFields, getNonFkFields, fetchFk, fetchIfk, fetchM2m } = useDatabase();
+    const { data, loading, error, fetchOne, fetchAll, getForeignKeys, getInverseForeignKeys, getAllFields, fetchFk, fetchIfk, fetchM2m } = useDatabase();
+
+    const handleSchemaSelect = (schemaName: EntityKeys) => {
+        setSelectedSchema(schemaName as AutomationTableName);
+    };
 
     const handleFetchOne = () => {
         if (selectedSchema && id) {
@@ -47,7 +53,7 @@ const FetchOperations = () => {
     return (
         <div className="space-y-4">
             {/* Schema Selection */}
-            <SchemaSelect onSchemaSelect={setSelectedSchema} selectedSchema={selectedSchema} />
+            <SchemaSelect onSchemaSelect={handleSchemaSelect} selectedSchema={selectedSchema} />
 
             {/* ID Input */}
             <Input

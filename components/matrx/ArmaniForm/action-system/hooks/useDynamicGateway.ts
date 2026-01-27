@@ -1,28 +1,24 @@
 import { useState, useRef, useCallback } from 'react';
-import {ACTION_TYPES, ActionRegistryEntry} from "../types";
+import {
+    ACTION_TYPES,
+    ActionRegistryEntry,
+    PropDefinitions,
+    HandlerDefinition,
+    PresentationConfig,
+    TriggerConfig,
+    ActionComponentConfig,
+    ReduxActionConfig,
+    HookActionConfig,
+    CommandActionConfig,
+    DirectActionConfig
+} from "../types";
 
 
-interface HandlerDefinition {
-    type: 'event' | 'callback' | 'async';
-    handler: (...args: any[]) => any;
-    isResultHandler?: boolean;
-    metadata?: {
-        description?: string;
-        parameters?: Record<string, any>;
-        returnType?: string;
-    };
-}
 export interface PropSource {
     type: 'context' | 'redux' | 'computed' | 'direct' | 'static';
     path?: string;
     resolver?: string;
     value?: any;
-}
-
-export interface PropDefinitions {
-    staticProps: Record<string, any>;
-    requiredProps: Record<string, PropSource>;
-    optionalProps: Record<string, any>;
 }
 
 export type RegistryKey = `${string}:${string}:${string}`; // resource:component:name
@@ -50,62 +46,77 @@ export const useActionGateway = () => {
         actionRegistryKey: string,
         actionConfig: ActionRegistryEntry
     ) => {
-        const configs = [
+        type ConfigEntry = {
+            type: string;
+            config: PresentationConfig | TriggerConfig | ActionComponentConfig | ReduxActionConfig | HookActionConfig | CommandActionConfig | DirectActionConfig | undefined;
+        };
+
+        const configs: ConfigEntry[] = [
             {
                 type: 'presentation',
-                config: actionConfig.presentationConfig
+                config: actionConfig.presentationConfig as PresentationConfig
             },
             {
                 type: 'trigger',
-                config: actionConfig.triggerConfig
+                config: actionConfig.triggerConfig as TriggerConfig
             },
         ];
 
         // Add the specific action config based on type
         switch (actionConfig.actionType) {
             case ACTION_TYPES.COMPONENT:
-                configs.push({
-                    type: 'component',
-                    config: actionConfig.actionComponentConfig
-                });
+                if (actionConfig.actionComponentConfig) {
+                    configs.push({
+                        type: 'component',
+                        config: actionConfig.actionComponentConfig
+                    });
+                }
                 break;
             case ACTION_TYPES.REDUX:
-                configs.push({
-                    type: 'redux',
-                    config: actionConfig.reduxActionConfig
-                });
+                if (actionConfig.reduxActionConfig) {
+                    configs.push({
+                        type: 'redux',
+                        config: actionConfig.reduxActionConfig
+                    });
+                }
                 break;
             case ACTION_TYPES.HOOK:
-                configs.push({
-                    type: 'hook',
-                    config: actionConfig.hookActionConfig
-                });
+                if (actionConfig.hookActionConfig) {
+                    configs.push({
+                        type: 'hook',
+                        config: actionConfig.hookActionConfig
+                    });
+                }
                 break;
             case ACTION_TYPES.COMMAND:
-                configs.push({
-                    type: 'command',
-                    config: actionConfig.commandActionConfig
-                });
+                if (actionConfig.commandActionConfig) {
+                    configs.push({
+                        type: 'command',
+                        config: actionConfig.commandActionConfig
+                    });
+                }
                 break;
             case ACTION_TYPES.DIRECT:
-                configs.push({
-                    type: 'direct',
-                    config: actionConfig.directActionConfig
-                });
+                if (actionConfig.directActionConfig) {
+                    configs.push({
+                        type: 'direct',
+                        config: actionConfig.directActionConfig
+                    });
+                }
                 break;
         }
 
         // Register all configs
         configs.forEach(({ type, config }) => {
-            if (!config || !config.resource) return;
+            if (!config || !('resource' in config) || !config.resource) return;
 
             // Register props
-            if (config.propDefinitions) {
+            if ('propDefinitions' in config && config.propDefinitions) {
                 // Register static props
                 Object.entries(config.propDefinitions.staticProps).forEach(
                     ([propName, value]) => {
                         const key = createRegistryKey(
-                            config.resource,
+                            config.resource as string,
                             type,
                             propName
                         );
@@ -120,11 +131,11 @@ export const useActionGateway = () => {
                 Object.entries(config.propDefinitions.requiredProps).forEach(
                     ([propName, source]) => {
                         const key = createRegistryKey(
-                            config.resource,
+                            config.resource as string,
                             type,
                             propName
                         );
-                        propsRef.current.set(key, source);
+                        propsRef.current.set(key, source as PropSource);
                     }
                 );
 
@@ -132,7 +143,7 @@ export const useActionGateway = () => {
                 Object.entries(config.propDefinitions.optionalProps).forEach(
                     ([propName, value]) => {
                         const key = createRegistryKey(
-                            config.resource,
+                            config.resource as string,
                             type,
                             propName
                         );
@@ -145,15 +156,15 @@ export const useActionGateway = () => {
             }
 
             // Register handlers
-            if (config.handlers) {
+            if ('handlers' in config && config.handlers) {
                 Object.entries(config.handlers).forEach(
                     ([handlerName, handler]) => {
                         const key = createRegistryKey(
-                            config.resource,
+                            config.resource as string,
                             type,
                             handlerName
                         );
-                        handlersRef.current.set(key, handler);
+                        handlersRef.current.set(key, handler as HandlerDefinition);
                     }
                 );
             }
@@ -164,7 +175,7 @@ export const useActionGateway = () => {
         // Return cleanup function
         return () => {
             configs.forEach(({ type, config }) => {
-                if (!config || !config.resource) return;
+                if (!config || !('resource' in config) || !config.resource) return;
 
                 // Clean up props and handlers
                 const allKeys = [...propsRef.current.keys(), ...handlersRef.current.keys()]

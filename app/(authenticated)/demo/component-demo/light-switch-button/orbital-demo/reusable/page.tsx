@@ -175,7 +175,7 @@ const WaveSlider = ({
 }: WaveSliderProps) => {
     const [value, setValue] = useState(defaultValue);
     const [points, setPoints] = useState<string[]>([]);
-    const animationRef = React.useRef<number>();
+    const animationRef = React.useRef<number>(0);
 
     useEffect(() => {
         let startTime = Date.now();

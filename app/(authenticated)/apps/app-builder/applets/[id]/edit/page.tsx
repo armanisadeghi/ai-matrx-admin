@@ -77,7 +77,7 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
   // Initialize editedApplet state when the original applet data is loaded
   useEffect(() => {
     if (applet) {
-      setEditedApplet({ ...applet });
+      setEditedApplet({ ...applet } as unknown as AppletBuilder);
     }
   }, [applet]);
 

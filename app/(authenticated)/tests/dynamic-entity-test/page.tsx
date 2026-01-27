@@ -1,49 +1,54 @@
 'use client';
 
-import React, {useCallback, useEffect, useState} from 'react';
-import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-// import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import {createEntitySelectors, getEntitySlice} from "@/lib/redux";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
+import {EntityKeys} from "@/types/entityTypes";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
-const entityKey = 'registeredFunction';
-const entitySelectors = createEntitySelectors(entityKey);
-const entityActions = createEntityActions(entityKey);
+const entityKey: EntityKeys = 'registeredFunction';
 
 const TestEntityTable: React.FC = () => {
     const dispatch = useAppDispatch();
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [shouldFetch, setShouldFetch] = useState(true);
 
-    const data = useAppSelector(entitySelectors.selectData);
-    const loading = useAppSelector(entitySelectors.selectLoading);
-    const error = useAppSelector(entitySelectors.selectError);
-    const totalCount = useAppSelector(entitySelectors.selectTotalCount);
-    const initialized = useAppSelector(entitySelectors.selectInitialized);
+    // Create selectors and actions
+    const selectors = useMemo(() => createEntitySelectors(entityKey), []);
+    const actions = useMemo(() => getEntitySlice(entityKey).actions, []);
 
-    // Combine fetch logic into a single effect with clear conditions
+    const records = useAppSelector(selectors.selectAllRecords);
+    const loadingState = useAppSelector(selectors.selectLoadingState);
+    const error = useAppSelector(selectors.selectErrorState);
+    const paginationInfo = useAppSelector(selectors.selectPaginationInfo);
+    const internalLoading = useAppSelector(selectors.selectIsInternalLoading);
+
+    // Convert records map to array
+    const data = useMemo(() => {
+        return Object.values(records);
+    }, [records]);
+
+    const loading = loadingState?.loading ?? false;
+    const totalCount = paginationInfo?.totalCount ?? 0;
+    const initialized = !internalLoading;
+
+    // Fetch effect
     useEffect(() => {
-        // Only fetch if:
-        // 1. We're not currently loading
-        // 2. AND either we're not initialized OR we have an explicit page change
-        if (!loading && (!initialized || page > 0)) {
-            dispatch(entityActions.fetchPaginatedRequest({
-                page,
-                pageSize,
-                options: {},
-                maxCount: 10000
-            }));
+        if (shouldFetch) {
+            dispatch(actions.fetchRecords({ page, pageSize }));
+            setShouldFetch(false);
         }
-    }, [page, pageSize]);
+    }, [dispatch, page, pageSize, shouldFetch, actions]);
 
-    const handlePageChange = useCallback((newPage: number) => {
+    const handlePageChange = useCallback((newPage: number, newPageSize?: number) => {
         console.log('Page changed to:', newPage);
         setPage(newPage);
+        if (newPageSize) {
+            setPageSize(newPageSize);
+        }
+        setShouldFetch(true);
     }, []);
-
-    // Memoize data only if you're using it in expensive computations
-    const memoizedData = data;
-    const memoizedTotalCount = totalCount;
 
     return (
         <div className="p-4 space-y-4">
@@ -51,25 +56,25 @@ const TestEntityTable: React.FC = () => {
 
             {loading && <div>Loading...</div>}
 
-            {error?.message && (
+            {error && (
                 <div className="text-destructive p-4 rounded">
-                    Error: {error.message}
+                    Error: {error.message || String(error)}
                 </div>
             )}
 
-            {!loading && memoizedData && (
+            {!loading && data && data.length > 0 && (
                 <div className="space-y-4">
                     <MatrxTable
-                        data={memoizedData}
+                        data={data}
                         actions={['view']}
                         onAction={(action, row) => console.log(action, row)}
                         truncateAt={50}
                         onPageChange={handlePageChange}
                     />
 
-                    {memoizedTotalCount !== undefined && (
+                    {totalCount !== undefined && (
                         <div className="text-muted-foreground text-sm">
-                            Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, memoizedTotalCount)} of {memoizedTotalCount} entries
+                            Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
                         </div>
                     )}
                 </div>
@@ -80,10 +85,11 @@ const TestEntityTable: React.FC = () => {
                     page,
                     pageSize,
                     initialized,
-                    totalCount: memoizedTotalCount,
-                    dataLength: memoizedData?.length,
+                    totalCount,
+                    dataLength: data.length,
                     loading,
-                    error,
+                    error: error ? (error.message || String(error)) : null,
+                    shouldFetch
                 }, null, 2)}
             </pre>
         </div>

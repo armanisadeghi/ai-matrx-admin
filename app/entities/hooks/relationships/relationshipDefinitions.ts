@@ -186,10 +186,10 @@ export class RelationshipMapper {
 
         // Get all other entities' reference fields
         const otherConfigs = [
-            this.getEntityConfig(this.definition.entityOne),
-            this.getEntityConfig(this.definition.entityTwo),
-            this.getEntityConfig(this.definition.entityThree),
-            this.getEntityConfig(this.definition.entityFour),
+            this.getEntityConfig(this.definition.entityOne as EntityKeys),
+            this.getEntityConfig(this.definition.entityTwo as EntityKeys),
+            this.getEntityConfig(this.definition.entityThree as EntityKeys),
+            this.getEntityConfig(this.definition.entityFour as EntityKeys),
         ].filter((config) => config && config.entity !== this.parentEntity);
 
         // Filter records based on parent entity and map to child IDs
@@ -205,7 +205,7 @@ export class RelationshipMapper {
         // Find the first non-parent entity in the relationship
         const otherEntity = [this.definition.entityOne, this.definition.entityTwo, this.definition.entityThree, this.definition.entityFour].find(
             (entity) => entity && entity !== this.parentEntity
-        );
+        ) as EntityKeys;
 
         if (!otherEntity) {
             throw new Error('No target entity found');
@@ -327,7 +327,7 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
 
     // First, set the core properties that don't need mapping
     const core = {
-        joiningTable: definition.joiningTable,
+        joiningTable: definition.joiningTable as EntityKeys,
         joiningTablePks: definition.joiningTablePks,
         relationshipCount: definition.relationshipCount,
         additionalFields: definition.additionalFields,
@@ -337,19 +337,19 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
     if (definition.entityOne === parentEntity) {
         mapped = {
             ...core,
-            parentEntity: definition.entityOne,
+            parentEntity: definition.entityOne as EntityKeys,
             parentField: definition.entityOneField,
             parentPks: definition.entityOnePks,
             parentReference: definition.ReferenceFieldOne,
-            childEntity: definition.entityTwo!,
+            childEntity: definition.entityTwo! as EntityKeys,
             childField: definition.entityTwoField!,
             childPks: definition.entityTwoPks!,
             childReference: definition.ReferenceFieldTwo!,
-            childTwoEntity: definition.entityThree,
+            childTwoEntity: definition.entityThree as EntityKeys | undefined,
             childTwoField: definition.entityThreeField,
             childTwoPks: definition.entityThreePks,
             childTwoReference: definition.ReferenceFieldThree,
-            childThreeEntity: definition.entityFour,
+            childThreeEntity: definition.entityFour as EntityKeys | undefined,
             childThreeField: definition.entityFourField,
             childThreePks: definition.entityFourPks,
             childThreeReference: definition.ReferenceFieldFour,
@@ -357,19 +357,19 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
     } else if (definition.entityTwo === parentEntity) {
         mapped = {
             ...core,
-            parentEntity: definition.entityTwo!,
+            parentEntity: definition.entityTwo! as EntityKeys,
             parentField: definition.entityTwoField!,
             parentPks: definition.entityTwoPks!,
             parentReference: definition.ReferenceFieldTwo!,
-            childEntity: definition.entityOne,
+            childEntity: definition.entityOne as EntityKeys,
             childField: definition.entityOneField,
             childPks: definition.entityOnePks,
             childReference: definition.ReferenceFieldOne,
-            childTwoEntity: definition.entityThree,
+            childTwoEntity: definition.entityThree as EntityKeys | undefined,
             childTwoField: definition.entityThreeField,
             childTwoPks: definition.entityThreePks,
             childTwoReference: definition.ReferenceFieldThree,
-            childThreeEntity: definition.entityFour,
+            childThreeEntity: definition.entityFour as EntityKeys | undefined,
             childThreeField: definition.entityFourField,
             childThreePks: definition.entityFourPks,
             childThreeReference: definition.ReferenceFieldFour,
@@ -377,19 +377,19 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
     } else if (definition.entityThree === parentEntity) {
         mapped = {
             ...core,
-            parentEntity: definition.entityThree!,
+            parentEntity: definition.entityThree! as EntityKeys,
             parentField: definition.entityThreeField!,
             parentPks: definition.entityThreePks!,
             parentReference: definition.ReferenceFieldThree!,
-            childEntity: definition.entityOne,
+            childEntity: definition.entityOne as EntityKeys,
             childField: definition.entityOneField,
             childPks: definition.entityOnePks,
             childReference: definition.ReferenceFieldOne,
-            childTwoEntity: definition.entityTwo!,
+            childTwoEntity: definition.entityTwo! as EntityKeys,
             childTwoField: definition.entityTwoField!,
             childTwoPks: definition.entityTwoPks!,
             childTwoReference: definition.ReferenceFieldTwo!,
-            childThreeEntity: definition.entityFour,
+            childThreeEntity: definition.entityFour as EntityKeys | undefined,
             childThreeField: definition.entityFourField,
             childThreePks: definition.entityFourPks,
             childThreeReference: definition.ReferenceFieldFour,
@@ -397,19 +397,19 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
     } else {
         mapped = {
             ...core,
-            parentEntity: definition.entityFour!,
+            parentEntity: definition.entityFour! as EntityKeys,
             parentField: definition.entityFourField!,
             parentPks: definition.entityFourPks!,
             parentReference: definition.ReferenceFieldFour!,
-            childEntity: definition.entityOne,
+            childEntity: definition.entityOne as EntityKeys,
             childField: definition.entityOneField,
             childPks: definition.entityOnePks,
             childReference: definition.ReferenceFieldOne,
-            childTwoEntity: definition.entityTwo!,
+            childTwoEntity: definition.entityTwo! as EntityKeys,
             childTwoField: definition.entityTwoField!,
             childTwoPks: definition.entityTwoPks!,
             childTwoReference: definition.ReferenceFieldTwo!,
-            childThreeEntity: definition.entityThree,
+            childThreeEntity: definition.entityThree as EntityKeys | undefined,
             childThreeField: definition.entityThreeField,
             childThreePks: definition.entityThreePks,
             childThreeReference: definition.ReferenceFieldThree,

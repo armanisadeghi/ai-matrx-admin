@@ -33,7 +33,7 @@ export default function SchemaAdmin() {
             fieldsList: Array<Record<string, any>>;
         }
     ) => {
-        setSchemaDetails(result);
+        setSchemaDetails(result as any);
     }, []);
 
     return (

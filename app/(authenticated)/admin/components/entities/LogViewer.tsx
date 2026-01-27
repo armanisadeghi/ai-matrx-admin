@@ -1,7 +1,7 @@
 // app/admin/components/entity-testing/LogViewer.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,16 @@ import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 
 const LogViewer = () => {
     const [logs, setLogs] = useState<any[]>([]);
+    
+    // Create a shared EntityLogger instance for the LogViewer
+    const logger = useMemo(() => {
+        return new EntityLogger('LogViewer', 'all-entities');
+    }, []);
 
     useEffect(() => {
-        const unsubscribe = EntityLogger.subscribe(setLogs);
+        const unsubscribe = logger.subscribe(setLogs);
         return () => unsubscribe();
-    }, []);
+    }, [logger]);
 
     const getLevelColor = (level: string) => {
         switch (level) {
@@ -31,7 +36,7 @@ const LogViewer = () => {
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => EntityLogger.clear()}
+                    onClick={() => logger.clear()}
                 >
                     Clear Logs
                 </Button>
