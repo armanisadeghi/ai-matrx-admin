@@ -22,6 +22,7 @@ import {selectSchema} from "@/lib/redux/schema/globalCacheSelectors";
 import {TableDetails} from "@/app/(authenticated)/admin/components/SchemaVisualizer/Details/TableDetails";
 import {FieldDetails} from "@/app/(authenticated)/admin/components/SchemaVisualizer/Details/FieldDetails";
 import {RelationshipDetails} from "@/app/(authenticated)/admin/components/SchemaVisualizer/Details/RelationshipDetails";
+import {AutomationEntity, EntityKeys} from "@/types/entityTypes";
 
 export function SchemaDetails() {
     const { selectedElement, isDetailsOpen, setDetailsOpen } = useSchemaVisualizerStore();
@@ -41,17 +42,22 @@ export function SchemaDetails() {
     };
 
     const renderContent = () => {
+        if (!selectedElement.entityName) return null;
+        
+        const entityName = selectedElement.entityName;
+        const entity = schema[entityName];
+        
         switch (selectedElement.type) {
             case 'table':
-                return <TableDetails entity={schema[selectedElement.entityName!]} />;
+                return <TableDetails entity={entity} />;
             case 'field':
-                return <FieldDetails
-                    entity={schema[selectedElement.entityName!]}
+                return <FieldDetails<typeof entityName>
+                    entity={entity as AutomationEntity<typeof entityName>}
                     fieldName={selectedElement.fieldName!}
                 />;
             case 'relationship':
-                return <RelationshipDetails
-                    entity={schema[selectedElement.entityName!]}
+                return <RelationshipDetails<typeof entityName>
+                    entity={entity as AutomationEntity<typeof entityName>}
                     relationshipIndex={selectedElement.relationshipIndex!}
                 />;
             default:

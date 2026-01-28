@@ -18,12 +18,12 @@ import { ComponentIcon } from '../ComponentIcon'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {AutomationEntity, EntityKeys} from '@/types/entityTypes'
 
-interface FieldDetailsProps {
-    entity: AutomationEntity<EntityKeys>;
+interface FieldDetailsProps<TEntity extends EntityKeys = EntityKeys> {
+    entity: AutomationEntity<TEntity>;
     fieldName: string;
 }
 
-export function FieldDetails({ entity, fieldName }: FieldDetailsProps) {
+export function FieldDetails<TEntity extends EntityKeys = EntityKeys>({ entity, fieldName }: FieldDetailsProps<TEntity>) {
     const field = entity.entityFields[fieldName];
     const [showAdvanced, setShowAdvanced] = useState(false);
 

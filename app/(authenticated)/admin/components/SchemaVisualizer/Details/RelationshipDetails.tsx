@@ -14,12 +14,12 @@ import { useAppSelector } from '@/lib/redux/hooks'
 import { selectEntityNameFormats } from '@/lib/redux/schema/globalCacheSelectors'
 import {AutomationEntity, EntityKeys} from "@/types/entityTypes";
 
-interface RelationshipDetailsProps {
-    entity: AutomationEntity<EntityKeys>;
+interface RelationshipDetailsProps<TEntity extends EntityKeys = EntityKeys> {
+    entity: AutomationEntity<TEntity>;
     relationshipIndex: number;
 }
 
-export function RelationshipDetails({ entity, relationshipIndex }: RelationshipDetailsProps) {
+export function RelationshipDetails<TEntity extends EntityKeys = EntityKeys>({ entity, relationshipIndex }: RelationshipDetailsProps<TEntity>) {
     const relationship = entity.relationships[relationshipIndex];
     const entityNameFormats = useAppSelector(selectEntityNameFormats);
 
