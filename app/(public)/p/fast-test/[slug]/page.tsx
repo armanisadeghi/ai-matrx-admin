@@ -2,9 +2,8 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { PromptAppPublicRendererFastAPI } from '@/features/prompt-apps/components/PromptAppPublicRendererFastAPI';
 import type { Metadata } from 'next';
+import SampleAppCode from '@/features/prompt-apps/sample-code/sample-app-code';
 
-// Import the test component directly (swap this out to test different UIs)
-import BalancedNewsAnalysis from '@/features/prompt-apps/sample-code/news-app-code';
 
 export const revalidate = 0; // No cache for test route
 
@@ -21,10 +20,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const { slug } = await params;
     const supabase = await createClient();
+    console.log('slug', slug);
 
     // Determine if we're searching by ID or slug
     const isId = isUUID(slug);
     const column = isId ? 'id' : 'slug';
+
+    console.log('column', column);
 
     const { data: app } = await supabase
         .from('prompt_apps')
@@ -99,7 +101,7 @@ export default async function PromptAppFastAPITestPage({
         <PromptAppPublicRendererFastAPI
             app={app}
             slug={app.slug}
-            TestComponent={BalancedNewsAnalysis}
+            TestComponent={SampleAppCode}
         />
     );
 }

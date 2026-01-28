@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { supabase } from '@/utils/supabase/client';
 import { executeBuiltinWithCodeExtraction, executeBuiltinWithJsonExtraction } from '@/lib/redux/prompt-execution';
-import { validateSlugsInBatch } from '../services/slug-service';
+import { validateSlugsInBatch, generateSlugCandidates } from '../services/slug-service';
 import { getDefaultImportsForNewApps } from '../utils/allowed-imports';
 import type { AppMetadata } from '../types';
 
@@ -109,16 +109,23 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       
       let selectedSlug: string;
       
+      // Get slug options from metadata, or generate fallbacks from prompt name
+      const slugOptions = Array.isArray(metadata.slug_options) && metadata.slug_options.length > 0
+        ? metadata.slug_options
+        : generateSlugCandidates(data.prompt?.name || metadata.name || 'app');
+      
       try {
-        const slugValidation = await validateSlugsInBatch(metadata.slug_options);
+        const slugValidation = await validateSlugsInBatch(slugOptions.slice(0, 5));
         
         if (slugValidation.available && slugValidation.available.length > 0) {
           selectedSlug = slugValidation.available[0];
         } else {
-          selectedSlug = `${metadata.slug_options[0]}-${Math.floor(Math.random() * 900) + 100}`;
+          // All slugs taken, add random number to first option
+          selectedSlug = `${slugOptions[0]}-${Math.floor(Math.random() * 900) + 100}`;
         }
       } catch (slugError: any) {
-        selectedSlug = `${metadata.slug_options[0]}-${Math.floor(Math.random() * 900) + 100}`;
+        // Fallback: use first slug option with random number
+        selectedSlug = `${slugOptions[0]}-${Math.floor(Math.random() * 900) + 100}`;
       }
 
       // Save to database

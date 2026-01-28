@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import ChatStreamDisplay from "./ChatStreamDisplay";
-import { ChevronDoubleDown } from "@mynaui/icons-react";
+import { ChevronsDown } from "lucide-react";
 
 interface AssistantStreamProps {
     taskId: string;
@@ -50,7 +50,7 @@ const AssistantStream: React.FC<AssistantStreamProps> = ({ taskId, handleVisibil
                         }}
                         aria-label="Scroll to bottom"
                     >
-                        <ChevronDoubleDown className="w-5 h-5" />
+                        <ChevronsDown className="w-5 h-5" />
                     </button>
                 )}
                 <div ref={observerRef} className="h-48 w-full absolute bottom-[-1px] opacity-0 pointer-events-none" />

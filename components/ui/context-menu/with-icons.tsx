@@ -5,14 +5,13 @@ import {
     ContextMenuSeparator,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu/context-menu";
-// Install MynaUI Icons from mynaui.com/icons
 import {
     Copy,
-    Envelope,
-    Lightning,
-    Share,
-    SlashCircle,
-} from "@mynaui/icons-react";
+    Mail,
+    Zap,
+    Share2,
+    Ban,
+} from "lucide-react";
 
 export default function WithIcons() {
     return (
@@ -22,24 +21,24 @@ export default function WithIcons() {
             </ContextMenuTrigger>
             <ContextMenuContent className="w-64">
                 <ContextMenuItem>
-                    <Share className="mr-2 size-4" stroke={2} />
+                    <Share2 className="mr-2 size-4" />
                     Share folder with others
                 </ContextMenuItem>
                 <ContextMenuItem>
-                    <SlashCircle className="mr-2 size-4" stroke={2} />
+                    <Ban className="mr-2 size-4" />
                     Unshare folder
                 </ContextMenuItem>
                 <ContextMenuItem>
-                    <Lightning className="mr-2 size-4" stroke={2} />
+                    <Zap className="mr-2 size-4" />
                     Change sharing permissions
                 </ContextMenuItem>
                 <ContextMenuSeparator />
                 <ContextMenuItem>
-                    <Copy className="mr-2 size-4" stroke={2} />
+                    <Copy className="mr-2 size-4" />
                     Copy share link
                 </ContextMenuItem>
                 <ContextMenuItem>
-                    <Envelope className="mr-2 size-4" stroke={2} />
+                    <Mail className="mr-2 size-4" />
                     Email share link
                 </ContextMenuItem>
             </ContextMenuContent>
