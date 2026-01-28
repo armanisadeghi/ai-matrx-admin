@@ -1,8 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
-import { PromptAppPublicRendererFastAPI } from '@/features/prompt-apps/components/PromptAppPublicRendererFastAPI';
+import { SampleAppTestWrapper } from '@/features/prompt-apps/sample-code/SampleAppTestWrapper';
 import type { Metadata } from 'next';
-import SampleAppCode from '@/features/prompt-apps/sample-code/sample-app-code';
 
 
 export const revalidate = 0; // No cache for test route
@@ -98,10 +97,9 @@ export default async function PromptAppFastAPITestPage({
     delete app.prompt_variable_defaults;
 
     return (
-        <PromptAppPublicRendererFastAPI
+        <SampleAppTestWrapper
             app={app}
             slug={app.slug}
-            TestComponent={SampleAppCode}
         />
     );
 }
