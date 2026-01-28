@@ -132,7 +132,7 @@ export function MobileUnsplashViewer({
                         className="absolute inset-0 flex items-center justify-center"
                     >
                         <img
-                            src={buffer[Math.floor(preloadCount/2)] || photos[imageIndex]?.urls.regular}
+                            src={buffer[preloadCount] || photos[imageIndex]?.urls.regular}
                             alt={photos[imageIndex]?.alt_description}
                             className="w-full h-full object-contain"
                         />

@@ -200,9 +200,9 @@ export function EnhancedImageViewer({
                             >
                                 {/* Image container with fixed position */}
                                 <div className="w-full h-full flex items-center justify-center">
-                                    <img
-                                        src={buffer[Math.floor(preloadCount/2)] || photos[imageIndex]?.urls.regular}
-                                        alt={photos[imageIndex]?.alt_description}
+                                                <img
+                                                        src={buffer[preloadCount] || photos[imageIndex]?.urls.regular}
+                                                        alt={photos[imageIndex]?.alt_description}
                                         className="max-w-full max-h-full object-contain"
                                         style={{ 
                                             scale,
