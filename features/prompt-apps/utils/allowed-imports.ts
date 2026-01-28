@@ -47,6 +47,14 @@ export const ALLOWED_IMPORTS_CONFIG: AllowedImportConfig[] = [
     }
   },
   {
+    path: '@/components/markdown',  // lowercase - matches what code generators produce
+    loader: () => require('@/components/MarkdownStream'),
+    scopeStrategy: 'named',
+    exportMap: {
+      'default': 'MarkdownStream'
+    }
+  },
+  {
     path: '@/components/MarkdownStream',
     loader: () => require('@/components/MarkdownStream'),
     scopeStrategy: 'named',
@@ -191,6 +199,12 @@ export function buildComponentScope(allowedImports: string[]): Record<string, an
     }
   }
 
+  // Add Markdown alias if MarkdownStream is in scope
+  // This handles cases where database code uses `import Markdown from...` vs `import MarkdownStream from...`
+  if (scope.MarkdownStream && !scope.Markdown) {
+    scope.Markdown = scope.MarkdownStream;
+  }
+
   return scope;
 }
 
@@ -227,6 +241,7 @@ export function getImportDescription(importPath: string): string {
     'react': 'React core (useState, useEffect, useMemo, useCallback, useRef)',
     'lucide-react': 'Lucide icons (all icons available)',
     '@/components/Markdown': 'MarkdownStream component for rendering markdown (legacy path)',
+    '@/components/markdown': 'MarkdownStream component for rendering markdown (lowercase path)',
     '@/components/MarkdownStream': 'MarkdownStream component for rendering markdown',
     '@/components/ui/button': 'Button component',
     '@/components/ui/input': 'Input component',

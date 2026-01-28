@@ -483,13 +483,15 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
     }
     
     return (
-        <>
+        <div className="h-full flex flex-col">
             {/* Guest limit warning (shows after 3 executions) */}
             {guestLimit.showWarning && (
-                <GuestLimitWarning
-                    remaining={guestLimit.remaining}
-                    onDismiss={guestLimit.dismissWarning}
-                />
+                <div className="flex-shrink-0 p-4">
+                    <GuestLimitWarning
+                        remaining={guestLimit.remaining}
+                        onDismiss={guestLimit.dismissWarning}
+                    />
+                </div>
             )}
             
             {/* Signup conversion modal (shows at 5 executions) */}
@@ -499,14 +501,17 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 totalUsed={guestLimit.totalUsed}
             />
             
-            <CustomComponent
-                onExecute={handleExecute}
-                response={response}
-                isStreaming={!isStreamComplete && !!taskId}
-                isExecuting={isExecuting}
-                error={error}
-            />
-        </>
+            {/* Main content with scroll */}
+            <div className="flex-1 overflow-auto">
+                <CustomComponent
+                    onExecute={handleExecute}
+                    response={response}
+                    isStreaming={!isStreamComplete && !!taskId}
+                    isExecuting={isExecuting}
+                    error={error}
+                />
+            </div>
+        </div>
     );
 }
 
