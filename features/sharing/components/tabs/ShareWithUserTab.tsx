@@ -15,32 +15,12 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { PermissionLevel, ResourceType } from '@/utils/permissions';
 import { PermissionLevelDescription } from '../PermissionBadge';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/utils/supabase/client';
+import { lookupUserByEmail } from '@/actions/user-lookup.actions';
 
 interface ShareWithUserTabProps {
   onShare: (userId: string, level: PermissionLevel) => Promise<any>;
   onSuccess: () => void;
   resourceType: ResourceType;
-}
-
-/**
- * Look up a user by email address
- * @param email The email address to look up
- * @returns The user's UUID if found, null otherwise
- */
-async function lookupUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, email')
-    .eq('email', email.toLowerCase().trim())
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return data;
 }
 
 /**
@@ -57,7 +37,9 @@ export function ShareWithUserTab({
   const { toast } = useToast();
 
   const handleShare = async () => {
-    if (!email || !email.includes('@')) {
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
       toast({
         title: 'Invalid email',
         description: 'Please enter a valid email address',
@@ -68,24 +50,35 @@ export function ShareWithUserTab({
 
     setLoading(true);
     try {
-      // Look up the user by email to get their UUID
-      const user = await lookupUserByEmail(email);
+      // Look up the user by email to get their UUID (server action bypasses RLS)
+      const lookupResult = await lookupUserByEmail(trimmedEmail);
 
-      if (!user) {
+      if (!lookupResult.success) {
         toast({
           title: 'User not found',
-          description: `No user found with email "${email}". They may need to create an account first.`,
+          description: lookupResult.error || 'Could not find user',
           variant: 'destructive',
         });
+        setLoading(false);
         return;
       }
 
-      const result = await onShare(user.id, permissionLevel);
+      if (!lookupResult.user) {
+        toast({
+          title: 'User not found',
+          description: `No user found with email "${trimmedEmail}". They may need to create an account first.`,
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      const result = await onShare(lookupResult.user.id, permissionLevel);
 
       if (result.success) {
         toast({
           title: 'Shared successfully',
-          description: `Access granted to ${email}`,
+          description: `Access granted to ${trimmedEmail}`,
         });
         setEmail('');
         setPermissionLevel('viewer');
@@ -98,6 +91,7 @@ export function ShareWithUserTab({
         });
       }
     } catch (error: any) {
+      console.error('Share error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to share',
