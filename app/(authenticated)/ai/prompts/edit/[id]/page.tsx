@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { PromptBuilder } from "@/features/prompts/components/builder/PromptBuilder";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
+import type { PromptAccessInfo } from "@/features/prompts/types/shared";
 
 // Cache AI models data for 12 hours
 export const revalidate = 43200;
@@ -50,14 +51,42 @@ export default async function EditPromptPage({
     const { id } = await params;
     const supabase = await createClient();
 
-    // Fetch prompt by ID (RLS handles access control) and AI models in parallel
-    const [promptResult, aiModels, availableTools] = await Promise.all([
+    // Fetch prompt by ID (RLS handles access control), AI models, tools, and access level in parallel
+    const [promptResult, aiModels, availableTools, accessLevelResult] = await Promise.all([
         supabase.from("prompts").select("*").eq("id", id).single(),
         fetchAIModels(),
-        serverToolsService.fetchTools()
+        serverToolsService.fetchTools(),
+        supabase.rpc("get_prompt_access_level", { prompt_id: id })
     ]);
 
     const { data, error } = promptResult;
+    const { data: accessData, error: accessError } = accessLevelResult;
+
+    // Transform access data
+    let accessInfo: PromptAccessInfo | undefined;
+    if (accessData && Array.isArray(accessData) && accessData.length > 0) {
+        const access = accessData[0];
+        accessInfo = {
+            isOwner: access.is_owner,
+            permissionLevel: access.permission_level as PromptAccessInfo['permissionLevel'],
+            ownerEmail: access.owner_email,
+            canEdit: access.can_edit,
+            canDelete: access.can_delete,
+        };
+    } else if (accessData && !Array.isArray(accessData)) {
+        // Single row returned directly
+        accessInfo = {
+            isOwner: accessData.is_owner,
+            permissionLevel: accessData.permission_level as PromptAccessInfo['permissionLevel'],
+            ownerEmail: accessData.owner_email,
+            canEdit: accessData.can_edit,
+            canDelete: accessData.can_delete,
+        };
+    }
+
+    if (accessError) {
+        console.error("Error fetching access level:", accessError);
+    }
 
     // Handle not found or access denied
     if (error || !data) {
@@ -95,5 +124,5 @@ export default async function EditPromptPage({
         settings: data.settings,
     };
 
-    return <PromptBuilder models={aiModels} initialData={initialData} availableTools={availableTools} />;
+    return <PromptBuilder models={aiModels} initialData={initialData} availableTools={availableTools} accessInfo={accessInfo} />;
 }

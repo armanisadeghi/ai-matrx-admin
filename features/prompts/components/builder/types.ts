@@ -1,5 +1,6 @@
 import { PromptMessage, PromptVariable, PromptSettings } from "@/features/prompts/types/core";
 import type { Resource } from "../resource-display";
+import type { PromptAccessInfo } from "@/features/prompts/types/shared";
 
 // Message item type for full screen editor
 export type MessageItem = { type: 'system'; index: -1 } | { type: 'message'; index: number };
@@ -136,4 +137,9 @@ export interface PromptBuilderSharedProps {
     promptDescription: string;
     handleSettingsUpdate: (id: string, data: any) => void;
     handleLocalStateUpdate: (updates: any, isFromSave?: boolean) => void;
+
+    // Shared prompt info
+    accessInfo?: PromptAccessInfo;
+    isSharedPrompt?: boolean;
+    canEditOriginal?: boolean;
 }

@@ -619,7 +619,7 @@ export async function inviteToOrganization(
 }
 
 /**
- * Get pending invitations for an organization
+ * Get all invitations for an organization (including expired)
  * @param orgId Organization ID
  * @returns Array of invitations
  */
@@ -631,7 +631,6 @@ export async function getOrganizationInvitations(
       .from('organization_invitations')
       .select('*')
       .eq('organization_id', orgId)
-      .gt('expires_at', new Date().toISOString())
       .order('invited_at', { ascending: false });
 
     if (error) throw error;

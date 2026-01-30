@@ -5,6 +5,7 @@ import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
 import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
+import { SharedPromptBanner } from "./SharedPromptWarningModal";
 import { PromptBuilderSharedProps } from "./types";
 
 interface PromptBuilderMobileProps extends PromptBuilderSharedProps {
@@ -108,6 +109,10 @@ export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
         handleLocalStateUpdate,
         setModelConfig,
         setIsDirty,
+
+        // Shared prompt info
+        accessInfo,
+        isSharedPrompt,
     } = props;
 
     return (
@@ -130,6 +135,15 @@ export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
                     mobileActiveTab={mobileActiveTab}
                     onMobileTabChange={onMobileTabChange}
                 />
+
+                {/* Shared Prompt Banner */}
+                {isSharedPrompt && accessInfo && (
+                    <SharedPromptBanner
+                        ownerEmail={accessInfo.ownerEmail}
+                        permissionLevel={accessInfo.permissionLevel}
+                        className="mx-3 mb-2"
+                    />
+                )}
 
                 <div className="flex-1 overflow-hidden w-full">
                     <div className={`h-full w-full overflow-x-hidden ${mobileActiveTab === 'edit' ? 'block' : 'hidden'}`}>

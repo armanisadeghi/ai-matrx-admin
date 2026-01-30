@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { PromptCard } from "./PromptCard";
+import { SharedPromptCard } from "./SharedPromptCard";
 import { MobileActionBar, MobileFilterDrawer } from "@/components/official/mobile-action-bar";
 import { DesktopSearchBar } from "./DesktopSearchBar";
 import { NewPromptModal } from "./NewPromptModal";
@@ -9,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Plus, Users, ChevronDown, ChevronRight } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,6 +21,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import type { SharedPrompt } from "@/features/prompts/types/shared";
 
 interface Prompt {
     id: string;
@@ -29,9 +37,10 @@ interface Prompt {
 
 interface PromptsGridProps {
     prompts: Prompt[];
+    sharedPrompts?: SharedPrompt[];
 }
 
-export function PromptsGrid({ prompts }: PromptsGridProps) {
+export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     const router = useRouter();
     const isMobile = useIsMobile();
     const [isPending, startTransition] = useTransition();
@@ -40,6 +49,9 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
     const [duplicatingIds, setDuplicatingIds] = useState<Set<string>>(new Set());
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [promptToDelete, setPromptToDelete] = useState<{ id: string; name: string } | null>(null);
+    
+    // Shared prompts section state
+    const [isSharedSectionOpen, setIsSharedSectionOpen] = useState(true);
     
     // Search and filter state
     const [searchTerm, setSearchTerm] = useState("");
@@ -73,6 +85,34 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
 
         return filtered;
     }, [prompts, searchTerm, sortBy]);
+
+    // Filter and sort shared prompts
+    const filteredSharedPrompts = useMemo(() => {
+        let filtered = sharedPrompts.filter((prompt) => {
+            if (!searchTerm) return true;
+            const searchLower = searchTerm.toLowerCase();
+            return (
+                prompt.name.toLowerCase().includes(searchLower) ||
+                (prompt.description && prompt.description.toLowerCase().includes(searchLower)) ||
+                (prompt.ownerEmail && prompt.ownerEmail.toLowerCase().includes(searchLower))
+            );
+        });
+
+        // Sort
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case "name-asc":
+                    return a.name.localeCompare(b.name);
+                case "name-desc":
+                    return b.name.localeCompare(a.name);
+                case "updated-desc":
+                default:
+                    return 0;
+            }
+        });
+
+        return filtered;
+    }, [sharedPrompts, searchTerm, sortBy]);
 
     const handleDeleteClick = (id: string, name: string) => {
         setPromptToDelete({ id, name });
@@ -127,6 +167,33 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
         } catch (error) {
             console.error("Error duplicating prompt:", error);
             toast.error("Failed to duplicate prompt. Please try again.");
+        } finally {
+            setDuplicatingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(id);
+                return newSet;
+            });
+        }
+    };
+
+    // Handler for duplicating shared prompts (copy to my prompts)
+    const handleDuplicateShared = async (id: string) => {
+        setDuplicatingIds(prev => new Set(prev).add(id));
+        
+        try {
+            const response = await fetch(`/api/prompts/${id}/duplicate`, {
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to copy prompt");
+            }
+
+            router.refresh();
+            toast.success("Prompt copied to your prompts!");
+        } catch (error) {
+            console.error("Error copying shared prompt:", error);
+            toast.error("Failed to copy prompt. Please try again.");
         } finally {
             setDuplicatingIds(prev => {
                 const newSet = new Set(prev);
@@ -234,17 +301,27 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                 />
             )}
 
+            {/* My Prompts Section Header */}
+            {prompts.length > 0 && sharedPrompts.length > 0 && (
+                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    My Prompts
+                    <Badge variant="secondary" className="font-normal">
+                        {filteredPrompts.length}
+                    </Badge>
+                </h2>
+            )}
+
             {/* Prompts Grid */}
-            {filteredPrompts.length === 0 ? (
-                <div className="text-center py-12 pb-24">
+            {filteredPrompts.length === 0 && prompts.length > 0 ? (
+                <div className="text-center py-12">
                     <p className="text-muted-foreground">
                         No prompts match your filters. Try adjusting your search or filters.
                     </p>
                 </div>
-            ) : (
+            ) : filteredPrompts.length > 0 && (
                 <div className={cn(
                     "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
-                    isMobile && "pb-24"
+                    sharedPrompts.length === 0 && isMobile && "pb-24"
                 )}>
                     {filteredPrompts.map((prompt) => (
                         <PromptCard
@@ -267,6 +344,59 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                         />
                     ))}
                 </div>
+            )}
+
+            {/* Shared with Me Section */}
+            {sharedPrompts.length > 0 && (
+                <Collapsible
+                    open={isSharedSectionOpen}
+                    onOpenChange={setIsSharedSectionOpen}
+                    className={cn("mt-8", isMobile && "pb-24")}
+                >
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full group mb-4 hover:opacity-80 transition-opacity">
+                        <div className="flex items-center gap-2">
+                            {isSharedSectionOpen ? (
+                                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                            ) : (
+                                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                            )}
+                            <Users className="w-5 h-5 text-secondary" />
+                            <h2 className="text-lg font-semibold text-foreground">
+                                Shared with Me
+                            </h2>
+                            <Badge variant="secondary" className="font-normal">
+                                {filteredSharedPrompts.length}
+                            </Badge>
+                        </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        {filteredSharedPrompts.length === 0 ? (
+                            <div className="text-center py-8 border border-dashed border-border rounded-lg bg-muted/30">
+                                <p className="text-muted-foreground">
+                                    No shared prompts match your search.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {filteredSharedPrompts.map((prompt) => (
+                                    <SharedPromptCard
+                                        key={prompt.id}
+                                        id={prompt.id}
+                                        name={prompt.name}
+                                        description={prompt.description}
+                                        permissionLevel={prompt.permissionLevel}
+                                        ownerEmail={prompt.ownerEmail}
+                                        onDuplicate={handleDuplicateShared}
+                                        onNavigate={handleNavigate}
+                                        isDuplicating={duplicatingIds.has(prompt.id)}
+                                        isNavigating={navigatingId === prompt.id}
+                                        isAnyNavigating={navigatingId !== null}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </CollapsibleContent>
+                </Collapsible>
             )}
 
             {/* Mobile Action Bar */}

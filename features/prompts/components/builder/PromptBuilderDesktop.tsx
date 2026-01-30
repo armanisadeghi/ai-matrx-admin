@@ -6,6 +6,7 @@ import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayo
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
 import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
+import { SharedPromptBanner } from "./SharedPromptWarningModal";
 import { PromptBuilderSharedProps } from "./types";
 
 export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
@@ -105,6 +106,10 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
         handleLocalStateUpdate,
         setModelConfig,
         setIsDirty,
+
+        // Shared prompt info
+        accessInfo,
+        isSharedPrompt,
     } = props;
 
     return (
@@ -114,21 +119,31 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                 mobileBreakpoint={950}
                 leftPanelMaxWidth={640}
                 header={
-                    <PromptHeader
-                        promptId={promptId}
-                        promptName={promptName}
-                        onPromptNameChange={onPromptNameChange}
-                        isDirty={isDirty}
-                        isSaving={isSaving}
-                        onSave={onSave}
-                        onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
-                        onOpenSettings={() => setIsSettingsModalOpen(true)}
-                        developerMessage={developerMessage}
-                        onDeveloperMessageChange={onDeveloperMessageChange}
-                        fullPromptObject={fullPromptObject}
-                        onAcceptFullPrompt={handleAcceptFullPrompt}
-                        onAcceptAsCopy={handleAcceptFullPromptAsCopy}
-                    />
+                    <div className="flex flex-col">
+                        <PromptHeader
+                            promptId={promptId}
+                            promptName={promptName}
+                            onPromptNameChange={onPromptNameChange}
+                            isDirty={isDirty}
+                            isSaving={isSaving}
+                            onSave={onSave}
+                            onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
+                            onOpenSettings={() => setIsSettingsModalOpen(true)}
+                            developerMessage={developerMessage}
+                            onDeveloperMessageChange={onDeveloperMessageChange}
+                            fullPromptObject={fullPromptObject}
+                            onAcceptFullPrompt={handleAcceptFullPrompt}
+                            onAcceptAsCopy={handleAcceptFullPromptAsCopy}
+                        />
+                        {/* Shared Prompt Banner */}
+                        {isSharedPrompt && accessInfo && (
+                            <SharedPromptBanner
+                                ownerEmail={accessInfo.ownerEmail}
+                                permissionLevel={accessInfo.permissionLevel}
+                                className="mx-4 mb-2"
+                            />
+                        )}
+                    </div>
                 }
                 leftPanel={
                     <PromptBuilderLeftPanel

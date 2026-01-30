@@ -7,7 +7,7 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { ArrowLeft, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose, Copy } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
@@ -19,6 +19,9 @@ import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startIn
 import { PromptRunner } from "./results-display/PromptRunner";
 import { selectRequiresVariableReplacement } from "@/lib/redux/prompt-execution/selectors";
 import { cachePrompt } from "@/lib/redux/slices/promptCacheSlice";
+import { SharedPromptBanner } from "./builder/SharedPromptWarningModal";
+import type { PromptAccessInfo } from "@/features/prompts/types/shared";
+import { toast } from "sonner";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -36,9 +39,10 @@ interface PromptRunnerProps {
         settings: Record<string, any>;
         userId?: string | null;
     };
+    accessInfo?: PromptAccessInfo;
 }
 
-export function PromptRunPage({ promptData }: PromptRunnerProps) {
+export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -67,6 +71,34 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
     const isMobile = useIsMobile();
     const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
     const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(false);
+    const [isCopyingPrompt, setIsCopyingPrompt] = useState(false);
+
+    // Determine if this is a shared prompt
+    const isSharedPrompt = accessInfo && !accessInfo.isOwner && accessInfo.permissionLevel !== null;
+
+    // Handle copying shared prompt to user's own prompts
+    const handleCopyToMyPrompts = async () => {
+        setIsCopyingPrompt(true);
+        try {
+            const response = await fetch(`/api/prompts/${promptData.id}/duplicate`, {
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to copy prompt");
+            }
+
+            const data = await response.json();
+            toast.success("Prompt copied to your prompts!", {
+                description: "You can now find it in your prompts list.",
+            });
+        } catch (error) {
+            console.error("Error copying prompt:", error);
+            toast.error("Failed to copy prompt. Please try again.");
+        } finally {
+            setIsCopyingPrompt(false);
+        }
+    };
 
     // Local state for runId to handle "ghost" runs (not yet persisted/in URL)
     const [activeRunId, setActiveRunId] = useState<string | null>(urlRunId);
@@ -181,6 +213,20 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
 
                     {/* Right: Action buttons */}
                     <div className="flex items-center gap-0.5 flex-shrink-0">
+                        {/* Copy to My Prompts button for shared prompts */}
+                        {isSharedPrompt && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCopyToMyPrompts}
+                                disabled={isCopyingPrompt}
+                                className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 px-2 gap-1.5"
+                                title="Copy to My Prompts"
+                            >
+                                <Copy className="w-4 h-4" />
+                                <span className="hidden sm:inline text-xs">Copy</span>
+                            </Button>
+                        )}
                         {/* Mobile sidebar toggle */}
                         {isMobile && (
                             <Button
@@ -251,14 +297,22 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
                 </div>
             ) : isMobile ? (
                 /* Mobile Runner View - Direct rendering without AdaptiveLayout */
-                <div className="h-page w-full bg-textured overflow-x-hidden">
+                <div className="h-page w-full bg-textured overflow-x-hidden flex flex-col">
+                    {/* Shared Prompt Banner for Mobile */}
+                    {isSharedPrompt && accessInfo && (
+                        <SharedPromptBanner
+                            ownerEmail={accessInfo.ownerEmail}
+                            permissionLevel={accessInfo.permissionLevel}
+                            className="mx-3 my-2 flex-shrink-0"
+                        />
+                    )}
                     {activeRunId ? (
                         <PromptRunner
                             runId={activeRunId}
-                            className="h-full w-full"
+                            className="flex-1 w-full"
                         />
                     ) : (
-                        <div className="flex items-center justify-center h-full">
+                        <div className="flex items-center justify-center flex-1">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         </div>
                     )}
@@ -284,13 +338,21 @@ export function PromptRunPage({ promptData }: PromptRunnerProps) {
                     }
                     rightPanel={
                         <div className="h-full flex flex-col overflow-hidden">
+                            {/* Shared Prompt Banner for Desktop */}
+                            {isSharedPrompt && accessInfo && (
+                                <SharedPromptBanner
+                                    ownerEmail={accessInfo.ownerEmail}
+                                    permissionLevel={accessInfo.permissionLevel}
+                                    className="mx-4 my-2 flex-shrink-0"
+                                />
+                            )}
                             {activeRunId ? (
                                 <PromptRunner
                                     runId={activeRunId}
-                                    className="h-full"
+                                    className="flex-1"
                                 />
                             ) : (
-                                <div className="flex items-center justify-center h-full">
+                                <div className="flex items-center justify-center flex-1">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                                 </div>
                             )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Send, X, RefreshCw, Loader2, Clock, CheckCircle2 } from 'lucide-react';
+import { Mail, Send, X, RefreshCw, Loader2, Clock, Copy, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -193,18 +193,25 @@ export function InvitationManager({
 
         {/* Email Notice */}
         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <p className="text-sm text-amber-800 dark:text-amber-200">
-            <strong>Note:</strong> Email notifications are not yet implemented. Share the invitation link manually for now.
-          </p>
+          <div className="flex items-start gap-2">
+            <Link2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-700 dark:text-amber-300" />
+            <div className="text-sm text-amber-800 dark:text-amber-200">
+              <strong>Email not yet available:</strong> After sending an invitation, use the{' '}
+              <span className="inline-flex items-center gap-1 font-medium">
+                <Copy className="h-3 w-3" /> Copy Link
+              </span>{' '}
+              button to get the invitation URL, then share it with your invitee directly.
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Pending Invitations List */}
+      {/* Invitations List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Pending Invitations ({invitations.length})
+            Invitations ({invitations.length})
           </h3>
           {invitations.length > 0 && (
             <Button
@@ -222,7 +229,7 @@ export function InvitationManager({
         {invitations.length === 0 ? (
           <div className="text-center py-8 border rounded-lg bg-muted/20">
             <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground">No pending invitations</p>
+            <p className="text-muted-foreground">No invitations</p>
             <p className="text-sm text-muted-foreground mt-1">
               Invite team members using the form above
             </p>
@@ -235,11 +242,24 @@ export function InvitationManager({
               const timeToExpiry = isExpired
                 ? 'Expired'
                 : `Expires ${formatDistanceToNow(expiresAt, { addSuffix: true })}`;
+              
+              const invitationLink = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.aimatrx.com'}/invitations/accept/${invitation.token}`;
+
+              const handleCopyLink = async () => {
+                try {
+                  await navigator.clipboard.writeText(invitationLink);
+                  toast.success('Invitation link copied to clipboard');
+                } catch (err) {
+                  toast.error('Failed to copy link');
+                }
+              };
 
               return (
                 <div
                   key={invitation.id}
-                  className="flex items-center justify-between p-4 rounded-lg border bg-card"
+                  className={`flex items-center justify-between p-4 rounded-lg border bg-card ${
+                    isExpired ? 'opacity-60 border-dashed' : ''
+                  }`}
                 >
                   {/* Invitation Info */}
                   <div className="flex-1 min-w-0">
@@ -266,15 +286,27 @@ export function InvitationManager({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    {!isExpired && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCopyLink}
+                        title="Copy invitation link"
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy Link
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleResendInvitation(invitation.id, invitation.email)}
                       disabled={operationLoading}
+                      title={isExpired ? 'Renew and extend expiry' : 'Resend and extend expiry'}
                     >
-                      <RefreshCw className="h-4 w-4" />
-                      Resend
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      {isExpired ? 'Renew' : 'Resend'}
                     </Button>
                     <Button
                       variant="ghost"
@@ -282,9 +314,9 @@ export function InvitationManager({
                       onClick={() => setInvitationToCancel(invitation.id)}
                       disabled={operationLoading}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      title="Cancel invitation"
                     >
                       <X className="h-4 w-4" />
-                      Cancel
                     </Button>
                   </div>
                 </div>

@@ -20,6 +20,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { selectPromptsPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";
 import { PromptBuilderDesktop } from "./PromptBuilderDesktop";
 import { PromptBuilderMobile } from "./PromptBuilderMobile";
+import { SharedPromptWarningModal, SharedPromptBanner } from "./SharedPromptWarningModal";
+import type { PromptAccessInfo } from "@/features/prompts/types/shared";
 
 interface PromptBuilderProps {
     models: any[];
@@ -31,11 +33,12 @@ interface PromptBuilderProps {
         settings?: Record<string, any>; // Single source of truth: { model_id: string, temperature: number, ... }
     };
     availableTools?: any[]; // Array of database tool objects
+    accessInfo?: PromptAccessInfo; // Access level info for shared prompts
 }
 
 
 
-export function PromptBuilder({ models, initialData, availableTools }: PromptBuilderProps) {
+export function PromptBuilder({ models, initialData, availableTools, accessInfo }: PromptBuilderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -48,6 +51,15 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     // Mobile detection and tab state
     const isMobile = useIsMobile();
     const [mobileActiveTab, setMobileActiveTab] = useState<'edit' | 'test'>('edit');
+
+    // Shared prompt state
+    const [showSharedWarningModal, setShowSharedWarningModal] = useState(false);
+    const [hasAcknowledgedSharedPrompt, setHasAcknowledgedSharedPrompt] = useState(false);
+    const [isCreatingCopy, setIsCreatingCopy] = useState(false);
+
+    // Determine if this is a shared prompt (not owner, has permission)
+    const isSharedPrompt = accessInfo && !accessInfo.isOwner && accessInfo.permissionLevel !== null;
+    const canEditOriginal = accessInfo?.canEdit ?? true; // Default to true for owned prompts
 
     
     if (!models || models.length === 0) {
@@ -411,6 +423,12 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     };
 
     const handleSave = async () => {
+        // For shared prompts that haven't been acknowledged, show the warning modal
+        if (isSharedPrompt && !hasAcknowledgedSharedPrompt) {
+            setShowSharedWarningModal(true);
+            return;
+        }
+
         setIsSaving(true);
         try {
             const allMessages: PromptMessage[] = [{ role: "system", content: developerMessage }, ...messages];
@@ -452,6 +470,49 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             console.error("Error saving prompt:", error);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    // Handle "Edit Original" from the shared prompt warning modal
+    const handleEditOriginal = () => {
+        setHasAcknowledgedSharedPrompt(true);
+        setShowSharedWarningModal(false);
+        // The next save will proceed normally
+    };
+
+    // Handle "Save as My Copy" from the shared prompt warning modal
+    const handleSaveAsCopy = async () => {
+        if (!initialData?.id) return;
+        
+        setIsCreatingCopy(true);
+        try {
+            const allMessages: PromptMessage[] = [{ role: "system", content: developerMessage }, ...messages];
+            const settings = {
+                model_id: model,
+                ...modelConfig,
+            };
+
+            const promptData = {
+                name: `${promptName} (Copy)`,
+                messages: allMessages,
+                variableDefaults,
+                settings,
+            };
+
+            const result = await createPrompt(promptData as any);
+            
+            if (result?.id) {
+                toast.success('Copy created successfully!', {
+                    description: 'Redirecting to your copy...'
+                });
+                setShowSharedWarningModal(false);
+                router.push(`/ai/prompts/edit/${result.id}`);
+            }
+        } catch (error) {
+            console.error('Error creating copy:', error);
+            toast.error('Failed to create copy');
+        } finally {
+            setIsCreatingCopy(false);
         }
     };
 
@@ -999,18 +1060,49 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         promptDescription,
         handleSettingsUpdate,
         handleLocalStateUpdate,
+
+        // Shared prompt info
+        accessInfo,
+        isSharedPrompt,
+        canEditOriginal,
     };
 
     // Render appropriate component based on device type
     if (isMobile) {
         return (
-            <PromptBuilderMobile
-                {...sharedProps}
-                mobileActiveTab={mobileActiveTab}
-                onMobileTabChange={setMobileActiveTab}
-            />
+            <>
+                <PromptBuilderMobile
+                    {...sharedProps}
+                    mobileActiveTab={mobileActiveTab}
+                    onMobileTabChange={setMobileActiveTab}
+                />
+                {/* Shared Prompt Warning Modal */}
+                <SharedPromptWarningModal
+                    isOpen={showSharedWarningModal}
+                    onClose={() => setShowSharedWarningModal(false)}
+                    ownerEmail={accessInfo?.ownerEmail ?? null}
+                    permissionLevel={accessInfo?.permissionLevel ?? null}
+                    onEditOriginal={handleEditOriginal}
+                    onCreateCopy={handleSaveAsCopy}
+                    isCreatingCopy={isCreatingCopy}
+                />
+            </>
         );
     }
 
-    return <PromptBuilderDesktop {...sharedProps} />;
+    return (
+        <>
+            <PromptBuilderDesktop {...sharedProps} />
+            {/* Shared Prompt Warning Modal */}
+            <SharedPromptWarningModal
+                isOpen={showSharedWarningModal}
+                onClose={() => setShowSharedWarningModal(false)}
+                ownerEmail={accessInfo?.ownerEmail ?? null}
+                permissionLevel={accessInfo?.permissionLevel ?? null}
+                onEditOriginal={handleEditOriginal}
+                onCreateCopy={handleSaveAsCopy}
+                isCreatingCopy={isCreatingCopy}
+            />
+        </>
+    );
 }

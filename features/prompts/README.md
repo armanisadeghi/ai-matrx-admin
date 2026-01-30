@@ -1,10 +1,10 @@
 # Prompts Feature
 
-Manage and organize AI prompts with search, filtering, and voice input capabilities.
+Manage and organize AI prompts with search, filtering, voice input, and sharing capabilities.
 
 ## Overview
 
-The Prompts feature provides a comprehensive interface for creating, organizing, and managing AI prompts. It includes both desktop and mobile-optimized experiences with advanced search, filtering, and voice transcription capabilities.
+The Prompts feature provides a comprehensive interface for creating, organizing, and managing AI prompts. It includes both desktop and mobile-optimized experiences with advanced search, filtering, voice transcription, and prompt sharing capabilities.
 
 ## Route
 
@@ -32,8 +32,21 @@ Main grid component that displays all prompts with search, filter, and action ca
 ```tsx
 interface PromptsGridProps {
   prompts: Prompt[];
+  sharedPrompts?: SharedPrompt[];
 }
 ```
+
+#### `SharedPromptCard`
+Card component for displaying prompts shared by other users.
+
+**Features:**
+- Visual distinction from owned prompts (secondary color accent)
+- Permission level badge (View Only, Can Edit, Full Access)
+- Owner display badge showing who shared the prompt
+- Conditional actions based on permission level:
+  - **Viewer:** Run, View, Copy to My Prompts
+  - **Editor:** Run, Edit, View, Copy to My Prompts
+  - **Admin:** Full access like owner
 
 #### `PromptsPageHeader`
 Page header component with icon and title, shown in the top navigation bar.
@@ -81,6 +94,25 @@ Individual prompt card with actions menu.
 #### `NewPromptModal`
 Modal for creating new prompts.
 
+#### `SharedPromptWarningModal`
+Modal shown when a user attempts to edit a shared prompt.
+
+**Features:**
+- Displays owner information
+- Shows permission level
+- Options based on access:
+  - **Viewer:** "Save as My Copy" only
+  - **Editor/Admin:** "Edit Original" or "Save as My Copy"
+- Tracks acknowledgment to avoid repeated prompts
+
+#### `SharedPromptBanner`
+Banner component displayed on edit/run pages for shared prompts.
+
+**Features:**
+- Shows owner name and permission level
+- Color-coded by permission (blue for viewer, amber for editor, green for admin)
+- Compact display for headers
+
 #### `FilterModal` (Deprecated)
 Old filter modal - replaced by `MobileFilterDrawer` from the reusable component system.
 
@@ -127,24 +159,70 @@ const [duplicatingIds, setDuplicatingIds] = useState<Set<string>>(new Set());
 const [navigatingId, setNavigatingId] = useState<string | null>(null);
 ```
 
+## Shared Prompts System
+
+### Overview
+
+The shared prompts system allows users to share prompts with other users, granting different permission levels.
+
+### Permission Levels
+
+| Level | View | Run | Edit | Delete | Share |
+|-------|------|-----|------|--------|-------|
+| Viewer | ✓ | ✓ | ✗ | ✗ | ✗ |
+| Editor | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Admin | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Owner | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+### "Shared with Me" Section
+
+On the main prompts page, a collapsible "Shared with Me" section displays all prompts shared with the current user. Each card shows:
+- Prompt name
+- Owner badge
+- Permission level badge
+- Appropriate actions based on access
+
+### Edit Flow for Shared Prompts
+
+When editing a shared prompt:
+1. Banner displays showing owner and permission level
+2. On first save attempt, `SharedPromptWarningModal` appears
+3. User chooses "Edit Original" (if allowed) or "Save as My Copy"
+4. If "Save as My Copy", creates duplicate owned by user
+
+### Run Page for Shared Prompts
+
+- Displays shared prompt banner with owner info
+- "Copy to My Prompts" button in header
+- All run functionality works normally (running doesn't modify the prompt)
+
 ## API Integration
 
 ### Endpoints Used
 
 - `GET /api/prompts` - Fetch user's prompts (via Supabase)
 - `DELETE /api/prompts/[id]` - Delete prompt
-- `POST /api/prompts/[id]/duplicate` - Duplicate prompt
+- `POST /api/prompts/[id]/duplicate` - Duplicate prompt (works for owned AND shared prompts)
+
+### SQL Functions (RPC)
+
+- `get_prompts_shared_with_me()` - Returns all prompts shared with current user with permission details
+- `get_prompt_access_level(prompt_id)` - Returns access level info for a specific prompt
 
 ### Data Fetching
 
 Prompts are fetched server-side in the page component:
 
 ```tsx
-const { data: prompts } = await supabase
-  .from("prompts")
-  .select("id, name, description")
-  .eq("user_id", user.id)
-  .order("updated_at", { ascending: false });
+// Fetch owned and shared prompts in parallel
+const [promptsResult, sharedPromptsResult] = await Promise.all([
+  supabase
+    .from("prompts")
+    .select("id, name, description")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false }),
+  supabase.rpc("get_prompts_shared_with_me")
+]);
 ```
 
 ## User Experience
@@ -194,19 +272,33 @@ Integrated voice transcription via `/features/audio/`:
 features/prompts/
 ├── components/
 │   ├── layouts/
-│   │   ├── PromptsGrid.tsx          # Main grid component
-│   │   ├── PromptsPageHeader.tsx    # Page header
-│   │   ├── DesktopSearchBar.tsx     # Desktop search bar
-│   │   ├── PromptCard.tsx           # Individual card
-│   │   ├── NewPromptModal.tsx       # Create modal
-│   │   ├── FloatingActionBar.tsx    # (Deprecated - use MobileActionBar)
-│   │   └── FilterModal.tsx          # (Deprecated - use MobileFilterDrawer)
+│   │   ├── PromptsGrid.tsx           # Main grid component (includes shared prompts section)
+│   │   ├── PromptsPageHeader.tsx     # Page header
+│   │   ├── DesktopSearchBar.tsx      # Desktop search bar
+│   │   ├── PromptCard.tsx            # Individual card for owned prompts
+│   │   ├── SharedPromptCard.tsx      # Card for shared prompts (with permission badges)
+│   │   ├── NewPromptModal.tsx        # Create modal
+│   │   ├── FloatingActionBar.tsx     # (Deprecated - use MobileActionBar)
+│   │   └── FilterModal.tsx           # (Deprecated - use MobileFilterDrawer)
+│   ├── builder/
+│   │   ├── PromptBuilder.tsx         # Main editor component
+│   │   ├── PromptBuilderDesktop.tsx  # Desktop layout
+│   │   ├── PromptBuilderMobile.tsx   # Mobile layout
+│   │   ├── SharedPromptWarningModal.tsx # Modal for shared prompt save warnings
+│   │   └── types.ts                  # Shared props interface
 │   └── index.ts
-├── types.ts                          # TypeScript interfaces
+├── types/
+│   ├── core.ts                       # Core prompt types
+│   └── shared.ts                     # Shared prompts types (SharedPrompt, PromptAccessInfo)
 └── README.md                         # This file
 
 app/(authenticated)/ai/prompts/
-└── page.tsx                          # Route page component
+├── page.tsx                          # Main prompts list
+├── edit/[id]/page.tsx                # Edit prompt (with access level)
+└── run/[id]/page.tsx                 # Run prompt (with access level)
+
+supabase/migrations/
+└── create_shared_prompts_functions.sql  # SQL functions and RLS policies
 ```
 
 ## Technologies
@@ -234,7 +326,8 @@ Follows AI Matrx mobile layout guidelines:
 - Additional filter types (categories, tags, favorites)
 - Bulk actions (select multiple, batch delete)
 - Prompt versioning and history
-- Sharing and collaboration features
+- Organization-level sharing (share with all org members)
 - Advanced search with operators
 - Prompt performance analytics
+- Collaborative editing with conflict resolution
 

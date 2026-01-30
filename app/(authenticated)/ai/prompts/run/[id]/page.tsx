@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { PromptRunPage } from "@/features/prompts/components/PromptRunPage";
 import { Suspense } from "react";
+import type { PromptAccessInfo } from "@/features/prompts/types/shared";
 
 // Cache AI models data for 12 hours
 export const revalidate = 43200;
@@ -49,12 +50,39 @@ export default async function RunPromptPage({
     const { id } = await params;
     const supabase = await createClient();
 
-    // Fetch prompt by ID (RLS handles access control)
-    const [promptResult] = await Promise.all([
+    // Fetch prompt by ID and access level in parallel (RLS handles access control)
+    const [promptResult, accessLevelResult] = await Promise.all([
         supabase.from("prompts").select("*").eq("id", id).single(),
+        supabase.rpc("get_prompt_access_level", { prompt_id: id })
     ]);
 
-    const { data: prompt, error } = await promptResult;
+    const { data: prompt, error } = promptResult;
+    const { data: accessData, error: accessError } = accessLevelResult;
+
+    // Transform access data
+    let accessInfo: PromptAccessInfo | undefined;
+    if (accessData && Array.isArray(accessData) && accessData.length > 0) {
+        const access = accessData[0];
+        accessInfo = {
+            isOwner: access.is_owner,
+            permissionLevel: access.permission_level as PromptAccessInfo['permissionLevel'],
+            ownerEmail: access.owner_email,
+            canEdit: access.can_edit,
+            canDelete: access.can_delete,
+        };
+    } else if (accessData && !Array.isArray(accessData)) {
+        accessInfo = {
+            isOwner: accessData.is_owner,
+            permissionLevel: accessData.permission_level as PromptAccessInfo['permissionLevel'],
+            ownerEmail: accessData.owner_email,
+            canEdit: accessData.can_edit,
+            canDelete: accessData.can_delete,
+        };
+    }
+
+    if (accessError) {
+        console.error("Error fetching access level:", accessError);
+    }
 
     // Handle not found or access denied
     if (error || !prompt) {
@@ -104,7 +132,7 @@ export default async function RunPromptPage({
                 </div>
             </div>
         }>
-            <PromptRunPage promptData={promptData} />
+            <PromptRunPage promptData={promptData} accessInfo={accessInfo} />
         </Suspense>
     );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { PromptsGrid } from "@/features/prompts/components/layouts/PromptsGrid";
 import { PromptsPageHeader } from "@/features/prompts/components/layouts/PromptsPageHeader";
+import type { SharedPrompt } from "@/features/prompts/types/shared";
 
 export default async function PromptsPage() {
     const supabase = await createClient();
@@ -14,22 +15,46 @@ export default async function PromptsPage() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Fetch user's prompts
-    const { data: prompts, error } = await supabase
-        .from("prompts")
-        .select("id, name, description")
-        .eq("user_id", user!.id)
-        .order("updated_at", { ascending: false });
+    // Fetch user's prompts and shared prompts in parallel
+    const [promptsResult, sharedPromptsResult, templateCountResult] = await Promise.all([
+        // User's own prompts
+        supabase
+            .from("prompts")
+            .select("id, name, description")
+            .eq("user_id", user!.id)
+            .order("updated_at", { ascending: false }),
+        
+        // Prompts shared with the user via RPC function
+        supabase.rpc("get_prompts_shared_with_me"),
+        
+        // Template count for info banner
+        supabase
+            .from("prompt_templates")
+            .select("*", { count: "exact", head: true })
+    ]);
+
+    const { data: prompts, error } = promptsResult;
+    const { data: sharedPromptsData, error: sharedError } = sharedPromptsResult;
+    const { count: templateCount } = templateCountResult;
 
     if (error) {
         console.error("Error fetching prompts:", error);
         throw new Error("Failed to fetch prompts");
     }
 
-    // Fetch template count for the info banner
-    const { count: templateCount } = await supabase
-        .from("prompt_templates")
-        .select("*", { count: "exact", head: true });
+    if (sharedError) {
+        console.error("Error fetching shared prompts:", sharedError);
+        // Don't throw - shared prompts are optional, just log the error
+    }
+
+    // Transform shared prompts data to match expected interface
+    const sharedPrompts: SharedPrompt[] = (sharedPromptsData || []).map((sp: any) => ({
+        id: sp.id,
+        name: sp.name,
+        description: sp.description,
+        permissionLevel: sp.permission_level as 'viewer' | 'editor' | 'admin',
+        ownerEmail: sp.owner_email,
+    }));
 
     return (
         <>
@@ -59,7 +84,7 @@ export default async function PromptsPage() {
                         </Card>
                     )}
 
-                    <PromptsGrid prompts={prompts || []} />
+                    <PromptsGrid prompts={prompts || []} sharedPrompts={sharedPrompts} />
                 </div>
             </div>
         </>

@@ -20,20 +20,24 @@ export async function POST(
         }
 
         // Fetch the original prompt
+        // RLS policies handle access control - user can access if they:
+        // 1. Own the prompt
+        // 2. Have permission (viewer/editor/admin) via permissions table
+        // 3. Prompt is public
         const { data: originalPrompt, error: fetchError } = await supabase
             .from("prompts")
             .select("*")
             .eq("id", id)
-            .eq("user_id", user.id)
             .single();
 
         if (fetchError || !originalPrompt) {
             console.error("Error fetching prompt:", fetchError);
-            return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
+            return NextResponse.json({ error: "Prompt not found or access denied" }, { status: 404 });
         }
 
-        // Create a duplicate
-        // Note: Permissions are handled separately via the permissions system
+        // Create a duplicate owned by the current user
+        // Note: The new copy is always owned by the current user regardless of who
+        // owned the original prompt - this is the "Copy to My Prompts" functionality
         const { data: newPrompt, error: insertError } = await supabase
             .from("prompts")
             .insert({
@@ -41,7 +45,7 @@ export async function POST(
                 messages: originalPrompt.messages,
                 variable_defaults: originalPrompt.variable_defaults,
                 tools: originalPrompt.tools,
-                user_id: user.id,
+                user_id: user.id, // Always set to current user
                 settings: originalPrompt.settings,
                 description: originalPrompt.description,
             })
