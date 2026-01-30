@@ -123,20 +123,20 @@ export function PublicAccessTab({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Public toggle */}
-      <div className="flex items-start justify-between gap-4 p-4 bg-muted/30 rounded-lg border">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-start justify-between gap-3 p-3 bg-muted/30 rounded-lg border">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
             {isPublic ? (
               <>
-                <Globe className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <Globe className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                 <h3 className="text-sm font-medium">Public Access Enabled</h3>
                 <PublicBadge variant="compact" />
               </>
             ) : (
               <>
-                <Lock className="w-4 h-4 text-muted-foreground" />
+                <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <h3 className="text-sm font-medium">Private</h3>
               </>
             )}
@@ -153,66 +153,45 @@ export function PublicAccessTab({
             checked={isPublic}
             onCheckedChange={handleToggle}
             disabled={loading}
+            className="flex-shrink-0"
           />
         )}
       </div>
 
       {/* Warning when public */}
       {isPublic && (
-        <Alert className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/20">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <Alert className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/20 py-2">
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
           <AlertDescription className="text-amber-800 dark:text-amber-200 text-xs">
-            <strong>Public Warning:</strong> Anyone with the link can access this {resourceType}.
-            Share links carefully.
+            <strong>Public Warning:</strong> Anyone with the link can access this {resourceType}. Share links carefully.
           </AlertDescription>
         </Alert>
       )}
 
       {/* Permission level selector when public */}
       {isPublic && isOwner && (
-        <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
+        <div className="space-y-2.5 p-3 bg-muted/30 rounded-lg border">
           <div>
-            <h4 className="text-sm font-medium mb-2">Public Permission Level</h4>
-            <p className="text-xs text-muted-foreground mb-3">
+            <h4 className="text-sm font-medium mb-1">Public Permission Level</h4>
+            <p className="text-xs text-muted-foreground">
               Control what public viewers can do
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label>Permission Level</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Permission Level</Label>
             <Select
               value={publicPermission?.permissionLevel || permissionLevel}
               onValueChange={(value) => handleUpdateLevel(value as PermissionLevel)}
               disabled={loading}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="viewer">
-                  <div className="flex flex-col items-start py-1">
-                    <span className="font-medium">Viewer</span>
-                    <span className="text-xs text-muted-foreground">
-                      Public can view only
-                    </span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="editor">
-                  <div className="flex flex-col items-start py-1">
-                    <span className="font-medium">Editor</span>
-                    <span className="text-xs text-muted-foreground">
-                      Public can view and edit
-                    </span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="admin">
-                  <div className="flex flex-col items-start py-1">
-                    <span className="font-medium">Admin</span>
-                    <span className="text-xs text-muted-foreground">
-                      Public has full access (not recommended)
-                    </span>
-                  </div>
-                </SelectItem>
+                <SelectItem value="viewer">Viewer</SelectItem>
+                <SelectItem value="editor">Editor</SelectItem>
+                <SelectItem value="admin">Admin (not recommended)</SelectItem>
               </SelectContent>
             </Select>
             <PermissionLevelDescription
@@ -224,10 +203,10 @@ export function PublicAccessTab({
 
       {/* Info when not public */}
       {!isPublic && (
-        <div className="p-6 text-center space-y-3 bg-muted/30 rounded-lg border">
-          <Lock className="w-12 h-12 mx-auto text-muted-foreground opacity-20" />
+        <div className="p-4 text-center space-y-2 bg-muted/30 rounded-lg border">
+          <Lock className="w-10 h-10 mx-auto text-muted-foreground opacity-20" />
           <div>
-            <h4 className="text-sm font-medium mb-1">Resource is Private</h4>
+            <h4 className="text-sm font-medium mb-0.5">Resource is Private</h4>
             <p className="text-xs text-muted-foreground">
               Enable public access to allow anyone with the link to view this {resourceType}
             </p>

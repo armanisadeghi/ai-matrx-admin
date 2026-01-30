@@ -162,10 +162,10 @@ export function ShareWithUserTab({
   const isLoading = status.type === 'loading';
 
   return (
-    <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+    <div className="space-y-2.5 p-3 bg-muted/30 rounded-lg border">
       <div>
-        <h3 className="text-sm font-medium mb-3">Share with User</h3>
-        <p className="text-xs text-muted-foreground mb-4">
+        <h3 className="text-sm font-medium mb-1">Share with User</h3>
+        <p className="text-xs text-muted-foreground">
           Enter the email address of the user you want to share with
         </p>
       </div>
@@ -173,7 +173,7 @@ export function ShareWithUserTab({
       {/* STATUS MESSAGE - Always visible when there's a status */}
       {status.type !== 'idle' && (
         <div
-          className={`p-3 rounded-md flex items-start gap-2 text-sm ${
+          className={`p-2 rounded-md flex items-start gap-2 text-xs ${
             status.type === 'loading'
               ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20'
               : status.type === 'success'
@@ -182,13 +182,13 @@ export function ShareWithUserTab({
           }`}
         >
           {status.type === 'loading' && (
-            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0 mt-0.5" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0 mt-0.5" />
           )}
           {status.type === 'success' && (
-            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           )}
           {status.type === 'error' && (
-            <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           )}
           <span className="flex-1">{status.message}</span>
           {status.type === 'error' && (
@@ -202,9 +202,9 @@ export function ShareWithUserTab({
         </div>
       )}
 
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="user-email">Email Address</Label>
+      <div className="space-y-2.5">
+        <div className="space-y-1.5">
+          <Label htmlFor="user-email" className="text-xs">Email Address</Label>
           <Input
             id="user-email"
             type="email"
@@ -218,38 +218,24 @@ export function ShareWithUserTab({
               }
             }}
             disabled={isLoading}
+            className="h-9"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="user-permission">Permission Level</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="user-permission" className="text-xs">Permission Level</Label>
           <Select
             value={permissionLevel}
             onValueChange={(value) => setPermissionLevel(value as PermissionLevel)}
             disabled={isLoading}
           >
-            <SelectTrigger id="user-permission">
+            <SelectTrigger id="user-permission" className="h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="viewer">
-                <div className="flex flex-col items-start py-1">
-                  <span className="font-medium">Viewer</span>
-                  <span className="text-xs text-muted-foreground">Can view only</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="editor">
-                <div className="flex flex-col items-start py-1">
-                  <span className="font-medium">Editor</span>
-                  <span className="text-xs text-muted-foreground">Can view and edit</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="admin">
-                <div className="flex flex-col items-start py-1">
-                  <span className="font-medium">Admin</span>
-                  <span className="text-xs text-muted-foreground">Full access</span>
-                </div>
-              </SelectItem>
+              <SelectItem value="viewer">Viewer</SelectItem>
+              <SelectItem value="editor">Editor</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
           <PermissionLevelDescription level={permissionLevel} />
@@ -258,7 +244,7 @@ export function ShareWithUserTab({
         <Button
           onClick={handleShare}
           disabled={isLoading || !email.trim()}
-          className="w-full"
+          className="w-full h-9"
         >
           {isLoading ? (
             <>

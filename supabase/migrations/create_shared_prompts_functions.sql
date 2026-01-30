@@ -36,8 +36,8 @@ BEGIN
     RETURN QUERY
     SELECT 
         p.id,
-        p.name,
-        p.description,
+        p.name::TEXT,
+        p.description::TEXT,
         p.messages,
         p.variable_defaults,
         p.settings,

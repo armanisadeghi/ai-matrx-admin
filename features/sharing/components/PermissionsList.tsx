@@ -77,10 +77,10 @@ export function PermissionsList({
 
   if (permissions.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <Lock className="w-12 h-12 mx-auto mb-2 opacity-20" />
+      <div className="text-center py-6 text-muted-foreground">
+        <Lock className="w-10 h-10 mx-auto mb-1.5 opacity-20" />
         <p className="text-sm">Not shared with anyone</p>
-        <p className="text-xs mt-1">Only you can access this resource</p>
+        <p className="text-xs mt-0.5">Only you can access this resource</p>
       </div>
     );
   }
@@ -134,18 +134,18 @@ export function PermissionsList({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {permissions.map((permission) => {
         const Icon = getPermissionIcon(permission);
         const isUpdating = updatingId === permission.id;
         const isRevoking = revokingId === permission.id;
 
         return (
-          <Card key={permission.id} className="p-3">
-            <div className="flex items-center justify-between gap-3">
+          <Card key={permission.id} className="p-2.5">
+            <div className="flex items-center justify-between gap-2.5">
               {/* Left: Icon and label */}
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
                     {getPermissionLabel(permission)}
@@ -159,7 +159,7 @@ export function PermissionsList({
               </div>
 
               {/* Right: Permission level selector and remove button */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 {isOwner ? (
                   <>
                     <Select
@@ -169,7 +169,7 @@ export function PermissionsList({
                       }
                       disabled={isUpdating || isRevoking}
                     >
-                      <SelectTrigger className="w-[110px] h-8">
+                      <SelectTrigger className="w-[100px] h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -189,9 +189,9 @@ export function PermissionsList({
                       disabled={isUpdating || isRevoking}
                     >
                       {isRevoking ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       )}
                     </Button>
                   </>

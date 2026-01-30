@@ -111,23 +111,23 @@ export function ShareWithOrgTab({
   }
 
   return (
-    <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+    <div className="space-y-2.5 p-3 bg-muted/30 rounded-lg border">
       <div>
-        <h3 className="text-sm font-medium mb-3">Share with Organization</h3>
-        <p className="text-xs text-muted-foreground mb-4">
+        <h3 className="text-sm font-medium mb-1">Share with Organization</h3>
+        <p className="text-xs text-muted-foreground">
           All members of the organization will have access
         </p>
       </div>
 
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="org-select">Organization</Label>
+      <div className="space-y-2.5">
+        <div className="space-y-1.5">
+          <Label htmlFor="org-select" className="text-xs">Organization</Label>
           <Select
             value={selectedOrgId}
             onValueChange={setSelectedOrgId}
             disabled={loading}
           >
-            <SelectTrigger id="org-select">
+            <SelectTrigger id="org-select" className="h-9">
               <SelectValue placeholder="Select an organization" />
             </SelectTrigger>
             <SelectContent>
@@ -148,35 +148,20 @@ export function ShareWithOrgTab({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="org-permission">Permission Level</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="org-permission" className="text-xs">Permission Level</Label>
           <Select
             value={permissionLevel}
             onValueChange={(value) => setPermissionLevel(value as PermissionLevel)}
             disabled={loading}
           >
-            <SelectTrigger id="org-permission">
+            <SelectTrigger id="org-permission" className="h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="viewer">
-                <div className="flex flex-col items-start py-1">
-                  <span className="font-medium">Viewer</span>
-                  <span className="text-xs text-muted-foreground">Can view only</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="editor">
-                <div className="flex flex-col items-start py-1">
-                  <span className="font-medium">Editor</span>
-                  <span className="text-xs text-muted-foreground">Can view and edit</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="admin">
-                <div className="flex flex-col items-start py-1">
-                  <span className="font-medium">Admin</span>
-                  <span className="text-xs text-muted-foreground">Full access</span>
-                </div>
-              </SelectItem>
+              <SelectItem value="viewer">Viewer</SelectItem>
+              <SelectItem value="editor">Editor</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
           <PermissionLevelDescription level={permissionLevel} />
@@ -185,7 +170,7 @@ export function ShareWithOrgTab({
         <Button
           onClick={handleShare}
           disabled={loading || !selectedOrgId}
-          className="w-full"
+          className="w-full h-9"
         >
           {loading ? (
             <>

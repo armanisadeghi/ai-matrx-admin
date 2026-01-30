@@ -74,8 +74,8 @@ export function ShareModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Share {resourceLabel}</DialogTitle>
           <DialogDescription className="truncate">
             {resourceName}
@@ -85,9 +85,9 @@ export function ShareModal({
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as typeof activeTab)}
-          className="flex-1 flex flex-col overflow-hidden"
+          className="flex-1 flex flex-col min-h-0"
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Users</span>
@@ -117,11 +117,11 @@ export function ShareModal({
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 mt-4 h-[450px]">
-            <TabsContent value="users" className="mt-0 space-y-4 h-full overflow-y-auto">
+          <div className="flex-1 mt-3 min-h-0">
+            <TabsContent value="users" className="mt-0 space-y-3 h-full overflow-y-auto">
               {/* Current user permissions */}
               <div>
-                <h3 className="text-sm font-medium mb-3">Current Access</h3>
+                <h3 className="text-sm font-medium mb-2">Current Access</h3>
                 <PermissionsList
                   permissions={userPermissions}
                   isOwner={isOwner}
@@ -142,10 +142,10 @@ export function ShareModal({
               )}
             </TabsContent>
 
-            <TabsContent value="organizations" className="mt-0 space-y-4 h-full overflow-y-auto">
+            <TabsContent value="organizations" className="mt-0 space-y-3 h-full overflow-y-auto">
               {/* Current org permissions */}
               <div>
-                <h3 className="text-sm font-medium mb-3">Current Access</h3>
+                <h3 className="text-sm font-medium mb-2">Current Access</h3>
                 <PermissionsList
                   permissions={orgPermissions}
                   isOwner={isOwner}
@@ -184,7 +184,7 @@ export function ShareModal({
         </Tabs>
 
         {error && (
-          <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="mt-3 p-2.5 bg-destructive/10 border border-destructive/20 rounded-md flex-shrink-0">
             <p className="text-sm text-destructive">{error}</p>
           </div>
         )}

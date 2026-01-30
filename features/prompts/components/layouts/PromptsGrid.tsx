@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Plus, Users, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Users, ChevronDown, ChevronRight, LayoutPanelTop } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -247,47 +247,6 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
         }
     };
 
-    if (prompts.length === 0) {
-        return (
-            <>
-                <div className="text-center py-12 pb-24">
-                    <p className="text-muted-foreground">No prompts found. Create your first prompt to get started!</p>
-                </div>
-                
-                {/* Mobile Action Bar */}
-                <MobileActionBar
-                    searchValue={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    totalCount={prompts.length}
-                    filteredCount={filteredPrompts.length}
-                    onPrimaryAction={() => setIsNewModalOpen(true)}
-                    primaryActionLabel="New Prompt"
-                    primaryActionIcon={<Plus className="h-5 w-5" />}
-                    showFilterButton={true}
-                    showVoiceSearch={true}
-                    isFilterModalOpen={isFilterModalOpen}
-                    setIsFilterModalOpen={setIsFilterModalOpen}
-                    searchPlaceholder="Search prompts..."
-                />
-
-                {/* Modals */}
-                <NewPromptModal
-                    isOpen={isNewModalOpen}
-                    onClose={() => setIsNewModalOpen(false)}
-                />
-                <MobileFilterDrawer
-                    isOpen={isFilterModalOpen}
-                    onClose={() => setIsFilterModalOpen(false)}
-                    filterConfig={filterConfig}
-                    activeFilters={activeFilters}
-                    onFiltersChange={handleFiltersChange}
-                    totalCount={prompts.length}
-                    filteredCount={filteredPrompts.length}
-                />
-            </>
-        );
-    }
-
     return (
         <>
             {/* Desktop Search Bar */}
@@ -311,14 +270,52 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                 </h2>
             )}
 
-            {/* Prompts Grid */}
-            {filteredPrompts.length === 0 && prompts.length > 0 ? (
+            {/* Personal Prompts Area */}
+            {prompts.length === 0 ? (
+                // Empty State Component
+                <div className={cn(
+                    "mb-8",
+                    sharedPrompts.length === 0 && isMobile && "pb-24"
+                )}>
+                    <div className="border border-primary/20 rounded-xl p-8 bg-gradient-to-br from-primary/5 to-secondary/5">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="p-4 bg-primary/10 rounded-full">
+                                <Plus className="h-8 w-8 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-semibold mb-2">Create Your First Prompt</h3>
+                                <p className="text-muted-foreground">
+                                    Start from scratch or use a template to build your prompt library
+                                </p>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                <button
+                                    onClick={() => setIsNewModalOpen(true)}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Create Blank Prompt
+                                </button>
+                                <button
+                                    onClick={() => router.push('/ai/prompts/templates')}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4"
+                                >
+                                    <LayoutPanelTop className="h-4 w-4 mr-2" />
+                                    Browse Templates
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : filteredPrompts.length === 0 ? (
+                // No matches state
                 <div className="text-center py-12">
                     <p className="text-muted-foreground">
                         No prompts match your filters. Try adjusting your search or filters.
                     </p>
                 </div>
-            ) : filteredPrompts.length > 0 && (
+            ) : (
+                // Prompts Grid
                 <div className={cn(
                     "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
                     sharedPrompts.length === 0 && isMobile && "pb-24"
