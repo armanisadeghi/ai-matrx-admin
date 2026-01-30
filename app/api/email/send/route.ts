@@ -1,43 +1,42 @@
 /**
  * Email Send API Route
  * 
- * Handles sending emails via SMTP using Nodemailer
+ * Handles sending emails via Resend
  * 
  * Environment variables needed:
- * - SMTP_HOST=smtp.gmail.com
- * - SMTP_PORT=587
- * - SMTP_USER=info@aimatrx.com
- * - SMTP_PASSWORD=your_password_here
+ * - RESEND_API_KEY=re_xxxxxxxxxxxx
+ * - EMAIL_FROM=AI Matrx <noreply@aimatrx.com>
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
-
-// Create reusable transporter
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  });
-};
+import { sendEmail, getDefaultFromAddress } from '@/lib/email/client';
+import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if SMTP is configured
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+    // Check if email is configured
+    if (!process.env.RESEND_API_KEY) {
       return NextResponse.json(
-        { error: 'SMTP not configured. Please set SMTP_USER and SMTP_PASSWORD environment variables.' },
+        { error: 'Email not configured. Please set RESEND_API_KEY environment variable.' },
         { status: 500 }
       );
     }
 
+    // Verify authentication
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { to, subject, html, text } = body;
+    const { to, subject, html, text, replyTo } = body;
 
     // Validate input
     if (!to || !subject || !html) {
@@ -47,23 +46,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create transporter
-    const transporter = createTransporter();
-
     // Send email
-    const info = await transporter.sendMail({
-      from: `"AI Matrx" <${process.env.SMTP_USER}>`,
+    const result = await sendEmail({
       to,
       subject,
-      text: text || '', // Plain text version
-      html, // HTML version
+      html,
+      text,
+      replyTo,
     });
 
-    console.log('Email sent:', info.messageId);
+    if (!result.success) {
+      console.error('Email send error:', result.error);
+      return NextResponse.json(
+        { 
+          error: result.error instanceof Error ? result.error.message : 'Failed to send email',
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('Email sent successfully');
 
     return NextResponse.json({
       success: true,
-      messageId: info.messageId,
+      data: result.data,
     });
   } catch (error: any) {
     console.error('Error sending email:', error);
@@ -81,10 +87,8 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     status: 'ok',
-    smtpConfigured: !!(process.env.SMTP_USER && process.env.SMTP_PASSWORD),
-    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
-    smtpPort: process.env.SMTP_PORT || '587',
-    smtpUser: process.env.SMTP_USER || 'not set',
+    emailConfigured: !!(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
+    emailFrom: getDefaultFromAddress() || 'not set',
   });
 }
 

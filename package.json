@@ -194,6 +194,7 @@
     "remark-math": "latest",
     "remirror": "latest",
     "replicate": "^1.4.0",
+    "resend": "^6.9.1",
     "server-only": "^0.0.1",
     "sharp": "latest",
     "shiki": "latest",

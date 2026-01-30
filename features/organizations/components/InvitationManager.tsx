@@ -191,16 +191,16 @@ export function InvitationManager({
           </Button>
         </form>
 
-        {/* Email Notice */}
-        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+        {/* Email Info */}
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <div className="flex items-start gap-2">
-            <Link2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-700 dark:text-amber-300" />
-            <div className="text-sm text-amber-800 dark:text-amber-200">
-              <strong>Email not yet available:</strong> After sending an invitation, use the{' '}
+            <Mail className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-700 dark:text-blue-300" />
+            <div className="text-sm text-blue-800 dark:text-blue-200">
+              An email will be sent to the invitee with an invitation link. You can also use the{' '}
               <span className="inline-flex items-center gap-1 font-medium">
                 <Copy className="h-3 w-3" /> Copy Link
               </span>{' '}
-              button to get the invitation URL, then share it with your invitee directly.
+              button to share the invitation URL directly.
             </div>
           </div>
         </div>

@@ -601,8 +601,59 @@ export async function inviteToOrganization(
       throw error;
     }
 
-    // TODO: Send invitation email with token
-    // await sendInvitationEmail(email, token, organizationId);
+    // Send invitation email
+    try {
+      // Fetch organization details for the email
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('name')
+        .eq('id', organizationId)
+        .single();
+
+      // Fetch inviter details
+      const { data: inviterData } = await supabase
+        .from('users')
+        .select('display_name, email')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (orgData && inviterData) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aimatrx.com';
+        const invitationUrl = `${siteUrl}/organizations/accept-invitation?token=${token}`;
+        
+        // Import email utilities dynamically to avoid server/client issues
+        const { sendEmail, emailTemplates } = await import('@/lib/email/client');
+        
+        const emailTemplate = emailTemplates.organizationInvitation(
+          orgData.name,
+          inviterData.display_name || inviterData.email,
+          invitationUrl,
+          expiresAt
+        );
+
+        const emailResult = await sendEmail({
+          to: email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+        });
+
+        // Update invitation record with email status
+        if (emailResult.success) {
+          await supabase
+            .from('organization_invitations')
+            .update({
+              email_sent: true,
+              email_sent_at: new Date().toISOString(),
+            })
+            .eq('id', data.id);
+        } else {
+          console.error('Failed to send invitation email:', emailResult.error);
+        }
+      }
+    } catch (emailError) {
+      // Don't fail the invitation if email fails, just log it
+      console.error('Error sending invitation email:', emailError);
+    }
 
     return {
       success: true,
