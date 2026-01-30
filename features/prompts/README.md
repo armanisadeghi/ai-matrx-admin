@@ -17,16 +17,18 @@ The Prompts feature provides a comprehensive interface for creating, organizing,
 ### Layouts
 
 #### `PromptsGrid`
-Main grid component that displays all prompts with search, filter, and action capabilities.
+Main grid component that displays all prompts with search, filter, and action capabilities using an intelligent hybrid layout.
 
 **Features:**
 - Real-time search filtering
 - Sort options (Recently Updated, Name A-Z, Name Z-A)
-- Card-based grid layout
+- **Hybrid card/list layout** for optimal space efficiency
 - Mobile-responsive with floating action bar
 - Desktop search bar
 - Voice search integration
 - Delete/duplicate/navigation actions
+- Elegant empty state with quick actions
+- Always displays shared prompts section (when available)
 
 **Props:**
 ```tsx
@@ -35,6 +37,48 @@ interface PromptsGridProps {
   sharedPrompts?: SharedPrompt[];
 }
 ```
+
+**Hybrid Layout (New!):**
+To optimize space for users with many prompts, the grid uses a hybrid display approach:
+
+**Desktop (8-card threshold):**
+- First 8 prompts display as full-size cards in a grid
+- Remaining prompts display as compact list items
+- ~75% vertical space savings for large collections
+
+**Mobile (4-card threshold):**
+- First 4 prompts display as full-size cards
+- Remaining prompts display as compact list items
+- Maintains touch-friendly interactions
+
+**Why Hybrid?**
+- **Visual appeal** for top items (immediate recognition)
+- **Space efficiency** for browsing many items
+- **Full functionality** maintained in both formats
+- **Better search experience** - see more results at once
+
+**Components:**
+- `PromptCard` - Full-size card with inline actions
+- `PromptListItem` - Compact list item with dropdown menu
+- `SharedPromptCard` - Full-size card for shared prompts
+- `SharedPromptListItem` - Compact list item for shared prompts
+
+**Empty State:**
+When a user has no personal prompts, an elegant empty state is displayed featuring:
+- Prominent "Create Your First Prompt" heading
+- Two action buttons:
+  - **Create Blank Prompt** - Opens the NewPromptModal
+  - **Browse Templates** - Navigates to templates page
+- Gradient background styling for visual appeal
+- All search, filter, and action features remain accessible
+- Shared prompts section still appears below (if user has shared prompts)
+
+**Display Logic:**
+- If `prompts.length === 0`: Shows empty state
+- If `prompts.length > 0` but `filteredPrompts.length === 0`: Shows "no matches" message
+- If `filteredPrompts.length > 0`: Shows hybrid layout (cards + list)
+- If `sharedPrompts.length > 0`: Always shows "Shared with Me" collapsible section with same hybrid layout
+- Threshold applies to filtered results (search returns 5 items = all cards, 20 items = 8 cards + 12 list)
 
 #### `SharedPromptCard`
 Card component for displaying prompts shared by other users.
@@ -80,14 +124,58 @@ See `/components/official/mobile-action-bar/README.md` for complete documentatio
 ### Cards
 
 #### `PromptCard`
-Individual prompt card with actions menu.
+Full-size card component displayed for the first 8 prompts (4 on mobile).
 
 **Features:**
-- Prompt name and description
-- Action menu (Edit, Duplicate, Delete)
-- Loading states for actions
-- Navigation transition indicator
-- Click to edit
+- Large, visually prominent display
+- Inline action buttons (Run, Edit, View, Duplicate, Share, Create App)
+- Admin actions menu (for system admins)
+- Loading states and transition indicators
+- Click to open action modal
+- Hover effects and animations
+
+#### `PromptListItem`
+Compact list item component displayed after the card threshold is reached.
+
+**Features:**
+- Space-efficient single-line layout
+- Icon, name, and truncated description
+- Dropdown menu with all actions:
+  - Run, Edit, View, Duplicate, Share, Create App, Delete
+  - Admin actions submenu (Convert to Template, Make Global Built-in)
+- Loading states and overlays
+- Click row to edit (same as card behavior)
+- Hover background highlighting
+- All same functionality as cards, just more compact
+
+**Design:**
+```
+[Icon] Prompt Name                                    [•••]
+       Description (truncated, muted)
+```
+
+#### `SharedPromptCard`
+Full-size card for shared prompts (first 8/4).
+
+**Features:**
+- Secondary color accent for distinction
+- Permission badge (View Only, Can Edit, Full Access)
+- Owner email badge
+- Conditional actions based on permission level
+- Click to run (viewer) or edit (editor/admin)
+
+#### `SharedPromptListItem`
+Compact list item for shared prompts (after threshold).
+
+**Features:**
+- Secondary color icon for distinction
+- Inline permission and owner badges
+- Dropdown menu with permission-appropriate actions:
+  - Viewer: Run, View, Copy to My Prompts
+  - Editor: Run, Edit, View, Copy to My Prompts
+  - Admin: Full access
+- Same space-efficient layout as PromptListItem
+- Click to run (viewer) or edit (editor/admin)
 
 ### Modals
 

@@ -3,6 +3,8 @@
 import { useState, useTransition, useMemo } from "react";
 import { PromptCard } from "./PromptCard";
 import { SharedPromptCard } from "./SharedPromptCard";
+import { PromptListItem } from "./PromptListItem";
+import { SharedPromptListItem } from "./SharedPromptListItem";
 import { MobileActionBar, MobileFilterDrawer } from "@/components/official/mobile-action-bar";
 import { DesktopSearchBar } from "./DesktopSearchBar";
 import { NewPromptModal } from "./NewPromptModal";
@@ -27,6 +29,7 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { SharedPrompt } from "@/features/prompts/types/shared";
 
 interface Prompt {
@@ -40,9 +43,14 @@ interface PromptsGridProps {
     sharedPrompts?: SharedPrompt[];
 }
 
+// Threshold constants for hybrid card/list layout
+const CARDS_DISPLAY_LIMIT_DESKTOP = 8;
+const CARDS_DISPLAY_LIMIT_MOBILE = 4;
+
 export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     const router = useRouter();
     const isMobile = useIsMobile();
+    const cardsLimit = isMobile ? CARDS_DISPLAY_LIMIT_MOBILE : CARDS_DISPLAY_LIMIT_DESKTOP;
     const [isPending, startTransition] = useTransition();
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
     const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
@@ -52,6 +60,11 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
     
     // Shared prompts section state
     const [isSharedSectionOpen, setIsSharedSectionOpen] = useState(true);
+    
+    // Pagination state for list items
+    const [promptListPage, setPromptListPage] = useState(1);
+    const [sharedListPage, setSharedListPage] = useState(1);
+    const LIST_ITEMS_PER_PAGE = 20;
     
     // Search and filter state
     const [searchTerm, setSearchTerm] = useState("");
@@ -113,6 +126,24 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
 
         return filtered;
     }, [sharedPrompts, searchTerm, sortBy]);
+
+    // Split prompts into cards and list items based on threshold
+    const promptCards = useMemo(() => filteredPrompts.slice(0, cardsLimit), [filteredPrompts, cardsLimit]);
+    const allPromptListItems = useMemo(() => filteredPrompts.slice(cardsLimit), [filteredPrompts, cardsLimit]);
+    const promptListItems = useMemo(() => allPromptListItems.slice(0, promptListPage * LIST_ITEMS_PER_PAGE), [allPromptListItems, promptListPage]);
+    const hasMorePrompts = allPromptListItems.length > promptListItems.length;
+
+    // Split shared prompts into cards and list items based on threshold
+    const sharedPromptCards = useMemo(() => filteredSharedPrompts.slice(0, cardsLimit), [filteredSharedPrompts, cardsLimit]);
+    const allSharedListItems = useMemo(() => filteredSharedPrompts.slice(cardsLimit), [filteredSharedPrompts, cardsLimit]);
+    const sharedPromptListItems = useMemo(() => allSharedListItems.slice(0, sharedListPage * LIST_ITEMS_PER_PAGE), [allSharedListItems, sharedListPage]);
+    const hasMoreShared = allSharedListItems.length > sharedPromptListItems.length;
+    
+    // Reset pagination when search/filter changes
+    useMemo(() => {
+        setPromptListPage(1);
+        setSharedListPage(1);
+    }, [searchTerm, sortBy]);
 
     const handleDeleteClick = (id: string, name: string) => {
         setPromptToDelete({ id, name });
@@ -315,32 +346,82 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                     </p>
                 </div>
             ) : (
-                // Prompts Grid
-                <div className={cn(
-                    "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
-                    sharedPrompts.length === 0 && isMobile && "pb-24"
-                )}>
-                    {filteredPrompts.map((prompt) => (
-                        <PromptCard
-                            key={prompt.id}
-                            id={prompt.id}
-                            name={prompt.name}
-                            description={prompt.description}
-                            onDelete={(id) => {
-                                const prompt = prompts.find(p => p.id === id);
-                                if (prompt) {
-                                    handleDeleteClick(id, prompt.name);
-                                }
-                            }}
-                            onDuplicate={handleDuplicate}
-                            onNavigate={handleNavigate}
-                            isDeleting={deletingIds.has(prompt.id)}
-                            isDuplicating={duplicatingIds.has(prompt.id)}
-                            isNavigating={navigatingId === prompt.id}
-                            isAnyNavigating={navigatingId !== null}
-                        />
-                    ))}
-                </div>
+                // Hybrid Layout: Cards + List
+                <>
+                    {/* Cards Grid */}
+                    {promptCards.length > 0 && (
+                        <div className={cn(
+                            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
+                            promptListItems.length === 0 && sharedPrompts.length === 0 && isMobile && "pb-24"
+                        )}>
+                            {promptCards.map((prompt) => (
+                                <PromptCard
+                                    key={prompt.id}
+                                    id={prompt.id}
+                                    name={prompt.name}
+                                    description={prompt.description}
+                                    onDelete={(id) => {
+                                        const prompt = prompts.find(p => p.id === id);
+                                        if (prompt) {
+                                            handleDeleteClick(id, prompt.name);
+                                        }
+                                    }}
+                                    onDuplicate={handleDuplicate}
+                                    onNavigate={handleNavigate}
+                                    isDeleting={deletingIds.has(prompt.id)}
+                                    isDuplicating={duplicatingIds.has(prompt.id)}
+                                    isNavigating={navigatingId === prompt.id}
+                                    isAnyNavigating={navigatingId !== null}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* List Items Grid */}
+                    {promptListItems.length > 0 && (
+                        <>
+                            <div className={cn(
+                                "mt-6 grid gap-3",
+                                "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+                                sharedPrompts.length === 0 && !hasMorePrompts && isMobile && "mb-24"
+                            )}>
+                                {promptListItems.map((prompt) => (
+                                    <PromptListItem
+                                        key={prompt.id}
+                                        id={prompt.id}
+                                        name={prompt.name}
+                                        description={prompt.description}
+                                        onDelete={(id) => {
+                                            const prompt = prompts.find(p => p.id === id);
+                                            if (prompt) {
+                                                handleDeleteClick(id, prompt.name);
+                                            }
+                                        }}
+                                        onDuplicate={handleDuplicate}
+                                        onNavigate={handleNavigate}
+                                        isDeleting={deletingIds.has(prompt.id)}
+                                        isDuplicating={duplicatingIds.has(prompt.id)}
+                                        isNavigating={navigatingId === prompt.id}
+                                        isAnyNavigating={navigatingId !== null}
+                                    />
+                                ))}
+                            </div>
+                            
+                            {/* Show More Button */}
+                            {hasMorePrompts && (
+                                <div className="mt-4 flex justify-center">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setPromptListPage(prev => prev + 1)}
+                                        className="w-full md:w-auto"
+                                    >
+                                        Show More ({allPromptListItems.length - promptListItems.length} remaining)
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
             )}
 
             {/* Shared with Me Section */}
@@ -374,23 +455,71 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredSharedPrompts.map((prompt) => (
-                                    <SharedPromptCard
-                                        key={prompt.id}
-                                        id={prompt.id}
-                                        name={prompt.name}
-                                        description={prompt.description}
-                                        permissionLevel={prompt.permissionLevel}
-                                        ownerEmail={prompt.ownerEmail}
-                                        onDuplicate={handleDuplicateShared}
-                                        onNavigate={handleNavigate}
-                                        isDuplicating={duplicatingIds.has(prompt.id)}
-                                        isNavigating={navigatingId === prompt.id}
-                                        isAnyNavigating={navigatingId !== null}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                {/* Shared Cards Grid */}
+                                {sharedPromptCards.length > 0 && (
+                                    <div className={cn(
+                                        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
+                                        sharedPromptListItems.length === 0 && isMobile && "mb-24"
+                                    )}>
+                                        {sharedPromptCards.map((prompt) => (
+                                            <SharedPromptCard
+                                                key={prompt.id}
+                                                id={prompt.id}
+                                                name={prompt.name}
+                                                description={prompt.description}
+                                                permissionLevel={prompt.permissionLevel}
+                                                ownerEmail={prompt.ownerEmail}
+                                                onDuplicate={handleDuplicateShared}
+                                                onNavigate={handleNavigate}
+                                                isDuplicating={duplicatingIds.has(prompt.id)}
+                                                isNavigating={navigatingId === prompt.id}
+                                                isAnyNavigating={navigatingId !== null}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Shared List Items Grid */}
+                                {sharedPromptListItems.length > 0 && (
+                                    <>
+                                        <div className={cn(
+                                            "mt-6 grid gap-3",
+                                            "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+                                            !hasMoreShared && isMobile && "mb-24"
+                                        )}>
+                                            {sharedPromptListItems.map((prompt) => (
+                                                <SharedPromptListItem
+                                                    key={prompt.id}
+                                                    id={prompt.id}
+                                                    name={prompt.name}
+                                                    description={prompt.description}
+                                                    permissionLevel={prompt.permissionLevel}
+                                                    ownerEmail={prompt.ownerEmail}
+                                                    onDuplicate={handleDuplicateShared}
+                                                    onNavigate={handleNavigate}
+                                                    isDuplicating={duplicatingIds.has(prompt.id)}
+                                                    isNavigating={navigatingId === prompt.id}
+                                                    isAnyNavigating={navigatingId !== null}
+                                                />
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Show More Button */}
+                                        {hasMoreShared && (
+                                            <div className="mt-4 flex justify-center">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setSharedListPage(prev => prev + 1)}
+                                                    className="w-full md:w-auto"
+                                                >
+                                                    Show More ({allSharedListItems.length - sharedPromptListItems.length} remaining)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </>
                         )}
                     </CollapsibleContent>
                 </Collapsible>
