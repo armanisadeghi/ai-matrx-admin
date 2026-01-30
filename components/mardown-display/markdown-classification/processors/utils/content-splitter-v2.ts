@@ -586,48 +586,24 @@ function analyzeTableCompletionWithCache(tableLines: string[], tableHasEnded: bo
         };
     }
     
-    // Create stable cache key based on header structure
+    // Create stable cache key based on header structure and row count
     const headerHash = tableLines.slice(0, 2).join("|").replace(/\s+/g, "");
-    const cacheKey = `table-${headerHash}`;
+    const rowCount = tableLines.length;
+    const cacheKey = `table-${headerHash}-${rowCount}-${tableHasEnded}`;
     
     // Analyze table state
     const state = analyzeTableCompletion(tableLines, tableHasEnded);
     
-    // Determine what content to release
-    // ALWAYS show header + separator if we have valid table structure
-    // Then add complete rows as they arrive
-    let contentToRelease = "";
-    
-    if (tableLines.length >= 2) {
-        const headerAndSeparator = tableLines.slice(0, 2);
-        const dataRows = tableLines.slice(2);
-        const completeRows: string[] = [];
-        
-        // Only add data rows that are complete (not the last buffered row)
-        if (dataRows.length > 0) {
-            for (let i = 0; i < dataRows.length; i++) {
-                const line = dataRows[i];
-                const trimmedLine = removeMatrxPattern(line).trim();
-                
-                if (trimmedLine.startsWith("|") && trimmedLine.includes("|", 1)) {
-                    // If table has ended (hit non-table line), include all rows
-                    // Otherwise, only include rows that aren't the last (streaming)
-                    const isCompleteRow = tableHasEnded || i < dataRows.length - 1;
-                    if (isCompleteRow) {
-                        completeRows.push(line);
-                    }
-                }
-            }
-        }
-        
-        contentToRelease = [...headerAndSeparator, ...completeRows].join("\n");
-    }
+    // ALWAYS include all rows in the content - the renderer handles streaming display.
+    // Previously we filtered out the last row during streaming, but this caused the 
+    // last row to be permanently lost when streaming ended (the splitter doesn't know 
+    // when isStreamActive changes). Now we include all rows and let the renderer use 
+    // metadata.hasPartialContent to show a streaming indicator when appropriate.
+    const contentToRelease = tableLines.join("\n");
     
     // Check cache
     const cached = tableCache.get(cacheKey);
-    const shouldUpdate = !cached || cached.metadata?.completeRowCount !== state.completeRowCount;
-    
-    if (!shouldUpdate && cached) {
+    if (cached && cached.content === contentToRelease) {
         return cached;
     }
     
@@ -645,7 +621,7 @@ function analyzeTableCompletionWithCache(tableLines: string[], tableHasEnded: bo
     
     tableCache.set(cacheKey, {
         content: contentToRelease,
-        hash: `${state.completeRowCount}-${state.isComplete}`,
+        hash: `${state.completeRowCount}-${state.isComplete}-${rowCount}`,
         metadata: result.metadata
     });
     

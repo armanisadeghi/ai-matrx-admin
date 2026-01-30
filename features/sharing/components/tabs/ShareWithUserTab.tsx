@@ -15,11 +15,32 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { PermissionLevel, ResourceType } from '@/utils/permissions';
 import { PermissionLevelDescription } from '../PermissionBadge';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/utils/supabase/client';
 
 interface ShareWithUserTabProps {
   onShare: (userId: string, level: PermissionLevel) => Promise<any>;
   onSuccess: () => void;
   resourceType: ResourceType;
+}
+
+/**
+ * Look up a user by email address
+ * @param email The email address to look up
+ * @returns The user's UUID if found, null otherwise
+ */
+async function lookupUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, email')
+    .eq('email', email.toLowerCase().trim())
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data;
 }
 
 /**
@@ -47,9 +68,19 @@ export function ShareWithUserTab({
 
     setLoading(true);
     try {
-      // Note: In a real implementation, you'd need to look up the user by email
-      // For now, this expects a user ID. You may need to add a user search/lookup function
-      const result = await onShare(email, permissionLevel);
+      // Look up the user by email to get their UUID
+      const user = await lookupUserByEmail(email);
+
+      if (!user) {
+        toast({
+          title: 'User not found',
+          description: `No user found with email "${email}". They may need to create an account first.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const result = await onShare(user.id, permissionLevel);
 
       if (result.success) {
         toast({
