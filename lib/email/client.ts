@@ -1,11 +1,17 @@
 import { Resend } from "resend";
 
-// Validate required environment variables
-if (!process.env.RESEND_API_KEY) {
-  console.warn("RESEND_API_KEY is not set - email sending will fail");
-}
+// Lazy initialization to avoid build-time errors when API key is not available
+let resend: Resend | null = null;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResendClient(): Resend {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY environment variable is not set");
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 /**
  * Get the list of allowed email domains for sending
@@ -78,7 +84,8 @@ export async function sendEmail(options: SendEmailOptions) {
   }
 
   try {
-    const { data, error } = await resend.emails.send({
+    const client = getResendClient();
+    const { data, error } = await client.emails.send({
       from: senderAddress,
       to: Array.isArray(to) ? to : [to],
       subject,
