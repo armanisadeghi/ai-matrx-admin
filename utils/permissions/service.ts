@@ -440,20 +440,33 @@ export async function updatePermissionLevel(
 export async function listPermissions(
   resourceType: ResourceType,
   resourceId: string
-): Promise<Permission[]> {
+): Promise<PermissionWithDetails[]> {
   try {
-    const { data, error } = await supabase
-      .from('permissions')
-      .select('*')
-      .eq('resource_type', resourceType)
-      .eq('resource_id', resourceId)
-      .order('created_at', { ascending: false });
+    // Use the SECURITY DEFINER function to avoid RLS recursion issues
+    const { data, error } = await supabase.rpc('get_resource_permissions', {
+      p_resource_type: resourceType,
+      p_resource_id: resourceId,
+    });
 
-    if (error) throw error;
+    if (error) {
+      console.error('RPC error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
+      throw error;
+    }
 
     return (data || []).map(transformPermissionFromDb);
-  } catch (error) {
-    console.error('Error listing permissions:', error);
+  } catch (error: any) {
+    console.error('Error listing permissions:', {
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint,
+      code: error?.code,
+      error,
+    });
     return [];
   }
 }
@@ -609,7 +622,7 @@ export async function isResourceOwner(
  * @param dbRecord Database record
  * @returns Transformed permission
  */
-function transformPermissionFromDb(dbRecord: any): Permission {
+function transformPermissionFromDb(dbRecord: any): PermissionWithDetails {
   return {
     id: dbRecord.id,
     resourceType: dbRecord.resource_type,
@@ -620,6 +633,19 @@ function transformPermissionFromDb(dbRecord: any): Permission {
     permissionLevel: dbRecord.permission_level,
     createdAt: dbRecord.created_at ? new Date(dbRecord.created_at) : undefined,
     createdBy: dbRecord.created_by,
+    // Parse JSONB fields from the RPC function
+    grantedToUser: dbRecord.granted_to_user ? {
+      id: dbRecord.granted_to_user.id,
+      email: dbRecord.granted_to_user.email,
+      displayName: dbRecord.granted_to_user.displayName,
+      avatarUrl: dbRecord.granted_to_user.avatarUrl,
+    } : undefined,
+    grantedToOrganization: dbRecord.granted_to_organization ? {
+      id: dbRecord.granted_to_organization.id,
+      name: dbRecord.granted_to_organization.name,
+      slug: dbRecord.granted_to_organization.slug,
+      logoUrl: dbRecord.granted_to_organization.logoUrl,
+    } : undefined,
   };
 }
 

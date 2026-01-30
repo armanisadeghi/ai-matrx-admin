@@ -63,7 +63,7 @@ export function ShareModal({
     revokeAccess,
     updateLevel,
     refresh,
-  } = useSharing(resourceType, resourceId);
+  } = useSharing(resourceType, resourceId, isOpen);
 
   // Filter permissions by type for each tab
   const userPermissions = permissions.filter((p) => p.grantedToUserId);

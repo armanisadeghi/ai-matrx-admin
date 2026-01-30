@@ -37,13 +37,13 @@ import {
  * @param resourceId Resource ID
  * @returns Permissions, loading state, and refresh function
  */
-export function usePermissions(resourceType: ResourceType, resourceId: string) {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [loading, setLoading] = useState(true);
+export function usePermissions(resourceType: ResourceType, resourceId: string, enabled: boolean = true) {
+  const [permissions, setPermissions] = useState<PermissionWithDetails[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPermissions = useCallback(async () => {
-    if (!resourceType || !resourceId) return;
+    if (!resourceType || !resourceId || !enabled) return;
 
     setLoading(true);
     setError(null);
@@ -57,11 +57,13 @@ export function usePermissions(resourceType: ResourceType, resourceId: string) {
     } finally {
       setLoading(false);
     }
-  }, [resourceType, resourceId]);
+  }, [resourceType, resourceId, enabled]);
 
   useEffect(() => {
-    fetchPermissions();
-  }, [fetchPermissions]);
+    if (enabled) {
+      fetchPermissions();
+    }
+  }, [fetchPermissions, enabled]);
 
   return {
     permissions,
@@ -227,10 +229,10 @@ export function useIsOwner(resourceType: ResourceType, resourceId: string) {
  * @param resourceId Resource ID
  * @returns Sharing functions and state
  */
-export function useSharing(resourceType: ResourceType, resourceId: string) {
+export function useSharing(resourceType: ResourceType, resourceId: string, enabled: boolean = true) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { permissions, refresh } = usePermissions(resourceType, resourceId);
+  const { permissions, refresh } = usePermissions(resourceType, resourceId, enabled);
 
   const handleShareWithUser = useCallback(
     async (userId: string, permissionLevel: PermissionLevel) => {
