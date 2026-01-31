@@ -1,7 +1,7 @@
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { FetchRelatedRecordsPayload, fetchRelatedRecordsThunk } from "@/lib/redux/entity/thunks/fetchRelatedRecordsThunk";
 import { createAppThunk } from "@/lib/redux/utils";
-import { MessageRecordMap } from "@/types";
+import { MessageRecordMap } from "@/types/AutomationSchemaTypes";
 import { createMessageForConversation } from "./createMessageThunk";
 
 

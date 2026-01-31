@@ -1,4 +1,4 @@
-import { AiSettingsData } from "@/types";
+import { AiSettingsData } from "@/types/AutomationSchemaTypes";
 
 type NormalizedFields<T> = Required<{
     [K in keyof T]: string | NonNullable<T[K]>;

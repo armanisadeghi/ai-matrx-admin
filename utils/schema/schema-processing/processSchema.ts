@@ -1,10 +1,12 @@
 import {
-    UnifiedSchemaCache,
     EntityKeys,
-    AutomationSchema,
     AutomationEntities,
+    UnifiedSchemaCache,
+    AutomationSchema,
+} from '@/types/entityTypes';
+import {
     SchemaEntity,
-} from '@/types';
+} from '@/types/schema';
 import { asEntityRelationships, entityRelationships } from '../fullRelationships';
 import { initialAutomationTableSchema } from '../initialSchemas';
 import { entityNameFormats, fieldNameFormats, entityNameToCanonical, fieldNameToCanonical } from '../lookupSchema';

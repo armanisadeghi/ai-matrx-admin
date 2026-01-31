@@ -1,4 +1,4 @@
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { primaryKeys } from '@/utils/schema/entityPrimarykeys';
 
 export const toMatrxId = (entityName: EntityKeys, record: Record<string, unknown>): MatrxRecordId => {

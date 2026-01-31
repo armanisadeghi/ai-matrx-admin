@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from './store';
 import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import { createEntitySelectors } from '@/lib/redux/entity/selectors';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 
 // Typed thunk creator
 export const createAppThunk = createAsyncThunk.withTypes<{

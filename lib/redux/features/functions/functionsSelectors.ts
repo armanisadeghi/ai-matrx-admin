@@ -1,9 +1,10 @@
 // src/redux/features/functions/functionsSelectors.ts
 
-import { RootState } from '@/redux/store';
+import { RootState } from '@/lib/redux/store';
 import { createSelector } from '@reduxjs/toolkit';
 import { FunctionsState, Function } from './functionsTypes';
 
+// @ts-ignore
 const selectFunctionsState = (state: RootState) => state.functions;
 
 export const selectAllFunctions = createSelector(

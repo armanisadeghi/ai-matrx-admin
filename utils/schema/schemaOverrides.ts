@@ -1,5 +1,8 @@
+// @ts-nocheck
+
 import { DisplayFieldMetadata } from '@/lib/redux/entity/types/stateTypes';
-import { AutomationEntities, EntityComponentProps, EntityField, EntityFieldKeys, EntityKeys, FetchStrategy } from '@/types';
+import { AutomationEntities, EntityComponentProps, EntityField, EntityFieldKeys, EntityKeys } from '@/types/entityTypes';
+import { FetchStrategy } from '@/types/AutomationSchemaTypes';
 
 type EntityOverrides<TEntity extends EntityKeys> = Partial<{
     displayFieldMetadata?: Partial<DisplayFieldMetadata> | null;

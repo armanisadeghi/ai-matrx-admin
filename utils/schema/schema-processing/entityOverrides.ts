@@ -1,5 +1,5 @@
 // File: utils/schema/schema-processing/entityOverrides.ts
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { EntityOverrides } from './overrideTypes';
 
 

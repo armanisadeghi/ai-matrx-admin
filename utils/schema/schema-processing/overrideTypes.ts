@@ -1,4 +1,5 @@
-import { EntityComponentProps, EntityKeys, FetchStrategy } from '@/types';
+import { EntityComponentProps, EntityKeys } from '@/types/entityTypes';
+import { FetchStrategy } from '@/types/AutomationSchemaTypes';
 import { DisplayFieldMetadata } from '@/lib/redux/entity/types/stateTypes';
 
 export type EntityOverrides<TEntity extends EntityKeys> = Partial<{

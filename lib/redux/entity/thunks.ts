@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { EntityKeys, AnyEntityDatabaseTable } from '@/types';
+import { EntityKeys, AnyEntityDatabaseTable } from '@/types/entityTypes';
 import { createEntitySlice } from './slice';
 import { FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from './actions';
 import { QueryOptions } from './types/stateTypes';

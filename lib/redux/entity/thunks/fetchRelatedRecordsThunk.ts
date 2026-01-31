@@ -1,5 +1,5 @@
 import { createAppThunk, getTypedEntityActions } from "@/lib/redux/utils";
-import { EntityKeys, MatrxRecordId } from "@/types";
+import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 import { callbackManager } from "@/utils/callbackManager";
 import { FilterCondition, SortPayload } from "../types/stateTypes";
 import { FetchRecordsPayload } from "../actions";

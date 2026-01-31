@@ -1,4 +1,4 @@
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { AllEntityFieldOverrides, FieldOverrideName, ProcessedField } from "./overrideTypes";
 import { getFieldOverride } from "./entityFieldOverrides";
 

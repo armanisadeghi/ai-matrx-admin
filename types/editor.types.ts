@@ -1,5 +1,6 @@
 // features/rich-text-editor/types/editor.types.ts
-import { BrokerDataOptional, DataBrokerDataOptional, MatrxRecordId } from '@/types';
+import { BrokerDataOptional, DataBrokerDataOptional } from '@/types/AutomationSchemaTypes';
+import { MatrxRecordId } from '@/types/entityTypes';
 import { RefObject } from 'react';
 import { TailwindColor } from '../constants/rich-text-constants';
 

@@ -1,7 +1,7 @@
 // redux/features/recipes/recipeSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BrokerValue } from '@/redux/features/broker/types';
+import { BrokerValue } from '@/lib/redux/features/broker/types';
 
 export interface RecipeInstance {
     recipe_id: string;

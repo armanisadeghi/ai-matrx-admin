@@ -1,6 +1,6 @@
 // File: utils/schema/entityFieldNameGroups.ts
 'use client';
-import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { EntityAnyFieldKey, EntityKeys } from '@/types/entityTypes';
 
 export type FieldGroups = {
     nativeFields: EntityAnyFieldKey<EntityKeys>[];

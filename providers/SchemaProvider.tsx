@@ -18,7 +18,7 @@ import {
     FieldNameFormats,
     FormattedEntitySchema,
 } from '@/types/entityTypes';
-import { SchemaEntity } from '@/types';
+import { SchemaEntity } from '@/types/schema';
 import { FullEntityRelationships } from '@/utils/schema/fullRelationships';
 
 interface UnifiedSchemaCache {
@@ -109,7 +109,7 @@ export function useSchemaResolution() {
      */
     const getEntitySchema = <TEntity extends EntityKeys>(entityVariant: AllEntityNameVariations): AutomationEntity<TEntity> => {
         const entityKey = resolveEntityKey(entityVariant);
-        const entitySchema = schema[entityKey] as AutomationEntity<TEntity>;
+        const entitySchema = schema[entityKey] as unknown as AutomationEntity<TEntity>;
         if (!entitySchema) {
             throw new Error(`No entity found for key: ${entityKey}`);
         }

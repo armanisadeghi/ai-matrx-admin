@@ -1,5 +1,5 @@
 // utils/schema/relationshipUtils.ts
-import {AnyEntityDatabaseTable, EntityKeys, UnifiedSchemaCache} from "@/types";
+import {AnyEntityDatabaseTable, EntityKeys, UnifiedSchemaCache} from "@/types/entityTypes";
 import {
     FullEntityRelationships,
     EntityRelationshipType,
@@ -39,7 +39,7 @@ export class EntityRelationshipManager {
     static getInstance(cache?: UnifiedSchemaCache): EntityRelationshipManager {
         if (!EntityRelationshipManager.instance) {
             if (!cache) {
-                const globalCache = getGlobalCache(['EntityRelationshipManager.getInstance']);
+                const globalCache = getGlobalCache();
                 if (!globalCache) {
                     throw new Error('Cannot initialize EntityRelationshipManager: global cache not available');
                 }

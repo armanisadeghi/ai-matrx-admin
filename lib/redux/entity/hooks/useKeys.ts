@@ -1,4 +1,4 @@
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useMemo } from 'react';
 import { useAppStore } from '../../hooks';
 import { createEntitySelectors } from '../selectors';

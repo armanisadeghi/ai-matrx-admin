@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { AIProvider } from '@/lib/ai/aiChat.types';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 import { supabase } from '@/utils/supabase/client';
 
 // Define types for each module's preferences

@@ -21,7 +21,7 @@ import {
 import { ChatMode } from '../conversationSlice';
 import { NewMessageState } from '../newMessageSlice';
 import { createMessageSelectors, RootState } from '@/lib/redux';
-import { MessageRecordWithKey } from '@/types';
+import { MessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 
 interface CreateNewConversationArgs {
   userId: string;

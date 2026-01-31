@@ -1,4 +1,4 @@
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { getGlobalCache } from './processSchema';
 
 // Base getters

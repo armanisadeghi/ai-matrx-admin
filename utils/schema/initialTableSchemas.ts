@@ -1,5 +1,6 @@
 // File: utils/schema/initialTableSchemas.ts
-import {AutomationEntity, TypeBrand} from '@/types';
+import {AutomationEntity} from '@/types/entityTypes';
+import {TypeBrand} from '@/types/AutomationSchemaTypes';
 
 export const action = {
         schemaType: 'table' as const,

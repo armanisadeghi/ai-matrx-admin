@@ -1,5 +1,5 @@
 import { PrimaryKeyMetadata, DisplayFieldMetadata } from '@/lib/redux/entity/types/stateTypes';
-import { EntityComponentProps, EntityKeys, EntityNameFormats } from '@/types';
+import { EntityComponentProps, EntityKeys, EntityNameFormats } from '@/types/entityTypes';
 import { initialAutomationTableSchema } from '../initialSchemas';
 import { OverrideName, EntityProcessedFields, EntityOverrides } from './overrideTypes';
 

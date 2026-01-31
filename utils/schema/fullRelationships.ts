@@ -1,4 +1,4 @@
-import { AnyEntityDatabaseTable, EntityKeys } from "@/types";
+import { AnyEntityDatabaseTable, EntityKeys } from "@/types/entityTypes";
 
 export type EntityRelationshipType = "self-referential" | "one-to-one" | "one-to-many" | "many-to-one" | "many-to-many";
 

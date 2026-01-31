@@ -1,4 +1,4 @@
-import { createFieldId } from '@/types';
+import { createFieldId } from '@/types/schema';
 import { EntityKeys } from '@/types/entityTypes';
 import { initialAutomationTableSchema } from '../initialSchemas';
 import { FieldOverrideName, AllEntityFieldOverrides, ProcessedField, EntityProcessedFields } from './overrideTypes';

@@ -1,4 +1,4 @@
-import { MessageRecordWithKey } from "@/types";
+import { MessageRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 

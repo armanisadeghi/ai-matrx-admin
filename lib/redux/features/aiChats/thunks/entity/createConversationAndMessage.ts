@@ -3,7 +3,7 @@ import { DEFAULT_CONVERSATION, DEFAULT_FIRST_MESSAGE } from "@/constants/chat";
 import { Conversation, Message } from "@/types/chat/chat.types";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { createAppThunk } from "@/lib/redux/utils";
-import { EntityKeys, MatrxRecordId } from "@/types";
+import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 import { saveRecordsInOrder } from "@/lib/redux/entity/thunks/createRecordThunk";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { setTaskFields, submitTask } from "@/lib/redux/socket-io";

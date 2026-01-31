@@ -1,7 +1,7 @@
 // factories/createShadowSlice.ts
 
-import { EntityKeys } from "@/types";
-import { RootState } from "../../store";
+import { EntityKeys } from "@/types/entityTypes";
+import { RootState } from "@/lib/redux/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { EntityState, MatrxRecordId } from "../../entity/types/stateTypes";
 

@@ -1,6 +1,6 @@
 // lib/redux/entity/thunks/recordThunks.ts
 import { createAppThunk, getTypedEntityTools } from "@/lib/redux/utils";
-import { EntityKeys, MatrxRecordId } from "@/types";
+import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 import { callbackManager } from "@/utils/callbackManager";
 import { v4 as uuidv4 } from "uuid";
 

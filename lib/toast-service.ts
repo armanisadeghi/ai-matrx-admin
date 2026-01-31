@@ -1,6 +1,6 @@
 // lib/toast-service.ts
 import { MatrxVariant } from "@/components/ui/types";
-import type { ToastDefaults, ToastOptions } from "@/types";
+import type { ToastDefaults, ToastOptions } from "@/types/toast.types";
 
 // Default messages for different toast types
 const DEFAULT_MESSAGES = {

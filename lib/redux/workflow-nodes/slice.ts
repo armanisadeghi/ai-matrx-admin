@@ -10,7 +10,7 @@ import {
     deleteWorkflowNode,
     duplicateWorkflowNode,
 } from "./thunks";
-import { RegisteredNodeData } from "@/types";
+import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
 import { NodeInput } from "@/features/workflows-xyflow/nodes/base/NodeHandles";
 
 export const DEFAULT_WORKFLOW_NODE: Omit<WorkflowNode, "id" | "created_at" | "updated_at" | "user_id"> = {

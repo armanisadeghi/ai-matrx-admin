@@ -1,4 +1,4 @@
-import { BrokerValue } from '@/redux/features/broker/types';
+import { BrokerValue } from '@/lib/redux/features/broker/types';
 
 
 export interface FlatRecipeData {
