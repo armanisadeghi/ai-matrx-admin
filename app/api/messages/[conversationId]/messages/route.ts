@@ -20,7 +20,7 @@ const sendMessageSchema = z.object({
   message_type: z.enum(['text', 'image', 'video', 'audio', 'file', 'system']).default('text'),
   media_url: z.string().url().optional(),
   media_thumbnail_url: z.string().url().optional(),
-  media_metadata: z.record(z.unknown()).optional(),
+  media_metadata: z.record(z.string(), z.unknown()).optional(),
   reply_to_id: z.string().uuid().optional(),
   client_message_id: z.string().optional(),
 });
@@ -178,7 +178,7 @@ export async function POST(
 
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, msg: validation.error.errors[0].message },
+        { success: false, msg: validation.error.issues[0].message },
         { status: 400 }
       );
     }

@@ -159,7 +159,7 @@ export async function PUT(
 
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, msg: validation.error.errors[0].message },
+        { success: false, msg: validation.error.issues[0].message },
         { status: 400 }
       );
     }

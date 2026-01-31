@@ -32,7 +32,7 @@ export function ChatThread({
 
   // Get user from Redux state - use auth.users.id (UUID)
   const user = useAppSelector((state) => state.user);
-  const userId = propUserId || user?.id || user?.activeUser?.id;
+  const userId = propUserId || user?.id;
   const displayName =
     propDisplayName ||
     user?.userMetadata?.fullName ||
