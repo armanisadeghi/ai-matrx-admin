@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Crown, Shield, User as UserIcon, MoreVertical, Loader2, Search, UserX } from 'lucide-react';
+import { Users, Crown, Shield, User as UserIcon, MoreVertical, Loader2, Search, UserX, MessageSquare, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import {
   useOrganizationMembers,
@@ -29,8 +35,11 @@ import {
   useUserRole,
   type OrgRole,
 } from '@/features/organizations';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/selectors/userSelectors';
+import { openMessaging, setCurrentConversation } from '@/features/messaging/redux/messagingSlice';
+import { useConversations } from '@/hooks/useSupabaseMessaging';
+import { EmailComposeSheet } from '@/components/admin/EmailComposeSheet';
 
 interface MemberManagementProps {
   organizationId: string;
@@ -57,11 +66,46 @@ export function MemberManagement({
   isPersonal,
 }: MemberManagementProps) {
   const currentUser = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
+  const [emailRecipient, setEmailRecipient] = useState<{ id: string; email: string; name: string } | null>(null);
+  const [messageLoading, setMessageLoading] = useState<string | null>(null);
 
   const { members, loading, error, refresh } = useOrganizationMembers(organizationId);
   const { updateRole, remove, loading: operationLoading } = useMemberOperations(organizationId);
+  const { createConversation } = useConversations(currentUser?.id || null);
+
+  // Handle sending a direct message to a member
+  const handleSendMessage = async (memberId: string, memberEmail: string) => {
+    if (!currentUser?.id || memberId === currentUser.id) return;
+    
+    setMessageLoading(memberId);
+    try {
+      // Create or get existing conversation with this user
+      const conversationId = await createConversation(memberId);
+      
+      // Open messaging sheet and select this conversation
+      dispatch(openMessaging(conversationId));
+      dispatch(setCurrentConversation(conversationId));
+      
+      toast.success(`Opening conversation with ${memberEmail}`);
+    } catch (err) {
+      console.error('Failed to start conversation:', err);
+      toast.error('Failed to start conversation');
+    } finally {
+      setMessageLoading(null);
+    }
+  };
+
+  // Handle opening email compose for a member
+  const handleSendEmail = (member: { userId: string; email: string; displayName?: string }) => {
+    setEmailRecipient({
+      id: member.userId,
+      email: member.email,
+      name: member.displayName || member.email,
+    });
+  };
 
   // Filter members
   const filteredMembers = members.filter((member) =>
@@ -209,6 +253,52 @@ export function MemberManagement({
                   {roleDisplay.label}
                 </Badge>
 
+                {/* Quick Actions - Message & Email (not for self) */}
+                {!isCurrentUser && member.user?.email && (
+                  <TooltipProvider delayDuration={300}>
+                    <div className="flex items-center gap-1">
+                      {/* Send Message */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleSendMessage(member.userId, member.user?.email || '')}
+                            disabled={messageLoading === member.userId}
+                          >
+                            {messageLoading === member.userId ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <MessageSquare className="h-4 w-4 text-blue-500" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Send message</TooltipContent>
+                      </Tooltip>
+
+                      {/* Send Email */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleSendEmail({
+                              userId: member.userId,
+                              email: member.user?.email || '',
+                              displayName: member.user?.displayName,
+                            })}
+                          >
+                            <Mail className="h-4 w-4 text-green-500" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Send email</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                )}
+
                 {/* Actions Menu */}
                 {canManageThisMember && !isCurrentUser && !isPersonal && (
                   <DropdownMenu>
@@ -308,6 +398,14 @@ export function MemberManagement({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Email Compose Sheet */}
+      <EmailComposeSheet
+        isOpen={!!emailRecipient}
+        onClose={() => setEmailRecipient(null)}
+        recipients={emailRecipient ? [emailRecipient] : []}
+        title={emailRecipient ? `Email ${emailRecipient.name}` : 'Compose Email'}
+      />
     </div>
   );
 }
