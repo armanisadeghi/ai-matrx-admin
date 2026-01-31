@@ -16,7 +16,7 @@
     "analyze": "ANALYZE=true pnpm build",
     "analyze:win": "set ANALYZE=true && pnpm build",
     "migrate-content-blocks": "npx tsx scripts/migrate-content-blocks.ts",
-    "capture-errors": "npx tsx capture_ts_errors.ts"
+    "capture-errors": "NODE_OPTIONS='--max-old-space-size=8192' npx tsx capture_ts_errors.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.52",

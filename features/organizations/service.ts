@@ -354,14 +354,21 @@ export async function getOrganizationMembers(
   try {
     const { data, error } = await supabase
       .from('organization_members')
-      .select('*')
+      .select(`
+        *,
+        users:user_id (
+          id,
+          email,
+          display_name,
+          avatar_url
+        )
+      `)
       .eq('organization_id', orgId)
       .order('joined_at', { ascending: true });
 
     if (error) throw error;
 
-    // Transform and return
-    // Note: In production, you'd join with auth.users for user details
+    // Transform and return with user details
     return (data || []).map(transformMemberFromDb);
   } catch (error) {
     console.error('Error fetching organization members:', error);
@@ -893,6 +900,12 @@ function transformMemberFromDb(dbRecord: any): OrganizationMemberWithUser {
     role: dbRecord.role,
     joinedAt: dbRecord.joined_at,
     invitedBy: dbRecord.invited_by,
+    user: dbRecord.users ? {
+      id: dbRecord.users.id,
+      email: dbRecord.users.email,
+      displayName: dbRecord.users.display_name,
+      avatarUrl: dbRecord.users.avatar_url,
+    } : undefined,
   };
 }
 
