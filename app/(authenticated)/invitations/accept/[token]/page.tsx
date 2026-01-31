@@ -43,25 +43,93 @@ export default function AcceptInvitationPage() {
     setError(null);
 
     try {
+      console.log('[Invitation] Starting to load invitation with token:', token);
+      
       const {
         data: { user },
+        error: authError,
       } = await supabase.auth.getUser();
+
+      console.log('[Invitation] Auth check:', { 
+        userId: user?.id, 
+        userEmail: user?.email, 
+        authError: authError?.message 
+      });
 
       if (!user) {
         // Not logged in - redirect to login with return URL
+        console.log('[Invitation] No user, redirecting to login');
         router.push(`/login?redirectTo=${encodeURIComponent(`/invitations/accept/${token}`)}`);
         return;
       }
 
-      // Fetch invitation details
-      const { data, error: fetchError } = await supabase
+      // First, try to fetch just the invitation without join
+      console.log('[Invitation] Fetching invitation without join...');
+      const { data: invitationOnly, error: inviteOnlyError } = await supabase
         .from('organization_invitations')
-        .select('*, organizations(*)')
+        .select('*')
         .eq('token', token)
-        .gt('expires_at', new Date().toISOString())
+        .single();
+      
+      console.log('[Invitation] Invitation-only result:', { 
+        found: !!invitationOnly, 
+        error: inviteOnlyError?.message,
+        errorCode: inviteOnlyError?.code,
+        errorDetails: inviteOnlyError?.details,
+        invitationId: invitationOnly?.id,
+        invitationEmail: invitationOnly?.email,
+        expiresAt: invitationOnly?.expires_at
+      });
+
+      if (inviteOnlyError) {
+        console.error('[Invitation] Failed to fetch invitation:', inviteOnlyError);
+        setError(`Failed to fetch invitation: ${inviteOnlyError.message}`);
+        return;
+      }
+
+      if (!invitationOnly) {
+        console.log('[Invitation] No invitation found for token');
+        setError('Invitation not found');
+        return;
+      }
+
+      // Check expiry manually
+      const isExpired = new Date(invitationOnly.expires_at) <= new Date();
+      console.log('[Invitation] Expiry check:', { 
+        expiresAt: invitationOnly.expires_at, 
+        now: new Date().toISOString(),
+        isExpired 
+      });
+
+      if (isExpired) {
+        setError('This invitation has expired');
+        return;
+      }
+
+      // Now fetch the organization separately
+      console.log('[Invitation] Fetching organization:', invitationOnly.organization_id);
+      const { data: orgData, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', invitationOnly.organization_id)
         .single();
 
-      if (fetchError || !data) {
+      console.log('[Invitation] Organization result:', { 
+        found: !!orgData, 
+        error: orgError?.message,
+        errorCode: orgError?.code,
+        orgName: orgData?.name 
+      });
+
+      if (orgError || !orgData) {
+        console.error('[Invitation] Failed to fetch organization:', orgError);
+        // Continue anyway with partial data - we can show the invitation
+        // but maybe not all org details
+      }
+
+      const data = { ...invitationOnly, organizations: orgData };
+
+      if (!data) {
         setError('Invitation not found or has expired');
         return;
       }

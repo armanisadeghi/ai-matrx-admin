@@ -11,7 +11,7 @@ import {
   setSheetWidth,
   clearCurrentConversation,
 } from "../redux/messagingSlice";
-import { X, ChevronLeft, Maximize2 } from "lucide-react";
+import { ChevronLeft, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ConversationList } from "./ConversationList";
@@ -128,16 +128,6 @@ export function MessagingSideSheet() {
               <Maximize2 className="h-4 w-4" />
             </Button>
           </Link>
-
-          {/* Close Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClose}
-            className="h-8 w-8"
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
