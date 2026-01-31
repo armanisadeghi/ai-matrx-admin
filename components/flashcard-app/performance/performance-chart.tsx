@@ -158,6 +158,7 @@ const DesktopPerformanceChart = ({
                             innerRadius={60}
                             outerRadius="80%"
                             paddingAngle={5}
+                            // @ts-ignore - activeIndex prop exists in recharts but type definitions may be outdated
                             activeIndex={activeIndex}
                             activeShape={renderActiveShape}
                             onMouseEnter={(_, index) => setActiveIndex(index)}

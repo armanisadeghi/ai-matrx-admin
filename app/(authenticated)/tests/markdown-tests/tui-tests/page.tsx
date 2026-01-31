@@ -100,7 +100,7 @@ export default function TuiTestPage() {
 
             {/* Main Content */}
             <div className="flex-1 overflow-hidden">
-                <ResizablePanelGroup direction="horizontal">
+                <ResizablePanelGroup orientation="horizontal">
                 {/* Left Panel - TUI Editor */}
                 <ResizablePanel defaultSize={33} minSize={20}>
                     <div className="flex flex-col h-full border-r border-gray-300 dark:border-gray-700">

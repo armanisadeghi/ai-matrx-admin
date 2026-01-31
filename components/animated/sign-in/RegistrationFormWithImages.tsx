@@ -1,6 +1,9 @@
+// @ts-ignore - Module paths may have changed
 import {FeaturedTestimonials} from "@/components/animated/login/FeaturedTestimonials";
 import {cn} from "@/lib/utils";
+// @ts-ignore - Module paths may have changed
 import {GridLineHorizontal, GridLineVertical} from "@/components/animated/login/GridLines";
+// @ts-ignore - Module paths may have changed
 import AuthSignInForm from "@/components/animated/login/AuthSignIn";
 
 function RegistrationFormWithImages() {

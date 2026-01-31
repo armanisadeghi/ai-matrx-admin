@@ -26,6 +26,7 @@ export async function POST(req: Request) {
                     {
                         type: "file",
                         data: firstFile,
+                        // @ts-ignore - mimeType not in type definition but required by API
                         mimeType: "application/pdf",
                     },
                 ],
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
         onFinish: ({ object }) => {
             const res = questionsSchema.safeParse(object);
             if (res.error) {
-                throw new Error(res.error.errors.map((e) => e.message).join("\n"));
+                throw new Error(res.error.issues.map((e) => e.message).join("\n"));
             }
         },
     });

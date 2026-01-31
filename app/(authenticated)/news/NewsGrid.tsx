@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { NewsCard } from './NewsCard';
+import NewsCard from './NewsCard';
 import { LoadingSkeleton } from './ProgressiveNewsImage';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -68,8 +68,6 @@ export const NewsGrid = ({ news, loading, onImageError, failedImages }: NewsGrid
                     key={`${article.url}-${index}`}
                     article={article}
                     index={index}
-                    onImageError={onImageError}
-                    failedImages={failedImages}
                 />
             ))}
         </motion.div>

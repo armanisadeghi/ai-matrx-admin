@@ -74,7 +74,7 @@ export const IncreaseFontButton: React.FC<SmartButtonProps> = ({ flashcardHook, 
 
 export const AudioHelpButton: React.FC<SmartButtonProps> = ({ flashcardHook, className }) => (
     <Button
-        onClick={flashcardHook.aiModalActions.openAudioModal}
+        onClick={flashcardHook.audioModalActions.playActiveCardAudio}
         variant="outline"
         size="icon"
         className={`w-10 h-10 hover:scale-105 transition-transform bg-card ${className || ''}`}
@@ -86,7 +86,7 @@ export const AudioHelpButton: React.FC<SmartButtonProps> = ({ flashcardHook, cla
 
 export const ChatHelpButton: React.FC<SmartButtonProps> = ({ flashcardHook, className }) => (
     <Button
-        onClick={flashcardHook.aiModalActions.openAiModal}
+        onClick={flashcardHook.textModalActions.openAiModal}
         variant="outline"
         size="icon"
         className={`w-10 h-10 hover:scale-105 transition-transform bg-card ${className || ''}`}

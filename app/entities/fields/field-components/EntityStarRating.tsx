@@ -7,7 +7,7 @@ import { EntityComponentBaseProps } from "../types";
 
 interface EntityStarRatingProps extends EntityComponentBaseProps {
     color?: "amber" | "slate" | "red" | "green";
-    size?: "sm" | "md" | "lg";
+    size: "sm" | "md" | "lg";
     viewOnly?: boolean;
 }
 

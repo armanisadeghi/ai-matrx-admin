@@ -49,7 +49,7 @@ const AudioModal: React.FC<AudioModalProps> = ({
         status: 'idle'
     });
 
-    const textAnimationRef = useRef<NodeJS.Timeout>();
+    const textAnimationRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const textIndexRef = useRef(0);
     const textSpeedRef = useRef(50); // ms between characters
     const cleanupRef = useRef(false);
@@ -190,8 +190,6 @@ const AudioModal: React.FC<AudioModalProps> = ({
         <Credenza
             open={isOpen}
             onOpenChange={handleModalClose}
-            onEscapeKeyDown={handleModalClose}
-            onPointerDownOutside={handleModalClose}
         >
             <CredenzaContent
                 className={cn(

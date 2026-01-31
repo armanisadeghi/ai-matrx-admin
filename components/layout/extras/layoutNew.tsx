@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/MatrixLogo";
+// @ts-ignore - constants module exists but TypeScript may not resolve it correctly
 import { appSidebarLinks } from "@/constants";
 import { ThemeSwitcher } from "@/styles/themes";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

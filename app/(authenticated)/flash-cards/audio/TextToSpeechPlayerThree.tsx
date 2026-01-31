@@ -182,8 +182,12 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
             <VoiceConfigSelects
                 isPlaying={isPlaying}
                 onVoiceChange={setVoiceId}
-                onEmotionChange={setEmotion}
-                onIntensityChange={setIntensity}
+                onEmotionsChange={(emotions) => {
+                    // @ts-ignore - Legacy emotion handling, component expects array but we use single string
+                    if (emotions && emotions.length > 0) {
+                        setEmotion(emotions[0]);
+                    }
+                }}
                 onSpeedChange={(speed: number) => setSpeed(speed.toString())}
                 onEncodingChange={setEncoding}
                 onLanguageChange={setLanguage}

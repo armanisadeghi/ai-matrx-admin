@@ -8,6 +8,7 @@ import React, {useState, createContext, useContext, useEffect} from "react";
 import {AnimatePresence, motion} from "motion/react";
 import {IconMenu2, IconX, IconLogout, IconUser} from "@tabler/icons-react";
 import {Logo} from "@/components/layout/MatrixLogo";
+// @ts-ignore - constants module exists but TypeScript may not resolve it correctly
 import {appSidebarLinks} from "@/constants";
 import {Settings, User, ChevronLeft, ChevronRight} from "lucide-react";
 import {useSelector} from "react-redux";

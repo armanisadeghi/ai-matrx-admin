@@ -5,7 +5,8 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Button} from '@/components/ui/button';
 import {Bot, Code, Copy, Download, FileJson, Image, Loader2} from 'lucide-react';
-import type {ImageQuality, AIHelpContext} from '@/types/contextCollection';
+import type {AIHelpContext} from '@/types/contextCollection';
+import type {ImageQuality} from '@/types/screenshot';
 import {AI_HELP_PROMPTS} from '@/constants/aiHelp';
 import { highlightElements, removeHighlights } from '@/utils/highlighting';
 

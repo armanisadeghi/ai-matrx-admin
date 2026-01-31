@@ -159,7 +159,8 @@ const CardTitle = ({
         <motion.h3
             variants={variants}
             transition={{
-                type: "easeOut",
+                type: "tween",
+                ease: "easeOut",
                 duration: 0.2,
             }}
             className={cn(
@@ -190,7 +191,8 @@ const CardDescription = ({
         <motion.p
             variants={variants}
             transition={{
-                type: "easeOut",
+                type: "tween",
+                ease: "easeOut",
                 duration: 0.2,
             }}
             className={cn(

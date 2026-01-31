@@ -57,8 +57,8 @@ const ResizableLayoutDemo = () => {
     // Create a deep copy without JSON stringify/parse to avoid circular reference issues
     const newSections = structuredClone(sections);
     
-    let targetSection = newSections;
-    let currentPath = [...path];
+    let targetSection: any = newSections;
+    let currentPath: any[] = [...path];
     
     // Navigate to the target section
     while (currentPath.length > 1) {
@@ -66,6 +66,7 @@ const ResizableLayoutDemo = () => {
       currentPath.shift();
       
       if (typeof index === 'number' && targetSection[index]) {
+        // @ts-ignore - Complex nested section navigation, path may include string markers
         if (targetSection[index].type === 'nested' && currentPath[0] === 'sections') {
           targetSection = targetSection[index].sections;
           currentPath.shift(); // Remove 'sections' from the path

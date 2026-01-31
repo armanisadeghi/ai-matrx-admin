@@ -115,7 +115,7 @@ const EntityNumberInput = React.forwardRef<HTMLInputElement, EntityNumberInputPr
                     {!hideControls && (
                         <Button
                             type='button'
-                            variant={buttonVariant}
+                            variant={buttonVariant as 'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost'}
                             size='icon'
                             onClick={handleDecrement}
                             disabled={disabled || isDecrementDisabled}
@@ -137,7 +137,7 @@ const EntityNumberInput = React.forwardRef<HTMLInputElement, EntityNumberInputPr
                     {!hideControls && (
                         <Button
                             type='button'
-                            variant={buttonVariant}
+                            variant={buttonVariant as 'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost'}
                             size='icon'
                             onClick={handleIncrement}
                             disabled={disabled}

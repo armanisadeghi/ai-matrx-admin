@@ -3,7 +3,7 @@ import { Button, ButtonProps } from '@/components/ui/button'; // Adjust this imp
 
 const ButtonTest: React.FC = () => {
     const variants: ButtonProps['variant'][] = ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'];
-    const sizes: ButtonProps['size'][] = ['xs', 's', 'sm', 'm', 'default', 'l', 'lg', 'xl'];
+    const sizes: ButtonProps['size'][] = ['default', 'sm', 'lg', 'icon'];
 
     return (
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">

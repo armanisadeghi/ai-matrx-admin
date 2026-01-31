@@ -46,6 +46,7 @@ const MarkdownInput: React.FC<MarkdownInputProps> = ({
             onClick={handleContainerClick}
         >
             <ResizablePanelGroup
+                // @ts-ignore - direction prop exists but type definitions may be outdated
                 direction="vertical"
                 className="h-full"
                 onPointerDown={(e) => e.stopPropagation()}

@@ -10,13 +10,13 @@ import { getServerBroker } from '@/lib/server/brokerService';
 
 // Define broker identifiers
 const BROKER_IDS = {
-  token: { source: 'api', itemId: 'slack_token' },
-  channels: { source: 'slack', itemId: 'slack_channels' },
-  selectedChannel: { source: 'slack', itemId: 'selected_channel' },
-  filename: { source: 'slack', itemId: 'slack_filename' },
-  title: { source: 'slack', itemId: 'slack_title' },
-  initialComment: { source: 'slack', itemId: 'slack_initial_comment' },
-  sessionId: { source: 'user', itemId: 'session_id' }
+  token: { source: 'api', mappedItemId: 'slack_token' },
+  channels: { source: 'slack', mappedItemId: 'slack_channels' },
+  selectedChannel: { source: 'slack', mappedItemId: 'selected_channel' },
+  filename: { source: 'slack', mappedItemId: 'slack_filename' },
+  title: { source: 'slack', mappedItemId: 'slack_title' },
+  initialComment: { source: 'slack', mappedItemId: 'slack_initial_comment' },
+  sessionId: { source: 'user', mappedItemId: 'session_id' }
 } as const;
 
 export async function POST(request: NextRequest) {
@@ -45,12 +45,12 @@ export async function POST(request: NextRequest) {
 
     // Get values from brokers
     const [token, brokerChannels, selectedChannel, filename, title, initialComment] = await Promise.all([
-      getServerBroker(BROKER_IDS.token, sessionId),
-      getServerBroker(BROKER_IDS.channels, sessionId),
-      getServerBroker(BROKER_IDS.selectedChannel, sessionId),
-      getServerBroker(BROKER_IDS.filename, sessionId),
-      getServerBroker(BROKER_IDS.title, sessionId),
-      getServerBroker(BROKER_IDS.initialComment, sessionId),
+      getServerBroker(BROKER_IDS.token as any, sessionId),
+      getServerBroker(BROKER_IDS.channels as any, sessionId),
+      getServerBroker(BROKER_IDS.selectedChannel as any, sessionId),
+      getServerBroker(BROKER_IDS.filename as any, sessionId),
+      getServerBroker(BROKER_IDS.title as any, sessionId),
+      getServerBroker(BROKER_IDS.initialComment as any, sessionId),
     ]);
 
     // Get data from the request body
@@ -193,10 +193,11 @@ export async function POST(request: NextRequest) {
     console.error('Error uploading file to Slack:', error);
     
     // Log which brokers might be missing
+    const sessionId = request.headers.get('x-session-id');
     console.error('Broker availability:', {
-      token: await getServerBroker(BROKER_IDS.token).then(v => !!v).catch(() => false),
-      channels: await getServerBroker(BROKER_IDS.channels).then(v => !!v).catch(() => false),
-      selectedChannel: await getServerBroker(BROKER_IDS.selectedChannel).then(v => !!v).catch(() => false),
+      token: await getServerBroker(BROKER_IDS.token, sessionId || undefined).then(v => !!v).catch(() => false),
+      channels: await getServerBroker(BROKER_IDS.channels, sessionId || undefined).then(v => !!v).catch(() => false),
+      selectedChannel: await getServerBroker(BROKER_IDS.selectedChannel, sessionId || undefined).then(v => !!v).catch(() => false),
     });
     
     return NextResponse.json(

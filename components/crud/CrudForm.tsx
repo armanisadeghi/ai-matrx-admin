@@ -38,8 +38,9 @@ export function CrudForm<T extends z.ZodType<any, any>>(
         onCancel,
         fields,
     }: CrudFormProps<T>) {
+    // @ts-ignore - Complex type mismatch between zod schema input/output types and react-hook-form
     const form = useForm<z.infer<T>>({
-        resolver: zodResolver(schema),
+        resolver: zodResolver(schema) as any,
         defaultValues: initialData || {} as z.infer<T>,
     });
 

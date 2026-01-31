@@ -15,7 +15,7 @@ import {
 import React from "react";
 import {FlexibleId} from './FlexibleId';
 
-interface TableData {
+export interface TableData {
     id?: FlexibleId;
     [key: string]: any;
 }

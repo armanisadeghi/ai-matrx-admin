@@ -12,7 +12,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
-import { MatrxVariant } from '../types';
+import { MatrxVariant } from '@/components/ui/types';
 
 type MenuItem = {
     label: string;
@@ -63,7 +63,7 @@ export const EntityDropdownMenu: React.FC<EntityDropdownMenuProps> = (
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                {trigger || <Button variant={triggerVariant}>{triggerText}</Button>}
+                {trigger || <Button variant={triggerVariant as any}>{triggerText}</Button>}
             </DropdownMenuTrigger>
             <DropdownMenuContent className={className}>
                 {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}

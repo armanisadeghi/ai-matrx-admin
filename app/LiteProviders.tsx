@@ -9,7 +9,7 @@ import { ThemeProvider } from '@/styles/themes';
 import LiteStoreProvider from '@/providers/LiteStoreProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LiteInitialReduxState } from '@/types/reduxTypes';
-import { ToastProvider } from '@/providers';
+import { ToastProvider } from '@/providers/toast-context';
 import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
 
 interface LiteProvidersProps {

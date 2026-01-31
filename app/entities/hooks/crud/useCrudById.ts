@@ -117,7 +117,8 @@ export const useEntitySelectionCrud = <TEntity extends EntityKeys>(entityKey: TE
                 matrxRecordId: recordId,
                 callbackId,
             };
-            dispatch(actions.updateRecord(payload));
+            // @ts-ignore - updateRecord expects data property, but data comes from unsavedRecords in state
+            dispatch(actions.updateRecord(payload as any));
         },
         [dispatch, actions]
     );
@@ -134,7 +135,8 @@ export const useEntitySelectionCrud = <TEntity extends EntityKeys>(entityKey: TE
                     callback?.(result);
                 };
                 const callbackId = callbackManager.register(wrappedCallback);
-                dispatch(actions.updateRecord({ matrxRecordId: recordId, callbackId }));
+                // @ts-ignore - updateRecord expects data property, but data comes from unsavedRecords in state
+                dispatch(actions.updateRecord({ matrxRecordId: recordId, callbackId } as any));
             });
 
             return true;

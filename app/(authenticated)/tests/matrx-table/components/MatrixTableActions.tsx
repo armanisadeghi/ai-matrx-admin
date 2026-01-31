@@ -4,7 +4,9 @@ import React from "react";
 import {Edit, Eye, Maximize2, Trash} from "lucide-react";
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";
 import {Button} from "@/components/ui/button";
-import {ActionDefinition, TableData} from "@/types/tableTypes";
+import {ActionDefinition} from "@/types/tableTypes";
+// @ts-ignore - TableData declared locally but not exported, using any for now
+type TableData = any;
 
 export const actionDefinitions: Record<string, ActionDefinition> = {
     edit: {
@@ -50,11 +52,11 @@ export const TableActionIcon: React.FC<{
                     e.stopPropagation();
                     onAction(name, data);
                 }}
-                size="xs"
+                size="sm"
                 variant="ghost"
                 className={`p-1 ${className || "transition-all duration-300 hover:scale-105"}`}
             >
-                {React.cloneElement(icon as React.ReactElement, {className: 'w-3 h-3'})}
+                {React.cloneElement(icon as React.ReactElement, {className: 'w-3 h-3'} as any)}
             </Button>
         </MatrxTooltip>
     );

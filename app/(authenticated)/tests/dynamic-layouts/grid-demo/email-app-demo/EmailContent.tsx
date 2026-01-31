@@ -36,7 +36,7 @@ const EmailContent = () => {
         subject: email.subject || '(No Subject)',
         body: email.body || '(No Content)',
         timestamp: email.timestamp
-                   ? new Date(email.timestamp).toLocaleString()
+                   ? new Date(email.timestamp as string | number | Date).toLocaleString()
                    : 'Unknown Time',
         isRead: email.isRead ?? false,
     };

@@ -108,8 +108,7 @@ export function DynamicCards({
             title={systemPrompt.display_config?.label || systemPrompt.name}
             description={systemPrompt.description || ''}
             context={context}
-            allowInitialMessage={allowInitialMessage}
-            allowChat={allowChat}
+            allow_chat={allowChat}
           />
         );
       })}

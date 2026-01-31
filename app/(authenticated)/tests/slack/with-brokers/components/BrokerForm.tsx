@@ -25,7 +25,7 @@ export function BrokerForm({ fields, onSubmit, brokerSync = true }: BrokerFormCo
         const fieldValues: Record<string, any> = {};
         fields.forEach((field) => {
             const key = JSON.stringify(field.broker);
-            fieldValues[key] = brokerSelectors.selectValue(state, field.broker);
+            fieldValues[key] = brokerSelectors.selectValue(state, field.broker as any);
         });
         return fieldValues;
     });

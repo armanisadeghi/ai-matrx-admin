@@ -87,7 +87,7 @@ const EntityTimePicker = React.forwardRef<HTMLInputElement, EntityTimePickerProp
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={resolvedVariant}
+              variant={resolvedVariant as 'link' | 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost'}
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !time && "text-muted-foreground",

@@ -11,7 +11,7 @@ import { GlobalBrokerRegistration } from "@/providers/GlobalBrokerRegistration";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { RefProvider } from "@/lib/refs";
-import { ToastProvider } from "@/providers";
+import { ToastProvider } from "@/providers/toast-context";
 import { AudioModalProvider } from "@/providers/AudioModalProvider";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
 import { EntityProvider } from "@/providers/entity-context/EntityProvider";

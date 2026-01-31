@@ -101,7 +101,7 @@ export const useEntityTable = <TEntity extends EntityKeys>({
                         if (!useParentModal && onModalOpen) onModalOpen(actionName, context.data);
                         break;
                     case "delete":
-                        dispatch(actions.deleteRecord(context.matrxRecordId));
+                        dispatch(actions.deleteRecord({ matrxRecordId: context.matrxRecordId }));
                         toast({ title: "Success", description: "Item deleted successfully", variant: "default" });
                         break;
                     case "create":

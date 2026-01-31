@@ -98,8 +98,6 @@ const FastFireContainer = ({
                 currentCardIndex={currentCardIndex}
                 timeLeft={timeLeft}
                 isRecording={isRecording}
-                startRecording={startRecording}
-                stopRecording={stopRecording}
             />
 
             <AnimatePresence mode="wait">
@@ -130,6 +128,7 @@ const FastFireContainer = ({
                 playAllAudioFeedback={playAllAudioFeedback}
                 playCorrectAnswersOnly={playCorrectAnswersOnly}
                 playHighScoresOnly={playHighScoresOnly}
+                currentCardIndex={currentCardIndex}
             />
         </div>
     );

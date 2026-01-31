@@ -95,7 +95,7 @@ export function TableDetails({ entity }) {
                     <TabsContent value="fields">
                         <Card>
                             <CardContent className="space-y-4">
-                                {Object.entries(entity.entityFields).map(([key, field]) => (
+                                {Object.entries(entity.entityFields).map(([key, field]: [string, EntityField]) => (
                                     <div key={key} className="flex items-center justify-between p-2 hover:bg-muted rounded-lg">
                                         <div>
                                             <p className="font-medium">{field.fieldNameFormats.pretty}</p>

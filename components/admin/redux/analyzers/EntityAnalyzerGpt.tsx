@@ -89,7 +89,7 @@ const EntityAnalyzerGpt: React.FC<EntityAnalyzerProps> = (
                                          key={option.value}
                                          onClick={() => handleEntitySelect(option.value)}
                                          size="sm"
-                                         variant={selectedEntity === option.value ? 'primary' : 'default'}
+                                         variant={selectedEntity === option.value ? 'default' : 'outline'}
                                      >
                                          {option.label}
                                      </Button>

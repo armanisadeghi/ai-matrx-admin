@@ -11,11 +11,13 @@ export default function SlackBrokersLayout({ children }: { children: React.React
     
     useEffect(() => {
         const brokerMappings = Object.entries(SLACK_BROKER_IDS).map(([key, idArgs]) => {
-            const brokerId = `slack-${idArgs.source}-${idArgs.itemId}-${Date.now()}`;
+            const mappedItemId = 'mappedItemId' in idArgs ? idArgs.mappedItemId : (idArgs as any).itemId || key;
+            const source = 'source' in idArgs ? idArgs.source : 'slack';
+            const brokerId = `slack-${source}-${mappedItemId}-${Date.now()}`;
             return {
-                source: idArgs.source,
+                source: source,
                 sourceId: "slack-integration",
-                itemId: idArgs.itemId,
+                mappedItemId: mappedItemId,
                 brokerId: brokerId,
             };
         });

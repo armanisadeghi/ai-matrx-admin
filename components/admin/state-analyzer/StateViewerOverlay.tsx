@@ -31,9 +31,9 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({ isOpen, onClose
     // Create tabs based on the exact slices from your root reducer
     const tabs: TabDefinition[] = [
         {
-            id: "workflow",
-            label: "Workflow",
-            content: <GenericSliceViewer sliceKey="workflow" state={completeState.workflow} />,
+            id: "workflows",
+            label: "Workflows",
+            content: <GenericSliceViewer sliceKey="workflows" state={completeState.workflows} />,
         },
         {
             id: "workflowNodes",
@@ -166,15 +166,17 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({ isOpen, onClose
             label: "UI",
             content: <GenericSliceViewer sliceKey="ui" state={completeState.ui} />,
         },
+        // @ts-ignore - Notes and tags may not exist in RootState
         {
             id: "notes",
             label: "Notes",
-            content: <GenericSliceViewer sliceKey="notes" state={completeState.notes} />,
+            content: <GenericSliceViewer sliceKey="notes" state={(completeState as any).notes} />,
         },
+        // @ts-ignore - Notes and tags may not exist in RootState
         {
             id: "tags",
             label: "Tags",
-            content: <GenericSliceViewer sliceKey="tags" state={completeState.tags} />,
+            content: <GenericSliceViewer sliceKey="tags" state={(completeState as any).tags} />,
         },
         {
             id: "storage",

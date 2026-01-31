@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import {getGlobalCache} from "@/utils/schema/precomputeUtil";
+import {getGlobalCache} from "@/utils/schema/schema-processing/processSchema";
 
 interface SchemaMetrics {
     tableCount: number;
@@ -38,8 +38,8 @@ export function SchemaMetrics() {
             if (!cache) return null;
 
             const tableMetrics = Object.entries(cache.schema).map(([tableName, table]) => {
-                const fieldCount = Object.keys(table.entityFields).length;
-                const variantCount = cache.fieldNameMap.get(tableName)?.size || 0;
+                const fieldCount = Object.keys((table as any).entityFields || {}).length;
+                const variantCount = (cache as any).fieldNameMap.get(tableName)?.size || 0;
                 const size = new TextEncoder().encode(JSON.stringify(table)).length;
 
                 return {
@@ -57,9 +57,9 @@ export function SchemaMetrics() {
                 tableMetrics,
                 cacheSize: Math.round(new TextEncoder().encode(JSON.stringify(cache)).length / 1024),
                 resolutionStats: {
-                    successful: cache.tableNameMap.size,
+                    successful: (cache as any).tableNameMap.size,
                     failed: 0, // We'll need to track this in the schema logger
-                    total: cache.tableNameMap.size
+                    total: (cache as any).tableNameMap.size
                 }
             };
         };

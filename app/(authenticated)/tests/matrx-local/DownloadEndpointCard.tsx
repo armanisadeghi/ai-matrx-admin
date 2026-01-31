@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Download, Check, AlertCircle } from "lucide-react";
-import { DownloadEndpointCardProps } from './types';
+import { EndpointCardProps as DownloadEndpointCardProps } from './types';
 import { DirectoryStructureForm, DirectoryStructureParams } from './directory-structure';
 
 export const DownloadEndpointCard = ({ endpoint, baseUrl }: DownloadEndpointCardProps) => {

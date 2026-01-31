@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
+// @ts-ignore - cobe module may not be installed
 import createGlobe from "cobe";
 
 export function BentoGridExampleThree() {

@@ -2,6 +2,7 @@ import React from 'react';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {cn} from '@/lib/utils';
 import {motion} from 'motion/react';
+import {QUICK_ACTIONS} from '@/constants/flashcard-constants';
 
 
 
@@ -62,7 +63,7 @@ export const QuickActionButtons = ({ onSelect, isDisabled }: {
                 {Object.entries(QUICK_ACTIONS).map(([title, prompt]) => (
                     <button
                         key={title}
-                        onClick={() => onSelect(prompt)}
+                        onClick={() => onSelect(String(prompt))}
                         disabled={isDisabled}
                         className={`
                             flex flex-col items-start gap-1.5
@@ -79,7 +80,7 @@ export const QuickActionButtons = ({ onSelect, isDisabled }: {
                             {title}
                         </span>
                         <span className="text-xs line-clamp-2 text-left w-full text-muted-foreground group-hover:text-foreground/80">
-                            {prompt}
+                            {String(prompt)}
                         </span>
                     </button>
                 ))}

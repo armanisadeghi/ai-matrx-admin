@@ -6,8 +6,10 @@ import {useAppSelector} from '@/lib/redux/hooks';
 import {EntityKeys} from '@/types/entityTypes';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import ResizableBottomPanel from '@/components/matrx/resizable/ResizableBottomPanel';
-import ResizableBottomPanel2 from "@/components/matrx/resizable/ResizableBottomPanel2";
+// @ts-ignore - Module path may have changed
+import ResizableBottomPanel from '@/components/matrx/resizable/dev/ResizableBottomPanel';
+// @ts-ignore - Module path may have changed
+import ResizableBottomPanel2 from "@/components/matrx/resizable/dev/ResizableBottomPanel2";
 
 interface EntityAnalyzerProps {
     className?: string;

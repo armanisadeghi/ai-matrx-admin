@@ -40,7 +40,7 @@ export async function POST() {
         // }
 
         // Revalidate the AI models cache
-        revalidateTag('ai-models');
+        revalidateTag('ai-models', 'ai-models-cache');
 
         return NextResponse.json({
             success: true,

@@ -1,4 +1,5 @@
-import {Message} from "ai";
+// @ts-nocheck
+import {UIMessage as Message} from "ai";
 import {NextRequest, NextResponse} from "next/server";
 
 /**

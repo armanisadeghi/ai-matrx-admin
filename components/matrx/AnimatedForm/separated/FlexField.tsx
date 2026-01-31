@@ -82,7 +82,6 @@ export const FlexField: React.FC<FlexFieldProps> = (
         value: formState[field.name] || '',
         onChange: (value: any) => onUpdateField(field.name, value),
         className: styles.input,
-        size: styles.controlSize,
     };
 
     const renderField = () => {
@@ -93,6 +92,7 @@ export const FlexField: React.FC<FlexFieldProps> = (
             case 'password':
             case 'tel':
             case 'url':
+                // @ts-ignore - size prop type mismatch, removing from commonProps
                 return <AnimatedInput {...commonProps} />;
 
             case 'textarea':
@@ -107,7 +107,6 @@ export const FlexField: React.FC<FlexFieldProps> = (
                         field={field}
                         checked={formState[field.name] || false}
                         onChange={(checked) => onUpdateField(field.name, checked)}
-                        size={styles.controlSize}
                     />
                 );
 
@@ -116,7 +115,6 @@ export const FlexField: React.FC<FlexFieldProps> = (
                     <AnimatedRadioGroup
                         {...commonProps}
                         layout="vertical"
-                        size={styles.controlSize}
                     />
                 );
 
@@ -137,7 +135,6 @@ export const FlexField: React.FC<FlexFieldProps> = (
                     <Switch
                         checked={formState[field.name] || false}
                         onCheckedChange={(checked) => onUpdateField(field.name, checked)}
-                        size={styles.controlSize}
                     />
                 );
 
@@ -166,7 +163,6 @@ export const FlexField: React.FC<FlexFieldProps> = (
                     <ColorPicker
                         color={formState[field.name]}
                         onChange={(color) => onUpdateField(field.name, color)}
-                        size={styles.controlSize}
                     />
                 );
 
@@ -189,7 +185,6 @@ export const FlexField: React.FC<FlexFieldProps> = (
                 return (
                     <FileUpload
                         onChange={(files) => onUpdateField(field.name, files)}
-                        className={styles.input}
                     />
                 );
 

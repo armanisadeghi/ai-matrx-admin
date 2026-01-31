@@ -96,12 +96,9 @@ export const EntityFieldContent = ({ entityField }: { entityField: EntityStateFi
 );
 
 
-interface EntityFieldsProps {
-    entityFields: Record<string, EntityMetadata['entityFields'][0]>;
-}
 
-const EntityFieldsCard = ({ entityFields }: EntityFieldsProps) => {
-    const fields = Object.values(entityFields);
+const EntityFieldsCard = ({ entityFields }: any) => {
+    const fields = Object.values(entityFields) as EntityStateField[];
     const [activeTab, setActiveTab] = useState<string>();
     
     const groupedFields = fields.reduce((acc, field) => {
@@ -111,7 +108,7 @@ const EntityFieldsCard = ({ entityFields }: EntityFieldsProps) => {
         }
         acc[key].push(field);
         return acc;
-    }, {} as Record<string, typeof fields>);
+    }, {} as Record<string, EntityStateField[]>);
 
     const fieldNames = Object.keys(groupedFields);
 
@@ -129,7 +126,8 @@ const EntityFieldsCard = ({ entityFields }: EntityFieldsProps) => {
                 <div className="max-w-full overflow-x-auto">
                     <TabsList className="w-full flex flex-wrap">
                         {fieldNames.map((name) => {
-                            const field = groupedFields[name][0];
+                            const field = groupedFields[name]?.[0];
+                            if (!field) return null;
                             const prettyName = field.fieldNameFormats.pretty;
                             return (
                                 <TabsTrigger
@@ -149,7 +147,7 @@ const EntityFieldsCard = ({ entityFields }: EntityFieldsProps) => {
                         value={name}
                         className="mt-2"
                     >
-                        {fields.map((field, idx) => (
+                        {(fields as EntityStateField[]).map((field, idx) => (
                             <EntityFieldContent
                                 key={idx}
                                 entityField={field}

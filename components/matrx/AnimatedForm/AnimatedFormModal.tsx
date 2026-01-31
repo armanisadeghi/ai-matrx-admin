@@ -69,7 +69,7 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
 
     return (
         <>
-            {triggerButton && React.cloneElement(triggerButton as React.ReactElement, { onClick: openModal })}
+            {triggerButton && React.cloneElement(triggerButton as React.ReactElement, { onClick: openModal } as any)}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div

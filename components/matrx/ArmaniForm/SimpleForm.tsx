@@ -66,14 +66,14 @@ const SimpleArmaniForm: React.FC<SimpleFormProps> = (
 
     return (
         <div ref={formRef}>
-            <EntityBaseField {...entityBaseFieldProps} />
+            <EntityBaseField {...entityBaseFieldProps as any} />
 
             {/* Render a wrapper for each foreignActiveRecordId corresponding to foreignEntityKeys */}
             {foreignEntityKeys &&
                 foreignEntityKeys.map((key) =>
                     foreignActiveRecordIds && foreignActiveRecordIds[key] ? (
                         <EntityFkWrapper
-                            {...commonProps}
+                            {...commonProps as any}
                             entityKey={key}
                             matrxRecordId={foreignActiveRecordIds[key]}
                             key={`fk-${key}-${foreignActiveRecordIds[key]}`}
@@ -84,13 +84,13 @@ const SimpleArmaniForm: React.FC<SimpleFormProps> = (
             {/* Render a wrapper for each inverseEntityKey */}
             {inverseEntityKeys &&
                 inverseEntityKeys.map((key) => (
-                    <EntityIfkWrapper {...commonProps} entityKey={key} key={`ifk-${key}`} />
+                    <EntityFkWrapper {...commonProps as any} entityKey={key} key={`ifk-${key}`} />
                 ))}
 
             {/* Render a wrapper for each manyToManyEntityKey */}
             {manyToManyEntityKeys &&
                 manyToManyEntityKeys.map((key) => (
-                    <EntityM2MWrapper {...commonProps} entityKey={key} key={`m2m-${key}`} />
+                    <EntityFkWrapper {...commonProps as any} entityKey={key} key={`m2m-${key}`} />
                 ))}
         </div>
     );

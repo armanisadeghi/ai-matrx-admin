@@ -53,7 +53,7 @@ const TreeItemContent = forwardRef<HTMLDivElement, TreeItemContentProps>(
         {...props}
       >
         <div className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
-          {children?.length > 0 && (
+          {React.Children.count(children) > 0 && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

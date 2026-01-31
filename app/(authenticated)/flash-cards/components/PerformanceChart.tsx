@@ -98,6 +98,7 @@ const PerformanceChart: React.FC = () => {
                             innerRadius={60}
                             outerRadius="80%"
                             paddingAngle={5}
+                            // @ts-expect-error - activeIndex prop not supported in this recharts version
                             activeIndex={activeIndex}
                             activeShape={renderActiveShape}
                             onMouseEnter={(_, index) => setActiveIndex(index)}

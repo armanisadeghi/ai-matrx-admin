@@ -405,7 +405,14 @@ export const parseResearchMarkdown = (content: string): ResearchData | null => {
       methodology,
       sourceQuality,
       limitations,
-      metadata
+      metadata,
+      unrecognizedSections,
+      rawContent: originalContent,
+      parsingStats: {
+        totalLines,
+        processedLines,
+        skippedLines
+      }
     };
     
   } catch (error) {
