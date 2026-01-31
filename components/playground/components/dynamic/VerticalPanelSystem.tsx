@@ -115,9 +115,6 @@ export const ResizablePanelSystem: React.FC<ResizablePanelSystemProps> = ({
                                 maxSize={100}
                                 collapsible={true}
                                 collapsedSize={3}
-                                onCollapse={() => handlePanelCollapse(panel.id)}
-                                onExpand={() => handlePanelExpand(panel.id)}
-                                order={panel.order}
                             >
                                 {renderPanel(panel, isCollapsed)}
                             </Panel>

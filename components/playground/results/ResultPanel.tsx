@@ -197,7 +197,7 @@ export function ResultPanel({
 
     return (
         <>
-            <Panel panelRef={panelRef} id={id} order={order} defaultSize={previousSize} minSize={10} maxSize={75}>
+            <Panel panelRef={panelRef} id={id} defaultSize={previousSize} minSize={10} maxSize={75}>
                 <Card className="h-full p-0 overflow-hidden bg-textured">
                     <div className="h-full flex flex-col">
                         <DraggableToolbar

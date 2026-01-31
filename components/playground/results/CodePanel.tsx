@@ -124,7 +124,6 @@ export function CodePanel({ id, order, number, label, taskId, onDelete, onDragDr
             <Panel
                 panelRef={panelRef}
                 id={id}
-                order={order}
                 defaultSize={previousSize}
                 minSize={10}
                 maxSize={75}

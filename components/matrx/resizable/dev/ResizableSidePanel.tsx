@@ -8,7 +8,7 @@ import {Button} from '@/components/ui/button';
 import {ChevronLeft, ChevronRight, Maximize2, Minimize2} from 'lucide-react';
 import {Card} from '@/components/ui/card';
 import {cn} from '@/lib/utils';
-import {GroupImperativeHandle} from 'react-resizable-panels';
+import {GroupImperativeHandle, type Layout} from 'react-resizable-panels';
 
 interface ResizableSidePanelProps {
     position?: 'left' | 'right';
@@ -77,10 +77,10 @@ const ResizableSidePanel: React.FC<ResizableSidePanelProps> = (
         });
     };
 
-    const handlePanelResize = (sizes: number[]) => {
+    const handlePanelResize = (layout: Layout) => {
         const sizeIndex = isLeftPosition ? 0 : 1;
-        if (sizes[sizeIndex] >= minSize && sizes[sizeIndex] <= maxSize) {
-            setLastSize(sizes[sizeIndex]);
+        if (layout[sizeIndex] >= minSize && layout[sizeIndex] <= maxSize) {
+            setLastSize(layout[sizeIndex]);
         }
     };
 
@@ -223,10 +223,10 @@ const ResizableSidePanel: React.FC<ResizableSidePanelProps> = (
         >
             <ResizablePanelGroup
                 key={panelKey}
-                ref={panelGroupRef}
-                direction="horizontal"
+                groupRef={panelGroupRef}
+                orientation="horizontal"
                 className="h-full"
-                onLayout={handlePanelResize}
+                onLayoutChanged={handlePanelResize}
                 style={{
                     touchAction: 'none',
                     userSelect: 'none',

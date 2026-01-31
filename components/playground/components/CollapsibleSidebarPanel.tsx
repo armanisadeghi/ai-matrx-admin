@@ -46,8 +46,6 @@ const CollapsibleSidebarPanel = forwardRef<PanelImperativeHandle, CollapsibleSid
                 maxSize={maxSize}
                 collapsible={collapsible}
                 panelRef={ref}
-                onCollapse={onCollapse}
-                onExpand={onExpand}
             >
                 <Card
                     className={`rounded-none bg-textured ${className}`}

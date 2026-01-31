@@ -8,7 +8,7 @@ import {Button} from '@/components/ui/button';
 import {ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Maximize2, Minimize2} from 'lucide-react';
 import {Card} from '@/components/ui/card';
 import {cn} from '@/lib/utils';
-import {GroupImperativeHandle} from 'react-resizable-panels';
+import {GroupImperativeHandle, type Layout} from 'react-resizable-panels';
 import type {CSSProperties} from 'react';
 
 type PanelPosition = 'left' | 'right' | 'top' | 'bottom';
@@ -81,10 +81,10 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
         });
     };
 
-    const handlePanelResize = (sizes: number[]) => {
+    const handlePanelResize = (layout: Layout) => {
         const sizeIndex = isStartPosition ? 0 : 1;
-        if (sizes[sizeIndex] >= minSize && sizes[sizeIndex] <= maxSize) {
-            setLastSize(sizes[sizeIndex]);
+        if (layout[sizeIndex] >= minSize && layout[sizeIndex] <= maxSize) {
+            setLastSize(layout[sizeIndex]);
         }
     };
 
@@ -292,10 +292,10 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
         >
             <ResizablePanelGroup
                 key={panelKey}
-                ref={panelGroupRef}
-                direction={isVertical ? 'vertical' : 'horizontal'}
+                groupRef={panelGroupRef}
+                orientation={isVertical ? 'vertical' : 'horizontal'}
                 className="h-full"
-                onLayout={handlePanelResize}
+                onLayoutChanged={handlePanelResize}
                 style={{
                     touchAction: 'none',
                     userSelect: 'none',

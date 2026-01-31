@@ -28,7 +28,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
-import {GroupImperativeHandle} from 'react-resizable-panels';
+import {GroupImperativeHandle, type Layout} from 'react-resizable-panels';
 import {useIsMobile} from '@/hooks/use-mobile';
 import type {CSSProperties} from 'react';
 
@@ -159,10 +159,10 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
         });
     };
 
-    const handlePanelResize = (sizes: number[]) => {
+    const handlePanelResize = (layout: Layout) => {
         const sizeIndex = isStartPosition ? 0 : 1;
-        if (sizes[sizeIndex] >= minSize && sizes[sizeIndex] <= maxSize) {
-            setLastSize(sizes[sizeIndex]);
+        if (layout[sizeIndex] >= minSize && layout[sizeIndex] <= maxSize) {
+            setLastSize(layout[sizeIndex]);
         }
     };
 
@@ -406,10 +406,10 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             }}
         >
             <ResizablePanelGroup
-                ref={panelGroupRef}
-                direction={isVertical ? 'vertical' : 'horizontal'}
+                groupRef={panelGroupRef}
+                orientation={isVertical ? 'vertical' : 'horizontal'}
                 className="h-full"
-                onLayout={handlePanelResize}
+                onLayoutChanged={handlePanelResize}
                 style={{
                     touchAction: 'none',
                     userSelect: 'none',

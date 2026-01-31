@@ -160,9 +160,6 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                                             maxSize={100}
                                             collapsible={true}
                                             collapsedSize={3}
-                                            onCollapse={() => handlePanelCollapse(message.matrxRecordId)}
-                                            onExpand={() => handlePanelExpand(message.matrxRecordId)}
-                                            order={message.order}
                                         >
                                             <MessageEditor
                                                 messageRecordId={message.matrxRecordId}

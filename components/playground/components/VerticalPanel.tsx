@@ -56,7 +56,8 @@ export function VerticalPanel({
       setIsCollapsed(false);
       panelRef.current?.resize(previousSize);
     } else {
-      setPreviousSize(panelRef.current?.getSize() ?? defaultSize);
+      const size = panelRef.current?.getSize();
+      setPreviousSize(typeof size === 'object' ? size.asPercentage : (size ?? defaultSize));
       setIsCollapsed(true);
       panelRef.current?.resize(0);
     }
@@ -109,8 +110,7 @@ export function VerticalPanel({
   return (
     <>
       <Panel
-        ref={panelRef}
-        order={order}
+        panelRef={panelRef}
         defaultSize={defaultSize}
         minSize={minSize}
         maxSize={maxSize}
