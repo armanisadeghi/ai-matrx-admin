@@ -1,15 +1,43 @@
 /**
  * Messaging Feature - Barrel Exports
  * 
- * Real-time user-to-user messaging system.
+ * Real-time direct messaging using Supabase Realtime
+ * Uses dm_ prefixed tables and auth.users.id (UUID)
  */
 
 // Types
-export * from './types';
+export type {
+  ConversationType,
+  ParticipantRole,
+  MessageType,
+  MessageStatus,
+  Conversation,
+  ConversationParticipant,
+  Message,
+  UserBasicInfo,
+  ConversationWithDetails,
+  ParticipantWithUser,
+  MessageWithSender,
+  CreateConversationRequest,
+  CreateConversationResponse,
+  SendMessageRequest,
+  UpdateMessageRequest,
+  ConversationListResponse,
+  MessagesListResponse,
+  NewMessageEvent,
+  MessageUpdateEvent,
+  TypingEvent,
+  PresenceState,
+  MessagingState,
+  ChatState,
+  UseMessagesReturn,
+  UseTypingIndicatorReturn,
+  UseChatReturn,
+  UseConversationsReturn,
+} from './types';
 
-// Redux
+// Redux Actions
 export {
-  // Actions
   openMessaging,
   closeMessaging,
   toggleMessaging,
@@ -27,7 +55,10 @@ export {
   setError,
   setMessagingAvailable,
   resetMessaging,
-  // Selectors
+} from './redux/messagingSlice';
+
+// Redux Selectors
+export {
   selectMessagingIsOpen,
   selectMessagingSheetWidth,
   selectCurrentConversationId,
@@ -43,12 +74,12 @@ export {
 
 // Components
 export { MessagingSideSheet } from './components/MessagingSideSheet';
+export { MessagingInitializer } from './components/MessagingInitializer';
 export { ConversationList } from './components/ConversationList';
 export { ChatThread } from './components/ChatThread';
 export { MessageBubble } from './components/MessageBubble';
 export { MessageInput } from './components/MessageInput';
 export { TypingIndicator } from './components/TypingIndicator';
 export { OnlineIndicator } from './components/OnlineIndicator';
-export { MessageIcon } from './components/MessageIcon';
 export { NewConversationDialog } from './components/NewConversationDialog';
-export { MessagingInitializer } from './components/MessagingInitializer';
+export { MessageIcon } from './components/MessageIcon';

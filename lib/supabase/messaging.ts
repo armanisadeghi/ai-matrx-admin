@@ -1,5 +1,5 @@
 /**
- * MessagingService - Singleton service for real-time messaging
+ * MessagingService - Singleton service for real-time direct messaging
  * 
  * Handles:
  * - Channel management (creation, subscription, cleanup)
@@ -8,16 +8,12 @@
  * - Online presence tracking
  * - Message sending with broadcast
  * 
- * Critical patterns (learned from RealSingles):
- * - Singleton pattern for consistent channel state
- * - Handler deduplication to prevent duplicate subscriptions
- * - client_message_id for message deduplication
- * - Proper channel cleanup on unmount
+ * Uses dm_ prefixed tables and auth.users.id UUIDs
  */
 
 import { createClient } from '@/utils/supabase/client';
 import type { RealtimeChannel, RealtimePresenceState } from '@supabase/supabase-js';
-import type { Message, MessageType, TypingEvent } from '@/features/messaging/types';
+import type { Message, MessageType } from '@/features/messaging/types';
 
 // ============================================
 // Types
@@ -84,7 +80,7 @@ export class MessagingService {
    * Reuses existing channels to avoid duplicate subscriptions
    */
   private getOrCreateChannel(conversationId: string): RealtimeChannel {
-    const channelName = `conversation:${conversationId}`;
+    const channelName = `dm:${conversationId}`;
 
     if (this.channels.has(channelName)) {
       return this.channels.get(channelName)!;
@@ -106,7 +102,7 @@ export class MessagingService {
    * Remove a channel and clean up all tracking
    */
   removeChannel(conversationId: string): void {
-    const channelName = `conversation:${conversationId}`;
+    const channelName = `dm:${conversationId}`;
     const channel = this.channels.get(channelName);
 
     if (channel) {
@@ -116,7 +112,7 @@ export class MessagingService {
       this.subscribedChannels.delete(channelName);
       this.messageHandlersAdded.delete(`msg:${conversationId}`);
       this.typingHandlersAdded.delete(`typing:${conversationId}`);
-      console.log(`[Messaging] Removed channel: ${channelName}`);
+      console.log(`[DM] Removed channel: ${channelName}`);
     }
   }
 
@@ -127,7 +123,7 @@ export class MessagingService {
     const client = this.getSupabase();
     this.channels.forEach((channel, name) => {
       client.removeChannel(channel);
-      console.log(`[Messaging] Removed channel: ${name}`);
+      console.log(`[DM] Removed channel: ${name}`);
     });
     this.channels.clear();
     this.subscribedChannels.clear();
@@ -149,13 +145,13 @@ export class MessagingService {
     conversationId: string,
     onMessage: MessageCallback
   ): () => void {
-    const channelName = `conversation:${conversationId}`;
+    const channelName = `dm:${conversationId}`;
     const channel = this.getOrCreateChannel(conversationId);
 
     // Prevent duplicate handlers
     const handlersKey = `msg:${conversationId}`;
     if (this.messageHandlersAdded.has(handlersKey)) {
-      console.log(`[Messaging] Message handlers already added for ${channelName}, skipping`);
+      console.log(`[DM] Message handlers already added for ${channelName}, skipping`);
       return () => {
         this.messageHandlersAdded.delete(handlersKey);
         this.removeChannel(conversationId);
@@ -169,7 +165,7 @@ export class MessagingService {
       'broadcast',
       { event: 'new_message' },
       (payload) => {
-        console.log(`[Messaging] Broadcast message received:`, payload.payload?.id);
+        console.log(`[DM] Broadcast message received:`, payload.payload?.id);
         if (payload.payload) {
           onMessage(payload.payload as Message);
         }
@@ -182,11 +178,11 @@ export class MessagingService {
       {
         event: 'INSERT',
         schema: 'public',
-        table: 'messages',
+        table: 'dm_messages',
         filter: `conversation_id=eq.${conversationId}`,
       },
       (payload) => {
-        console.log(`[Messaging] postgres_changes INSERT received:`, payload.new.id);
+        console.log(`[DM] postgres_changes INSERT received:`, payload.new.id);
         onMessage(payload.new as Message);
       }
     );
@@ -197,11 +193,11 @@ export class MessagingService {
       {
         event: 'UPDATE',
         schema: 'public',
-        table: 'messages',
+        table: 'dm_messages',
         filter: `conversation_id=eq.${conversationId}`,
       },
       (payload) => {
-        console.log(`[Messaging] postgres_changes UPDATE received:`, payload.new.id);
+        console.log(`[DM] postgres_changes UPDATE received:`, payload.new.id);
         onMessage(payload.new as Message);
       }
     );
@@ -211,16 +207,16 @@ export class MessagingService {
     if (!isAlreadySubscribed) {
       channel.subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`[Messaging] Successfully subscribed to ${channelName}`);
+          console.log(`[DM] Successfully subscribed to ${channelName}`);
           this.subscribedChannels.add(channelName);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(`[Messaging] Channel error for ${channelName}:`, err);
+          console.error(`[DM] Channel error for ${channelName}:`, err);
           this.subscribedChannels.delete(channelName);
         } else if (status === 'TIMED_OUT') {
-          console.error(`[Messaging] Channel timed out for ${channelName}`);
+          console.error(`[DM] Channel timed out for ${channelName}`);
           this.subscribedChannels.delete(channelName);
         } else if (status === 'CLOSED') {
-          console.log(`[Messaging] Channel closed for ${channelName}`);
+          console.log(`[DM] Channel closed for ${channelName}`);
           this.subscribedChannels.delete(channelName);
         }
       });
@@ -266,18 +262,18 @@ export class MessagingService {
     // 1. INSERT to database
     const supabase = this.getSupabase();
     const { data, error } = await supabase
-      .from('messages')
+      .from('dm_messages')
       .insert(messageData)
       .select()
       .single();
 
     if (error) {
-      console.error('[Messaging] Failed to send message:', error);
+      console.error('[DM] Failed to send message:', error);
       throw error;
     }
 
     // 2. BROADCAST to channel subscribers for immediate delivery
-    const channelName = `conversation:${conversationId}`;
+    const channelName = `dm:${conversationId}`;
     const channel = this.channels.get(channelName);
     const isChannelSubscribed = this.subscribedChannels.has(channelName);
 
@@ -288,9 +284,9 @@ export class MessagingService {
           event: 'new_message',
           payload: data as Message,
         });
-        console.log(`[Messaging] Broadcast sent to ${channelName}, result:`, result);
+        console.log(`[DM] Broadcast sent to ${channelName}, result:`, result);
       } catch (err) {
-        console.error(`[Messaging] Broadcast failed for ${channelName}:`, err);
+        console.error(`[DM] Broadcast failed for ${channelName}:`, err);
         // Don't throw - message is already saved in DB
       }
     }
@@ -315,7 +311,7 @@ export class MessagingService {
     setTyping: (isTyping: boolean) => void;
     unsubscribe: () => void;
   } {
-    const channelName = `conversation:${conversationId}`;
+    const channelName = `dm:${conversationId}`;
     const channel = this.getOrCreateChannel(conversationId);
     let typingTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -438,7 +434,7 @@ export class MessagingService {
     displayName: string,
     onPresenceUpdate: PresenceCallback
   ): () => void {
-    const channelName = `presence:${conversationId}`;
+    const channelName = `dm_presence:${conversationId}`;
     
     // Create a separate presence channel (not the message channel)
     let channel = this.channels.get(channelName);
@@ -504,7 +500,7 @@ export class MessagingService {
    * Check if a channel is currently subscribed
    */
   isSubscribed(conversationId: string): boolean {
-    const channelName = `conversation:${conversationId}`;
+    const channelName = `dm:${conversationId}`;
     return this.subscribedChannels.has(channelName);
   }
 
@@ -517,7 +513,7 @@ export class MessagingService {
 
   /**
    * Mark conversation as read
-   * Updates last_read_at in conversation_participants
+   * Updates last_read_at in dm_conversation_participants
    */
   async markConversationAsRead(
     conversationId: string,
@@ -525,13 +521,13 @@ export class MessagingService {
   ): Promise<void> {
     const supabase = this.getSupabase();
     const { error } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .update({ last_read_at: new Date().toISOString() })
       .eq('conversation_id', conversationId)
       .eq('user_id', userId);
 
     if (error) {
-      console.error('[Messaging] Failed to mark conversation as read:', error);
+      console.error('[DM] Failed to mark conversation as read:', error);
       throw error;
     }
   }

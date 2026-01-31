@@ -1,9 +1,9 @@
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Messages | AI Matrx",
-  description: "Direct messaging with other users",
-};
+/**
+ * Messages Layout
+ * 
+ * Simple passthrough layout for the messages routes.
+ * The main authenticated layout already includes MessagingInitializer.
+ */
 
 export default function MessagesLayout({
   children,

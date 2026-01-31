@@ -1,12 +1,13 @@
 /**
  * Messaging System Types
  * 
- * Core types for the real-time messaging system.
- * Adapted for AI Matrx's users.matrix_id schema.
+ * Core types for the real-time direct messaging system.
+ * Uses auth.users(id) as UUID for user references.
+ * Tables prefixed with dm_ to avoid conflicts.
  */
 
 // ============================================
-// Database Types (matching migration schema)
+// Database Types (matching dm_ schema)
 // ============================================
 
 export type ConversationType = 'direct' | 'group';
@@ -15,19 +16,19 @@ export type MessageType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'syste
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 
 export interface Conversation {
-  id: string;
+  id: string; // UUID
   type: ConversationType;
   group_name: string | null;
   group_image_url: string | null;
-  created_by: string | null; // matrix_id
+  created_by: string | null; // auth.users.id UUID
   created_at: string;
   updated_at: string;
 }
 
 export interface ConversationParticipant {
-  id: string;
-  conversation_id: string;
-  user_id: string; // matrix_id
+  id: string; // UUID
+  conversation_id: string; // UUID
+  user_id: string; // auth.users.id UUID
   role: ParticipantRole;
   joined_at: string;
   last_read_at: string | null;
@@ -36,9 +37,9 @@ export interface ConversationParticipant {
 }
 
 export interface Message {
-  id: string;
-  conversation_id: string;
-  sender_id: string; // matrix_id
+  id: string; // UUID
+  conversation_id: string; // UUID
+  sender_id: string; // auth.users.id UUID
   content: string;
   message_type: MessageType;
   media_url: string | null;
@@ -54,18 +55,19 @@ export interface Message {
 }
 
 // ============================================
-// Extended Types with User Info
+// User Info Types (from auth.users)
 // ============================================
 
 export interface UserBasicInfo {
-  matrix_id: string;
-  first_name: string | null;
-  last_name: string | null;
-  full_name: string | null;
+  user_id: string; // auth.users.id UUID
   email: string | null;
-  picture: string | null;
-  preferred_picture: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
 }
+
+// ============================================
+// Extended Types with User Info
+// ============================================
 
 export interface ConversationWithDetails extends Conversation {
   participants: ParticipantWithUser[];
@@ -77,7 +79,7 @@ export interface ConversationWithDetails extends Conversation {
 }
 
 export interface ParticipantWithUser extends ConversationParticipant {
-  user: UserBasicInfo;
+  user?: UserBasicInfo;
 }
 
 export interface MessageWithSender extends Message {
@@ -91,7 +93,7 @@ export interface MessageWithSender extends Message {
 
 export interface CreateConversationRequest {
   type?: ConversationType;
-  participant_ids: string[]; // matrix_ids of other participants
+  participant_ids: string[]; // auth.users.id UUIDs of other participants
   group_name?: string;
 }
 
@@ -147,16 +149,16 @@ export interface MessageUpdateEvent {
 }
 
 export interface TypingEvent {
-  user_id: string; // matrix_id
+  user_id: string; // auth.users.id UUID
   conversation_id: string;
   is_typing: boolean;
   last_typed_at: number;
 }
 
 export interface PresenceState {
-  [userId: string]: {
-    online_at: string;
+  [key: string]: {
     user_id: string;
+    online_at: string;
   }[];
 }
 
@@ -181,8 +183,8 @@ export interface ChatState {
   isSending: boolean;
   error: string | null;
   hasMore: boolean;
-  typingUsers: string[]; // matrix_ids of users currently typing
-  onlineUsers: string[]; // matrix_ids of users currently online
+  typingUsers: string[]; // auth.users.id UUIDs of users currently typing
+  onlineUsers: string[]; // auth.users.id UUIDs of users currently online
 }
 
 // ============================================

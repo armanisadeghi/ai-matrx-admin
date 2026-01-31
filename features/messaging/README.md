@@ -1,185 +1,256 @@
-# Messaging System
+# Direct Messaging System
 
-Real-time user-to-user messaging system for AI Matrx.
+Real-time user-to-user messaging for AI Matrx using Supabase Realtime.
 
 ## Features
 
-- **Real-time messaging** - Instant message delivery using Supabase Realtime
-- **Dual subscription** - Broadcast for immediate delivery + Postgres changes for reliability
-- **Typing indicators** - See when others are typing (3-second timeout)
-- **Online presence** - Track who's online in a conversation
-- **Message deduplication** - Prevents duplicate messages via `client_message_id`
-- **Optimistic updates** - Messages appear instantly while sending
-- **Resizable side sheet** - Quick access from anywhere in the app
-- **Full-page view** - Dedicated `/messages` route for focused messaging
+- **Direct Messages**: One-on-one conversations between users
+- **Group Messages**: Multi-user conversations (future)
+- **Real-time Updates**: Instant message delivery via broadcast + postgres_changes
+- **Typing Indicators**: Live "user is typing" status
+- **Online Presence**: Track who's currently viewing a conversation
+- **Unread Counts**: Badge showing unread message count
+- **Message Status**: Sending, sent, delivered, read, failed states
+- **Optimistic Updates**: Messages appear instantly before server confirmation
+- **Adjustable Side Sheet**: Resizable panel (like Canvas)
+- **Full Page View**: Dedicated `/messages` route
 
 ## Architecture
 
+### Database Schema
+
+All tables use `dm_` prefix to avoid conflicts. User references use `auth.users(id)` UUID.
+
 ```
-features/messaging/
-├── index.ts                      # Barrel exports
-├── types.ts                      # TypeScript types
-├── README.md                     # This file
-├── redux/
-│   └── messagingSlice.ts         # Redux state (sheet, conversations, unread)
-└── components/
-    ├── MessagingSideSheet.tsx    # Global side sheet
-    ├── MessagingInitializer.tsx  # Data loader
-    ├── ConversationList.tsx      # List of conversations
-    ├── ChatThread.tsx            # Messages view
-    ├── MessageBubble.tsx         # Single message
-    ├── MessageInput.tsx          # Text input with typing detection
-    ├── TypingIndicator.tsx       # Animated typing dots
-    ├── OnlineIndicator.tsx       # Green online dot
-    ├── MessageIcon.tsx           # Header icon with badge
-    └── NewConversationDialog.tsx # Start new conversation
+dm_conversations
+├── id (UUID, PK)
+├── type (dm_conversation_type: 'direct' | 'group')
+├── group_name (TEXT)
+├── group_image_url (TEXT)
+├── created_by (UUID → auth.users)
+├── created_at (TIMESTAMPTZ)
+└── updated_at (TIMESTAMPTZ)
+
+dm_conversation_participants
+├── id (UUID, PK)
+├── conversation_id (UUID → dm_conversations)
+├── user_id (UUID → auth.users)
+├── role (dm_participant_role: 'owner' | 'admin' | 'member')
+├── joined_at (TIMESTAMPTZ)
+├── last_read_at (TIMESTAMPTZ)
+├── is_muted (BOOLEAN)
+└── is_archived (BOOLEAN)
+
+dm_messages
+├── id (UUID, PK)
+├── conversation_id (UUID → dm_conversations)
+├── sender_id (UUID → auth.users)
+├── content (TEXT)
+├── message_type (dm_message_type)
+├── media_url, media_thumbnail_url, media_metadata
+├── status (dm_message_status)
+├── reply_to_id (UUID → dm_messages)
+├── deleted_at (TIMESTAMPTZ)
+├── deleted_for_everyone (BOOLEAN)
+├── created_at, edited_at (TIMESTAMPTZ)
+└── client_message_id (TEXT, for deduplication)
 ```
 
-## Database Schema
+### Key SQL Functions
 
-Run the migration at `supabase/migrations/20260130200000_messaging.sql`:
+- `is_dm_participant(user_id, conversation_id)` - Check participation
+- `get_dm_unread_count(user_id, conversation_id)` - Get unread count
+- `get_dm_user_info(user_id)` - Get user info from auth.users
+- `get_dm_conversations_with_details(user_id)` - List conversations with metadata
+- `find_dm_direct_conversation(user1_id, user2_id)` - Find existing direct chat
 
-### Tables
+### Real-time Architecture
 
-- **conversations** - Chat containers (direct or group)
-- **conversation_participants** - Links users to conversations
-- **messages** - All chat messages
+```
+┌─────────────────┐
+│  React Component │
+│  (ChatThread)    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   useChat Hook   │  ← Combines: useMessages, useTypingIndicator, useOnlinePresence
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ MessagingService │  ← Singleton managing all channels
+│   (lib/supabase) │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+┌───────┐ ┌─────────────────┐
+│Broadcast│ │postgres_changes │
+│(fast)   │ │(reliable)       │
+└───────┘ └─────────────────┘
+```
 
-### Key Columns
+**Dual Subscription Pattern:**
+1. **Broadcast** - Immediate delivery when sender broadcasts
+2. **postgres_changes** - Reliable fallback via database INSERT trigger
 
-- `matrix_id` - References `users.matrix_id` (AI Matrx specific)
-- `client_message_id` - For deduplication and optimistic updates
-- `status` - sending → sent → delivered → read
+**Deduplication:** Uses `client_message_id` to prevent duplicates when both channels deliver the same message.
 
 ## Usage
 
-### Side Sheet (Quick Access)
+### 1. Database Setup
 
-The messaging side sheet is globally available. Users can:
-1. Click the MessageIcon in the header
-2. Select a conversation or start a new one
-3. Chat while staying on their current page
-
-### Full Page (/messages)
-
-For focused messaging:
-- Desktop: Split view with conversation list + chat thread
-- Mobile: Full-screen chat experience
-
-### Starting a Conversation
-
-```typescript
-import { useConversations } from '@/hooks/useSupabaseMessaging';
-
-const { createConversation } = useConversations(userId);
-
-// Creates new conversation or returns existing one
-const conversationId = await createConversation(otherUserId);
+Run the migration in Supabase SQL Editor:
+```sql
+-- See: supabase/migrations/20260130200000_messaging.sql
 ```
 
-### Sending Messages
+### 2. Import Components
 
-```typescript
-import { useChat } from '@/hooks/useSupabaseMessaging';
-
-const { sendMessage, messages, typingUsers } = useChat(
-  conversationId,
-  userId,
-  displayName
-);
-
-await sendMessage('Hello!');
+```tsx
+import {
+  MessagingSideSheet,
+  MessagingInitializer,
+  MessageIcon,
+} from '@/features/messaging';
 ```
 
-### Redux Actions
+### 3. Global Setup (Already Integrated)
 
-```typescript
-import { 
-  openMessaging, 
-  closeMessaging,
-  setCurrentConversation 
+The authenticated layout includes:
+- `<MessagingInitializer />` - Loads conversations on mount
+- `<MessagingSideSheet />` - Side panel UI
+
+The header includes:
+- `<MessageIcon />` - Toggle button with unread badge
+
+### 4. Use Hooks Directly
+
+```tsx
+import { useChat, useConversations } from '@/hooks/useSupabaseMessaging';
+
+// In your component
+const userId = user?.id; // auth.users.id UUID
+const displayName = user?.userMetadata?.fullName || 'User';
+
+const {
+  messages,
+  sendMessage,
+  typingUsers,
+  setTyping,
+  onlineUsers,
+} = useChat(conversationId, userId, displayName);
+
+const {
+  conversations,
+  createConversation,
+  refreshConversations,
+} = useConversations(userId);
+```
+
+### 5. Redux State
+
+```tsx
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import {
+  openMessaging,
+  selectTotalUnreadCount,
 } from '@/features/messaging';
 
-// Open side sheet
-dispatch(openMessaging());
-
-// Open to specific conversation
+// Open to a specific conversation
 dispatch(openMessaging(conversationId));
 
-// Close
-dispatch(closeMessaging());
+// Get unread count
+const unreadCount = useAppSelector(selectTotalUnreadCount);
 ```
 
 ## API Routes
 
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/messages/conversations` | GET, POST | List/create conversations |
-| `/api/messages/conversations/[id]` | GET, PUT, DELETE | Single conversation |
-| `/api/messages/[conversationId]/messages` | GET, POST | List/send messages |
-| `/api/messages/[conversationId]/messages/[id]` | PATCH, DELETE | Edit/delete message |
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/messages/conversations` | List user's conversations |
+| POST | `/api/messages/conversations` | Create conversation (or return existing) |
+| GET | `/api/messages/conversations/[id]` | Get conversation details |
+| PUT | `/api/messages/conversations/[id]` | Update settings (mute, archive) |
+| DELETE | `/api/messages/conversations/[id]` | Leave/delete conversation |
+| GET | `/api/messages/[conversationId]/messages` | List messages (paginated) |
+| POST | `/api/messages/[conversationId]/messages` | Send message |
+| GET | `/api/messages/[conversationId]/messages/[id]` | Get single message |
+| PATCH | `/api/messages/[conversationId]/messages/[id]` | Edit/delete message |
+| DELETE | `/api/messages/[conversationId]/messages/[id]` | Soft delete message |
 
-## Real-Time Architecture
+## File Structure
 
-### Dual Subscription Strategy
+```
+features/messaging/
+├── index.ts                    # Barrel exports
+├── types.ts                    # TypeScript types
+├── README.md                   # This file
+├── redux/
+│   └── messagingSlice.ts       # Redux state
+└── components/
+    ├── MessagingSideSheet.tsx  # Main side panel
+    ├── MessagingInitializer.tsx # Data loader
+    ├── ConversationList.tsx    # Conversation list
+    ├── ChatThread.tsx          # Message thread
+    ├── MessageBubble.tsx       # Single message
+    ├── MessageInput.tsx        # Input field
+    ├── TypingIndicator.tsx     # "X is typing..."
+    ├── OnlineIndicator.tsx     # Green/gray dot
+    ├── NewConversationDialog.tsx # User search
+    └── MessageIcon.tsx         # Header icon
 
-1. **Broadcast** - Sender pushes to channel immediately after DB insert
-   - Fast (bypasses Postgres replication lag)
-   - May be missed if recipient just connected
+lib/supabase/messaging.ts       # MessagingService singleton
+hooks/useSupabaseMessaging.ts   # React hooks
 
-2. **Postgres Changes** - Database triggers fire INSERT/UPDATE events
-   - Reliable (always delivers if RLS allows)
-   - Slightly slower due to replication
-
-### Deduplication
-
-Messages can arrive via multiple paths. Always check both `id` and `client_message_id`:
-
-```typescript
-const exists = prev.some(m => 
-  m.id === newMessage.id || 
-  (m.client_message_id && m.client_message_id === newMessage.client_message_id)
-);
+app/api/messages/               # API routes
+app/(authenticated)/messages/   # Page routes
 ```
 
-### Channel Cleanup
+## Key Patterns
 
-Always clean up channels on unmount to prevent memory leaks:
+### Singleton MessagingService
 
-```typescript
-const unsubscribe = messagingService.subscribeToMessages(convId, onMessage);
-return () => unsubscribe();
+One instance manages all Supabase channels. Prevents duplicate subscriptions.
+
+```tsx
+const service = getMessagingService();
+service.subscribeToMessages(convId, onMessage);
+// cleanup
+service.removeChannel(convId);
 ```
 
-## Key Implementation Details
+### Optimistic Updates
 
-### MessagingService (Singleton)
+Messages appear immediately with `status: 'sending'`, then update on confirmation:
 
-Located at `lib/supabase/messaging.ts`:
-- Manages channel subscriptions
-- Prevents duplicate handlers
-- Handles typing via Presence API
-- Provides cleanup methods
+```tsx
+// 1. Add optimistic message
+setMessages(prev => [...prev, optimisticMessage]);
 
-### RLS Policies
+// 2. Send to server
+await messagingService.sendMessage(...);
 
-The migration includes `is_conversation_participant()` SECURITY DEFINER function to prevent RLS infinite recursion.
+// 3. Real-time updates replace optimistic with confirmed
+```
 
-### User Mapping
+### Typing Indicator with Auto-timeout
 
-AI Matrx uses `matrix_id` (not Supabase `auth.uid()`). The `get_user_matrix_id()` function maps between them.
+```tsx
+const handleTyping = () => {
+  setTyping(true);
+  // Auto-stops after 3 seconds of no input
+};
+```
 
-## Post-Migration Steps
+### Presence Tracking
 
-1. Run the migration in Supabase Dashboard
-2. Regenerate types: `pnpm supabase gen types typescript --local > types/database.types.ts`
-3. Restart the dev server
+Uses Supabase Presence API to track who's currently viewing a conversation.
 
-## Future Enhancements
+## Security
 
-- [ ] Message reactions (emoji)
-- [ ] Read receipts (per-message)
-- [ ] Group chats (schema ready)
-- [ ] File/media attachments
-- [ ] Message search
-- [ ] Push notifications
+- **RLS Policies**: All operations require user to be conversation participant
+- **SECURITY DEFINER functions**: Prevent RLS recursion issues
+- **Soft Delete**: Messages are marked deleted, not removed
+- **UUID References**: Uses `auth.users(id)` for all user references

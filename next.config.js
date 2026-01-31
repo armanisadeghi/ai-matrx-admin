@@ -143,10 +143,6 @@ const nextConfig = {
 
         return config;
     },
-    // Disable ESLint during builds (pre-existing lint errors)
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
     env: {
         GROQ_API_KEY: process.env.GROQ_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,

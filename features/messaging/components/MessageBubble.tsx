@@ -31,8 +31,7 @@ export function MessageBubble({
 
   // Get sender display name
   const senderName =
-    sender?.full_name ||
-    sender?.first_name ||
+    sender?.display_name ||
     sender?.email?.split("@")[0] ||
     "Unknown";
 
@@ -108,9 +107,7 @@ export function MessageBubble({
                 <TooltipTrigger asChild>
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={
-                        sender?.preferred_picture || sender?.picture || undefined
-                      }
+                      src={sender?.avatar_url || undefined}
                       alt={senderName}
                     />
                     <AvatarFallback className="bg-primary/10 text-primary text-xs">

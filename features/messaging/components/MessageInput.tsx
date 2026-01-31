@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => Promise<void>;
+  onSendMessage: (content: string) => void;
   onTyping?: (isTyping: boolean) => void;
   isSending?: boolean;
   disabled?: boolean;
@@ -26,81 +26,74 @@ export function MessageInput({
   const [content, setContent] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
   // Auto-resize textarea
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 120);
-      textarea.style.height = `${newHeight}px`;
-    }
-  }, []);
-
   useEffect(() => {
-    adjustTextareaHeight();
-  }, [content, adjustTextareaHeight]);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        150
+      )}px`;
+    }
+  }, [content]);
 
-  // Handle input change with typing indicator
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setContent(e.target.value);
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
-      // Typing indicator
-      if (onTyping) {
-        onTyping(true);
+    // If not already typing, start typing
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      onTyping?.(true);
+    }
 
-        // Clear existing timeout
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
+    // Set timeout to stop typing after 2 seconds of no input
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      onTyping?.(false);
+    }, 2000);
+  }, [onTyping]);
 
-        // Set timeout to stop typing after 3 seconds of no input
-        typingTimeoutRef.current = setTimeout(() => {
-          onTyping(false);
-        }, 3000);
-      }
-    },
-    [onTyping]
-  );
+  // Handle content change
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+    handleTyping();
+  };
 
   // Handle send
-  const handleSend = useCallback(async () => {
-    const trimmedContent = content.trim();
-    if (!trimmedContent || isSending || disabled) return;
+  const handleSend = useCallback(() => {
+    if (!content.trim() || isSending || disabled) return;
 
-    // Clear typing indicator
-    if (onTyping) {
-      onTyping(false);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+    // Stop typing indicator
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTyping?.(false);
     }
 
-    // Clear input immediately for better UX
+    onSendMessage(content.trim());
     setContent("");
 
-    try {
-      await onSendMessage(trimmedContent);
-    } catch (error) {
-      // Restore content if send failed
-      setContent(trimmedContent);
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
     }
-
-    // Focus back on textarea
-    textareaRef.current?.focus();
   }, [content, isSending, disabled, onSendMessage, onTyping]);
 
   // Handle key press (Enter to send, Shift+Enter for new line)
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
-      }
-    },
-    [handleSend]
-  );
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   // Cleanup typing timeout on unmount
   useEffect(() => {
@@ -111,8 +104,6 @@ export function MessageInput({
     };
   }, []);
 
-  const canSend = content.trim().length > 0 && !isSending && !disabled;
-
   return (
     <div
       className={cn(
@@ -120,43 +111,30 @@ export function MessageInput({
         className
       )}
     >
-      {/* Text Input */}
-      <div className="flex-1 relative">
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled || isSending}
-          rows={1}
-          className={cn(
-            "min-h-[40px] max-h-[120px] resize-none py-2.5 px-3",
-            "text-base", // 16px to prevent iOS zoom
-            "rounded-2xl",
-            "border-zinc-200 dark:border-zinc-700",
-            "focus-visible:ring-1 focus-visible:ring-primary",
-            disabled && "opacity-50 cursor-not-allowed"
-          )}
-        />
-      </div>
-
-      {/* Send Button */}
-      <Button
-        size="icon"
+      <Textarea
+        ref={textareaRef}
+        value={content}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled}
         className={cn(
-          "h-10 w-10 rounded-full shrink-0 transition-all",
-          canSend
-            ? "bg-primary hover:bg-primary/90"
-            : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
+          "min-h-[40px] max-h-[150px] resize-none text-base",
+          "focus-visible:ring-1 focus-visible:ring-primary"
         )}
+        rows={1}
+      />
+
+      <Button
         onClick={handleSend}
-        disabled={!canSend}
+        disabled={!content.trim() || isSending || disabled}
+        size="icon"
+        className="h-10 w-10 shrink-0"
       >
         {isSending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
-          <Send className="h-4 w-4" />
+          <Send className="h-5 w-5" />
         )}
       </Button>
     </div>

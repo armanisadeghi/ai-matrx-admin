@@ -37,12 +37,12 @@ export function NewConversationDialog({
   const [error, setError] = useState<string | null>(null);
 
   const user = useAppSelector((state) => state.user);
-  const currentUserId = user?.activeUser?.matrix_id || user?.activeUser?.matrixId;
+  const currentUserId = user?.id;
 
   const { createConversation } = useConversations(currentUserId || null);
   const supabase = createClient();
 
-  // Search for users by email or name
+  // Search for users by email using lookup_user_by_email function
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim() || searchQuery.length < 2) {
       setSearchResults([]);
@@ -55,20 +55,41 @@ export function NewConversationDialog({
     try {
       const query = searchQuery.toLowerCase().trim();
 
-      // Search by email or name
-      const { data, error: searchError } = await supabase
-        .from("users")
-        .select("matrix_id, first_name, last_name, full_name, email, picture, preferred_picture")
-        .or(`email.ilike.%${query}%,full_name.ilike.%${query}%,first_name.ilike.%${query}%`)
-        .neq("matrix_id", currentUserId) // Exclude current user
-        .limit(10);
+      // Use the existing lookup_user_by_email function
+      const { data: lookupResult, error: lookupError } = await supabase
+        .rpc('lookup_user_by_email', { lookup_email: query });
 
-      if (searchError) {
-        setError(searchError.message);
-        return;
+      if (lookupError) {
+        console.error('Lookup error:', lookupError);
+        // Fall back to direct search if RPC fails
       }
 
-      setSearchResults(data || []);
+      // Convert lookup result to UserBasicInfo format
+      const results: UserBasicInfo[] = [];
+
+      if (lookupResult && lookupResult.length > 0) {
+        for (const row of lookupResult) {
+          if (row.user_id !== currentUserId) {
+            // Get additional user info
+            const { data: userInfo } = await supabase
+              .rpc('get_dm_user_info', { p_user_id: row.user_id });
+            
+            if (userInfo && userInfo[0]) {
+              results.push(userInfo[0]);
+            } else {
+              // Fallback with basic info
+              results.push({
+                user_id: row.user_id,
+                email: row.user_email,
+                display_name: row.user_email?.split('@')[0] || 'User',
+                avatar_url: null,
+              });
+            }
+          }
+        }
+      }
+
+      setSearchResults(results);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
@@ -85,7 +106,7 @@ export function NewConversationDialog({
       setError(null);
 
       try {
-        const conversationId = await createConversation(selectedUser.matrix_id);
+        const conversationId = await createConversation(selectedUser.user_id);
         onConversationCreated(conversationId);
         onOpenChange(false);
         
@@ -103,7 +124,7 @@ export function NewConversationDialog({
 
   // Get initials from name
   const getInitials = (user: UserBasicInfo): string => {
-    const name = user.full_name || user.first_name || user.email;
+    const name = user.display_name || user.email;
     if (!name) return "?";
     return name
       .split(" ")
@@ -119,7 +140,7 @@ export function NewConversationDialog({
         <DialogHeader>
           <DialogTitle>New Conversation</DialogTitle>
           <DialogDescription>
-            Search for a user by email or name to start a conversation.
+            Search for a user by email to start a conversation.
           </DialogDescription>
         </DialogHeader>
 
@@ -132,7 +153,7 @@ export function NewConversationDialog({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <Input
                   id="search"
-                  placeholder="Enter email or name..."
+                  placeholder="Enter email address..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -163,7 +184,7 @@ export function NewConversationDialog({
             <div className="border rounded-lg divide-y divide-zinc-200 dark:divide-zinc-800">
               {searchResults.map((result) => (
                 <button
-                  key={result.matrix_id}
+                  key={result.user_id}
                   onClick={() => handleSelectUser(result)}
                   disabled={isCreating}
                   className={cn(
@@ -174,8 +195,8 @@ export function NewConversationDialog({
                 >
                   <Avatar className="h-10 w-10">
                     <AvatarImage
-                      src={result.preferred_picture || result.picture || undefined}
-                      alt={result.full_name || result.email || ""}
+                      src={result.avatar_url || undefined}
+                      alt={result.display_name || result.email || ""}
                     />
                     <AvatarFallback className="bg-primary/10 text-primary">
                       {getInitials(result)}
@@ -184,7 +205,7 @@ export function NewConversationDialog({
 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                      {result.full_name || result.first_name || "Unknown User"}
+                      {result.display_name || "Unknown User"}
                     </p>
                     <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                       <Mail className="h-3 w-3" />

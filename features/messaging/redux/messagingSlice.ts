@@ -8,7 +8,7 @@
  * - Conversations list with unread counts
  * - Total unread count (for header badge)
  * 
- * Similar pattern to canvasSlice.ts
+ * Uses auth.users.id (UUID) for user identification
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';

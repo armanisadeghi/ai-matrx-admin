@@ -8,7 +8,6 @@ import {
   setCurrentConversation,
   selectMessagingIsLoading,
 } from "../redux/messagingSlice";
-import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

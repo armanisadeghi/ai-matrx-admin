@@ -1,5 +1,7 @@
 /**
- * React Hooks for Supabase Messaging
+ * React Hooks for Supabase Direct Messaging
+ * 
+ * Uses dm_ prefixed tables and auth.users.id UUIDs
  * 
  * Provides hooks for:
  * - useMessages: Message state, loading, send, pagination
@@ -7,12 +9,6 @@
  * - useChat: Combined convenience hook
  * - useOnlinePresence: Track online users
  * - useConversations: List and manage conversations
- * 
- * Critical patterns:
- * - mounted state checks to prevent updates after unmount
- * - Deduplication by both id and client_message_id
- * - Auto-mark conversation as read
- * - 3-second typing timeout
  */
 
 'use client';
@@ -74,20 +70,10 @@ export function useMessages(
       setError(null);
 
       try {
+        // Fetch messages with sender info via RPC
         const { data, error: fetchError } = await supabase
-          .from('messages')
-          .select(`
-            *,
-            sender:users!messages_sender_id_fkey(
-              matrix_id,
-              first_name,
-              last_name,
-              full_name,
-              email,
-              picture,
-              preferred_picture
-            )
-          `)
+          .from('dm_messages')
+          .select('*')
           .eq('conversation_id', conversationId)
           .is('deleted_at', null)
           .order('created_at', { ascending: true })
@@ -100,7 +86,27 @@ export function useMessages(
           return;
         }
 
-        setMessages(data as MessageWithSender[]);
+        // Fetch sender info for each unique sender
+        const senderIds = [...new Set((data || []).map((m) => m.sender_id))];
+        const senderInfoMap = new Map<string, UserBasicInfo>();
+
+        for (const senderId of senderIds) {
+          const { data: userInfo } = await supabase
+            .rpc('get_dm_user_info', { p_user_id: senderId });
+          if (userInfo && userInfo[0]) {
+            senderInfoMap.set(senderId, userInfo[0]);
+          }
+        }
+
+        // Attach sender info to messages
+        const messagesWithSender = (data || []).map((m) => ({
+          ...m,
+          sender: senderInfoMap.get(m.sender_id) || null,
+        })) as MessageWithSender[];
+
+        if (!mountedRef.current) return;
+
+        setMessages(messagesWithSender);
         setHasMore(data?.length === initialPageSize);
 
         // Auto-mark as read
@@ -120,8 +126,16 @@ export function useMessages(
     loadMessages();
 
     // Subscribe to real-time messages
-    const handleNewMessage = (newMessage: Message) => {
+    const handleNewMessage = async (newMessage: Message) => {
       if (!mountedRef.current) return;
+
+      // Fetch sender info for the new message
+      let senderInfo: UserBasicInfo | undefined;
+      const { data: userInfo } = await supabase
+        .rpc('get_dm_user_info', { p_user_id: newMessage.sender_id });
+      if (userInfo && userInfo[0]) {
+        senderInfo = userInfo[0];
+      }
 
       setMessages((prev) => {
         // Deduplication: Check by id and client_message_id
@@ -134,18 +148,18 @@ export function useMessages(
           // Update existing message (might be status change)
           return prev.map((m) => {
             if (m.id === newMessage.id) {
-              return { ...m, ...newMessage };
+              return { ...m, ...newMessage, sender: senderInfo || m.sender };
             }
             if (m.client_message_id && m.client_message_id === newMessage.client_message_id) {
               // Replace optimistic message with real one
-              return { ...m, ...newMessage, id: newMessage.id };
+              return { ...m, ...newMessage, id: newMessage.id, sender: senderInfo || m.sender };
             }
             return m;
           });
         }
 
         // Add new message
-        return [...prev, newMessage as MessageWithSender];
+        return [...prev, { ...newMessage, sender: senderInfo } as MessageWithSender];
       });
 
       // Auto-mark as read when receiving messages
@@ -237,19 +251,8 @@ export function useMessages(
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          sender:users!messages_sender_id_fkey(
-            matrix_id,
-            first_name,
-            last_name,
-            full_name,
-            email,
-            picture,
-            preferred_picture
-          )
-        `)
+        .from('dm_messages')
+        .select('*')
         .eq('conversation_id', conversationId)
         .is('deleted_at', null)
         .lt('created_at', oldestMessage.created_at)
@@ -263,8 +266,25 @@ export function useMessages(
         return;
       }
 
+      // Fetch sender info
+      const senderIds = [...new Set((data || []).map((m) => m.sender_id))];
+      const senderInfoMap = new Map<string, UserBasicInfo>();
+
+      for (const senderId of senderIds) {
+        const { data: userInfo } = await supabase
+          .rpc('get_dm_user_info', { p_user_id: senderId });
+        if (userInfo && userInfo[0]) {
+          senderInfoMap.set(senderId, userInfo[0]);
+        }
+      }
+
+      const messagesWithSender = (data || []).map((m) => ({
+        ...m,
+        sender: senderInfoMap.get(m.sender_id) || null,
+      })) as MessageWithSender[];
+
       // Prepend older messages (reversed to maintain order)
-      setMessages((prev) => [...(data as MessageWithSender[]).reverse(), ...prev]);
+      setMessages((prev) => [...messagesWithSender.reverse(), ...prev]);
       setHasMore(data?.length === initialPageSize);
     } catch (err) {
       if (!mountedRef.current) return;
@@ -320,13 +340,10 @@ export function useTypingIndicator(
       (typing) => {
         // Convert typing users to UserBasicInfo format
         const users: UserBasicInfo[] = typing.map((t) => ({
-          matrix_id: t.user_id,
-          first_name: t.display_name.split(' ')[0] || null,
-          last_name: t.display_name.split(' ').slice(1).join(' ') || null,
-          full_name: t.display_name,
+          user_id: t.user_id,
           email: null,
-          picture: null,
-          preferred_picture: null,
+          display_name: t.display_name,
+          avatar_url: null,
         }));
         setTypingUsers(users);
       }
@@ -376,13 +393,10 @@ export function useOnlinePresence(
       displayName,
       (online) => {
         const users: UserBasicInfo[] = online.map((o) => ({
-          matrix_id: o.user_id,
-          first_name: o.display_name.split(' ')[0] || null,
-          last_name: o.display_name.split(' ').slice(1).join(' ') || null,
-          full_name: o.display_name,
+          user_id: o.user_id,
           email: null,
-          picture: null,
-          preferred_picture: null,
+          display_name: o.display_name,
+          avatar_url: null,
         }));
         setOnlineUsers(users);
       }
@@ -444,7 +458,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
     try {
       // Use the database function for efficient loading
       const { data, error: fetchError } = await supabase
-        .rpc('get_conversations_with_details', { p_user_matrix_id: userId });
+        .rpc('get_dm_conversations_with_details', { p_user_id: userId });
 
       if (!mountedRef.current) return;
 
@@ -457,23 +471,24 @@ export function useConversations(userId: string | null): UseConversationsReturn 
       const conversationsWithParticipants = await Promise.all(
         (data || []).map(async (conv: Record<string, unknown>) => {
           const { data: participants } = await supabase
-            .from('conversation_participants')
-            .select(`
-              *,
-              user:users!conversation_participants_user_id_fkey(
-                matrix_id,
-                first_name,
-                last_name,
-                full_name,
-                email,
-                picture,
-                preferred_picture
-              )
-            `)
+            .from('dm_conversation_participants')
+            .select('*')
             .eq('conversation_id', conv.conversation_id);
 
+          // Fetch user info for each participant
+          const participantsWithUser = await Promise.all(
+            (participants || []).map(async (p) => {
+              const { data: userInfo } = await supabase
+                .rpc('get_dm_user_info', { p_user_id: p.user_id });
+              return {
+                ...p,
+                user: userInfo?.[0] || null,
+              };
+            })
+          );
+
           // For direct chats, compute display name/image from the other participant
-          const otherParticipant = participants?.find(
+          const otherParticipant = participantsWithUser.find(
             (p) => p.user_id !== userId
           );
 
@@ -485,7 +500,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
             created_by: null,
             created_at: conv.created_at,
             updated_at: conv.updated_at,
-            participants: participants || [],
+            participants: participantsWithUser || [],
             last_message: conv.last_message_content ? {
               id: '',
               conversation_id: conv.conversation_id as string,
@@ -505,10 +520,10 @@ export function useConversations(userId: string | null): UseConversationsReturn 
             } : null,
             unread_count: conv.unread_count as number,
             display_name: conv.conversation_type === 'direct' && otherParticipant
-              ? otherParticipant.user?.full_name || otherParticipant.user?.email || 'Unknown'
+              ? otherParticipant.user?.display_name || otherParticipant.user?.email || 'Unknown'
               : conv.group_name || 'Group Chat',
             display_image: conv.conversation_type === 'direct' && otherParticipant
-              ? otherParticipant.user?.preferred_picture || otherParticipant.user?.picture
+              ? otherParticipant.user?.avatar_url
               : conv.group_image_url,
           } as ConversationWithDetails;
         })
@@ -550,9 +565,9 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
     // First check if conversation already exists
     const { data: existingConv } = await supabase
-      .rpc('find_direct_conversation', {
-        p_user1_matrix_id: userId,
-        p_user2_matrix_id: participantId,
+      .rpc('find_dm_direct_conversation', {
+        p_user1_id: userId,
+        p_user2_id: participantId,
       });
 
     if (existingConv) {
@@ -561,7 +576,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
     // Create new conversation
     const { data: newConv, error: createError } = await supabase
-      .from('conversations')
+      .from('dm_conversations')
       .insert({
         type: 'direct',
         created_by: userId,
@@ -573,7 +588,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
     // Add both participants
     const { error: participantError } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .insert([
         { conversation_id: newConv.id, user_id: userId, role: 'owner' },
         { conversation_id: newConv.id, user_id: participantId, role: 'member' },

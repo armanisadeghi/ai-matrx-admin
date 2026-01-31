@@ -1,9 +1,11 @@
 /**
- * Single Conversation API Routes
+ * Single DM Conversation API Routes
  * 
  * GET /api/messages/conversations/[id] - Get conversation details
  * PUT /api/messages/conversations/[id] - Update conversation settings
  * DELETE /api/messages/conversations/[id] - Leave or delete conversation
+ * 
+ * Uses dm_ prefixed tables
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -42,25 +44,11 @@ export async function GET(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Check if user is participant
     const { data: participation, error: participationError } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .select('*')
       .eq('conversation_id', conversationId)
       .eq('user_id', userId)
@@ -73,9 +61,9 @@ export async function GET(
       );
     }
 
-    // Get conversation with participants
+    // Get conversation
     const { data: conversation, error: convError } = await supabase
-      .from('conversations')
+      .from('dm_conversations')
       .select('*')
       .eq('id', conversationId)
       .single();
@@ -87,26 +75,26 @@ export async function GET(
       );
     }
 
-    // Get all participants
+    // Get all participants with user info
     const { data: participants } = await supabase
-      .from('conversation_participants')
-      .select(`
-        *,
-        user:users!conversation_participants_user_id_fkey(
-          matrix_id,
-          first_name,
-          last_name,
-          full_name,
-          email,
-          picture,
-          preferred_picture
-        )
-      `)
+      .from('dm_conversation_participants')
+      .select('*')
       .eq('conversation_id', conversationId);
+
+    const participantsWithUser = await Promise.all(
+      (participants || []).map(async (p) => {
+        const { data: userInfo } = await supabase
+          .rpc('get_dm_user_info', { p_user_id: p.user_id });
+        return {
+          ...p,
+          user: userInfo?.[0] || null,
+        };
+      })
+    );
 
     // Update last_read_at for current user
     await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .update({ last_read_at: new Date().toISOString() })
       .eq('conversation_id', conversationId)
       .eq('user_id', userId);
@@ -121,23 +109,20 @@ export async function GET(
         CreatedBy: conversation.created_by,
         CreatedAt: conversation.created_at,
         UpdatedAt: conversation.updated_at,
-        Participants: participants?.map((p) => ({
+        Participants: participantsWithUser.map((p) => ({
           UserID: p.user_id,
-          DisplayName: (p.user as Record<string, unknown>)?.full_name || 
-                      (p.user as Record<string, unknown>)?.email,
-          FirstName: (p.user as Record<string, unknown>)?.first_name,
-          LastName: (p.user as Record<string, unknown>)?.last_name,
-          ProfileImage: (p.user as Record<string, unknown>)?.preferred_picture || 
-                       (p.user as Record<string, unknown>)?.picture,
+          DisplayName: p.user?.display_name,
+          Email: p.user?.email,
+          AvatarUrl: p.user?.avatar_url,
           Role: p.role,
           LastReadAt: p.last_read_at,
           IsMuted: p.is_muted,
-        })) || [],
+        })),
       },
       msg: 'Conversation fetched successfully',
     });
   } catch (error) {
-    console.error('[Conversation API] GET Error:', error);
+    console.error('[DM Conversation API] GET Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
@@ -166,21 +151,7 @@ export async function PUT(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Parse and validate request body
     const body = await request.json();
@@ -197,7 +168,7 @@ export async function PUT(
 
     // Check if user is participant
     const { data: participation, error: participationError } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .select('role')
       .eq('conversation_id', conversationId)
       .eq('user_id', userId)
@@ -217,7 +188,7 @@ export async function PUT(
       if (is_archived !== undefined) participantUpdate.is_archived = is_archived;
 
       await supabase
-        .from('conversation_participants')
+        .from('dm_conversation_participants')
         .update(participantUpdate)
         .eq('conversation_id', conversationId)
         .eq('user_id', userId);
@@ -227,7 +198,7 @@ export async function PUT(
     if (group_name !== undefined || group_image_url !== undefined) {
       // Check if conversation is a group
       const { data: conversation } = await supabase
-        .from('conversations')
+        .from('dm_conversations')
         .select('type, created_by')
         .eq('id', conversationId)
         .single();
@@ -252,7 +223,7 @@ export async function PUT(
       if (group_image_url !== undefined) convUpdate.group_image_url = group_image_url;
 
       await supabase
-        .from('conversations')
+        .from('dm_conversations')
         .update(convUpdate)
         .eq('id', conversationId);
     }
@@ -263,7 +234,7 @@ export async function PUT(
       msg: 'Conversation updated successfully',
     });
   } catch (error) {
-    console.error('[Conversation API] PUT Error:', error);
+    console.error('[DM Conversation API] PUT Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
@@ -292,25 +263,11 @@ export async function DELETE(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Get conversation and participation info
     const { data: conversation } = await supabase
-      .from('conversations')
+      .from('dm_conversations')
       .select('type, created_by')
       .eq('id', conversationId)
       .single();
@@ -324,7 +281,7 @@ export async function DELETE(
 
     // For group chats where user is owner, delete the entire conversation
     if (conversation.type === 'group' && conversation.created_by === userId) {
-      await supabase.from('conversations').delete().eq('id', conversationId);
+      await supabase.from('dm_conversations').delete().eq('id', conversationId);
       return NextResponse.json({
         success: true,
         msg: 'Conversation deleted successfully',
@@ -333,7 +290,7 @@ export async function DELETE(
 
     // Otherwise, just leave the conversation (archive it)
     await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .update({ is_archived: true })
       .eq('conversation_id', conversationId)
       .eq('user_id', userId);
@@ -343,7 +300,7 @@ export async function DELETE(
       msg: 'Left conversation successfully',
     });
   } catch (error) {
-    console.error('[Conversation API] DELETE Error:', error);
+    console.error('[DM Conversation API] DELETE Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }

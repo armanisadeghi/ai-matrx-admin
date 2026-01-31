@@ -8,15 +8,16 @@ import { useConversations } from "@/hooks/useSupabaseMessaging";
 /**
  * MessagingInitializer - Loads conversations on mount and syncs to Redux
  * 
+ * Uses auth.users.id (UUID) for user identification.
  * This component should be rendered once at the root layout level.
  * It doesn't render any UI, just handles data loading.
  */
 export function MessagingInitializer() {
   const dispatch = useAppDispatch();
 
-  // Get user from Redux
+  // Get user from Redux - use auth.users.id (UUID)
   const user = useAppSelector((state) => state.user);
-  const userId = user?.activeUser?.matrix_id || user?.activeUser?.matrixId;
+  const userId = user?.id;
 
   // Load conversations
   const { conversations, isLoading, error } = useConversations(userId || null);

@@ -30,14 +30,14 @@ export function ChatThread({
   const dispatch = useAppDispatch();
   const conversation = useAppSelector(selectCurrentConversation);
 
-  // Get user from Redux state
+  // Get user from Redux state - use auth.users.id (UUID)
   const user = useAppSelector((state) => state.user);
-  const userId = propUserId || user?.activeUser?.matrix_id || user?.activeUser?.matrixId;
+  const userId = propUserId || user?.id || user?.activeUser?.id;
   const displayName =
     propDisplayName ||
-    user?.activeUser?.full_name ||
-    user?.activeUser?.fullName ||
-    user?.activeUser?.email ||
+    user?.userMetadata?.fullName ||
+    user?.userMetadata?.name ||
+    user?.email?.split("@")[0] ||
     "User";
 
   // Chat hook
@@ -93,7 +93,7 @@ export function ChatThread({
       : null;
 
   const isOtherUserOnline = otherParticipant
-    ? onlineUsers.some((u) => u.matrix_id === otherParticipant.user_id)
+    ? onlineUsers.some((u) => u.user_id === otherParticipant.user_id)
     : false;
 
   // Group messages by date

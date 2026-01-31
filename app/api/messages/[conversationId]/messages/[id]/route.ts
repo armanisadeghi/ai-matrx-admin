@@ -1,9 +1,11 @@
 /**
- * Single Message API Routes
+ * Single DM Message API Routes
  * 
  * GET /api/messages/[conversationId]/messages/[id] - Get single message
  * PATCH /api/messages/[conversationId]/messages/[id] - Edit or delete message
  * DELETE /api/messages/[conversationId]/messages/[id] - Delete message
+ * 
+ * Uses dm_ prefixed tables
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -41,25 +43,11 @@ export async function GET(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Check if user is participant
     const { data: participation } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .select('id')
       .eq('conversation_id', conversationId)
       .eq('user_id', userId)
@@ -74,26 +62,8 @@ export async function GET(
 
     // Get message
     const { data: message, error: fetchError } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        sender:users!messages_sender_id_fkey(
-          matrix_id,
-          first_name,
-          last_name,
-          full_name,
-          email,
-          picture,
-          preferred_picture
-        ),
-        reply_to:messages!messages_reply_to_id_fkey(
-          id,
-          content,
-          sender_id,
-          message_type,
-          created_at
-        )
-      `)
+      .from('dm_messages')
+      .select('*')
       .eq('id', messageId)
       .eq('conversation_id', conversationId)
       .single();
@@ -113,13 +83,20 @@ export async function GET(
       );
     }
 
+    // Fetch sender info
+    const { data: senderInfo } = await supabase
+      .rpc('get_dm_user_info', { p_user_id: message.sender_id });
+
     return NextResponse.json({
       success: true,
-      data: message,
+      data: {
+        ...message,
+        sender: senderInfo?.[0] || null,
+      },
       msg: 'Message fetched successfully',
     });
   } catch (error) {
-    console.error('[Message API] GET Error:', error);
+    console.error('[DM Message API] GET Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
@@ -148,21 +125,7 @@ export async function PATCH(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Parse and validate request body
     const body = await request.json();
@@ -179,7 +142,7 @@ export async function PATCH(
 
     // Get message and verify ownership
     const { data: message, error: fetchError } = await supabase
-      .from('messages')
+      .from('dm_messages')
       .select('*')
       .eq('id', messageId)
       .eq('conversation_id', conversationId)
@@ -218,38 +181,34 @@ export async function PATCH(
 
     // Update message
     const { data: updatedMessage, error: updateError } = await supabase
-      .from('messages')
+      .from('dm_messages')
       .update(updateData)
       .eq('id', messageId)
-      .select(`
-        *,
-        sender:users!messages_sender_id_fkey(
-          matrix_id,
-          first_name,
-          last_name,
-          full_name,
-          email,
-          picture,
-          preferred_picture
-        )
-      `)
+      .select()
       .single();
 
     if (updateError) {
-      console.error('[Message API] Failed to update:', updateError);
+      console.error('[DM Message API] Failed to update:', updateError);
       return NextResponse.json(
         { success: false, msg: updateError.message },
         { status: 500 }
       );
     }
 
+    // Fetch sender info
+    const { data: senderInfo } = await supabase
+      .rpc('get_dm_user_info', { p_user_id: userId });
+
     return NextResponse.json({
       success: true,
-      data: updatedMessage,
+      data: {
+        ...updatedMessage,
+        sender: senderInfo?.[0] || null,
+      },
       msg: deleted ? 'Message deleted successfully' : 'Message updated successfully',
     });
   } catch (error) {
-    console.error('[Message API] PATCH Error:', error);
+    console.error('[DM Message API] PATCH Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
@@ -278,25 +237,11 @@ export async function DELETE(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Get message and verify ownership
     const { data: message } = await supabase
-      .from('messages')
+      .from('dm_messages')
       .select('sender_id')
       .eq('id', messageId)
       .eq('conversation_id', conversationId)
@@ -319,7 +264,7 @@ export async function DELETE(
 
     // Soft delete: set deleted_at and replace content
     const { error: deleteError } = await supabase
-      .from('messages')
+      .from('dm_messages')
       .update({
         deleted_at: new Date().toISOString(),
         deleted_for_everyone: true,
@@ -328,7 +273,7 @@ export async function DELETE(
       .eq('id', messageId);
 
     if (deleteError) {
-      console.error('[Message API] Failed to delete:', deleteError);
+      console.error('[DM Message API] Failed to delete:', deleteError);
       return NextResponse.json(
         { success: false, msg: deleteError.message },
         { status: 500 }
@@ -340,7 +285,7 @@ export async function DELETE(
       msg: 'Message deleted successfully',
     });
   } catch (error) {
-    console.error('[Message API] DELETE Error:', error);
+    console.error('[DM Message API] DELETE Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }

@@ -1,8 +1,10 @@
 /**
- * Conversations API Routes
+ * DM Conversations API Routes
  * 
  * GET /api/messages/conversations - List all conversations for current user
  * POST /api/messages/conversations - Create new conversation or return existing
+ * 
+ * Uses dm_ prefixed tables
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -15,7 +17,7 @@ import { z } from 'zod';
 
 const createConversationSchema = z.object({
   type: z.enum(['direct', 'group']).default('direct'),
-  participant_ids: z.array(z.string()).min(1, 'At least one participant required'),
+  participant_ids: z.array(z.string().uuid()).min(1, 'At least one participant required'),
   group_name: z.string().optional(),
 });
 
@@ -36,21 +38,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Parse query params
     const searchParams = request.nextUrl.searchParams;
@@ -59,10 +47,10 @@ export async function GET(request: NextRequest) {
 
     // Get conversations using the helper function
     const { data: conversations, error: fetchError } = await supabase
-      .rpc('get_conversations_with_details', { p_user_matrix_id: userId });
+      .rpc('get_dm_conversations_with_details', { p_user_id: userId });
 
     if (fetchError) {
-      console.error('[Conversations API] Failed to fetch:', fetchError);
+      console.error('[DM Conversations API] Failed to fetch:', fetchError);
       return NextResponse.json(
         { success: false, msg: fetchError.message },
         { status: 500 }
@@ -76,30 +64,24 @@ export async function GET(request: NextRequest) {
     const conversationsWithParticipants = await Promise.all(
       paginatedConversations.map(async (conv: Record<string, unknown>) => {
         const { data: participants } = await supabase
-          .from('conversation_participants')
-          .select(`
-            id,
-            conversation_id,
-            user_id,
-            role,
-            joined_at,
-            last_read_at,
-            is_muted,
-            is_archived,
-            user:users!conversation_participants_user_id_fkey(
-              matrix_id,
-              first_name,
-              last_name,
-              full_name,
-              email,
-              picture,
-              preferred_picture
-            )
-          `)
+          .from('dm_conversation_participants')
+          .select('*')
           .eq('conversation_id', conv.conversation_id);
 
+        // Fetch user info for each participant
+        const participantsWithUser = await Promise.all(
+          (participants || []).map(async (p) => {
+            const { data: userInfo } = await supabase
+              .rpc('get_dm_user_info', { p_user_id: p.user_id });
+            return {
+              ...p,
+              user: userInfo?.[0] || null,
+            };
+          })
+        );
+
         // For direct chats, compute display name/image from the other participant
-        const otherParticipant = participants?.find(
+        const otherParticipant = participantsWithUser.find(
           (p) => p.user_id !== userId
         );
 
@@ -111,25 +93,20 @@ export async function GET(request: NextRequest) {
           CreatedAt: conv.created_at,
           UpdatedAt: conv.updated_at,
           DisplayName: conv.conversation_type === 'direct' && otherParticipant
-            ? (otherParticipant.user as Record<string, unknown>)?.full_name || 
-              (otherParticipant.user as Record<string, unknown>)?.email || 'Unknown'
+            ? otherParticipant.user?.display_name || otherParticipant.user?.email || 'Unknown'
             : conv.group_name || 'Group Chat',
           DisplayImage: conv.conversation_type === 'direct' && otherParticipant
-            ? (otherParticipant.user as Record<string, unknown>)?.preferred_picture || 
-              (otherParticipant.user as Record<string, unknown>)?.picture
+            ? otherParticipant.user?.avatar_url
             : conv.group_image_url,
           IsMuted: participants?.find((p) => p.user_id === userId)?.is_muted || false,
           LastReadAt: participants?.find((p) => p.user_id === userId)?.last_read_at,
-          Participants: participants?.map((p) => ({
+          Participants: participantsWithUser.map((p) => ({
             UserID: p.user_id,
-            DisplayName: (p.user as Record<string, unknown>)?.full_name || 
-                        (p.user as Record<string, unknown>)?.email,
-            FirstName: (p.user as Record<string, unknown>)?.first_name,
-            LastName: (p.user as Record<string, unknown>)?.last_name,
-            ProfileImage: (p.user as Record<string, unknown>)?.preferred_picture || 
-                         (p.user as Record<string, unknown>)?.picture,
+            DisplayName: p.user?.display_name,
+            Email: p.user?.email,
+            AvatarUrl: p.user?.avatar_url,
             Role: p.role,
-          })) || [],
+          })),
           LastMessage: conv.last_message_content ? {
             Content: conv.last_message_content,
             SenderID: conv.last_message_sender_id,
@@ -147,7 +124,7 @@ export async function GET(request: NextRequest) {
       msg: 'Conversations fetched successfully',
     });
   } catch (error) {
-    console.error('[Conversations API] Error:', error);
+    console.error('[DM Conversations API] Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
@@ -172,29 +149,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Parse and validate request body
     const body = await request.json();
     const validation = createConversationSchema.safeParse(body);
 
     if (!validation.success) {
+      const firstErrorMessage =
+        Array.isArray((validation.error as any).issues) && (validation.error as any).issues.length > 0
+          ? (validation.error as any).issues[0].message
+          : 'Invalid request body';
+
       return NextResponse.json(
-        { success: false, msg: validation.error.errors[0].message },
+        { success: false, msg: firstErrorMessage },
         { status: 400 }
       );
     }
@@ -207,9 +175,9 @@ export async function POST(request: NextRequest) {
 
       // Use helper function to find existing conversation
       const { data: existingConvId } = await supabase
-        .rpc('find_direct_conversation', {
-          p_user1_matrix_id: userId,
-          p_user2_matrix_id: otherUserId,
+        .rpc('find_dm_direct_conversation', {
+          p_user1_id: userId,
+          p_user2_id: otherUserId,
         });
 
       if (existingConvId) {
@@ -222,32 +190,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verify all participants exist
-    const { data: validUsers, error: usersError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .in('matrix_id', participant_ids);
-
-    if (usersError) {
-      return NextResponse.json(
-        { success: false, msg: 'Failed to verify participants' },
-        { status: 500 }
-      );
-    }
-
-    const validUserIds = new Set(validUsers?.map((u) => u.matrix_id));
-    const invalidUsers = participant_ids.filter((id) => !validUserIds.has(id));
-
-    if (invalidUsers.length > 0) {
-      return NextResponse.json(
-        { success: false, msg: `Invalid participant IDs: ${invalidUsers.join(', ')}` },
-        { status: 400 }
-      );
-    }
+    // Verify all participants exist in auth.users
+    // We can use lookup_user_by_email or just try to create - RLS will handle invalid users
 
     // Create conversation
     const { data: newConversation, error: createError } = await supabase
-      .from('conversations')
+      .from('dm_conversations')
       .insert({
         type,
         group_name: type === 'group' ? group_name : null,
@@ -257,7 +205,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (createError) {
-      console.error('[Conversations API] Failed to create:', createError);
+      console.error('[DM Conversations API] Failed to create:', createError);
       return NextResponse.json(
         { success: false, msg: createError.message },
         { status: 500 }
@@ -273,13 +221,13 @@ export async function POST(request: NextRequest) {
     }));
 
     const { error: participantsError } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .insert(participantRecords);
 
     if (participantsError) {
       // Rollback: delete the conversation
-      await supabase.from('conversations').delete().eq('id', newConversation.id);
-      console.error('[Conversations API] Failed to add participants:', participantsError);
+      await supabase.from('dm_conversations').delete().eq('id', newConversation.id);
+      console.error('[DM Conversations API] Failed to add participants:', participantsError);
       return NextResponse.json(
         { success: false, msg: participantsError.message },
         { status: 500 }
@@ -293,7 +241,7 @@ export async function POST(request: NextRequest) {
       msg: 'Conversation created successfully',
     }, { status: 201 });
   } catch (error) {
-    console.error('[Conversations API] Error:', error);
+    console.error('[DM Conversations API] Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }

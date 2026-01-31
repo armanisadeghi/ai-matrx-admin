@@ -1,8 +1,10 @@
 /**
- * Messages API Routes
+ * DM Messages API Routes
  * 
  * GET /api/messages/[conversationId]/messages - List messages in conversation
  * POST /api/messages/[conversationId]/messages - Send a message
+ * 
+ * Uses dm_ prefixed tables
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -44,25 +46,11 @@ export async function GET(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Check if user is participant
     const { data: participation, error: participationError } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .select('id')
       .eq('conversation_id', conversationId)
       .eq('user_id', userId)
@@ -83,26 +71,8 @@ export async function GET(
 
     // Build query
     let query = supabase
-      .from('messages')
-      .select(`
-        *,
-        sender:users!messages_sender_id_fkey(
-          matrix_id,
-          first_name,
-          last_name,
-          full_name,
-          email,
-          picture,
-          preferred_picture
-        ),
-        reply_to:messages!messages_reply_to_id_fkey(
-          id,
-          content,
-          sender_id,
-          message_type,
-          created_at
-        )
-      `)
+      .from('dm_messages')
+      .select('*')
       .eq('conversation_id', conversationId)
       .is('deleted_at', null);
 
@@ -122,23 +92,41 @@ export async function GET(
     const { data: messages, error: fetchError } = await query;
 
     if (fetchError) {
-      console.error('[Messages API] Failed to fetch:', fetchError);
+      console.error('[DM Messages API] Failed to fetch:', fetchError);
       return NextResponse.json(
         { success: false, msg: fetchError.message },
         { status: 500 }
       );
     }
 
+    // Fetch sender info for each message
+    const senderIds = [...new Set((messages || []).map((m) => m.sender_id))];
+    const senderInfoMap = new Map();
+
+    for (const senderId of senderIds) {
+      const { data: userInfo } = await supabase
+        .rpc('get_dm_user_info', { p_user_id: senderId });
+      if (userInfo && userInfo[0]) {
+        senderInfoMap.set(senderId, userInfo[0]);
+      }
+    }
+
+    // Attach sender info
+    const messagesWithSender = (messages || []).map((m) => ({
+      ...m,
+      sender: senderInfoMap.get(m.sender_id) || null,
+    }));
+
     // If we queried in descending order (for pagination), reverse to get chronological
-    const sortedMessages = before ? messages?.reverse() : messages;
+    const sortedMessages = before ? messagesWithSender.reverse() : messagesWithSender;
 
     return NextResponse.json({
       success: true,
-      data: sortedMessages || [],
+      data: sortedMessages,
       msg: 'Messages fetched successfully',
     });
   } catch (error) {
-    console.error('[Messages API] GET Error:', error);
+    console.error('[DM Messages API] GET Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
@@ -167,25 +155,11 @@ export async function POST(
       );
     }
 
-    // Get user's matrix_id
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('matrix_id')
-      .eq('auth_id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { success: false, msg: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const userId = userData.matrix_id;
+    const userId = user.id;
 
     // Check if user is participant
     const { data: participation, error: participationError } = await supabase
-      .from('conversation_participants')
+      .from('dm_conversation_participants')
       .select('id')
       .eq('conversation_id', conversationId)
       .eq('user_id', userId)
@@ -222,7 +196,7 @@ export async function POST(
     // Check for duplicate message (idempotency)
     if (client_message_id) {
       const { data: existingMessage } = await supabase
-        .from('messages')
+        .from('dm_messages')
         .select('*')
         .eq('client_message_id', client_message_id)
         .single();
@@ -240,7 +214,7 @@ export async function POST(
     // Verify reply_to message exists and is in this conversation
     if (reply_to_id) {
       const { data: replyToMessage } = await supabase
-        .from('messages')
+        .from('dm_messages')
         .select('id')
         .eq('id', reply_to_id)
         .eq('conversation_id', conversationId)
@@ -256,7 +230,7 @@ export async function POST(
 
     // Insert message
     const { data: newMessage, error: insertError } = await supabase
-      .from('messages')
+      .from('dm_messages')
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
@@ -269,35 +243,31 @@ export async function POST(
         client_message_id,
         status: 'sent',
       })
-      .select(`
-        *,
-        sender:users!messages_sender_id_fkey(
-          matrix_id,
-          first_name,
-          last_name,
-          full_name,
-          email,
-          picture,
-          preferred_picture
-        )
-      `)
+      .select()
       .single();
 
     if (insertError) {
-      console.error('[Messages API] Failed to send:', insertError);
+      console.error('[DM Messages API] Failed to send:', insertError);
       return NextResponse.json(
         { success: false, msg: insertError.message },
         { status: 500 }
       );
     }
 
+    // Fetch sender info
+    const { data: senderInfo } = await supabase
+      .rpc('get_dm_user_info', { p_user_id: userId });
+
     return NextResponse.json({
       success: true,
-      data: newMessage,
+      data: {
+        ...newMessage,
+        sender: senderInfo?.[0] || null,
+      },
       msg: 'Message sent successfully',
     }, { status: 201 });
   } catch (error) {
-    console.error('[Messages API] POST Error:', error);
+    console.error('[DM Messages API] POST Error:', error);
     return NextResponse.json(
       { success: false, msg: 'Internal server error' },
       { status: 500 }
