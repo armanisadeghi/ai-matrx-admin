@@ -1,6 +1,6 @@
 import { MatrxVariant } from "@/components/ui/types";
 import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { FormFieldType } from "@/types/AnimatedFormTypes";
 import {
   AnimationPreset,

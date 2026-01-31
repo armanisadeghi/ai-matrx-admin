@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { createRecordKey, useAppDispatch, useAppSelector, useEntityData, useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { useCallbackManager } from '@/hooks/useCallbackManager';
 import { useDispatch } from 'react-redux';

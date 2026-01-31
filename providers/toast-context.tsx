@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { toast } from '@/lib/toast-service';
 import { ToastAction } from "@/components/ui/toast";
-import type { ToastDefaults } from '@/types';
+import type { ToastDefaults } from '@/types/toast.types';
 import type { ToastActionElement } from "@/components/ui/toast";
 
 type ToastContextType = {

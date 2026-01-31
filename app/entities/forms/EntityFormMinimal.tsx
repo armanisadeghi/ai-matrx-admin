@@ -8,7 +8,7 @@ import { getFormStyle } from './formUtils';
 import { EntityKeys } from '@/types/entityTypes';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
 import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
-import { ComponentDensity } from '@/types';
+import { ComponentDensity } from '@/types/componentConfigTypes';
 
 
 const LOCAL_OVERRIDES = {

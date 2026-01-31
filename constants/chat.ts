@@ -2,7 +2,7 @@ import { ChatMode, Conversation, Message } from "@/types/chat/chat.types";
 import { FilterCondition, SelectionMode } from "@/lib/redux/entity/types/stateTypes";
 import { EntityKeys } from "@/types/entityTypes";
 import { EntityAnyFieldKey } from "@/types/entityTypes";
-import { MessageRecordWithKey } from "@/types";
+import { MessageRecordWithKey } from "@/types/AutomationSchemaTypes";
 
 export interface CreateNewConversationParams {
     label?: string;
