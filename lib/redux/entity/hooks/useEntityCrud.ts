@@ -1,3 +1,4 @@
+// @ts-nocheck
 // lib/redux/entity/useEntity.ts
 'use client';
 

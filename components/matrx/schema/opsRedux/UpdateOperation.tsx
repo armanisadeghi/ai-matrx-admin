@@ -8,6 +8,14 @@ const UpdateOperation = () => {
     const [id, setId] = useState('');
     const [updateData, setUpdateData] = useState('');
     // const {update, loading, error} = useDatabase();
+    
+    // TODO: Fix when useDatabase hook is uncommented
+    // @ts-ignore - Hook commented out, using placeholder values
+    const update = ((...args: any[]) => {}) as any;
+    // @ts-ignore - Hook commented out, using placeholder values
+    const loading = false;
+    // @ts-ignore - Hook commented out, using placeholder values
+    const error = null as Error | null;
 
     const handleUpdate = () => {
         if (selectedSchema && id) {

@@ -51,7 +51,7 @@ export function CompleteHtmlTab({ state, actions }: HtmlPreviewTabProps) {
             </div>
             <textarea
                 ref={completeTextareaRef}
-                value={actions.getCurrentHtmlContent()}
+                value={(actions as any).getCurrentHtmlContent?.() || ''}
                 readOnly
                 className="flex-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-y-auto"
                 placeholder="Loading complete HTML..."

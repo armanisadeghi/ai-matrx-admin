@@ -1,3 +1,4 @@
+
 import { UserPreferences } from './userPreferencesSlice';
 
 export const defaultUserPreferences: UserPreferences = {
@@ -9,6 +10,15 @@ export const defaultUserPreferences: UserPreferences = {
         headerLayout: 'default',
         windowMode: 'default',
     },
+    prompts: {
+        showSettingsOnMainPage: false,
+        defaultModel: '548126f2-714a-4562-9001-0c31cbeea375', // GPT-4.1 Mini
+        defaultTemperature: 1.0,
+        alwaysIncludeInternalWebSearch: true,
+        includeThinkingInAutoPrompts: 'none',
+        submitOnEnter: true,
+        autoClearResponsesInEditMode: true,
+    },
     voice: {
         voice: '',
         language: 'en',
@@ -17,6 +27,11 @@ export const defaultUserPreferences: UserPreferences = {
         microphone: false,
         speaker: false,
         wakeWord: 'Hey Matrix',
+    },
+    textToSpeech: {
+        preferredVoice: 'Cheyenne-PlayAI',
+        autoPlay: false,
+        processMarkdown: true,
     },
     assistant: {
         alwaysActive: false,

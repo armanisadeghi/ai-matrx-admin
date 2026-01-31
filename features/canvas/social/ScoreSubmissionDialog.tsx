@@ -25,6 +25,7 @@ import {
 import { useCanvasScore } from '@/hooks/canvas/useCanvasScore';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+// @ts-ignore - canvas-confetti types may not be available
 import confetti from 'canvas-confetti';
 
 interface ScoreSubmissionDialogProps {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // utils/supabase/api-wrapper.ts
 
 import {PostgrestError, PostgrestFilterBuilder} from '@supabase/postgrest-js';

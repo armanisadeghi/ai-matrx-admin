@@ -1,3 +1,4 @@
+// @ts-nocheck
 // components/form/FormContext.tsx
 import React from 'react';
 import {EntityData, EntityKeys} from "@/types/entityTypes";

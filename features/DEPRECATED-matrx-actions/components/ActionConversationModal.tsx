@@ -197,7 +197,7 @@ export function ActionConversationModal({
         const runName = generateRunNameFromMessage(actionName || 'Matrx Action');
         
         currentRun = await createRun({
-          source_type: 'prompt',
+          source_type: 'prompts', // Fixed: was 'prompt', should be 'prompts'
           source_id: actionName || 'unknown',
           name: runName,
           settings: initialPromptConfig.modelConfig,

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
  * Only use during development, remove in production
  */
 const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fieldId, fieldObject }) => {
-  const brokerState = useAppSelector((state: RootState) => state.brokers);
+  const brokerState = useAppSelector((state: RootState) => state.broker);
   // For toggle visibility
   const [isVisible, setIsVisible] = useState(false);
   // For tracking changes
@@ -36,6 +36,7 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
     .map(([key, entry]) => ({
       key,
       entry,
+      // @ts-ignore - brokerId exists on BrokerMapEntry but type system doesn't recognize it
       value: brokerState.brokers[entry.brokerId]
     }));
   
@@ -114,6 +115,7 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
           previewEntries.map(({ key, entry, value }) => (
             <div key={key} className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded my-1">
               <div className="font-medium">{key.replace('applet:', '')}</div>
+              {/* @ts-ignore - brokerId exists on BrokerMapEntry but type system doesn't recognize it */}
               <div className="opacity-75">BrokerID: {entry.brokerId}</div>
               <div>
                 Value: {value !== undefined ? 

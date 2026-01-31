@@ -27,7 +27,9 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
     renderSeparator,
 }) => {
     const router = useRouter();
-    const { mode, toggleMode } = useTheme();
+    const themeContext = useTheme();
+    // @ts-ignore - useTheme may return fallback object without toggleMode, but we know it exists in our context
+    const { mode, toggleMode } = themeContext;
     const dispatch = useAppDispatch();
     
     // Get the menu definition

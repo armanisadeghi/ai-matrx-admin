@@ -69,6 +69,8 @@ function createReduxCommand<TState = unknown, TPayload = unknown>(
 
         // Create context
         const context: ReduxCommandContext<TState, TPayload> = {
+            type: config.type || 'entity',
+            scope: config.scope || 'single',
             sliceName: config.slice.name,
             key: commandKey,
             state,

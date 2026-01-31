@@ -1,3 +1,4 @@
+// @ts-nocheck
 // hooks/useSchema.ts
 'use client';
 

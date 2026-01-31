@@ -63,7 +63,7 @@ export function DynamicResizableLayout(
     return (
         <div className={`h-full overflow-hidden ${className}`}>
             <ResizablePanelGroup
-                direction={direction}
+                orientation={direction}
                 className="h-full"
             >
                 {panels.map((panel, index) => (
@@ -73,7 +73,7 @@ export function DynamicResizableLayout(
                             minSize={panel.minSize || 10}
                             maxSize={panel.maxSize || 90}
                             collapsible={panel.collapsible}
-                            onResize={(size) => handleResize(index, size)}
+                            onResize={(size) => handleResize(index, typeof size === 'number' ? size : size.asPercentage)}
                             className="flex"
                         >
                             <div className="flex-1 min-h-0 relative">

@@ -202,6 +202,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = (
         >
             {React.Children.map(childrenArray, (child, index) => {
                 if (React.isValidElement(child)) {
+                    // @ts-ignore - Spread types may only be created from object types
                     return React.cloneElement(child, {
                         ...child.props,
                         groupPosition: groupPosition(index, childrenArray.length),

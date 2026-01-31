@@ -66,7 +66,7 @@ const RenderSection: React.FC<{
             maxSize={section.maxSize || 90}
             collapsible={section.collapsible}
         >
-            <ResizablePanelGroup direction={section.direction} className="h-full">
+            <ResizablePanelGroup orientation={section.direction} className="h-full">
                 {section.sections.map((nestedSection, idx) => (
                     <React.Fragment key={idx}>
                         <RenderSection

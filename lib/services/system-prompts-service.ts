@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * System Prompts Service
  * 

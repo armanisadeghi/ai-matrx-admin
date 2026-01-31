@@ -133,7 +133,7 @@ const ResizableBottomPanel: React.FC<ResizableBottomPanelProps> = (
             }}
         >
             <ResizablePanelGroup
-                direction="vertical"
+                orientation="vertical"
                 className="h-full"
                 onLayout={handlePanelResize}
                 style={{

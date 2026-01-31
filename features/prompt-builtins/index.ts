@@ -23,7 +23,7 @@ export type {
   // Execution types
   ResultDisplay,
   PromptExecutionConfig,
-  LegacyPromptExecutionMode,
+  // LegacyPromptExecutionMode, // Removed - not exported from types
   
   // Menu types
   ShortcutItem,

@@ -120,6 +120,7 @@ export function useContextMenuShortcuts(
           apply_variables: row.apply_variables ?? true,
           is_active: row.shortcut_is_active,
           created_by_user_id: null,
+          enabled_contexts: row.enabled_contexts || [], // Add missing property
           category: categoriesMap.get(row.category_id)!,
           prompt_builtin: row.builtin_id ? {
             id: row.builtin_id,

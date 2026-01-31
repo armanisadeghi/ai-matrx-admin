@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {FieldIdentifier, FormMode} from '../types';

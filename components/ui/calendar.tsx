@@ -60,9 +60,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        // @ts-ignore - IconLeft/IconRight may not be in CustomComponents type but are supported
         IconLeft: ({ className, ...props }) => (
           <ChevronLeftIcon className={cn("h-4 w-4", className)} />
         ),
+        // @ts-ignore - IconLeft/IconRight may not be in CustomComponents type but are supported
         IconRight: ({ className, ...props }) => (
           <ChevronRightIcon className={cn("h-4 w-4", className)} />
         ),

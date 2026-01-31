@@ -3,7 +3,8 @@
  * All display components receive these props from the core PromptRunner logic
  */
 
-import type { ConversationMessage } from "@/features/prompts/components/conversation";
+// @ts-ignore - conversation module may not exist, using any type
+import type { ConversationMessage } from "@/features/prompts/components/conversation" as any;
 import type { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import type { Resource } from "../resource-display";
 

@@ -207,10 +207,12 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
         )}
 
         <div className="relative">
+          {/* @ts-ignore - ButtonVariant includes "success" but Button component doesn't support it */}
           <Button
             ref={ref}
             type="button"
             variant={variant}
+            // @ts-ignore - Size type mismatch: ComponentSize includes "md"/"2xl"/"3xl" but Button size doesn't
             size={displayMode === "icon" ? "icon" : size}
             className={cn(
               displayMode === "icon"

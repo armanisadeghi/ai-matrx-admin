@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { HeaderExtraButtonsConfig } from "../../field-components/types";
+import { HeaderExtraButtonsConfig } from "@/types/customAppTypes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useToast } from "@/components/ui/use-toast";
 import { selectAppRuntimePrimaryColor } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";

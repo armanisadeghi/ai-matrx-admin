@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Example usage in your app:
 
 

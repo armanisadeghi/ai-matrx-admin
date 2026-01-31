@@ -293,7 +293,7 @@ export default function MultiFileCodeEditor({
         >
             <div ref={ref} className={cn("flex h-full", isFullScreen && "flex-1 overflow-hidden")}>
             {sidebarVisible ? (
-                <ResizablePanelGroup direction="horizontal">
+                <ResizablePanelGroup orientation="horizontal">
                     {/* File Sidebar */}
                     <ResizablePanel defaultSize={15} minSize={10} maxSize={30}>
                         <div className="h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">

@@ -43,12 +43,14 @@ export const ActiveEventsPanel = ({ onSelectEvent, selectedListenerId }: ActiveE
   // Empty stream data object with proper shape for fallback
   const emptyStreamData: ResponseState = {
     text: '',
+    textChunks: [],
     data: [],
     info: [],
     errors: [],
+    toolUpdates: [],
     ended: false,
     taskId: '',
-};
+  };
 
   return (
     <div className="w-full rounded-md border-border bg-textured">

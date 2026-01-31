@@ -25,7 +25,7 @@ const SchemaSelect = <TEntity extends EntityKeys>(
         onSchemaSelect,
         onSchemaFetched,
         selectedSchema
-    }: SchemaSelectProps): JSX.Element => {
+    }: SchemaSelectProps): React.JSX.Element => {
     const {getAllEntitiesWithPrettyName, createTypedEntitySchema} = useSchemaResolution();  // old
     const registeredSchemas = getAllEntitiesWithPrettyName();
 

@@ -548,7 +548,7 @@ export const MultiFileUploadWithSpinner = (
             scale: 1.05,
             transition: {
                 duration: 0.3,
-                ease: "easeInOut",
+                ease: "easeInOut" as const,
             }
         }
     };
@@ -558,7 +558,7 @@ export const MultiFileUploadWithSpinner = (
             opacity: 1,
             transition: {
                 duration: 0.3,
-                ease: "easeInOut",
+                ease: "easeInOut" as const,
             }
         }
     };

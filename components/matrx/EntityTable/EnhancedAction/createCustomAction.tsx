@@ -49,6 +49,8 @@ interface CustomActionConfig<TEntity extends EntityKeys> {
         };
         rollback?: boolean;
         logging?: boolean;
+        onSuccess?: (result: any, context: any) => void;
+        onError?: (error: any, context: any) => void;
     };
 }
 
@@ -147,7 +149,7 @@ export function createCustomAction<TEntity extends EntityKeys>(
         label: typeof config.label === 'function'
             ? (data: EntityData<TEntity>) => {
                 // const displayField = getDisplayField(data);
-                return config.label(data);
+                return typeof config.label === 'function' ? config.label(data) : config.label;
             }
             : config.label,
         icon: config.icon,

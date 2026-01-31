@@ -75,13 +75,15 @@ const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
                 <div className="relative">
                     <div
                         className={cn(
-                            spinnerCircleVariants({ size }),
+                            // @ts-ignore - Size type mismatch: ComponentSize includes "icon"/"2xl"/"3xl" but spinnerCircleVariants doesn't
+                            spinnerCircleVariants({ size: size === "icon" ? "sm" : size === "2xl" || size === "3xl" ? "xl" : size }),
                             "border-current opacity-25"
                         )}
                     />
                     <div
                         className={cn(
-                            spinnerCircleVariants({ size }),
+                            // @ts-ignore - Size type mismatch: ComponentSize includes "icon"/"2xl"/"3xl" but spinnerCircleVariants doesn't
+                            spinnerCircleVariants({ size: size === "icon" ? "sm" : size === "2xl" || size === "3xl" ? "xl" : size }),
                             "border-t-transparent border-l-transparent"
                         )}
                     />

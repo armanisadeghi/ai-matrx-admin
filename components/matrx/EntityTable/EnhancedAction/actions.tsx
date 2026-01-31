@@ -3,7 +3,7 @@
 import React from "react";
 import {ReactNode} from 'react';
 import {EntityKeys, EntityData, AutomationEntity} from '@/types/entityTypes';
-import {Edit, Eye} from "lucide-react";
+import {Edit, Eye, Wand} from "lucide-react";
 import MatrxTooltip from '../../MatrxTooltip';
 import {Button} from "@/components/ui";
 import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -206,13 +206,13 @@ export function ActionButton<TEntity extends EntityKeys>(
             <Button
                 onClick={handleClick}
                 disabled={!isEnabled}
-                size="xs"
+                size="sm"
                 variant="ghost"
                 className={`p-1 ${action.className || ""} ${className || ""}`}
             >
                 {children || (
                     React.isValidElement(actionIcon)
-                    ? React.cloneElement(actionIcon, {className: 'w-3 h-3'})
+                    ? React.cloneElement(actionIcon as React.ReactElement<any>, {className: 'w-3 h-3'})
                     : actionIcon
                 )}
             </Button>

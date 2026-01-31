@@ -88,7 +88,7 @@ function createTableCommand<TData = TableData>(
             <MatrxTooltip content={config.label} placement="left">
                 <Button
                     onClick={handleClick}
-                    size={config.size || "xs"}
+                    size={(config.size || "sm") as "default" | "sm" | "lg" | "icon"}
                     variant={config.variant || "ghost"}
                     disabled={!isEnabled}
                     className={cn(
@@ -533,7 +533,7 @@ export const TableActionIcon = React.forwardRef<
         hidden = false,
         callback,
         variant = "ghost",
-        size = "xs",
+        size = "sm" as "default" | "sm" | "lg" | "icon",
     } = action;
 
     if (hidden) return null;
@@ -554,7 +554,7 @@ export const TableActionIcon = React.forwardRef<
             <Button
                 ref={ref}
                 onClick={handleClick}
-                size={size}
+                size={size as "default" | "sm" | "lg" | "icon"}
                 variant={variant}
                 disabled={disabled}
                 className={cn(

@@ -157,6 +157,8 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
     );
     
     const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
+    const dispatch = useAppDispatch();
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
     const handleCommandExecute = async (
         actionName: EntityCommandName,
@@ -262,7 +264,10 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
                         entityKey,
                         data: {} as EntityData<TEntity>,
                         index: -1,
-                    });
+                        matrxRecordId: '',
+                        selectors,
+                        dispatch,
+                    } as EntityCommandContext<TEntity>);
                 }}
                 setColumnSettingsOpen={setColumnSettingsOpen}
                 columnSettingsOpen={columnSettingsOpen}
@@ -311,7 +316,6 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
                 columns={allColumns}
                 visibleColumns={visibleColumnAccessors}
                 setVisibleColumns={setVisibleColumnAccessors}
-                columnHeaders={allColumnNames}
             />
         </div>
     );

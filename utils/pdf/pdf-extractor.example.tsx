@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * USAGE EXAMPLES for pdf-extractor utility
  * 

@@ -11,10 +11,10 @@ export function EditHtmlTab({ state, actions }: HtmlPreviewTabProps) {
             <div className="flex-1 min-h-0 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                 <SmallCodeEditor
                     language="html"
-                    initialCode={actions.getCurrentHtmlContent()}
+                    initialCode={(actions as any).getCurrentHtmlContent?.() || ''}
                     onChange={(newCode) => {
                         if (newCode) {
-                            actions.setEditedCompleteHtml(newCode);
+                            (actions as any).setEditedCompleteHtml?.(newCode);
                         }
                     }}
                 />

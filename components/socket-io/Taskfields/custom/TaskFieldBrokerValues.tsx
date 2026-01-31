@@ -17,8 +17,7 @@ export const TaskFieldBrokerValues: React.FC<TaskFieldBrokerValuesProps> = ({
   fieldPath,
   className = '',
 }) => {
-
-  
+  const { definition } = useTaskField(taskId, fieldPath);
   
   // Get the reference schema for broker values
   const brokerSchema = definition?.REFERENCE;

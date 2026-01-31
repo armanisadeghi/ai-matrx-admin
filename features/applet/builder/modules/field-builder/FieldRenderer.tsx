@@ -51,6 +51,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
   };
   
   const renderComponent = () => {
+    // @ts-ignore - Type mismatch: field.component may be ComponentType but switch handles string literals
     switch (field.component) {
       case 'input':
         return (

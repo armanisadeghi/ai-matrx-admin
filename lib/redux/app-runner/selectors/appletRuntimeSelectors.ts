@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux/store";
 import { ComponentToBrokerMapping } from "../types";

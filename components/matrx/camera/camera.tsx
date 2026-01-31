@@ -84,7 +84,7 @@ const Camera: FC<CameraProps> = ({ onClosed, onCapturedImages }) => {
                     )}
                 </div>
 
-                <CameraView ref={camera}   />
+                <CameraView ref={camera} errorMessages={undefined} videoReadyCallback={() => null} />
                 <div className="absolute bottom-0 left-[45%] z-20 md:bottom-auto md:left-auto md:right-14 md:top-[50%] ">
                     <Button
                         className={cn(

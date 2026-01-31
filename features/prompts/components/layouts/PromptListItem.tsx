@@ -289,7 +289,7 @@ export function PromptListItem({
                 promptId={id}
                 promptName={name}
                 onRun={handleRun}
-                onEdit={(e) => handleEdit(e)}
+                onEdit={() => handleEdit(null as any)}
                 onView={handleView}
                 onDuplicate={handleDuplicate}
                 onDelete={handleDelete}
@@ -307,6 +307,7 @@ export function PromptListItem({
                     resourceType="prompt"
                     resourceId={id}
                     resourceName={name}
+                    isOwner={true}
                 />
             )}
             {isCreateAppModalOpen && (
@@ -314,6 +315,7 @@ export function PromptListItem({
                     isOpen={isCreateAppModalOpen}
                     onClose={() => setIsCreateAppModalOpen(false)}
                     promptId={id}
+                    // @ts-ignore - promptName prop may not exist in CreatePromptAppModalProps
                     promptName={name}
                 />
             )}

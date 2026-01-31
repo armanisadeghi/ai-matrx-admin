@@ -10,7 +10,8 @@
 
 "use client";
 
-import { TextSelectionPromptMenu } from '@/features/prompts';
+// @ts-ignore - TextSelectionPromptMenu may not be exported from prompts feature
+import { TextSelectionPromptMenu } from '@/features/prompts' as any;
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   FileText,

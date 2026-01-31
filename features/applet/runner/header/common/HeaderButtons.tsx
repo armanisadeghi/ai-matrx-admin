@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/lib/redux/hooks";
 import Link from "next/link";
-import { HeaderExtraButtonsConfig } from "../../field-components/types";
+import { HeaderExtraButtonsConfig } from "@/types/customAppTypes";
 import { useToast } from "@/components/ui/use-toast";
 
 // Export the handler functions for use in ButtonMenu

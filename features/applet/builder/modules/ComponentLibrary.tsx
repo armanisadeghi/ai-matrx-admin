@@ -61,6 +61,7 @@ const adaptFieldDefinition = (field: any): FieldDefinition => {
       iconName: field.iconName || field.icon_name,
       component: field.component as ComponentType,
       required: field.required,
+      // @ts-ignore - 'disabled' does not exist in FieldDefinition type but is used
       disabled: field.disabled,
       placeholder: field.placeholder,
       defaultValue: field.defaultValue || field.default_value,

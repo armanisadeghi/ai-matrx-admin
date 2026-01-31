@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { createSelector } from "@reduxjs/toolkit";

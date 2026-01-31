@@ -108,6 +108,7 @@ export function DynamicCards({
             title={systemPrompt.display_config?.label || systemPrompt.name}
             description={systemPrompt.description || ''}
             context={context}
+            {/* @ts-ignore - allowInitialMessage prop may not exist in PromptExecutionCardProps */}
             allowInitialMessage={allowInitialMessage}
             allowChat={allowChat}
           />

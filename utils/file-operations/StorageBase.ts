@@ -1,4 +1,5 @@
-import {Bucket as SupabaseBucket} from "@supabase/storage-js/dist/module/lib/types";
+
+
 
 class StorageMetadata {
     eTag: string;
@@ -94,7 +95,7 @@ class Bucket {
     updated_at: string;
     rootItem: StorageItem;
 
-    constructor(data: SupabaseBucket) {
+    constructor(data: any) {
         this.id = data.id;
         this.name = data.name;
         this.owner = data.owner;

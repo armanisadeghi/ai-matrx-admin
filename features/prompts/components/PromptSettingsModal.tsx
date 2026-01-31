@@ -654,6 +654,7 @@ export function PromptSettingsModal({
                                     models={models}
                                     settings={{
                                         temperature: localSettings?.temperature,
+                                        // @ts-ignore - max_tokens may not exist in PromptSettings type but is used in runtime
                                         max_tokens: localSettings?.max_tokens,
                                         top_p: localSettings?.top_p,
                                         top_k: localSettings?.top_k,

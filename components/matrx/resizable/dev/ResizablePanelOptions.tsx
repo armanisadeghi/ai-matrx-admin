@@ -80,7 +80,7 @@ export const ResizableBottomPanel: React.FC<ResizableBottomPanelProps> = (
         onFullScreen
     }) => (
     <div className="fixed inset-x-0 bottom-0 z-50">
-        <ResizablePanelGroup direction="vertical">
+        <ResizablePanelGroup orientation="vertical">
             <ResizablePanel
                 defaultSize={100 - defaultSize}
                 minSize={100 - maxSize}

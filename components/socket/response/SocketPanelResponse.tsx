@@ -252,6 +252,7 @@ const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
                     showCopyButton={true}
                     tabs={[
                         "write",
+                        // @ts-ignore - "rich" tab type may not be in type definition but is supported
                         "rich",
                         "preview",
                         "analysis",

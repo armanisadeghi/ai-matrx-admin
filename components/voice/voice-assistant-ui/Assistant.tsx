@@ -57,7 +57,7 @@ export default function Home() {
             toast.warning("Speech detection was too short");
         },
         positiveSpeechThreshold: 0.6,
-        minSpeechFrames: 4,
+        minSpeechMs: 4, // Fixed: was minSpeechFrames, should be minSpeechMs
         redemptionFrames: 8,
         preSpeechPadFrames: 1,
         baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/",

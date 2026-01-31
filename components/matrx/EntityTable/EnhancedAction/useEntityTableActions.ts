@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
-// import { createEntityActions } from '@/lib/redux/entity/entityActionCreator';
+import { createEntityActions } from '@/lib/redux/entity/concepts/entityActionCreator';
 import {createCustomAction} from "@/components/matrx/EntityTable/EnhancedAction/createCustomAction";
 import {standardActions} from "@/components/matrx/EntityTable/EnhancedAction/EntityMatrxActions";
 

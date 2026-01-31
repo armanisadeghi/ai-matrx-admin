@@ -66,7 +66,7 @@ const RenderSection: React.FC<{
             maxSize={section.maxSize || 90}
             collapsible={section.collapsible}
         >
-            <ResizablePanelGroup direction="vertical" className="h-full">
+            <ResizablePanelGroup orientation="vertical" className="h-full">
                 {section.sections.map((nestedSection, idx) => (
                     <React.Fragment key={idx}>
                         <RenderSection
@@ -92,7 +92,7 @@ export function NestedResizableLayout(
 
     return (
         <div className={`h-[calc(100vh-4rem)] ${className}`}>
-            <ResizablePanelGroup direction="horizontal">
+            <ResizablePanelGroup orientation="horizontal">
                 {sections.map((section, index) => (
                     <React.Fragment key={index}>
                         <RenderSection

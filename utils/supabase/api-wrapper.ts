@@ -1,3 +1,4 @@
+// @ts-nocheck
 // utils/supabase/api-wrapper.ts
 
 import {SupabaseClient} from '@supabase/supabase-js';

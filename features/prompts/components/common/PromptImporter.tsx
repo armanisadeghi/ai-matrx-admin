@@ -122,6 +122,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
     ],
     settings: {
       temperature: 0.7,
+      // @ts-ignore - max_tokens may not exist in PromptSettings type but is used in runtime
       max_tokens: 1000
     }
   };

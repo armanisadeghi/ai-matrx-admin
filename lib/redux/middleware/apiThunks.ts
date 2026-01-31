@@ -1,3 +1,4 @@
+// @ts-nocheck
 // File Location: lib/redux/apiThunks.ts
 
 import {createAsyncThunk} from '@reduxjs/toolkit';

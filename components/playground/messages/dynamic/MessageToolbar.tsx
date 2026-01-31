@@ -9,7 +9,7 @@ import {
   SquareRadical, 
   Eye 
 } from 'lucide-react';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/index';
 import DynamicToolbar from '../../components/dynamic/DynamicToolbar';
 import { BaseToolbarProps } from '../../components/dynamic/PanelContent';
 
