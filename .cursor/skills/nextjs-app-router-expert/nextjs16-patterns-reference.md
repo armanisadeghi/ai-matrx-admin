@@ -379,10 +379,10 @@ export async function updateProfile(formData: FormData) {
   const raw = Object.fromEntries(formData)
   const validated = updateProfileSchema.parse(raw)
   
-  const { error } = await supabase
-    .from('users')
-    .update(validated)
-    .eq('id', user.id)
+  // Update user metadata in auth.users (use supabase.auth.updateUser)
+  const { error } = await supabase.auth.updateUser({
+    data: validated // Updates user_metadata
+  })
   
   if (error) {
     throw new Error('Failed to update profile')

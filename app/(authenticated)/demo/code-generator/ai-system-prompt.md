@@ -249,25 +249,25 @@ function ContactForm() {
 
 #### Data Fetching with Supabase
 ```jsx
-function UserList() {
-  const [users, setUsers] = React.useState([]);
+function ItemList() {
+  const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   
   React.useEffect(() => {
-    async function fetchUsers() {
+    async function fetchItems() {
       try {
         setLoading(true);
         
         const { data, error } = await supabase
-          .from('users')
+          .from('items')  // Use your actual table name
           .select('*')
           .order('created_at', { ascending: false })
           .limit(10);
         
         if (error) throw error;
         
-        setUsers(data);
+        setItems(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -275,7 +275,7 @@ function UserList() {
       }
     }
     
-    fetchUsers();
+    fetchItems();
   }, []);
   
   if (loading) {

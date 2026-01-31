@@ -139,17 +139,16 @@ export async function sendSharingNotification(
       return { success: true }; // User opted out, consider it a success
     }
 
-    // Get recipient email
-    const { data: userData } = await supabase
-      .from('users')
-      .select('email')
-      .eq('id', recipientUserId)
-      .single();
+    // Get recipient email using RPC function (securely accesses auth.users)
+    const { data: usersData, error: userError } = await supabase
+      .rpc('get_user_emails_by_ids', { user_ids: [recipientUserId] });
 
-    if (!userData?.email) {
+    if (userError || !usersData || usersData.length === 0 || !usersData[0]?.email) {
       console.warn('No email found for user:', recipientUserId);
       return { success: false, error: 'User email not found' };
     }
+
+    const userData = usersData[0];
 
     // Get resource details
     const resourceDetails = await getResourceDetails(resourceType, resourceId);

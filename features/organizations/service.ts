@@ -345,6 +345,7 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
 
 /**
  * Get all members of an organization
+ * Uses RPC function to securely fetch user details from auth.users
  * @param orgId Organization ID
  * @returns Array of members with user details
  */
@@ -353,23 +354,24 @@ export async function getOrganizationMembers(
 ): Promise<OrganizationMemberWithUser[]> {
   try {
     const { data, error } = await supabase
-      .from('organization_members')
-      .select(`
-        *,
-        users:user_id (
-          id,
-          email,
-          display_name,
-          avatar_url
-        )
-      `)
-      .eq('organization_id', orgId)
-      .order('joined_at', { ascending: true });
+      .rpc('get_organization_members_with_users', { p_org_id: orgId });
 
     if (error) throw error;
 
-    // Transform and return with user details
-    return (data || []).map(transformMemberFromDb);
+    // Transform RPC result to application format
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      organizationId: row.organization_id,
+      userId: row.user_id,
+      role: row.role,
+      joinedAt: row.joined_at,
+      invitedBy: row.invited_by,
+      user: {
+        id: row.user_id,
+        email: row.user_email || '',
+        displayName: row.user_display_name || undefined,
+      },
+    }));
   } catch (error) {
     console.error('Error fetching organization members:', error);
     return [];
@@ -617,14 +619,13 @@ export async function inviteToOrganization(
         .eq('id', organizationId)
         .single();
 
-      // Fetch inviter details
-      const { data: inviterData } = await supabase
-        .from('users')
-        .select('display_name, email')
-        .eq('id', currentUser.id)
-        .single();
+      // Get inviter details from current authenticated user
+      const inviterName = currentUser.user_metadata?.full_name 
+        || currentUser.user_metadata?.name 
+        || currentUser.email 
+        || 'Someone';
 
-      if (orgData && inviterData) {
+      if (orgData) {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aimatrx.com';
         const invitationUrl = `${siteUrl}/organizations/accept-invitation?token=${token}`;
         
@@ -633,7 +634,7 @@ export async function inviteToOrganization(
         
         const emailTemplate = emailTemplates.organizationInvitation(
           orgData.name,
-          inviterData.display_name || inviterData.email,
+          inviterName,
           invitationUrl,
           expiresAt
         );

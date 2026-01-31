@@ -465,16 +465,14 @@ export async function fetchAppsAdmin(filters?: {
         throw error;
     }
 
-    // Fetch user emails separately if we have apps
+    // Fetch user emails separately if we have apps (using RPC to access auth.users securely)
     if (data && data.length > 0) {
         const userIds = [...new Set(data.map(app => app.user_id))];
         const { data: users } = await supabase
-            .from('users')
-            .select('id, email')
-            .in('id', userIds);
+            .rpc('get_user_emails_by_ids', { user_ids: userIds });
 
         if (users && users.length > 0) {
-            const userMap = new Map(users.map(user => [user.id, user]));
+            const userMap = new Map(users.map((user: { id: string; email: string }) => [user.id, user]));
 
             return data.map(item => ({
                 ...item,

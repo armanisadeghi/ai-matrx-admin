@@ -21,15 +21,15 @@ export async function GET(request: Request) {
       );
     }
 
-    // Check if user is admin/moderator
+    // Check if user is admin (using admins table)
     const adminSupabase = createAdminClient();
-    const { data: userData } = await adminSupabase
-      .from("users")
-      .select("role")
-      .eq("id", authUser.id)
+    const { data: adminData } = await adminSupabase
+      .from("admins")
+      .select("user_id")
+      .eq("user_id", authUser.id)
       .single();
 
-    if (!userData || (userData.role !== "admin" && userData.role !== "moderator")) {
+    if (!adminData) {
       return NextResponse.json(
         { success: false, msg: "Forbidden - Admin access required" },
         { status: 403 }

@@ -21,15 +21,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // Check if user is admin
+  // Check if user is admin (using admins table)
   const adminSupabase = createAdminClient();
-  const { data: userData } = await adminSupabase
-    .from("users")
-    .select("role")
-    .eq("id", authUser.id)
+  const { data: adminData } = await adminSupabase
+    .from("admins")
+    .select("user_id")
+    .eq("user_id", authUser.id)
     .single();
 
-  if (!userData || (userData.role !== "admin" && userData.role !== "moderator")) {
+  if (!adminData) {
     return NextResponse.json(
       { success: false, msg: "Forbidden - Admin access required" },
       { status: 403 }
@@ -71,11 +71,9 @@ export async function POST(request: Request) {
       // Direct email addresses provided
       recipients = to;
     } else if (userIds && Array.isArray(userIds) && userIds.length > 0) {
-      // Fetch emails by user IDs
+      // Fetch emails by user IDs using RPC (securely accesses auth.users)
       const { data: users, error } = await adminSupabase
-        .from("users")
-        .select("email")
-        .in("id", userIds);
+        .rpc("get_user_emails_by_ids", { user_ids: userIds });
 
       if (error) {
         console.error("Error fetching user emails:", error);
@@ -85,7 +83,7 @@ export async function POST(request: Request) {
         );
       }
 
-      recipients = users?.map((u) => u.email).filter(Boolean) || [];
+      recipients = users?.map((u: { email: string }) => u.email).filter(Boolean) || [];
     } else {
       return NextResponse.json(
         { success: false, msg: "Either 'to' or 'userIds' must be provided" },

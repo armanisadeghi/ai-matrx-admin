@@ -93,29 +93,24 @@ export async function shareWithUser(
 
     // Send email notification (async, non-blocking)
     try {
-      // Get sharer's name for email
-      const { data: sharerData } = await supabase
-        .from('users')
-        .select('display_name, email')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (sharerData) {
-        const sharerName = sharerData.display_name || sharerData.email;
-        
-        // Import email service dynamically
-        const { sendSharingNotification } = await import('@/features/sharing/emailService');
-        
-        // Send notification (don't await - fire and forget)
-        sendSharingNotification({
-          recipientUserId: userId,
-          resourceType,
-          resourceId,
-          sharerName,
-        }).catch((err) => {
-          console.error('Failed to send sharing notification email:', err);
-        });
-      }
+      // Get sharer's name from current authenticated user
+      const sharerName = currentUser.user_metadata?.full_name 
+        || currentUser.user_metadata?.name 
+        || currentUser.email 
+        || 'Someone';
+      
+      // Import email service dynamically
+      const { sendSharingNotification } = await import('@/features/sharing/emailService');
+      
+      // Send notification (don't await - fire and forget)
+      sendSharingNotification({
+        recipientUserId: userId,
+        resourceType,
+        resourceId,
+        sharerName,
+      }).catch((err) => {
+        console.error('Failed to send sharing notification email:', err);
+      });
     } catch (emailError) {
       // Don't fail the share if email fails
       console.error('Error sending sharing notification:', emailError);
