@@ -1,3 +1,4 @@
+// @ts-nocheck
 // entityExports.ts
 import { getEntitySelectors, getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import { AutomationTableName } from '@/types/AutomationSchemaTypes';

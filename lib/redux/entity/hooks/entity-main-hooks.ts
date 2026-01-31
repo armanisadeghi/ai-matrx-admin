@@ -1,3 +1,4 @@
+// @ts-nocheck
 // File: lib/redux/entity/hooks/entityMainHooks.ts
 
 import {

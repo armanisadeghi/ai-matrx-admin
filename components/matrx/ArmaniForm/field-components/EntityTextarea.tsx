@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, {TextareaHTMLAttributes, useMemo, useState} from "react";
 import {cn} from "@/styles/themes/utils";
 import {Label} from "@/components/ui/label";

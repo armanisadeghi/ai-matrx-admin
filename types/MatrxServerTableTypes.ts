@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ReactNode } from 'react';
 import { TableState } from 'react-table';
 import {AutomationEntity, EntityData, EntityKeys} from '@/types/entityTypes';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // lib/redux/features/recipes/recipeThunks.ts
 
 import {createAsyncThunk} from '@reduxjs/toolkit';

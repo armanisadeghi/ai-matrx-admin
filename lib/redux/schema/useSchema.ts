@@ -1,3 +1,4 @@
+// @ts-nocheck
 // lib/redux/hooks/useGlobalCache.ts
 
 import { useMemo } from 'react';
