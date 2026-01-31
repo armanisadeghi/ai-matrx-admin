@@ -1,6 +1,6 @@
 import React from 'react';
 import { FieldComponentProps } from '../../types';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { hasCustomFkComponent, getCustomFkComponentName } from './custom-fk-config';
 import FieldComponentsFkCustom from './custom/FieldComponentsFkCustom';
 

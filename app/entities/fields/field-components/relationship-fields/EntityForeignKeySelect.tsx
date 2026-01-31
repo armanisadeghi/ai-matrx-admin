@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FieldComponentProps } from '../../types';
 import MatrxSelectFloatinglabel from '@/components/matrx/MatrxSelectFloatingLabel';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';
 import EntitySheetForm from '@/app/entities/forms/EntitySheetForm';

@@ -7,11 +7,11 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Files Processed | 7 |
-| Errors Fixed | 7 |
+| Total Files Processed | 15 |
+| Errors Fixed | 15 |
 | Errors Flagged for Review | 0 |
 | Files Excluded | 0 |
-| Batches Completed | 2 |
+| Batches Completed | 3 |
 
 ## By Area
 
@@ -19,8 +19,8 @@
 |------|--------|----------------|--------------|----------------|
 | constants/ | ✅ Complete | 1 | 1 | 0 |
 | providers/ | ✅ Complete | 2 | 2 | 0 |
-| app/entities/fields/ | ✅ Complete | 2 | 2 | 0 |
-| app/entities/forms/ | ✅ Complete | 1 | 1 | 0 |
+| app/entities/fields/ | ✅ Complete | 8 | 8 | 0 |
+| app/entities/forms/ | ✅ Complete | 3 | 3 | 0 |
 | app/entities/hooks/ | ✅ Complete | 1 | 1 | 0 |
 
 ## Next Areas to Process

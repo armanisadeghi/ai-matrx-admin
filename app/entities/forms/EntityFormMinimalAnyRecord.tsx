@@ -5,7 +5,8 @@ import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
 import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
 import { getFormStyle } from './formUtils';
-import { ComponentDensity, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
+import { ComponentDensity } from '@/types/componentConfigTypes';
 import EntityFormFooter from './form-helpers/EntityFormFooter';
 
 interface EntityFormMinimalAnyRecordProps {

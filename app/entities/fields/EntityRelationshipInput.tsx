@@ -1,7 +1,7 @@
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { SearchIcon } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 import EntityInput, { EntityInputProps } from './field-components/EntityInput';
 import EntityButton from './other-components/EntityButton';
 

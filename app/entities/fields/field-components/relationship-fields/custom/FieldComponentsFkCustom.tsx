@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { FieldComponentProps } from '../../../types';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';
 import FieldListTableOverlay from '@/features/applet/builder/modules/field-builder/FieldListTableOverlay';
