@@ -3,13 +3,15 @@ import { FieldKeys, AllEntityNameVariations, AnyEntityDatabaseTable, EntityKeys,
 import {
     FieldDataOptionsType,
     DataStructure,
+    FetchStrategy,
+    NameFormat,
+} from '@/types/AutomationSchemaTypes';
+import {
     AutomationEntities,
     EntityNameOfficial,
-    FetchStrategy,
     relationships,
     AllEntityFieldVariations,
     EntityDatabaseTable,
-    NameFormat,
     UnifiedSchemaCache,
     PrettyEntityName,
     PrettyFieldName,

@@ -155,7 +155,8 @@ function EntityQuickReferenceCardsEnhanced<TEntity extends EntityKeys>(
         return {
             duration: 0.3,
             delay: index * delayMultiplier,
-            type: animationPreset === 'playful' ? 'spring' : 'easeOut',
+            // @ts-ignore - COMPLEX: type should be AnimationGeneratorType but string is used, may need refactor
+            type: (animationPreset === 'playful' ? 'spring' : 'easeOut') as any,
         };
     };
 

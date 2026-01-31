@@ -110,10 +110,10 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
             meta: {
                 isPrimaryKey: col.isPrimaryKey,
                 isDisplayField: col.isDisplayField,
-                fieldType: fieldInfo[col.key]?.type || 'string',
+                fieldType: fieldInfo[col.key]?.dataType || 'string',
                 sortable: !col.isPrimaryKey,
                 filterable: !col.isPrimaryKey,
-                align: fieldInfo[col.key]?.align || 'left',
+                align: 'left', // TODO: Add align property to EntityStateField if needed
             } as TanStackColumnMeta
         } as ColumnDef<EntityData<TEntity>>));
     }, [tableColumns, fieldInfo]);

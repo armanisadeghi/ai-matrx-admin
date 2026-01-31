@@ -99,7 +99,8 @@ const FunctionManagement: React.FC = () => {
             allIdAndNames={allIdAndNames}
             items={Object.values(items).map(item => ({
                 ...item,
-                type: item.type || RegisteredFunctionTypeEnum.Base
+                // @ts-ignore - COMPLEX: item doesn't have type property, may need type extension
+                type: (item as any).type || RegisteredFunctionTypeEnum.Base
             }))}
             fields={fields}
             getItemId={(item) => item.id}

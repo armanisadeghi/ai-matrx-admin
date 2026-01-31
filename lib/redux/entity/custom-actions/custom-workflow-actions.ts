@@ -735,6 +735,7 @@ export const getWorkflowActionsWithThunks = () => {
 
                 dispatch(workflowActions.updateNestedFieldSmart({ 
                     keyOrId, 
+                    // @ts-ignore - COMPLEX: "backendWorkflow" not in expected field union type - requires field type definition update
                     field: "backendWorkflow", 
                     nestedKey: "workflow_metadata", 
                     value: params.metadata 

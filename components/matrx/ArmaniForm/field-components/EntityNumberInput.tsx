@@ -8,6 +8,31 @@ import {MinusCircle, PlusCircle} from 'lucide-react';
 import {Label} from '@/components/ui/label';
 import {EntityBaseFieldProps} from "../EntityBaseField";
 import {MatrxVariant} from './types';
+import type { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "@/components/ui/button";
+
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+
+// Map MatrxVariant to Button variant
+const mapVariant = (variant?: MatrxVariant): ButtonVariant => {
+    switch (variant) {
+        case 'primary':
+        case 'success':
+            return 'default';
+        case 'destructive':
+            return 'destructive';
+        case 'outline':
+            return 'outline';
+        case 'secondary':
+            return 'secondary';
+        case 'ghost':
+            return 'ghost';
+        case 'link':
+            return 'link';
+        default:
+            return 'outline';
+    }
+};
 
 type NumberType =
     'default'
@@ -245,7 +270,7 @@ const EntityNumberInput = React.forwardRef<HTMLInputElement, EntityNumberInputPr
                 {!hideControls && (
                     <Button
                         type="button"
-                        variant={buttonVariant}
+                        variant={mapVariant(buttonVariant)}
                         size="icon"
                         onClick={handleIncrement}
                         disabled={disabled || value === null || value >= max}

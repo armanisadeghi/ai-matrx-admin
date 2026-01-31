@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useDynamicGateway} from "@/app/(authenticated)/tests/dynamic-gateway-concept/hooks/useDynamicGateway";
 
 
 interface ComponentAProps {

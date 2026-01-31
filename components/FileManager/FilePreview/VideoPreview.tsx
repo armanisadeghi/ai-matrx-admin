@@ -21,6 +21,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ file }) => {
                 width="100%"
                 height="100%"
                 config={{
+                    // @ts-ignore - COMPLEX: ReactPlayer Config type doesn't include 'file' property - needs type definition update or different config structure
                     file: {
                         attributes: {
                             controlsList: 'nodownload',

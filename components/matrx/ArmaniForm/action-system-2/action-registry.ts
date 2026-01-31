@@ -5,6 +5,7 @@ import {
 import EntityQuickReferenceList from "../../Entity/prewired-components/quick-reference/EntityQuickReferenceList";
 import RecordSelector from "@/components/matrx/ArmaniForm/action-system/action-components/RecordSelector";
 import {JsonEditor} from "@/components/matrx/ArmaniForm/action-system/action-components/JsonEditor";
+import {QuickReferenceSidebar} from "@/components/matrx/Entity/prewired-components";
 
 
 const PRESENTATION_COMPONENTS = {

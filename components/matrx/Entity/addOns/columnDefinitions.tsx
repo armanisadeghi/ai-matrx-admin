@@ -266,7 +266,7 @@ export const createTableColumnDefinitions = <TEntity extends EntityKeys>() => {
                         <Button
                             key={index}
                             variant={action.variant || "outline"}
-                            size={action.size || "xs"}
+                            size={(action.size === "xs" ? "sm" : action.size) || "sm"}
                             onClick={() => action.onClick(row.original)}
                             className={action.className}
                         >

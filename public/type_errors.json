@@ -14,13 +14,6 @@
     "code": 2741
   },
   {
-    "file": "app/(authenticated)/tests/matrx-local/DirectoryStructureGroup.tsx",
-    "line": 49,
-    "column": 26,
-    "message": "Property 'onTest' is missing in type '{ endpoint: any; baseUrl: string; }' but required in type 'EndpointCardProps'.",
-    "code": 2741
-  },
-  {
     "file": "app/(authenticated)/tests/matrx-local/page.tsx",
     "line": 280,
     "column": 58,
@@ -30,79 +23,16 @@
   {
     "file": "app/entities/hooks/useEntityCrudFinal.ts",
     "line": 149,
-    "column": 39,
-    "message": "Argument of type 'UpdateRecordPayload' is not assignable to parameter of type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.\n  Property 'data' is missing in type 'UpdateRecordPayload' but required in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
-    "code": 2345
+    "column": 9,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "app/entities/hooks/useEntityCrudFinal.ts",
-    "line": 163,
-    "column": 43,
-    "message": "Argument of type '{ matrxRecordId: string; callbackId: string; }' is not assignable to parameter of type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.\n  Property 'data' is missing in type '{ matrxRecordId: string; callbackId: string; }' but required in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
-    "code": 2345
-  },
-  {
-    "file": "components/DirectoryTree/DirectoryItemRenderers.tsx",
-    "line": 15,
-    "column": 50,
-    "message": "Cannot find module '../file-operations/utils' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/FileManager/FilePreview/VideoPreview.tsx",
-    "line": 24,
-    "column": 21,
-    "message": "Object literal may only specify known properties, and 'file' does not exist in type 'Config'.",
-    "code": 2353
-  },
-  {
-    "file": "components/GlobalContextMenu/version-one/hooks/useFileContextMenu.ts",
-    "line": 55,
-    "column": 55,
-    "message": "Expected 1 arguments, but got 2.",
-    "code": 2554
-  },
-  {
-    "file": "components/GlobalContextMenu/version-one/hooks/useFileContextMenu.ts",
-    "line": 66,
-    "column": 55,
-    "message": "Expected 1 arguments, but got 2.",
-    "code": 2554
-  },
-  {
-    "file": "components/GlobalContextMenu/version-one/hooks/useFileContextMenu.ts",
-    "line": 77,
-    "column": 57,
-    "message": "Expected 1 arguments, but got 2.",
-    "code": 2554
-  },
-  {
-    "file": "components/GlobalContextMenu/version-two/hooks/useMenuHandlerRegistration.ts",
-    "line": 10,
-    "column": 29,
-    "message": "Cannot find name 'useMenuRegistry'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/admin/AdminSaveButton.tsx",
-    "line": 46,
-    "column": 34,
-    "message": "Cannot find name 'saveJson'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/admin/AdminSaveButton.tsx",
-    "line": 82,
-    "column": 34,
-    "message": "Cannot find name 'savePublicText'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/admin/AdminSaveButton.tsx",
-    "line": 119,
-    "column": 34,
-    "message": "Cannot find name 'savePublicImage'.",
-    "code": 2304
+    "line": 164,
+    "column": 13,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/ArmaniForm/SimpleRelationshipWrapper.tsx",
@@ -112,256 +42,74 @@
     "code": 2349
   },
   {
-    "file": "components/matrx/ArmaniForm/action-system-2/ActionWrapperOld.tsx",
-    "line": 89,
-    "column": 31,
-    "message": "Type 'string | Function' is not assignable to type 'string'.\n  Type 'Function' is not assignable to type 'string'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system-2/ActionWrapperOld.tsx",
-    "line": 92,
-    "column": 31,
-    "message": "Type 'string | Function' is not assignable to type 'string'.\n  Type 'Function' is not assignable to type 'string'.",
-    "code": 2322
+    "file": "components/matrx/ArmaniForm/SimpleRelationshipWrapper.tsx",
+    "line": 117,
+    "column": 25,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/ArmaniForm/action-system-2/ActionWrapperOld.tsx",
     "line": 233,
-    "column": 12,
-    "message": "Generic type 'EntityField' requires 2 type argument(s).",
-    "code": 2314
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/ArmaniForm/action-system-2/ActionWrapperOld.tsx",
-    "line": 238,
-    "column": 10,
-    "message": "Property 'children' is missing in type '{ field: any; actions: Record<string, ActionConfig>; onActionComplete: (result: any) => void; }' but required in type 'ActionWrapperProps'.",
-    "code": 2741
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/DynamicFieldWrapper.tsx",
-    "line": 7,
-    "column": 9,
-    "message": "Module '\"@/config/ui/entity-layout-config\"' declares 'AnimationPreset' locally, but it is not exported.",
-    "code": 2459
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 266,
-    "column": 14,
-    "message": "Cannot redeclare block-scoped variable 'ICON_OPTIONS'.",
-    "code": 2451
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 564,
-    "column": 14,
-    "message": "Cannot redeclare block-scoped variable 'ICON_OPTIONS'.",
-    "code": 2451
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 595,
-    "column": 14,
-    "message": "Cannot redeclare block-scoped variable 'ICON_OPTIONS'.",
-    "code": 2451
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 638,
-    "column": 21,
-    "message": "Property 'name' is missing in type '{}' but required in type 'IconProps'.",
-    "code": 2741
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 640,
-    "column": 21,
-    "message": "Type '{}' is missing the following properties from type 'SimpleIconProps': name, onClick",
-    "code": 2739
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 642,
-    "column": 21,
-    "message": "Property 'name' is missing in type '{}' but required in type 'AdvancedIconProps'.",
-    "code": 2741
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 648,
-    "column": 20,
-    "message": "Cannot find name 'ACTION_REGISTRY'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 648,
-    "column": 49,
-    "message": "Cannot find name 'ACTION_REGISTRY'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
-    "line": 699,
-    "column": 25,
-    "message": "Cannot find name 'ACTION_REGISTRY'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system-2/action-registry.ts",
-    "line": 12,
-    "column": 27,
-    "message": "Cannot find name 'QuickReferenceSidebar'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system-2/action-registry.ts",
-    "line": 96,
-    "column": 28,
-    "message": "Cannot find name 'QuickReferenceSidebar'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/ActionFieldWrapper.tsx",
-    "line": 44,
-    "column": 33,
-    "message": "Type '{ key: any; matrxAction: any; field: any; value: any; onChange: any; fieldComponentProps: any; density: string; animationPreset: string; onActionComplete: (isOpen: boolean) => void; }' is not assignable to type 'IntrinsicAttributes & FieldActionProps'.\n  Property 'fieldComponentProps' does not exist on type 'IntrinsicAttributes & FieldActionProps'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/FieldAction.tsx",
-    "line": 29,
-    "column": 9,
-    "message": "Type 'ActionRegistryEntry' is missing the following properties from type 'ActionRegistryEntry[]': length, pop, push, concat, and 35 more.",
-    "code": 2740
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/FieldAction.tsx",
-    "line": 47,
-    "column": 72,
-    "message": "Spread types may only be created from object types.",
-    "code": 2698
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/action-components/actionComponentRegistry.ts",
-    "line": 245,
-    "column": 20,
-    "message": "Cannot find name 'QuickReferenceSidebar'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/hooks/GatewayExample.tsx",
-    "line": 5,
-    "column": 32,
-    "message": "Cannot find name 'useDynamicGateway'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/hooks/GatewayExample.tsx",
-    "line": 49,
-    "column": 21,
-    "message": "Cannot find name 'useDynamicGateway'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/hooks/useFieldActions.ts",
-    "line": 39,
-    "column": 9,
-    "message": "Type '{ variant: any; config: any; controls: any; onOpenChange: (open: boolean) => void; className: string; }' is missing the following properties from type 'PresentationProps': trigger, content",
-    "code": 2739
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/hooks/useFieldActions.ts",
-    "line": 69,
+    "line": 240,
     "column": 13,
-    "message": "Object literal may only specify known properties, and 'eventHandlers' does not exist in type 'TriggerProps'.",
-    "code": 2353
+    "message": "Property 'value' is missing in type 'EntityField<any, any>' but required in type 'EntityField'.",
+    "code": 2741
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system-2/IconRegistry.tsx",
+    "line": 659,
+    "column": 9,
+    "message": "Argument of type 'string' is not assignable to parameter of type 'IconDefinition'.",
+    "code": 2345
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/FieldAction.tsx",
+    "line": 27,
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/ArmaniForm/action-system/hooks/useFieldActions.ts",
-    "line": 71,
-    "column": 40,
+    "line": 42,
+    "column": 13,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "components/matrx/ArmaniForm/action-system/hooks/useFieldActions.ts",
+    "line": 72,
+    "column": 53,
     "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
     "code": 2339
   },
   {
     "file": "components/matrx/ArmaniForm/action-system/hooks/useFieldActions.ts",
-    "line": 76,
-    "column": 40,
+    "line": 73,
+    "column": 47,
     "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
     "code": 2339
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/icons/iconRegistry.tsx",
-    "line": 636,
-    "column": 21,
-    "message": "Property 'name' is missing in type '{}' but required in type 'IconProps'.",
-    "code": 2741
+    "file": "components/matrx/ArmaniForm/action-system/presentation/new.tsx",
+    "line": 200,
+    "column": 5,
+    "message": "Type '{ trigger: { valueType: \"direct\"; isRequired: true; metadata: { description: \"Component that triggers the presentation\"; type: \"ReactNode\"; }; }; content: { valueType: \"direct\"; isRequired: true; metadata: { description: \"Content to display in the presentation\"; type: \"ReactNode\"; }; }; }' is missing the following properties from type 'PresentationPropDefinitions': variant, title, description, helpSource, and 4 more.",
+    "code": 2740
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/icons/iconRegistry.tsx",
-    "line": 638,
-    "column": 21,
-    "message": "Type '{}' is missing the following properties from type 'SimpleIconProps': name, onClick",
-    "code": 2739
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/icons/iconRegistry.tsx",
-    "line": 640,
-    "column": 21,
-    "message": "Property 'name' is missing in type '{}' but required in type 'AdvancedIconProps'.",
-    "code": 2741
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/icons/iconRegistry.tsx",
-    "line": 653,
-    "column": 40,
-    "message": "Property 'iconName' does not exist on type 'TriggerType'.\n  Property 'iconName' does not exist on type '({ iconName, label, onClick, className, variant, disabled, children, }: TriggerProps) => Element'.",
+    "file": "components/matrx/ArmaniForm/action-system/presentation/new.tsx",
+    "line": 337,
+    "column": 27,
+    "message": "Property 'handlers' does not exist on type 'PresentationDefinition'.",
     "code": 2339
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/presentation/CustomPresentation.tsx",
-    "line": 17,
-    "column": 51,
-    "message": "Cannot find namespace 'JSX'.",
-    "code": 2503
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/presentation/CustomPresentation.tsx",
-    "line": 79,
-    "column": 15,
-    "message": "Cannot find namespace 'JSX'.",
-    "code": 2503
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/presentation/new.tsx",
-    "line": 202,
-    "column": 9,
-    "message": "Property 'metadata' is missing in type '{ valueType: \"direct\"; isRequired: true; }' but required in type '{ valueType: \"direct\"; isRequired: true; metadata: { description: \"Component that triggers the presentation\"; type: \"ReactNode\"; }; }'.",
-    "code": 2741
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/presentation/new.tsx",
-    "line": 210,
-    "column": 17,
-    "message": "Type '\"Content to display in the sheet\"' is not assignable to type '\"Content to display in the presentation\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/presentation/new.tsx",
-    "line": 312,
-    "column": 45,
-    "message": "Property 'get' does not exist on type 'typeof PresentationRegistry'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/presentation/new.tsx",
-    "line": 322,
-    "column": 16,
-    "message": "Cannot find name 'processProps'.",
-    "code": 2304
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/action-system/triggers/EntityDropdownMenu.tsx",
@@ -372,709 +120,219 @@
   },
   {
     "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 46,
+    "line": 184,
     "column": 9,
     "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
     "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 77,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 104,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 132,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 160,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 189,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 220,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 250,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 281,
-    "column": 9,
-    "message": "Property 'dataProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 282,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 317,
-    "column": 9,
-    "message": "Property 'dataProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 320,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 363,
-    "column": 9,
-    "message": "Property 'dataProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 366,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 367,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 414,
-    "column": 9,
-    "message": "Property 'dataProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 417,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 418,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 468,
-    "column": 9,
-    "message": "Property 'dataProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 469,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 472,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 525,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 526,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 559,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 560,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 603,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 604,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 637,
-    "column": 9,
-    "message": "Property 'uiProps' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/ArmaniForm/action-system/triggers/triggerComponents.tsx",
-    "line": 638,
-    "column": 9,
-    "message": "Property 'eventHandlers' does not exist on type 'TriggerProps'.",
-    "code": 2339
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/field-components/EntityDropdownMenu.tsx",
-    "line": 66,
-    "column": 37,
-    "message": "Type 'MatrxVariant' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.\n  Type '\"success\"' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.",
-    "code": 2322
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/field-components/EntityNumberInput.tsx",
-    "line": 218,
+    "line": 243,
     "column": 25,
     "message": "Type 'MatrxVariant' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.\n  Type '\"success\"' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.",
     "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/ArmaniForm/field-components/EntityNumberInput.tsx",
-    "line": 248,
-    "column": 25,
-    "message": "Type 'MatrxVariant' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.\n  Type '\"success\"' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/ArmaniForm/modal/AnimatedFormModal.tsx",
-    "line": 73,
-    "column": 89,
-    "message": "No overload matches this call.\n  The last overload gave the following error.\n    Object literal may only specify known properties, and 'onClick' does not exist in type 'Partial<unknown> & Attributes'.",
-    "code": 2769
-  },
-  {
-    "file": "components/matrx/ArmaniForm/modal/AnimatedTabModal.tsx",
-    "line": 119,
-    "column": 88,
-    "message": "No overload matches this call.\n  The last overload gave the following error.\n    Object literal may only specify known properties, and 'onClick' does not exist in type 'Partial<unknown> & Attributes'.",
-    "code": 2769
-  },
-  {
-    "file": "components/matrx/Entity/DataTable/versions/DataTableOne/useEntityDataTable.ts",
-    "line": 113,
-    "column": 48,
-    "message": "Property 'type' does not exist on type 'EntityStateField'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/DataTable/versions/DataTableOne/useEntityDataTable.ts",
-    "line": 116,
-    "column": 44,
-    "message": "Property 'align' does not exist on type 'EntityStateField'.",
-    "code": 2339
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/action/CreateEntityButton.tsx",
     "line": 23,
-    "column": 29,
-    "message": "Argument of type 'Record<string, any>' is not assignable to parameter of type 'FlexibleQueryOptions[]'.\n  Type 'Record<string, any>' is missing the following properties from type 'FlexibleQueryOptions[]': length, pop, push, concat, and 35 more.",
-    "code": 2345
-  },
-  {
-    "file": "components/matrx/Entity/action/MatrixTableActions.tsx",
-    "line": 53,
-    "column": 17,
-    "message": "Type '\"xs\"' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/Entity/action/MatrixTableActions.tsx",
-    "line": 57,
-    "column": 66,
-    "message": "No overload matches this call.\n  The last overload gave the following error.\n    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.",
-    "code": 2769
+    "column": 9,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/action/UpdateEntityButton.tsx",
-    "line": 34,
+    "line": 31,
+    "column": 9,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/action/UpdateEntityButton.tsx",
+    "line": 37,
     "column": 13,
     "message": "Expected 1-2 arguments, but got 3.",
     "code": 2554
   },
   {
-    "file": "components/matrx/Entity/addOns/DebouncedInput.tsx",
-    "line": 12,
-    "column": 31,
-    "message": "'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.",
-    "code": 2686
-  },
-  {
-    "file": "components/matrx/Entity/addOns/DebouncedInput.tsx",
-    "line": 14,
-    "column": 5,
-    "message": "'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.",
-    "code": 2686
-  },
-  {
-    "file": "components/matrx/Entity/addOns/DebouncedInput.tsx",
-    "line": 18,
-    "column": 5,
-    "message": "'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.",
-    "code": 2686
-  },
-  {
-    "file": "components/matrx/Entity/addOns/Filter.tsx",
-    "line": 11,
-    "column": 18,
-    "message": "Cannot find name 'DebouncedInput'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/Entity/addOns/Filter.tsx",
-    "line": 20,
-    "column": 18,
-    "message": "Cannot find name 'DebouncedInput'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/Entity/addOns/Filter.tsx",
-    "line": 45,
-    "column": 14,
-    "message": "Cannot find name 'DebouncedInput'.",
-    "code": 2304
-  },
-  {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/addOns/columnDefinitions.tsx",
     "line": 269,
-    "column": 29,
-    "message": "Type '\"xs\" | ButtonSize' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.\n  Type '\"xs\"' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/Entity/addOns/mapDataTypeToFormFieldType.ts",
-    "line": 94,
-    "column": 11,
-    "message": "Property 'phone' is missing in type '{ string: \"text\"; number: \"number\"; boolean: \"checkbox\"; array: \"select\"; object: \"json\"; json: \"json\"; uuid: \"text\"; email: \"email\"; url: \"url\"; datetime: \"datetime-local\"; null: \"text\"; undefined: \"text\"; any: \"text\"; function: \"text\"; symbol: \"text\"; union: \"text\"; bigint: \"number\"; date: \"date\"; map: \"json\"; set: \"json\"; tuple: \"text\"; enum: \"select\"; intersection: \"text\"; literal: \"text\"; void: \"text\"; never: \"text\"; }' but required in type 'Record<FieldDataOptionsType, FormFieldType>'.",
-    "code": 2741
+    "column": 36,
+    "message": "This comparison appears to be unintentional because the types 'ButtonSize' and '\"xs\"' have no overlap.",
+    "code": 2367
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/components/SingleRecordViewer.tsx",
     "line": 27,
-    "column": 47,
-    "message": "Expected 1 arguments, but got 0.",
-    "code": 2554
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/components/SingleRecordViewer.tsx",
-    "line": 69,
-    "column": 21,
-    "message": "Type '{ fields: EntityStateField[]; config: RecordDisplayConfig; onChange: (field: string, value: any) => void; }' is not assignable to type '{ config: AppletConfig; }'.\n  Types of property 'config' are incompatible.\n    Type 'RecordDisplayConfig' is missing the following properties from type 'AppletConfig': key, description, icon, category",
-    "code": 2322
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/components/SingleRecordViewer.tsx",
     "line": 71,
-    "column": 21,
-    "message": "Type '{ fields: EntityStateField[]; config: RecordDisplayConfig; onChange: (field: string, value: any) => void; }' is not assignable to type 'TableLayoutProps'.\n  Types of property 'fields' are incompatible.\n    Type 'EntityStateField[]' is not assignable to type 'EntityStateFieldWithValue[]'.\n      Property 'value' is missing in type 'EntityStateField' but required in type 'EntityStateFieldWithValue'.",
-    "code": 2322
+    "column": 14,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/components/SingleRecordViewer.tsx",
-    "line": 73,
-    "column": 21,
-    "message": "Type '{ fields: EntityStateField[]; config: RecordDisplayConfig; onChange: (field: string, value: any) => void; }' is not assignable to type 'CustomLayoutProps'.\n  Types of property 'fields' are incompatible.\n    Type 'EntityStateField[]' is not assignable to type 'EntityStateFieldWithValue[]'.\n      Property 'value' is missing in type 'EntityStateField' but required in type 'EntityStateFieldWithValue'.",
-    "code": 2322
+    "line": 74,
+    "column": 14,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/components/SingleRecordViewer.tsx",
-    "line": 76,
-    "column": 21,
-    "message": "Type '{ fields: EntityStateField[]; config: RecordDisplayConfig; onChange: (field: string, value: any) => void; }' is not assignable to type 'FormLayoutProps'.\n  Types of property 'fields' are incompatible.\n    Type 'EntityStateField[]' is not assignable to type 'EntityStateFieldWithValue[]'.\n      Property 'value' is missing in type 'EntityStateField' but required in type 'EntityStateFieldWithValue'.",
-    "code": 2322
+    "line": 77,
+    "column": 14,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/components/SingleRecordViewer.tsx",
+    "line": 81,
+    "column": 14,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/Entity/field-actions/creators/fetchActions.ts",
     "line": 17,
-    "column": 30,
-    "message": "Argument of type '\"fetchSingleRecord\"' is not assignable to parameter of type 'ActionType'.",
-    "code": 2345
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/Entity/field-actions/creators/fetchActions.ts",
-    "line": 37,
-    "column": 30,
-    "message": "Argument of type '\"fetchMultiRecord\"' is not assignable to parameter of type 'ActionType'.",
-    "code": 2345
+    "line": 38,
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/Entity/field-actions/hooks/useFieldAction.ts",
-    "line": 16,
-    "column": 25,
-    "message": "Property 'actions' does not exist on type '{}'.",
-    "code": 2339
+    "line": 15,
+    "column": 13,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/Entity/field-actions/layouts/CustomLayout.tsx",
     "line": 18,
-    "column": 35,
-    "message": "Property 'customRenderer' does not exist on type 'RecordDisplayConfig'.",
-    "code": 2339
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
     "file": "components/matrx/Entity/field-actions/layouts/FormLayout.tsx",
     "line": 53,
-    "column": 33,
-    "message": "Type 'ActionConfig' is not assignable to type 'Record<string, ActionConfig>'.\n  Index signature for type 'string' is missing in type 'ActionConfig'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/Entity/field-actions/layouts/GridLayout.tsx",
-    "line": 18,
-    "column": 28,
-    "message": "Property 'gridColumns' does not exist on type 'RecordDisplayConfig'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/field-actions/layouts/GridLayout.tsx",
-    "line": 33,
-    "column": 25,
-    "message": "Type 'ActionConfig' is not assignable to type 'Record<string, ActionConfig>'.\n  Index signature for type 'string' is missing in type 'ActionConfig'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
-    "line": 31,
-    "column": 47,
-    "message": "Expected 1 arguments, but got 0.",
-    "code": 2554
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
-    "line": 82,
-    "column": 50,
-    "message": "Argument of type 'EntityStateField[]' is not assignable to parameter of type 'EntityStateFieldWithValue[]'.\n  Property 'value' is missing in type 'EntityStateField' but required in type 'EntityStateFieldWithValue'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
-    "line": 98,
-    "column": 54,
-    "message": "Argument of type 'EntityStateField[]' is not assignable to parameter of type 'EntityStateFieldWithValue[]'.\n  Property 'value' is missing in type 'EntityStateField' but required in type 'EntityStateFieldWithValue'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
-    "line": 117,
-    "column": 46,
-    "message": "Argument of type 'EntityStateField[]' is not assignable to parameter of type 'EntityStateFieldWithValue[]'.\n  Property 'value' is missing in type 'EntityStateField' but required in type 'EntityStateFieldWithValue'.",
-    "code": 2345
-  },
-  {
-    "file": "components/matrx/Entity/field-actions/layouts/TableLayout.tsx",
-    "line": 38,
-    "column": 33,
-    "message": "Type '{ value: any; type: FieldDataOptionsType; label: string; required: boolean; componentProps: ComponentProps; }' is not assignable to type 'IntrinsicAttributes & FormattedFieldValueProps'.\n  Property 'label' does not exist on type 'IntrinsicAttributes & FormattedFieldValueProps'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/Entity/field-actions/layouts/TableLayout.tsx",
-    "line": 50,
-    "column": 45,
-    "message": "Type 'EntityStateFieldWithValue' is missing the following properties from type 'FieldConfig': id, label, type",
-    "code": 2739
-  },
-  {
-    "file": "components/matrx/Entity/field-actions/redux/syncMiddleware.ts",
-    "line": 5,
-    "column": 16,
-    "message": "Property 'type' does not exist on type 'unknown'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/field-actions/redux/syncMiddleware.ts",
-    "line": 9,
-    "column": 47,
-    "message": "Property 'payload' does not exist on type 'unknown'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/hooks/useAdvancedDataTable.ts",
-    "line": 138,
-    "column": 47,
-    "message": "Property 'width' does not exist on type 'EntityStateField'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/hooks/useAdvancedDataTable.ts",
-    "line": 145,
-    "column": 44,
-    "message": "Property 'align' does not exist on type 'EntityStateField'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/hooks/useEntityDataTable.ts",
-    "line": 113,
-    "column": 48,
-    "message": "Property 'type' does not exist on type 'EntityStateField'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/hooks/useEntityDataTable.ts",
-    "line": 116,
-    "column": 44,
-    "message": "Property 'align' does not exist on type 'EntityStateField'.",
-    "code": 2339
-  },
-  {
-    "file": "components/matrx/Entity/layouts/EntityThreePanelTester.tsx",
-    "line": 15,
-    "column": 45,
-    "message": "Cannot find name 'EntityFormPanelRefs'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/Entity/layouts/EntityThreePanelTester.tsx",
-    "line": 37,
-    "column": 18,
-    "message": "Cannot find name 'EntityFormPanel'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/modal/EntityFormModal.tsx",
-    "line": 6,
-    "column": 31,
-    "message": "'\"@/components/matrx/Entity/types/entityForm\"' has no exported member named 'EntityFormState'. Did you mean 'EntityModalFormState'?",
-    "code": 2724
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/modal/EntityFormModal.tsx",
-    "line": 73,
-    "column": 89,
-    "message": "No overload matches this call.\n  The last overload gave the following error.\n    Object literal may only specify known properties, and 'onClick' does not exist in type 'Partial<unknown> & Attributes'.",
-    "code": 2769
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/modal/EntityTabModal.tsx",
-    "line": 116,
-    "column": 88,
-    "message": "No overload matches this call.\n  The last overload gave the following error.\n    Object literal may only specify known properties, and 'onClick' does not exist in type 'Partial<unknown> & Attributes'.",
-    "code": 2769
-  },
-  {
-    "file": "components/matrx/Entity/prewired-components/layouts/layout-sections/types.ts",
-    "line": 2,
-    "column": 5,
-    "message": "'\"@/types/componentConfigTypes\"' has no exported member named 'FormColumnOptions'. Did you mean 'formColumnOptions'?",
-    "code": 2724
-  },
-  {
-    "file": "components/matrx/Entity/prewired-components/layouts/layout-sections/types.ts",
-    "line": 4,
-    "column": 73,
-    "message": "'\"@/types/componentConfigTypes\"' has no exported member named 'InlineEntityStyleOptions'. Did you mean 'inlineEntityStyleOptions'?",
-    "code": 2724
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/prewired-components/layouts/parts/ResizableLayout.tsx",
-    "line": 165,
     "column": 34,
-    "message": "Type '{ children: Element[]; direction: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'direction' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/core-buttons/SmartAdvancedButton.tsx",
-    "line": 7,
-    "column": 31,
-    "message": "Cannot find module '@/types' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/prewired-components/quick-reference/EntityQuickReferenceCardsEnhanced.tsx",
-    "line": 239,
-    "column": 29,
-    "message": "Type '{ duration: number; delay: number; type: string; }' is not assignable to type 'Transition<any>'.\n  Type '{ duration: number; delay: number; type: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.\n    Type '{ duration: number; delay: number; type: string; }' is not assignable to type 'ValueAnimationTransition<any>'.\n      Types of property 'type' are incompatible.\n        Type 'string' is not assignable to type 'AnimationGeneratorType'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/Entity/records/EntityRecordDisplay.tsx",
-    "line": 9,
-    "column": 5,
-    "message": "'\"@/components/matrx/Entity/types/entityForm\"' has no exported member named 'EntityFormState'. Did you mean 'EntityModalFormState'?",
-    "code": 2724
-  },
-  {
-    "file": "components/matrx/Entity/records/EntityRecordDisplay.tsx",
-    "line": 39,
-    "column": 29,
-    "message": "Argument of type 'Record<string, string>' is not assignable to parameter of type 'string'.",
-    "code": 2345
-  },
-  {
-    "file": "components/matrx/Entity/records/EntityRecordDisplay.tsx",
-    "line": 78,
-    "column": 56,
-    "message": "Argument of type 'Record<string, EntityStateField>' is not assignable to parameter of type 'EntityStateField[]'.\n  Type 'Record<string, EntityStateField>' is missing the following properties from type 'EntityStateField[]': length, pop, push, concat, and 35 more.",
-    "code": 2345
-  },
-  {
-    "file": "components/matrx/Entity/records/EntityRecordDisplay.tsx",
-    "line": 95,
-    "column": 37,
-    "message": "Argument of type '{ [x: string]: any; }' is not assignable to parameter of type 'string'.",
-    "code": 2345
-  },
-  {
-    "file": "components/matrx/Entity/types/entityForm.ts",
-    "line": 9,
-    "column": 5,
-    "message": "Module '\"@/types/entityTypes\"' declares 'TypeBrand' locally, but it is not exported.",
-    "code": 2459
-  },
-  {
-    "file": "components/matrx/Entity/types/entityForm.ts",
-    "line": 288,
-    "column": 5,
-    "message": "All declarations of 'onSubmit' must have identical modifiers.",
-    "code": 2687
-  },
-  {
-    "file": "components/matrx/Entity/types/entityForm.ts",
-    "line": 363,
-    "column": 5,
-    "message": "All declarations of 'onSubmit' must have identical modifiers.",
-    "code": 2687
-  },
-  {
-    "file": "components/matrx/EntityTable/EnhancedAction/EntityMatrxActions.tsx",
-    "line": 254,
-    "column": 11,
-    "message": "Type 'string | ((data: EntityData<TEntity>) => string)' is not assignable to type 'string'.\n  Type '(data: EntityData<TEntity>) => string' is not assignable to type 'string'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/EntityTable/EnhancedAction/useEntityTableActions.ts",
-    "line": 8,
-    "column": 35,
-    "message": "File 'lib/redux/entity/concepts/entityActionCreator.ts' is not a module.",
-    "code": 2306
-  },
-  {
-    "file": "components/matrx/resizable/dev/ResizableBottomPanel.tsx",
-    "line": 138,
-    "column": 17,
-    "message": "Type '(sizes: number[]) => void' is not assignable to type '(layout: Layout) => void'.\n  Types of parameters 'sizes' and 'layout' are incompatible.\n    Type 'Layout' is missing the following properties from type 'number[]': length, pop, push, concat, and 35 more.",
-    "code": 2322
-  },
-  {
-    "file": "components/ssr/select/app-data-select.tsx",
-    "line": 11,
-    "column": 95,
-    "message": "';' expected.",
-    "code": 1005
-  },
-  {
-    "file": "components/ui/loaders/Spinner.tsx",
-    "line": 72,
-    "column": 49,
-    "message": "Type '\"md\" | \"default\" | \"sm\" | \"lg\" | \"icon\" | \"xl\" | \"2xl\" | \"3xl\" | \"xs\"' is not assignable to type '\"md\" | \"default\" | \"sm\" | \"lg\" | \"xl\" | \"xs\"'.\n  Type '\"icon\"' is not assignable to type '\"md\" | \"default\" | \"sm\" | \"lg\" | \"xl\" | \"xs\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/ui/loaders/loading-button.tsx",
-    "line": 106,
-    "column": 13,
-    "message": "Type 'ButtonVariant' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.\n  Type '\"success\"' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/ui/loaders/multi-select-updated.tsx",
-    "line": 214,
-    "column": 13,
-    "message": "Type 'ButtonVariant' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.\n  Type '\"success\"' is not assignable to type '\"link\" | \"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\"'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/components/ui/samples/button.tsx",
-    "line": 207,
-    "column": 25,
-    "message": "Spread types may only be created from object types.",
-    "code": 2698
-  },
-  {
-    "file": "components/voice/voice-assistant-ui/Assistant.tsx",
-    "line": 61,
-    "column": 9,
-    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
-    "code": 2561
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/prompts/components/builder-new/PromptSettingsPanel.tsx",
-    "line": 187,
-    "column": 112,
+    "file": "components/matrx/Entity/field-actions/layouts/FormLayout.tsx",
+    "line": 53,
+    "column": 142,
     "message": "'...' expected.",
     "code": 1005
   },
   {
-    "file": "features/registered-function/components/FunctionManagement.tsx",
-    "line": 102,
-    "column": 28,
-    "message": "Property 'type' does not exist on type '{ id: string; name: string; modulePath: string; className?: string; description?: string; returnBroker?: string; }'.",
-    "code": 2339
+    "file": "components/matrx/Entity/field-actions/layouts/GridLayout.tsx",
+    "line": 18,
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "components/matrx/Entity/field-actions/layouts/GridLayout.tsx",
+    "line": 34,
+    "column": 26,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "components/matrx/Entity/field-actions/layouts/GridLayout.tsx",
+    "line": 34,
+    "column": 134,
+    "message": "'...' expected.",
+    "code": 1005
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
+    "line": 31,
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
+    "line": 83,
+    "column": 26,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
+    "line": 100,
+    "column": 30,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/components/matrx/Entity/field-actions/layouts/MultiRecordViewer.tsx",
+    "line": 120,
+    "column": 22,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "components/matrx/Entity/field-actions/layouts/TableLayout.tsx",
+    "line": 35,
+    "column": 30,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "components/matrx/Entity/records/EntityRecordDisplay.tsx",
+    "line": 84,
+    "column": 47,
+    "message": "Cannot find name 'EntityFormState'.",
+    "code": 2304
+  },
+  {
+    "file": "components/matrx/resizable/dev/ResizableBottomPanel.tsx",
+    "line": 74,
+    "column": 30,
+    "message": "Operator '>=' cannot be applied to types 'number | Layout' and 'number'.",
+    "code": 2365
+  },
+  {
+    "file": "components/matrx/resizable/dev/ResizableBottomPanel.tsx",
+    "line": 74,
+    "column": 53,
+    "message": "Operator '<=' cannot be applied to types 'number | Layout' and 'number'.",
+    "code": 2365
+  },
+  {
+    "file": "components/matrx/resizable/dev/ResizableBottomPanel.tsx",
+    "line": 75,
+    "column": 25,
+    "message": "Argument of type 'number | Layout' is not assignable to parameter of type 'SetStateAction<number>'.\n  Type 'Layout' is not assignable to type 'SetStateAction<number>'.",
+    "code": 2345
+  },
+  {
+    "file": "features/prompts/examples/ContextMenuExample.tsx",
+    "line": 13,
+    "column": 10,
+    "message": "Module '\"@/features/prompts\"' has no exported member 'TextSelectionPromptMenu'.",
+    "code": 2305
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
     "line": 76,
     "column": 7,
-    "message": "Object literal may only specify known properties, and ''due-date-asc'' does not exist in type 'Record<TaskSortOption, string>'.",
+    "message": "Object literal may only specify known properties, and ''due-date-asc'' does not exist in type 'Partial<Record<TaskSortOption, string>>'.",
     "code": 2353
   },
   {
@@ -1085,88 +343,39 @@
     "code": 2345
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 161,
-    "column": 44,
-    "message": "Argument of type 'TaskSortOption' is not assignable to parameter of type 'TaskSortField'.\n  Type '\"priority-asc\"' is not assignable to type 'TaskSortField'. Did you mean '\"priority\"'?",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 162,
-    "column": 30,
-    "message": "This comparison appears to be unintentional because the types 'TaskSortField' and 'TaskSortOption' have no overlap.",
-    "code": 2367
-  },
-  {
-    "file": "features/workflows/components/WorkflowsGrid.tsx",
-    "line": 30,
-    "column": 22,
-    "message": "Argument of type 'DbWorkflow[]' is not assignable to parameter of type 'SetStateAction<Workflow[]>'.\n  Type 'DbWorkflow[]' is not assignable to type 'Workflow[]'.\n    Type 'DbWorkflow' is missing the following properties from type 'Workflow': workflow_type, inputs, outputs, dependencies, and 3 more.",
-    "code": 2345
-  },
-  {
-    "file": "features/workflows/components/menus/NodeMenuCore.tsx",
-    "line": 129,
-    "column": 23,
-    "message": "Cannot find name 'mode'.",
-    "code": 2304
-  },
-  {
-    "file": "features/workflows/components/menus/NodeMenuCore.tsx",
-    "line": 130,
-    "column": 24,
-    "message": "Cannot find name 'mode'.",
-    "code": 2304
-  },
-  {
-    "file": "hooks/flashcard-app/useAudioRecorder.ts",
-    "line": 9,
-    "column": 31,
-    "message": "Expected 1 arguments, but got 0.",
-    "code": 2554
-  },
-  {
     "file": "hooks/tts/useVoiceChat.ts",
-    "line": 129,
+    "line": 130,
     "column": 9,
-    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
+    "message": "Object literal may only specify known properties, but 'preSpeechPadFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'preSpeechPadMs'?",
     "code": 2561
   },
   {
     "file": "hooks/tts/useVoiceChatCdn.ts",
-    "line": 127,
+    "line": 128,
     "column": 9,
-    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
+    "message": "Object literal may only specify known properties, but 'preSpeechPadFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'preSpeechPadMs'?",
     "code": 2561
   },
   {
     "file": "hooks/tts/useVoiceChatWithAutoSleep.ts",
-    "line": 181,
+    "line": 182,
     "column": 9,
-    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
+    "message": "Object literal may only specify known properties, but 'preSpeechPadFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'preSpeechPadMs'?",
     "code": 2561
   },
   {
     "file": "hooks/tts/useWakeWord.ts",
-    "line": 56,
+    "line": 46,
+    "column": 5,
+    "message": "Unused '@ts-ignore' directive.",
+    "code": 2578
+  },
+  {
+    "file": "hooks/tts/useWakeWord.ts",
+    "line": 57,
     "column": 9,
     "message": "Cannot find name 'usePorcupine'.",
     "code": 2304
-  },
-  {
-    "file": "hooks/user-preferences/usePreferenceValue.ts",
-    "line": 34,
-    "column": 25,
-    "message": "Type 'Dispatch<SetStateAction<UserPreferencesState[T][K]>>' is not assignable to type '(value: UserPreferences[T][K]) => void'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'UserPreferences[T][K]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.\n      Type 'UserPreferences[T][keyof UserPreferences[T]]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.\n        Type 'UserPreferences[T][string] | UserPreferences[T][number] | UserPreferences[T][symbol]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.\n          Type 'UserPreferences[T][string]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/ai/adapters/anthropicAdapter.ts",
-    "line": 4,
-    "column": 44,
-    "message": "Cannot find module '@ai-sdk/anthropic' or its corresponding type declarations.",
-    "code": 2307
   },
   {
     "file": "lib/hooks/useDatabase.ts",
@@ -1191,59 +400,10 @@
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/concepts/fields/component-examples/SmartField.tsx",
-    "line": 35,
-    "column": 24,
-    "message": "This comparison appears to be unintentional because the types 'EntityOperationMode' and '\"display\"' have no overlap.",
-    "code": 2367
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/concepts/fields/component-examples/SmartField.tsx",
-    "line": 40,
+    "line": 41,
     "column": 31,
     "message": "Cannot find name 'EntityOperationMode'.",
     "code": 2304
-  },
-  {
-    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 13,
-    "column": 55,
-    "message": "Property 'data' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
-    "code": 2339
-  },
-  {
-    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 23,
-    "column": 55,
-    "message": "Property 'error' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
-    "code": 2339
-  },
-  {
-    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 28,
-    "column": 55,
-    "message": "Property 'totalCount' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
-    "code": 2339
-  },
-  {
-    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 33,
-    "column": 55,
-    "message": "Property 'initialized' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
-    "code": 2339
-  },
-  {
-    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 38,
-    "column": 55,
-    "message": "Property 'selectedItem' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
-    "code": 2339
-  },
-  {
-    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 43,
-    "column": 55,
-    "message": "Property 'lastFetched' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
-    "code": 2339
   },
   {
     "file": "lib/redux/entity/concepts/paramSelectors.ts",
@@ -1260,122 +420,24 @@
     "code": 2536
   },
   {
-    "file": "lib/redux/entity/custom-actions/custom-workflow-actions.ts",
-    "line": 738,
-    "column": 21,
-    "message": "Type '\"backendWorkflow\"' is not assignable to type '\"message\" | \"public\" | \"name\" | \"value\" | \"path\" | \"priority\" | \"data\" | \"options\" | \"size\" | \"deleted\" | \"completed\" | \"url\" | \"mimeType\" | \"type\" | \"id\" | \"description\" | \"tags\" | \"messages\" | \"settings\" | \"metadata\" | \"status\" | \"exact\" | \"count\" | \"min\" | \"max\" | \"timestamp\" | \"temperature\" | \"maxTokens\" | \"topP\" | \"presencePenalty\" | \"frequencyPenalty\" | \"responseFormat\" | \"systemPrompt\" | \"recipeId\" | \"email\" | \"filePath\" | \"content\" | \"structure\" | \"username\" | \"params\" | \"title\" | \"score\" | \"role\" | \"category\" | \"className\" | \"color\" | \"height\" | \"style\" | \"width\" | \"display\" | \"order\" | \"orientation\" | \"version\" | \"visibility\" | \"displayName\" | \"source\" | \"controls\" | \"group\" | \"body\" | \"label\" | \"template\" | \"defaultValue\" | \"tooltip\" | \"props\" | \"position\" | \"matrix\" | \"attributes\" | \"side\" | \"enabled\" | \"duration\" | \"actions\" | \"useCount\" | \"state\" | \"sourceType\" | \"viewport\" | \"parameters\" | \"segments\" | \"capabilities\" | \"nodeType\" | \"step\" | \"icon\" | \"theme\" | \"component\" | \"componentProps\" | \"broker\" | \"helpText\" | \"iconName\" | \"ready\" | \"inputs\" | \"outputs\" | \"dependencies\" | \"sources\" | \"destinations\" | \"stream\" | \"aiModel\" | \"rating\" | \"fields\" | \"subComponent\" | \"placeholder\" | \"required\" | \"src\" | \"accentColor\" | \"maxHeight\" | \"maxWidth\" | \"minHeight\" | \"minWidth\" | \"action\" | \"slug\" | \"categories\" | \"partial\" | \"featured\" | \"creator\" | \"transformer\" | \"referenceId\" | \"automationMatrixReference\" | \"aiEndpoint\" | \"aiProvider\" | \"compiledRecipe\" | \"dataBroker\" | \"notes\" | \"processor\" | \"recipe\" | \"registeredFunction\" | \"subcategory\" | \"tools\" | \"transformerReference\" | \"userId\" | \"createdAt\" | \"aiSettingsId\" | \"systemMessageOverride\" | \"aiSettingsReference\" | \"recipeReference\" | \"provider\" | \"additionalCost\" | \"costDetails\" | \"aiModelEndpointInverse\" | \"aiSettingsInverse\" | \"commonName\" | \"modelClass\" | \"endpoints\" | \"contextWindow\" | \"modelProvider\" | \"isDeprecated\" | \"isPrimary\" | \"isPremium\" | \"apiClass\" | \"aiProviderReference\" | \"recipeModelInverse\" | \"aiModelId\" | \"aiEndpointId\" | \"available\" | \"endpointPriority\" | \"configuration\" | \"aiEndpointReference\" | \"aiModelReference\" | \"companyDescription\" | \"documentationLink\" | \"modelsLink\" | \"aiModelInverse\" | \"presetName\" | \"quality\" | \"audioVoice\" | \"audioFormat\" | \"modalities\" | \"aiAgentInverse\" | \"updatedAt\" | \"isPublic\" | \"userQuery\" | \"thinkingContent\" | \"responseContent\" | \"reflectionContent\" | \"qualityScore\" | \"questionsThinking\" | \"questionsContent\" | \"structuredQuestions\" | \"reflectionThinking\" | \"compiledRecipeId\" | \"dataSourceConfig\" | \"resultComponentConfig\" | \"nextStepConfig\" | \"subcategoryId\" | \"ctaText\" | \"compiledRecipeReference\" | \"subcategoryReference\" | \"appletId\" | \"containerId\" | \"customAppletConfigsReference\" | \"componentGroupsReference\" | \"defaultJunk\" | \"dataType\" | \"examples\" | \"registeredFunctionReference\" | \"audioRecordingInverse\" | \"fileUrl\" | \"localPath\" | \"audioLabelReference\" | \"firstName\" | \"lastName\" | \"sparkSource\" | \"beaconDestination\" | \"brokerReference\" | \"averageSeconds\" | \"isAutomated\" | \"cognitionMatrices\" | \"actionInverse\" | \"automationBoundaryBrokerInverse\" | \"defaultSource\" | \"validationRules\" | \"sampleEntries\" | \"customSourceComponent\" | \"additionalParams\" | \"otherSourceParams\" | \"defaultDestination\" | \"outputComponent\" | \"stringValue\" | \"dataInputComponentReference\" | \"recipeBrokerInverse\" | \"subCategory\" | \"comments\" | \"dataBrokerReference\" | \"bucketId\" | \"lastUpdated\" | \"treeStructure\" | \"commentId\" | \"canvasCommentsReference\" | \"canvasId\" | \"avatarUrl\" | \"parentCommentId\" | \"likeCount\" | \"replyCount\" | \"edited\" | \"flagged\" | \"flagCount\" | \"sharedCanvasItemsReference\" | \"canvasCommentLikesInverse\" | \"isFavorited\" | \"isArchived\" | \"sessionId\" | \"sourceMessageId\" | \"taskId\" | \"shareToken\" | \"lastAccessedAt\" | \"contentHash\" | \"maxScore\" | \"percentage\" | \"timeTaken\" | \"attemptNumber\" | \"viewedAt\" | \"referrer\" | \"userAgent\" | \"timeSpent\" | \"interacted\" | \"subcategoryInverse\" | \"categoryId\" | \"sortOrder\" | \"isActive\" | \"contentBlocksInverse\" | \"subcategoryConfigsInverse\" | \"authenticatedRead\" | \"appletInverse\" | \"customAppletConfigsInverse\" | \"shortLabel\" | \"hideDescription\" | \"publicRead\" | \"appletContainersInverse\" | \"containerFieldsInverse\" | \"fieldId\" | \"fieldComponentsReference\" | \"blockId\" | \"categoryConfigsReference\" | \"keywords\" | \"messageInverse\" | \"mainAppIcon\" | \"mainAppSubmitIcon\" | \"primaryColor\" | \"appletList\" | \"extraButtons\" | \"layoutType\" | \"imageUrl\" | \"appDataContext\" | \"appletIcon\" | \"appletSubmitText\" | \"containers\" | \"appId\" | \"brokerMap\" | \"overviewLabel\" | \"dataDestinationConfig\" | \"customAppConfigsReference\" | \"inputComponent\" | \"fieldComponentId\" | \"defaultScope\" | \"dataOutputComponentReference\" | \"brokerValueInverse\" | \"messageBrokerInverse\" | \"registeredFunctionInverse\" | \"includeOther\" | \"acceptableFiletypes\" | \"colorOverrides\" | \"containerClassName\" | \"collapsibleClassName\" | \"labelClassName\" | \"descriptionClassName\" | \"componentClassName\" | \"dataBrokerInverse\" | \"brokerInverse\" | \"componentType\" | \"uiComponent\" | \"defaultParams\" | \"customizableParams\" | \"recipeDisplayInverse\" | \"subject\" | \"sender\" | \"recipient\" | \"isRead\" | \"outputType\" | \"defaultIdentifier\" | \"defaultIndex\" | \"componentGroup\" | \"workflowUserInputInverse\" | \"isFolder\" | \"fileId\" | \"parentPath\" | \"topic\" | \"lesson\" | \"difficulty\" | \"front\" | \"back\" | \"example\" | \"detailedExplanation\" | \"audioExplanation\" | \"personalNotes\" | \"isDeleted\" | \"sharedWith\" | \"flashcardHistoryInverse\" | \"flashcardSetRelationsInverse\" | \"flashcardImagesInverse\" | \"flashcardId\" | \"reviewCount\" | \"correctCount\" | \"incorrectCount\" | \"flashcardDataReference\" | \"fileName\" | \"setId\" | \"flashcardSetsReference\" | \"audioOverview\" | \"alternateTitles\" | \"qualifications\" | \"sizzleQuestions\" | \"redFlags\" | \"additionalDetails\" | \"htmlContent\" | \"metaDescription\" | \"metaKeywords\" | \"contentLength\" | \"extractedAt\" | \"conversationId\" | \"displayOrder\" | \"systemOrder\" | \"conversationReference\" | \"messageId\" | \"brokerId\" | \"defaultComponent\" | \"messageTemplateReference\" | \"recipeMessageInverse\" | \"projectName\" | \"projectDescription\" | \"repoName\" | \"repoId\" | \"repoOrgName\" | \"repoUrl\" | \"isSystem\" | \"projectCode\" | \"registeredNodeInverse\" | \"folderName\" | \"organizationId\" | \"token\" | \"invitedAt\" | \"invitedBy\" | \"expiresAt\" | \"organizationsReference\" | \"joinedAt\" | \"logoUrl\" | \"website\" | \"createdBy\" | \"isPersonal\" | \"organizationMembersInverse\" | \"organizationInvitationsInverse\" | \"permissionsInverse\" | \"resourceType\" | \"resourceId\" | \"grantedToUserId\" | \"grantedToOrganizationId\" | \"permissionLevel\" | \"dependsDefault\" | \"defaultExtractors\" | \"processorReference\" | \"recipeProcessorInverse\" | \"projectId\" | \"projectsReference\" | \"projectMembersInverse\" | \"tasksInverse\" | \"variableDefaults\" | \"isFeatured\" | \"createdByUserId\" | \"isCompleted\" | \"completedAt\" | \"quizContentHash\" | \"quizMetadata\" | \"sampleOutput\" | \"postResultOptions\" | \"compiledRecipeInverse\" | \"brokerRole\" | \"displaySettings\" | \"displayOptionReference\" | \"lastModified\" | \"funcName\" | \"modulePath\" | \"returnBroker\" | \"nodeDescription\" | \"argInverse\" | \"workflowNodeInverse\" | \"workflowNodeDataInverse\" | \"registeredFunctionId\" | \"styles\" | \"arguments\" | \"customEditor\" | \"depedencyFunction\" | \"dynamicBrokerArgs\" | \"functionDescription\" | \"dynamicOutputs\" | \"nodeCategoryReference\" | \"registeredNodeResultsInverse\" | \"workflowId\" | \"registeredNodeId\" | \"registeredNodeReference\" | \"workflowDataReference\" | \"templateName\" | \"selectorType\" | \"regex\" | \"rescrapeAfter\" | \"staleAfter\" | \"scrapePathPatternCachePolicyInverse\" | \"scrapeMode\" | \"interactionSettingsId\" | \"scrapePathPatternId\" | \"scrapePathPatternReference\" | \"scrapeParsedPageInverse\" | \"scrapeCycleTrackerId\" | \"runNumber\" | \"allowPattern\" | \"disallowPatterns\" | \"scrapeCycleTrackerReference\" | \"scrapeTaskInverse\" | \"pageName\" | \"targetUrl\" | \"scrapePathPatternCachePolicyId\" | \"scrapeJobId\" | \"lastRunAt\" | \"nextRunAt\" | \"scrapeJobReference\" | \"scrapePathPatternCachePolicyReference\" | \"scrapeCycleRunInverse\" | \"scrapeAllowed\" | \"scrapePathPatternInverse\" | \"scrapeJobInverse\" | \"scrapeDomainQuickScrapeSettingsInverse\" | \"scrapeDomainDisallowedNotesInverse\" | \"scrapeDomainRobotsTxtInverse\" | \"scrapeDomainNotesInverse\" | \"scrapeDomainSitemapInverse\" | \"scrapeQuickFailureLogInverse\" | \"scrapeDomainId\" | \"scrapeDomainReference\" | \"proxyType\" | \"robotsTxt\" | \"sitemap\" | \"startUrls\" | \"scrapeStatus\" | \"parseStatus\" | \"attemptLimit\" | \"startedAt\" | \"finishedAt\" | \"scrapeCycleTrackerInverse\" | \"configType\" | \"matchType\" | \"scrapeOverrideValueInverse\" | \"scrapePathPatternOverrideInverse\" | \"scrapeOverrideId\" | \"scrapeOverrideReference\" | \"validity\" | \"remotePath\" | \"scrapeTaskId\" | \"scrapeTaskResponseId\" | \"scrapeCycleRunId\" | \"scrapeConfigurationId\" | \"scrapePathPatternOverrideId\" | \"scrapedAt\" | \"scrapeConfigurationReference\" | \"scrapeCycleRunReference\" | \"scrapePathPatternOverrideReference\" | \"scrapeTaskReference\" | \"scrapeTaskResponseReference\" | \"pathPattern\" | \"scrapeConfigurationInverse\" | \"scrapeCachePolicyId\" | \"scrapeCachePolicyReference\" | \"domainName\" | \"failureReason\" | \"errorLog\" | \"parentTask\" | \"attemptsLeft\" | \"interactionConfig\" | \"discoveredLinks\" | \"spawnedConcurrentTasks\" | \"cancelMessage\" | \"scrapeTaskResponseInverse\" | \"statusCode\" | \"contentPath\" | \"contentSize\" | \"contentType\" | \"responseHeaders\" | \"responseUrl\" | \"canvasType\" | \"canvasData\" | \"thumbnailUrl\" | \"creatorUsername\" | \"creatorDisplayName\" | \"originalId\" | \"forkedFrom\" | \"versionNumber\" | \"forkCount\" | \"viewCount\" | \"shareCount\" | \"commentCount\" | \"playCount\" | \"completionRate\" | \"hasScoring\" | \"highScore\" | \"highScoreUser\" | \"averageScore\" | \"totalAttempts\" | \"allowRemixes\" | \"requireAttribution\" | \"publishedAt\" | \"lastPlayedAt\" | \"trendingScore\" | \"searchVector\" | \"canvasLikesInverse\" | \"canvasCommentsInverse\" | \"canvasScoresInverse\" | \"canvasViewsInverse\" | \"userBookmarksInverse\" | \"siteName\" | \"siteKey\" | \"siteUrl\" | \"organizationType\" | \"logoWidth\" | \"logoHeight\" | \"defaultShareImageUrl\" | \"defaultShareImageWidth\" | \"defaultShareImageHeight\" | \"twitterHandle\" | \"facebookPageUrl\" | \"contactEmail\" | \"copyrightHolder\" | \"defaultAuthorName\" | \"defaultAuthorType\" | \"defaultLanguage\" | \"googleAnalyticsId\" | \"googleTagManagerId\" | \"gscPropertyUrl\" | \"features\" | \"categoryReference\" | \"announcementType\" | \"minDisplaySeconds\" | \"sample\" | \"inputParams\" | \"outputOptions\" | \"rfId\" | \"tableId\" | \"userTablesReference\" | \"fieldName\" | \"fieldOrder\" | \"isRequired\" | \"assignedBy\" | \"assignedAt\" | \"tasksReference\" | \"fileType\" | \"fileSize\" | \"uploadedBy\" | \"uploadedAt\" | \"dueDate\" | \"parentTaskId\" | \"taskAssignmentsInverse\" | \"taskAttachmentsInverse\" | \"taskCommentsInverse\" | \"outputSchema\" | \"annotations\" | \"functionPath\" | \"audioFilePath\" | \"videoFilePath\" | \"outputParams\" | \"achievementType\" | \"achievementData\" | \"unlockedAt\" | \"feedbackType\" | \"route\" | \"adminNotes\" | \"resolvedAt\" | \"resolvedBy\" | \"followerId\" | \"followingId\" | \"groupName\" | \"listId\" | \"userListsReference\" | \"listName\" | \"userListItemsInverse\" | \"preferences\" | \"totalCreated\" | \"totalLikesReceived\" | \"totalViewsReceived\" | \"totalForksReceived\" | \"totalPlays\" | \"totalLikesGiven\" | \"totalComments\" | \"totalHighScores\" | \"bestScore\" | \"followerCount\" | \"followingCount\" | \"totalXp\" | \"level\" | \"streakDays\" | \"lastActiveDate\" | \"longestStreak\" | \"tableName\" | \"rowOrderingConfig\" | \"tableFieldsInverse\" | \"tableDataInverse\" | \"applicantName\" | \"personId\" | \"dateOfBirth\" | \"dateOfInjury\" | \"ageAtDoi\" | \"occupationalCode\" | \"weeklyEarnings\" | \"wcReportInverse\" | \"impairmentNumber\" | \"fecRank\" | \"fingerType\" | \"wcInjuryInverse\" | \"reportId\" | \"impairmentDefinitionId\" | \"digit\" | \"le\" | \"ue\" | \"wpi\" | \"pain\" | \"industrial\" | \"formula\" | \"wcImpairmentDefinitionReference\" | \"wcReportReference\" | \"claimId\" | \"finalRating\" | \"leftSideTotal\" | \"rightSideTotal\" | \"defaultSideTotal\" | \"compensationAmount\" | \"compensationWeeks\" | \"compensationDays\" | \"wcClaimReference\" | \"autoExecute\" | \"workflowRelayInverse\" | \"workflowType\" | \"workflowEdgeInverse\" | \"sourceNodeId\" | \"targetNodeId\" | \"sourceHandleId\" | \"targetHandleId\" | \"edgeType\" | \"animated\" | \"connectionType\" | \"workflowNodeDataReference\" | \"stepName\" | \"functionId\" | \"functionType\" | \"executionRequired\" | \"additionalDependencies\" | \"argMapping\" | \"returnBrokerOverrides\" | \"argOverrides\" | \"uiNodeData\" | \"workflowReference\" | \"uiData\" | \"sourceBrokerId\" | \"targetBrokerIds\"'.",
-    "code": 2322
-  },
-  {
-    "file": "lib/redux/entity/hooks/useEntity.ts",
-    "line": 189,
-    "column": 39,
-    "message": "Argument of type '{ matrxRecordId: string; callbackId: string; }' is not assignable to parameter of type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.\n  Property 'data' is missing in type '{ matrxRecordId: string; callbackId: string; }' but required in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntityForm.ts",
-    "line": 204,
-    "column": 47,
-    "message": "Argument of type '{ tempRecordId: string; callbackId: string; }' is not assignable to parameter of type 'FlexibleQueryOptions'.\n  Property 'entityNameAnyFormat' is missing in type '{ tempRecordId: string; callbackId: string; }' but required in type 'FlexibleQueryOptions'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntityForm.ts",
-    "line": 209,
-    "column": 47,
-    "message": "Argument of type '{ matrxRecordId: string; callbackId: string; }' is not assignable to parameter of type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.\n  Property 'data' is missing in type '{ matrxRecordId: string; callbackId: string; }' but required in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useValidatedUpdateOrCreate.ts",
-    "line": 47,
-    "column": 47,
-    "message": "Argument of type 'EntityData<TEntity>' is not assignable to parameter of type 'FlexibleQueryOptions'.\n  Property 'entityNameAnyFormat' is missing in type 'EntityData<TEntity>' but required in type 'FlexibleQueryOptions'.",
-    "code": 2345
-  },
-  {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 4,
-    "column": 5,
-    "message": "Module '\"@/types/entityTypes\"' has no exported member 'FieldDataOptionsType'.",
-    "code": 2305
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 5,
-    "column": 5,
-    "message": "Module '\"@/types/entityTypes\"' has no exported member 'DataStructure'.",
-    "code": 2305
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 7,
+    "line": 11,
     "column": 5,
     "message": "Module '\"@/types/entityTypes\"' declares 'EntityNameOfficial' locally, but it is not exported.",
     "code": 2459
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 8,
-    "column": 5,
-    "message": "'\"@/types/entityTypes\"' has no exported member named 'FetchStrategy'. Did you mean 'isFetchStrategy'?",
-    "code": 2724
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 9,
+    "line": 12,
     "column": 5,
     "message": "'\"@/types/entityTypes\"' has no exported member named 'relationships'. Did you mean 'Relationship'?",
     "code": 2724
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 12,
-    "column": 5,
-    "message": "Module '\"@/types/entityTypes\"' has no exported member 'NameFormat'.",
-    "code": 2305
-  },
-  {
-    "file": "lib/redux/entity/utils/tempFormHelper.ts",
+    "file": "/home/arman/projects/ai-matrx-admin/types/index.ts",
     "line": 7,
-    "column": 11,
-    "message": "Property 'phone' is missing in type '{ string: \"text\"; number: \"number\"; boolean: \"checkbox\"; array: \"select\"; object: \"textarea\"; json: \"json\"; uuid: \"text\"; email: \"email\"; url: \"url\"; datetime: \"datetime-local\"; null: \"text\"; undefined: \"text\"; any: \"text\"; function: \"text\"; symbol: \"text\"; union: \"select\"; bigint: \"number\"; date: \"date\"; map: \"textarea\"; set: \"textarea\"; tuple: \"textarea\"; enum: \"select\"; intersection: \"textarea\"; literal: \"text\"; void: \"text\"; never: \"text\"; }' but required in type 'Record<FieldDataOptionsType, FormFieldType>'.",
-    "code": 2741
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
-    "line": 7,
-    "column": 33,
-    "message": "Property 'recipes' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
-    "code": 2339
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
-    "line": 9,
-    "column": 63,
-    "message": "Property 'recipes' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
-    "code": 2339
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
-    "line": 12,
-    "column": 54,
-    "message": "Property 'recipes' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
-    "code": 2339
-  },
-  {
-    "file": "lib/redux/shadow/brokers/brokerSlice.ts",
-    "line": 9,
-    "column": 49,
-    "message": "Type 'BrokerLocalState' does not satisfy the constraint 'Record<string, unknown>'.\n  Index signature for type 'string' is missing in type 'BrokerLocalState'.",
-    "code": 2344
-  },
-  {
-    "file": "lib/redux/shadow/brokers/brokerSlice.ts",
-    "line": 32,
-    "column": 27,
-    "message": "Property 'brokerShadow' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
-    "code": 2339
+    "column": 1,
+    "message": "Module './AutomationSchemaTypes' has already exported a member named 'TypeBrand'. Consider explicitly re-exporting to resolve the ambiguity.",
+    "code": 2308
   }
 ]

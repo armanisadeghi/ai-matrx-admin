@@ -50,11 +50,11 @@ export const TableActionIcon: React.FC<{
                     e.stopPropagation();
                     onAction(name, data);
                 }}
-                size="xs"
+                size="sm"
                 variant="ghost"
                 className={`p-1 ${className || "transition-all duration-300 hover:scale-105"}`}
             >
-                {React.cloneElement(icon as React.ReactElement, {className: 'w-3 h-3'})}
+                {React.cloneElement(icon as React.ReactElement<any>, {className: 'w-3 h-3'})}
             </Button>
         </MatrxTooltip>
     );

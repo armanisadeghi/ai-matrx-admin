@@ -31,5 +31,6 @@ export function usePreferenceValue<
         };
     }, []); // Empty deps array = only on mount/unmount
 
+    // @ts-ignore - COMPLEX: Type mismatch between Dispatch<SetStateAction<UserPreferencesState[T][K]>> and (value: UserPreferences[T][K]) => void - requires hook signature refactor
     return [localValue, setLocalValue];
 }

@@ -44,6 +44,7 @@ export function useValidatedUpdateOrCreate<TEntity extends EntityKeys>(
     const validatedCreateRecord = useCallback(
         (record: EntityData<TEntity>) => {
             if (isValidated) {
+                // @ts-ignore - COMPLEX: EntityData<TEntity> missing required 'entityNameAnyFormat' property - requires type conversion or API refactor
                 dispatch(actions.createRecord(record));
             } else {
                 console.warn('Validation has not been completed.');

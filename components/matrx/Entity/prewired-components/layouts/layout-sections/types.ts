@@ -1,7 +1,7 @@
 import {
-    FormColumnOptions,
+    FormColumnsOptions,
     FormDirectionOptions,
-    FormLayoutOptions, InlineEntityColumnsOptions, inlineEntityOptions, InlineEntityStyleOptions,
+    FormLayoutOptions, InlineEntityColumnsOptions, inlineEntityOptions, InlineEntityComponentStyles,
     TextSizeOptions
 } from "@/types/componentConfigTypes";
 
@@ -29,7 +29,7 @@ export interface EntityLayoutProps {
     formOptions?: {
         size?: ComponentSize;
         formLayout?: FormLayoutOptions;
-        formColumns?: FormColumnOptions;
+        formColumns?: FormColumnsOptions;
         formDirection?: FormDirectionOptions;
         formEnableSearch?: boolean;
         formIsSinglePage?: boolean;
@@ -48,7 +48,7 @@ export interface ArmaniLayoutProps {
     formOptions?: {
         size?: ComponentSize;
         formLayout?: FormLayoutOptions;
-        formColumns?: FormColumnOptions;
+        formColumns?: FormColumnsOptions;
         formDirection?: FormDirectionOptions;
         formEnableSearch?: boolean;
         formIsSinglePage?: boolean;
@@ -58,7 +58,7 @@ export interface ArmaniLayoutProps {
         textSize?: TextSizeOptions;
         inlineEntityOptions?: {
             showInlineEntities: boolean;
-            inlineEntityStyle: InlineEntityStyleOptions;
+            inlineEntityStyle: InlineEntityComponentStyles;
             inlineEntityColumns: InlineEntityColumnsOptions;
             editableInlineEntities: boolean;
         };

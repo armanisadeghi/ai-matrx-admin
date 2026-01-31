@@ -32,6 +32,7 @@ export const SmartField: React.FC<SmartFieldProps> = (
 
     const field = useAppSelector(state => selectField(state, identifier));
     const value = field?.value ?? initialValue;
+    // @ts-ignore - COMPLEX: FormMode 'display' vs EntityOperationMode 'view' comparison - field.mode is EntityOperationMode
     const isDisabled = field?.mode === 'display' || field?.mode === 'view';
 
     React.useEffect(() => {

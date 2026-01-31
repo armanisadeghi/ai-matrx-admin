@@ -126,7 +126,7 @@ export const useVoiceChat = () => {
         },
         positiveSpeechThreshold: 0.6,
         minSpeechMs: 4, // TODO: Verify correct value conversion from frames to ms
-        redemptionFrames: 8,
+        redemptionMs: 8,
         preSpeechPadFrames: 1,
         baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/",
         onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/",

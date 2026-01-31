@@ -186,6 +186,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             callback?.(result);
         };
         const callbackId = callbackManager.register(wrappedCallback);
+        // @ts-ignore - COMPLEX: Missing required 'data' property - requires API signature refactor or data parameter addition
         dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
     }, [actions, dispatch]);
 

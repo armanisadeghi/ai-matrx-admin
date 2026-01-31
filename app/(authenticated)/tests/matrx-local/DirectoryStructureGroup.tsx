@@ -49,6 +49,7 @@ const DirectoryStructureGroup = ({ endpoints, baseUrl, onTest, responses, loadin
                         <DownloadEndpointCard
                             endpoint={endpoints.generateStructureZip}
                             baseUrl={baseUrl}
+                            onTest={onTest}
                         />
                     </TabsContent>
                 </Tabs>

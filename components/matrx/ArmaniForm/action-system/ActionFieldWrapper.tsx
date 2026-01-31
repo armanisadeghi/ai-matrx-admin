@@ -41,6 +41,7 @@ const ActionFieldWrapper = (
                                 field={field}
                                 value={value}
                                 onChange={onChange}
+                                // @ts-ignore - COMPLEX: fieldComponentProps doesn't exist on FieldActionProps - needs prop addition or removal
                                 fieldComponentProps={field.componentProps}
                                 density={density}
                                 animationPreset={animationPreset}

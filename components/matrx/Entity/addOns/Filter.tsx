@@ -1,4 +1,5 @@
 import {Column} from "@tanstack/react-table";
+import DebouncedInput from "./DebouncedInput";
 
 
 export function Filter({ column }: { column: Column<any, unknown> }) {

@@ -43,7 +43,8 @@ export function useWakeWord(
     }: UseWakeWordProps = {}) {
     const [detectedWord, setDetectedWord] = useState<WakeWord | null>(null);
 
-    // @ts-ignore - usePorcupine hook not found, may need to install @picovoice/web-voice-processor
+    // @ts-ignore - COMPLEX: usePorcupine hook not found, may need to install @picovoice/web-voice-processor or @picovoice/react-web-voice-processor
+    // eslint-disable-next-line @typescript-eslint/no-undef
     const {
         keywordDetection,
         isLoaded,

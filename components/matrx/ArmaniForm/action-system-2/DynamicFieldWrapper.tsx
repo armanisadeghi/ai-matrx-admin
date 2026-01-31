@@ -4,7 +4,8 @@ import {cn} from '@/utils/cn';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {Label} from '@/components/ui/label';
 import {InfoIcon, ChevronDown, ChevronUp} from 'lucide-react';
-import {AnimationPreset, densityConfig, getAnimationVariants} from '@/config/ui/entity-layout-config';
+import {densityConfig, getAnimationVariants} from '@/config/ui/entity-layout-config';
+import type {AnimationPreset} from '@/types/componentConfigTypes';
 import {EntityField, MatrxVariant} from '../field-components/types';
 
 // Types

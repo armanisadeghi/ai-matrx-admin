@@ -1,4 +1,5 @@
 import React from "react";
+import type { JSX } from "react";
 import {PresentationComponent, PresentationProps} from "./types";
 import {cn} from "@/lib/utils";
 import {
@@ -14,7 +15,7 @@ interface CustomRenderProps {
     isOpen: boolean;
     onOpenChange: (state: boolean) => void;
     trigger: React.ReactNode;
-    renderWrapper: (children: React.ReactNode) => JSX.Element;
+    renderWrapper: (children: React.ReactNode) => JSX.Element | React.ReactElement;
 }
 
 
@@ -76,7 +77,7 @@ export const CustomPresentation: React.FC<CustomPresentationProps> = (
             onOpenChange: handleStateChange,
             trigger,
             renderWrapper
-        }) as JSX.Element;
+        }) as JSX.Element | React.ReactElement;
     }
 
     return renderWrapper(

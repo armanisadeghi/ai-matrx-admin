@@ -15,7 +15,8 @@ export const CustomLayout: React.FC<CustomLayoutProps> = (
         config,
         onChange
     }) => {
-    const CustomRenderer = config.customRenderer;
+    // @ts-ignore - COMPLEX: customRenderer property doesn't exist on RecordDisplayConfig type
+    const CustomRenderer = (config as any).customRenderer;
 
     if (!CustomRenderer) {
         return (

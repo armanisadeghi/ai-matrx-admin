@@ -251,7 +251,8 @@ export const EntityOpsButton = <TEntity extends EntityKeys>({
 
     if (!isVisible) return null;
 
-    const label: string = action.label;
+    // @ts-ignore - COMPLEX: action.label can be function or string, may need type guard
+    const label: string = typeof action.label === 'function' ? action.label(entityData as EntityData<TEntity>) : action.label;
     const icon: React.ReactNode = action.icon;
     const buttonClassName = typeof action.className === 'function'
         ? action.className(entityData as EntityData<TEntity>)

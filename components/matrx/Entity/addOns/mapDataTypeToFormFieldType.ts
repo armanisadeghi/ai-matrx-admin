@@ -101,6 +101,7 @@ export function mapFieldDataTypeToFormFieldType(dataType: FieldDataOptionsType):
         uuid: 'text',     // UUIDs typically represented as text
         email: 'email',   // Dedicated 'email' field type
         url: 'url',       // Dedicated 'url' field type
+        phone: 'tel',    // Phone numbers use tel input type
         datetime: 'datetime-local', // HTML5 datetime-local input
         null: 'text',     // Defaulting to 'text'
         undefined: 'text', // Defaulting to 'text'

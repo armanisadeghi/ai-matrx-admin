@@ -1,8 +1,8 @@
 // app/(authenticated)/tests/selector-test/dynamic-test/SaveButtons.tsx
 "use client";
 
-// import { saveJson } from "@/actions/json.actions";
-// import { savePublicText, savePublicImage } from "@/actions/file.actions";
+import { saveJson } from "@/actions/json.actions";
+import { savePublicText, savePublicImage } from "@/actions/file.actions";
 import React, { useState } from "react";
 import { Button } from "@/components/ui";
 

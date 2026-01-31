@@ -1,3 +1,5 @@
+import React from 'react';
+
 function DebouncedInput(
     {
         value: initialValue,
@@ -21,9 +23,11 @@ function DebouncedInput(
         }, debounce)
 
         return () => clearTimeout(timeout)
-    }, [value])
+    }, [value, debounce, onChange])
 
     return (
         <input {...props} value={value} onChange={e => setValue(e.target.value)}/>
     )
 }
+
+export default DebouncedInput;

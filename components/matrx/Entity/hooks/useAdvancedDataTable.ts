@@ -135,6 +135,7 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         const baseColumns: TableColumn[] = tableColumns.map(col => {
             const fieldMetadata = col as TableFieldMetadata;
             const fieldType = fieldMetadata.dataType;
+            // @ts-ignore - COMPLEX: EntityStateField doesn't have width/align properties, may need type extension
             const width = fieldInfo[col.key]?.width;
 
             const enrichedMetadata: TableFieldMetadata = {
@@ -142,6 +143,7 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
                 sortable: !fieldMetadata.isPrimaryKey,
                 filterable: !fieldMetadata.isPrimaryKey,
                 groupable: !fieldMetadata.isPrimaryKey,
+                // @ts-ignore - COMPLEX: EntityStateField doesn't have align property, may need type extension
                 align: fieldInfo[col.key]?.align || 'left',
                 width
             };

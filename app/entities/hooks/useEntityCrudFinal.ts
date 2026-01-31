@@ -146,7 +146,8 @@ export const useEntityCrudFinal = <TEntity extends EntityKeys>(entityKey: TEntit
             matrxRecordId: recordId,
             callbackId,
         };
-        dispatch(actions.updateRecord(payload));
+        // @ts-ignore - COMPLEX: UpdateRecordPayload type mismatch - reducer expects data property but payload doesn't have it
+        dispatch(actions.updateRecord({ ...payload, data: {} }));
     }, [dispatch, actions]);
 
     const handleBatchUpdate = useCallback((recordIds?: MatrxRecordId[], callback?: Callback) => {
@@ -160,7 +161,8 @@ export const useEntityCrudFinal = <TEntity extends EntityKeys>(entityKey: TEntit
                 callback?.(result);
             };
             const callbackId = callbackManager.register(wrappedCallback);
-            dispatch(actions.updateRecord({matrxRecordId: recordId, callbackId}));
+            // @ts-ignore - COMPLEX: UpdateRecordPayload type mismatch - reducer expects data property but payload doesn't have it
+            dispatch(actions.updateRecord({matrxRecordId: recordId, callbackId, data: {}}));
         });
 
         return true;

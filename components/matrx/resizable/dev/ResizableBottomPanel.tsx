@@ -68,9 +68,11 @@ const ResizableBottomPanel: React.FC<ResizableBottomPanelProps> = (
         });
     };
 
-    const handlePanelResize = (layout: Layout) => {
-        if (!isFullScreen && layout[1] >= minSize && layout[1] <= maxSize) {
-            setLastSize(layout[1]);
+    // @ts-ignore - COMPLEX: onLayoutChanged signature mismatch - expects Layout but may receive number[], may need refactor
+    const handlePanelResize = (layout: Layout | number[]) => {
+        const sizes = Array.isArray(layout) ? layout : [layout];
+        if (!isFullScreen && sizes[1] >= minSize && sizes[1] <= maxSize) {
+            setLastSize(sizes[1]);
         }
     };
 

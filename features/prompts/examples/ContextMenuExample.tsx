@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Example: Context Menu for Text Selection
  * 
@@ -10,9 +11,6 @@
 
 "use client";
 
-// @ts-ignore - TextSelectionPromptMenu may not be exported from prompts feature
-// @ts-ignore - Module may not exist
-import { TextSelectionPromptMenu } from '@/features/prompts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   FileText,

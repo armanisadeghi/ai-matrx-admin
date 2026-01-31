@@ -162,7 +162,7 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
             animate="animate"
             exit="exit"
         >
-            <ResizablePanelGroup direction="horizontal" className="h-full">
+            <ResizablePanelGroup orientation="horizontal" className="h-full">
                 <ResizablePanel
                     defaultSize={splitRatio}
                     minSize={15}

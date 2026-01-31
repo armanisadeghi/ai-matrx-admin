@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/styles/themes/utils';
-import {EntityFormModalProps, EntityFormState} from "@/components/matrx/Entity/types/entityForm";
+import {EntityFormModalProps, EntityModalFormState} from "@/components/matrx/Entity/types/entityForm";
 import {EntityForm} from "@/components/matrx/Entity"; // Import cn utility
 
 
@@ -25,7 +25,7 @@ const EntityFormModal: React.FC<EntityFormModalProps & { className?: string }> =
     }) => {
 
     const [internalIsOpen, setInternalIsOpen] = useState(false);
-    const [internalFormState, setInternalFormState] = useState<EntityFormState>(externalFormState);
+    const [internalFormState, setInternalFormState] = useState<EntityModalFormState>(externalFormState);
 
     const isControlled = externalIsOpen !== undefined;
     const isOpen = isControlled ? externalIsOpen : internalIsOpen;
@@ -52,7 +52,7 @@ const EntityFormModal: React.FC<EntityFormModalProps & { className?: string }> =
     const handleSubmit = () => {
         if (externalOnSubmit) {
             if (externalOnSubmit.length > 0) {
-                (externalOnSubmit as (formData: EntityFormState) => void)(internalFormState);
+                (externalOnSubmit as (formData: EntityModalFormState) => void)(internalFormState);
             } else {
                 (externalOnSubmit as () => void)();
             }
@@ -70,7 +70,7 @@ const EntityFormModal: React.FC<EntityFormModalProps & { className?: string }> =
 
     return (
         <>
-            {triggerButton && React.cloneElement(triggerButton as React.ReactElement, { onClick: openModal })}
+            {triggerButton && React.cloneElement(triggerButton as React.ReactElement<any>, { onClick: openModal } as any)}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Settings, X } from 'lucide-react';
 import SmartButtonBase from './SmartButtonBase';
 import { SmartButtonProps } from '../types';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 import EntityRecordSheet from '@/app/entities/layout/EntityRecordSheet';
 
 

@@ -13,6 +13,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
 import { MatrxVariant } from './types';
+import type { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "@/components/ui/button";
+
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
+
+// Map MatrxVariant to Button variant
+const mapVariant = (variant?: MatrxVariant): ButtonVariant => {
+    switch (variant) {
+        case 'primary':
+        case 'success':
+            return 'default';
+        case 'destructive':
+            return 'destructive';
+        case 'outline':
+            return 'outline';
+        case 'secondary':
+            return 'secondary';
+        case 'ghost':
+            return 'ghost';
+        case 'link':
+            return 'link';
+        default:
+            return 'outline';
+    }
+};
 
 type MenuItem = {
     label: string;
@@ -63,7 +88,7 @@ export const EntityDropdownMenu: React.FC<EntityDropdownMenuProps> = (
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                {trigger || <Button variant={triggerVariant}>{triggerText}</Button>}
+                {trigger || <Button variant={mapVariant(triggerVariant)}>{triggerText}</Button>}
             </DropdownMenuTrigger>
             <DropdownMenuContent className={className}>
                 {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}

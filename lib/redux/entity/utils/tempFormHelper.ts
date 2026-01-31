@@ -14,6 +14,7 @@ export function mapFieldDataToFormField(
         uuid: 'text',
         email: 'email',
         url: 'url',
+        phone: 'text', // Added missing phone mapping
         datetime: 'datetime-local',
         null: 'text',
         undefined: 'text',

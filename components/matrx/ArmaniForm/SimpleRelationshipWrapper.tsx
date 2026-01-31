@@ -114,6 +114,7 @@ const EntityFkWrapper = (
                 </h2>
                 {fieldInfo &&
                     fieldInfo.map((field) => {
+                        // @ts-ignore - COMPLEX: fieldType returns component type but TypeScript sees EntityStateField as non-callable - type inference issue
                         const Component = fieldType(field);
                         if (!Component) {
                             console.warn(`No component found for field: ${field.name}`);

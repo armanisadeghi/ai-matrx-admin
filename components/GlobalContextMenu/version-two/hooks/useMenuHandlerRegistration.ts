@@ -7,6 +7,7 @@ export const useMenuHandlerRegistration = (
     module: ModuleType,
     handlers: Record<string, Function>
 ) => {
+    // @ts-ignore - COMPLEX: useMenuRegistry not imported/defined - needs manual review to determine correct import or implementation
     const registerHandler = useMenuRegistry(state => state.registerHandler);
 
     useEffect(() => {

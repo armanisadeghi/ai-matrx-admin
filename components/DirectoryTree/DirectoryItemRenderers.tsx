@@ -12,7 +12,8 @@ import {
     Calendar
 } from 'lucide-react';
 import {Badge} from "@/components/ui/badge";
-import {formatFileSize, formatLastModified} from '../file-operations/utils';
+// @ts-ignore - COMPLEX: Module '../file-operations/utils' path resolution issue - correct path is '@/utils/file-operations/utils'
+import {formatFileSize, formatLastModified} from '@/utils/file-operations/utils';
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from '../ui';
 import {getEnhancedFileIcon, getFileCategory} from './config';
 import type {EnhancedDirectoryTreeConfig} from './config';

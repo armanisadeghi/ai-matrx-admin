@@ -1,7 +1,7 @@
 // middleware/syncMiddleware.ts
 import { Middleware } from 'redux';
 
-export const syncMiddleware: Middleware = store => next => async action => {
+export const syncMiddleware: Middleware = store => next => async (action: any) => {
     if (action.type !== 'SYNC_STATE') {
         return next(action);
     }

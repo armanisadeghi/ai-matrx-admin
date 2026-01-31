@@ -237,6 +237,8 @@ registerComponent('QUICK_LIST', {
 // };
 
 
+import {QuickReferenceSidebar} from "@/components/matrx/Entity/prewired-components";
+
 export const ACTION_COMPONENTS = {
     QUICK_LIST: EntityQuickListAction,
     DATA_TABLE: DataTable,

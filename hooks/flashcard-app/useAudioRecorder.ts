@@ -6,7 +6,7 @@ export function useAudioRecorder() {
     const [audioLevel, setAudioLevel] = useState(0);
     const audioContextRef = useRef<AudioContext | null>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
-    const animationFrameRef = useRef<number>();
+    const animationFrameRef = useRef<number | undefined>(undefined);
     const recordingsRef = useRef<Record<string, Blob>>({});
     const mediaRecordersRef = useRef<Record<string, MediaRecorder>>({});
     const audioChunksRef = useRef<Record<string, Blob[]>>({});

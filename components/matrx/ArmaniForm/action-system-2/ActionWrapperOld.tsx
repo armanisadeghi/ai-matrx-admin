@@ -86,10 +86,10 @@ const ActionWrapper: React.FC<ActionWrapperProps> = (
         if (action.command) {
             switch (action.command.type) {
                 case 'redux':
-                    dispatch({type: action.command.action, payload: action.command.params});
+                    dispatch({type: action.command.action as string, payload: action.command.params});
                     break;
                 case 'saga':
-                    dispatch({type: action.command.action, payload: action.command.params});
+                    dispatch({type: action.command.action as string, payload: action.command.params});
                     break;
                 case 'function':
                     if (typeof action.command.action === 'function') {
@@ -230,7 +230,8 @@ const ActionWrapper: React.FC<ActionWrapperProps> = (
 
 // Example usage components
 const ActionField: React.FC<{
-    field: EntityField;
+    // @ts-ignore - COMPLEX: EntityField requires 2 type arguments but none provided - needs entity and field key types
+    field: EntityField<any, any>;
     actions: Record<string, ActionConfig>;
     onActionComplete?: (result: any) => void;
 }> = ({field, actions, onActionComplete}) => {
@@ -239,6 +240,7 @@ const ActionField: React.FC<{
             field={field}
             actions={actions}
             onActionComplete={onActionComplete}
+            children={null}
         >
             {/* Your field component here */}
         </ActionWrapper>

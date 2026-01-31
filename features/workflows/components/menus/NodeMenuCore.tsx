@@ -124,10 +124,9 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
                 label: "Profile Settings",
                 onClick: handleProfileClick,
             })}
-            
             {!hideTheme && renderMenuItem({
-                icon: mode === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />,
-                label: mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+                icon: theme.mode === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />,
+                label: theme.mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
                 onClick: toggleMode,
             })}
             
