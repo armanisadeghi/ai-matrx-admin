@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import EntityJsonBuilderWithSelect from './EntityJsonBuilderWithSelect';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 
 const TestPage = () => {
     const [jsonValue, setJsonValue] = useState('');

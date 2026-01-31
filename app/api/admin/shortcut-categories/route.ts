@@ -7,7 +7,7 @@ import {
   createShortcutCategory,
   fetchCategoriesWithShortcutCounts,
 } from '@/features/prompt-builtins/services/admin-service';
-import { CreateShortcutCategoryInput } from '@/features/prompt-builtins/core';
+import { CreateShortcutCategoryInput } from '@/features/prompt-builtins/types/core';
 
 /**
  * GET /api/admin/shortcut-categories

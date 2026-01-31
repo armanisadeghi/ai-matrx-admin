@@ -3,7 +3,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { EntityDataWithKey, EntityKeys, ProcessedEntityData } from '@/types';
+import { EntityDataWithKey, EntityKeys, ProcessedEntityData } from '@/types/entityTypes';
 
 type LoadingState = {
     isLoading: boolean;

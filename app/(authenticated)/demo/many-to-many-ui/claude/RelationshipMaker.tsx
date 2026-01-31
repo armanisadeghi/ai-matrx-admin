@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { X, Check, AlertCircle, Search, Move, Plus } from "lucide-react";
 import { useCreateManyToMany } from "@/lib/redux/entity/hooks/useCreateManyToMany";
 import { RELATIONSHIP_DEFINITIONS } from "@/app/entities/hooks/relationships/relationshipData";
-import { AiModelDataOptional, AiEndpointDataOptional } from "@/types";
+import { AiModelDataOptional, AiEndpointDataOptional } from "@/types/AutomationSchemaTypes";
 
 export const aiModelEndpointDef = RELATIONSHIP_DEFINITIONS.aiModelEndpoint;
 

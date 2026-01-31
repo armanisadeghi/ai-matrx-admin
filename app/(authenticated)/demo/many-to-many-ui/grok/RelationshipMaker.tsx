@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "motion/react";
 import { useCreateManyToMany } from "@/lib/redux/entity/hooks/useCreateManyToMany";
 import { RELATIONSHIP_DEFINITIONS } from "@/app/entities/hooks/relationships/relationshipData";
-import { AiModelDataOptional, AiEndpointDataOptional } from "@/types";
+import { AiModelDataOptional, AiEndpointDataOptional } from "@/types/AutomationSchemaTypes";
 
 export const aiModelEndpointDef = RELATIONSHIP_DEFINITIONS.aiModelEndpoint;
 

@@ -7,7 +7,7 @@ import { getFormStyle } from './formUtils';
 import FieldSelectionControls from './form-helpers/FieldSelectionControls';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useRenderedFields } from '../hooks/form-related/useRenderedFields';
-import { ComponentDensity } from '@/types';
+import { ComponentDensity } from '@/types/componentConfigTypes';
 
 interface EntityFormMinimalAnyRecordProps {
     recordId: MatrxRecordId;

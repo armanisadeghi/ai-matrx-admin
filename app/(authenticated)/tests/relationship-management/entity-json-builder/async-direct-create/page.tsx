@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCreateWithId } from '@/app/entities/hooks/crud/useDirectCreateRecord';
 import EntityJsonBuilderWithSelect from '../EntityJsonBuilderWithSelect';

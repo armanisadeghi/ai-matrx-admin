@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { BasicInfoCard, PrimaryKeyInfo, SimpleCard, RelationshipsCard } from './info-cards';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import EntityFieldsCard from './field-cardds';
 import RelationshipDetailsCard from './RelationshipDetailsCard';
 import { getFullEntityRelationships, getEntityMetadata } from '@/lib/redux/entity/utils/direct-schema';

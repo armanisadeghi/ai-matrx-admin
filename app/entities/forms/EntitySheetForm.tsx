@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { RootState, selectEntityPrettyName, useAppSelector, useEntityTools } from '@/lib/redux';
 import { Button } from '@/components/ui/button';
 import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';

@@ -10,7 +10,7 @@ import {
 import { FilterCondition } from '@/lib/redux/entity/types/stateTypes';
 import { useSelector } from 'react-redux';
 import { buildFilterConditions, ConditionInput } from './filter-utils';
-import { MessageRecordWithKey } from '@/types';
+import { MessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 
 
 export function useConversationMessages(conversationId: string, initialPage = 1, initialPageSize = 10) {

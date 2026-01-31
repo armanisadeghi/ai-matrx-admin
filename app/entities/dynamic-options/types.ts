@@ -1,6 +1,6 @@
 import { SmartCrudWrapperProps } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper';
 import { MatrxVariant } from '@/components/ui/types';
-import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { EntityAnyFieldKey, EntityKeys } from '@/types/entityTypes';
 import { EntityFormType } from '../forms';
 
 export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disabled'] as const;

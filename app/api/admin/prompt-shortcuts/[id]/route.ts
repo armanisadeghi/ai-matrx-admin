@@ -7,7 +7,7 @@ import {
   updatePromptShortcut,
   deletePromptShortcut,
 } from '@/features/prompt-builtins/services/admin-service';
-import { UpdatePromptShortcutInput } from '@/features/prompt-builtins/core';
+import { UpdatePromptShortcutInput } from '@/features/prompt-builtins/types/core';
 
 /**
  * GET /api/admin/prompt-shortcuts/[id]

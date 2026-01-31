@@ -1,4 +1,4 @@
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { FullEntityRelationships } from "@/utils/schema/fullRelationships";
 import { MetadataField, SimpleCard } from "./info-cards";
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';

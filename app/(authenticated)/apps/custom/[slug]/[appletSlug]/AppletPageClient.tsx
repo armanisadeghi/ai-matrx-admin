@@ -4,7 +4,7 @@
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import AppletRunComponent from "@/features/applet/runner/AppletRunComponent";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 interface AppletPageClientProps {
     slug: string;

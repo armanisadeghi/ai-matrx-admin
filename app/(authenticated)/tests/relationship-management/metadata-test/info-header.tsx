@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AllEntityFieldKeys, AllEntityFieldVariations, EntityKeys } from '@/types';
+import { AllEntityFieldKeys, AllEntityFieldVariations, EntityKeys } from '@/types/entityTypes';
 import { getEntitySelectOptions, toDbEntityName, toPrettyEntityName, toPrettyFieldName } from '@/lib/redux/entity/utils/direct-schema';
 import { FullEntityRelationships } from '@/utils/schema/fullRelationships';
 import { EntityMetadata } from '@/lib/redux/entity/types/stateTypes';

@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { createEntitySelectors, useAppSelector } from '@/lib/redux';
-import {  EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import EntityFormMinimalAnyRecord from './EntityFormMinimalAnyRecord';
 
 

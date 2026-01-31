@@ -7,7 +7,7 @@ import {
   updateShortcutCategory,
   deleteShortcutCategory,
 } from '@/features/prompt-builtins/services/admin-service';
-import { UpdateShortcutCategoryInput } from '@/features/prompt-builtins/core';
+import { UpdateShortcutCategoryInput } from '@/features/prompt-builtins/types/core';
 
 /**
  * GET /api/admin/shortcut-categories/[id]
