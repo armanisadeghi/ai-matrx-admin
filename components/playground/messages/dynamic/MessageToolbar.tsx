@@ -9,9 +9,9 @@ import {
   SquareRadical, 
   Eye 
 } from 'lucide-react';
-import { MatrxRecordId } from '@/types/index';
 import DynamicToolbar from '../../components/dynamic/DynamicToolbar';
 import { BaseToolbarProps } from '../../components/dynamic/PanelContent';
+import { MatrxRecordId } from '@/types/entityTypes';
 
 export interface MessageToolbarProps extends BaseToolbarProps {
     messageRecordId: MatrxRecordId;

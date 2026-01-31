@@ -69,7 +69,7 @@ export interface ApiConfig {
 
 export interface EndpointCardProps {
     endpoint: Endpoint;
-    onTest: (endpoint: Endpoint, url: string, body?: EndpointBody) => Promise<void>;
+    onTest?: (endpoint: Endpoint, url: string, body?: EndpointBody) => Promise<void>;
     response?: EndpointResponse;
     loading?: boolean;
     baseUrl: string;

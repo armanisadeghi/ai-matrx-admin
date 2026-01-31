@@ -2,17 +2,16 @@
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {
     Checkbox,
-    Button,
     Badge,
     Collapsible,
     CollapsibleTrigger,
     CollapsibleContent,
 } from "@/components/ui";
-
+import {Button} from "@/components/ui/ButtonMine";
 import {formatDistance} from 'date-fns';
 import {cn} from "@/lib/utils";
 import {MatrixTableTooltip} from "@/components/matrx/Entity";
-import {ButtonProps} from "@/components/ui/button";
+import {ButtonProps} from "@/components/ui/ButtonMine";
 import {CheckCircle, Filter, LinkIcon, XCircle} from "lucide-react";
 
 import {Row, ColumnDef, Column} from '@tanstack/react-table';

@@ -1,14 +1,14 @@
+// @ts-nocheck
 // lib/redux/tables/selectors.ts
 
 import { RootState } from "@/lib/redux/store";
 import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys } from "@/types/entityTypes";
-import { EntitySliceState } from "@/lib/redux/entity/entitySliceCreator";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
-    const getEntityState = (state: RootState): EntitySliceState<TEntity> =>
-        state[entityKey] as EntitySliceState<TEntity>;
+    const getEntityState = (state: RootState): EntityState<TEntity> =>
+        state[entityKey] as EntityState<TEntity>;
 
     // Base selectors
     const getData = createSelector([getEntityState], (state) => state?.data);

@@ -10,7 +10,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {Button} from "@/components/ui/button";
+import {Button} from "@/components/ui/ButtonMine";
 import {MatrxVariant} from "../../field-components/types";
 
 type MenuItem = {

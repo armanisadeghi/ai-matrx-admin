@@ -5,7 +5,7 @@ import {FieldIdentifier, FormMode} from '../types';
 import {updateFieldValue, initializeField} from '../fieldSlice';
 import {selectField, selectFieldValue} from '../selectors';
 import {EntityKeys, AllEntityFieldKeys} from "@/types/entityTypes";
-import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {EntityOperationMode, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {SmartComponentProps} from "@/components/matrx/ArmaniForm/SimpleRelationshipWrapper";
 import {useForm} from "@/lib/redux/concepts/fields/component-examples/fieldComponentExample";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";

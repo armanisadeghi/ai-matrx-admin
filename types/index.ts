@@ -4,7 +4,6 @@ export * from './aiChatTypes';
 export * from './AutomationSchemaTypes';
 export * from './componentConfigTypes';
 export * from './entityTableTypes';
-export * from './entityTypes';
 export * from './flashcards.types';
 export * from './FlexibleId';
 export * from './FlexRef';

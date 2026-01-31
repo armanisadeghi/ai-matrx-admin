@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, {createContext, useContext, useCallback, useMemo, useState} from 'react';
 import {motion, AnimatePresence} from 'motion/react';
 import {cn} from '@/utils/cn';

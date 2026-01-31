@@ -16,8 +16,8 @@ import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { TaskFilterType } from '@/features/tasks/types';
 import { TaskSortField } from '@/features/tasks/types/sort';
 
-type TaskSortOption = `${TaskSortField}-${'asc' | 'desc'}` | 'title-asc' | 'title-desc';
-import { Button } from '@/components/ui/button';
+type TaskSortOption = `${TaskSortField}-${'asc' | 'desc'}` | 'title-asc' | 'title-desc' | 'due-date-asc' | 'due-date-desc' | 'priority-asc' | 'priority-desc' | 'created-asc' | 'created-desc';
+import { Button } from '@/components/ui/ButtonMine';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,7 +141,7 @@ export default function MobileFilterMenu() {
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <ArrowUpDown size={18} className="mr-2" />
-              {getSortLabel(sortBy)}
+              {getSortLabel(sortBy as TaskSortOption)}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="w-56">
               {(

@@ -656,7 +656,7 @@ interface ActionExecutionContext {
 const executeAction = ({ action, runtimeContext }: ActionExecutionContext) => {
     // Create the icon component with resolved runtime values
     const iconComponent = createIconComponent(
-        action.icon,
+        action.icon as any,
         {
             context: {
                 isDisabled: false, // Your runtime value

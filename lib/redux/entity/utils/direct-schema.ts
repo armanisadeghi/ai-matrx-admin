@@ -8,8 +8,6 @@ import {
 } from '@/types/AutomationSchemaTypes';
 import {
     AutomationEntities,
-    EntityNameOfficial,
-    relationships,
     AllEntityFieldVariations,
     EntityDatabaseTable,
     UnifiedSchemaCache,
@@ -28,6 +26,7 @@ import { RelationshipDetails } from '@/utils/schema/fullRelationships';
 import { EntityMetadata, EntityFieldRecord } from '../types/stateTypes';
 import { getGlobalUserId } from '@/app/Providers';
 import { TypeBrand } from '@/utils/schema/initialSchemas';
+import { EntityNameOfficial, relationships } from '@/types/schema';
 
 
 type ComponentProps = {

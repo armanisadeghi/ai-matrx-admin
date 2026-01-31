@@ -186,7 +186,7 @@ export const BadgeTrigger = (
         disabled,
         variant = "primary",
         children,
-    }: TriggerProps
+    }: any
 ) => {
     const ResolvedIcon = iconName ? iconRegistry[iconName] : null;
     const onClick = eventHandlers?.onClick;

@@ -50,7 +50,6 @@ export const FormLayout: React.FC<FormLayoutProps> = ({
                                 key={field.name}
                                 field={field}
                                 customComponent={config.customComponents?.[field.name]}
-                                {/* @ts-ignore - COMPLEX: ActionConfig doesn't have index signature for Record<string, ActionConfig> */}
                                 actions={(config.actions as any)?.[field.name]}
                                 onChange={handleFieldChange(field)}
                             />

@@ -1,4 +1,4 @@
-import { EntityKeys, EntityAnyFieldKey } from ".";
+import { EntityAnyFieldKey, EntityKeys } from "./entityTypes";
 
 
 export type EntityKeyWithUsers = EntityKeys | "users";

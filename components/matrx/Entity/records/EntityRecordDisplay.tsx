@@ -13,6 +13,7 @@ import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
 import {EntityError, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {createRecordKey} from '@/lib/redux/entity/utils/stateHelpUtils';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
+import { EntityFormState } from '@/types/componentConfigTypes';
 
 function EntityRecordDisplay(
     {

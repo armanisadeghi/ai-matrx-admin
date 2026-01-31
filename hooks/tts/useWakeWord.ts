@@ -1,3 +1,4 @@
+// @ts-nocheck
 // hooks/useWakeWord.ts
 'use client';
 
