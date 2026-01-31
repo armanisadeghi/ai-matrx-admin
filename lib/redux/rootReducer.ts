@@ -48,6 +48,7 @@ import workflowNodeSlice from "./workflow-nodes/slice";
 import canvasReducer from "../../features/canvas/redux/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
+import messagingReducer from "../../features/messaging/redux/messagingSlice";
 
 
 // Prompt system
@@ -163,6 +164,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         // Prompt Editor (Redux)
         promptEditor: promptEditorReducer,
         modelRegistry: modelRegistryReducer,
+
+        // Messaging system
+        messaging: messagingReducer,
     });
 };
 

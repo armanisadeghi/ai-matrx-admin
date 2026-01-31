@@ -5,6 +5,7 @@ import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { NotificationDropdown } from "@/components/ui/notifications";
 import { Notification } from "@/types/notification.types";
+import { MessageIcon } from "@/features/messaging";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -122,6 +123,7 @@ export default function DesktopLayout({
                     <div className="flex items-center gap-1">
                         <QuickActionsMenu className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <FeedbackButton className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+                        <MessageIcon />
                         <NotificationDropdown
                             notifications={notifications}
                             onMarkAsRead={(id) => {
