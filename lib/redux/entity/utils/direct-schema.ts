@@ -19,7 +19,7 @@ import {
     DatabaseFieldName,
     AllEntityFieldKeys,
     MatrxRecordId,
-} from '@/types';
+} from '@/types/entityTypes';
 import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';

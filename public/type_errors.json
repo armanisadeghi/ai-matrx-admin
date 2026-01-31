@@ -994,137 +994,25 @@
     "code": 2687
   },
   {
-    "file": "components/matrx/EntityTable/EnhancedAction/TableActionIcon.tsx",
-    "line": 90,
-    "column": 21,
-    "message": "Type '\"default\" | \"sm\" | \"lg\" | \"icon\" | \"xs\"' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.\n  Type '\"xs\"' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/EntityTable/EnhancedAction/createCustomAction.tsx",
-    "line": 149,
-    "column": 9,
+    "file": "components/matrx/EntityTable/EnhancedAction/EntityMatrxActions.tsx",
+    "line": 254,
+    "column": 11,
     "message": "Type 'string | ((data: EntityData<TEntity>) => string)' is not assignable to type 'string'.\n  Type '(data: EntityData<TEntity>) => string' is not assignable to type 'string'.",
     "code": 2322
   },
   {
     "file": "components/matrx/EntityTable/EnhancedAction/useEntityTableActions.ts",
-    "line": 6,
-    "column": 37,
+    "line": 8,
+    "column": 35,
     "message": "File 'lib/redux/entity/concepts/entityActionCreator.ts' is not a module.",
     "code": 2306
-  },
-  {
-    "file": "components/matrx/MatrxCheckbox.tsx",
-    "line": 111,
-    "column": 25,
-    "message": "Type '{ checked: { pathLength: number; opacity: number; transition: { duration: number; ease: string; }; }; unchecked: { pathLength: number; opacity: number; transition: { duration: number; ease: string; }; }; }' is not assignable to type 'Variants'.\n  Property 'checked' is incompatible with index signature.\n    Type '{ pathLength: number; opacity: number; transition: { duration: number; ease: string; }; }' is not assignable to type 'Variant'.\n      Type '{ pathLength: number; opacity: number; transition: { duration: number; ease: string; }; }' is not assignable to type 'TargetAndTransition'.\n        Type '{ pathLength: number; opacity: number; transition: { duration: number; ease: string; }; }' is not assignable to type '{ transition?: Transition<any>; transitionEnd?: ResolvedValues$1; }'.\n          Types of property 'transition' are incompatible.\n            Type '{ duration: number; ease: string; }' is not assignable to type 'Transition<any>'.\n              Type '{ duration: number; ease: string; }' is not assignable to type 'TransitionWithValueOverrides<any>'.\n                Type '{ duration: number; ease: string; }' is not assignable to type 'ValueAnimationTransition<any>'.\n                  Types of property 'ease' are incompatible.\n                    Type 'string' is not assignable to type 'Easing | Easing[]'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/camera/camera.tsx",
-    "line": 34,
-    "column": 20,
-    "message": "Expected 1 arguments, but got 0.",
-    "code": 2554
-  },
-  {
-    "file": "components/matrx/resizable/NestedResizableWithHeaderFooter.tsx",
-    "line": 90,
-    "column": 34,
-    "message": "Type '{ children: Element; direction: \"horizontal\" | \"vertical\"; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'direction' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/resizable/Panels.tsx",
-    "line": 21,
-    "column": 17,
-    "message": "Type '{ children: Element[]; orientation: \"horizontal\"; className: string; onLayout: any; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'onLayout' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/resizable/Panels.tsx",
-    "line": 63,
-    "column": 17,
-    "message": "Type '{ children: Element[]; orientation: \"horizontal\"; className: string; onLayout: any; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'onLayout' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/resizable/Panels.tsx",
-    "line": 104,
-    "column": 17,
-    "message": "Type '{ children: Element[]; orientation: \"vertical\"; className: string; onLayout: any; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'onLayout' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/resizable/Panels.tsx",
-    "line": 146,
-    "column": 17,
-    "message": "Type '{ children: Element[]; orientation: \"vertical\"; className: string; onLayout: any; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'onLayout' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
   },
   {
     "file": "components/matrx/resizable/dev/ResizableBottomPanel.tsx",
     "line": 138,
     "column": 17,
-    "message": "Type '{ children: Element[]; orientation: \"vertical\"; className: string; onLayout: (sizes: number[]) => void; style: { touchAction: \"none\"; userSelect: \"none\"; }; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'onLayout' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
+    "message": "Type '(sizes: number[]) => void' is not assignable to type '(layout: Layout) => void'.\n  Types of parameters 'sizes' and 'layout' are incompatible.\n    Type 'Layout' is missing the following properties from type 'number[]': length, pop, push, concat, and 35 more.",
     "code": 2322
-  },
-  {
-    "file": "components/matrx/resizable/dev/ResizableBottomPanel2.tsx",
-    "line": 80,
-    "column": 21,
-    "message": "Type '{ children: Element[]; direction: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'direction' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
-  },
-  {
-    "file": "components/matrx/schema/ops/CreateFromJson.tsx",
-    "line": 26,
-    "column": 13,
-    "message": "Unused '@ts-expect-error' directive.",
-    "code": 2578
-  },
-  {
-    "file": "components/matrx/schema/ops/FetchOperations.tsx",
-    "line": 27,
-    "column": 13,
-    "message": "Unused '@ts-expect-error' directive.",
-    "code": 2578
-  },
-  {
-    "file": "components/matrx/schema/opsRedux/CustomQuery.tsx",
-    "line": 45,
-    "column": 31,
-    "message": "Cannot find name 'data'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/schema/opsRedux/DeleteOperation.tsx",
-    "line": 42,
-    "column": 31,
-    "message": "Cannot find name 'data'.",
-    "code": 2304
-  },
-  {
-    "file": "components/matrx/schema/opsRedux/RealtimeSubscription.tsx",
-    "line": 38,
-    "column": 31,
-    "message": "Cannot find name 'data'.",
-    "code": 2304
-  },
-  {
-    "file": "components/playground/brokers/dev/OrphanChipDisplay.tsx",
-    "line": 10,
-    "column": 88,
-    "message": "';' expected.",
-    "code": 1005
-  },
-  {
-    "file": "components/playground/brokers/dev/OrphanChipDisplay.tsx",
-    "line": 222,
-    "column": 18,
-    "message": "Property 'chips' is missing in type '{ recordId: string; record: BrokerRecord; color: \"red\" | \"blue\" | \"cyan\" | \"fuchsia\" | \"green\" | \"indigo\" | \"lime\" | \"orange\" | \"pink\" | \"purple\" | \"teal\" | \"violet\" | \"yellow\" | \"rose\" | \"amber\" | \"emerald\" | \"sky\"; isConnected: boolean; isOpen: boolean; onToggle: () => void; onDelete: () => void; }' but required in type 'BrokerCardHeaderProps'.",
-    "code": 2741
   },
   {
     "file": "components/ssr/select/app-data-select.tsx",
@@ -1169,34 +1057,6 @@
     "code": 2561
   },
   {
-    "file": "features/applet/builder/modules/field-builder/FieldRenderer.tsx",
-    "line": 345,
-    "column": 12,
-    "message": "Type '\"button\"' is not comparable to type 'ComponentType'.",
-    "code": 2678
-  },
-  {
-    "file": "features/applet/builder/modules/recipe-source/RecipeSelectDialog.tsx",
-    "line": 14,
-    "column": 3,
-    "message": "Module '\"@/lib/redux/app-builder/service/customAppletService\"' declares 'AppletSourceConfig' locally, but it is not exported.",
-    "code": 2459
-  },
-  {
-    "file": "features/prompts/components/builder-new/PromptBuilderRedux.tsx",
-    "line": 118,
-    "column": 38,
-    "message": "Type '{ children: Element[]; direction: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.\n  Property 'direction' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { children?: ReactNode; className?: string; defaultLayout?: Layout; disableCursor?: boolean; disabled?: boolean; elementRef?: Ref<HTMLDivElement>; groupRef?: Ref<GroupImperativeHandle>; id?: string | number; onLayoutChange?: (layout: Layout) => void; onLayoutChanged?: (layout: Layout) => void; resizeTargetMinimumSize?: { coarse: number; fine: number; }; orientation?: \"horizontal\" | \"vertical\"; style?: CSSProperties; }'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/prompts/components/builder-new/PromptSettingsPanel.tsx",
-    "line": 177,
-    "column": 112,
-    "message": "'...' expected.",
-    "code": 1005
-  },
-  {
     "file": "/home/arman/projects/ai-matrx-admin/features/prompts/components/builder-new/PromptSettingsPanel.tsx",
     "line": 187,
     "column": 112,
@@ -1204,207 +1064,39 @@
     "code": 1005
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/features/prompts/components/dynamic/DynamicCards.tsx",
-    "line": 111,
-    "column": 99,
-    "message": "'...' expected.",
-    "code": 1005
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/prompts/components/layouts/PromptListItem.tsx",
-    "line": 289,
-    "column": 17,
-    "message": "Type '{ isOpen: boolean; onClose: () => void; promptId: string; promptName: string; onRun: (e?: MouseEvent<Element, MouseEvent>) => void; onEdit: () => void; onView: (e?: MouseEvent<Element, MouseEvent>) => void; onDuplicate: (e?: MouseEvent<Element, MouseEvent>) => void; onDelete: (e?: MouseEvent<Element, MouseEvent>) => void; onShare: (e?: MouseEvent<Element, MouseEvent>) => void; onCreateApp: (e?: MouseEvent<Element, MouseEvent>) => void; isDuplicating: boolean; isDeleting: boolean; }' is not assignable to type 'IntrinsicAttributes & PromptActionModalProps'.\n  Property 'promptId' does not exist on type 'IntrinsicAttributes & PromptActionModalProps'.",
-    "code": 2322
-  },
-  {
-    "file": "features/prompts/components/results-display/PromptRunner.types.ts",
-    "line": 7,
-    "column": 87,
-    "message": "';' expected.",
-    "code": 1005
-  },
-  {
-    "file": "features/prompts/examples/ContextMenuExample.tsx",
-    "line": 14,
-    "column": 62,
-    "message": "';' expected.",
-    "code": 1005
-  },
-  {
-    "file": "features/prompts/examples/index.tsx",
-    "line": 13,
-    "column": 109,
-    "message": "';' expected.",
-    "code": 1005
-  },
-  {
-    "file": "features/recipes/recipe-source/RecipeSelectDialog.tsx",
-    "line": 14,
-    "column": 3,
-    "message": "Module '\"@/lib/redux/app-builder/service/customAppletService\"' declares 'AppletSourceConfig' locally, but it is not exported.",
-    "code": 2459
-  },
-  {
     "file": "features/registered-function/components/FunctionManagement.tsx",
-    "line": 100,
-    "column": 13,
-    "message": "Type '{ id: string; name: string; modulePath: string; className?: string; description?: string; returnBroker?: string; }[]' is not assignable to type '({ id: string; name: string; modulePath: string; type: RegisteredFunctionTypeEnum.Base; className?: string; description?: string; returnBroker?: string; } | { id: string; name: string; modulePath: string; type: RegisteredFunctionTypeEnum.Full; className?: string; description?: string; returnBroker?: string; returnBrokerObject?: any; args?: any[]; systemFunction?: any; recipeFunctions?: any[]; })[]'.\n  Type '{ id: string; name: string; modulePath: string; className?: string; description?: string; returnBroker?: string; }' is not assignable to type '{ id: string; name: string; modulePath: string; type: RegisteredFunctionTypeEnum.Base; className?: string; description?: string; returnBroker?: string; } | { id: string; name: string; modulePath: string; type: RegisteredFunctionTypeEnum.Full; className?: string; description?: string; returnBroker?: string; returnBrokerObject?: any; args?: any[]; systemFunction?: any; recipeFunctions?: any[]; }'.\n    Property 'type' is missing in type '{ id: string; name: string; modulePath: string; className?: string; description?: string; returnBroker?: string; }' but required in type '{ id: string; name: string; modulePath: string; type: RegisteredFunctionTypeEnum.Full; className?: string; description?: string; returnBroker?: string; returnBrokerObject?: any; args?: any[]; systemFunction?: any; recipeFunctions?: any[]; }'.",
-    "code": 2322
-  },
-  {
-    "file": "features/rich-text-editor/components/ChipSelectionContent.tsx",
-    "line": 9,
-    "column": 72,
-    "message": "Cannot find module '../types' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "features/rich-text-editor/components/ChipSelectionContent.tsx",
-    "line": 11,
-    "column": 36,
-    "message": "Cannot find module '../_dev/new/EditorProvider' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/rich-text-editor/components/ColorSelection.tsx",
-    "line": 4,
-    "column": 29,
-    "message": "Cannot find module '../types' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "features/scraper/parts/FancyJsonExplorer.tsx",
-    "line": 113,
-    "column": 21,
-    "message": "Type '\"xs\"' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/scraper/parts/SimplifiedView.tsx",
-    "line": 31,
-    "column": 25,
-    "message": "Type '\"md\"' is not assignable to type '\"default\" | \"sm\" | \"lg\" | \"icon\"'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 73,
-    "column": 26,
-    "message": "Type 'TaskSortOption' does not satisfy the constraint 'string | number | symbol'.",
-    "code": 2344
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 83,
-    "column": 19,
-    "message": "Type 'TaskSortOption' cannot be used as an index type.",
-    "code": 2538
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 142,
-    "column": 29,
-    "message": "Argument of type 'string' is not assignable to parameter of type 'TaskSortOption'.\n  Type 'string' is not assignable to type 'TaskSortOption'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 146,
-    "column": 17,
-    "message": "Conversion of type 'string[]' to type 'TaskSortOption[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Type 'string' is not comparable to type 'TaskSortOption'.",
-    "code": 2352
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 158,
-    "column": 19,
-    "message": "Type 'TaskSortOption' is not assignable to type 'Key'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 159,
-    "column": 44,
-    "message": "Argument of type 'TaskSortOption' is not assignable to parameter of type 'TaskSortField'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
-    "line": 160,
-    "column": 30,
-    "message": "This comparison appears to be unintentional because the types 'string' and 'TaskSortOption' have no overlap.",
-    "code": 2367
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/hooks/useQuickTask.ts",
-    "line": 41,
-    "column": 37,
-    "message": "Argument of type 'import(\"/home/arman/projects/ai-matrx-admin/features/tasks/types/database\").CreateTaskInput' is not assignable to parameter of type 'import(\"/home/arman/projects/ai-matrx-admin/features/tasks/services/taskService\").CreateTaskInput'.\n  Types of property 'status' are incompatible.\n    Type 'string' is not assignable to type '\"completed\" | \"incomplete\"'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/workflows-xyflow/core/WorkflowHeader.tsx",
-    "line": 82,
-    "column": 30,
-    "message": "Property 'toggleMode' does not exist on type 'ThemeContextProps | { mode: \"light\"; setMode: () => void; theme: {}; }'.",
+    "line": 102,
+    "column": 28,
+    "message": "Property 'type' does not exist on type '{ id: string; name: string; modulePath: string; className?: string; description?: string; returnBroker?: string; }'.",
     "code": 2339
   },
   {
-    "file": "features/workflows-xyflow/index.ts",
-    "line": 12,
-    "column": 3,
-    "message": "Module '\"./utils/nodeTransforms\"' has no exported member 'nodeToReactFlow'.",
-    "code": 2305
+    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
+    "line": 76,
+    "column": 7,
+    "message": "Object literal may only specify known properties, and ''due-date-asc'' does not exist in type 'Record<TaskSortOption, string>'.",
+    "code": 2353
   },
   {
-    "file": "features/workflows-xyflow/nodes/wf-nodes/index.ts",
-    "line": 3,
-    "column": 28,
-    "message": "Cannot find module './editor-options/NodeEditor' or its corresponding type declarations.",
-    "code": 2307
+    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
+    "line": 144,
+    "column": 29,
+    "message": "Argument of type 'TaskSortField' is not assignable to parameter of type 'TaskSortOption'.\n  Type '\"priority\"' is not assignable to type 'TaskSortOption'.",
+    "code": 2345
   },
   {
-    "file": "features/workflows-xyflow/nodes/wf-nodes/index.ts",
-    "line": 6,
-    "column": 35,
-    "message": "Cannot find module './editor-options/DynamicNodeEditor' or its corresponding type declarations.",
-    "code": 2307
+    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
+    "line": 161,
+    "column": 44,
+    "message": "Argument of type 'TaskSortOption' is not assignable to parameter of type 'TaskSortField'.\n  Type '\"priority-asc\"' is not assignable to type 'TaskSortField'. Did you mean '\"priority\"'?",
+    "code": 2345
   },
   {
-    "file": "features/workflows-xyflow/nodes/wf-nodes/index.ts",
-    "line": 7,
-    "column": 53,
-    "message": "Cannot find module './editor-options/DynamicNodeEditor' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "features/workflows-xyflow/nodes/wf-nodes/index.ts",
-    "line": 8,
-    "column": 31,
-    "message": "Cannot find module './FlexibleNodeEditor' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "features/workflows-xyflow/nodes/wf-nodes/index.ts",
-    "line": 9,
-    "column": 53,
-    "message": "Cannot find module './editor-options/NodeEditorOptions' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "features/workflows-xyflow/nodes/wf-nodes/index.ts",
-    "line": 12,
-    "column": 32,
-    "message": "Cannot find module './editor-options/DynamicNodeEditor' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/workflows-xyflow/utils/nodeTransforms.ts",
-    "line": 155,
-    "column": 5,
-    "message": "Property 'is_active' is missing in type '{ workflow_id: string; function_id: string; type: XyFlowNodeType; step_name: string; node_type: string; execution_required: true; inputs: undefined[]; outputs: undefined[]; dependencies: undefined[]; metadata: {}; ui_data: any; is_public: false; authenticated_read: true; public_read: false; }' but required in type 'WorkflowNodeCreateInput'.",
-    "code": 2741
+    "file": "/home/arman/projects/ai-matrx-admin/features/tasks/components/mobile/MobileFilterMenu.tsx",
+    "line": 162,
+    "column": 30,
+    "message": "This comparison appears to be unintentional because the types 'TaskSortField' and 'TaskSortOption' have no overlap.",
+    "code": 2367
   },
   {
     "file": "features/workflows/components/WorkflowsGrid.tsx",
@@ -1415,45 +1107,17 @@
   },
   {
     "file": "features/workflows/components/menus/NodeMenuCore.tsx",
-    "line": 53,
-    "column": 19,
-    "message": "Property 'toggleMode' does not exist on type 'ThemeContextProps | { mode: \"light\"; setMode: () => void; theme: {}; }'.",
-    "code": 2339
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/recipes/tabs/RecipeResultsTab.tsx",
-    "line": 80,
-    "column": 34,
-    "message": "Property 'taskId' is missing in type '{ message: localMessage; isStreamActive: false; onScrollToBottom: () => void; onContentUpdate: () => void; metadata: null; isOverlay: false; audioControls: null; }' but required in type 'AssistantMessageProps'.",
-    "code": 2741
-  },
-  {
-    "file": "features/workflows/utils/brokerEdgeAnalyzer.ts",
-    "line": 167,
-    "column": 73,
-    "message": "Argument of type 'WorkflowEdge' is not assignable to parameter of type 'Edge'.\n  Property 'isVirtual' is missing in type 'DefaultEdge<EnrichedEdgeData>' but required in type 'Edge'.",
-    "code": 2345
-  },
-  {
-    "file": "features/workflows/utils/edgeAnalyzer.ts",
-    "line": 23,
-    "column": 25,
-    "message": "Cannot find name 'CompleteWorkflowData'.",
+    "line": 129,
+    "column": 23,
+    "message": "Cannot find name 'mode'.",
     "code": 2304
   },
   {
-    "file": "features/workflows/utils/edgeAnalyzer.ts",
-    "line": 77,
-    "column": 25,
-    "message": "Cannot find name 'CompleteWorkflowData'.",
+    "file": "features/workflows/components/menus/NodeMenuCore.tsx",
+    "line": 130,
+    "column": 24,
+    "message": "Cannot find name 'mode'.",
     "code": 2304
-  },
-  {
-    "file": "features/workflows/utils/edgeManager.ts",
-    "line": 82,
-    "column": 57,
-    "message": "Argument of type 'DbFunctionNode' is not assignable to parameter of type 'FunctionNode'.\n  Type 'DbFunctionNode' is missing the following properties from type 'FunctionNode': position, data",
-    "code": 2345
   },
   {
     "file": "hooks/flashcard-app/useAudioRecorder.ts",
@@ -1464,101 +1128,38 @@
   },
   {
     "file": "hooks/tts/useVoiceChat.ts",
-    "line": 128,
+    "line": 129,
     "column": 9,
-    "message": "Object literal may only specify known properties, but 'minSpeechFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'minSpeechMs'?",
+    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
     "code": 2561
   },
   {
     "file": "hooks/tts/useVoiceChatCdn.ts",
-    "line": 126,
+    "line": 127,
     "column": 9,
-    "message": "Object literal may only specify known properties, but 'minSpeechFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'minSpeechMs'?",
+    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
     "code": 2561
   },
   {
     "file": "hooks/tts/useVoiceChatWithAutoSleep.ts",
-    "line": 180,
+    "line": 181,
     "column": 9,
-    "message": "Object literal may only specify known properties, but 'minSpeechFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'minSpeechMs'?",
+    "message": "Object literal may only specify known properties, but 'redemptionFrames' does not exist in type 'Partial<ReactRealTimeVADOptions>'. Did you mean to write 'redemptionMs'?",
     "code": 2561
   },
   {
     "file": "hooks/tts/useWakeWord.ts",
-    "line": 55,
+    "line": 56,
     "column": 9,
     "message": "Cannot find name 'usePorcupine'.",
     "code": 2304
   },
   {
     "file": "hooks/user-preferences/usePreferenceValue.ts",
-    "line": 3,
-    "column": 42,
-    "message": "Module '\"@/lib/redux\"' has no exported member 'UserPreferences'.",
-    "code": 2305
-  },
-  {
-    "file": "hooks/user-preferences/usePreferenceValue.ts",
-    "line": 3,
-    "column": 59,
-    "message": "Module '\"@/lib/redux\"' has no exported member 'setPreference'.",
-    "code": 2305
-  },
-  {
-    "file": "hooks/user-preferences/usePreferenceValue.ts",
-    "line": 13,
-    "column": 50,
-    "message": "Type 'T' cannot be used to index type 'UserPreferencesState'.",
-    "code": 2536
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 3,
-    "column": 5,
-    "message": "Module '\"@/lib/redux\"' has no exported member 'AssistantPreferences'.",
-    "code": 2305
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 4,
-    "column": 5,
-    "message": "'\"@/lib/redux\"' has no exported member named 'CodingPreferences'. Did you mean 'loadPreferences'?",
-    "code": 2724
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 5,
-    "column": 5,
-    "message": "'\"@/lib/redux\"' has no exported member named 'DisplayPreferences'. Did you mean 'loadPreferences'?",
-    "code": 2724
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 6,
-    "column": 5,
-    "message": "'\"@/lib/redux\"' has no exported member named 'PlaygroundPreferences'. Did you mean 'loadPreferences'?",
-    "code": 2724
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 7,
-    "column": 5,
-    "message": "Module '\"@/lib/redux\"' has no exported member 'setModulePreferences'.",
-    "code": 2305
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 8,
-    "column": 5,
-    "message": "Module '\"@/lib/redux\"' has no exported member 'setPreference'.",
-    "code": 2305
-  },
-  {
-    "file": "hooks/user-preferences/useUserPreferences.ts",
-    "line": 11,
-    "column": 5,
-    "message": "Module '\"@/lib/redux\"' has no exported member 'VoicePreferences'.",
-    "code": 2305
+    "line": 34,
+    "column": 25,
+    "message": "Type 'Dispatch<SetStateAction<UserPreferencesState[T][K]>>' is not assignable to type '(value: UserPreferences[T][K]) => void'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'UserPreferences[T][K]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.\n      Type 'UserPreferences[T][keyof UserPreferences[T]]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.\n        Type 'UserPreferences[T][string] | UserPreferences[T][number] | UserPreferences[T][symbol]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.\n          Type 'UserPreferences[T][string]' is not assignable to type 'SetStateAction<UserPreferencesState[T][K]>'.",
+    "code": 2322
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/lib/ai/adapters/anthropicAdapter.ts",
@@ -1566,20 +1167,6 @@
     "column": 44,
     "message": "Cannot find module '@ai-sdk/anthropic' or its corresponding type declarations.",
     "code": 2307
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/deepgram/helpers.ts",
-    "line": 96,
-    "column": 3,
-    "message": "Unreachable code detected.",
-    "code": 7027
-  },
-  {
-    "file": "lib/deepgram/types.ts",
-    "line": 1,
-    "column": 10,
-    "message": "'\"ai\"' has no exported member named 'Message'. Did you mean 'UIMessage'?",
-    "code": 2724
   },
   {
     "file": "lib/hooks/useDatabase.ts",
@@ -1603,13 +1190,6 @@
     "code": 2345
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/app-runner/validations/appRunnerValidations.ts",
-    "line": 164,
-    "column": 45,
-    "message": "Type '\"input-bar\"' is not assignable to type 'AppletLayoutOption'.",
-    "code": 2322
-  },
-  {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/concepts/fields/component-examples/SmartField.tsx",
     "line": 35,
     "column": 24,
@@ -1618,17 +1198,52 @@
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/concepts/fields/component-examples/SmartField.tsx",
-    "line": 42,
-    "column": 17,
-    "message": "Type 'FormMode' is not assignable to type 'EntityOperationMode'.\n  Type '\"display\"' is not assignable to type 'EntityOperationMode'.",
-    "code": 2322
+    "line": 40,
+    "column": 31,
+    "message": "Cannot find name 'EntityOperationMode'.",
+    "code": 2304
   },
   {
     "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
-    "line": 3,
-    "column": 27,
-    "message": "Cannot find module '../store' or its corresponding type declarations.",
-    "code": 2307
+    "line": 13,
+    "column": 55,
+    "message": "Property 'data' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
+    "code": 2339
+  },
+  {
+    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
+    "line": 23,
+    "column": 55,
+    "message": "Property 'error' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
+    "code": 2339
+  },
+  {
+    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
+    "line": 28,
+    "column": 55,
+    "message": "Property 'totalCount' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
+    "code": 2339
+  },
+  {
+    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
+    "line": 33,
+    "column": 55,
+    "message": "Property 'initialized' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
+    "code": 2339
+  },
+  {
+    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
+    "line": 38,
+    "column": 55,
+    "message": "Property 'selectedItem' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
+    "code": 2339
+  },
+  {
+    "file": "lib/redux/entity/concepts/paramEntitySelectors.ts",
+    "line": 43,
+    "column": 55,
+    "message": "Property 'lastFetched' does not exist on type 'EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">'.",
+    "code": 2339
   },
   {
     "file": "lib/redux/entity/concepts/paramSelectors.ts",
@@ -1648,25 +1263,11 @@
     "file": "lib/redux/entity/custom-actions/custom-workflow-actions.ts",
     "line": 738,
     "column": 21,
-    "message": "Type '\"backendWorkflow\"' is not assignable to type '\"message\" | \"public\" | \"name\" | \"value\" | \"path\" | \"priority\" | \"data\" | \"options\" | \"size\" | \"deleted\" | \"completed\" | \"url\" | \"mimeType\" | \"type\" | \"id\" | \"description\" | \"tags\" | \"messages\" | \"settings\" | \"metadata\" | \"status\" | \"exact\" | \"count\" | \"min\" | \"max\" | \"timestamp\" | \"temperature\" | \"maxTokens\" | \"topP\" | \"presencePenalty\" | \"frequencyPenalty\" | \"responseFormat\" | \"systemPrompt\" | \"recipeId\" | \"email\" | \"filePath\" | \"content\" | \"structure\" | \"username\" | \"params\" | \"title\" | \"score\" | \"role\" | \"category\" | \"className\" | \"color\" | \"height\" | \"style\" | \"width\" | \"display\" | \"order\" | \"orientation\" | \"version\" | \"visibility\" | \"displayName\" | \"source\" | \"controls\" | \"group\" | \"body\" | \"label\" | \"template\" | \"defaultValue\" | \"tooltip\" | \"props\" | \"position\" | \"matrix\" | \"attributes\" | \"side\" | \"enabled\" | \"duration\" | \"actions\" | \"useCount\" | \"state\" | \"sourceType\" | \"viewport\" | \"parameters\" | \"segments\" | \"capabilities\" | \"nodeType\" | \"step\" | \"icon\" | \"theme\" | \"ready\" | \"component\" | \"componentProps\" | \"broker\" | \"helpText\" | \"iconName\" | \"inputs\" | \"outputs\" | \"dependencies\" | \"sources\" | \"destinations\" | \"stream\" | \"aiModel\" | \"rating\" | \"fields\" | \"subComponent\" | \"placeholder\" | \"required\" | \"src\" | \"accentColor\" | \"maxHeight\" | \"maxWidth\" | \"minHeight\" | \"minWidth\" | \"action\" | \"slug\" | \"categories\" | \"partial\" | \"featured\" | \"creator\" | \"transformer\" | \"referenceId\" | \"automationMatrixReference\" | \"aiEndpoint\" | \"aiProvider\" | \"compiledRecipe\" | \"dataBroker\" | \"notes\" | \"processor\" | \"recipe\" | \"registeredFunction\" | \"subcategory\" | \"tools\" | \"transformerReference\" | \"userId\" | \"createdAt\" | \"aiSettingsId\" | \"systemMessageOverride\" | \"aiSettingsReference\" | \"recipeReference\" | \"provider\" | \"additionalCost\" | \"costDetails\" | \"aiModelEndpointInverse\" | \"aiSettingsInverse\" | \"commonName\" | \"modelClass\" | \"endpoints\" | \"contextWindow\" | \"modelProvider\" | \"isDeprecated\" | \"isPrimary\" | \"isPremium\" | \"apiClass\" | \"aiProviderReference\" | \"recipeModelInverse\" | \"aiModelId\" | \"aiEndpointId\" | \"available\" | \"endpointPriority\" | \"configuration\" | \"aiEndpointReference\" | \"aiModelReference\" | \"companyDescription\" | \"documentationLink\" | \"modelsLink\" | \"aiModelInverse\" | \"presetName\" | \"quality\" | \"audioVoice\" | \"audioFormat\" | \"modalities\" | \"aiAgentInverse\" | \"updatedAt\" | \"isPublic\" | \"userQuery\" | \"thinkingContent\" | \"responseContent\" | \"reflectionContent\" | \"qualityScore\" | \"questionsThinking\" | \"questionsContent\" | \"structuredQuestions\" | \"reflectionThinking\" | \"compiledRecipeId\" | \"dataSourceConfig\" | \"resultComponentConfig\" | \"nextStepConfig\" | \"subcategoryId\" | \"ctaText\" | \"compiledRecipeReference\" | \"subcategoryReference\" | \"appletId\" | \"containerId\" | \"customAppletConfigsReference\" | \"componentGroupsReference\" | \"defaultJunk\" | \"dataType\" | \"examples\" | \"registeredFunctionReference\" | \"audioRecordingInverse\" | \"fileUrl\" | \"localPath\" | \"audioLabelReference\" | \"firstName\" | \"lastName\" | \"sparkSource\" | \"beaconDestination\" | \"brokerReference\" | \"averageSeconds\" | \"isAutomated\" | \"cognitionMatrices\" | \"actionInverse\" | \"automationBoundaryBrokerInverse\" | \"defaultSource\" | \"validationRules\" | \"sampleEntries\" | \"customSourceComponent\" | \"additionalParams\" | \"otherSourceParams\" | \"defaultDestination\" | \"outputComponent\" | \"stringValue\" | \"dataInputComponentReference\" | \"recipeBrokerInverse\" | \"subCategory\" | \"comments\" | \"dataBrokerReference\" | \"bucketId\" | \"lastUpdated\" | \"treeStructure\" | \"commentId\" | \"canvasCommentsReference\" | \"canvasId\" | \"avatarUrl\" | \"parentCommentId\" | \"likeCount\" | \"replyCount\" | \"edited\" | \"flagged\" | \"flagCount\" | \"sharedCanvasItemsReference\" | \"canvasCommentLikesInverse\" | \"isFavorited\" | \"isArchived\" | \"sessionId\" | \"sourceMessageId\" | \"taskId\" | \"shareToken\" | \"lastAccessedAt\" | \"contentHash\" | \"maxScore\" | \"percentage\" | \"timeTaken\" | \"attemptNumber\" | \"viewedAt\" | \"referrer\" | \"userAgent\" | \"timeSpent\" | \"interacted\" | \"subcategoryInverse\" | \"categoryId\" | \"sortOrder\" | \"isActive\" | \"contentBlocksInverse\" | \"subcategoryConfigsInverse\" | \"authenticatedRead\" | \"appletInverse\" | \"customAppletConfigsInverse\" | \"shortLabel\" | \"hideDescription\" | \"publicRead\" | \"appletContainersInverse\" | \"containerFieldsInverse\" | \"fieldId\" | \"fieldComponentsReference\" | \"blockId\" | \"categoryConfigsReference\" | \"keywords\" | \"messageInverse\" | \"mainAppIcon\" | \"mainAppSubmitIcon\" | \"primaryColor\" | \"appletList\" | \"extraButtons\" | \"layoutType\" | \"imageUrl\" | \"appDataContext\" | \"appletIcon\" | \"appletSubmitText\" | \"containers\" | \"appId\" | \"brokerMap\" | \"overviewLabel\" | \"dataDestinationConfig\" | \"customAppConfigsReference\" | \"inputComponent\" | \"fieldComponentId\" | \"defaultScope\" | \"dataOutputComponentReference\" | \"brokerValueInverse\" | \"messageBrokerInverse\" | \"registeredFunctionInverse\" | \"includeOther\" | \"acceptableFiletypes\" | \"colorOverrides\" | \"containerClassName\" | \"collapsibleClassName\" | \"labelClassName\" | \"descriptionClassName\" | \"componentClassName\" | \"dataBrokerInverse\" | \"brokerInverse\" | \"componentType\" | \"uiComponent\" | \"defaultParams\" | \"customizableParams\" | \"recipeDisplayInverse\" | \"subject\" | \"sender\" | \"recipient\" | \"isRead\" | \"outputType\" | \"defaultIdentifier\" | \"defaultIndex\" | \"componentGroup\" | \"workflowUserInputInverse\" | \"isFolder\" | \"fileId\" | \"parentPath\" | \"topic\" | \"lesson\" | \"difficulty\" | \"front\" | \"back\" | \"example\" | \"detailedExplanation\" | \"audioExplanation\" | \"personalNotes\" | \"isDeleted\" | \"sharedWith\" | \"flashcardHistoryInverse\" | \"flashcardSetRelationsInverse\" | \"flashcardImagesInverse\" | \"flashcardId\" | \"reviewCount\" | \"correctCount\" | \"incorrectCount\" | \"flashcardDataReference\" | \"fileName\" | \"setId\" | \"flashcardSetsReference\" | \"audioOverview\" | \"alternateTitles\" | \"qualifications\" | \"sizzleQuestions\" | \"redFlags\" | \"additionalDetails\" | \"htmlContent\" | \"metaDescription\" | \"metaKeywords\" | \"contentLength\" | \"extractedAt\" | \"conversationId\" | \"displayOrder\" | \"systemOrder\" | \"conversationReference\" | \"messageId\" | \"brokerId\" | \"defaultComponent\" | \"messageTemplateReference\" | \"recipeMessageInverse\" | \"projectName\" | \"projectDescription\" | \"repoName\" | \"repoId\" | \"repoOrgName\" | \"repoUrl\" | \"isSystem\" | \"projectCode\" | \"registeredNodeInverse\" | \"folderName\" | \"organizationId\" | \"token\" | \"invitedAt\" | \"invitedBy\" | \"expiresAt\" | \"organizationsReference\" | \"joinedAt\" | \"logoUrl\" | \"website\" | \"createdBy\" | \"isPersonal\" | \"organizationMembersInverse\" | \"organizationInvitationsInverse\" | \"permissionsInverse\" | \"resourceType\" | \"resourceId\" | \"grantedToUserId\" | \"grantedToOrganizationId\" | \"permissionLevel\" | \"dependsDefault\" | \"defaultExtractors\" | \"processorReference\" | \"recipeProcessorInverse\" | \"projectId\" | \"projectsReference\" | \"projectMembersInverse\" | \"tasksInverse\" | \"variableDefaults\" | \"isFeatured\" | \"createdByUserId\" | \"isCompleted\" | \"completedAt\" | \"quizContentHash\" | \"quizMetadata\" | \"sampleOutput\" | \"postResultOptions\" | \"compiledRecipeInverse\" | \"brokerRole\" | \"displaySettings\" | \"displayOptionReference\" | \"lastModified\" | \"funcName\" | \"modulePath\" | \"returnBroker\" | \"nodeDescription\" | \"argInverse\" | \"workflowNodeInverse\" | \"workflowNodeDataInverse\" | \"registeredFunctionId\" | \"styles\" | \"arguments\" | \"customEditor\" | \"depedencyFunction\" | \"dynamicBrokerArgs\" | \"functionDescription\" | \"dynamicOutputs\" | \"nodeCategoryReference\" | \"registeredNodeResultsInverse\" | \"workflowId\" | \"registeredNodeId\" | \"registeredNodeReference\" | \"workflowDataReference\" | \"templateName\" | \"selectorType\" | \"regex\" | \"rescrapeAfter\" | \"staleAfter\" | \"scrapePathPatternCachePolicyInverse\" | \"scrapeMode\" | \"interactionSettingsId\" | \"scrapePathPatternId\" | \"scrapePathPatternReference\" | \"scrapeParsedPageInverse\" | \"scrapeCycleTrackerId\" | \"runNumber\" | \"allowPattern\" | \"disallowPatterns\" | \"scrapeCycleTrackerReference\" | \"scrapeTaskInverse\" | \"pageName\" | \"targetUrl\" | \"scrapePathPatternCachePolicyId\" | \"scrapeJobId\" | \"lastRunAt\" | \"nextRunAt\" | \"scrapeJobReference\" | \"scrapePathPatternCachePolicyReference\" | \"scrapeCycleRunInverse\" | \"scrapeAllowed\" | \"scrapePathPatternInverse\" | \"scrapeJobInverse\" | \"scrapeDomainQuickScrapeSettingsInverse\" | \"scrapeDomainDisallowedNotesInverse\" | \"scrapeDomainRobotsTxtInverse\" | \"scrapeDomainNotesInverse\" | \"scrapeDomainSitemapInverse\" | \"scrapeQuickFailureLogInverse\" | \"scrapeDomainId\" | \"scrapeDomainReference\" | \"proxyType\" | \"robotsTxt\" | \"sitemap\" | \"startUrls\" | \"scrapeStatus\" | \"parseStatus\" | \"attemptLimit\" | \"startedAt\" | \"finishedAt\" | \"scrapeCycleTrackerInverse\" | \"configType\" | \"matchType\" | \"scrapeOverrideValueInverse\" | \"scrapePathPatternOverrideInverse\" | \"scrapeOverrideId\" | \"scrapeOverrideReference\" | \"validity\" | \"remotePath\" | \"scrapeTaskId\" | \"scrapeTaskResponseId\" | \"scrapeCycleRunId\" | \"scrapeConfigurationId\" | \"scrapePathPatternOverrideId\" | \"scrapedAt\" | \"scrapeConfigurationReference\" | \"scrapeCycleRunReference\" | \"scrapePathPatternOverrideReference\" | \"scrapeTaskReference\" | \"scrapeTaskResponseReference\" | \"pathPattern\" | \"scrapeConfigurationInverse\" | \"scrapeCachePolicyId\" | \"scrapeCachePolicyReference\" | \"domainName\" | \"failureReason\" | \"errorLog\" | \"parentTask\" | \"attemptsLeft\" | \"interactionConfig\" | \"discoveredLinks\" | \"spawnedConcurrentTasks\" | \"cancelMessage\" | \"scrapeTaskResponseInverse\" | \"statusCode\" | \"contentPath\" | \"contentSize\" | \"contentType\" | \"responseHeaders\" | \"responseUrl\" | \"canvasType\" | \"canvasData\" | \"thumbnailUrl\" | \"creatorUsername\" | \"creatorDisplayName\" | \"originalId\" | \"forkedFrom\" | \"versionNumber\" | \"forkCount\" | \"viewCount\" | \"shareCount\" | \"commentCount\" | \"playCount\" | \"completionRate\" | \"hasScoring\" | \"highScore\" | \"highScoreUser\" | \"averageScore\" | \"totalAttempts\" | \"allowRemixes\" | \"requireAttribution\" | \"publishedAt\" | \"lastPlayedAt\" | \"trendingScore\" | \"searchVector\" | \"canvasLikesInverse\" | \"canvasCommentsInverse\" | \"canvasScoresInverse\" | \"canvasViewsInverse\" | \"userBookmarksInverse\" | \"siteName\" | \"siteKey\" | \"siteUrl\" | \"organizationType\" | \"logoWidth\" | \"logoHeight\" | \"defaultShareImageUrl\" | \"defaultShareImageWidth\" | \"defaultShareImageHeight\" | \"twitterHandle\" | \"facebookPageUrl\" | \"contactEmail\" | \"copyrightHolder\" | \"defaultAuthorName\" | \"defaultAuthorType\" | \"defaultLanguage\" | \"googleAnalyticsId\" | \"googleTagManagerId\" | \"gscPropertyUrl\" | \"features\" | \"categoryReference\" | \"announcementType\" | \"minDisplaySeconds\" | \"sample\" | \"inputParams\" | \"outputOptions\" | \"rfId\" | \"tableId\" | \"userTablesReference\" | \"fieldName\" | \"fieldOrder\" | \"isRequired\" | \"assignedBy\" | \"assignedAt\" | \"tasksReference\" | \"fileType\" | \"fileSize\" | \"uploadedBy\" | \"uploadedAt\" | \"dueDate\" | \"parentTaskId\" | \"taskAssignmentsInverse\" | \"taskAttachmentsInverse\" | \"taskCommentsInverse\" | \"outputSchema\" | \"annotations\" | \"functionPath\" | \"audioFilePath\" | \"videoFilePath\" | \"outputParams\" | \"achievementType\" | \"achievementData\" | \"unlockedAt\" | \"feedbackType\" | \"route\" | \"adminNotes\" | \"resolvedAt\" | \"resolvedBy\" | \"followerId\" | \"followingId\" | \"groupName\" | \"listId\" | \"userListsReference\" | \"listName\" | \"userListItemsInverse\" | \"preferences\" | \"totalCreated\" | \"totalLikesReceived\" | \"totalViewsReceived\" | \"totalForksReceived\" | \"totalPlays\" | \"totalLikesGiven\" | \"totalComments\" | \"totalHighScores\" | \"bestScore\" | \"followerCount\" | \"followingCount\" | \"totalXp\" | \"level\" | \"streakDays\" | \"lastActiveDate\" | \"longestStreak\" | \"tableName\" | \"rowOrderingConfig\" | \"tableFieldsInverse\" | \"tableDataInverse\" | \"applicantName\" | \"personId\" | \"dateOfBirth\" | \"dateOfInjury\" | \"ageAtDoi\" | \"occupationalCode\" | \"weeklyEarnings\" | \"wcReportInverse\" | \"impairmentNumber\" | \"fecRank\" | \"fingerType\" | \"wcInjuryInverse\" | \"reportId\" | \"impairmentDefinitionId\" | \"digit\" | \"le\" | \"ue\" | \"wpi\" | \"pain\" | \"industrial\" | \"formula\" | \"wcImpairmentDefinitionReference\" | \"wcReportReference\" | \"claimId\" | \"finalRating\" | \"leftSideTotal\" | \"rightSideTotal\" | \"defaultSideTotal\" | \"compensationAmount\" | \"compensationWeeks\" | \"compensationDays\" | \"wcClaimReference\" | \"autoExecute\" | \"workflowRelayInverse\" | \"workflowType\" | \"workflowEdgeInverse\" | \"sourceNodeId\" | \"targetNodeId\" | \"sourceHandleId\" | \"targetHandleId\" | \"edgeType\" | \"animated\" | \"connectionType\" | \"workflowNodeDataReference\" | \"stepName\" | \"functionId\" | \"functionType\" | \"executionRequired\" | \"additionalDependencies\" | \"argMapping\" | \"returnBrokerOverrides\" | \"argOverrides\" | \"uiNodeData\" | \"workflowReference\" | \"uiData\" | \"sourceBrokerId\" | \"targetBrokerIds\"'.",
+    "message": "Type '\"backendWorkflow\"' is not assignable to type '\"message\" | \"public\" | \"name\" | \"value\" | \"path\" | \"priority\" | \"data\" | \"options\" | \"size\" | \"deleted\" | \"completed\" | \"url\" | \"mimeType\" | \"type\" | \"id\" | \"description\" | \"tags\" | \"messages\" | \"settings\" | \"metadata\" | \"status\" | \"exact\" | \"count\" | \"min\" | \"max\" | \"timestamp\" | \"temperature\" | \"maxTokens\" | \"topP\" | \"presencePenalty\" | \"frequencyPenalty\" | \"responseFormat\" | \"systemPrompt\" | \"recipeId\" | \"email\" | \"filePath\" | \"content\" | \"structure\" | \"username\" | \"params\" | \"title\" | \"score\" | \"role\" | \"category\" | \"className\" | \"color\" | \"height\" | \"style\" | \"width\" | \"display\" | \"order\" | \"orientation\" | \"version\" | \"visibility\" | \"displayName\" | \"source\" | \"controls\" | \"group\" | \"body\" | \"label\" | \"template\" | \"defaultValue\" | \"tooltip\" | \"props\" | \"position\" | \"matrix\" | \"attributes\" | \"side\" | \"enabled\" | \"duration\" | \"actions\" | \"useCount\" | \"state\" | \"sourceType\" | \"viewport\" | \"parameters\" | \"segments\" | \"capabilities\" | \"nodeType\" | \"step\" | \"icon\" | \"theme\" | \"component\" | \"componentProps\" | \"broker\" | \"helpText\" | \"iconName\" | \"ready\" | \"inputs\" | \"outputs\" | \"dependencies\" | \"sources\" | \"destinations\" | \"stream\" | \"aiModel\" | \"rating\" | \"fields\" | \"subComponent\" | \"placeholder\" | \"required\" | \"src\" | \"accentColor\" | \"maxHeight\" | \"maxWidth\" | \"minHeight\" | \"minWidth\" | \"action\" | \"slug\" | \"categories\" | \"partial\" | \"featured\" | \"creator\" | \"transformer\" | \"referenceId\" | \"automationMatrixReference\" | \"aiEndpoint\" | \"aiProvider\" | \"compiledRecipe\" | \"dataBroker\" | \"notes\" | \"processor\" | \"recipe\" | \"registeredFunction\" | \"subcategory\" | \"tools\" | \"transformerReference\" | \"userId\" | \"createdAt\" | \"aiSettingsId\" | \"systemMessageOverride\" | \"aiSettingsReference\" | \"recipeReference\" | \"provider\" | \"additionalCost\" | \"costDetails\" | \"aiModelEndpointInverse\" | \"aiSettingsInverse\" | \"commonName\" | \"modelClass\" | \"endpoints\" | \"contextWindow\" | \"modelProvider\" | \"isDeprecated\" | \"isPrimary\" | \"isPremium\" | \"apiClass\" | \"aiProviderReference\" | \"recipeModelInverse\" | \"aiModelId\" | \"aiEndpointId\" | \"available\" | \"endpointPriority\" | \"configuration\" | \"aiEndpointReference\" | \"aiModelReference\" | \"companyDescription\" | \"documentationLink\" | \"modelsLink\" | \"aiModelInverse\" | \"presetName\" | \"quality\" | \"audioVoice\" | \"audioFormat\" | \"modalities\" | \"aiAgentInverse\" | \"updatedAt\" | \"isPublic\" | \"userQuery\" | \"thinkingContent\" | \"responseContent\" | \"reflectionContent\" | \"qualityScore\" | \"questionsThinking\" | \"questionsContent\" | \"structuredQuestions\" | \"reflectionThinking\" | \"compiledRecipeId\" | \"dataSourceConfig\" | \"resultComponentConfig\" | \"nextStepConfig\" | \"subcategoryId\" | \"ctaText\" | \"compiledRecipeReference\" | \"subcategoryReference\" | \"appletId\" | \"containerId\" | \"customAppletConfigsReference\" | \"componentGroupsReference\" | \"defaultJunk\" | \"dataType\" | \"examples\" | \"registeredFunctionReference\" | \"audioRecordingInverse\" | \"fileUrl\" | \"localPath\" | \"audioLabelReference\" | \"firstName\" | \"lastName\" | \"sparkSource\" | \"beaconDestination\" | \"brokerReference\" | \"averageSeconds\" | \"isAutomated\" | \"cognitionMatrices\" | \"actionInverse\" | \"automationBoundaryBrokerInverse\" | \"defaultSource\" | \"validationRules\" | \"sampleEntries\" | \"customSourceComponent\" | \"additionalParams\" | \"otherSourceParams\" | \"defaultDestination\" | \"outputComponent\" | \"stringValue\" | \"dataInputComponentReference\" | \"recipeBrokerInverse\" | \"subCategory\" | \"comments\" | \"dataBrokerReference\" | \"bucketId\" | \"lastUpdated\" | \"treeStructure\" | \"commentId\" | \"canvasCommentsReference\" | \"canvasId\" | \"avatarUrl\" | \"parentCommentId\" | \"likeCount\" | \"replyCount\" | \"edited\" | \"flagged\" | \"flagCount\" | \"sharedCanvasItemsReference\" | \"canvasCommentLikesInverse\" | \"isFavorited\" | \"isArchived\" | \"sessionId\" | \"sourceMessageId\" | \"taskId\" | \"shareToken\" | \"lastAccessedAt\" | \"contentHash\" | \"maxScore\" | \"percentage\" | \"timeTaken\" | \"attemptNumber\" | \"viewedAt\" | \"referrer\" | \"userAgent\" | \"timeSpent\" | \"interacted\" | \"subcategoryInverse\" | \"categoryId\" | \"sortOrder\" | \"isActive\" | \"contentBlocksInverse\" | \"subcategoryConfigsInverse\" | \"authenticatedRead\" | \"appletInverse\" | \"customAppletConfigsInverse\" | \"shortLabel\" | \"hideDescription\" | \"publicRead\" | \"appletContainersInverse\" | \"containerFieldsInverse\" | \"fieldId\" | \"fieldComponentsReference\" | \"blockId\" | \"categoryConfigsReference\" | \"keywords\" | \"messageInverse\" | \"mainAppIcon\" | \"mainAppSubmitIcon\" | \"primaryColor\" | \"appletList\" | \"extraButtons\" | \"layoutType\" | \"imageUrl\" | \"appDataContext\" | \"appletIcon\" | \"appletSubmitText\" | \"containers\" | \"appId\" | \"brokerMap\" | \"overviewLabel\" | \"dataDestinationConfig\" | \"customAppConfigsReference\" | \"inputComponent\" | \"fieldComponentId\" | \"defaultScope\" | \"dataOutputComponentReference\" | \"brokerValueInverse\" | \"messageBrokerInverse\" | \"registeredFunctionInverse\" | \"includeOther\" | \"acceptableFiletypes\" | \"colorOverrides\" | \"containerClassName\" | \"collapsibleClassName\" | \"labelClassName\" | \"descriptionClassName\" | \"componentClassName\" | \"dataBrokerInverse\" | \"brokerInverse\" | \"componentType\" | \"uiComponent\" | \"defaultParams\" | \"customizableParams\" | \"recipeDisplayInverse\" | \"subject\" | \"sender\" | \"recipient\" | \"isRead\" | \"outputType\" | \"defaultIdentifier\" | \"defaultIndex\" | \"componentGroup\" | \"workflowUserInputInverse\" | \"isFolder\" | \"fileId\" | \"parentPath\" | \"topic\" | \"lesson\" | \"difficulty\" | \"front\" | \"back\" | \"example\" | \"detailedExplanation\" | \"audioExplanation\" | \"personalNotes\" | \"isDeleted\" | \"sharedWith\" | \"flashcardHistoryInverse\" | \"flashcardSetRelationsInverse\" | \"flashcardImagesInverse\" | \"flashcardId\" | \"reviewCount\" | \"correctCount\" | \"incorrectCount\" | \"flashcardDataReference\" | \"fileName\" | \"setId\" | \"flashcardSetsReference\" | \"audioOverview\" | \"alternateTitles\" | \"qualifications\" | \"sizzleQuestions\" | \"redFlags\" | \"additionalDetails\" | \"htmlContent\" | \"metaDescription\" | \"metaKeywords\" | \"contentLength\" | \"extractedAt\" | \"conversationId\" | \"displayOrder\" | \"systemOrder\" | \"conversationReference\" | \"messageId\" | \"brokerId\" | \"defaultComponent\" | \"messageTemplateReference\" | \"recipeMessageInverse\" | \"projectName\" | \"projectDescription\" | \"repoName\" | \"repoId\" | \"repoOrgName\" | \"repoUrl\" | \"isSystem\" | \"projectCode\" | \"registeredNodeInverse\" | \"folderName\" | \"organizationId\" | \"token\" | \"invitedAt\" | \"invitedBy\" | \"expiresAt\" | \"organizationsReference\" | \"joinedAt\" | \"logoUrl\" | \"website\" | \"createdBy\" | \"isPersonal\" | \"organizationMembersInverse\" | \"organizationInvitationsInverse\" | \"permissionsInverse\" | \"resourceType\" | \"resourceId\" | \"grantedToUserId\" | \"grantedToOrganizationId\" | \"permissionLevel\" | \"dependsDefault\" | \"defaultExtractors\" | \"processorReference\" | \"recipeProcessorInverse\" | \"projectId\" | \"projectsReference\" | \"projectMembersInverse\" | \"tasksInverse\" | \"variableDefaults\" | \"isFeatured\" | \"createdByUserId\" | \"isCompleted\" | \"completedAt\" | \"quizContentHash\" | \"quizMetadata\" | \"sampleOutput\" | \"postResultOptions\" | \"compiledRecipeInverse\" | \"brokerRole\" | \"displaySettings\" | \"displayOptionReference\" | \"lastModified\" | \"funcName\" | \"modulePath\" | \"returnBroker\" | \"nodeDescription\" | \"argInverse\" | \"workflowNodeInverse\" | \"workflowNodeDataInverse\" | \"registeredFunctionId\" | \"styles\" | \"arguments\" | \"customEditor\" | \"depedencyFunction\" | \"dynamicBrokerArgs\" | \"functionDescription\" | \"dynamicOutputs\" | \"nodeCategoryReference\" | \"registeredNodeResultsInverse\" | \"workflowId\" | \"registeredNodeId\" | \"registeredNodeReference\" | \"workflowDataReference\" | \"templateName\" | \"selectorType\" | \"regex\" | \"rescrapeAfter\" | \"staleAfter\" | \"scrapePathPatternCachePolicyInverse\" | \"scrapeMode\" | \"interactionSettingsId\" | \"scrapePathPatternId\" | \"scrapePathPatternReference\" | \"scrapeParsedPageInverse\" | \"scrapeCycleTrackerId\" | \"runNumber\" | \"allowPattern\" | \"disallowPatterns\" | \"scrapeCycleTrackerReference\" | \"scrapeTaskInverse\" | \"pageName\" | \"targetUrl\" | \"scrapePathPatternCachePolicyId\" | \"scrapeJobId\" | \"lastRunAt\" | \"nextRunAt\" | \"scrapeJobReference\" | \"scrapePathPatternCachePolicyReference\" | \"scrapeCycleRunInverse\" | \"scrapeAllowed\" | \"scrapePathPatternInverse\" | \"scrapeJobInverse\" | \"scrapeDomainQuickScrapeSettingsInverse\" | \"scrapeDomainDisallowedNotesInverse\" | \"scrapeDomainRobotsTxtInverse\" | \"scrapeDomainNotesInverse\" | \"scrapeDomainSitemapInverse\" | \"scrapeQuickFailureLogInverse\" | \"scrapeDomainId\" | \"scrapeDomainReference\" | \"proxyType\" | \"robotsTxt\" | \"sitemap\" | \"startUrls\" | \"scrapeStatus\" | \"parseStatus\" | \"attemptLimit\" | \"startedAt\" | \"finishedAt\" | \"scrapeCycleTrackerInverse\" | \"configType\" | \"matchType\" | \"scrapeOverrideValueInverse\" | \"scrapePathPatternOverrideInverse\" | \"scrapeOverrideId\" | \"scrapeOverrideReference\" | \"validity\" | \"remotePath\" | \"scrapeTaskId\" | \"scrapeTaskResponseId\" | \"scrapeCycleRunId\" | \"scrapeConfigurationId\" | \"scrapePathPatternOverrideId\" | \"scrapedAt\" | \"scrapeConfigurationReference\" | \"scrapeCycleRunReference\" | \"scrapePathPatternOverrideReference\" | \"scrapeTaskReference\" | \"scrapeTaskResponseReference\" | \"pathPattern\" | \"scrapeConfigurationInverse\" | \"scrapeCachePolicyId\" | \"scrapeCachePolicyReference\" | \"domainName\" | \"failureReason\" | \"errorLog\" | \"parentTask\" | \"attemptsLeft\" | \"interactionConfig\" | \"discoveredLinks\" | \"spawnedConcurrentTasks\" | \"cancelMessage\" | \"scrapeTaskResponseInverse\" | \"statusCode\" | \"contentPath\" | \"contentSize\" | \"contentType\" | \"responseHeaders\" | \"responseUrl\" | \"canvasType\" | \"canvasData\" | \"thumbnailUrl\" | \"creatorUsername\" | \"creatorDisplayName\" | \"originalId\" | \"forkedFrom\" | \"versionNumber\" | \"forkCount\" | \"viewCount\" | \"shareCount\" | \"commentCount\" | \"playCount\" | \"completionRate\" | \"hasScoring\" | \"highScore\" | \"highScoreUser\" | \"averageScore\" | \"totalAttempts\" | \"allowRemixes\" | \"requireAttribution\" | \"publishedAt\" | \"lastPlayedAt\" | \"trendingScore\" | \"searchVector\" | \"canvasLikesInverse\" | \"canvasCommentsInverse\" | \"canvasScoresInverse\" | \"canvasViewsInverse\" | \"userBookmarksInverse\" | \"siteName\" | \"siteKey\" | \"siteUrl\" | \"organizationType\" | \"logoWidth\" | \"logoHeight\" | \"defaultShareImageUrl\" | \"defaultShareImageWidth\" | \"defaultShareImageHeight\" | \"twitterHandle\" | \"facebookPageUrl\" | \"contactEmail\" | \"copyrightHolder\" | \"defaultAuthorName\" | \"defaultAuthorType\" | \"defaultLanguage\" | \"googleAnalyticsId\" | \"googleTagManagerId\" | \"gscPropertyUrl\" | \"features\" | \"categoryReference\" | \"announcementType\" | \"minDisplaySeconds\" | \"sample\" | \"inputParams\" | \"outputOptions\" | \"rfId\" | \"tableId\" | \"userTablesReference\" | \"fieldName\" | \"fieldOrder\" | \"isRequired\" | \"assignedBy\" | \"assignedAt\" | \"tasksReference\" | \"fileType\" | \"fileSize\" | \"uploadedBy\" | \"uploadedAt\" | \"dueDate\" | \"parentTaskId\" | \"taskAssignmentsInverse\" | \"taskAttachmentsInverse\" | \"taskCommentsInverse\" | \"outputSchema\" | \"annotations\" | \"functionPath\" | \"audioFilePath\" | \"videoFilePath\" | \"outputParams\" | \"achievementType\" | \"achievementData\" | \"unlockedAt\" | \"feedbackType\" | \"route\" | \"adminNotes\" | \"resolvedAt\" | \"resolvedBy\" | \"followerId\" | \"followingId\" | \"groupName\" | \"listId\" | \"userListsReference\" | \"listName\" | \"userListItemsInverse\" | \"preferences\" | \"totalCreated\" | \"totalLikesReceived\" | \"totalViewsReceived\" | \"totalForksReceived\" | \"totalPlays\" | \"totalLikesGiven\" | \"totalComments\" | \"totalHighScores\" | \"bestScore\" | \"followerCount\" | \"followingCount\" | \"totalXp\" | \"level\" | \"streakDays\" | \"lastActiveDate\" | \"longestStreak\" | \"tableName\" | \"rowOrderingConfig\" | \"tableFieldsInverse\" | \"tableDataInverse\" | \"applicantName\" | \"personId\" | \"dateOfBirth\" | \"dateOfInjury\" | \"ageAtDoi\" | \"occupationalCode\" | \"weeklyEarnings\" | \"wcReportInverse\" | \"impairmentNumber\" | \"fecRank\" | \"fingerType\" | \"wcInjuryInverse\" | \"reportId\" | \"impairmentDefinitionId\" | \"digit\" | \"le\" | \"ue\" | \"wpi\" | \"pain\" | \"industrial\" | \"formula\" | \"wcImpairmentDefinitionReference\" | \"wcReportReference\" | \"claimId\" | \"finalRating\" | \"leftSideTotal\" | \"rightSideTotal\" | \"defaultSideTotal\" | \"compensationAmount\" | \"compensationWeeks\" | \"compensationDays\" | \"wcClaimReference\" | \"autoExecute\" | \"workflowRelayInverse\" | \"workflowType\" | \"workflowEdgeInverse\" | \"sourceNodeId\" | \"targetNodeId\" | \"sourceHandleId\" | \"targetHandleId\" | \"edgeType\" | \"animated\" | \"connectionType\" | \"workflowNodeDataReference\" | \"stepName\" | \"functionId\" | \"functionType\" | \"executionRequired\" | \"additionalDependencies\" | \"argMapping\" | \"returnBrokerOverrides\" | \"argOverrides\" | \"uiNodeData\" | \"workflowReference\" | \"uiData\" | \"sourceBrokerId\" | \"targetBrokerIds\"'.",
     "code": 2322
   },
   {
-    "file": "lib/redux/entity/custom-actions/custom-workflow-actions.ts",
-    "line": 752,
-    "column": 21,
-    "message": "Type '\"backendWorkflow\"' is not assignable to type '\"message\" | \"public\" | \"name\" | \"value\" | \"path\" | \"priority\" | \"data\" | \"options\" | \"size\" | \"deleted\" | \"completed\" | \"url\" | \"mimeType\" | \"type\" | \"id\" | \"description\" | \"tags\" | \"messages\" | \"settings\" | \"metadata\" | \"status\" | \"exact\" | \"count\" | \"min\" | \"max\" | \"timestamp\" | \"temperature\" | \"maxTokens\" | \"topP\" | \"presencePenalty\" | \"frequencyPenalty\" | \"responseFormat\" | \"systemPrompt\" | \"recipeId\" | \"email\" | \"filePath\" | \"content\" | \"structure\" | \"username\" | \"params\" | \"title\" | \"score\" | \"role\" | \"category\" | \"className\" | \"color\" | \"height\" | \"style\" | \"width\" | \"display\" | \"order\" | \"orientation\" | \"version\" | \"visibility\" | \"displayName\" | \"source\" | \"controls\" | \"group\" | \"body\" | \"label\" | \"template\" | \"defaultValue\" | \"tooltip\" | \"props\" | \"position\" | \"matrix\" | \"attributes\" | \"side\" | \"enabled\" | \"duration\" | \"actions\" | \"useCount\" | \"state\" | \"sourceType\" | \"viewport\" | \"parameters\" | \"segments\" | \"capabilities\" | \"nodeType\" | \"step\" | \"icon\" | \"theme\" | \"ready\" | \"component\" | \"componentProps\" | \"broker\" | \"helpText\" | \"iconName\" | \"inputs\" | \"outputs\" | \"dependencies\" | \"sources\" | \"destinations\" | \"stream\" | \"aiModel\" | \"rating\" | \"fields\" | \"subComponent\" | \"placeholder\" | \"required\" | \"src\" | \"accentColor\" | \"maxHeight\" | \"maxWidth\" | \"minHeight\" | \"minWidth\" | \"action\" | \"slug\" | \"categories\" | \"partial\" | \"featured\" | \"creator\" | \"transformer\" | \"referenceId\" | \"automationMatrixReference\" | \"aiEndpoint\" | \"aiProvider\" | \"compiledRecipe\" | \"dataBroker\" | \"notes\" | \"processor\" | \"recipe\" | \"registeredFunction\" | \"subcategory\" | \"tools\" | \"transformerReference\" | \"userId\" | \"createdAt\" | \"aiSettingsId\" | \"systemMessageOverride\" | \"aiSettingsReference\" | \"recipeReference\" | \"provider\" | \"additionalCost\" | \"costDetails\" | \"aiModelEndpointInverse\" | \"aiSettingsInverse\" | \"commonName\" | \"modelClass\" | \"endpoints\" | \"contextWindow\" | \"modelProvider\" | \"isDeprecated\" | \"isPrimary\" | \"isPremium\" | \"apiClass\" | \"aiProviderReference\" | \"recipeModelInverse\" | \"aiModelId\" | \"aiEndpointId\" | \"available\" | \"endpointPriority\" | \"configuration\" | \"aiEndpointReference\" | \"aiModelReference\" | \"companyDescription\" | \"documentationLink\" | \"modelsLink\" | \"aiModelInverse\" | \"presetName\" | \"quality\" | \"audioVoice\" | \"audioFormat\" | \"modalities\" | \"aiAgentInverse\" | \"updatedAt\" | \"isPublic\" | \"userQuery\" | \"thinkingContent\" | \"responseContent\" | \"reflectionContent\" | \"qualityScore\" | \"questionsThinking\" | \"questionsContent\" | \"structuredQuestions\" | \"reflectionThinking\" | \"compiledRecipeId\" | \"dataSourceConfig\" | \"resultComponentConfig\" | \"nextStepConfig\" | \"subcategoryId\" | \"ctaText\" | \"compiledRecipeReference\" | \"subcategoryReference\" | \"appletId\" | \"containerId\" | \"customAppletConfigsReference\" | \"componentGroupsReference\" | \"defaultJunk\" | \"dataType\" | \"examples\" | \"registeredFunctionReference\" | \"audioRecordingInverse\" | \"fileUrl\" | \"localPath\" | \"audioLabelReference\" | \"firstName\" | \"lastName\" | \"sparkSource\" | \"beaconDestination\" | \"brokerReference\" | \"averageSeconds\" | \"isAutomated\" | \"cognitionMatrices\" | \"actionInverse\" | \"automationBoundaryBrokerInverse\" | \"defaultSource\" | \"validationRules\" | \"sampleEntries\" | \"customSourceComponent\" | \"additionalParams\" | \"otherSourceParams\" | \"defaultDestination\" | \"outputComponent\" | \"stringValue\" | \"dataInputComponentReference\" | \"recipeBrokerInverse\" | \"subCategory\" | \"comments\" | \"dataBrokerReference\" | \"bucketId\" | \"lastUpdated\" | \"treeStructure\" | \"commentId\" | \"canvasCommentsReference\" | \"canvasId\" | \"avatarUrl\" | \"parentCommentId\" | \"likeCount\" | \"replyCount\" | \"edited\" | \"flagged\" | \"flagCount\" | \"sharedCanvasItemsReference\" | \"canvasCommentLikesInverse\" | \"isFavorited\" | \"isArchived\" | \"sessionId\" | \"sourceMessageId\" | \"taskId\" | \"shareToken\" | \"lastAccessedAt\" | \"contentHash\" | \"maxScore\" | \"percentage\" | \"timeTaken\" | \"attemptNumber\" | \"viewedAt\" | \"referrer\" | \"userAgent\" | \"timeSpent\" | \"interacted\" | \"subcategoryInverse\" | \"categoryId\" | \"sortOrder\" | \"isActive\" | \"contentBlocksInverse\" | \"subcategoryConfigsInverse\" | \"authenticatedRead\" | \"appletInverse\" | \"customAppletConfigsInverse\" | \"shortLabel\" | \"hideDescription\" | \"publicRead\" | \"appletContainersInverse\" | \"containerFieldsInverse\" | \"fieldId\" | \"fieldComponentsReference\" | \"blockId\" | \"categoryConfigsReference\" | \"keywords\" | \"messageInverse\" | \"mainAppIcon\" | \"mainAppSubmitIcon\" | \"primaryColor\" | \"appletList\" | \"extraButtons\" | \"layoutType\" | \"imageUrl\" | \"appDataContext\" | \"appletIcon\" | \"appletSubmitText\" | \"containers\" | \"appId\" | \"brokerMap\" | \"overviewLabel\" | \"dataDestinationConfig\" | \"customAppConfigsReference\" | \"inputComponent\" | \"fieldComponentId\" | \"defaultScope\" | \"dataOutputComponentReference\" | \"brokerValueInverse\" | \"messageBrokerInverse\" | \"registeredFunctionInverse\" | \"includeOther\" | \"acceptableFiletypes\" | \"colorOverrides\" | \"containerClassName\" | \"collapsibleClassName\" | \"labelClassName\" | \"descriptionClassName\" | \"componentClassName\" | \"dataBrokerInverse\" | \"brokerInverse\" | \"componentType\" | \"uiComponent\" | \"defaultParams\" | \"customizableParams\" | \"recipeDisplayInverse\" | \"subject\" | \"sender\" | \"recipient\" | \"isRead\" | \"outputType\" | \"defaultIdentifier\" | \"defaultIndex\" | \"componentGroup\" | \"workflowUserInputInverse\" | \"isFolder\" | \"fileId\" | \"parentPath\" | \"topic\" | \"lesson\" | \"difficulty\" | \"front\" | \"back\" | \"example\" | \"detailedExplanation\" | \"audioExplanation\" | \"personalNotes\" | \"isDeleted\" | \"sharedWith\" | \"flashcardHistoryInverse\" | \"flashcardSetRelationsInverse\" | \"flashcardImagesInverse\" | \"flashcardId\" | \"reviewCount\" | \"correctCount\" | \"incorrectCount\" | \"flashcardDataReference\" | \"fileName\" | \"setId\" | \"flashcardSetsReference\" | \"audioOverview\" | \"alternateTitles\" | \"qualifications\" | \"sizzleQuestions\" | \"redFlags\" | \"additionalDetails\" | \"htmlContent\" | \"metaDescription\" | \"metaKeywords\" | \"contentLength\" | \"extractedAt\" | \"conversationId\" | \"displayOrder\" | \"systemOrder\" | \"conversationReference\" | \"messageId\" | \"brokerId\" | \"defaultComponent\" | \"messageTemplateReference\" | \"recipeMessageInverse\" | \"projectName\" | \"projectDescription\" | \"repoName\" | \"repoId\" | \"repoOrgName\" | \"repoUrl\" | \"isSystem\" | \"projectCode\" | \"registeredNodeInverse\" | \"folderName\" | \"organizationId\" | \"token\" | \"invitedAt\" | \"invitedBy\" | \"expiresAt\" | \"organizationsReference\" | \"joinedAt\" | \"logoUrl\" | \"website\" | \"createdBy\" | \"isPersonal\" | \"organizationMembersInverse\" | \"organizationInvitationsInverse\" | \"permissionsInverse\" | \"resourceType\" | \"resourceId\" | \"grantedToUserId\" | \"grantedToOrganizationId\" | \"permissionLevel\" | \"dependsDefault\" | \"defaultExtractors\" | \"processorReference\" | \"recipeProcessorInverse\" | \"projectId\" | \"projectsReference\" | \"projectMembersInverse\" | \"tasksInverse\" | \"variableDefaults\" | \"isFeatured\" | \"createdByUserId\" | \"isCompleted\" | \"completedAt\" | \"quizContentHash\" | \"quizMetadata\" | \"sampleOutput\" | \"postResultOptions\" | \"compiledRecipeInverse\" | \"brokerRole\" | \"displaySettings\" | \"displayOptionReference\" | \"lastModified\" | \"funcName\" | \"modulePath\" | \"returnBroker\" | \"nodeDescription\" | \"argInverse\" | \"workflowNodeInverse\" | \"workflowNodeDataInverse\" | \"registeredFunctionId\" | \"styles\" | \"arguments\" | \"customEditor\" | \"depedencyFunction\" | \"dynamicBrokerArgs\" | \"functionDescription\" | \"dynamicOutputs\" | \"nodeCategoryReference\" | \"registeredNodeResultsInverse\" | \"workflowId\" | \"registeredNodeId\" | \"registeredNodeReference\" | \"workflowDataReference\" | \"templateName\" | \"selectorType\" | \"regex\" | \"rescrapeAfter\" | \"staleAfter\" | \"scrapePathPatternCachePolicyInverse\" | \"scrapeMode\" | \"interactionSettingsId\" | \"scrapePathPatternId\" | \"scrapePathPatternReference\" | \"scrapeParsedPageInverse\" | \"scrapeCycleTrackerId\" | \"runNumber\" | \"allowPattern\" | \"disallowPatterns\" | \"scrapeCycleTrackerReference\" | \"scrapeTaskInverse\" | \"pageName\" | \"targetUrl\" | \"scrapePathPatternCachePolicyId\" | \"scrapeJobId\" | \"lastRunAt\" | \"nextRunAt\" | \"scrapeJobReference\" | \"scrapePathPatternCachePolicyReference\" | \"scrapeCycleRunInverse\" | \"scrapeAllowed\" | \"scrapePathPatternInverse\" | \"scrapeJobInverse\" | \"scrapeDomainQuickScrapeSettingsInverse\" | \"scrapeDomainDisallowedNotesInverse\" | \"scrapeDomainRobotsTxtInverse\" | \"scrapeDomainNotesInverse\" | \"scrapeDomainSitemapInverse\" | \"scrapeQuickFailureLogInverse\" | \"scrapeDomainId\" | \"scrapeDomainReference\" | \"proxyType\" | \"robotsTxt\" | \"sitemap\" | \"startUrls\" | \"scrapeStatus\" | \"parseStatus\" | \"attemptLimit\" | \"startedAt\" | \"finishedAt\" | \"scrapeCycleTrackerInverse\" | \"configType\" | \"matchType\" | \"scrapeOverrideValueInverse\" | \"scrapePathPatternOverrideInverse\" | \"scrapeOverrideId\" | \"scrapeOverrideReference\" | \"validity\" | \"remotePath\" | \"scrapeTaskId\" | \"scrapeTaskResponseId\" | \"scrapeCycleRunId\" | \"scrapeConfigurationId\" | \"scrapePathPatternOverrideId\" | \"scrapedAt\" | \"scrapeConfigurationReference\" | \"scrapeCycleRunReference\" | \"scrapePathPatternOverrideReference\" | \"scrapeTaskReference\" | \"scrapeTaskResponseReference\" | \"pathPattern\" | \"scrapeConfigurationInverse\" | \"scrapeCachePolicyId\" | \"scrapeCachePolicyReference\" | \"domainName\" | \"failureReason\" | \"errorLog\" | \"parentTask\" | \"attemptsLeft\" | \"interactionConfig\" | \"discoveredLinks\" | \"spawnedConcurrentTasks\" | \"cancelMessage\" | \"scrapeTaskResponseInverse\" | \"statusCode\" | \"contentPath\" | \"contentSize\" | \"contentType\" | \"responseHeaders\" | \"responseUrl\" | \"canvasType\" | \"canvasData\" | \"thumbnailUrl\" | \"creatorUsername\" | \"creatorDisplayName\" | \"originalId\" | \"forkedFrom\" | \"versionNumber\" | \"forkCount\" | \"viewCount\" | \"shareCount\" | \"commentCount\" | \"playCount\" | \"completionRate\" | \"hasScoring\" | \"highScore\" | \"highScoreUser\" | \"averageScore\" | \"totalAttempts\" | \"allowRemixes\" | \"requireAttribution\" | \"publishedAt\" | \"lastPlayedAt\" | \"trendingScore\" | \"searchVector\" | \"canvasLikesInverse\" | \"canvasCommentsInverse\" | \"canvasScoresInverse\" | \"canvasViewsInverse\" | \"userBookmarksInverse\" | \"siteName\" | \"siteKey\" | \"siteUrl\" | \"organizationType\" | \"logoWidth\" | \"logoHeight\" | \"defaultShareImageUrl\" | \"defaultShareImageWidth\" | \"defaultShareImageHeight\" | \"twitterHandle\" | \"facebookPageUrl\" | \"contactEmail\" | \"copyrightHolder\" | \"defaultAuthorName\" | \"defaultAuthorType\" | \"defaultLanguage\" | \"googleAnalyticsId\" | \"googleTagManagerId\" | \"gscPropertyUrl\" | \"features\" | \"categoryReference\" | \"announcementType\" | \"minDisplaySeconds\" | \"sample\" | \"inputParams\" | \"outputOptions\" | \"rfId\" | \"tableId\" | \"userTablesReference\" | \"fieldName\" | \"fieldOrder\" | \"isRequired\" | \"assignedBy\" | \"assignedAt\" | \"tasksReference\" | \"fileType\" | \"fileSize\" | \"uploadedBy\" | \"uploadedAt\" | \"dueDate\" | \"parentTaskId\" | \"taskAssignmentsInverse\" | \"taskAttachmentsInverse\" | \"taskCommentsInverse\" | \"outputSchema\" | \"annotations\" | \"functionPath\" | \"audioFilePath\" | \"videoFilePath\" | \"outputParams\" | \"achievementType\" | \"achievementData\" | \"unlockedAt\" | \"feedbackType\" | \"route\" | \"adminNotes\" | \"resolvedAt\" | \"resolvedBy\" | \"followerId\" | \"followingId\" | \"groupName\" | \"listId\" | \"userListsReference\" | \"listName\" | \"userListItemsInverse\" | \"preferences\" | \"totalCreated\" | \"totalLikesReceived\" | \"totalViewsReceived\" | \"totalForksReceived\" | \"totalPlays\" | \"totalLikesGiven\" | \"totalComments\" | \"totalHighScores\" | \"bestScore\" | \"followerCount\" | \"followingCount\" | \"totalXp\" | \"level\" | \"streakDays\" | \"lastActiveDate\" | \"longestStreak\" | \"tableName\" | \"rowOrderingConfig\" | \"tableFieldsInverse\" | \"tableDataInverse\" | \"applicantName\" | \"personId\" | \"dateOfBirth\" | \"dateOfInjury\" | \"ageAtDoi\" | \"occupationalCode\" | \"weeklyEarnings\" | \"wcReportInverse\" | \"impairmentNumber\" | \"fecRank\" | \"fingerType\" | \"wcInjuryInverse\" | \"reportId\" | \"impairmentDefinitionId\" | \"digit\" | \"le\" | \"ue\" | \"wpi\" | \"pain\" | \"industrial\" | \"formula\" | \"wcImpairmentDefinitionReference\" | \"wcReportReference\" | \"claimId\" | \"finalRating\" | \"leftSideTotal\" | \"rightSideTotal\" | \"defaultSideTotal\" | \"compensationAmount\" | \"compensationWeeks\" | \"compensationDays\" | \"wcClaimReference\" | \"autoExecute\" | \"workflowRelayInverse\" | \"workflowType\" | \"workflowEdgeInverse\" | \"sourceNodeId\" | \"targetNodeId\" | \"sourceHandleId\" | \"targetHandleId\" | \"edgeType\" | \"animated\" | \"connectionType\" | \"workflowNodeDataReference\" | \"stepName\" | \"functionId\" | \"functionType\" | \"executionRequired\" | \"additionalDependencies\" | \"argMapping\" | \"returnBrokerOverrides\" | \"argOverrides\" | \"uiNodeData\" | \"workflowReference\" | \"uiData\" | \"sourceBrokerId\" | \"targetBrokerIds\"'.",
-    "code": 2322
-  },
-  {
-    "file": "lib/redux/entity/custom-actions/custom-workflow-actions.ts",
-    "line": 766,
-    "column": 21,
-    "message": "Type '\"backendWorkflow\"' is not assignable to type '\"message\" | \"public\" | \"name\" | \"value\" | \"path\" | \"priority\" | \"data\" | \"options\" | \"size\" | \"deleted\" | \"completed\" | \"url\" | \"mimeType\" | \"type\" | \"id\" | \"description\" | \"tags\" | \"messages\" | \"settings\" | \"metadata\" | \"status\" | \"exact\" | \"count\" | \"min\" | \"max\" | \"timestamp\" | \"temperature\" | \"maxTokens\" | \"topP\" | \"presencePenalty\" | \"frequencyPenalty\" | \"responseFormat\" | \"systemPrompt\" | \"recipeId\" | \"email\" | \"filePath\" | \"content\" | \"structure\" | \"username\" | \"params\" | \"title\" | \"score\" | \"role\" | \"category\" | \"className\" | \"color\" | \"height\" | \"style\" | \"width\" | \"display\" | \"order\" | \"orientation\" | \"version\" | \"visibility\" | \"displayName\" | \"source\" | \"controls\" | \"group\" | \"body\" | \"label\" | \"template\" | \"defaultValue\" | \"tooltip\" | \"props\" | \"position\" | \"matrix\" | \"attributes\" | \"side\" | \"enabled\" | \"duration\" | \"actions\" | \"useCount\" | \"state\" | \"sourceType\" | \"viewport\" | \"parameters\" | \"segments\" | \"capabilities\" | \"nodeType\" | \"step\" | \"icon\" | \"theme\" | \"ready\" | \"component\" | \"componentProps\" | \"broker\" | \"helpText\" | \"iconName\" | \"inputs\" | \"outputs\" | \"dependencies\" | \"sources\" | \"destinations\" | \"stream\" | \"aiModel\" | \"rating\" | \"fields\" | \"subComponent\" | \"placeholder\" | \"required\" | \"src\" | \"accentColor\" | \"maxHeight\" | \"maxWidth\" | \"minHeight\" | \"minWidth\" | \"action\" | \"slug\" | \"categories\" | \"partial\" | \"featured\" | \"creator\" | \"transformer\" | \"referenceId\" | \"automationMatrixReference\" | \"aiEndpoint\" | \"aiProvider\" | \"compiledRecipe\" | \"dataBroker\" | \"notes\" | \"processor\" | \"recipe\" | \"registeredFunction\" | \"subcategory\" | \"tools\" | \"transformerReference\" | \"userId\" | \"createdAt\" | \"aiSettingsId\" | \"systemMessageOverride\" | \"aiSettingsReference\" | \"recipeReference\" | \"provider\" | \"additionalCost\" | \"costDetails\" | \"aiModelEndpointInverse\" | \"aiSettingsInverse\" | \"commonName\" | \"modelClass\" | \"endpoints\" | \"contextWindow\" | \"modelProvider\" | \"isDeprecated\" | \"isPrimary\" | \"isPremium\" | \"apiClass\" | \"aiProviderReference\" | \"recipeModelInverse\" | \"aiModelId\" | \"aiEndpointId\" | \"available\" | \"endpointPriority\" | \"configuration\" | \"aiEndpointReference\" | \"aiModelReference\" | \"companyDescription\" | \"documentationLink\" | \"modelsLink\" | \"aiModelInverse\" | \"presetName\" | \"quality\" | \"audioVoice\" | \"audioFormat\" | \"modalities\" | \"aiAgentInverse\" | \"updatedAt\" | \"isPublic\" | \"userQuery\" | \"thinkingContent\" | \"responseContent\" | \"reflectionContent\" | \"qualityScore\" | \"questionsThinking\" | \"questionsContent\" | \"structuredQuestions\" | \"reflectionThinking\" | \"compiledRecipeId\" | \"dataSourceConfig\" | \"resultComponentConfig\" | \"nextStepConfig\" | \"subcategoryId\" | \"ctaText\" | \"compiledRecipeReference\" | \"subcategoryReference\" | \"appletId\" | \"containerId\" | \"customAppletConfigsReference\" | \"componentGroupsReference\" | \"defaultJunk\" | \"dataType\" | \"examples\" | \"registeredFunctionReference\" | \"audioRecordingInverse\" | \"fileUrl\" | \"localPath\" | \"audioLabelReference\" | \"firstName\" | \"lastName\" | \"sparkSource\" | \"beaconDestination\" | \"brokerReference\" | \"averageSeconds\" | \"isAutomated\" | \"cognitionMatrices\" | \"actionInverse\" | \"automationBoundaryBrokerInverse\" | \"defaultSource\" | \"validationRules\" | \"sampleEntries\" | \"customSourceComponent\" | \"additionalParams\" | \"otherSourceParams\" | \"defaultDestination\" | \"outputComponent\" | \"stringValue\" | \"dataInputComponentReference\" | \"recipeBrokerInverse\" | \"subCategory\" | \"comments\" | \"dataBrokerReference\" | \"bucketId\" | \"lastUpdated\" | \"treeStructure\" | \"commentId\" | \"canvasCommentsReference\" | \"canvasId\" | \"avatarUrl\" | \"parentCommentId\" | \"likeCount\" | \"replyCount\" | \"edited\" | \"flagged\" | \"flagCount\" | \"sharedCanvasItemsReference\" | \"canvasCommentLikesInverse\" | \"isFavorited\" | \"isArchived\" | \"sessionId\" | \"sourceMessageId\" | \"taskId\" | \"shareToken\" | \"lastAccessedAt\" | \"contentHash\" | \"maxScore\" | \"percentage\" | \"timeTaken\" | \"attemptNumber\" | \"viewedAt\" | \"referrer\" | \"userAgent\" | \"timeSpent\" | \"interacted\" | \"subcategoryInverse\" | \"categoryId\" | \"sortOrder\" | \"isActive\" | \"contentBlocksInverse\" | \"subcategoryConfigsInverse\" | \"authenticatedRead\" | \"appletInverse\" | \"customAppletConfigsInverse\" | \"shortLabel\" | \"hideDescription\" | \"publicRead\" | \"appletContainersInverse\" | \"containerFieldsInverse\" | \"fieldId\" | \"fieldComponentsReference\" | \"blockId\" | \"categoryConfigsReference\" | \"keywords\" | \"messageInverse\" | \"mainAppIcon\" | \"mainAppSubmitIcon\" | \"primaryColor\" | \"appletList\" | \"extraButtons\" | \"layoutType\" | \"imageUrl\" | \"appDataContext\" | \"appletIcon\" | \"appletSubmitText\" | \"containers\" | \"appId\" | \"brokerMap\" | \"overviewLabel\" | \"dataDestinationConfig\" | \"customAppConfigsReference\" | \"inputComponent\" | \"fieldComponentId\" | \"defaultScope\" | \"dataOutputComponentReference\" | \"brokerValueInverse\" | \"messageBrokerInverse\" | \"registeredFunctionInverse\" | \"includeOther\" | \"acceptableFiletypes\" | \"colorOverrides\" | \"containerClassName\" | \"collapsibleClassName\" | \"labelClassName\" | \"descriptionClassName\" | \"componentClassName\" | \"dataBrokerInverse\" | \"brokerInverse\" | \"componentType\" | \"uiComponent\" | \"defaultParams\" | \"customizableParams\" | \"recipeDisplayInverse\" | \"subject\" | \"sender\" | \"recipient\" | \"isRead\" | \"outputType\" | \"defaultIdentifier\" | \"defaultIndex\" | \"componentGroup\" | \"workflowUserInputInverse\" | \"isFolder\" | \"fileId\" | \"parentPath\" | \"topic\" | \"lesson\" | \"difficulty\" | \"front\" | \"back\" | \"example\" | \"detailedExplanation\" | \"audioExplanation\" | \"personalNotes\" | \"isDeleted\" | \"sharedWith\" | \"flashcardHistoryInverse\" | \"flashcardSetRelationsInverse\" | \"flashcardImagesInverse\" | \"flashcardId\" | \"reviewCount\" | \"correctCount\" | \"incorrectCount\" | \"flashcardDataReference\" | \"fileName\" | \"setId\" | \"flashcardSetsReference\" | \"audioOverview\" | \"alternateTitles\" | \"qualifications\" | \"sizzleQuestions\" | \"redFlags\" | \"additionalDetails\" | \"htmlContent\" | \"metaDescription\" | \"metaKeywords\" | \"contentLength\" | \"extractedAt\" | \"conversationId\" | \"displayOrder\" | \"systemOrder\" | \"conversationReference\" | \"messageId\" | \"brokerId\" | \"defaultComponent\" | \"messageTemplateReference\" | \"recipeMessageInverse\" | \"projectName\" | \"projectDescription\" | \"repoName\" | \"repoId\" | \"repoOrgName\" | \"repoUrl\" | \"isSystem\" | \"projectCode\" | \"registeredNodeInverse\" | \"folderName\" | \"organizationId\" | \"token\" | \"invitedAt\" | \"invitedBy\" | \"expiresAt\" | \"organizationsReference\" | \"joinedAt\" | \"logoUrl\" | \"website\" | \"createdBy\" | \"isPersonal\" | \"organizationMembersInverse\" | \"organizationInvitationsInverse\" | \"permissionsInverse\" | \"resourceType\" | \"resourceId\" | \"grantedToUserId\" | \"grantedToOrganizationId\" | \"permissionLevel\" | \"dependsDefault\" | \"defaultExtractors\" | \"processorReference\" | \"recipeProcessorInverse\" | \"projectId\" | \"projectsReference\" | \"projectMembersInverse\" | \"tasksInverse\" | \"variableDefaults\" | \"isFeatured\" | \"createdByUserId\" | \"isCompleted\" | \"completedAt\" | \"quizContentHash\" | \"quizMetadata\" | \"sampleOutput\" | \"postResultOptions\" | \"compiledRecipeInverse\" | \"brokerRole\" | \"displaySettings\" | \"displayOptionReference\" | \"lastModified\" | \"funcName\" | \"modulePath\" | \"returnBroker\" | \"nodeDescription\" | \"argInverse\" | \"workflowNodeInverse\" | \"workflowNodeDataInverse\" | \"registeredFunctionId\" | \"styles\" | \"arguments\" | \"customEditor\" | \"depedencyFunction\" | \"dynamicBrokerArgs\" | \"functionDescription\" | \"dynamicOutputs\" | \"nodeCategoryReference\" | \"registeredNodeResultsInverse\" | \"workflowId\" | \"registeredNodeId\" | \"registeredNodeReference\" | \"workflowDataReference\" | \"templateName\" | \"selectorType\" | \"regex\" | \"rescrapeAfter\" | \"staleAfter\" | \"scrapePathPatternCachePolicyInverse\" | \"scrapeMode\" | \"interactionSettingsId\" | \"scrapePathPatternId\" | \"scrapePathPatternReference\" | \"scrapeParsedPageInverse\" | \"scrapeCycleTrackerId\" | \"runNumber\" | \"allowPattern\" | \"disallowPatterns\" | \"scrapeCycleTrackerReference\" | \"scrapeTaskInverse\" | \"pageName\" | \"targetUrl\" | \"scrapePathPatternCachePolicyId\" | \"scrapeJobId\" | \"lastRunAt\" | \"nextRunAt\" | \"scrapeJobReference\" | \"scrapePathPatternCachePolicyReference\" | \"scrapeCycleRunInverse\" | \"scrapeAllowed\" | \"scrapePathPatternInverse\" | \"scrapeJobInverse\" | \"scrapeDomainQuickScrapeSettingsInverse\" | \"scrapeDomainDisallowedNotesInverse\" | \"scrapeDomainRobotsTxtInverse\" | \"scrapeDomainNotesInverse\" | \"scrapeDomainSitemapInverse\" | \"scrapeQuickFailureLogInverse\" | \"scrapeDomainId\" | \"scrapeDomainReference\" | \"proxyType\" | \"robotsTxt\" | \"sitemap\" | \"startUrls\" | \"scrapeStatus\" | \"parseStatus\" | \"attemptLimit\" | \"startedAt\" | \"finishedAt\" | \"scrapeCycleTrackerInverse\" | \"configType\" | \"matchType\" | \"scrapeOverrideValueInverse\" | \"scrapePathPatternOverrideInverse\" | \"scrapeOverrideId\" | \"scrapeOverrideReference\" | \"validity\" | \"remotePath\" | \"scrapeTaskId\" | \"scrapeTaskResponseId\" | \"scrapeCycleRunId\" | \"scrapeConfigurationId\" | \"scrapePathPatternOverrideId\" | \"scrapedAt\" | \"scrapeConfigurationReference\" | \"scrapeCycleRunReference\" | \"scrapePathPatternOverrideReference\" | \"scrapeTaskReference\" | \"scrapeTaskResponseReference\" | \"pathPattern\" | \"scrapeConfigurationInverse\" | \"scrapeCachePolicyId\" | \"scrapeCachePolicyReference\" | \"domainName\" | \"failureReason\" | \"errorLog\" | \"parentTask\" | \"attemptsLeft\" | \"interactionConfig\" | \"discoveredLinks\" | \"spawnedConcurrentTasks\" | \"cancelMessage\" | \"scrapeTaskResponseInverse\" | \"statusCode\" | \"contentPath\" | \"contentSize\" | \"contentType\" | \"responseHeaders\" | \"responseUrl\" | \"canvasType\" | \"canvasData\" | \"thumbnailUrl\" | \"creatorUsername\" | \"creatorDisplayName\" | \"originalId\" | \"forkedFrom\" | \"versionNumber\" | \"forkCount\" | \"viewCount\" | \"shareCount\" | \"commentCount\" | \"playCount\" | \"completionRate\" | \"hasScoring\" | \"highScore\" | \"highScoreUser\" | \"averageScore\" | \"totalAttempts\" | \"allowRemixes\" | \"requireAttribution\" | \"publishedAt\" | \"lastPlayedAt\" | \"trendingScore\" | \"searchVector\" | \"canvasLikesInverse\" | \"canvasCommentsInverse\" | \"canvasScoresInverse\" | \"canvasViewsInverse\" | \"userBookmarksInverse\" | \"siteName\" | \"siteKey\" | \"siteUrl\" | \"organizationType\" | \"logoWidth\" | \"logoHeight\" | \"defaultShareImageUrl\" | \"defaultShareImageWidth\" | \"defaultShareImageHeight\" | \"twitterHandle\" | \"facebookPageUrl\" | \"contactEmail\" | \"copyrightHolder\" | \"defaultAuthorName\" | \"defaultAuthorType\" | \"defaultLanguage\" | \"googleAnalyticsId\" | \"googleTagManagerId\" | \"gscPropertyUrl\" | \"features\" | \"categoryReference\" | \"announcementType\" | \"minDisplaySeconds\" | \"sample\" | \"inputParams\" | \"outputOptions\" | \"rfId\" | \"tableId\" | \"userTablesReference\" | \"fieldName\" | \"fieldOrder\" | \"isRequired\" | \"assignedBy\" | \"assignedAt\" | \"tasksReference\" | \"fileType\" | \"fileSize\" | \"uploadedBy\" | \"uploadedAt\" | \"dueDate\" | \"parentTaskId\" | \"taskAssignmentsInverse\" | \"taskAttachmentsInverse\" | \"taskCommentsInverse\" | \"outputSchema\" | \"annotations\" | \"functionPath\" | \"audioFilePath\" | \"videoFilePath\" | \"outputParams\" | \"achievementType\" | \"achievementData\" | \"unlockedAt\" | \"feedbackType\" | \"route\" | \"adminNotes\" | \"resolvedAt\" | \"resolvedBy\" | \"followerId\" | \"followingId\" | \"groupName\" | \"listId\" | \"userListsReference\" | \"listName\" | \"userListItemsInverse\" | \"preferences\" | \"totalCreated\" | \"totalLikesReceived\" | \"totalViewsReceived\" | \"totalForksReceived\" | \"totalPlays\" | \"totalLikesGiven\" | \"totalComments\" | \"totalHighScores\" | \"bestScore\" | \"followerCount\" | \"followingCount\" | \"totalXp\" | \"level\" | \"streakDays\" | \"lastActiveDate\" | \"longestStreak\" | \"tableName\" | \"rowOrderingConfig\" | \"tableFieldsInverse\" | \"tableDataInverse\" | \"applicantName\" | \"personId\" | \"dateOfBirth\" | \"dateOfInjury\" | \"ageAtDoi\" | \"occupationalCode\" | \"weeklyEarnings\" | \"wcReportInverse\" | \"impairmentNumber\" | \"fecRank\" | \"fingerType\" | \"wcInjuryInverse\" | \"reportId\" | \"impairmentDefinitionId\" | \"digit\" | \"le\" | \"ue\" | \"wpi\" | \"pain\" | \"industrial\" | \"formula\" | \"wcImpairmentDefinitionReference\" | \"wcReportReference\" | \"claimId\" | \"finalRating\" | \"leftSideTotal\" | \"rightSideTotal\" | \"defaultSideTotal\" | \"compensationAmount\" | \"compensationWeeks\" | \"compensationDays\" | \"wcClaimReference\" | \"autoExecute\" | \"workflowRelayInverse\" | \"workflowType\" | \"workflowEdgeInverse\" | \"sourceNodeId\" | \"targetNodeId\" | \"sourceHandleId\" | \"targetHandleId\" | \"edgeType\" | \"animated\" | \"connectionType\" | \"workflowNodeDataReference\" | \"stepName\" | \"functionId\" | \"functionType\" | \"executionRequired\" | \"additionalDependencies\" | \"argMapping\" | \"returnBrokerOverrides\" | \"argOverrides\" | \"uiNodeData\" | \"workflowReference\" | \"uiData\" | \"sourceBrokerId\" | \"targetBrokerIds\"'.",
-    "code": 2322
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntity.ts",
+    "file": "lib/redux/entity/hooks/useEntity.ts",
     "line": 189,
     "column": 39,
     "message": "Argument of type '{ matrxRecordId: string; callbackId: string; }' is not assignable to parameter of type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.\n  Property 'data' is missing in type '{ matrxRecordId: string; callbackId: string; }' but required in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
@@ -1687,213 +1288,94 @@
     "code": 2345
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntityForm.ts",
-    "line": 251,
-    "column": 33,
-    "message": "This expression is not callable.\n  Type 'EntityStateField' has no call signatures.",
-    "code": 2349
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntityForm.ts",
-    "line": 264,
-    "column": 39,
-    "message": "Argument of type '{ tempRecordId: string; callbackId: string; }' is not assignable to parameter of type 'FlexibleQueryOptions'.\n  Property 'entityNameAnyFormat' is missing in type '{ tempRecordId: string; callbackId: string; }' but required in type 'FlexibleQueryOptions'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntityForm.ts",
-    "line": 272,
-    "column": 39,
-    "message": "Argument of type '{ matrxRecordId: string; callbackId: string; }' is not assignable to parameter of type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.\n  Property 'data' is missing in type '{ matrxRecordId: string; callbackId: string; }' but required in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
-    "code": 2345
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useEntityForm.ts",
-    "line": 301,
-    "column": 9,
-    "message": "Type 'Record<string, EntityStateField>' is missing the following properties from type 'EntityStateField[]': length, pop, push, concat, and 35 more.",
-    "code": 2740
-  },
-  {
-    "file": "lib/redux/entity/hooks/useEntitySelection.ts",
-    "line": 165,
-    "column": 9,
-    "message": "Type 'Partial<EntityData<TEntity>>' is not assignable to type 'EntityData<TEntity>'.\n  Type 'Partial<EntityData<TEntity>>' is not assignable to type '{ [TField in keyof { [TField in EntityFieldKeys<TEntity>]: EntityField<TEntity, TField>; } as { [TField in EntityFieldKeys<TEntity>]: EntityField<TEntity, TField>; }[TField][\"isNative\"] extends true ? TField : never]: ExtractType<{ [TField in EntityFieldKeys<TEntity>]: EntityField<TEntity, TField>; }[TField][\"typeReference\"]>; }'.",
-    "code": 2322
-  },
-  {
-    "file": "lib/redux/entity/hooks/useEntityValidation.ts",
-    "line": 58,
-    "column": 33,
-    "message": "This expression is not callable.\n  Type 'EntityStateField' has no call signatures.",
-    "code": 2349
-  },
-  {
-    "file": "lib/redux/entity/hooks/useEntityValidation.ts",
-    "line": 110,
-    "column": 40,
-    "message": "This expression is not callable.\n  Type 'EntityStateField' has no call signatures.",
-    "code": 2349
-  },
-  {
-    "file": "lib/redux/entity/hooks/useEntityValidation.ts",
-    "line": 128,
-    "column": 43,
-    "message": "This expression is not callable.\n  Type 'EntityStateField' has no call signatures.",
-    "code": 2349
-  },
-  {
-    "file": "lib/redux/entity/hooks/useFetchRelated.ts",
-    "line": 151,
-    "column": 9,
-    "message": "Type 'Record<string, EntityStateField>' is missing the following properties from type 'EntityStateField[]': length, pop, push, concat, and 35 more.",
-    "code": 2740
-  },
-  {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useValidatedUpdateOrCreate.ts",
-    "line": 34,
-    "column": 49,
-    "message": "Object literal may only specify known properties, and 'primaryKeyValues' does not exist in type '{ matrxRecordId: string; data: Record<string, any>; callbackId?: string; }'.",
-    "code": 2353
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/hooks/useValidatedUpdateOrCreate.ts",
-    "line": 46,
+    "line": 47,
     "column": 47,
     "message": "Argument of type 'EntityData<TEntity>' is not assignable to parameter of type 'FlexibleQueryOptions'.\n  Property 'entityNameAnyFormat' is missing in type 'EntityData<TEntity>' but required in type 'FlexibleQueryOptions'.",
     "code": 2345
   },
   {
     "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
-    "line": 22,
-    "column": 8,
-    "message": "Cannot find module '@/types' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "lib/redux/entity/utils/tempFormHelper.ts",
-    "line": 2,
-    "column": 22,
-    "message": "Cannot find name 'FieldDataOptionsType'.",
-    "code": 2304
-  },
-  {
-    "file": "lib/redux/entity/utils/tempFormHelper.ts",
-    "line": 3,
-    "column": 4,
-    "message": "Cannot find name 'FormFieldType'.",
-    "code": 2304
-  },
-  {
-    "file": "lib/redux/entity/utils/tempFormHelper.ts",
     "line": 4,
-    "column": 27,
-    "message": "Cannot find name 'FieldDataOptionsType'.",
-    "code": 2304
-  },
-  {
-    "file": "lib/redux/entity/utils/tempFormHelper.ts",
-    "line": 4,
-    "column": 49,
-    "message": "Cannot find name 'FormFieldType'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
-    "line": 4,
-    "column": 10,
-    "message": "Module '\"../../rootReducer\"' has no exported member 'RootState'.",
+    "column": 5,
+    "message": "Module '\"@/types/entityTypes\"' has no exported member 'FieldDataOptionsType'.",
     "code": 2305
   },
   {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/user/userActions.ts",
-    "line": 11,
-    "column": 38,
-    "message": "Cannot find name 'upsertFromAuth0'.",
-    "code": 2304
-  },
-  {
-    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/user/userSlice.ts",
-    "line": 4,
-    "column": 28,
-    "message": "Cannot find module '@/types/user.types' or its corresponding type declarations.",
-    "code": 2307
-  },
-  {
-    "file": "lib/redux/sagas/storage/storageSyncSaga.ts",
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
     "line": 5,
-    "column": 81,
-    "message": "Cannot find module '@/types' or its corresponding type declarations.",
-    "code": 2307
+    "column": 5,
+    "message": "Module '\"@/types/entityTypes\"' has no exported member 'DataStructure'.",
+    "code": 2305
   },
   {
-    "file": "lib/redux/schema/concepts/types.ts",
-    "line": 25,
-    "column": 34,
-    "message": "Cannot find name 'LayoutConfig'.",
-    "code": 2304
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
+    "line": 7,
+    "column": 5,
+    "message": "Module '\"@/types/entityTypes\"' declares 'EntityNameOfficial' locally, but it is not exported.",
+    "code": 2459
   },
   {
-    "file": "lib/redux/schema/concepts/types.ts",
-    "line": 36,
-    "column": 38,
-    "message": "Cannot find name 'BaseSchemaField'. Did you mean 'SchemaField'?",
-    "code": 2552
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
+    "line": 8,
+    "column": 5,
+    "message": "'\"@/types/entityTypes\"' has no exported member named 'FetchStrategy'. Did you mean 'isFetchStrategy'?",
+    "code": 2724
   },
   {
-    "file": "lib/redux/shadow/brokers/middleware/shadowSync.ts",
-    "line": 5,
-    "column": 28,
-    "message": "Cannot find module '@/types' or its corresponding type declarations.",
-    "code": 2307
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
+    "line": 9,
+    "column": 5,
+    "message": "'\"@/types/entityTypes\"' has no exported member named 'relationships'. Did you mean 'Relationship'?",
+    "code": 2724
   },
   {
-    "file": "lib/redux/shadow/brokers/useBroker.ts",
-    "line": 17,
-    "column": 30,
-    "message": "Property 'actions' does not exist on type 'Reducer<BrokerState>'.",
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/entity/utils/direct-schema.ts",
+    "line": 12,
+    "column": 5,
+    "message": "Module '\"@/types/entityTypes\"' has no exported member 'NameFormat'.",
+    "code": 2305
+  },
+  {
+    "file": "lib/redux/entity/utils/tempFormHelper.ts",
+    "line": 7,
+    "column": 11,
+    "message": "Property 'phone' is missing in type '{ string: \"text\"; number: \"number\"; boolean: \"checkbox\"; array: \"select\"; object: \"textarea\"; json: \"json\"; uuid: \"text\"; email: \"email\"; url: \"url\"; datetime: \"datetime-local\"; null: \"text\"; undefined: \"text\"; any: \"text\"; function: \"text\"; symbol: \"text\"; union: \"select\"; bigint: \"number\"; date: \"date\"; map: \"textarea\"; set: \"textarea\"; tuple: \"textarea\"; enum: \"select\"; intersection: \"textarea\"; literal: \"text\"; void: \"text\"; never: \"text\"; }' but required in type 'Record<FieldDataOptionsType, FormFieldType>'.",
+    "code": 2741
+  },
+  {
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
+    "line": 7,
+    "column": 33,
+    "message": "Property 'recipes' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
     "code": 2339
   },
   {
-    "file": "lib/redux/storage/ExampleComponent.tsx",
-    "line": 14,
-    "column": 9,
-    "message": "Property 'initialize' does not exist on type '{ listBuckets: () => Promise<PayloadAction<unknown, string, { arg: void; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError> | PayloadAction<Bucket[], string, { arg: void; requestId: string; requestStatus: \"fulfilled\"; }, never>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: void; unwrap: () => Promise<Bucket[]>; }; selectBucket: (bucketName: string) => Promise<PayloadAction<unknown, string, { arg: string; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError> | PayloadAction<void, string, { arg: string; requestId: string; requestStatus: \"fulfilled\"; }, never>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: string; unwrap: () => Promise<void>; }; navigateFolder: (path: string[]) => Promise<PayloadAction<void, string, { arg: string[]; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: string[]; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: string[]; unwrap: () => Promise<void>; }; changeDirectory: (path: string[]) => Promise<PayloadAction<void, string, { arg: string[]; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: string[]; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: string[]; unwrap: () => Promise<void>; }; createFolder: (path: string[]) => Promise<PayloadAction<void, string, { arg: string[]; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: string[]; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: string[]; unwrap: () => Promise<void>; }; uploadFile: (params: { file: File; targetPath: string[]; customFileName?: string; }) => Promise<PayloadAction<void, string, { arg: { file: File; targetPath: string[]; customFileName?: string; }; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: { file: File; targetPath: string[]; customFileName?: string; }; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: { file: File; targetPath: string[]; customFileName?: string; }; unwrap: () => Promise<void>; }; moveItem: (params: { item: StorageItem; newPath: string[]; }) => Promise<PayloadAction<void, string, { arg: { item: StorageItem; newPath: string[]; }; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: { item: StorageItem; newPath: string[]; }; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: { item: StorageItem; newPath: string[]; }; unwrap: () => Promise<void>; }; deleteItem: (item: StorageItem) => Promise<PayloadAction<void, string, { arg: StorageItem; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: StorageItem; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: StorageItem; unwrap: () => Promise<void>; }; renameItem: (params: { item: StorageItem; newName: string; }) => Promise<PayloadAction<void, string, { arg: { item: StorageItem; newName: string; }; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: { item: StorageItem; newName: string; }; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: { item: StorageItem; newName: string; }; unwrap: () => Promise<void>; }; copyItem: (params: { item: StorageItem; destinationPath: string[]; }) => Promise<PayloadAction<void, string, { arg: { item: StorageItem; destinationPath: string[]; }; requestId: string; requestStatus: \"fulfilled\"; }, never> | PayloadAction<unknown, string, { arg: { item: StorageItem; destinationPath: string[]; }; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: { item: StorageItem; destinationPath: string[]; }; unwrap: () => Promise<void>; }; getPublicUrl: (item: StorageItem) => Promise<PayloadAction<unknown, string, { arg: StorageItem; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError> | PayloadAction<string, string, { arg: StorageItem; requestId: string; requestStatus: \"fulfilled\"; }, never>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: StorageItem; unwrap: () => Promise<string>; }; downloadItem: (item: StorageItem) => Promise<PayloadAction<unknown, string, { arg: StorageItem; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError> | PayloadAction<Blob, string, { arg: StorageItem; requestId: string; requestStatus: \"fulfilled\"; }, never>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: StorageItem; unwrap: () => Promise<Blob>; }; refreshCurrentFolder: () => Promise<PayloadAction<unknown, string, { arg: void; requestId: string; requestStatus: \"rejected\"; aborted: boolean; condition: boolean; } & ({ rejectedWithValue: true; } | ({ rejectedWithValue: false; } & {})), SerializedError> | PayloadAction<void, string, { arg: void; requestId: string; requestStatus: \"fulfilled\"; }, never>> & { __linterBrands: \"SafePromise\"; } & { abort: (reason?: string) => void; requestId: string; arg: void; unwrap: () => Promise<void>; }; currentBucket: string; currentPath: string[]; items: StorageItem[]; buckets: Bucket[]; isLoading: boolean; error: string; }'.",
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
+    "line": 9,
+    "column": 63,
+    "message": "Property 'recipes' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
     "code": 2339
   },
   {
-    "file": "lib/server/brokerCache.ts",
-    "line": 47,
-    "column": 67,
-    "message": "Property 'itemId' does not exist on type 'BrokerIdentifier'.\n  Property 'itemId' does not exist on type '{ brokerId: string; source?: string; mappedItemId?: string; }'.",
+    "file": "/home/arman/projects/ai-matrx-admin/lib/redux/features/recipes/selectors.ts",
+    "line": 12,
+    "column": 54,
+    "message": "Property 'recipes' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
     "code": 2339
   },
   {
-    "file": "styles/dynamic.ts",
-    "line": 117,
-    "column": 13,
-    "message": "Object literal may only specify known properties, and ''bg-opacity'' does not exist in type 'Partial<Record<DefaultClassGroupIds, ClassGroup<DefaultThemeGroupIds>>>'.",
-    "code": 2353
+    "file": "lib/redux/shadow/brokers/brokerSlice.ts",
+    "line": 9,
+    "column": 49,
+    "message": "Type 'BrokerLocalState' does not satisfy the constraint 'Record<string, unknown>'.\n  Index signature for type 'string' is missing in type 'BrokerLocalState'.",
+    "code": 2344
   },
   {
-    "file": "utils/cache/middlewareOrchestrator.ts",
-    "line": 3,
-    "column": 39,
-    "message": "File 'utils/cache/cacheMiddleware.ts' is not a module.",
-    "code": 2306
-  },
-  {
-    "file": "utils/schema/schemaGenerator.ts",
-    "line": 55,
-    "column": 14,
-    "message": "Property 'from' does not exist on type 'Promise<SupabaseClient<any, \"public\", \"public\", any, any>>'.",
-    "code": 2339
-  },
-  {
-    "file": "utils/schema/schemaGenerator.ts",
-    "line": 71,
-    "column": 18,
-    "message": "Property 'from' does not exist on type 'Promise<SupabaseClient<any, \"public\", \"public\", any, any>>'.",
+    "file": "lib/redux/shadow/brokers/brokerSlice.ts",
+    "line": 32,
+    "column": 27,
+    "message": "Property 'brokerShadow' does not exist on type '{ fileSystem: FileSystemState; entities: { [x: string]: EntityState<\"message\" | \"prompts\" | \"applet\" | \"workflow\" | \"tasks\" | \"category\" | \"userPreferences\" | \"arg\" | \"broker\" | \"aiModel\" | \"action\" | \"automationMatrix\" | \"transformer\" | \"admins\" | \"aiAgent\" | \"aiEndpoint\" | \"aiModelEndpoint\" | \"aiProvider\" | \"aiSettings\" | \"aiTrainingData\" | \"appletContainers\" | \"audioLabel\" | \"audioRecording\" | \"audioRecordingUsers\" | \"automationBoundaryBroker\" | \"brokerValue\" | \"bucketStructures\" | \"bucketTreeStructures\" | \"canvasCommentLikes\" | \"canvasComments\" | \"canvasItems\" | \"canvasLikes\" | \"canvasScores\" | \"canvasViews\" | \"categoryConfigs\" | \"compiledRecipe\" | \"componentGroups\" | \"containerFields\" | \"contentBlocks\" | \"conversation\" | \"customAppConfigs\" | \"customAppletConfigs\" | \"dataBroker\" | \"dataInputComponent\" | \"dataOutputComponent\" | \"displayOption\" | \"emails\" | \"extractor\" | \"fieldComponents\" | \"fileStructure\" | \"flashcardData\" | \"flashcardHistory\" | \"flashcardImages\" | \"flashcardSetRelations\" | \"flashcardSets\" | \"fullSpectrumPositions\" | \"htmlExtractions\" | \"messageBroker\" | \"messageTemplate\" | \"microserviceProject\" | \"nodeCategory\" | \"notes\" | \"organizationInvitations\" | \"organizationMembers\" | \"organizations\" | \"permissions\" | \"processor\" | \"projectMembers\" | \"projects\" | \"promptTemplates\" | \"quizSessions\" | \"recipe\" | \"recipeBroker\" | \"recipeDisplay\" | \"recipeMessage\" | \"recipeMessageReorderQueue\" | \"recipeModel\" | \"recipeProcessor\" | \"registeredFunction\" | \"registeredNode\" | \"registeredNodeResults\" | \"schemaTemplates\" | \"scrapeBaseConfig\" | \"scrapeCachePolicy\" | \"scrapeConfiguration\" | \"scrapeCycleRun\" | \"scrapeCycleTracker\" | \"scrapeDomain\" | \"scrapeDomainDisallowedNotes\" | \"scrapeDomainNotes\" | \"scrapeDomainQuickScrapeSettings\" | \"scrapeDomainRobotsTxt\" | \"scrapeDomainSitemap\" | \"scrapeJob\" | \"scrapeOverride\" | \"scrapeOverrideValue\" | \"scrapeParsedPage\" | \"scrapePathPattern\" | \"scrapePathPatternCachePolicy\" | \"scrapePathPatternOverride\" | \"scrapeQuickFailureLog\" | \"scrapeTask\" | \"scrapeTaskResponse\" | \"sharedCanvasItems\" | \"siteMetadata\" | \"subcategory\" | \"subcategoryConfigs\" | \"systemAnnouncements\" | \"systemFunction\" | \"tableData\" | \"tableFields\" | \"taskAssignments\" | \"taskAttachments\" | \"taskComments\" | \"tools\" | \"transcripts\" | \"userAchievements\" | \"userBookmarks\" | \"userFeedback\" | \"userFollows\" | \"userListItems\" | \"userLists\" | \"userStats\" | \"userTables\" | \"wcClaim\" | \"wcImpairmentDefinition\" | \"wcInjury\" | \"wcReport\" | \"workflowData\" | \"workflowEdge\" | \"workflowNode\" | \"workflowNodeData\" | \"workflowRelay\" | \"workflowUserInput\">; }; entityFields: EntityState<FieldState, string>; layout: LayoutState; theme: ThemeState; form: FormState; user: UserState; userPreferences: UserPreferencesState; testRoutes: string[]; flashcardChat: FlashcardChatState; aiChat: AIChatState; adminDebug: AdminDebugState; globalCache: GlobalCacheState; ui: UIState; storage: StorageState; conversation: ConversationState; messages: MessagesState; newMessage: NewMessageState; chatDisplay: ChatDisplayState; socketConnections: ExtendedSocketState; socketResponse: ResponsesState; socketTasks: TasksState; componentDefinitions: ComponentDefinitionsState; appBuilder: AppsState; appletBuilder: AppletsState; containerBuilder: ContainersState; fieldBuilder: FieldsState; customAppRuntime: CustomAppRuntimeState; customAppletRuntime: CustomAppletRuntimeState; broker: BrokerState; overlays: OverlayState; promptCache: PromptCacheState; promptRunner: PromptRunnerState; promptExecution: PromptExecutionState; actionCache: ActionCacheState; dbFunctionNode: DbFunctionNodeState; workflows: WorkflowState; workflowNodes: WorkflowNodeState; canvas: CanvasState; textDiff: DiffState; noteVersions: VersionHistoryState; promptEditor: PromptEditorState; modelRegistry: ModelRegistryState; messaging: MessagingState; }'.",
     "code": 2339
   }
 ]

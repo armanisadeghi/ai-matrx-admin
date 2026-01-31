@@ -1,5 +1,8 @@
 import { Edge } from "reactflow";
 import { analyzeBrokerConnections } from "./brokerEdgeAnalyzer";
+import { ConvertedWorkflowData } from "../types";
+
+type CompleteWorkflowData = ConvertedWorkflowData;
 
 export interface EdgeAnalysisResult {
   validEdges: Edge[];

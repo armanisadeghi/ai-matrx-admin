@@ -164,7 +164,7 @@ export function analyzeBrokerConnections(completeData: ConvertedWorkflowData): E
     const virtualEdges = uniqueConnections.map((connection, index) => createVirtualEdge(connection, index));
 
     // Convert database edges to basic edges
-    const basicEdges = completeData.edges.map((edge) => createBasicEdge(edge));
+    const basicEdges = completeData.edges.map((edge) => createBasicEdge(edge as any)); // TODO: Fix WorkflowEdge to Edge conversion
 
     // Combine and return all edges
     return [...basicEdges, ...virtualEdges];

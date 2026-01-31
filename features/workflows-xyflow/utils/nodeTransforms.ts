@@ -162,6 +162,7 @@ export const createNewNode = (
         inputs: [],
         outputs: [],
         dependencies: [],
+        is_active: true,
         metadata: {},
         ui_data: {
             position,

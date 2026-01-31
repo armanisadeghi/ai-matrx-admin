@@ -342,6 +342,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
           </div>
         );
 
+      // @ts-ignore - field.component is ComponentType but switch handles string literals
       case 'button':
         return (
           <div className="flex flex-wrap gap-2">

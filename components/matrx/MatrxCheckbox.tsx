@@ -23,7 +23,7 @@ const tickVariants = {
         opacity: 1,
         transition: {
             duration: 0.3,
-            ease: "easeOut",
+            ease: "easeOut" as const,
         },
     },
     unchecked: {
@@ -31,7 +31,7 @@ const tickVariants = {
         opacity: 0,
         transition: {
             duration: 0.3,
-            ease: "easeIn",
+            ease: "easeIn" as const,
         },
     },
 };

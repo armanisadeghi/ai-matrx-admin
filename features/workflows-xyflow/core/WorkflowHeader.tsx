@@ -79,7 +79,8 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     const allNodesArray = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId));
     const nodeCount = allNodesArray.length;
     const userId = useAppSelector(selectUserId);
-    const { mode: themeMode, toggleMode } = useTheme();
+    const themeContext = useTheme();
+    const { mode: themeMode, toggleMode } = themeContext as { mode: 'light' | 'dark'; toggleMode: () => void };
     
     // Auto-save functionality - watch for workflow dirty state
     const isWorkflowDirty = useAppSelector(state => selectWorkflowIsDirty(state, workflowId));

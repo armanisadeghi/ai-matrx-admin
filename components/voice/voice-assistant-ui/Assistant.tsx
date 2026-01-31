@@ -58,8 +58,8 @@ export default function Home() {
         },
         positiveSpeechThreshold: 0.6,
         minSpeechMs: 4, // Fixed: was minSpeechFrames, should be minSpeechMs
-        redemptionFrames: 8,
-        preSpeechPadFrames: 1,
+        redemptionMs: 8, // Fixed: was redemptionFrames, should be redemptionMs
+        preSpeechPadMs: 1, // Fixed: was preSpeechPadFrames, should be preSpeechPadMs
         baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/",
         onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/",
     });

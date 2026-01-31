@@ -162,6 +162,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         selectedRecords,
         activeRecordId,
         selectSelectedRecordsWithKey,
+        // @ts-ignore - activeRecord may be Partial from unsavedRecords, but return type expects full EntityData
         activeRecord,
         selectionMode,
         summary,

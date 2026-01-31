@@ -1,4 +1,3 @@
-// @ts-nocheck
 // slices/brokerSlice.ts
 
 import { MatrxRecordId } from "../../entity/types/stateTypes";
@@ -18,16 +17,24 @@ const brokerSlice = createShadowSlice<'broker', BrokerLocalState>('broker', {
       }
     }
   });
+
+// Selector to get broker entity data
+const selectBrokerEntity = (state: RootState, brokerId: MatrxRecordId) => {
+  // @ts-ignore - broker entity selector not yet fully implemented
+  return state.broker?.records?.[brokerId] || null;
+};
+
+export default brokerSlice;
   
-  // Create combined selectors that merge entity and local state
-  export const selectBrokerComplete = (state: RootState, brokerId: MatrxRecordId) => {
-    const entityData = selectBrokerEntity(state, brokerId);
-    const localData = state.brokerShadow.localState[brokerId];
-    
-    if (!entityData) return null;
-    
-    return {
-      ...entityData,
-      ...localData
-    };
+// Create combined selectors that merge entity and local state
+export const selectBrokerComplete = (state: RootState, brokerId: MatrxRecordId) => {
+  const entityData = selectBrokerEntity(state, brokerId);
+  const localData = state.brokerShadow?.localState?.[brokerId];
+  
+  if (!entityData) return null;
+  
+  return {
+    ...entityData,
+    ...localData
   };
+};

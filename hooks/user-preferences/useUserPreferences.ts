@@ -1,4 +1,5 @@
 // hooks/useUserPreferences.ts
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import {
     AssistantPreferences,
     CodingPreferences,
@@ -6,10 +7,8 @@ import {
     PlaygroundPreferences,
     setModulePreferences,
     setPreference,
-    useAppDispatch,
-    useAppSelector,
     VoicePreferences,
-} from '@/lib/redux';
+} from '@/lib/redux/slices/userPreferencesSlice';
 
 export const useUserPreferences = () => {
     const dispatch = useAppDispatch();

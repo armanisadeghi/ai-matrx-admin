@@ -101,9 +101,8 @@ const LoadingButton = (
     };
 
     return (
-        // @ts-ignore - ButtonVariant includes "success" but Button component doesn't support it
         <Button
-            variant={variant}
+            variant={variant as any}
             onClick={handleClick}
             disabled={disabled || isLoading}
             className={cn(

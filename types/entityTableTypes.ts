@@ -137,7 +137,7 @@ export interface EntityActionGroupProps<TEntity extends EntityKeys> {
 // Base Action Definition
 export interface ActionDefinition<TEntity extends EntityKeys = any> {
     name: string;
-    label: string;
+    label: string | ((data: EntityData<TEntity>) => string);
     icon: React.ReactNode;
     type: 'entity' | 'feature' | 'module' | 'service' | 'navigation' | 'custom';
     subType?: 'single' | 'relationship' | 'custom';

@@ -123,7 +123,7 @@ export const useVoiceChatCdn = () => {
             setActivityTiming(prev => ({ ...prev, isActive: false }));
         },
         positiveSpeechThreshold: 0.6,
-        minSpeechFrames: 4,
+        minSpeechMs: 4, // TODO: Verify correct value conversion from frames to ms
         redemptionFrames: 8,
         preSpeechPadFrames: 1,
         baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/",

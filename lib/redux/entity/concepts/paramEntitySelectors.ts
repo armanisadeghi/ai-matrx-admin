@@ -1,6 +1,6 @@
 // entitySelectors.ts
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import { RootState } from '@/lib/redux/store';
 import { EntityKeys } from "@/types/entityTypes";
 
 // First, create a base selector for the entity domain

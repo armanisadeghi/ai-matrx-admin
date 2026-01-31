@@ -9,7 +9,6 @@ export { useWorkflowSync } from './hooks/useWorkflowSync';
 
 // Utilities
 export {
-  nodeToReactFlow,
   reactFlowToNode,
   createNewNode,
   validateNodeData,

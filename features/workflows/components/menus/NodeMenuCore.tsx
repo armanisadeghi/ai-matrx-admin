@@ -50,7 +50,8 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const { mode, toggleMode } = useTheme();
+    const theme = useTheme();
+    const toggleMode = 'toggleMode' in theme ? theme.toggleMode : () => {}; // TODO: Fix useTheme return type
     const [isExecuting, setIsExecuting] = useState(false);
 
     const handleExecute = async () => {

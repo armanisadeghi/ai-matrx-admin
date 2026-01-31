@@ -51,6 +51,7 @@ function PrimaryActionButton({
 interface PromptActionModalProps {
     isOpen: boolean;
     onClose: () => void;
+    promptId?: string;
     promptName: string;
     promptDescription?: string;
     onRun: () => void;

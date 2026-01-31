@@ -148,7 +148,7 @@ export function useFetchRelated(
         setHoveredItem,
         truncateText,
         matrxRecordId,
-        individualFieldInfo,
+        individualFieldInfo: individualFieldInfo ? Object.values(individualFieldInfo) : null,
         entityPrettyName,
     };
 }

@@ -2,7 +2,7 @@
 // middleware/shadowSync.ts
 
 import { AppDispatch } from "@/lib/redux";
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { Action, MiddlewareAPI } from "@reduxjs/toolkit";
 
 
@@ -13,7 +13,7 @@ export const createShadowSyncMiddleware = (entityKey: EntityKeys) => {
       // If the entity state changed, sync the shadow
       if (action.type.startsWith(`ENTITIES/${entityKey.toUpperCase()}`)) {
         const entityState = store.getState().entities[entityKey];
-        // @ts-expect-error - shadowSlices not yet implemented, needs registry pattern
+        // @ts-ignore - shadowSlices not yet implemented, needs registry pattern
         store.dispatch(shadowSlices[entityKey].actions.syncWithEntity(entityState));
       }
       

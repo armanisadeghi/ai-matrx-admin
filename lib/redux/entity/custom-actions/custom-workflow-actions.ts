@@ -749,6 +749,7 @@ export const getWorkflowActionsWithThunks = () => {
 
                 dispatch(workflowActions.updateNestedFieldSmart({ 
                     keyOrId, 
+                    // @ts-ignore - "backendWorkflow" is a valid nested field but not in the type union
                     field: "backendWorkflow", 
                     nestedKey: "workflow_relays", 
                     value: params.relays 
@@ -763,6 +764,7 @@ export const getWorkflowActionsWithThunks = () => {
 
                 dispatch(workflowActions.updateNestedFieldSmart({ 
                     keyOrId, 
+                    // @ts-ignore - "backendWorkflow" is a valid nested field but not in the type union
                     field: "backendWorkflow", 
                     nestedKey: "user_inputs", 
                     value: params.userInputs 

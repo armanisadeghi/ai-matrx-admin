@@ -115,7 +115,7 @@ export const PromptBuilderRedux: React.FC<PromptBuilderReduxProps> = ({ promptId
 
             {/* Main Content */}
             <div className="flex-1 overflow-hidden">
-                <ResizablePanelGroup direction="horizontal">
+                <ResizablePanelGroup orientation="horizontal">
                     {/* Left Panel: Settings & Variables */}
                     <ResizablePanel defaultSize={20} minSize={10} maxSize={30} className="border-r">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">

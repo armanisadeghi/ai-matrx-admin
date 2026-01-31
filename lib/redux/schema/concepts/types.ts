@@ -1,5 +1,13 @@
 // lib/schema/types.ts
 
+// Type definitions for schema concepts
+export interface LayoutConfig {
+    [key: string]: any;
+}
+
+export interface BaseSchemaField {
+    [key: string]: any;
+}
 
 export interface UnifiedSchemaAll {
     id: string;

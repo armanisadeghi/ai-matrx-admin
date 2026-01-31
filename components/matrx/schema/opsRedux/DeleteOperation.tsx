@@ -1,45 +1,37 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { FlexibleId } from '@/types/FlexibleId';
-// import useDatabase from "@/lib/hooks/useDatabase";
+import { EntityKeys } from '@/types/entityTypes';
+import { useEntity } from "@/lib/redux/entity/hooks/useEntity";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
+// Default entity key for initial hook call
+const DEFAULT_ENTITY: EntityKeys = 'systemFunction';
+
 const DeleteOperation = () => {
-    const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
-    // const { data, loading, error, delete: deleteRecord, fetchAll } = useDatabase();
+    const [selectedSchema, setSelectedSchema] = useState<EntityKeys>(DEFAULT_ENTITY);
+    const entity = useEntity(selectedSchema);
 
     useEffect(() => {
-        if (selectedSchema) {
-            // @ts-ignore - fetchAll function not available (import commented out)
-            fetchAll(selectedSchema);
-        }
-        // @ts-ignore - fetchAll variable not available (import commented out)
-    }, [selectedSchema, fetchAll]);
+        entity.fetchAll();
+    }, [selectedSchema]);
 
-    const handleDelete = (id: FlexibleId) => {
-        if (selectedSchema) {
-            // @ts-ignore - deleteRecord function not available (import commented out)
-            deleteRecord(selectedSchema, id);
-        }
+    const handleDelete = (id: string | number) => {
+        entity.deleteRecord(id as any);
     };
 
     return (
         <div className="space-y-4">
             <h2 className="text-2xl font-bold">Delete Operation</h2>
             <SchemaSelect onSchemaSelect={setSelectedSchema} selectedSchema={selectedSchema} />
-            {/* @ts-ignore - loading variable not available (import commented out) */}
-            {loading && <p>Loading...</p>}
-            {/* @ts-ignore - error variable not available (import commented out) */}
-            {error && <p className="text-red-500">Error: {error.message}</p>}
-            {/* @ts-ignore - data variable not available (import commented out) */}
-            {data && (
+            {entity?.loadingState.loading && <p>Loading...</p>}
+            {entity?.error && <p className="text-red-500">Error: {entity.error.message}</p>}
+            {entity?.currentPage && (
                 <Suspense fallback={<MatrxTableLoading />}>
-                    {/* @ts-ignore - data variable not available (import commented out) */}
                     <MatrxTable
-                        data={data}
+                        data={entity.currentPage}
                         actions={['delete']}
                         onAction={(actionName, rowData) => {
                             if (actionName === 'delete') {

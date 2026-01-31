@@ -110,7 +110,7 @@ const FancyJsonExplorer = ({ pageData }) => {
                 <div className="font-medium text-gray-700 dark:text-gray-300">{key}</div>
                 {isNavigable(value) && (
                   <Button 
-                    size="xs" 
+                    size="sm" 
                     variant="ghost" 
                     onClick={() => handleKeyClick(key)}
                     className="text-xs p-1 h-6"

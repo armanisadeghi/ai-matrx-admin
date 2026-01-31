@@ -7,6 +7,7 @@ import {
 import {Button} from '@/components/ui/button';
 import {ChevronUp, ChevronDown, Maximize2, Minimize2} from 'lucide-react';
 import {Card} from '@/components/ui/card';
+import {type Layout} from 'react-resizable-panels';
 
 interface ResizableBottomPanelProps {
     className?: string;
@@ -67,9 +68,9 @@ const ResizableBottomPanel: React.FC<ResizableBottomPanelProps> = (
         });
     };
 
-    const handlePanelResize = (sizes: number[]) => {
-        if (!isFullScreen && sizes[1] >= minSize && sizes[1] <= maxSize) {
-            setLastSize(sizes[1]);
+    const handlePanelResize = (layout: Layout) => {
+        if (!isFullScreen && layout[1] >= minSize && layout[1] <= maxSize) {
+            setLastSize(layout[1]);
         }
     };
 
@@ -135,7 +136,7 @@ const ResizableBottomPanel: React.FC<ResizableBottomPanelProps> = (
             <ResizablePanelGroup
                 orientation="vertical"
                 className="h-full"
-                onLayout={handlePanelResize}
+                onLayoutChanged={handlePanelResize}
                 style={{
                     touchAction: 'none',
                     userSelect: 'none',

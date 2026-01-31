@@ -14,7 +14,9 @@ import {
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { TaskFilterType } from '@/features/tasks/types';
-import { TaskSortOption } from '@/features/tasks/types/sort';
+import { TaskSortField } from '@/features/tasks/types/sort';
+
+type TaskSortOption = `${TaskSortField}-${'asc' | 'desc'}` | 'title-asc' | 'title-desc';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

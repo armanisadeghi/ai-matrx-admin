@@ -6,9 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import ColorSelection from './ColorSelection';
-import { ChipData, ChipRequestOptions, ColorOption, EditorState } from '../types';
+import { ChipData, ChipRequestOptions, ColorOption, EditorState } from '@/types/editor.types';
 import { EditorHookResult } from '../hooks/useEditor';
-import { EditorContextValue } from '../_dev/new/EditorProvider';
+import { EditorContextValue } from '@/providers/rich-text-editor/Provider';
 
 interface ChipSelectionContentProps {
     editorId: string;

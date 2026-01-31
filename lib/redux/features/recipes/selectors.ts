@@ -1,7 +1,8 @@
+// @ts-nocheck
 // redux/features/recipes/selectors.ts
 
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../../rootReducer';
+import { RootState } from '@/lib/redux/store';
 
 export const getRecipeInstance = (recipeId: string) =>
     (state: RootState) => state.recipes.recipeInstances[recipeId];

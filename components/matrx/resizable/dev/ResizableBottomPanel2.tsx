@@ -77,7 +77,7 @@ const ResizableBottomPanel2: React.FC<ResizableBottomPanelProps> = (
         <div className={`${containerStyles} pointer-events-none ${className}`}>
             <div className={`pointer-events-auto h-${isFullScreen ? 'screen' : '[50vh]'}`}>
                 <ResizablePanelGroup
-                    direction="vertical"
+                    orientation="vertical"
                     className="h-full"
                 >
                     {!isFullScreen && (

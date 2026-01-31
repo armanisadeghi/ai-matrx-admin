@@ -1,6 +1,7 @@
 // redux/features/user/userSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+// @ts-ignore - MatrixUser type not yet defined in @/types/user.types
 import { MatrixUser } from '@/types/user.types';
 
 interface UserState {

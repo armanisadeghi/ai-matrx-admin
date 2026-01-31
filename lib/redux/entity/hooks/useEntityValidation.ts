@@ -55,7 +55,7 @@ export function useEntityValidation<TEntity extends EntityKeys>(
     const validateField = React.useCallback(async (fieldName: string, value: any): Promise<boolean> => {
         console.log(`validateField: Starting validation for field "${fieldName}" with value:`, value);
 
-        const field = fieldInfo.find(f => f.name === fieldName);
+        const field = Object.values(fieldInfo).find(f => f.name === fieldName);
         if (!field) {
             console.log(`validateField: Field "${fieldName}" not found in fieldInfo.`);
             return false;
@@ -107,7 +107,7 @@ export function useEntityValidation<TEntity extends EntityKeys>(
 
     const validateNativeFields = React.useCallback(async (data: Partial<EntityData<TEntity>>): Promise<ValidationResult> => {
         console.log('validateNativeFields: Starting validation for native fields.');
-        const nativeFields = fieldInfo.filter(field => field.isNative);
+        const nativeFields = Object.values(fieldInfo).filter(field => field.isNative);
         const errors: Record<string, string> = {};
 
         for (const field of nativeFields) {
@@ -125,7 +125,7 @@ export function useEntityValidation<TEntity extends EntityKeys>(
 
     const validateNonNativeFields = React.useCallback(async (data: Partial<EntityData<TEntity>>): Promise<ValidationResult> => {
         console.log('validateNonNativeFields: Starting validation for non-native fields.');
-        const nonNativeFields = fieldInfo.filter(field => !field.isNative);
+        const nonNativeFields = Object.values(fieldInfo).filter(field => !field.isNative);
         const errors: Record<string, string> = {};
 
         for (const field of nonNativeFields) {

@@ -87,7 +87,7 @@ export function NestedResizableWithHeaderFooter({
     }: NestedResizableLayoutProps) {
     return (
         <div className={`h-[calc(100vh-4rem)] bg-background ${className}`}>
-            <ResizablePanelGroup direction={layout.type === 'nested' ? layout.direction : 'horizontal'}>
+            <ResizablePanelGroup orientation={layout.type === 'nested' ? layout.direction : 'horizontal'}>
                 <RenderSection
                     section={layout}
                     defaultSize={100}

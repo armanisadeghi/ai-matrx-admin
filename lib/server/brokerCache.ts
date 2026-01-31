@@ -44,7 +44,17 @@ class ServerBrokerCache {
 
   // Get user-specific broker key
   private getBrokerKey(idArgs: BrokerIdentifier, sessionId?: string) {
-    const baseKey = idArgs.brokerId || `${idArgs.source}:${idArgs.itemId}`;
+    // Handle union type: BrokerIdentifier can be { brokerId } or { source, mappedItemId }
+    if ('brokerId' in idArgs && idArgs.brokerId) {
+      const baseKey = idArgs.brokerId;
+      return sessionId ? `session:${sessionId}:${baseKey}` : `global:${baseKey}`;
+    }
+    if ('source' in idArgs && 'mappedItemId' in idArgs && idArgs.source && idArgs.mappedItemId) {
+      const baseKey = `${idArgs.source}:${idArgs.mappedItemId}`;
+      return sessionId ? `session:${sessionId}:${baseKey}` : `global:${baseKey}`;
+    }
+    // Fallback for compatibility
+    const baseKey = (idArgs as any).brokerId || `${(idArgs as any).source}:${(idArgs as any).mappedItemId || (idArgs as any).itemId}`;
     return sessionId ? `session:${sessionId}:${baseKey}` : `global:${baseKey}`;
   }
 

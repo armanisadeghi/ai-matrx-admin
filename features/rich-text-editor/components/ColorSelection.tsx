@@ -1,7 +1,7 @@
 import React from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ColorOption } from '../types';
+import { ColorOption } from '@/types/editor.types';
 
 interface ColorSelectionProps {
     options: ColorOption[];

@@ -42,6 +42,7 @@ const CustomQuery = () => {
                 <Suspense fallback={<MatrxTableLoading/>}>
                     {/* @ts-ignore - data variable not available (import commented out) */}
                     <MatrxTable
+                        // @ts-ignore - data variable not available (import commented out)
                         data={data}
                         actions={['view']}
                         onAction={(actionName, rowData) => console.log(actionName, rowData)}

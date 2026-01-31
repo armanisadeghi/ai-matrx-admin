@@ -79,6 +79,7 @@ const RecipeResultsTab: React.FC<RecipeResultsTabProps> = ({ nodeData, enrichedB
                             <CardContent className="p-6 h-full flex flex-col">
                                 <AssistantMessage
                                     message={message}
+                                    taskId={recipeId || ''} // TODO: Get actual taskId from workflow execution
                                     isStreamActive={false}
                                     onScrollToBottom={() => {}}
                                     onContentUpdate={() => {}}

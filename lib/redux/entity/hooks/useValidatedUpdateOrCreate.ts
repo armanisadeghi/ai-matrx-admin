@@ -31,6 +31,7 @@ export function useValidatedUpdateOrCreate<TEntity extends EntityKeys>(
     const validatedUpdateRecord = useCallback(
         (primaryKeyValues: Record<string, MatrxRecordId>, data: Partial<EntityData<TEntity>>) => {
             if (isValidated) {
+                // @ts-ignore - primaryKeyValues is used internally, data is the main parameter
                 dispatch(actions.updateRecord({ primaryKeyValues, data }));
             } else {
                 console.warn('Validation has not been completed.');

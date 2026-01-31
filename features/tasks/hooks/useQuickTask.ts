@@ -23,7 +23,8 @@
 
 import { useState } from 'react';
 import { createTask, quickCreateTask } from '../services/taskService';
-import type { CreateTaskInput, DatabaseTask } from '../types';
+import type { DatabaseTask } from '../types';
+import type { CreateTaskInput } from '../services/taskService';
 
 export function useQuickTask() {
   const [creating, setCreating] = useState(false);

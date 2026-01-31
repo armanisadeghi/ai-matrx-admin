@@ -36,10 +36,12 @@ export const SmartField: React.FC<SmartFieldProps> = (
 
     React.useEffect(() => {
         if (!field) {
+            // Convert FormMode to EntityOperationMode
+            const entityMode: EntityOperationMode = mode === 'display' ? 'view' : mode === 'edit' ? 'update' : mode;
             dispatch(initializeField({
                 identifier,
                 initialValue,
-                mode
+                mode: entityMode
             }));
         }
     }, [dispatch, entityKey, fieldName, recordId, initialValue, mode]);

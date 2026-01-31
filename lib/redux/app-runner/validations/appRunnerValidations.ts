@@ -161,7 +161,8 @@ export const validateAppletLayoutTypes: ValidatorFn = (appConfig, applets) => {
     'oneColumn', 'twoColumn', 'threeColumn', 'fourColumn',
     'tabs', 'accordion', 'minimalist', 'floatingCard',
     'sidebar', 'carousel', 'cardStack', 'contextual',
-    'chat', 'mapBased', 'fullWidthSidebar', 'input-bar'
+    'chat', 'mapBased', 'fullWidthSidebar'
+    // Note: 'input-bar' is not a valid AppletLayoutOption, removed from validation
   ];
   
   for (const applet of applets) {

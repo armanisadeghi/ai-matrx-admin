@@ -1,6 +1,7 @@
 // hooks/usePreferenceValue.ts
 import { useEffect, useRef, useState } from 'react';
-import { useAppSelector, useAppDispatch, UserPreferences, setPreference } from '@/lib/redux';
+import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { UserPreferences, setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
 export function usePreferenceValue<
     T extends keyof UserPreferences,

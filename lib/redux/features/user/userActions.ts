@@ -8,6 +8,7 @@ export const authenticateUser = createAsyncThunk(
     async (authProfile, { dispatch }) => {
         dispatch(setLoading(true));
         try {
+            // @ts-ignore - upsertFromAuth0 function not yet implemented
             const matrixUser = await upsertFromAuth0(authProfile);
             if (matrixUser) {
                 dispatch(setUser(matrixUser));

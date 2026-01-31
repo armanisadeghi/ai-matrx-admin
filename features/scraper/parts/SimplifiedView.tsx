@@ -28,7 +28,7 @@ const SimplifiedView = ({ pageData }) => {
                     <h2 className="text-xl font-semibold text-gray-800">{overview?.page_title || "Untitled Page"}</h2>
                     <Button
                         variant="ghost"
-                        size="md"
+                        size="default"
                         onClick={() => handleCopy(textData)}
                         className="absolute right-1 top-1 flex items-center"
                     >

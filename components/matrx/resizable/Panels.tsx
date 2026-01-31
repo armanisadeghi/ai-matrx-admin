@@ -18,7 +18,7 @@ export const PanelLeft = (
             <ResizablePanelGroup
                 orientation="horizontal"
                 className="w-screen h-screen"
-                onLayout={onResize}
+                onLayoutChange={onResize}
             >
                 <ResizablePanel
                     defaultSize={defaultSize}
@@ -60,7 +60,7 @@ export const PanelRight = (
             <ResizablePanelGroup
                 orientation="horizontal"
                 className="w-screen h-screen"
-                onLayout={onResize}
+                onLayoutChange={onResize}
             >
                 <ResizablePanel defaultSize={100 - defaultSize}>
                     <div className="h-full"/>
@@ -101,7 +101,7 @@ export const PanelTop = ({
             <ResizablePanelGroup
                 orientation="vertical"
                 className="w-screen h-screen"
-                onLayout={onResize}
+                onLayoutChange={onResize}
             >
                 <ResizablePanel
                     defaultSize={defaultSize}
@@ -143,7 +143,7 @@ export const PanelBottom = (
             <ResizablePanelGroup
                 orientation="vertical"
                 className="w-screen h-screen"
-                onLayout={onResize}
+                onLayoutChange={onResize}
             >
                 <ResizablePanel defaultSize={100 - defaultSize}>
                     <div className="h-full"/>

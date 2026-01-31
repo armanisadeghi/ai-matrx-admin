@@ -174,7 +174,7 @@ export const PromptSettingsPanel: React.FC = () => {
                                     <div className="flex items-center space-x-4">
                                         <Slider
                                             className="flex-1"
-                                            {/* @ts-ignore - max_tokens may not exist in PromptSettings type */}
+                                            // @ts-ignore - max_tokens may not exist in PromptSettings type
                                             value={[settings.max_tokens ?? (normalizedControls.max_tokens.default as number) ?? 1000]}
                                             min={normalizedControls.max_tokens.min ?? 1}
                                             max={normalizedControls.max_tokens.max ?? 4096}

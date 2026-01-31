@@ -23,7 +23,6 @@ const CreateOperationJson: React.FC = () => {
 
     const handleCreate = () => {
         if (entity) {
-            // @ts-expect-error - createRecord expects FlexibleQueryOptions[] but jsonData is Record<string, any>
             entity.createRecord(jsonData as any);
         }
     };

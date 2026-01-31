@@ -143,15 +143,10 @@ async function executeInstructions(instructions: Instruction | Instruction[], co
 // Modified createCustomAction to use schema-aware fields
 export function createCustomAction<TEntity extends EntityKeys>(
     config: CustomActionConfig<TEntity>
-): ActionDefinition {
+): ActionDefinition<TEntity> {
     return {
         name: config.name,
-        label: typeof config.label === 'function'
-            ? (data: EntityData<TEntity>) => {
-                // const displayField = getDisplayField(data);
-                return typeof config.label === 'function' ? config.label(data) : config.label;
-            }
-            : config.label,
+        label: config.label as string | ((data: EntityData<TEntity>) => string),
         icon: config.icon,
         type: 'custom',
         handler: async (context) => {

@@ -51,7 +51,8 @@ export async function createFile(filename: string, content: string) {
 export async function fetchAndGenerateSchema() {
     try {
         // Fetch the database schema from Supabase
-        const { data: tables, error } = await supabase
+        const client = await supabase;
+        const { data: tables, error } = await client
             .from('information_schema.tables')
             .select('table_name')
             .eq('table_schema', 'public');
@@ -67,7 +68,7 @@ export async function fetchAndGenerateSchema() {
             const tableName = table.table_name;
 
             // Fetch columns of the table
-            const { data: columns, error: columnError } = await supabase
+            const { data: columns, error: columnError } = await client
                 .from('information_schema.columns')
                 .select('column_name, data_type')
                 .eq('table_name', tableName);

@@ -92,8 +92,6 @@ function generateRandomString(length: number): string {
   }
 
   return result;
-
-  return 'test';
 }
 
 export {

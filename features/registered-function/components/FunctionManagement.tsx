@@ -97,7 +97,10 @@ const FunctionManagement: React.FC = () => {
         <CrudComponent
             schema={RegisteredFunctionUnionSchema}
             allIdAndNames={allIdAndNames}
-            items={Object.values(items)}
+            items={Object.values(items).map(item => ({
+                ...item,
+                type: item.type || RegisteredFunctionTypeEnum.Base
+            }))}
             fields={fields}
             getItemId={(item) => item.id}
             getItemName={(item) => item.name}

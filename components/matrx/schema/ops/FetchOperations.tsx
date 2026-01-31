@@ -24,7 +24,7 @@ const FetchOperations = () => {
 
     const handleFetchOne = () => {
         if (entity && entity.entityMetadata.primaryKeyMetadata.fields.length > 0) {
-            // @ts-expect-error - fetchOne expects MatrxRecordId but primaryKeyValues is Record<string, string>
+            // @ts-ignore - fetchOne expects MatrxRecordId but primaryKeyValues is Record<string, string>
             entity.fetchOne(primaryKeyValues as any);
         }
     };

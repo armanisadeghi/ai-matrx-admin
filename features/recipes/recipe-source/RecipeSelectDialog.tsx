@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { RecipeSelectionList } from '@/features/applet/builder/modules/recipe-source/RecipeSelectionList';
-import { 
-  AppletSourceConfig 
-} from '@/lib/redux/app-builder/service/customAppletService';
+import type { AppletSourceConfig } from '@/types/customAppTypes';
 
 interface RecipeSelectDialogProps {
   // Dialog specific props

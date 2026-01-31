@@ -64,26 +64,27 @@ interface SpinnerProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'color
 
 const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
     ({ className, size = "default", variant = "primary", label, ...props }, ref) => {
+        // Normalize size to match spinnerVariants supported sizes
+        const normalizedSize = size === "icon" ? "sm" : size === "2xl" || size === "3xl" ? "xl" : size;
+        
         return (
             <div
                 ref={ref}
                 role="status"
                 aria-label={label || "Loading"}
-                className={cn(spinnerVariants({ size, variant, className }))}
+                className={cn(spinnerVariants({ size: normalizedSize, variant, className }))}
                 {...props}
             >
                 <div className="relative">
                     <div
                         className={cn(
-                            // @ts-ignore - Size type mismatch: ComponentSize includes "icon"/"2xl"/"3xl" but spinnerCircleVariants doesn't
-                            spinnerCircleVariants({ size: size === "icon" ? "sm" : size === "2xl" || size === "3xl" ? "xl" : size }),
+                            spinnerCircleVariants({ size: normalizedSize }),
                             "border-current opacity-25"
                         )}
                     />
                     <div
                         className={cn(
-                            // @ts-ignore - Size type mismatch: ComponentSize includes "icon"/"2xl"/"3xl" but spinnerCircleVariants doesn't
-                            spinnerCircleVariants({ size: size === "icon" ? "sm" : size === "2xl" || size === "3xl" ? "xl" : size }),
+                            spinnerCircleVariants({ size: normalizedSize }),
                             "border-t-transparent border-l-transparent"
                         )}
                     />

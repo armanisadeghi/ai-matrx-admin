@@ -248,7 +248,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
 
     // Utility functions
     const isFieldReadOnly = React.useCallback((fieldName: string) => {
-        const field = fieldInfo.find(f => f.name === fieldName);
+        const field = Object.values(fieldInfo).find(f => f.name === fieldName);
         return operationMode === 'view' || (field?.isPrimaryKey ?? false);
     }, [operationMode, fieldInfo]);
 
@@ -261,6 +261,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
             callback?.(result);
         };
         const callbackId = callbackManager.register(wrappedCallback);
+        // @ts-ignore - entityNameAnyFormat and data are handled internally
         dispatch(actions.createRecord({tempRecordId, callbackId,}));
     }, [actions, dispatch]);
 
@@ -269,6 +270,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
             callback?.(result);
         };
         const callbackId = callbackManager.register(wrappedCallback);
+        // @ts-ignore - data is retrieved from unsavedRecords in the reducer
         dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
     }, [actions, dispatch]);
 
@@ -298,7 +300,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
         // Metadata
         entityKey, // Added entityKey
         entityDisplayName,
-        fieldInfo,
+        fieldInfo: Object.values(fieldInfo),
         activeRecord,
         matrxRecordId: matrxRecordId,
         defaultValues,

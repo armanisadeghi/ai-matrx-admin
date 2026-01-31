@@ -4,7 +4,7 @@
  */
 
 // @ts-ignore - conversation module may not exist, using any type
-import type { ConversationMessage } from "@/features/prompts/components/conversation" as any;
+import type { ConversationMessage } from "@/features/prompts/components/conversation";
 import type { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import type { Resource } from "../resource-display";
 

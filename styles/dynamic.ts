@@ -114,7 +114,8 @@ const twMerge = extendTailwindMerge({
             'shadow': ['shadow-md'],
             'cursor': ['cursor-not-allowed'],
             'opacity': ['opacity-50'],
-            'bg-opacity': ['50', '80', '90'],
+            // @ts-ignore - bg-opacity not a standard Tailwind class group, using custom config
+            'bg-opacity': ['50', '80', '90'] as any,
             'underline-offset': ['underline-offset-4']
         },
     },

@@ -1,3 +1,6 @@
+import { FieldDataOptionsType } from '@/types/AutomationSchemaTypes';
+import { FormFieldType } from '@/types/componentConfigTypes';
+
 export function mapFieldDataToFormField(
     fieldDataOption: FieldDataOptionsType
 ): FormFieldType {

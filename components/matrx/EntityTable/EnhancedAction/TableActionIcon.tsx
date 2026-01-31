@@ -87,6 +87,7 @@ function createTableCommand<TData = TableData>(
             <MatrxTooltip content={config.label} placement="left">
                 <Button
                     onClick={handleClick}
+                    // @ts-ignore - Button size type doesn't include "xs" but it's supported at runtime
                     size={config.size || "xs"}
                     variant={config.variant || "ghost"}
                     disabled={!isEnabled}

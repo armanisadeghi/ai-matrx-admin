@@ -376,7 +376,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             );
 
             // Build and execute query
-            // @ts-expect-error - fieldValue is unknown but Supabase accepts various types
+            // @ts-ignore - fieldValue is unknown but Supabase accepts various types
             let query = this.buildBaseQuery().eq(dbFieldName, fieldValue);
             query = this.applyQueryOptions(query, options);
 
@@ -518,7 +518,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
      */
     async getById(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
         const {data, error} = await this.buildBaseQuery()
-            // @ts-expect-error - id can be string or number, Supabase accepts both
+            // @ts-ignore - id can be string or number, Supabase accepts both
             .eq(this.primaryKeyField, id)
             .single();
 
@@ -540,7 +540,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
 
     async findOne(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
         const {data, error} = await this.buildBaseQuery()
-            // @ts-expect-error - id can be string or number, Supabase accepts both
+            // @ts-ignore - id can be string or number, Supabase accepts both
             .eq(this.primaryKeyField, id)
             .single();
 
@@ -769,7 +769,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
                 }
             });
 
-            // @ts-expect-error - RealtimeChannel version mismatch between dependencies
+            // @ts-ignore - RealtimeChannel version mismatch between dependencies
             this.subscriptions.set(this.entityKey, channel);
         } catch (error) {
             this.handleError(error, [...this.trace, 'subscribeToChanges']);
@@ -780,7 +780,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         try {
             const channel = this.subscriptions.get(this.entityKey);
             if (channel && channel instanceof RealtimeChannel) {
-                // @ts-expect-error - RealtimeChannel version mismatch between dependencies
+                // @ts-ignore - RealtimeChannel version mismatch between dependencies
                 this.client.removeChannel(channel);
                 this.subscriptions.delete(this.entityKey);
             }
@@ -793,7 +793,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         try {
             this.subscriptions.forEach((channel) => {
                 if (channel instanceof RealtimeChannel) {
-                    // @ts-expect-error - RealtimeChannel version mismatch between dependencies
+                    // @ts-ignore - RealtimeChannel version mismatch between dependencies
                     this.client.removeChannel(channel);
                 }
             });
