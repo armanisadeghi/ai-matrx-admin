@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { MessageBrokerRecordWithKey, DataBrokerRecordWithKey, MessageTemplateDataOptional } from '@/types';
+import { MessageBrokerRecordWithKey, DataBrokerRecordWithKey, MessageTemplateDataOptional } from '@/types/AutomationSchemaTypes';
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useRecipe } from './useRecipe';
 

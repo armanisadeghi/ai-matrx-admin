@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import { generateTempRecordIdFromFutureId, useEntityTools } from '@/lib/redux';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useCreateRecord } from './useCreateRecord';
 import useStartCreateRecord from './useStartCreateRecord';
 import { useUpdateFields } from './useUpdateFields';

@@ -3,7 +3,8 @@ import { DebugTabs, TabConfig } from '../../components/dynamic/DebugTabs';
 import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 import { EditorLineInfo, getEditorLineInfo } from '@/features/rich-text-editor/admin/new-test-util';
 import { getAllMetadata } from '@/features/rich-text-editor/utils/patternUtils';
-import { MatrxRecordId, MessageTemplateProcessed } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
+import { MessageTemplateProcessed } from '@/types/AutomationSchemaTypes';
 import { BrokerMetaData, ChipData, EditorState } from '@/types/editor.types';
 import { BaseDebugProps } from '../../components/dynamic/PanelContent';
 

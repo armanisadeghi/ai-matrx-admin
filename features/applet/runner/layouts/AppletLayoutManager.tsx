@@ -26,7 +26,7 @@ import {
     StepperAppletFieldInputLayout,
 } from "@/features/applet/runner/layouts/options";
 import { ReactNode, useState } from "react";
-import { AppletLayoutOption, FieldDefinition } from "@/types";
+import { AppletLayoutOption, FieldDefinition } from "@/types/customAppTypes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
     selectAppletRuntimeAccentColor,

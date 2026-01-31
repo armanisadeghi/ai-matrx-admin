@@ -6,7 +6,7 @@ import UserInputNode from "@/features/workflows/react-flow/nodes/UserInputNode";
 import BrokerRelayNode from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
 import NodeFloatingIcon from "@/features/workflows/react-flow/nodes/NodeFloatingIcon";
 import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
-import { DataBrokerData } from "@/types";
+import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import { DbNodeData, DbUserInput, DbBrokerRelayData, DbFunctionNode } from "@/features/workflows/types";
 import { getNodePotentialInputsAndOutputs, parseEdge } from "../../utils/node-utils";
 import { useTheme } from "@/styles/themes";

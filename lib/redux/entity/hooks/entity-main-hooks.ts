@@ -60,7 +60,7 @@ import {
     ConversationData,
     WcInjuryData,
     WcReportData,
-} from "@/types";
+} from "@/types/AutomationSchemaTypes";
 import { MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
 import { EntitySelectors } from "../selectors";
 import { EntityActions } from "../slice";

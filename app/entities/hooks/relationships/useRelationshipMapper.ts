@@ -1,5 +1,5 @@
 import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useCallback, useMemo } from 'react';
 import { RelationshipMapper } from './relationshipDefinitions';
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';

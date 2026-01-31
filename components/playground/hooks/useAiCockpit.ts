@@ -1,4 +1,4 @@
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { useCallback, useEffect, useState } from "react";
 import { useRecipeAgentSettings } from "@/hooks/aiCockpit/useRecipeAgentSettings";
 import { useProcessedRecipeMessages } from "@/hooks/aiCockpit/useProcessedRecipeMessages";

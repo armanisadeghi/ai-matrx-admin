@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 
 interface UseChatSubmissionProps {
   clearLastPrompt: () => Promise<void>;

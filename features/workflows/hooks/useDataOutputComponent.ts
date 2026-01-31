@@ -2,7 +2,8 @@ import { useEffect, useCallback } from "react";
 import { EntityActions, FetchMode } from "@/lib/redux";
 import { EntitySelectors } from "@/lib/redux/entity/selectors";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
-import { DataOutputComponentData, MatrxRecordId } from "@/types";
+import { DataOutputComponentData } from "@/types/AutomationSchemaTypes";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { useEntityWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 
 

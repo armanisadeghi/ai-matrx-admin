@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEnhancedFetch, useEntityFetch } from '@/app/entities/hooks/useEntityFetch';
 import BrokerDisplayCard from '../BrokerDisplayCard';

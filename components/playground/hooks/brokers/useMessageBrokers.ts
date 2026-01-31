@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { DataBrokerData, MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
+import { DataBrokerData } from '@/types/AutomationSchemaTypes';
 import { RelationshipProcessingHook, useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { ChipData } from '@/types/editor.types';

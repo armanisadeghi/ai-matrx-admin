@@ -4,7 +4,7 @@ import {
     MessageTemplateProcessed,
     MessageTemplateRecordWithKey,
     RecipeMessageRecordWithKey,
-} from '@/types';
+} from '@/types/AutomationSchemaTypes';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { RelationshipProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { useDebounce } from '@uidotdev/usehooks';

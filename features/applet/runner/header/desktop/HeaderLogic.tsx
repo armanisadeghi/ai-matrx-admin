@@ -15,7 +15,7 @@ import {
 import { getAppIcon } from "@/features/applet/styles/StyledComponents";
 import { CustomAppHeaderProps } from "../CustomAppHeader";
 import { selectAppletRuntimeActiveApplet } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { CustomActionButton, AppletListItemConfig, CustomAppConfig } from "@/types";
+import { CustomActionButton, AppletListItemConfig, CustomAppConfig } from "@/types/customAppTypes";
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
 

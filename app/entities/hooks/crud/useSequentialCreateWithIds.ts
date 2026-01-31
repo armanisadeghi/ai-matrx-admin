@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { createRecordKey, useAppSelector, useEntityTools } from '@/lib/redux';
-import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityData, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { useSequentialCreate } from './useSequentialCreate';
 

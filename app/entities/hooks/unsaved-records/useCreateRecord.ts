@@ -1,5 +1,5 @@
 import { useAppDispatch, useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback, useState } from 'react';
 

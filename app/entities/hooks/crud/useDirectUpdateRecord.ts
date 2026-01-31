@@ -1,5 +1,5 @@
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
-import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { EntityAnyFieldKey, EntityKeys } from '@/types/entityTypes';
 import { useCallback } from 'react';
 
 export const useDirectUpdateRecord = (entityName: EntityKeys, selectField: EntityAnyFieldKey<EntityKeys>) => {

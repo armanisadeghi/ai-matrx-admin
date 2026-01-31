@@ -1,4 +1,4 @@
-import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey, ProcessedEntityData } from '@/types';
+import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey, ProcessedEntityData } from '@/types/entityTypes';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 import { SimpleRelDef } from './definitionConversionUtil';

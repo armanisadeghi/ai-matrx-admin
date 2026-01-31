@@ -2,7 +2,7 @@
 
 import { EntityRecordMap } from '@/lib/redux/entity/types/stateTypes';
 import { toPkValue, toMatrxIdFromValueBatch, toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { EntityKeys, MatrxRecordId, EntityAnyFieldKey } from '@/types';
+import { EntityKeys, MatrxRecordId, EntityAnyFieldKey } from '@/types/entityTypes';
 import { RelationshipDefinition } from '@/types/relationshipTypes';
 import { v4 as uuidv4 } from 'uuid';
 import {

@@ -1,4 +1,5 @@
-import { MatrxRecordId, MessageTemplateDataOptional } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
+import { MessageTemplateDataOptional } from "@/types/AutomationSchemaTypes";
 
 export type ProcessedRecipeMessages = MessageTemplateDataOptional & {
     matrxRecordId: MatrxRecordId;

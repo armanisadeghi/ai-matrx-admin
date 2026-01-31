@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import BrokerCardHeader from './BrokerCardHeader';
 import { ChipData } from '@/types/editor.types';

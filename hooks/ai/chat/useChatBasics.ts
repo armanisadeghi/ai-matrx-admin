@@ -2,7 +2,7 @@ import { useAiModelWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 import { useCallback, useEffect } from "react";
 import { getChatActions, getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { createConversationSelectors, createMessageSelectors, useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
-import { ConversationRecordWithKey, MessageRecordWithKey } from "@/types";
+import { ConversationRecordWithKey, MessageRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { ConversationMetadata, MessageMetadata } from "@/types/chat/chat.types";
 import { useFileManagement } from "./useFileManagement";
 import { entityUpdateActionsWithThunks } from "@/lib/redux/entity/slices/updateReducers";

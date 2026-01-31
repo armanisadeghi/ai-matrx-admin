@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { DataBrokerDataRequired, MatrxRecordId, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
+import { EntityKeys, EntityDataWithKey, MatrxRecordId } from '@/types/entityTypes';
+import { DataBrokerDataRequired, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types/AutomationSchemaTypes';
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
 import { useActiveJoinedRecords } from '@/app/entities/hooks/relationships/useActiveJoinedRecords';
 import { ProcessedRecipeMessages } from '../../messages/types';
 import { useMessageReordering } from '@/hooks/aiCockpit/useMessageReordering';
 
-export const messageRelationshipDefinition: RelationshipDefinition = {
+export const messageRelationshipDefinition: any = {
     parentEntity: {
         entityKey: 'recipe',
         referenceField: 'id',
@@ -23,7 +24,7 @@ export const messageRelationshipDefinition: RelationshipDefinition = {
     },
 };
 
-const brokerRelationshipDefinition: RelationshipDefinition = {
+const brokerRelationshipDefinition: any = {
     parentEntity: {
         entityKey: 'messageTemplate',
         referenceField: 'id',
@@ -52,7 +53,7 @@ export function useMessageTemplatesWithNew() {
         deleteMatrxIdWithChild: deleteMessageByMatrxId,
         createRelatedRecords: createMessageTemplates,
         parentId: acticeRecipeId,
-    } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
+    } = useJoinedRecordsActiveParent(messageRelationshipDefinition as any);
 
 
 
@@ -75,7 +76,7 @@ export function useMessageTemplatesWithNew() {
 
     const {
         handleDragDrop,
-    } = useMessageReordering(processedMessages, () => setNeedsReprocess(true));
+    } = useMessageReordering(processedMessages as any, () => setNeedsReprocess(true));
     
     // Keep all existing broker relationship management
     const {
@@ -83,15 +84,15 @@ export function useMessageTemplatesWithNew() {
         JoiningEntityRecords: messageBrokers,
         childMatrxIds: brokerMatrxIds,
         childActions: brokerActions,
-    } = useActiveJoinedRecords(brokerRelationshipDefinition);
+    } = useActiveJoinedRecords(brokerRelationshipDefinition as any);
 
     // Keep existing broker processing
     const processedBrokers = React.useMemo(() => {
         return processJoinedData({
-            childRecords: brokers,
-            joiningRecords: messageBrokers,
+            childRecords: brokers as EntityDataWithKey<EntityKeys>[],
+            joiningRecords: messageBrokers as EntityDataWithKey<EntityKeys>[],
             relationshipDefinition: brokerRelationshipDefinition,
-        });
+        }) as any;
     }, [brokers, messageBrokers]) as DataBrokerDataRequired[];
 
     // Keep existing broker fetching
@@ -184,3 +185,7 @@ export function useMessageTemplatesWithNew() {
 }
 
 export type UseRecipeMessagesHook = ReturnType<typeof useMessageTemplatesWithNew>;
+
+function useJoinedRecordsActiveParent(arg0: any): { matchingChildRecords: any; childMatrxIds: any; JoiningEntityRecords: any; deletePkWithChild: any; deleteMatrxIdWithChild: any; createRelatedRecords: any; parentId: any; } {
+    throw new Error('Function not implemented.');
+}

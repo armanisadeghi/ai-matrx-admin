@@ -3,7 +3,7 @@
 import { useUser } from "@/lib/hooks/useUser";
 import { useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useEntityTools } from "@/lib/redux";
-import { DataBrokerRecordWithKey } from "@/types";
+import { DataBrokerRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { v4 as uuidv4 } from "uuid";
 import { useThrottle } from "@uidotdev/usehooks";
 import { useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";

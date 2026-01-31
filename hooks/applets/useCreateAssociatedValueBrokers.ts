@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import { useAppDispatch } from "@/lib/redux";
 import { v4 as uuidv4 } from "uuid";
 import { useBrokerValuesWithFetch, UseBrokerValuesWithFetchReturn, useDataBrokersWithFetch, UseDataBrokersWithFetchReturn } from "@/lib/redux/entity/hooks/useAllData";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 
 export type BrokerValuePayload = {
     tempId: string;

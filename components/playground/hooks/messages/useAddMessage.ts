@@ -4,7 +4,7 @@ import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
 import { useAppStore, useAppDispatch, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { useCallback, useMemo } from 'react';
 
 export interface AddMessagePayload {

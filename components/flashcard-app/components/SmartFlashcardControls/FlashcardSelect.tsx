@@ -1,7 +1,7 @@
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {SmartButtonProps} from "./types";
 import React from "react";
-import {cn} from '@/utils';
+import {cn} from '@/utils/cn';
 
 export const FlashcardSelect: React.FC<SmartButtonProps> = ({flashcardHook, className}) => (
     <Select

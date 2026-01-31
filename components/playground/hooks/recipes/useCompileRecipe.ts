@@ -3,7 +3,7 @@ import {
     transformEncodedToSimpleIdPattern,
 } from "@/features/rich-text-editor/utils/patternUtils";
 import { useAppSelector, useEntityTools } from "@/lib/redux";
-import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types";
+import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { createNormalizer } from "@/utils/dataSchemaNormalizer";
 import { useCallback, useMemo } from "react";
 import { createRecipeTaskBrokers, createRecipeOverrides, createRecipeTaskDataList, createRecipeToChatTaskDataList } from "./recipe-task-utils";

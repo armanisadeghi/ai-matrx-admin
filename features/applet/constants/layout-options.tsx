@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { PiTabsBold } from "react-icons/pi";
 import { TbCarouselHorizontal } from "react-icons/tb";
-import { AppletLayoutOption } from '@/types';
+import { AppletLayoutOption } from '@/types/customAppTypes';
 import { AppLayoutOptions } from '@/types/customAppTypes';
 import { BsBarChartSteps } from "react-icons/bs";
 

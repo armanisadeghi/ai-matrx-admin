@@ -1,7 +1,7 @@
 
 "use client";
 
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 interface AppletUrlParams {
   slug: string;

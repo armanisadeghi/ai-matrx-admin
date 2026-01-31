@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 import { getAppletUrl, createAppletSearchParams } from "@/features/applet/common/applet-routing-helpers/applet-params";
 
 interface AppletNavigationParams {

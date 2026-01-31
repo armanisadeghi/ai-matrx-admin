@@ -19,7 +19,7 @@ import {
     EntityQuickReferenceList,
     EntityQuickReferenceSelect
 } from '../prewired-components/quick-reference';
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 
 
 type QuickReferenceComponentType =

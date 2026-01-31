@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { createRecordKey, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { AiAgentDataRequired, AiSettingsDataRequired } from '@/types';
+import { AiAgentDataRequired, AiSettingsDataRequired } from '@/types/AutomationSchemaTypes';
 import { useRecipe } from './useRecipe';
 
 export function useSynchronizedAiAgents() {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { generateTemporaryRecordId, useAppDispatch, useEntityTools } from '@/lib/redux';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 
 interface UseTemporaryRecordOptions<T = any> {
   entityKey: EntityKeys;

@@ -2,16 +2,16 @@
 
 import { useMemo } from "react";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
+import { MatrxRecordId } from "@/types/entityTypes";
 import {
     AiSettingsData,
     BrokerValueData,
     DataInputComponentData,
     DataInputComponentRecordWithKey,
     DataOutputComponentData,
-    MatrxRecordId,
     MessageBrokerData,
     MessageTemplateDataOptional,
-} from "@/types";
+} from "@/types/AutomationSchemaTypes";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import { useDebounce } from "@uidotdev/usehooks";

@@ -1,6 +1,6 @@
 // useUpdateRecord.ts
 import { useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
@@ -28,6 +28,7 @@ export const useUpdateRecord = (
 
         dispatch(actions.updateRecord({
             matrxRecordId,
+            data: {},
             callbackId: callbackManager.register(({ success, error }) => {
                 dispatch(actions.removePendingOperation(matrxRecordId));
                 if (success) {

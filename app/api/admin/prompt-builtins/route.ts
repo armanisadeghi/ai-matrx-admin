@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       name: body.name,
       description: body.description,
       messages: body.messages,
-      variable_defaults: body.variable_defaults,
+      variableDefaults: body.variable_defaults,
       tools: body.tools,
       settings: body.settings,
       is_active: body.is_active,

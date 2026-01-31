@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Radar } from "lucide-react";
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 import { useAddMessage } from '@/components/playground/hooks/messages/useAddMessage';
 import { DEFAULT_MESSAGES } from '@/components/playground/messages/prompts';
 import MatrxGradientCard from '@/components/matrx/MatrxGradientCard';

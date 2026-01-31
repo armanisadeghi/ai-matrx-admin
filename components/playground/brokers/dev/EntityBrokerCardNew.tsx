@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import BrokerCardHeader from '../BrokerCardHeader';
 import { EntityRecordMap } from '@/lib/redux/entity/types/stateTypes';
@@ -47,7 +47,9 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>({
                 >
                     <Card className='bg-elevation2 border border-elevation3 rounded-lg'>
                         <BrokerCardHeader
-                            data={record}
+                            recordId={recordId}
+                            record={record as any}
+                            chips={[]}
                             isOpen={openStates[recordId] || false}
                             onToggle={() => toggleOpen(recordId)}
                             onDelete={() => onRecordRemove?.(recordId)}

@@ -12,7 +12,7 @@ import {
     AiSettingsRecordWithKey,
     MessageBrokerRecordWithKey,
     DataBrokerRecordWithKey,
-} from '@/types';
+} from '@/types/AutomationSchemaTypes';
 import React, { useEffect, useCallback } from 'react';
 
 export function useActiveRecipe() {

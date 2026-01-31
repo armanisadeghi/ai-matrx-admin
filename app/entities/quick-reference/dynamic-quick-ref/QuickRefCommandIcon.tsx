@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { FetchMode } from '@/lib/redux/entity/actions';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import CommandIconButton from '@/components/matrx/CommandIconButton';
 import { useQuickRef } from '../../hooks/useQuickRef';
 

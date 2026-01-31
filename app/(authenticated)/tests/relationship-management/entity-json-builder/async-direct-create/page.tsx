@@ -57,7 +57,7 @@ const AsyncTestPage = () => {
 
             const endTime = performance.now();
             setExecutionTime(endTime - startTime);
-            setResult(response.result);
+            setResult(response.newRecordWithKey);
         } catch (err) {
             setError(err as Error);
         } finally {

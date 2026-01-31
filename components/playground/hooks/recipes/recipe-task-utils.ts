@@ -1,4 +1,4 @@
-import { BrokerValueRecordWithKey, DataBrokerData, DataBrokerRecordWithKey } from "@/types";
+import { BrokerValueRecordWithKey, DataBrokerData, DataBrokerRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { BrokersForBackend, BrokerValue, RecipeOverrides, RecipeTaskData } from "./useCompileRecipe";
 import { CompiledRecipeEntry } from "@/hooks/run-recipe/types";
 import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompileRecipe";

@@ -1,5 +1,5 @@
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useMemo, useRef } from 'react';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { usePrevious, useThrottle, useDebounce } from '@uidotdev/usehooks';

@@ -3,10 +3,9 @@
 import React from 'react';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { FetchMode } from '@/lib/redux/entity/actions';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { selectEntitySelectText, useAppSelector } from '@/lib/redux';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
-import { useFetchQuickRefSingleMode } from '../../hooks/useFetchQuickRefSingleMode';
 import { Button } from '@/components/ui/button';
 import EntitySheetForm from '../../forms/EntitySheetForm';
 import { PlusCircle } from 'lucide-react';
@@ -104,3 +103,7 @@ export const QuickRefActiveSelectCreate: React.FC<QuickRefActiveSelectCreateProp
 };
 
 export default QuickRefActiveSelectCreate;
+function useFetchQuickRefSingleMode(entityKey: string): { quickReferenceRecords: any; activeRecordId: any; setActiveByRecordKey: any; setActiveBySimpleKey: any; setFetchMode: any; } {
+    throw new Error('Function not implemented.');
+}
+

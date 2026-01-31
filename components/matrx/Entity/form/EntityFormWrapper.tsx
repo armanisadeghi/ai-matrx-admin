@@ -4,7 +4,7 @@ import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {FlexEntityFormProps} from '@/components/matrx/Entity/types/entityForm';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
 import { useEntityForm } from '@/lib/redux/entity/hooks/useEntityForm';
-import { EntityFormState } from '@/types';
+import { EntityFormState } from '@/types/componentConfigTypes';
 
 interface EntityFormWrapperProps<TEntity extends EntityKeys> {
     entityFormState: ReturnType<typeof useEntityForm>;

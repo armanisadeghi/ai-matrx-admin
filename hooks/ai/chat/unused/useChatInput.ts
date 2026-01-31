@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { useChatStorage } from "@/hooks/ai/chat/unused/useChatStorage";
 import { ChatInputSettings } from "@/types/chat/chat.types";
 // import { useConversationMessages } from "../useConversationMessages";
 
-interface UseChatInputProps {
-    initialModelKey?: MatrxRecordId;
-    mainChatHook: ReturnType<typeof useConversationMessages>;
-}
 
-export function useChatInput({ initialModelKey, mainChatHook }: UseChatInputProps) {
+export function useChatInput({ initialModelKey, mainChatHook }: any) {
     // Get storage functionality
     const { lastPrompt, selectedModelKey, isLoading, updatePrompt, clearPrompt, updateModelSelection } = useChatStorage();
     const {conversationCrud, messageCrud} = mainChatHook;

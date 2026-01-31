@@ -1,7 +1,7 @@
 import React from "react";
 import { useActiveJoinedRecords } from "./useActiveJoinedRecords";
-import { RelationshipStatus, RelationshipDefinition, processJoinedData, getOrderedRecords } from "./utils";
-import { EntityData, EntityKeys } from "@/types";
+import { RelationshipStatus, processJoinedData, getOrderedRecords } from "./utils";
+import { EntityData, EntityDataWithKey, EntityKeys } from "@/types/entityTypes";
 
 type RelatedRecordsResult = {
     parentSelectors: any;
@@ -33,7 +33,7 @@ type UseProcessedRelatedRecordsOptions = {
 };
 
 export function useProcessedRelatedRecords(
-    relationshipDefinition: RelationshipDefinition,
+    relationshipDefinition: any,
     records?: ProcessRecordsInput,
     options?: UseProcessedRelatedRecordsOptions
 ) {
@@ -46,8 +46,8 @@ export function useProcessedRelatedRecords(
     // Process records with merging and optional filtering
     const processedRecords = React.useMemo(() => {
         return processJoinedData({
-            childRecords,
-            joiningRecords,
+            childRecords: childRecords as EntityDataWithKey<EntityKeys>[],
+            joiningRecords: joiningRecords as EntityDataWithKey<EntityKeys>[],
             relationshipDefinition,
             filterStatus: options?.filterStatus
         });
@@ -60,8 +60,8 @@ export function useProcessedRelatedRecords(
         }
 
         return getOrderedRecords({
-            childRecords: processedRecords || childRecords,
-            joiningRecords,
+            childRecords: (processedRecords || childRecords) as EntityDataWithKey<EntityKeys>[],
+            joiningRecords: joiningRecords as EntityDataWithKey<EntityKeys>[],
             orderField: relationshipDefinition.joiningEntity.orderPositionField,
             childField: relationshipDefinition.joiningEntity.childField
         });

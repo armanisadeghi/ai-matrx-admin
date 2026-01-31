@@ -5,7 +5,7 @@ import {ChevronRight} from 'lucide-react';
 import ArmaniFormFinal from "@/app/entities/forms/ArmaniFormFinal";
 import {getUpdatedUnifiedLayoutProps} from "@/app/entities/layout/configs";
 
-import {EntityKeys} from "@/types";
+import {EntityKeys} from "@/types/entityTypes";
 import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
 import { useFetchRelatedFinal } from '../hooks/useFetchRelatedFinal';

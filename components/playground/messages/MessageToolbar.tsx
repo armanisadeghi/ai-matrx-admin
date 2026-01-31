@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { IoDiamondOutline } from "react-icons/io5";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { useUser } from "@/lib/hooks/useUser";

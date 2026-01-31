@@ -1,4 +1,4 @@
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 import { getStyle, TAILWIND_COLORS, TailwindColor } from '@/constants/rich-text-constants';
 import { BrokerMetaData, ContentMode } from '@/types/editor.types';
 import { ChipMenuContextValue } from '../components/ChipContextMenu';

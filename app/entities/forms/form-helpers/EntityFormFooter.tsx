@@ -1,6 +1,7 @@
 import React from 'react';
 import { SmartCrudButtons } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
-import { ComponentDensity, ComponentSize, EntityKeys, MatrxRecordId } from '@/types';
+import { ComponentDensity, ComponentSize } from '@/types/componentConfigTypes';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { CrudButtonOptions, CrudLayout } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper';
 

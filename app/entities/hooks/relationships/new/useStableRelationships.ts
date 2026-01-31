@@ -1,5 +1,6 @@
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId, RecipeMessageRecordWithKey } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
+import { RecipeMessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useDebounce } from '@uidotdev/usehooks';

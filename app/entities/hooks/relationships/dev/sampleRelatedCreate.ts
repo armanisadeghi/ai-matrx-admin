@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { DefinedRelationship, RelatedDataManager } from '../relationshipDefinitions';
 import { useDirectCreateRecord } from '../../crud/useDirectCreateRecord';
 

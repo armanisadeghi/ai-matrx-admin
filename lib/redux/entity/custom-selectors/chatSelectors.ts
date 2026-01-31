@@ -6,7 +6,8 @@ import { EntityKeys, EntityFieldKeys } from "@/types/entityTypes";
 import { RootState } from "@/lib/redux/store";
 import { RuntimeFilter, RuntimeSort } from "@/lib/redux/entity/types/stateTypes";
 import { createEntitySelectors } from "../selectors";
-import { AiModelState, ConversationState, MatrxRecordId, MessageState } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
+import { AiModelState, ConversationState, MessageState } from "@/types/AutomationSchemaTypes";
 import {
     AiModelRecordMap,
     AiModelRecordWithKey,

@@ -1,3 +1,4 @@
+import { MatrxRecordId } from "@/types/entityTypes";
 import {
     AiSettingsData,
     BrokerValueData,
@@ -5,11 +6,10 @@ import {
     DataInputComponentData,
     DataInputComponentRecordWithKey,
     DataOutputComponentData,
-    MatrxRecordId,
     MessageBrokerData,
     MessageTemplateDataOptional,
     RecipeRecordWithKey,
-} from "@/types";
+} from "@/types/AutomationSchemaTypes";
 
 
 export type CompiledRecipeEntry = {

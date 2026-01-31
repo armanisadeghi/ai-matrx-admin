@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 import { useChatStorage } from '@/hooks/ai/chat/unused/useChatStorage';
 
 export function usePromptInput(initialModelKey?: MatrxRecordId) {

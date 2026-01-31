@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ExpandRecursively, MessageTemplateDataOptional, MessageTemplateProcessed, MessageTemplateRecordWithKey, RecipeMessageRecordWithKey } from '@/types';
+import { ExpandRecursively, MessageTemplateDataOptional, MessageTemplateProcessed, MessageTemplateRecordWithKey, RecipeMessageRecordWithKey } from '@/types/AutomationSchemaTypes';
 import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
 import { useMessageReordering } from '@/hooks/aiCockpit/useMessageReordering';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';

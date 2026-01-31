@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    BrokerValueData,
-    DataBrokerData,
     EntityData,
     EntityKeys,
+    AllEntityFieldKeys,
+} from "@/types/entityTypes";
+import {
+    BrokerValueData,
+    DataBrokerData,
     DataInputComponentData,
     DataOutputComponentData,
     RecipeData,
     CompiledRecipeData,
-    AllEntityFieldKeys,
-    FetchStrategy,
     AppletData,
     AiAgentData,
     AiSettingsData,
@@ -19,7 +20,8 @@ import {
     RegisteredFunctionData,
     ArgData,
     WorkflowData,
-} from "@/types";
+    FetchStrategy,
+} from "@/types/AutomationSchemaTypes";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { RootState } from "@/lib/redux/store";
 import {

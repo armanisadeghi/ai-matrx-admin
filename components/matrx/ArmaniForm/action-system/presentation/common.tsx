@@ -6,7 +6,7 @@ import {
 } from "@/components/ui";
 import React from "react";
 import {PresentationConfig, PresentationControls} from "./types";
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 import {HelpPanel} from "@/components/matrx/ArmaniForm/field-components/help-text/HelpPanel";
 
 export const defaultConfig: PresentationConfig = {
@@ -117,7 +117,7 @@ export const PresentationButtons = (
             )}
             {controls.showSave && (
                 <Button
-                    variant={"primary"}
+                    variant={"default"}
                     onClick={controls.onSave}
                 >
                     Save

@@ -1,5 +1,5 @@
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { EntityKeys, EntityData, MatrxRecordId } from '@/types';
+import { EntityKeys, EntityData, MatrxRecordId } from '@/types/entityTypes';
 import React, { useEffect, useCallback } from 'react';
 import { createRelationshipData } from './utils';
 

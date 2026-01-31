@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { generateMessage } from '../prompts';
-import type { MatrxRecordId } from '@/types';
+import type { MatrxRecordId } from '@/types/entityTypes';
 import type { AddMessagePayload } from '../../hooks/messages/useAddMessage';
 import { CockpitControls } from '../../types';
 import EmptyMessagesCard from '../EmptyMessagesCard';
@@ -28,7 +28,7 @@ export function DynamicMessagesContainer({
     
         const lastSection = messages[messages.length - 1];
         const lastRole = lastSection?.role;
-        const nextRole = lastRole ? getNextRole(lastRole) : 'system';
+        const nextRole = lastRole ? getNextRole(lastRole as any) : 'system';
         
         const newMessage = generateMessage(nextRole, messages.length);
         addMessage(newMessage);

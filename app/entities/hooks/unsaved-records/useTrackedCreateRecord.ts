@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react';
 import { generateTemporaryRecordId, useEntityTools, useEntityToasts, useAppDispatch } from '@/lib/redux';
-import { EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { callbackManager, CallbackContext, ProgressInfo } from '@/utils/callbackManager';
 
 interface RecordCreationContext extends CallbackContext {

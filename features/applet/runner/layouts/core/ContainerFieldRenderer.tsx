@@ -1,5 +1,5 @@
 "use client";
-import { FieldDefinition } from "@/types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import React from "react";
 import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 

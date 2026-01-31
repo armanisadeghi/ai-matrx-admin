@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocalStorageManager } from "@/hooks/common/useLocalStorageManager";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 
 // Constants for storage keys
 const MODULE_NAME = "chat";

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { MatrxRecordId, MessageTemplateProcessed } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
+import { MessageTemplateProcessed } from '@/types/AutomationSchemaTypes';
 import { useAppDispatch, useAppStore, useEntityTools } from '@/lib/redux';
 import { AppDispatch } from '@/lib/redux/store';
 

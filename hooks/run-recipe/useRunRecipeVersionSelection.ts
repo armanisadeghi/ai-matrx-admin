@@ -3,7 +3,7 @@
 import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import { useMemo, useState, useEffect } from 'react';
-import { RecipeRecordWithKey, CompiledRecipeRecordWithKey } from '@/types';
+import { RecipeRecordWithKey, CompiledRecipeRecordWithKey } from '@/types/AutomationSchemaTypes';
 
 export function useRunRecipeVersionSelection({ 
   onRecipeChange, 

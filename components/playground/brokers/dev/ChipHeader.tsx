@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui';
 import { X, ArrowUpRight, Database, CloudOff, ChevronUp, ChevronDown } from 'lucide-react';
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 import { ChipData } from '@/types/editor.types';
 import { TailwindColor } from '@/constants/rich-text-constants';
 

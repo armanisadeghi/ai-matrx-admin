@@ -7,7 +7,7 @@ import { SectionContainer, SectionTable, TableRowData } from "@/features/workflo
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toTitleCase } from "@/utils/dataUtils";
-import { RegisteredNodeData } from "@/types";
+import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
 import { useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { DynamicIcon } from "@/components/official/IconResolver";
 

@@ -1,7 +1,7 @@
 // File: features/applet/layouts/core/FieldsWithLabels.tsx
 "use client";
 import React from "react";
-import { FieldDefinition } from "@/types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import { AppletFieldController } from "@/features/applet/runner/fields/core/AppletFieldController";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 import { cn } from "@/lib/utils";

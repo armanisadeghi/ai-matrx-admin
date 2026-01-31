@@ -1,4 +1,4 @@
-import { EntityKeys, MatrxRecordId, EntityData } from "@/types";
+import { EntityKeys, MatrxRecordId, EntityData } from "@/types/entityTypes";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { useUpdateRecordFields } from "../unsaved-records/useUpdateFields";
 import { useCreateRecord } from "../unsaved-records/useCreateRecord";

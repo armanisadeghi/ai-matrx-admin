@@ -1,6 +1,6 @@
 import { FetchMode, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useEffect, useMemo } from 'react';
 
 export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[], shouldProcess = true, fetchMode: FetchMode = 'fkIfk') {

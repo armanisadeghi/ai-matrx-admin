@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { MatrxRecordId, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import { FetchMode } from '@/lib/redux/entity/actions';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { selectEntitySelectText, useAppSelector } from '@/lib/redux';
 import { useSelectActiveRecord } from '../hooks/useFetchQuickRefSingleMode';
 

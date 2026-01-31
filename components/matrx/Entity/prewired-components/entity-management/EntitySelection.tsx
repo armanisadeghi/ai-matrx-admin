@@ -9,7 +9,7 @@ import {
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys} from '@/types/entityTypes';
-import {cn} from '@/utils';
+import {cn} from '@/utils/cn';
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 
 type LayoutType = 'stacked' | 'sideBySide';

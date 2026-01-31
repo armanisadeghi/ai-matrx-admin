@@ -7,7 +7,7 @@ import {
 } from "@/lib/redux/entity/types/stateTypes";
 import RelatedEntityAccordionFinal from "./RelatedEntityAccordionFinal";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity";
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 
 export interface EntityRelationshipWrapperProps {

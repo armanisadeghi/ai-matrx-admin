@@ -20,7 +20,7 @@ import { fetchAppWithApplets } from "@/lib/redux/app-runner/thunks/appRunnerThun
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { CustomAppHeader } from "@/features/applet/runner/header/CustomAppHeader";
 import AppletRunComponent from "@/features/applet/runner/AppletRunComponent";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 interface LiveAppAndAppletPreviewProps {
     appSlug?: string;

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, X } from "lucide-react";
 import { AdvancedTooltip } from "./Tooltip";
-import { cn } from "@/utils";
+import { cn } from "@/utils/cn";
 
 type Item = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>> | React.ReactNode;

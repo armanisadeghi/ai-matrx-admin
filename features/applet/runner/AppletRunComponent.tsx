@@ -15,7 +15,7 @@ import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutMa
 import useAppletRecipe from "@/features/applet/hooks/useAppletRecipe";
 import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLayoutManager";
 import PreviewLoadingWithMessage from "@/features/applet/builder/previews/PreviewLoadingWithMessage";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 import { useToastManager } from "@/hooks/useToastManager";
 
 const SLUG_TO_COORDINATOR_MAP = {

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { FieldDefinition } from "@/types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import { AppletFieldController } from "@/features/applet/runner/fields/core/AppletFieldController";
 import { getSubmitButton } from "@/features/applet/styles/StyledComponents";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";

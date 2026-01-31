@@ -1,6 +1,6 @@
 import { cloneDeep } from "lodash";
 import { getStore } from "@/lib/redux/store";
-import { DataBrokerData } from "@/types";
+import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import { WorkflowNode, WorkflowNodeUiData, XyFlowNodeType } from "@/lib/redux/workflow-nodes/types";
 import { InputMapping, Output } from "@/lib/redux/workflow/types";
 import { DEFAULT_EXCLUDE_ARG_NAMES } from "./arg-utils";

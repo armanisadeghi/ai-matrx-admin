@@ -1,4 +1,4 @@
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types/entityTypes';
 import { ChipData } from '@/types/editor.types';
 
 export interface ChipSearchResult extends Omit<ChipData, 'color'> {

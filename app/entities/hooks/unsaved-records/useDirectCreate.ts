@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useAppDispatch, useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { callbackManager } from '@/utils/callbackManager';
 import { v4 as uuidv4 } from 'uuid';
 import { DefinedRelationship, RelatedDataManager } from '../relationships/relationshipDefinitions';

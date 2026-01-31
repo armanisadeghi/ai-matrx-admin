@@ -1,5 +1,5 @@
 import { createEntitySelectors, useAppSelector } from '@/lib/redux';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useCallback, useMemo } from 'react';
 import { RelationshipMapper } from './relationshipDefinitions';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';

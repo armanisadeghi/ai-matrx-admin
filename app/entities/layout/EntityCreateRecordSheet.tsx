@@ -1,5 +1,5 @@
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import EntitySheet from '../fields/other-components/EntitySheet';
 import { createEntitySelectors, useAppStore } from '@/lib/redux';
 import EntityFormCreateRecordWithRelated from '../forms/EntityFormCreateRecordWithRelated';

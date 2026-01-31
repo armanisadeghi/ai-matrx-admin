@@ -99,7 +99,7 @@ export const EntityHeader = ({ entityKey, onEntityChange, metadata, relationship
                         {getLabelValuePair('Fields', getFieldCount())}
                         {getLabelValuePair('Foreign Keys', getForeignKeyCount())}
                         {getLabelValuePair('Referenced By', getReferencedByCount())}
-                        {getLabelValuePair('Display Field', getDisplayFieldName())}
+                        {getLabelValuePair('Display Field', getDisplayFieldName() as any)}
                         {getLabelValuePair('Fetch Strategy', getDefaultFetchStrategy())}
                     </div>
                 )}

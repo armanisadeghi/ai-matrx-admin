@@ -1,6 +1,6 @@
 import { EntityActions, EntitySelectors, FetchMode, useEntityToasts } from "@/lib/redux";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { useEntityWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";

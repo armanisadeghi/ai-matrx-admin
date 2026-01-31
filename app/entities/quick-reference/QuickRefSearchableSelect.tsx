@@ -5,7 +5,7 @@ import { MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
 import { useSelectQuickRef } from "@/app/entities/hooks/useSelectQuickRef";
 import { FetchMode } from "@/lib/redux/entity/actions";
-import { EntityKeys } from "@/types";
+import { EntityKeys } from "@/types/entityTypes";
 import { selectEntitySelectText, useAppSelector } from "@/lib/redux";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import SearchableSelect from "@/components/ui/matrx/SearchableSelect";

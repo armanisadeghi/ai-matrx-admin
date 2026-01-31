@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 import { getAppletUrl } from "@/features/applet/common/applet-routing-helpers/applet-params";
 import { useAppletNavigation } from "@/features/applet/common/applet-routing-helpers/useAppletNavigation";
 

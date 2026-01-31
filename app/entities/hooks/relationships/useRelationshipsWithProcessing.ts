@@ -1,5 +1,5 @@
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from "@/types";
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 import { useCallback } from "react";
 import { toPkValue } from "@/lib/redux/entity/utils/entityPrimaryKeys";
 import { useSequentialDelete } from "../crud/useSequentialDelete";

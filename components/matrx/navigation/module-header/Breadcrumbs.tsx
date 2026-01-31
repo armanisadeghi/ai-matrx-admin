@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import {cn} from "@/utils";
+import {cn} from "@/utils/cn";
 
 
 interface BreadcrumbsProps {

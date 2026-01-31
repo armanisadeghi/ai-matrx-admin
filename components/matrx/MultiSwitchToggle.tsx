@@ -2,7 +2,7 @@
 
 import React, { useState, forwardRef } from 'react';
 import { cn } from "@/lib/utils";
-import { noErrors } from '@/utils';
+import { noErrors } from '@/utils/utils';
 import {
   Tooltip,
   TooltipContent,

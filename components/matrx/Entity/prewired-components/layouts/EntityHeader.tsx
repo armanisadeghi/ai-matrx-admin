@@ -11,7 +11,7 @@ import {
     EntityQuickReferenceList,
     EntityQuickReferenceSelect
 } from '../quick-reference';
-import {cn} from '@/utils';
+import {cn} from '@/utils/cn';
 import EntitySelection from '../entity-management/EntitySelection';
 
 type QuickReferenceComponentType =

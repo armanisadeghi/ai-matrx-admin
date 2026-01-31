@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useGetorFetchRecords, useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import { useDebounce } from "@uidotdev/usehooks";
-import { DataInputComponentRecordWithKey, MatrxRecordId, RecipeRecordWithKey, AppletRecordWithKey } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
+import { DataInputComponentRecordWithKey, RecipeRecordWithKey, AppletRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { BrokerWithComponentsMap, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
 
 

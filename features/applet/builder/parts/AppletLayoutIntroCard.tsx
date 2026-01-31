@@ -2,7 +2,7 @@
 
 import React from "react";
 import { appletLayoutOptions } from "@/features/applet/constants/layout-options";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 interface AppletLayoutIntroCardProps {
   layoutType: AppletLayoutOption;

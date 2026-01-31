@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { SquarePlus } from "lucide-react";
 import { MatrxGradientCard } from "../../matrx/MatrxGradientCard";
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 
 interface NewSettingsCardProps {
     onCreateNew: () => void;

@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { ChatMode } from "@/types/chat/chat.types";
 
 interface UseConversationRoutingProps {

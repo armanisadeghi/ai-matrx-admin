@@ -3,7 +3,7 @@ import { useEntityFetch } from "./useEntityFetch";
 import { useDirectCreateRecord } from "@/app/entities/hooks/crud/useDirectCreateRecord";
 import { RelationshipDefinition } from "@/types/relationshipTypes";
 import { useDeleteRecord } from "@/app/entities/hooks/crud/useDeleteRecord";
-import { EntityKeys, MatrxRecordId } from "@/types";
+import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 
 export const useCreateManyToMany = (
     relationshipDefinition: RelationshipDefinition,

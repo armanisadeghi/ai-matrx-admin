@@ -12,7 +12,7 @@ import { SaveIcon, RotateCcwIcon } from "lucide-react";
 import { MatrxMetadata, MatrxStatus, encodeMatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 import { getAllColorOptions } from "@/features/rich-text-editor/utils/colorUitls";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
-import { DataBrokerData } from "@/types";
+import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 import FieldListTable from "@/features/applet/builder/modules/field-builder/FieldListTable";
 
@@ -144,13 +144,11 @@ const MatrxBrokerUpdater: React.FC<MatrxBrokerUpdaterProps> = ({ content, metada
                         <FieldListTable
                             onFieldSelect={handleFieldSelect}
                             defaultPageSize={10}
-                            allowCreate={true}
-                            allowEdit={true}
-                            allowView={true}
                             allowDelete={true}
                             allowSelectAction={true}
                             showStripedRows={true}
                             allowRefresh={true}
+                            {...({} as any)}
                         />
                     </div>
                 </div>

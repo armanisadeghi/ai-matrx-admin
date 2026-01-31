@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { AiAgentDataOptional, AiSettingsProcessed, EntityData, MatrxRecordId } from '@/types';
+import { EntityData, MatrxRecordId } from '@/types/entityTypes';
+import { AiAgentDataOptional, AiSettingsProcessed } from '@/types/AutomationSchemaTypes';
 import { RelationshipProcessingHook, useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch } from '@/lib/redux';

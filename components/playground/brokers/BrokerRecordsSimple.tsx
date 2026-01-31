@@ -2,7 +2,8 @@
 
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityKeys, MatrxRecordId, MessageBrokerDataOptional } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
+import { MessageBrokerDataOptional } from '@/types/AutomationSchemaTypes';
 import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 import { ChipData } from '@/types/editor.types';

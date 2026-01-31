@@ -134,7 +134,7 @@ import {
     WorkflowNodeDataData,
     WorkflowRelayData,
     WorkflowUserInputData,
-} from "@/types";
+} from "@/types/AutomationSchemaTypes";
 import { MatrxRecordId, QuickReferenceRecord, FilterPayload, SortPayload } from "@/lib/redux/entity/types/stateTypes";
 import { EntitySelectors } from "@/lib/redux/entity/selectors";
 import { EntityActions } from "@/lib/redux/entity/slice";

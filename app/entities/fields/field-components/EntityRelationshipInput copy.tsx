@@ -96,6 +96,7 @@ const RelationalButton: React.FC<RelationalButtonBaseProps> = ({
 
 interface RelationalInputProps extends EntityInputProps {
     relational?: RelationalConfig;
+    field?: any;
 }
 
 const RelationalInput: React.FC<RelationalInputProps> = (
@@ -154,7 +155,6 @@ const RelationalInput: React.FC<RelationalInputProps> = (
     return (
         <div className="relative flex gap-2">
             <EntityInput
-                field={field}
                 value={value}
                 onChange={onChange}
                 {...props}

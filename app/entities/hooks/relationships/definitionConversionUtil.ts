@@ -1,6 +1,6 @@
 'use client';
 
-import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { EntityAnyFieldKey, EntityKeys } from '@/types/entityTypes';
 import { RELATIONSHIP_DEFINITIONS } from './relationshipData';
 
 
@@ -86,7 +86,7 @@ export function createRelationshipDefinition({
             referenceField: childInfo.entityField,
         },
         join: {
-            name: fullRel.joiningTable,
+            name: fullRel.joiningTable as EntityKeys,
             primaryKeys: fullRel.joiningTablePks,
             parentField: parentInfo.joiningTableField,
             childField: childInfo.joiningTableField,

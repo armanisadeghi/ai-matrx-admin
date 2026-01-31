@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { FileManagerReturn } from "@/hooks/ai/chat/useFileManagement";
 
 type ChatMode = "general" | "thinking" | "plan" | "askQuestions" | "research" | "recipes";

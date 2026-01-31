@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useCallback, useMemo, useState } from "react";
-import { EntityKeys, EntityData, EntityDataWithKey } from "@/types";
+import { EntityKeys, EntityData, EntityDataWithKey } from "@/types/entityTypes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {  MatrxRecordId } from "../types/stateTypes";
 import { Callback, callbackManager } from "@/utils/callbackManager";

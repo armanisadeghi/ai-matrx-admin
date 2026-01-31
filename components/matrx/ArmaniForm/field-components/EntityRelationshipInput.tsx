@@ -4,7 +4,7 @@ import {SearchIcon} from "lucide-react";
 
 import {EntityButton, EntityInput} from "@/components/matrx/ArmaniForm/field-components/index";
 import { useRouter } from "next/router";
-import {cn} from '@/utils';
+import {cn} from '@/utils/cn';
 
 type RelationType =
     | 'foreignKey'           // Single reference to another entity

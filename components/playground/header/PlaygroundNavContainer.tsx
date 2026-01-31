@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Brain, Workflow, Bot, Combine } from 'lucide-react';
-import { cn } from '@/utils';
+import { cn } from '@/utils/cn';
 
 // Prompt Button Component
 export const PromptButton = ({ isActive, onClick }: { isActive: boolean; onClick: () => void }) => (

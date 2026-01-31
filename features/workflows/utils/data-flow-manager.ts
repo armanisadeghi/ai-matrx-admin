@@ -1,4 +1,4 @@
-import { DataBrokerData } from "@/types";
+import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import { UserInputNodeData, BrokerRelayNodeData, FunctionNodeData } from "@/features/workflows/types";
 import { createVirtualEdgeFingerprint } from "../service/edgeService";
 

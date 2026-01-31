@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useEntityToasts } from '@/lib/redux';
-import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityData, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useCreateWithId } from './useDirectCreateRecord';
 
 interface SequentialCreateOptions {

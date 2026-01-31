@@ -3,7 +3,7 @@ import { MatrxRecordId, QuickReferenceRecord } from '@/lib/redux/entity/types/st
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { useQuickRef } from '../../hooks/useQuickRef';
 import { FetchMode } from '@/lib/redux/entity/actions';
-import { EntityKeys } from '@/types';
+import { EntityKeys } from '@/types/entityTypes';
 import { selectEntityPrettyName, selectEntitySelectText, useAppSelector } from '@/lib/redux';
 import SearchableSelect from '@/components/matrx/SearchableSelect';
 

@@ -17,7 +17,7 @@ import AppletPostActionButtons from "./AppletPostActionButtons";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
-import { AppletLayoutOption } from "@/types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 interface ResponseLayoutManagerProps {
     appletId: string;

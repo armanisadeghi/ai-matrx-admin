@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import useCreateUpdateRecord from "../useCreateUpdateRecord";
 import { Conversation, ConversationMetadata, ChatMode } from "@/types/chat/chat.types";
-import { MatrxRecordId } from "@/types";
+import { MatrxRecordId } from "@/types/entityTypes";
 import { getPermanentId } from "@/lib/redux";
 import { useUpdateRecordFields } from "../../unsaved-records/useUpdateFields";
 
