@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from "react-resizable-panels";
+import { Group, Panel, Separator, GroupImperativeHandle, PanelImperativeHandle } from "react-resizable-panels";
 import { Button } from "@/components/ui";
 import { Plus } from "lucide-react";
 import { MatrxRecordId } from "@/types";
@@ -23,8 +23,8 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
-    const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
-    const panelRefs = useRef<Map<MatrxRecordId, ImperativePanelHandle>>(new Map());
+    const panelGroupRef = useRef<GroupImperativeHandle>(null);
+    const panelRefs = useRef<Map<MatrxRecordId, PanelImperativeHandle>>(new Map());
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState<DialogType>("delete");
@@ -59,7 +59,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
         addMessage(newMessage);
     }, [messages, addMessage]);
 
-    const registerPanelRef = (messageRecordId: MatrxRecordId, ref: ImperativePanelHandle | null) => {
+    const registerPanelRef = (messageRecordId: MatrxRecordId, ref: PanelImperativeHandle | null) => {
         if (ref) {
             panelRefs.current.set(messageRecordId, ref);
         } else {
@@ -136,7 +136,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
 
     return (
         <div className="h-full relative">
-            <PanelGroup id="messages-panel-group" direction="vertical" className="h-full" ref={panelGroupRef}>
+            <Group id="messages-panel-group" orientation="vertical" className="h-full" groupRef={panelGroupRef}>
                 {messages.length > 0 ? (
                     <>
                         {/* Sort messages by their order property */}
@@ -153,7 +153,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                                 return (
                                     <React.Fragment key={panelKey}>
                                         <Panel
-                                            ref={(ref: ImperativePanelHandle | null) => registerPanelRef(message.matrxRecordId, ref)}
+                                            panelRef={(ref: PanelImperativeHandle | null) => registerPanelRef(message.matrxRecordId, ref)}
                                             id={message.matrxRecordId}
                                             defaultSize={isLastPanel ? remainingSize : 10}
                                             minSize={30}
@@ -174,7 +174,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                                                 registerComponentSave={registerComponentSave}
                                             />
                                         </Panel>
-                                        {!isLastPanel && <PanelResizeHandle />}
+                                        {!isLastPanel && <Separator />}
                                     </React.Fragment>
                                 );
                             })}
@@ -196,7 +196,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                         />
                     </Panel>
                 )}
-            </PanelGroup>
+            </Group>
             <ConfirmationDialog open={dialogOpen} onOpenChange={setDialogOpen} onConfirm={handleDialogConfirm} type={dialogType} />
         </div>
     );

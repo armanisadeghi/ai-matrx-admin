@@ -64,7 +64,7 @@ export function MessageIcon({ className }: MessageIconProps) {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Messages{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}</p>
+          Messages{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

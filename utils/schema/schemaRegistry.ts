@@ -473,3 +473,24 @@
 // const availableSchemas = getRegisteredSchemas('database');
 //
 // export type AvailableSchemas = typeof availableSchemas[number];
+
+// Stub exports to prevent build errors (original code is commented out)
+export type TableSchema = {
+    fields: Record<string, unknown>;
+};
+
+export function getRegisteredSchemas(_format: string): string[] {
+    return [];
+}
+
+export function getSchema(_name: string): TableSchema | null {
+    return null;
+}
+
+export function convertData(_data: unknown, _schema: unknown): unknown {
+    return _data;
+}
+
+export function processDataForInsert(_data: unknown, _schema: unknown): unknown {
+    return _data;
+}

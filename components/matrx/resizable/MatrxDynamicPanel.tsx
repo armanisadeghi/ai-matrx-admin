@@ -28,7 +28,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {cn} from '@/lib/utils';
-import {ImperativePanelGroupHandle} from 'react-resizable-panels';
+import {GroupImperativeHandle} from 'react-resizable-panels';
 import {useIsMobile} from '@/hooks/use-mobile';
 import type {CSSProperties} from 'react';
 
@@ -131,7 +131,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     const isExpanded = controlledExpanded ?? localExpanded;
     const isMobile = useIsMobile();
 
-    const panelGroupRef = React.useRef<ImperativePanelGroupHandle>(null);
+    const panelGroupRef = React.useRef<GroupImperativeHandle>(null);
     const isVertical = currentPosition === 'top' || currentPosition === 'bottom';
     const isStartPosition = currentPosition === 'left' || currentPosition === 'top';
 

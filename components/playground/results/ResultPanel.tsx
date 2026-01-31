@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { ImperativePanelHandle, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { PanelImperativeHandle, Panel, Separator } from "react-resizable-panels";
 import { Button, Card } from "@/components/ui";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import DraggableToolbar, { ToolbarAction } from "../components/DraggableToolbar";
@@ -43,7 +43,7 @@ export function ResultPanel({
     minSize,
     addAssistantResponse,
 }: ResultPanelProps) {
-    const panelRef = useRef<ImperativePanelHandle>(null);
+    const panelRef = useRef<PanelImperativeHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [previousSize, setPreviousSize] = useState(minSize);
     const [viewMode, setViewMode] = useState<"rendered" | "raw" | "processed" | "parsedAsJson">("rendered");
@@ -64,7 +64,8 @@ export function ResultPanel({
         if (isCollapsed) {
             setIsCollapsed(false);
         } else {
-            setPreviousSize(panelRef.current?.getSize() ?? 10);
+            const size = panelRef.current?.getSize();
+            setPreviousSize(typeof size === 'object' ? size.asPercentage : (size ?? 10));
             setIsCollapsed(true);
         }
     };
@@ -196,7 +197,7 @@ export function ResultPanel({
 
     return (
         <>
-            <Panel ref={panelRef} id={id} order={order} defaultSize={previousSize} minSize={10} maxSize={75}>
+            <Panel panelRef={panelRef} id={id} order={order} defaultSize={previousSize} minSize={10} maxSize={75}>
                 <Card className="h-full p-0 overflow-hidden bg-textured">
                     <div className="h-full flex flex-col">
                         <DraggableToolbar
@@ -215,7 +216,7 @@ export function ResultPanel({
                     </div>
                 </Card>
             </Panel>
-            <PanelResizeHandle />
+            <Separator />
         </>
     );
 }

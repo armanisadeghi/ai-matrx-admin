@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { ImperativePanelHandle, Panel, PanelResizeHandle } from 'react-resizable-panels';
+import { PanelImperativeHandle, Panel, Separator } from 'react-resizable-panels';
 import { Button, Card } from '@/components/ui';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
@@ -26,7 +26,7 @@ interface ResultPanelProps {
 }
 
 export function CodePanel({ id, order, number, label, taskId, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
-    const panelRef = useRef<ImperativePanelHandle>(null);
+    const panelRef = useRef<PanelImperativeHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [previousSize, setPreviousSize] = useState(50);
     const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed'>('rendered');
@@ -41,7 +41,8 @@ export function CodePanel({ id, order, number, label, taskId, onDelete, onDragDr
         if (isCollapsed) {
             setIsCollapsed(false);
         } else {
-            setPreviousSize(panelRef.current?.getSize() ?? 10);
+            const size = panelRef.current?.getSize();
+            setPreviousSize(typeof size === 'object' ? size.asPercentage : (size ?? 10));
             setIsCollapsed(true);
         }
     };
@@ -121,7 +122,7 @@ export function CodePanel({ id, order, number, label, taskId, onDelete, onDragDr
     return (
         <>
             <Panel
-                ref={panelRef}
+                panelRef={panelRef}
                 id={id}
                 order={order}
                 defaultSize={previousSize}
@@ -146,7 +147,7 @@ export function CodePanel({ id, order, number, label, taskId, onDelete, onDragDr
                     </div>
                 </Card>
             </Panel>
-            <PanelResizeHandle />
+            <Separator />
         </>
     );
 }

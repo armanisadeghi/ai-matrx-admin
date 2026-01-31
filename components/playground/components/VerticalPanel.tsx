@@ -3,8 +3,8 @@
 import React, { useRef, useState, useCallback } from "react";
 import {
   Panel,
-  PanelResizeHandle,
-  ImperativePanelHandle,
+  Separator,
+  PanelImperativeHandle,
 } from "react-resizable-panels";
 import { Card } from "@/components/ui/card";
 import DraggableToolbar, { ToolbarAction } from "./DraggableToolbar";
@@ -47,7 +47,7 @@ export function VerticalPanel({
   debug,
   onDebugClick,
 }: VerticalPanelProps) {
-  const panelRef = useRef<ImperativePanelHandle>(null);
+  const panelRef = useRef<PanelImperativeHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [previousSize, setPreviousSize] = useState(defaultSize);
 
@@ -122,7 +122,7 @@ export function VerticalPanel({
           </div>
         </Card>
       </Panel>
-      <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors" />
+      <Separator className="w-1 bg-border hover:bg-primary transition-colors" />
     </>
   );
 }

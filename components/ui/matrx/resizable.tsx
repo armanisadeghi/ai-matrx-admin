@@ -2,7 +2,7 @@
 
 import { DragHandleDots2Icon } from "@radix-ui/react-icons"
 import React from "react"
-import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels"
+import { Group, Panel, Separator } from "react-resizable-panels"
 import { cn } from "@/styles/themes/utils"
 
 const handleSizes = {
@@ -21,8 +21,8 @@ type HandleSize = keyof typeof handleSizes
 const ResizablePanelGroup = ({
                                className,
                                ...props
-                             }: React.ComponentProps<typeof PanelGroup>) => (
-    <PanelGroup
+                             }: React.ComponentProps<typeof Group>) => (
+    <Group
         className={cn(
             "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
             className
@@ -33,7 +33,7 @@ const ResizablePanelGroup = ({
 
 const ResizablePanel = Panel
 
-interface ResizableHandleProps extends React.ComponentProps<typeof PanelResizeHandle> {
+interface ResizableHandleProps extends React.ComponentProps<typeof Separator> {
   withHandle?: boolean
   size?: HandleSize
 }
@@ -44,7 +44,7 @@ const ResizableHandle = ({
                            className,
                            ...props
                          }: ResizableHandleProps) => (
-    <PanelResizeHandle
+    <Separator
         className={cn(
             "relative flex items-center justify-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1",
             "data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:h-1.5",
@@ -65,7 +65,7 @@ const ResizableHandle = ({
             <DragHandleDots2Icon className="h-2.5 w-2.5" />
           </div>
       )}
-    </PanelResizeHandle>
+    </Separator>
 )
 
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle }

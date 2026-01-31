@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from 'react';
 import { Card } from '@/components/ui/card';
-import { Panel, ImperativePanelHandle, PanelResizeHandle } from 'react-resizable-panels';
+import { Panel, PanelImperativeHandle, Separator } from 'react-resizable-panels';
 import { CockpitPanelComponent, CockpitControls } from '../types';
 
 export interface CollapsibleSidebarPanelProps {
@@ -19,7 +19,7 @@ export interface CollapsibleSidebarPanelProps {
   cockpitControls: CockpitControls;
 }
 
-const CollapsibleSidebarPanel = forwardRef<ImperativePanelHandle, CollapsibleSidebarPanelProps>(
+const CollapsibleSidebarPanel = forwardRef<PanelImperativeHandle, CollapsibleSidebarPanelProps>(
     (
         {
             // Panel props
@@ -45,7 +45,7 @@ const CollapsibleSidebarPanel = forwardRef<ImperativePanelHandle, CollapsibleSid
                 minSize={minSize}
                 maxSize={maxSize}
                 collapsible={collapsible}
-                ref={ref}
+                panelRef={ref}
                 onCollapse={onCollapse}
                 onExpand={onExpand}
             >
@@ -65,11 +65,11 @@ const CollapsibleSidebarPanel = forwardRef<ImperativePanelHandle, CollapsibleSid
                 {side === 'left' ? (
                     <>
                         {panelContent}
-                        <PanelResizeHandle />
+                        <Separator />
                     </>
                 ) : (
                     <>
-                        <PanelResizeHandle />
+                        <Separator />
                         {panelContent}
                     </>
                 )}

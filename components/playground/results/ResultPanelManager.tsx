@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PanelGroup } from "react-resizable-panels";
+import { Group } from "react-resizable-panels";
 import MultiSwitchToggle from "@/components/matrx/MultiSwitchToggle";
 import { CompiledRecipeDisplay } from "./CompiledRecipeDisplay";
 import { CockpitControls } from "../types";
@@ -35,7 +35,7 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
     // Calculate minPanelSize based on number of panels
     const minPanelSize = recordTabs.length > 0 ? 100 / recordTabs.length : 100;
 
-    // Don't render PanelGroup if there are no panels and we're not in compiled view
+    // Don't render Group if there are no panels and we're not in compiled view
     if (recordTabs.length === 0 && currentView !== 'compiled') {
         return (
             <div className='h-full flex flex-col'>
@@ -60,8 +60,8 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
             {currentView === 'compiled' ? (
                 <CompiledRecipeDisplay cockpitControls={playgroundControls} />
             ) : (
-                <PanelGroup
-                    direction='vertical'
+                <Group
+                    orientation='vertical'
                     className='flex-1 bg-textured rounded-xl'
                 >
                     {recordTabs.map((tab, index) => 
@@ -79,7 +79,7 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                             addAssistantResponse: addAssistantResponse,
                         })
                     )}
-                </PanelGroup>
+                </Group>
             )}
 
             <div>

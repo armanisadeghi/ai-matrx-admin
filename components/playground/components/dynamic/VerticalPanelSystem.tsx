@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from 'react-resizable-panels';
+import { Group, Panel, Separator, GroupImperativeHandle, PanelImperativeHandle } from 'react-resizable-panels';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import {
@@ -45,15 +45,15 @@ export const ResizablePanelSystem: React.FC<ResizablePanelSystemProps> = ({
     showAddButton = true,
     className = '',
 }) => {
-    const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
-    const panelRefs = useRef<Map<string, ImperativePanelHandle>>(new Map());
+    const panelGroupRef = useRef<GroupImperativeHandle>(null);
+    const panelRefs = useRef<Map<string, PanelImperativeHandle>>(new Map());
     const [collapsedPanels, setCollapsedPanels] = useState<Set<string>>(new Set());
 
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
     const [activePanelId, setActivePanelId] = useState<string | null>(null);
 
-    const registerPanelRef = (panelId: string, ref: ImperativePanelHandle | null) => {
+    const registerPanelRef = (panelId: string, ref: PanelImperativeHandle | null) => {
         if (ref) {
             panelRefs.current.set(panelId, ref);
         } else {
@@ -95,10 +95,10 @@ export const ResizablePanelSystem: React.FC<ResizablePanelSystemProps> = ({
 
     return (
         <div className={`h-full relative ${className}`}>
-            <PanelGroup
-                direction='vertical'
+            <Group
+                orientation='vertical'
                 className='h-full'
-                ref={panelGroupRef}
+                groupRef={panelGroupRef}
             >
                 {panels.map((panel, index) => {
                     const isLastPanel = index === panels.length - 1;
@@ -108,7 +108,7 @@ export const ResizablePanelSystem: React.FC<ResizablePanelSystemProps> = ({
                     return (
                         <React.Fragment key={panel.id}>
                             <Panel
-                                ref={(ref: ImperativePanelHandle | null) => registerPanelRef(panel.id, ref)}
+                                panelRef={(ref: PanelImperativeHandle | null) => registerPanelRef(panel.id, ref)}
                                 id={panel.id}
                                 defaultSize={isLastPanel ? remainingSize : 10}
                                 minSize={10}
@@ -121,7 +121,7 @@ export const ResizablePanelSystem: React.FC<ResizablePanelSystemProps> = ({
                             >
                                 {renderPanel(panel, isCollapsed)}
                             </Panel>
-                            {!isLastPanel && <PanelResizeHandle />}
+                            {!isLastPanel && <Separator />}
                         </React.Fragment>
                     );
                 })}
@@ -136,7 +136,7 @@ export const ResizablePanelSystem: React.FC<ResizablePanelSystemProps> = ({
                         {addButtonLabel}
                     </Button>
                 )}
-            </PanelGroup>
+            </Group>
 
             <AlertDialog
                 open={dialogOpen}

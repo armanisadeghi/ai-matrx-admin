@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, forwardRef, useState, useEffect } from 'react';
-import { PanelGroup, ImperativePanelHandle, PanelResizeHandle, Panel } from 'react-resizable-panels';
+import { Group, PanelImperativeHandle, Separator, Panel } from 'react-resizable-panels';
 import { useMeasure } from '@uidotdev/usehooks';
 import CollapsibleSidebarPanel from './components/CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/results/ResultPanelManager';
@@ -22,7 +22,7 @@ interface CockpitPanelsProps {
     cockpitControls: CockpitControls;
 }
 
-const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; rightPanel: ImperativePanelHandle | null }, CockpitPanelsProps>(
+const CockpitPanels = forwardRef<{ leftPanel: PanelImperativeHandle | null; rightPanel: PanelImperativeHandle | null }, CockpitPanelsProps>(
     (
         {
             leftComponent,
@@ -38,10 +38,10 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
         },
         ref
     ) => {
-        const leftPanelRef = useRef<ImperativePanelHandle>(null);
-        const messagesPanelRef = useRef<ImperativePanelHandle>(null);
-        const resultsPanelRef = useRef<ImperativePanelHandle>(null);
-        const rightPanelRef = useRef<ImperativePanelHandle>(null);
+        const leftPanelRef = useRef<PanelImperativeHandle>(null);
+        const messagesPanelRef = useRef<PanelImperativeHandle>(null);
+        const resultsPanelRef = useRef<PanelImperativeHandle>(null);
+        const rightPanelRef = useRef<PanelImperativeHandle>(null);
         
         const [showBrokers, setShowBrokers] = useState(false);
         const [showSettings, setShowSettings] = useState(false);
@@ -94,8 +94,8 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
                     isActive ? 'opacity-100' : 'opacity-50'
                 } ${!isActive ? 'pointer-events-none' : ''} ${className}`}
             >
-                <PanelGroup
-                    direction='horizontal'
+                <Group
+                    orientation='horizontal'
                     className='h-full'
                 >
                     <CollapsibleSidebarPanel
@@ -110,9 +110,9 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
                         cockpitControls={cockpitControls}
                     />
                     {/* <Panel defaultSize={55}>{showMessages && <DynamicMessagesContainer cockpitControls={cockpitControls} />}</Panel> */}
-                    <Panel ref={messagesPanelRef} defaultSize={55}>{showMessages && <MessagesContainer cockpitControls={cockpitControls} />}</Panel>
-                    <PanelResizeHandle />
-                    <Panel ref={resultsPanelRef} defaultSize={9}>
+                    <Panel panelRef={messagesPanelRef} defaultSize={55}>{showMessages && <MessagesContainer cockpitControls={cockpitControls} />}</Panel>
+                    <Separator />
+                    <Panel panelRef={resultsPanelRef} defaultSize={9}>
                         {showResults ? <ResultPanelManager cockpitControls={cockpitControls} /> : <CompiledRecipeDisplay cockpitControls={cockpitControls} />}
                     </Panel>{' '}
                     <CollapsibleSidebarPanel
@@ -125,7 +125,7 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
                         defaultSize={initialRightSize}
                         cockpitControls={cockpitControls}
                     />
-                </PanelGroup>
+                </Group>
             </div>
         );
     }

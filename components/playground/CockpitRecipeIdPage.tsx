@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ImperativePanelHandle } from 'react-resizable-panels';
+import { PanelImperativeHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { CockpitHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import ModelSettingsPanel from '@/components/playground/settings/ModelSettingsPanel';
@@ -21,10 +21,10 @@ import { LoadingSpinner } from '@/components/ui/spinner';
 
 
 interface PanelRefs {
-    leftPanel: ImperativePanelHandle | null;
-    messagesPanel: ImperativePanelHandle | null;
-    resultsPanel: ImperativePanelHandle | null;
-    rightPanel: ImperativePanelHandle | null;
+    leftPanel: PanelImperativeHandle | null;
+    messagesPanel: PanelImperativeHandle | null;
+    resultsPanel: PanelImperativeHandle | null;
+    rightPanel: PanelImperativeHandle | null;
 }
 
 

@@ -8,7 +8,7 @@ import {Button} from '@/components/ui/button';
 import {ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Maximize2, Minimize2} from 'lucide-react';
 import {Card} from '@/components/ui/card';
 import {cn} from '@/lib/utils';
-import {ImperativePanelGroupHandle} from 'react-resizable-panels';
+import {GroupImperativeHandle} from 'react-resizable-panels';
 import type {CSSProperties} from 'react';
 
 type PanelPosition = 'left' | 'right' | 'top' | 'bottom';
@@ -54,7 +54,7 @@ const MatrxPanel: React.FC<MatrxPanelProps> = (
     const [panelKey, setPanelKey] = React.useState(0);
     const isExpanded = controlledExpanded ?? localExpanded;
 
-    const panelGroupRef = React.useRef<ImperativePanelGroupHandle>(null);
+    const panelGroupRef = React.useRef<GroupImperativeHandle>(null);
 
     const isVertical = position === 'top' || position === 'bottom';
     const isStartPosition = position === 'left' || position === 'top';
