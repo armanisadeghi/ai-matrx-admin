@@ -167,6 +167,9 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to update row');
       
+      // Clear sorted data cache when data is modified
+      setAllSortedData(null);
+      
       // Reload the table data to reflect changes
       loadTableData(currentPage, limit, sortField, sortDirection, searchTerm);
     } catch (err) {
@@ -265,7 +268,8 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       
       // Apply client-side sorting if we have a sort field and conditions are right for client-side sorting
       if (sort && !search && page === 1 && pageLimit >= paginatedData.pagination.total_count) {
-        processedData = smartSort(processedData, sort, direction as 'asc' | 'desc');
+        const fieldDataType = getFieldDataType(sort);
+        processedData = smartSort(processedData, sort, direction as 'asc' | 'desc', fieldDataType);
       }
 
       setData(processedData);
@@ -300,7 +304,15 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    loadTableData(page, limit);
+    
+    // If we have client-side sorted data cached, use it for pagination
+    if (allSortedData && allSortedData.length > 0 && sortField) {
+      const startIndex = (page - 1) * limit;
+      const pageData = allSortedData.slice(startIndex, startIndex + limit);
+      setData(pageData);
+    } else {
+      loadTableData(page, limit);
+    }
   };
   
   // Handle rows per page change
@@ -309,8 +321,22 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     setLimit(numLimit);
     // Reset to first page when changing limit
     setCurrentPage(1);
-    loadTableData(1, numLimit);
+    
+    // If we have client-side sorted data cached, use it
+    if (allSortedData && allSortedData.length > 0 && sortField) {
+      const pageData = allSortedData.slice(0, numLimit);
+      setData(pageData);
+      setTotalPages(Math.ceil(allSortedData.length / numLimit));
+    } else {
+      loadTableData(1, numLimit);
+    }
   };
+  
+  // Threshold for client-side sorting (rows) - prevents loading too much data
+  const CLIENT_SORT_THRESHOLD = 1000;
+  
+  // State for storing all sorted data when doing client-side sorting
+  const [allSortedData, setAllSortedData] = useState<any[] | null>(null);
   
   // Smart numeric sorting helper
   const isNumericValue = (value: any): boolean => {
@@ -324,7 +350,16 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     return Number(String(value).trim());
   };
 
-  const smartSort = (data: any[], fieldName: string, direction: 'asc' | 'desc') => {
+  // Get the data type for a field by name
+  const getFieldDataType = (fieldName: string): string | undefined => {
+    const field = fields.find((f: any) => f.field_name === fieldName);
+    return field?.data_type;
+  };
+
+  const smartSort = (data: any[], fieldName: string, direction: 'asc' | 'desc', declaredDataType?: string) => {
+    // If the field is declared as integer or number, force numeric sorting
+    const forceNumeric = declaredDataType === 'integer' || declaredDataType === 'number';
+    
     return [...data].sort((a, b) => {
       const aValue = a.data[fieldName];
       const bValue = b.data[fieldName];
@@ -338,9 +373,9 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         return direction === 'asc' ? 1 : -1;
       }
 
-      // Check if both values are numeric
-      const aIsNumeric = isNumericValue(aValue);
-      const bIsNumeric = isNumericValue(bValue);
+      // Use declared data type to determine if numeric, otherwise detect from values
+      const aIsNumeric = forceNumeric || isNumericValue(aValue);
+      const bIsNumeric = forceNumeric || isNumericValue(bValue);
 
       if (aIsNumeric && bIsNumeric) {
         // Both are numeric - do numeric comparison
@@ -365,18 +400,61 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   };
 
   // Handle sorting
-  const handleSort = (field) => {
+  const handleSort = async (field) => {
     const newDirection = field === sortField && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
+    
+    // Get the declared data type for type-aware sorting
+    const fieldDataType = getFieldDataType(field);
 
-    // If we have current data and no search term, do client-side smart sorting
-    if (data.length > 0 && !searchTerm && currentPage === 1 && limit >= totalCount) {
-      // We have all data loaded, can do client-side sorting
-      const sortedData = smartSort(data, field, newDirection);
-      setData(sortedData);
+    // For small datasets without search, use client-side sorting for correct type handling
+    if (totalCount <= CLIENT_SORT_THRESHOLD && !searchTerm) {
+      // Check if we already have all data cached, just resort it
+      if (allSortedData && allSortedData.length === totalCount) {
+        const resortedData = smartSort(allSortedData, field, newDirection, fieldDataType);
+        setAllSortedData(resortedData);
+        // Show the appropriate page slice
+        const startIndex = (currentPage - 1) * limit;
+        const pageData = resortedData.slice(startIndex, startIndex + limit);
+        setData(pageData);
+        return;
+      }
+      
+      // Load all data for client-side sorting
+      setLoading(true);
+      try {
+        const { data: allData, error } = await supabase.rpc('get_user_table_data_paginated', { 
+          p_table_id: tableId,
+          p_limit: totalCount,
+          p_offset: 0,
+          p_sort_field: null, // Don't use server-side sorting
+          p_sort_direction: 'asc',
+          p_search_term: null
+        });
+        
+        if (error) throw error;
+        if (!allData.success) throw new Error(allData.error || 'Failed to load data');
+        
+        // Sort all data client-side with type awareness
+        const sortedData = smartSort(allData.data, field, newDirection, fieldDataType);
+        setAllSortedData(sortedData);
+        
+        // Show the appropriate page slice
+        const startIndex = (currentPage - 1) * limit;
+        const pageData = sortedData.slice(startIndex, startIndex + limit);
+        setData(pageData);
+      } catch (err) {
+        console.error('Error during client-side sorting:', err);
+        // Fallback to server-side sorting
+        setAllSortedData(null);
+        loadTableData(currentPage, limit, field, newDirection);
+      } finally {
+        setLoading(false);
+      }
     } else {
-      // Fall back to server-side sorting for complex scenarios
+      // Fall back to server-side sorting for large datasets or when searching
+      setAllSortedData(null);
       loadTableData(currentPage, limit, field, newDirection);
     }
   };
@@ -384,12 +462,16 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
+    // Clear sorted data cache when searching (server-side search + sort needed)
+    setAllSortedData(null);
     loadTableData(1, limit, sortField, sortDirection, searchTerm);
   };
   
   // Clear search
   const clearSearch = () => {
     setSearchTerm('');
+    // Clear sorted data cache when clearing search
+    setAllSortedData(null);
     loadTableData(1, limit, sortField, sortDirection, '');
   };
   
@@ -443,6 +525,9 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to update row');
       
+      // Clear sorted data cache when data is modified
+      setAllSortedData(null);
+      
       // Reload the table data to reflect changes
       await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm);
       
@@ -493,6 +578,9 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to update row order');
       
+      // Clear sorted data cache when row ordering changes
+      setAllSortedData(null);
+      
       // Reload table data to reflect new order
       await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm, true);
       
@@ -523,6 +611,9 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to disable row ordering');
+      
+      // Clear sorted data cache when row ordering changes
+      setAllSortedData(null);
       
       setRowOrderingEnabled(false);
       await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm, true);
@@ -608,6 +699,9 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           })
         );
       }
+      
+      // Clear sorted data cache when data is modified
+      setAllSortedData(null);
       
       // Reload the table data to reflect changes
       await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm);
@@ -783,11 +877,15 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           setShowEditModal(false);
           setSelectedRowId(null);
           setSelectedRowData(null);
+          // Clear sorted data cache when data is modified
+          setAllSortedData(null);
           loadTableData(currentPage, limit);
         }}
         onDeleteSuccess={() => {
           setShowDeleteModal(false);
           setSelectedRowId(null);
+          // Clear sorted data cache when data is modified
+          setAllSortedData(null);
           loadTableData(currentPage, limit);
         }}
         
@@ -805,6 +903,8 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           // Clear any active sorting when row ordering is updated
           setSortField(null);
           setSortDirection('asc');
+          // Clear sorted data cache when row ordering changes
+          setAllSortedData(null);
           loadTableData(currentPage, limit, null, 'asc', searchTerm, true);
         }}
       />

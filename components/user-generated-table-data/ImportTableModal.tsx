@@ -362,8 +362,9 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
         // Map the row data to field names (only included fields)
         const rowData: Record<string, any> = {};
         includedFields.forEach(field => {
+          // Use sanitizeFieldName consistently to match how field_name was created
           const originalKey = Object.keys(row).find(
-            key => key.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '_') === field.field_name
+            key => sanitizeFieldName(key) === field.field_name
           );
           if (originalKey) {
             rowData[field.field_name] = row[originalKey];
@@ -417,12 +418,12 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Import Table from File or Clipboard</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-4 py-4">
           {error && (
             <div className="bg-red-50 dark:bg-red-950 p-3 rounded-md text-red-600 dark:text-red-400 text-sm">
               {error}
@@ -626,8 +627,9 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
                         {previewData.map((row, i) => (
                           <tr key={i} className="border-t dark:border-gray-700">
                             {detectedFields.filter(f => f.included).map((field, j) => {
+                              // Use sanitizeFieldName consistently to match how field_name was created
                               const originalKey = Object.keys(row).find(
-                                key => key.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '_') === field.field_name
+                                key => sanitizeFieldName(key) === field.field_name
                               );
                               const value = originalKey ? row[originalKey] : '';
                               return (
@@ -647,7 +649,7 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           {showPreview && (
           <Button
             type="button"

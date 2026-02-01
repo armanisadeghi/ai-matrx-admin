@@ -23,11 +23,11 @@ export function sanitizeFieldName(displayName: string): string {
   return displayName
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, '') // Remove special chars (keep letters, numbers, spaces)
-    .replace(/\s+/g, '_')         // Spaces to underscores
-    .replace(/^_+|_+$/g, '')      // Trim leading/trailing underscores
-    .replace(/_+/g, '_')          // Collapse multiple underscores
-    .replace(/^(\d)/, '_$1');     // Prefix if starts with number
+    .replace(/[^a-z0-9\s_]/g, '') // Remove special chars (keep letters, numbers, spaces, underscores)
+    .replace(/\s+/g, '_')          // Spaces to underscores
+    .replace(/^_+|_+$/g, '')       // Trim leading/trailing underscores
+    .replace(/_+/g, '_')           // Collapse multiple underscores
+    .replace(/^(\d)/, '_$1');      // Prefix if starts with number
 }
 
 /**
