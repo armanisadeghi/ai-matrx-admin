@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Send, X, RefreshCw, Loader2, Clock, Copy, Link2 } from 'lucide-react';
+import { Mail, Send, X, RefreshCw, Loader2, Clock, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -115,124 +114,83 @@ export function InvitationManager({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
-        <p className="text-muted-foreground">Loading invitations...</p>
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-        <p className="text-red-800 dark:text-red-200">{error}</p>
+      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Send Invitation Form */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Send className="h-5 w-5" />
-            Invite New Member
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Send an invitation to join {organizationName}
-          </p>
-        </div>
-
-        <form onSubmit={handleSendInvitation} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Email Input */}
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="colleague@example.com"
-                disabled={operationLoading}
-                className={email && !emailValidation.valid ? 'border-red-500' : ''}
-              />
-              {email && !emailValidation.valid && (
-                <p className="text-xs text-red-600 dark:text-red-400">
-                  {emailValidation.error}
-                </p>
-              )}
-            </div>
-
-            {/* Role Select */}
-            <div className="space-y-2">
-              <Label htmlFor="role">Role *</Label>
-              <Select value={role} onValueChange={(value) => setRole(value as OrgRole)}>
-                <SelectTrigger id="role" disabled={operationLoading}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  {userRole === 'owner' && <SelectItem value="owner">Owner</SelectItem>}
-                </SelectContent>
-              </Select>
-            </div>
+      <form onSubmit={handleSendInvitation} className="space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Email Input */}
+          <div className="flex-1">
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              disabled={operationLoading}
+              className={`h-9 ${email && !emailValidation.valid ? 'border-red-500' : ''}`}
+            />
+            {email && !emailValidation.valid && (
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                {emailValidation.error}
+              </p>
+            )}
           </div>
+
+          {/* Role Select */}
+          <Select value={role} onValueChange={(value) => setRole(value as OrgRole)}>
+            <SelectTrigger disabled={operationLoading} className="w-32 h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="member">Member</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              {userRole === 'owner' && <SelectItem value="owner">Owner</SelectItem>}
+            </SelectContent>
+          </Select>
 
           <Button
             type="submit"
             disabled={!canSubmit}
-            className="bg-blue-500 hover:bg-blue-600"
+            size="sm"
+            className="bg-blue-500 hover:bg-blue-600 h-9"
           >
-            <Send className="h-4 w-4 mr-2" />
-            Send Invitation
+            <Send className="h-4 w-4 mr-1" />
+            Invite
           </Button>
-        </form>
-
-        {/* Email Info */}
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="flex items-start gap-2">
-            <Mail className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-700 dark:text-blue-300" />
-            <div className="text-sm text-blue-800 dark:text-blue-200">
-              An email will be sent to the invitee with an invitation link. You can also use the{' '}
-              <span className="inline-flex items-center gap-1 font-medium">
-                <Copy className="h-3 w-3" /> Copy Link
-              </span>{' '}
-              button to share the invitation URL directly.
-            </div>
-          </div>
         </div>
-      </div>
+      </form>
 
       {/* Invitations List */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Invitations ({invitations.length})
-          </h3>
+          <span className="text-sm text-muted-foreground">
+            {invitations.length} pending {invitations.length === 1 ? 'invitation' : 'invitations'}
+          </span>
           {invitations.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refresh}
-              disabled={loading}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-7 px-2">
+              <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           )}
         </div>
 
         {invitations.length === 0 ? (
-          <div className="text-center py-8 border rounded-lg bg-muted/20">
-            <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground">No invitations</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Invite team members using the form above
-            </p>
+          <div className="text-center py-6 border rounded-lg bg-muted/10">
+            <p className="text-sm text-muted-foreground">No pending invitations</p>
           </div>
         ) : (
           <div className="space-y-2">

@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Settings, Users, Mail, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
 import type { Organization, OrgRole } from '@/features/organizations';
 import { GeneralSettings } from './GeneralSettings';
 import { MemberManagement } from './MemberManagement';
@@ -45,36 +44,32 @@ export function OrgSettings({
   const canDelete = isOwner && !organization.isPersonal;
 
   return (
-    <Card className="p-6">
+    <div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-6">
-          {/* General Tab - Available to all members */}
-          <TabsTrigger value="general" className="gap-2">
-            <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">General</span>
+        <TabsList className="w-full justify-start gap-1 h-auto p-1 mb-4">
+          <TabsTrigger value="general" className="gap-1.5 px-3 py-1.5 text-sm">
+            <Settings className="h-3.5 w-3.5" />
+            General
           </TabsTrigger>
 
-          {/* Members Tab - Admin/Owner only */}
           {canManageMembers && (
-            <TabsTrigger value="members" className="gap-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Members</span>
+            <TabsTrigger value="members" className="gap-1.5 px-3 py-1.5 text-sm">
+              <Users className="h-3.5 w-3.5" />
+              Members
             </TabsTrigger>
           )}
 
-          {/* Invitations Tab - Admin/Owner only */}
           {canManageSettings && (
-            <TabsTrigger value="invitations" className="gap-2">
-              <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Invitations</span>
+            <TabsTrigger value="invitations" className="gap-1.5 px-3 py-1.5 text-sm">
+              <Mail className="h-3.5 w-3.5" />
+              Invites
             </TabsTrigger>
           )}
 
-          {/* Danger Zone Tab - Owner only, not personal org */}
           {canDelete && (
-            <TabsTrigger value="danger" className="gap-2 text-red-600 dark:text-red-400">
-              <AlertTriangle className="h-4 w-4" />
-              <span className="hidden sm:inline">Danger Zone</span>
+            <TabsTrigger value="danger" className="gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 data-[state=active]:text-red-600">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Danger
             </TabsTrigger>
           )}
         </TabsList>
@@ -123,13 +118,13 @@ export function OrgSettings({
 
       {/* Read-only notice for members */}
       {!canManageSettings && activeTab === 'general' && (
-        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Note:</strong> You have view-only access to this organization. Contact an admin or owner to make changes.
+            View-only access. Contact an admin to make changes.
           </p>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 

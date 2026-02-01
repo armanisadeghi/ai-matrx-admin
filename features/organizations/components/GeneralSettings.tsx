@@ -99,60 +99,45 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header with Edit/Save buttons */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">General Information</h3>
-          <p className="text-sm text-muted-foreground">
-            Basic details about your organization
-          </p>
-        </div>
-
-        {canEdit && (
-          <div className="flex gap-2">
-            {!isEditing ? (
-              <Button
-                onClick={() => setIsEditing(true)}
-                variant="outline"
-              >
-                Edit
+    <div className="space-y-5">
+      {/* Edit/Save buttons */}
+      {canEdit && (
+        <div className="flex justify-end gap-2">
+          {!isEditing ? (
+            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+              Edit
+            </Button>
+          ) : (
+            <>
+              <Button onClick={handleCancel} variant="outline" size="sm" disabled={isSaving}>
+                <X className="h-4 w-4 mr-1" />
+                Cancel
               </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  disabled={isSaving}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={!hasChanges || !isFormValid || isSaving}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+              <Button
+                onClick={handleSave}
+                disabled={!hasChanges || !isFormValid || isSaving}
+                size="sm"
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-1" />
+                    Save
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Form Fields */}
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Organization Name */}
         <div className="space-y-2">
           <Label htmlFor="name">Organization Name *</Label>

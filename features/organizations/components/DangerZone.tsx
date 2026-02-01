@@ -71,57 +71,31 @@ export function DangerZone({ organization }: DangerZoneProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Warning Header */}
-      <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-        <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-        <div>
-          <h4 className="font-semibold text-red-900 dark:text-red-100">Danger Zone</h4>
-          <p className="text-sm text-red-800 dark:text-red-200 mt-1">
-            Actions in this section are permanent and cannot be undone. Please proceed with caution.
-          </p>
-        </div>
-      </div>
-
+    <div className="space-y-4">
       {/* Delete Organization Section */}
-      <div className="border border-red-200 dark:border-red-800 rounded-lg p-6 space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 flex items-center gap-2">
-            <Trash2 className="h-5 w-5" />
-            Delete Organization
-          </h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            Permanently delete this organization and all of its data. This action cannot be reversed.
-          </p>
+      <div className="border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-medium text-red-900 dark:text-red-100">Delete Organization</h3>
+            <p className="text-sm text-muted-foreground">
+              Permanently remove this organization and all data. This cannot be undone.
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
+          </Button>
         </div>
 
-        <div className="space-y-3 text-sm">
-          <p className="font-medium">When you delete this organization:</p>
-          <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-2">
-            <li>All members will lose access immediately</li>
-            <li>All shared resources will become private</li>
-            <li>All pending invitations will be cancelled</li>
-            <li>The organization name and slug will become available for reuse</li>
-            <li>This action is permanent and cannot be undone</li>
-          </ul>
-        </div>
-
-        <Button
-          variant="destructive"
-          onClick={() => setIsDeleteDialogOpen(true)}
-          className="w-full sm:w-auto"
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete Organization
-        </Button>
-      </div>
-
-      {/* Member Count Warning */}
-      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-        <p className="text-sm text-amber-800 dark:text-amber-200">
-          <strong>Note:</strong> Make sure to inform your team members before deleting this organization.
-          They will lose access to all shared resources.
-        </p>
+        <ul className="text-xs text-muted-foreground space-y-0.5 border-t pt-3">
+          <li>• All members lose access immediately</li>
+          <li>• Shared resources become private</li>
+          <li>• Pending invitations are cancelled</li>
+        </ul>
       </div>
 
       {/* Delete Confirmation Dialog */}

@@ -17,7 +17,7 @@ import { OrgSettings } from '@/features/organizations/components/OrgSettings';
  * - Load organization details
  * - Check user permissions
  * - Display tabbed settings interface
- * - Handle navigation back to org list
+ * - Layout provides sidebar with all orgs
  */
 export default function OrganizationSettingsPage() {
   const params = useParams();
@@ -32,10 +32,10 @@ export default function OrganizationSettingsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="h-full w-full bg-textured flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading organization...</p>
+          <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Loading organization...</p>
         </div>
       </div>
     );
@@ -44,16 +44,16 @@ export default function OrganizationSettingsPage() {
   // Error state
   if (orgError || !organization) {
     return (
-      <div className="h-full w-full bg-textured p-8">
-        <Card className="max-w-2xl mx-auto p-8 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+      <div className="p-4 md:p-6">
+        <Card className="max-w-lg mx-auto p-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-red-900 dark:text-red-100 mb-2">
+            <h2 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-2">
               Organization Not Found
             </h2>
-            <p className="text-red-700 dark:text-red-300 mb-6">
-              {orgError || 'The organization you\'re looking for doesn\'t exist or you don\'t have access to it.'}
+            <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+              {orgError || 'This organization doesn\'t exist or you don\'t have access.'}
             </p>
-            <Button onClick={() => router.push('/settings/organizations')} variant="outline">
+            <Button onClick={() => router.push('/settings/organizations')} variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Organizations
             </Button>
@@ -66,16 +66,16 @@ export default function OrganizationSettingsPage() {
   // Not a member
   if (!role) {
     return (
-      <div className="h-full w-full bg-textured p-8">
-        <Card className="max-w-2xl mx-auto p-8 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+      <div className="p-4 md:p-6">
+        <Card className="max-w-lg mx-auto p-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-2">
+            <h2 className="text-lg font-semibold text-amber-900 dark:text-amber-100 mb-2">
               Access Denied
             </h2>
-            <p className="text-amber-700 dark:text-amber-300 mb-6">
+            <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
               You are not a member of this organization.
             </p>
-            <Button onClick={() => router.push('/settings/organizations')} variant="outline">
+            <Button onClick={() => router.push('/settings/organizations')} variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Organizations
             </Button>
@@ -86,39 +86,13 @@ export default function OrganizationSettingsPage() {
   }
 
   return (
-    <div className="h-full w-full bg-textured">
-      <div className="p-8 md:p-12">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => router.push('/settings/organizations')}
-            className="mb-4 -ml-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Organizations
-          </Button>
-
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                {organization.name}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Organization Settings
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Settings Component */}
-        <OrgSettings
-          organization={organization}
-          userRole={role}
-          isOwner={isOwner}
-          isAdmin={isAdmin}
-        />
-      </div>
+    <div className="p-4 md:p-6 max-w-5xl">
+      <OrgSettings
+        organization={organization}
+        userRole={role}
+        isOwner={isOwner}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }

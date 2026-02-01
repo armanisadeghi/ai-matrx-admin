@@ -59,7 +59,7 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="space-y-1">
+    <nav className="space-y-0.5">
       {settingsNavItems.map((item) => {
         const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
         
@@ -69,29 +69,20 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
             href={item.href}
             onClick={onItemClick}
             className={cn(
-              'flex items-start gap-3 px-3 py-3 rounded-lg transition-all',
-              'hover:bg-gray-50 dark:hover:bg-zinc-700/50',
+              'flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors text-sm',
+              'hover:bg-muted',
               isActive
-                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                : 'text-gray-700 dark:text-gray-300'
+                ? 'bg-primary/10 text-primary font-medium'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <div
-              className={cn(
-                'mt-0.5',
-                isActive
-                  ? 'text-indigo-600 dark:text-indigo-400'
-                  : 'text-gray-500 dark:text-gray-400'
-              )}
-            >
+            <span className={cn(
+              'flex-shrink-0',
+              isActive ? 'text-primary' : 'text-muted-foreground'
+            )}>
               {item.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm">{item.title}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {item.description}
-              </div>
-            </div>
+            </span>
+            <span className="truncate">{item.title}</span>
           </Link>
         );
       })}
@@ -115,57 +106,49 @@ export default function SettingsLayout({
 
   return (
     <div className="h-page w-full bg-textured overflow-hidden flex flex-col">
-      {/* Header */}
+      {/* Compact Header */}
       <div className="flex-shrink-0 border-b border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-        <div className="px-4 md:px-6 py-3 md:py-4">
+        <div className="h-12 px-3 md:px-4 flex items-center gap-3">
+          {/* Back Button */}
           <Link 
             href="/dashboard" 
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 mb-2 md:mb-3 transition-colors"
+            className="flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="Back to Dashboard"
           >
-            <ArrowLeft size={16} className="mr-2" />
-            <span className="text-sm font-medium">Back to Dashboard</span>
+            <ArrowLeft size={18} />
           </Link>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {isMobile && currentPage ? currentPage.title : 'Settings'}
-              </h1>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {isMobile && currentPage 
-                  ? currentPage.description
-                  : 'Manage your account settings and preferences'
-                }
-              </p>
-            </div>
-            
-            {/* Mobile Menu Button */}
-            {isMobile && (
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-72">
-                  <SheetHeader>
-                    <SheetTitle>Settings Menu</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-6">
-                    <SettingsNavigation onItemClick={() => setMobileMenuOpen(false)} />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            )}
-          </div>
+          {/* Title */}
+          <h1 className="text-base font-semibold text-foreground flex-1 truncate">
+            {currentPage ? currentPage.title : 'Settings'}
+          </h1>
+          
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72">
+                <SheetHeader>
+                  <SheetTitle>Settings</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                  <SettingsNavigation onItemClick={() => setMobileMenuOpen(false)} />
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
         </div>
       </div>
 
       {/* Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar Navigation */}
-        <aside className="hidden md:flex w-64 flex-shrink-0 border-r border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 overflow-y-auto">
-          <div className="p-4 w-full">
+        <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
+          <div className="p-3 w-full">
             <SettingsNavigation />
           </div>
         </aside>
