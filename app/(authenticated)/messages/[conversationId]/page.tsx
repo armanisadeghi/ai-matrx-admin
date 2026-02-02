@@ -3,8 +3,11 @@
 import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { closeMessaging } from "@/features/messaging/redux/messagingSlice";
-import { useConversations } from "@/hooks/useSupabaseMessaging";
+import { 
+  closeMessaging,
+  setCurrentConversation,
+  selectConversations,
+} from "@/features/messaging/redux/messagingSlice";
 import { ChatThread } from "@/features/messaging/components/ChatThread";
 import { MessagesHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 
@@ -22,14 +25,20 @@ export default function ConversationPage() {
     user?.email?.split("@")[0] ||
     "User";
 
-  // Get conversations to find current conversation for display name
-  const { conversations } = useConversations(userId || null);
+  // Get conversations from Redux (centralized state)
+  const conversations = useAppSelector(selectConversations);
   const currentConversation = conversations.find((c) => c.id === conversationId);
 
-  // Close side sheet on mount (using full page view)
+  // Close side sheet and set current conversation on mount
   useEffect(() => {
     dispatch(closeMessaging());
-  }, [dispatch]);
+    dispatch(setCurrentConversation(conversationId));
+    
+    // Clear current conversation when leaving
+    return () => {
+      dispatch(setCurrentConversation(null));
+    };
+  }, [dispatch, conversationId]);
 
   return (
     <>

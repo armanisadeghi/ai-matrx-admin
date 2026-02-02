@@ -100,13 +100,15 @@ export const messagingSlice = createSlice({
     
     /**
      * Set current conversation
+     * Header badge counts conversations with unread, not total messages
      */
     setCurrentConversation: (state, action: PayloadAction<string | null>) => {
       state.currentConversationId = action.payload;
       
-      // Clear unread count for this conversation
-      if (action.payload && state.unreadCounts[action.payload]) {
-        state.totalUnreadCount -= state.unreadCounts[action.payload];
+      // Clear unread count for this conversation (user is viewing it)
+      if (action.payload && state.unreadCounts[action.payload] > 0) {
+        // Only decrement badge by 1 (one less conversation with unread)
+        state.totalUnreadCount = Math.max(0, state.totalUnreadCount - 1);
         state.unreadCounts[action.payload] = 0;
         
         // Update conversation in list
@@ -128,35 +130,71 @@ export const messagingSlice = createSlice({
     
     /**
      * Set conversations list
+     * Note: totalUnreadCount = number of CONVERSATIONS with unread (for header badge)
+     *       unreadCounts = individual unread message counts per conversation
      */
     setConversations: (state, action: PayloadAction<ConversationWithDetails[]>) => {
       state.conversations = action.payload;
       
       // Recalculate unread counts
       state.unreadCounts = {};
-      state.totalUnreadCount = 0;
+      let conversationsWithUnread = 0;
+      
       action.payload.forEach(conv => {
-        state.unreadCounts[conv.id] = conv.unread_count || 0;
-        state.totalUnreadCount += conv.unread_count || 0;
+        const count = conv.unread_count || 0;
+        state.unreadCounts[conv.id] = count;
+        if (count > 0) {
+          conversationsWithUnread++;
+        }
       });
+      
+      // Header badge shows number of conversations with unread messages
+      state.totalUnreadCount = conversationsWithUnread;
     },
     
     /**
      * Update a single conversation (e.g., new message received)
+     * Updates unread counts and header badge (conversation count, not message sum)
      */
     updateConversation: (state, action: PayloadAction<ConversationWithDetails>) => {
-      const index = state.conversations.findIndex(c => c.id === action.payload.id);
+      const newConv = action.payload;
+      const index = state.conversations.findIndex(c => c.id === newConv.id);
+      
+      // Track if this affects the header badge (conversations with unread count)
+      const oldUnreadCount = index >= 0 
+        ? state.conversations[index].unread_count || 0 
+        : 0;
+      const newUnreadCount = newConv.unread_count || 0;
+      
+      // Header badge counts conversations with unread, not total unread messages
+      const hadUnread = oldUnreadCount > 0;
+      const hasUnread = newUnreadCount > 0;
+      
+      if (!hadUnread && hasUnread) {
+        // Conversation now has unread messages
+        state.totalUnreadCount += 1;
+      } else if (hadUnread && !hasUnread) {
+        // Conversation no longer has unread messages
+        state.totalUnreadCount = Math.max(0, state.totalUnreadCount - 1);
+      }
+      // If both had and have unread (or neither), no change to totalUnreadCount
+      
+      // Update per-conversation unread count
+      state.unreadCounts[newConv.id] = newUnreadCount;
+      
       if (index >= 0) {
-        state.conversations[index] = action.payload;
+        state.conversations[index] = newConv;
       } else {
-        // New conversation, add to beginning
-        state.conversations.unshift(action.payload);
+        // New conversation - if it has unread, we already incremented above
+        state.conversations.unshift(newConv);
       }
       
-      // Sort by updated_at (most recent first)
-      state.conversations.sort((a, b) => 
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-      );
+      // Sort by last_message time or updated_at (most recent first)
+      state.conversations.sort((a, b) => {
+        const aTime = a.last_message?.created_at || a.updated_at;
+        const bTime = b.last_message?.created_at || b.updated_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
     },
     
     /**
@@ -184,13 +222,24 @@ export const messagingSlice = createSlice({
     
     /**
      * Update unread count for a conversation
+     * Header badge counts conversations with unread, not total messages
      */
     updateUnreadCount: (state, action: PayloadAction<{ conversationId: string; count: number }>) => {
       const { conversationId, count } = action.payload;
       const oldCount = state.unreadCounts[conversationId] || 0;
       
+      // Track if this affects the header badge
+      const hadUnread = oldCount > 0;
+      const hasUnread = count > 0;
+      
       state.unreadCounts[conversationId] = count;
-      state.totalUnreadCount += count - oldCount;
+      
+      // Header badge counts conversations with unread
+      if (!hadUnread && hasUnread) {
+        state.totalUnreadCount += 1;
+      } else if (hadUnread && !hasUnread) {
+        state.totalUnreadCount = Math.max(0, state.totalUnreadCount - 1);
+      }
       
       // Update conversation in list
       const conv = state.conversations.find(c => c.id === conversationId);
@@ -201,6 +250,7 @@ export const messagingSlice = createSlice({
     
     /**
      * Increment unread count for a conversation (when receiving new message)
+     * Header badge counts conversations with unread, not total messages
      */
     incrementUnreadCount: (state, action: PayloadAction<string>) => {
       const conversationId = action.payload;
@@ -210,25 +260,37 @@ export const messagingSlice = createSlice({
         return;
       }
       
-      state.unreadCounts[conversationId] = (state.unreadCounts[conversationId] || 0) + 1;
-      state.totalUnreadCount += 1;
+      const oldCount = state.unreadCounts[conversationId] || 0;
+      const newCount = oldCount + 1;
+      
+      state.unreadCounts[conversationId] = newCount;
+      
+      // Only increment header badge if conversation went from 0 to 1 unread
+      if (oldCount === 0) {
+        state.totalUnreadCount += 1;
+      }
       
       // Update conversation in list
       const conv = state.conversations.find(c => c.id === conversationId);
       if (conv) {
-        conv.unread_count = (conv.unread_count || 0) + 1;
+        conv.unread_count = newCount;
       }
     },
     
     /**
      * Mark conversation as read (clear unread count)
+     * Header badge counts conversations with unread, not total messages
      */
     markConversationAsRead: (state, action: PayloadAction<string>) => {
       const conversationId = action.payload;
-      const count = state.unreadCounts[conversationId] || 0;
+      const oldCount = state.unreadCounts[conversationId] || 0;
       
       state.unreadCounts[conversationId] = 0;
-      state.totalUnreadCount -= count;
+      
+      // Only decrement header badge if conversation had unread messages
+      if (oldCount > 0) {
+        state.totalUnreadCount = Math.max(0, state.totalUnreadCount - 1);
+      }
       
       // Update conversation in list
       const conv = state.conversations.find(c => c.id === conversationId);

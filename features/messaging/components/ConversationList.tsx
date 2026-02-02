@@ -2,7 +2,8 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useConversations } from "@/hooks/useSupabaseMessaging";
+import { useAppSelector } from "@/lib/redux";
+import { selectConversations, selectMessagingIsLoading } from "../redux/messagingSlice";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,8 +30,9 @@ export function ConversationList({
   const [isPending, startTransition] = useTransition();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   
-  // Use the hook directly instead of Redux - much simpler!
-  const { conversations, isLoading } = useConversations(userId || null);
+  // Read conversations from Redux (centralized state managed by MessagingInitializer)
+  const conversations = useAppSelector(selectConversations);
+  const isLoading = useAppSelector(selectMessagingIsLoading);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewConversation, setShowNewConversation] = useState(false);
@@ -69,11 +71,27 @@ export function ConversationList({
       .slice(0, 2);
   };
 
-  // Format time
+  // Format time in compact format (e.g., "1m", "2h", "3d")
   const formatTime = (dateString: string | null | undefined): string => {
     if (!dateString) return "";
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHour = Math.floor(diffMin / 60);
+      const diffDay = Math.floor(diffHour / 24);
+      const diffWeek = Math.floor(diffDay / 7);
+
+      if (diffSec < 60) return "now";
+      if (diffMin < 60) return `${diffMin}m ago`;
+      if (diffHour < 24) return `${diffHour}h ago`;
+      if (diffDay < 7) return `${diffDay}d ago`;
+      if (diffWeek < 4) return `${diffWeek}w ago`;
+      
+      // For older messages, show date
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     } catch {
       return "";
     }
@@ -224,7 +242,8 @@ function ConversationItem({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
+        {/* Name row */}
+        <div className="flex items-center gap-2">
           <span
             className={cn(
               "text-sm font-medium truncate",
@@ -235,31 +254,31 @@ function ConversationItem({
           >
             {display_name || "Unknown"}
           </span>
-          <span className="text-xs text-zinc-400 shrink-0">
-            {formatTime(last_message?.created_at || updated_at)}
-          </span>
+          {unread_count > 0 && (
+            <Badge
+              variant="default"
+              className="h-4 min-w-[16px] px-1 text-[10px] shrink-0 bg-primary text-primary-foreground"
+            >
+              {unread_count > 99 ? "99+" : unread_count}
+            </Badge>
+          )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 mt-0.5">
+        {/* Message preview and time row */}
+        <div className="grid grid-cols-[1fr_auto] gap-2 items-center mt-0.5">
           <p
             className={cn(
               "text-xs truncate",
               unread_count && unread_count > 0
-                ? "text-zinc-700 dark:text-zinc-300 font-medium"
+                ? "text-zinc-600 dark:text-zinc-300"
                 : "text-zinc-500 dark:text-zinc-400"
             )}
           >
             {last_message?.content || "No messages yet"}
           </p>
-
-          {unread_count > 0 && (
-            <Badge
-              variant="default"
-              className="h-5 min-w-[20px] px-1.5 shrink-0 bg-primary text-primary-foreground"
-            >
-              {unread_count > 99 ? "99+" : unread_count}
-            </Badge>
-          )}
+          <time className="text-[11px] text-zinc-400 dark:text-zinc-500">
+            {formatTime(last_message?.created_at || updated_at)}
+          </time>
         </div>
       </div>
     </button>

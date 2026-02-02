@@ -73,7 +73,8 @@ export class MessagingService {
   private typingCallbacks = new Map<string, Map<string, TypingCallback>>();
 
   constructor() {
-    this.supabase.auth.getSession().then(({ data, error }) => {
+    // Verify auth on init - only log errors
+    this.supabase.auth.getSession().then(({ error }) => {
       if (error) {
         console.error('[DM] Auth error:', error);
       }
@@ -232,9 +233,8 @@ export class MessagingService {
     // BROADCAST subscription (immediate delivery)
     channel.on('broadcast', { event: 'new_message' }, (payload) => {
       if (payload.payload) {
-        const msg = payload.payload as Message;
-        console.log(`[DM] 📥 Received message: "${msg.content?.substring(0, 30)}..."`);
-        onMessage(msg);
+        console.log('[DM] 📥 realtime: message (broadcast)');
+        onMessage(payload.payload as Message);
       }
     });
 
@@ -245,9 +245,8 @@ export class MessagingService {
       table: 'dm_messages',
       filter: `conversation_id=eq.${conversationId}`,
     }, (payload) => {
-      const msg = payload.new as Message;
-      console.log(`[DM] 📥 Received message (DB): "${msg.content?.substring(0, 30)}..."`);
-      onMessage(msg);
+      console.log('[DM] 📥 realtime: message (db insert)');
+      onMessage(payload.new as Message);
     });
 
     // POSTGRES_CHANGES for UPDATE
@@ -257,6 +256,7 @@ export class MessagingService {
       table: 'dm_messages',
       filter: `conversation_id=eq.${conversationId}`,
     }, (payload) => {
+      console.log('[DM] 📥 realtime: message (db update)');
       onMessage(payload.new as Message);
     });
 
@@ -312,7 +312,7 @@ export class MessagingService {
       throw error;
     }
 
-    console.log(`[DM] 📤 Sent message: "${content.substring(0, 30)}..."`);
+    console.log('[DM] 📤 sent: message');
 
     // BROADCAST to channel subscribers for immediate delivery
     const channelName = `conversation:${conversationId}`;
@@ -404,7 +404,7 @@ export class MessagingService {
         });
 
         if (typingUsers.length > 0) {
-          console.log(`[DM] ⌨️ Received typing: ${typingUsers.map(u => u.display_name).join(', ')}`);
+          console.log(`[DM] 📥 realtime: typing (${typingUsers.map(u => u.display_name).join(', ')})`);
         }
 
         // Call ALL registered callbacks for this channel
@@ -445,7 +445,7 @@ export class MessagingService {
       }
 
       if (isTyping) {
-        console.log(`[DM] ⌨️ Broadcasting typing...`);
+        console.log('[DM] 📤 sent: typing');
       }
 
       await channel.track({
