@@ -148,6 +148,27 @@ export const emailTemplates = {
     `,
   }),
 
+  organizationInvitationReminder: (
+    organizationName: string,
+    inviterName: string,
+    invitationUrl: string,
+    expiresAt: Date
+  ) => ({
+    subject: `Reminder: Join ${organizationName} on AI Matrx`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #f59e0b;">Invitation Reminder</h1>
+        <p>This is a reminder that <strong>${inviterName}</strong> has invited you to join <strong>${organizationName}</strong> on AI Matrx.</p>
+        <p>AI Matrx is a powerful platform for AI prompt engineering, canvas creation, and team collaboration.</p>
+        <div style="margin: 24px 0;">
+          <a href="${invitationUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Accept Invitation</a>
+        </div>
+        <p style="color: #666; font-size: 14px;">This invitation has been extended and will now expire on ${expiresAt.toLocaleDateString()}.</p>
+        <p style="color: #666; font-size: 14px;">If you're not interested, you can safely ignore this email.</p>
+      </div>
+    `,
+  }),
+
   resourceShared: (
     sharerName: string,
     resourceType: string,
