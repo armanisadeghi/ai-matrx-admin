@@ -205,6 +205,8 @@ export interface UseMessagesReturn {
 export interface UseTypingIndicatorReturn {
   typingUsers: UserBasicInfo[];
   setTyping: (isTyping: boolean) => void;
+  isAnyoneTyping: boolean;
+  typingText: string;
 }
 
 export interface UseChatReturn extends UseMessagesReturn, UseTypingIndicatorReturn {

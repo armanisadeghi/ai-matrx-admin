@@ -332,12 +332,20 @@ export function useMessages(
 // useTypingIndicator Hook
 // ============================================
 
+// Internal typing user type matching the service
+interface TypingUserInternal {
+  user_id: string;
+  display_name: string;
+  is_typing: boolean;
+  last_typed_at: number;
+}
+
 export function useTypingIndicator(
   conversationId: string | null,
   userId: string | null,
   displayName: string
 ): UseTypingIndicatorReturn {
-  const [typingUsers, setTypingUsers] = useState<UserBasicInfo[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUserInternal[]>([]);
   const setTypingRef = useRef<((isTyping: boolean) => void) | null>(null);
   const messagingService = getMessagingService();
 
@@ -351,16 +359,7 @@ export function useTypingIndicator(
       conversationId,
       userId,
       displayName,
-      (typing) => {
-        // Convert typing users to UserBasicInfo format
-        const users: UserBasicInfo[] = typing.map((t) => ({
-          user_id: t.user_id,
-          email: null,
-          display_name: t.display_name,
-          avatar_url: null,
-        }));
-        setTypingUsers(users);
-      }
+      setTypingUsers
     );
 
     setTypingRef.current = setTyping;
@@ -377,9 +376,33 @@ export function useTypingIndicator(
     }
   }, []);
 
+  const isAnyoneTyping = typingUsers.length > 0;
+
+  const typingText = (() => {
+    if (typingUsers.length === 0) return "";
+    if (typingUsers.length === 1) {
+      return `${typingUsers[0].display_name || "Someone"} is typing...`;
+    }
+    if (typingUsers.length === 2) {
+      const names = typingUsers.map((u) => u.display_name || "Someone");
+      return `${names.join(" and ")} are typing...`;
+    }
+    return "Several people are typing...";
+  })();
+
+  // Convert to UserBasicInfo format for return
+  const typingUsersAsBasicInfo: UserBasicInfo[] = typingUsers.map((t) => ({
+    user_id: t.user_id,
+    email: null,
+    display_name: t.display_name,
+    avatar_url: null,
+  }));
+
   return {
-    typingUsers,
+    typingUsers: typingUsersAsBasicInfo,
     setTyping,
+    isAnyoneTyping,
+    typingText,
   };
 }
 
@@ -463,13 +486,11 @@ export function useConversations(userId: string | null): UseConversationsReturn 
   // Load conversations
   const loadConversations = useCallback(async () => {
     if (!userId) {
-      console.log('[DM] useConversations: No userId, skipping load');
       setConversations([]);
       setIsLoading(false);
       return;
     }
 
-    console.log('[DM] useConversations: Loading conversations for user:', userId);
     setIsLoading(true);
     setError(null);
 
@@ -477,18 +498,14 @@ export function useConversations(userId: string | null): UseConversationsReturn 
       // Use the database function for efficient loading
       const { data, error: fetchError } = await supabase
         .rpc('get_dm_conversations_with_details', { p_user_id: userId });
-      
-      console.log('[DM] useConversations: RPC result:', { data, error: fetchError });
 
       if (!mountedRef.current) return;
 
       if (fetchError) {
-        console.error('[DM] useConversations: Error fetching conversations:', fetchError);
+        console.error('[Messaging] Error loading conversations:', fetchError.message);
         setError(fetchError.message);
         return;
       }
-
-      console.log('[DM] useConversations: Processing', data?.length || 0, 'conversations');
 
       // Fetch participants for each conversation
       const conversationsWithParticipants = await Promise.all(
@@ -554,7 +571,6 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
       if (!mountedRef.current) return;
 
-      console.log('[DM] useConversations: Processed conversations:', conversationsWithParticipants);
       setConversations(conversationsWithParticipants);
       
       // Calculate total unread
@@ -563,9 +579,9 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         0
       );
       setTotalUnreadCount(total);
-      console.log('[DM] useConversations: Set', conversationsWithParticipants.length, 'conversations, total unread:', total);
     } catch (err) {
       if (!mountedRef.current) return;
+      console.error('[Messaging] Failed to load conversations:', err);
       setError(err instanceof Error ? err.message : 'Failed to load conversations');
     } finally {
       if (mountedRef.current) {
@@ -599,7 +615,6 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         table: 'dm_messages',
       },
       async () => {
-        console.log('[DM Conversations] New message received, refreshing list');
         await loadConversations();
       }
     );
@@ -619,17 +634,12 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         
         // Only refresh if last_read_at changed
         if (oldData.last_read_at !== newData.last_read_at) {
-          console.log('[DM Conversations] Messages marked as read, refreshing list');
           await loadConversations();
         }
       }
     );
 
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        console.log('[DM Conversations] Subscribed to conversation updates');
-      }
-    });
+    channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);

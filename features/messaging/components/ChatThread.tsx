@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectCurrentConversation } from "../redux/messagingSlice";
 import { useChat } from "@/hooks/useSupabaseMessaging";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronUp, Loader2 } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { TypingIndicator } from "./TypingIndicator";
 import { OnlineIndicator } from "./OnlineIndicator";
 import { cn } from "@/lib/utils";
 
@@ -27,18 +26,22 @@ export function ChatThread({
   displayName: propDisplayName,
   className,
 }: ChatThreadProps) {
-  const dispatch = useAppDispatch();
   const conversation = useAppSelector(selectCurrentConversation);
 
   // Get user from Redux state - use auth.users.id (UUID)
   const user = useAppSelector((state) => state.user);
   const userId = propUserId || user?.id;
-  const displayName =
-    propDisplayName ||
-    user?.userMetadata?.fullName ||
-    user?.userMetadata?.name ||
-    user?.email?.split("@")[0] ||
-    "User";
+  
+  // Memoize displayName to prevent unnecessary effect re-runs
+  const displayName = useMemo(
+    () =>
+      propDisplayName ||
+      user?.userMetadata?.fullName ||
+      user?.userMetadata?.name ||
+      user?.email?.split("@")[0] ||
+      "User",
+    [propDisplayName, user?.userMetadata?.fullName, user?.userMetadata?.name, user?.email]
+  );
 
   // Chat hook
   const {
@@ -49,8 +52,9 @@ export function ChatThread({
     hasMore,
     sendMessage,
     loadMoreMessages,
-    typingUsers,
     setTyping,
+    isAnyoneTyping,
+    typingText,
     onlineUsers,
   } = useChat(conversationId, userId || null, displayName, {
     autoMarkAsRead: true,
@@ -222,8 +226,19 @@ export function ChatThread({
             ))}
 
             {/* Typing Indicator */}
-            {typingUsers.length > 0 && (
-              <TypingIndicator typingUsers={typingUsers} />
+            {isAnyoneTyping && (
+              <div className="flex items-center gap-2 px-4 py-2">
+                {/* Animated dots */}
+                <div className="flex items-center gap-0.5">
+                  <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" />
+                </div>
+                {/* Typing text */}
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                  {typingText}
+                </span>
+              </div>
             )}
           </div>
         )}

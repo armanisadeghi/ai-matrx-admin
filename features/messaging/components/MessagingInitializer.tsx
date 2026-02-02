@@ -49,11 +49,10 @@ export function MessagingInitializer() {
         const conversationsWithUnread = data.filter(
           (conv: { unread_count: number }) => conv.unread_count > 0
         ).length;
-        console.log('[DM Global] Updated conversation count with unread:', conversationsWithUnread);
         dispatch(setTotalUnreadCount(conversationsWithUnread));
       }
     } catch (error) {
-      console.error('[DM Global] Failed to fetch unread count:', error);
+      console.error('[Messaging] Failed to update unread count:', error);
     }
   }, [userId, supabase, dispatch]);
 
@@ -81,7 +80,6 @@ export function MessagingInitializer() {
         
         // If message is from someone else, update unread count
         if (newMessage.sender_id !== userId) {
-          console.log('[DM Global] New message from other user, updating unread count');
           await updateUnreadCount();
         }
       }
@@ -102,19 +100,12 @@ export function MessagingInitializer() {
         
         // If last_read_at was updated (messages marked as read)
         if (oldData.last_read_at !== newData.last_read_at) {
-          console.log('[DM Global] Messages marked as read, updating unread count');
           await updateUnreadCount();
         }
       }
     );
 
-    channel.subscribe((status, err) => {
-      if (status === 'SUBSCRIBED') {
-        console.log('[DM Global] Subscribed to global DM updates');
-      } else if (status === 'CHANNEL_ERROR') {
-        console.error('[DM Global] Channel error:', err);
-      }
-    });
+    channel.subscribe();
 
     subscriptionRef.current = channel;
 
