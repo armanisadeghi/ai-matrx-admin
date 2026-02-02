@@ -3,11 +3,8 @@
 import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import {
-  setCurrentConversation,
-  selectCurrentConversation,
-  closeMessaging,
-} from "@/features/messaging/redux/messagingSlice";
+import { closeMessaging } from "@/features/messaging/redux/messagingSlice";
+import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { ChatThread } from "@/features/messaging/components/ChatThread";
 import { MessagesHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 
@@ -25,19 +22,18 @@ export default function ConversationPage() {
     user?.email?.split("@")[0] ||
     "User";
 
-  const currentConversation = useAppSelector(selectCurrentConversation);
+  // Get conversations to find current conversation for display name
+  const { conversations } = useConversations(userId || null);
+  const currentConversation = conversations.find((c) => c.id === conversationId);
 
-  // Set current conversation on mount
+  // Close side sheet on mount (using full page view)
   useEffect(() => {
-    if (conversationId) {
-      dispatch(setCurrentConversation(conversationId));
-      dispatch(closeMessaging()); // Close side sheet when viewing full page
-    }
-  }, [conversationId, dispatch]);
+    dispatch(closeMessaging());
+  }, [dispatch]);
 
   return (
     <>
-      {/* Header injected into main layout */}
+      {/* Header injected into main layout - mobile only shows back button */}
       <MessagesHeader 
         title={currentConversation?.display_name || "Chat"}
         showBack
@@ -45,7 +41,7 @@ export default function ConversationPage() {
       />
       
       {/* Chat Thread - Full height */}
-      <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden bg-background">
+      <div className="h-full flex flex-col overflow-hidden bg-background">
         <ChatThread
           conversationId={conversationId}
           userId={userId}

@@ -2,6 +2,9 @@
 import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 
+// Force dynamic rendering for all demo pages to avoid build timeouts
+export const dynamic = 'force-dynamic';
+
 export default function Layout(
     {
         children,

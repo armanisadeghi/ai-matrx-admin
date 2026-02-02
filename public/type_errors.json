@@ -5,5 +5,19 @@
     "column": null,
     "message": "Option '--incremental' can only be specified using tsconfig, emitting to single file or when option '--tsBuildInfoFile' is specified.",
     "code": 5074
+  },
+  {
+    "file": "components/user-generated-table-data/TableCards.tsx",
+    "line": 337,
+    "column": 83,
+    "message": "Type '{ size: number; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>'.\n  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>'.",
+    "code": 2322
+  },
+  {
+    "file": "lib/services/prompt-apps-admin-service.ts",
+    "line": 479,
+    "column": 59,
+    "message": "Property 'email' does not exist on type 'unknown'.",
+    "code": 2339
   }
 ]

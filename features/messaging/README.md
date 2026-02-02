@@ -17,6 +17,38 @@ Real-time user-to-user messaging for AI Matrx using Supabase Realtime.
 
 ## Architecture
 
+### Next.js Routing Structure
+
+The messaging system uses proper Next.js App Router patterns with dynamic routing:
+
+```
+app/(authenticated)/messages/
+├── layout.tsx              # Shared layout with persistent desktop sidebar
+├── page.tsx                # Conversation list (mobile full-screen, desktop empty state)
+└── [conversationId]/
+    └── page.tsx            # Chat thread view
+```
+
+**Key Features:**
+- **Desktop**: Persistent sidebar showing conversation list across all routes
+- **Mobile**: Full-screen route transitions between list and chat
+- **Deep Linking**: Share direct links to conversations (`/messages/[id]`)
+- **Browser Navigation**: Back/forward buttons work correctly
+- **Loading States**: `useTransition` for smooth navigation with loading indicators
+
+**Navigation Pattern:**
+```tsx
+// Use Next.js router, NOT Redux
+const router = useRouter();
+const [isPending, startTransition] = useTransition();
+
+const handleSelectConversation = (conversationId: string) => {
+  startTransition(() => {
+    router.push(`/messages/${conversationId}`);
+  });
+};
+```
+
 ### Database Schema
 
 All tables use `dm_` prefix to avoid conflicts. User references use `auth.users(id)` UUID.
@@ -149,21 +181,44 @@ const {
 } = useConversations(userId);
 ```
 
-### 5. Redux State
+### 5. Navigation
+
+**Use Next.js Router for navigation (NOT Redux):**
+
+```tsx
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+
+const router = useRouter();
+const [isPending, startTransition] = useTransition();
+
+// Navigate to a conversation
+const handleSelectConversation = (conversationId: string) => {
+  startTransition(() => {
+    router.push(`/messages/${conversationId}`);
+  });
+};
+```
+
+**Redux State (for UI only):**
 
 ```tsx
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import {
   openMessaging,
+  closeMessaging,
   selectTotalUnreadCount,
 } from '@/features/messaging';
 
-// Open to a specific conversation
-dispatch(openMessaging(conversationId));
+// Open/close side sheet
+dispatch(openMessaging());
+dispatch(closeMessaging());
 
-// Get unread count
+// Get unread count for header badge
 const unreadCount = useAppSelector(selectTotalUnreadCount);
 ```
+
+**Important:** Redux should only manage UI state (side sheet open/close, unread counts). Use URL-based routing for navigation, not Redux state.
 
 ## API Routes
 
@@ -210,6 +265,36 @@ app/(authenticated)/messages/   # Page routes
 
 ## Key Patterns
 
+### Next.js Routing (New Pattern)
+
+**Proper Component Lifecycle:**
+- Components unmount/remount correctly when navigating between routes
+- Real-time subscriptions are properly cleaned up on unmount
+- No stale subscriptions or memory leaks
+
+**Layout Structure:**
+```tsx
+// messages/layout.tsx
+<div className="flex h-full">
+  {/* Desktop sidebar - always visible */}
+  <div className="hidden md:flex w-80">
+    <ConversationList />
+  </div>
+  
+  {/* Main content - route outlet */}
+  <div className="flex-1">
+    {children}
+  </div>
+</div>
+```
+
+**Benefits:**
+- ✅ Shareable conversation URLs
+- ✅ Browser back/forward works
+- ✅ Proper component lifecycle
+- ✅ Real-time features work reliably
+- ✅ Better mobile UX with native route transitions
+
 ### Singleton MessagingService
 
 One instance manages all Supabase channels. Prevents duplicate subscriptions.
@@ -254,3 +339,72 @@ Uses Supabase Presence API to track who's currently viewing a conversation.
 - **SECURITY DEFINER functions**: Prevent RLS recursion issues
 - **Soft Delete**: Messages are marked deleted, not removed
 - **UUID References**: Uses `auth.users(id)` for all user references
+
+## Real-time Features
+
+### Typing Indicators
+
+Shows when other users are typing in real-time. Uses Supabase Presence API.
+
+**How it works:**
+1. User starts typing → `setTyping(true)` called
+2. Presence state updated via Supabase channel
+3. Other users see "User is typing..." within 1 second
+4. Auto-stops after 3 seconds of no typing
+
+**Requirements for proper function:**
+- Proper component lifecycle (unmount/remount)
+- Clean channel subscriptions
+- Next.js routing (not Redux-based navigation)
+
+### Online Presence
+
+Tracks which users are currently viewing the conversation.
+
+**How it works:**
+1. User opens conversation → Presence tracked
+2. Green dot shown for online users
+3. User navigates away → Presence untracked
+4. Offline status shown within 5-10 seconds
+
+**Requirements:**
+- `useOnlinePresence` hook subscribes on mount
+- Unsubscribes on unmount (proper cleanup)
+- Separate presence channel per conversation
+
+### Message Delivery
+
+Dual subscription pattern for reliability:
+
+1. **Broadcast** (immediate): Sender broadcasts to channel
+2. **postgres_changes** (reliable): Database INSERT triggers update
+
+**Deduplication:** Uses `client_message_id` to prevent duplicates.
+
+## Troubleshooting
+
+### Typing indicators not showing
+
+**Cause:** Improper component lifecycle (Redux-based navigation)
+
+**Solution:** Ensure using Next.js routing (`router.push`), not Redux state for navigation.
+
+### Online presence not updating
+
+**Cause:** Subscriptions not properly cleaned up
+
+**Solution:** Verify useEffect cleanup functions are running. Check console for channel cleanup logs.
+
+### Messages not arriving in real-time
+
+**Check:**
+1. Console for `[DM]` subscription logs
+2. Network tab for WebSocket connections
+3. Database RLS policies allow access
+4. User is participant in conversation
+
+### Duplicate messages
+
+**Cause:** Both broadcast and postgres_changes delivering the same message without deduplication
+
+**Solution:** Ensure `client_message_id` is being set and checked in deduplication logic.

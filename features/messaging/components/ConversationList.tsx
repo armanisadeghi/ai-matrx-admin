@@ -1,11 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import {
-  selectCurrentConversationId,
-  setCurrentConversation,
-} from "../redux/messagingSlice";
+import React, { useState, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -13,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Plus, MessageSquare } from "lucide-react";
+import { Search, Plus, MessageSquare, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import type { ConversationWithDetails } from "../types";
@@ -21,17 +17,17 @@ import { NewConversationDialog } from "./NewConversationDialog";
 
 interface ConversationListProps {
   userId?: string;
-  onConversationSelect?: (conversationId: string) => void;
   className?: string;
 }
 
 export function ConversationList({
   userId,
-  onConversationSelect,
   className,
 }: ConversationListProps) {
-  const dispatch = useAppDispatch();
-  const currentConversationId = useAppSelector(selectCurrentConversationId);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   
   // Use the hook directly instead of Redux - much simpler!
   const { conversations, isLoading } = useConversations(userId || null);
@@ -50,9 +46,16 @@ export function ConversationList({
     );
   });
 
+  // Get current conversation ID from URL
+  const currentConversationId = pathname.includes('/messages/') 
+    ? pathname.split('/messages/')[1]?.split('/')[0]
+    : null;
+
   const handleSelect = (conversationId: string) => {
-    dispatch(setCurrentConversation(conversationId));
-    onConversationSelect?.(conversationId);
+    setSelectedConversationId(conversationId);
+    startTransition(() => {
+      router.push(`/messages/${conversationId}`);
+    });
   };
 
   // Get initials from name
@@ -150,6 +153,8 @@ export function ConversationList({
                 onClick={() => handleSelect(conversation.id)}
                 getInitials={getInitials}
                 formatTime={formatTime}
+                isPending={isPending}
+                isClicked={selectedConversationId === conversation.id}
               />
             ))}
           </div>
@@ -176,6 +181,8 @@ interface ConversationItemProps {
   onClick: () => void;
   getInitials: (name: string | undefined | null) => string;
   formatTime: (date: string | null | undefined) => string;
+  isPending: boolean;
+  isClicked: boolean;
 }
 
 function ConversationItem({
@@ -184,6 +191,8 @@ function ConversationItem({
   onClick,
   getInitials,
   formatTime,
+  isPending,
+  isClicked,
 }: ConversationItemProps) {
   const { display_name, display_image, last_message, unread_count, updated_at } =
     conversation;
@@ -191,12 +200,20 @@ function ConversationItem({
   return (
     <button
       onClick={onClick}
+      disabled={isPending}
       className={cn(
-        "w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors",
+        "relative w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors",
         "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-        isSelected && "bg-zinc-100 dark:bg-zinc-800"
+        isSelected && "bg-zinc-100 dark:bg-zinc-800",
+        isPending && "opacity-50 cursor-not-allowed"
       )}
     >
+      {/* Loading overlay for clicked conversation */}
+      {isPending && isClicked && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+        </div>
+      )}
       {/* Avatar */}
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={display_image || undefined} alt={display_name || ""} />
