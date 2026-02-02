@@ -120,4 +120,9 @@ export const defaultUserPreferences: UserPreferences = {
         viewedAnnouncements: [],
         feedbackFeatureViewCount: 0,
     },
+    messaging: {
+        notificationSoundEnabled: true,
+        notificationVolume: 50,
+        showDesktopNotifications: false,
+    },
 }; 

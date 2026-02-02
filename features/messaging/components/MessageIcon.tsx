@@ -40,7 +40,7 @@ export function MessageIcon({ className }: MessageIconProps) {
             size="icon"
             onClick={handleClick}
             className={cn(
-              "relative h-9 w-9",
+              "relative h-9 w-9 overflow-visible",
               isOpen && "bg-zinc-100 dark:bg-zinc-800",
               className
             )}
@@ -48,11 +48,11 @@ export function MessageIcon({ className }: MessageIconProps) {
           >
             <MessageSquare className="h-5 w-5" />
 
-            {/* Unread Badge */}
+            {/* Unread Badge - positioned at top-right corner, slightly inset to avoid header clipping */}
             {unreadCount > 0 && (
               <Badge
                 className={cn(
-                  "absolute -top-1 -right-1 h-4 min-w-[16px] px-1",
+                  "absolute top-0.5 -right-1 h-4 min-w-[16px] px-1",
                   "flex items-center justify-center text-[9px] font-semibold",
                   "bg-primary hover:bg-primary border-0"
                 )}

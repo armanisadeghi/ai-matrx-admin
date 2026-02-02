@@ -153,6 +153,12 @@ export interface SystemPreferences {
     feedbackFeatureViewCount: number; // Number of times user has seen the new feedback feature highlight
 }
 
+export interface MessagingPreferences {
+    notificationSoundEnabled: boolean; // Play sound for new messages
+    notificationVolume: number; // 0-100
+    showDesktopNotifications: boolean; // Browser notifications
+}
+
 export type ThinkingMode = 'none' | 'simple' | 'deep';
 
 export interface PromptsPreferences {
@@ -182,6 +188,7 @@ export interface UserPreferences {
     playground: PlaygroundPreferences;
     aiModels: AiModelsPreferences;
     system: SystemPreferences;
+    messaging: MessagingPreferences;
 }
 
 // Add state interface for async operations
@@ -324,6 +331,11 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
             viewedAnnouncements: [],
             feedbackFeatureViewCount: 0,
         },
+        messaging: {
+            notificationSoundEnabled: true,
+            notificationVolume: 50,
+            showDesktopNotifications: false,
+        },
     };
 
     // Merge with defaults to ensure all properties exist
@@ -343,6 +355,7 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
         playground: { ...defaultPreferences.playground, ...preferences.playground },
         aiModels: { ...defaultPreferences.aiModels, ...preferences.aiModels },
         system: { ...defaultPreferences.system, ...preferences.system },
+        messaging: { ...defaultPreferences.messaging, ...preferences.messaging },
     };
 
     // If setAsLoaded is true, store the merged preferences as the loaded state
@@ -410,6 +423,7 @@ const userPreferencesSlice = createSlice({
                 state.playground = { ...state._meta.loadedPreferences.playground };
                 state.aiModels = { ...state._meta.loadedPreferences.aiModels };
                 state.system = { ...state._meta.loadedPreferences.system };
+                state.messaging = { ...state._meta.loadedPreferences.messaging };
                 state._meta.hasUnsavedChanges = false;
                 state._meta.error = null;
             }
@@ -484,6 +498,7 @@ const userPreferencesSlice = createSlice({
                 state.playground = { ...loadedPrefs.playground };
                 state.aiModels = { ...loadedPrefs.aiModels };
                 state.system = { ...loadedPrefs.system };
+                state.messaging = { ...loadedPrefs.messaging };
                 state._meta.loadedPreferences = { ...loadedPrefs };
                 state._meta.hasUnsavedChanges = false;
             })

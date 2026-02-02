@@ -152,16 +152,6 @@ export function ChatThread({
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* Header - Show online status for direct chats */}
-      {conversation?.type === "direct" && otherParticipant && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-          <OnlineIndicator isOnline={isOtherUserOnline} />
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">
-            {isOtherUserOnline ? "Online" : "Offline"}
-          </span>
-        </div>
-      )}
-
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
         {/* Load More Button */}

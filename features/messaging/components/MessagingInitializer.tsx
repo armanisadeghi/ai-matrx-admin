@@ -11,6 +11,7 @@ import {
 } from "../redux/messagingSlice";
 import { createClient } from "@/utils/supabase/client";
 import type { ConversationWithDetails, Message } from "../types";
+import { playNotificationSound, showDesktopNotification, unlockAudio } from "../utils/notificationSound";
 
 /**
  * MessagingInitializer - Central hub for messaging state management
@@ -40,10 +41,18 @@ export function MessagingInitializer() {
   const currentConversationId = useAppSelector((state) => state.messaging.currentConversationId);
   const currentConversationIdRef = useRef(currentConversationId);
   
-  // Keep ref updated
+  // Get messaging preferences for notification sounds
+  const messagingPreferences = useAppSelector((state) => state.userPreferences.messaging);
+  const messagingPreferencesRef = useRef(messagingPreferences);
+  
+  // Keep refs updated
   useEffect(() => {
     currentConversationIdRef.current = currentConversationId;
   }, [currentConversationId]);
+  
+  useEffect(() => {
+    messagingPreferencesRef.current = messagingPreferences;
+  }, [messagingPreferences]);
 
   // Mark messaging as available
   useEffect(() => {
@@ -52,6 +61,28 @@ export function MessagingInitializer() {
       dispatch(setMessagingAvailable(false));
     };
   }, [dispatch]);
+
+  // Unlock audio on first user interaction (no permission prompt needed)
+  // This ensures notification sounds can play when messages arrive
+  useEffect(() => {
+    const handleInteraction = () => {
+      unlockAudio();
+      // Remove listeners after first interaction
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+
+    document.addEventListener('click', handleInteraction, { once: true });
+    document.addEventListener('keydown', handleInteraction, { once: true });
+    document.addEventListener('touchstart', handleInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, []);
 
   /**
    * Fetch a single conversation with full details
@@ -264,6 +295,29 @@ export function MessagingInitializer() {
       },
       async (payload) => {
         const newMessage = payload.new as Message;
+        const isFromOtherUser = newMessage.sender_id !== userId;
+        const isActiveConversation = currentConversationIdRef.current === newMessage.conversation_id;
+        
+        // Play notification sound if:
+        // - Message is from someone else
+        // - User is not currently viewing this conversation
+        // - Notification sounds are enabled
+        if (isFromOtherUser && !isActiveConversation) {
+          const prefs = messagingPreferencesRef.current;
+          
+          if (prefs?.notificationSoundEnabled) {
+            playNotificationSound(prefs.notificationVolume);
+          }
+          
+          // Show desktop notification if enabled
+          if (prefs?.showDesktopNotifications) {
+            const senderName = newMessage.sender_id.substring(0, 8); // Placeholder
+            showDesktopNotification(
+              'New Message',
+              `${senderName}: ${newMessage.content.substring(0, 50)}${newMessage.content.length > 50 ? '...' : ''}`,
+            );
+          }
+        }
         
         // Fetch full conversation to update Redux
         // This ensures we have proper ordering and all details
@@ -272,7 +326,7 @@ export function MessagingInitializer() {
         if (updatedConv) {
           // If this is the currently active conversation, don't increment unread
           // The ChatThread handles marking as read automatically
-          if (currentConversationIdRef.current === newMessage.conversation_id) {
+          if (isActiveConversation) {
             updatedConv.unread_count = 0;
           }
           

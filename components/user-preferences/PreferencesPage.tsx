@@ -30,6 +30,7 @@ import CodingPreferences from './CodingPreferences';
 import FlashcardPreferences from './FlashcardPreferences';
 import PlaygroundPreferences from './PlaygroundPreferences';
 import AiModelsPreferences from './AiModelsPreferences';
+import MessagingPreferences from './MessagingPreferences';
 
 export type PreferenceTab = 
     | 'display'
@@ -45,7 +46,8 @@ export type PreferenceTab =
     | 'coding'
     | 'flashcard'
     | 'playground'
-    | 'aiModels';
+    | 'aiModels'
+    | 'messaging';
 
 const PreferencesPage = () => {
     const dispatch = useAppDispatch();
@@ -60,7 +62,8 @@ const PreferencesPage = () => {
     const validTabs: PreferenceTab[] = [
         'display', 'prompts', 'voice', 'textToSpeech', 'assistant', 
         'email', 'videoConference', 'photoEditing', 'imageGeneration', 
-        'textGeneration', 'coding', 'flashcard', 'playground', 'aiModels'
+        'textGeneration', 'coding', 'flashcard', 'playground', 'aiModels',
+        'messaging'
     ];
     
     const initialTab = tabParam && validTabs.includes(tabParam) ? tabParam : 'display';
@@ -108,6 +111,7 @@ const PreferencesPage = () => {
         flashcard: <FlashcardPreferences />,
         playground: <PlaygroundPreferences />,
         aiModels: <AiModelsPreferences />,
+        messaging: <MessagingPreferences />,
     };
 
     const handleSave = () => {
@@ -147,6 +151,7 @@ const PreferencesPage = () => {
                     <TabsList className="flex-wrap h-auto gap-1">
                         <TabsTrigger value="display">Display</TabsTrigger>
                         <TabsTrigger value="prompts">Prompts</TabsTrigger>
+                        <TabsTrigger value="messaging">Messaging</TabsTrigger>
                         <TabsTrigger value="voice">Voice</TabsTrigger>
                         <TabsTrigger value="textToSpeech">TTS</TabsTrigger>
                         <TabsTrigger value="assistant">Assistant</TabsTrigger>

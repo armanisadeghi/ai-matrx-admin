@@ -310,11 +310,16 @@ export function AppletHeader(props: AppletHeaderProps) {
   );
 }
 
+/** Props for MessagesHeader component */
 interface MessagesHeaderProps {
   title?: string;
   showBack?: boolean;
   backHref?: string;
   onBack?: () => void;
+  /** URL for the avatar image */
+  avatarUrl?: string | null;
+  /** Whether the other user is online */
+  isOnline?: boolean;
 }
 
 export function MessagesHeader(props: MessagesHeaderProps) {
