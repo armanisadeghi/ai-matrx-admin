@@ -64,14 +64,38 @@ export function ChatThread({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastMessageCountRef = useRef(0);
+  const isInitialLoadRef = useRef(true);
+
+  // Scroll to bottom helper - finds the viewport and scrolls it
+  const scrollToBottom = useCallback((smooth: boolean = true) => {
+    // Double requestAnimationFrame ensures layout is complete
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // Find the Radix ScrollArea viewport
+        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: smooth ? 'smooth' : 'instant'
+          });
+        }
+      });
+    });
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (messages.length > lastMessageCountRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0 && messages.length > lastMessageCountRef.current) {
+      // On initial load, scroll instantly; on new messages, scroll smoothly
+      const isInitial = isInitialLoadRef.current;
+      scrollToBottom(!isInitial);
+      
+      if (isInitial) {
+        isInitialLoadRef.current = false;
+      }
     }
     lastMessageCountRef.current = messages.length;
-  }, [messages.length]);
+  }, [messages.length, scrollToBottom]);
 
   // Handle send message
   const handleSendMessage = useCallback(
@@ -225,26 +249,40 @@ export function ChatThread({
               </div>
             ))}
 
-            {/* Typing Indicator */}
-            {isAnyoneTyping && (
-              <div className="flex items-center gap-2 px-4 py-2">
-                {/* Animated dots */}
-                <div className="flex items-center gap-0.5">
-                  <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" />
-                </div>
-                {/* Typing text */}
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
-                  {typingText}
-                </span>
-              </div>
-            )}
           </div>
         )}
         {/* Scroll anchor - outside space-y container to avoid extra spacing */}
         <div ref={messagesEndRef} className="h-0" />
       </ScrollArea>
+
+      {/* Typing Indicator - Fixed height, always visible for layout stability */}
+      <div className="h-5 flex items-center pl-4 pr-4 flex-shrink-0">
+        {/* Content aligned with incoming messages (pl-8 matches avatar + gap offset) */}
+        <div className={cn(
+          "flex items-center gap-1.5 pl-8 transition-opacity duration-200",
+          isAnyoneTyping ? "opacity-100" : "opacity-0"
+        )}>
+          {/* Animated bouncing dots - using Tailwind bounce with staggered delays */}
+          <div className="flex items-end gap-[3px] h-4">
+            <span 
+              className="w-[6px] h-[6px] rounded-full bg-primary animate-bounce"
+              style={{ animationDelay: '0ms', animationDuration: '1s' }}
+            />
+            <span 
+              className="w-[6px] h-[6px] rounded-full bg-primary animate-bounce"
+              style={{ animationDelay: '150ms', animationDuration: '1s' }}
+            />
+            <span 
+              className="w-[6px] h-[6px] rounded-full bg-primary animate-bounce"
+              style={{ animationDelay: '300ms', animationDuration: '1s' }}
+            />
+          </div>
+          {/* Typing text */}
+          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            {typingText}
+          </span>
+        </div>
+      </div>
 
       {/* Error Display */}
       {error && (

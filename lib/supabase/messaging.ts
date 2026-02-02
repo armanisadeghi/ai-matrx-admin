@@ -69,6 +69,8 @@ export class MessagingService {
   private channelRefCount = new Map<string, number>();
   private subscribeCallbacks = new Map<string, Array<() => void>>();
   private messageHandlersAdded = new Set<string>();
+  // Typing callback registry - allows updating callbacks without recreating channels
+  private typingCallbacks = new Map<string, Map<string, TypingCallback>>();
 
   constructor() {
     this.supabase.auth.getSession().then(({ data, error }) => {
@@ -353,6 +355,17 @@ export class MessagingService {
     const presenceChannelName = `typing:${conversationId}`;
     let typingTimeout: ReturnType<typeof setTimeout> | null = null;
     
+    // Generate a unique subscriber ID for this hook instance
+    const subscriberId = `${currentUserId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    
+    // Initialize callback registry for this channel if needed
+    if (!this.typingCallbacks.has(presenceChannelName)) {
+      this.typingCallbacks.set(presenceChannelName, new Map());
+    }
+    
+    // Register this subscriber's callback
+    this.typingCallbacks.get(presenceChannelName)!.set(subscriberId, onTypingUpdate);
+    
     // Check if we already have this presence channel
     let presenceChannel = this.channels.get(presenceChannelName);
     
@@ -368,12 +381,14 @@ export class MessagingService {
       this.channels.set(presenceChannelName, presenceChannel);
       
       // Attach handlers BEFORE subscribing (this is crucial!)
+      // Use callback registry so all subscribers get updates
       presenceChannel.on('presence', { event: 'sync' }, () => {
         const presenceState = presenceChannel!.presenceState() as RealtimePresenceState<TypingUser>;
         const typingUsers: TypingUser[] = [];
 
         Object.values(presenceState).forEach((presences) => {
           (presences as TypingUser[]).forEach((presence) => {
+            // Filter out own typing and check if recent
             if (presence.is_typing && presence.user_id !== currentUserId) {
               const isRecent = Date.now() - presence.last_typed_at < 5000;
               if (isRecent) {
@@ -392,7 +407,11 @@ export class MessagingService {
           console.log(`[DM] ⌨️ Received typing: ${typingUsers.map(u => u.display_name).join(', ')}`);
         }
 
-        onTypingUpdate(typingUsers);
+        // Call ALL registered callbacks for this channel
+        const callbacks = this.typingCallbacks.get(presenceChannelName);
+        if (callbacks) {
+          callbacks.forEach((callback) => callback(typingUsers));
+        }
       });
 
       // NOW subscribe (after handlers are attached)
@@ -462,6 +481,15 @@ export class MessagingService {
           is_typing: false,
           last_typed_at: Date.now(),
         });
+        // Remove this subscriber's callback from the registry
+        const callbacks = this.typingCallbacks.get(presenceChannelName);
+        if (callbacks) {
+          callbacks.delete(subscriberId);
+          // Clean up empty callback maps
+          if (callbacks.size === 0) {
+            this.typingCallbacks.delete(presenceChannelName);
+          }
+        }
         // Note: Don't remove the channel here - other instances might be using it
       },
     };
