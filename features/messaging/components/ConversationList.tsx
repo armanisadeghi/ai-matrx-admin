@@ -252,7 +252,7 @@ function ConversationItem({
             {last_message?.content || "No messages yet"}
           </p>
 
-          {unread_count && unread_count > 0 && (
+          {unread_count > 0 && (
             <Badge
               variant="default"
               className="h-5 min-w-[20px] px-1.5 shrink-0 bg-primary text-primary-foreground"

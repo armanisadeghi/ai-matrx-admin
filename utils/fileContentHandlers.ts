@@ -1,12 +1,10 @@
 // utils/fileContentHandlers.ts
+import 'server-only';
 import { fileHelpers } from '@/utils/fileSystemUtil';
+import type { DirectoryType, FileContentResult } from '@/utils/fileSystemTypes';
 
-export interface FileContentResult {
-    content: any;
-    type: string;
-    viewerType: 'json' | 'text' | 'markdown' | 'image' | 'binary' | 'none';
-    error?: string;
-}
+// Re-export types
+export type { FileContentResult, DirectoryType } from '@/utils/fileSystemTypes';
 
 export const FILE_TYPE_PATTERNS = {
     json: /\.json$/i,

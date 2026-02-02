@@ -1,7 +1,8 @@
 // actions/json.actions.ts
 'use server';
 
-import { DirectoryType, fileHelpers } from '@/utils/fileSystemUtil';
+import { fileHelpers } from '@/utils/fileSystemUtil';
+import type { DirectoryType } from '@/utils/fileSystemTypes';
 import { printLink } from '@/utils/printLink';
 
 interface JsonFileParams {

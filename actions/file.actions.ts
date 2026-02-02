@@ -1,7 +1,8 @@
 // actions/file.actions.ts
 'use server';
 
-import { fileHelpers, type DirectoryType } from '@/utils/fileSystemUtil';
+import { fileHelpers } from '@/utils/fileSystemUtil';
+import type { DirectoryType } from '@/utils/fileSystemTypes';
 
 interface FileParams {
     filename: string;
@@ -208,5 +209,31 @@ export async function readPublicBinary({
             content: null,
             error: error instanceof Error ? error.message : 'Unknown error reading binary file'
         };
+    }
+}
+
+/**
+ * Get file stats (size, modified time, etc.)
+ */
+export async function getFileStats(
+    filename: string,
+    options: {
+        type: DirectoryType;
+        path: string[];
+    }
+): Promise<{
+    size: number;
+    mtime: Date;
+    error?: string;
+}> {
+    try {
+        const stats = await fileHelpers.stats.get(filename, options);
+        return {
+            size: stats.size,
+            mtime: stats.mtime
+        };
+    } catch (error) {
+        console.error('Error getting file stats:', error);
+        throw new Error(error instanceof Error ? error.message : 'Unknown error getting file stats');
     }
 }

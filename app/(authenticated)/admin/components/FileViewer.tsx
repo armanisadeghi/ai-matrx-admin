@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FullEditableJsonViewer from '@/components/ui/JsonComponents/JsonEditor';
-import { FileContentResult } from '@/utils/fileContentHandlers';
+import type { FileContentResult } from '@/utils/fileSystemTypes';
 
 interface FileViewerProps {
     fileContent: FileContentResult;

@@ -381,6 +381,88 @@ Dual subscription pattern for reliability:
 
 **Deduplication:** Uses `client_message_id` to prevent duplicates.
 
+### Unread Count Tracking
+
+Real-time unread count badge in the header message icon.
+
+**How it works:**
+
+1. **Initial Load**: `MessagingInitializer` fetches total unread count on mount
+2. **New Messages**: Listens for INSERT on `dm_messages` → refetches count
+3. **Mark as Read**: Listens for UPDATE on `dm_conversation_participants` → refetches count
+4. **Display**: `MessageIcon` shows badge with count from Redux state
+
+**Auto-Mark as Read:**
+- When `ChatThread` mounts → marks conversation as read
+- When new message arrives from other user → marks as read immediately
+- Updates `last_read_at` timestamp in database
+- Triggers real-time update for all connected clients
+
+**Database Calculation:**
+```sql
+-- Unread count = messages created after user's last_read_at
+SELECT COUNT(*) 
+FROM dm_messages m
+WHERE m.conversation_id = ? 
+  AND m.created_at > participant.last_read_at
+  AND m.sender_id != current_user_id
+```
+
+**Real-time Flow:**
+```mermaid
+sequenceDiagram
+    participant UserA as User A
+    participant DB as Database
+    participant UserB_Init as User B (Initializer)
+    participant UserB_Icon as User B (Icon)
+    participant UserB_Chat as User B (ChatThread)
+    
+    Note over UserA,UserB_Chat: New Message Scenario
+    UserA->>DB: Send message
+    DB->>UserB_Init: INSERT event (dm_messages)
+    UserB_Init->>DB: Fetch unread count
+    DB-->>UserB_Init: Count: 1
+    UserB_Init->>UserB_Icon: Update Redux (count: 1)
+    UserB_Icon->>UserB_Icon: Show badge "1"
+    
+    Note over UserA,UserB_Chat: Mark as Read Scenario
+    UserB_Chat->>DB: markConversationAsRead()
+    DB->>DB: UPDATE last_read_at
+    DB->>UserB_Init: UPDATE event (dm_conversation_participants)
+    UserB_Init->>DB: Fetch unread count
+    DB-->>UserB_Init: Count: 0
+    UserB_Init->>UserB_Icon: Update Redux (count: 0)
+    UserB_Icon->>UserB_Icon: Hide badge
+```
+
+**Key Components:**
+
+1. **MessagingInitializer** (`features/messaging/components/MessagingInitializer.tsx`)
+   - Subscribes to global dm_messages INSERT events
+   - Subscribes to dm_conversation_participants UPDATE events
+   - Fetches and updates total unread count in Redux
+
+2. **MessageIcon** (`features/messaging/components/MessageIcon.tsx`)
+   - Displays badge with unread count from Redux
+   - Shows "99+" for counts over 99
+   - Red badge for visibility
+
+3. **ChatThread** (`features/messaging/components/ChatThread.tsx`)
+   - Automatically marks conversation as read on mount
+   - Marks as read when receiving new messages
+   - Uses `autoMarkAsRead: true` option
+
+4. **Redux State** (`features/messaging/redux/messagingSlice.ts`)
+   - `totalUnreadCount` - Global count across all conversations
+   - `setTotalUnreadCount` - Action to update count
+
+**Important Notes:**
+
+- Unread count updates happen in **real-time** for all connected clients
+- No polling required - uses Supabase Realtime subscriptions
+- Count is **never stale** - updates immediately when messages are read
+- Works across all views (side sheet, full page, mobile, desktop)
+
 ## Troubleshooting
 
 ### Typing indicators not showing
@@ -408,3 +490,31 @@ Dual subscription pattern for reliability:
 **Cause:** Both broadcast and postgres_changes delivering the same message without deduplication
 
 **Solution:** Ensure `client_message_id` is being set and checked in deduplication logic.
+
+### Unread count not updating
+
+**Cause:** MessagingInitializer not subscribed to proper events
+
+**Solution:** Verify subscriptions in console:
+```
+[DM Global] Subscribed to global DM updates
+[DM Global] New message from other user, updating unread count
+[DM Global] Messages marked as read, updating unread count
+[DM Global] Updated unread count: 0
+```
+
+**Test Scenario:**
+1. Open app in two browser windows (User A and User B)
+2. User A sends message to User B
+3. Check User B's header → Should show badge with "1"
+4. User B opens conversation
+5. Check User B's header → Badge should disappear immediately
+6. Check console → Should see "Messages marked as read" log
+
+### Unread count showing wrong number
+
+**Check:**
+1. Database function `get_dm_conversations_with_details` is correct
+2. `last_read_at` timestamps are being set properly
+3. Messages have proper `created_at` timestamps
+4. Console logs show correct count after fetch

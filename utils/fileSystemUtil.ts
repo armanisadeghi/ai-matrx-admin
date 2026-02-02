@@ -1,30 +1,20 @@
 // utils/fileSystemUtil.ts
-// Note: This file uses Node.js fs APIs but is also imported by client components
-// For Turbopack compatibility, we conditionally import fs only on server
+// This file uses Node.js fs APIs and should only run on the server
+import 'server-only';
 import path from 'path';
-
-// Conditional import for server-side only
-const fs = typeof window === 'undefined' ? require('fs').promises : null;
-type Dirent = any; // Simplified type for client compatibility
+import fs from 'fs/promises';
+import type { Dirent } from 'fs';
 
 import {printLink} from './printLink';
+
+// Re-export types for convenience
+export type { DirectoryType, DirectoryOptions, DirectoryEntry, FileOperationResult } from './fileSystemTypes';
+import type { DirectoryType, DirectoryOptions, DirectoryEntry, FileOperationResult } from './fileSystemTypes';
 
 // Default paths that can be overridden
 export const BASE_PATH = '/api';
 const DEFAULT_PUBLIC_DIR = 'public';
 const DEFAULT_MANIFEST_FILENAME = 'directory-manifest.json';
-
-interface DirectoryEntry {
-    path: string;
-    name: string;
-}
-
-interface FileOperationResult {
-    success: boolean;
-    filePath?: string;
-    clickableLink?: string;
-    error?: string;
-}
 
 const debug = false as boolean;
 
@@ -298,14 +288,6 @@ export async function readFile(
         console.error('Error reading file:', error);
         return {content: null, error: error.message};
     }
-}
-
-export type DirectoryType = 'public' | 'app' | 'custom';
-
-interface DirectoryOptions {
-    type: DirectoryType;
-    path: string[];
-    environment?: 'development' | 'production' | 'auto';
 }
 
 export const fileHelpers = {

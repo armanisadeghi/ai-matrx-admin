@@ -51,11 +51,10 @@ export function MessageIcon({ className }: MessageIconProps) {
             {/* Unread Badge */}
             {unreadCount > 0 && (
               <Badge
-                variant="destructive"
                 className={cn(
-                  "absolute -top-1 -right-1 h-5 min-w-[20px] px-1",
-                  "flex items-center justify-center text-[10px] font-bold",
-                  "bg-red-500 hover:bg-red-500"
+                  "absolute -top-1 -right-1 h-4 min-w-[16px] px-1",
+                  "flex items-center justify-center text-[9px] font-semibold",
+                  "bg-primary hover:bg-primary border-0"
                 )}
               >
                 {unreadCount > 99 ? "99+" : unreadCount}

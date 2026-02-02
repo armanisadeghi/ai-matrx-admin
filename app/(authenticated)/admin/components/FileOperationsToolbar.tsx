@@ -8,8 +8,6 @@ import {
 } from "lucide-react";
 import {motion, AnimatePresence} from "motion/react";
 import {Card, CardContent} from "@/components/ui/card";
-import {DirectoryType, fileHelpers} from "@/utils/fileSystemUtil";
-import {FileContentResult, getFileType, loadFileContent} from "@/utils/fileContentHandlers";
 
 // Main file operations toolbar
 export const FileOperationsToolbar = ({onUpload, onDownload, onDelete, onNew, selectedFile}) => (

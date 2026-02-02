@@ -10,8 +10,9 @@ import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import {generateDirectoryStructure} from "@/actions/directory.actions";
 import {DirectoryTreeConfig} from "@/components/DirectoryTree/config";
 import {DirectoryTree} from "@/components/DirectoryTree/DirectoryTree";
-import {DirectoryType, fileHelpers} from "@/utils/fileSystemUtil";
-import {FileContentResult, getFileType, loadFileContent} from "@/utils/fileContentHandlers";
+import type {DirectoryType, FileContentResult} from "@/utils/fileSystemTypes";
+import {getFileType, loadFileContent} from "@/utils/fileContentHandlers";
+import {getFileStats} from "@/actions/file.actions";
 import {FileViewer} from "@/app/(authenticated)/admin/components/FileViewer";
 import {FileOperationsToolbar} from "@/app/(authenticated)/admin/components/FileOperationsToolbar";
 import {FileDetailsPanel} from "@/app/(authenticated)/admin/components/FileDetailsPanel";
@@ -108,7 +109,7 @@ const LocalFileAccess = () => {
             const filename = parts.pop() || '';
             const dirPath = parts;
 
-            const stats = await fileHelpers.stats.get(filename, {
+            const stats = await getFileStats(filename, {
                 type: selectedDirectory as DirectoryType,
                 path: dirPath
             });
@@ -117,7 +118,7 @@ const LocalFileAccess = () => {
                 name: filename,
                 type: getFileType(filename),
                 size: stats.size,
-                modified: stats.mtime.toLocaleString(),
+                modified: new Date(stats.mtime).toLocaleString(),
                 path
             };
 

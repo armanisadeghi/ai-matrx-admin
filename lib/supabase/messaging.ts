@@ -66,7 +66,6 @@ export class MessagingService {
   private channels = new Map<string, RealtimeChannel>();
   private subscribedChannels = new Set<string>();
   private messageHandlersAdded = new Set<string>();
-  private typingHandlersAdded = new Set<string>();
 
   /**
    * Get supabase client (allows for refresh)
@@ -82,10 +81,14 @@ export class MessagingService {
   private getOrCreateChannel(conversationId: string): RealtimeChannel {
     const channelName = `dm:${conversationId}`;
 
+    // Return existing channel if it exists
     if (this.channels.has(channelName)) {
-      return this.channels.get(channelName)!;
+      const existing = this.channels.get(channelName)!;
+      console.log(`[DM] Reusing existing channel: ${channelName}`);
+      return existing;
     }
 
+    console.log(`[DM] Creating new channel: ${channelName}`);
     const channel = this.supabase.channel(channelName, {
       config: {
         presence: {
@@ -111,7 +114,6 @@ export class MessagingService {
       this.channels.delete(channelName);
       this.subscribedChannels.delete(channelName);
       this.messageHandlersAdded.delete(`msg:${conversationId}`);
-      this.typingHandlersAdded.delete(`typing:${conversationId}`);
       console.log(`[DM] Removed channel: ${channelName}`);
     }
   }
@@ -128,7 +130,6 @@ export class MessagingService {
     this.channels.clear();
     this.subscribedChannels.clear();
     this.messageHandlersAdded.clear();
-    this.typingHandlersAdded.clear();
   }
 
   // ============================================
@@ -158,8 +159,22 @@ export class MessagingService {
       };
     }
 
-    this.messageHandlersAdded.add(handlersKey);
+    console.log(`[DM] Setting up message subscription for ${channelName}`);
+   this.messageHandlersAdded.add(handlersKey);
 
+    // Check if channel is already subscribed BEFORE adding handlers
+    const isAlreadySubscribed = this.subscribedChannels.has(channelName);
+    
+    if (isAlreadySubscribed) {
+      console.warn(`[DM] Channel ${channelName} already subscribed! This should not happen.`);
+      // Don't add handlers to an already-subscribed channel
+      return () => {
+        this.messageHandlersAdded.delete(handlersKey);
+        this.removeChannel(conversationId);
+      };
+    }
+
+    // Add all handlers BEFORE subscribing
     // 1. BROADCAST subscription (immediate delivery from sender)
     channel.on(
       'broadcast',
@@ -202,25 +217,25 @@ export class MessagingService {
       }
     );
 
-    // Subscribe if not already subscribed
-    const isAlreadySubscribed = this.subscribedChannels.has(channelName);
-    if (!isAlreadySubscribed) {
-      channel.subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          console.log(`[DM] Successfully subscribed to ${channelName}`);
-          this.subscribedChannels.add(channelName);
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error(`[DM] Channel error for ${channelName}:`, err);
-          this.subscribedChannels.delete(channelName);
-        } else if (status === 'TIMED_OUT') {
-          console.error(`[DM] Channel timed out for ${channelName}`);
-          this.subscribedChannels.delete(channelName);
-        } else if (status === 'CLOSED') {
-          console.log(`[DM] Channel closed for ${channelName}`);
-          this.subscribedChannels.delete(channelName);
-        }
-      });
-    }
+    // Now subscribe (all handlers added above)
+    console.log(`[DM] Subscribing to ${channelName}...`);
+    channel.subscribe((status, err) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`[DM] ✓ Successfully subscribed to ${channelName}`);
+        this.subscribedChannels.add(channelName);
+      } else if (status === 'CHANNEL_ERROR') {
+        console.error(`[DM] ✗ Channel error for ${channelName}:`, err);
+        this.subscribedChannels.delete(channelName);
+      } else if (status === 'TIMED_OUT') {
+        console.error(`[DM] ✗ Channel timed out for ${channelName}`);
+        this.subscribedChannels.delete(channelName);
+      } else if (status === 'CLOSED') {
+        console.log(`[DM] Channel closed for ${channelName}`);
+        this.subscribedChannels.delete(channelName);
+      } else {
+        console.log(`[DM] Channel status: ${status} for ${channelName}`);
+      }
+    });
 
     // Return unsubscribe function
     return () => {
@@ -317,15 +332,17 @@ export class MessagingService {
 
     console.log(`[DM] Setting up typing subscription for ${channelName}`);
 
-    // Listen to presence sync events
-    // Note: We always add the listener - Supabase handles deduplication internally
+    // Check if channel is already subscribed
+    const isAlreadySubscribed = this.subscribedChannels.has(channelName);
+    
+    // Add presence handler (safe to add multiple times, Supabase deduplicates)
     channel.on('presence', { event: 'sync' }, () => {
       const presenceState = channel.presenceState() as RealtimePresenceState<TypingUser>;
       const typingUsers: TypingUser[] = [];
 
       // Extract typing users from presence state
       Object.values(presenceState).forEach((presences) => {
-        (presences as TypingUser[]).forEach((presence) => {
+        presences.forEach((presence: TypingUser) => {
           if (presence.is_typing && presence.user_id !== currentUserId) {
             // Only show typing if it was recent (within 5 seconds)
             const isRecent = Date.now() - presence.last_typed_at < 5000;
@@ -345,8 +362,8 @@ export class MessagingService {
     });
 
     // Subscribe if not already subscribed
-    const isAlreadySubscribed = this.subscribedChannels.has(channelName);
     if (!isAlreadySubscribed) {
+      console.log(`[DM] Subscribing to ${channelName} for typing...`);
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           console.log(`[DM] ✓ Typing channel subscribed: ${channelName}`);
@@ -358,6 +375,10 @@ export class MessagingService {
             is_typing: false,
             last_typed_at: Date.now(),
           });
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error(`[DM] ✗ Typing channel error for ${channelName}`);
+        } else if (status === 'TIMED_OUT') {
+          console.error(`[DM] ✗ Typing channel timed out for ${channelName}`);
         }
       });
     } else {
@@ -400,13 +421,13 @@ export class MessagingService {
       }
     };
 
+    // Return controls
     return {
       setTyping,
       unsubscribe: () => {
         if (typingTimeout) {
           clearTimeout(typingTimeout);
         }
-        // Mark as not typing before unsubscribing
         channel.track({
           user_id: currentUserId,
           display_name: displayName,
