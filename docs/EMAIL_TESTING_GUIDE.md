@@ -50,7 +50,7 @@ Before testing, ensure:
 **Check Email**:
 - Subject: "You've been invited to join [Org Name] on AI Matrx"
 - Contains invitation link
-- Link format: `/organizations/accept-invitation?token=...`
+- Link format: `/invitations/accept/{token}`
 - Professional branding and styling
 
 ---

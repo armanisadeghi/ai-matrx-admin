@@ -578,6 +578,7 @@ export async function getUserRole(orgId: string): Promise<OrgRole | null> {
 
 /**
  * Invite a user to an organization
+ * Calls the API route to handle invitation creation and email sending on the server
  * @param options Invitation options
  * @returns Invitation result
  */
@@ -593,104 +594,33 @@ export async function inviteToOrganization(
       return { success: false, error: emailValidation.error };
     }
 
-    // Get current user
-    const {
-      data: { user: currentUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !currentUser) {
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    // Generate secure token
-    const token = crypto.randomUUID();
-
-    // Set expiry (7 days from now)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-
-    const { data, error } = await supabase
-      .from('organization_invitations')
-      .insert({
-        organization_id: organizationId,
+    // Call the API route to create invitation and send email
+    // This runs on the server where EMAIL_FROM and RESEND_API_KEY are accessible
+    const response = await fetch('/api/organizations/invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        organizationId,
         email: email.toLowerCase().trim(),
-        token,
         role,
-        invited_by: currentUser.id,
-        expires_at: expiresAt.toISOString(),
-      })
-      .select()
-      .single();
+      }),
+    });
 
-    if (error) {
-      // Unique constraint violation
-      if (error.code === '23505') {
-        return {
-          success: false,
-          error: 'User already invited to this organization',
-        };
-      }
-      throw error;
-    }
+    const result = await response.json();
 
-    // Send invitation email
-    try {
-      // Fetch organization details for the email
-      const { data: orgData } = await supabase
-        .from('organizations')
-        .select('name')
-        .eq('id', organizationId)
-        .single();
-
-      // Get inviter details from current authenticated user
-      const inviterName = currentUser.user_metadata?.full_name 
-        || currentUser.user_metadata?.name 
-        || currentUser.email 
-        || 'Someone';
-
-      if (orgData) {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aimatrx.com';
-        const invitationUrl = `${siteUrl}/organizations/accept-invitation?token=${token}`;
-        
-        // Import email utilities dynamically to avoid server/client issues
-        const { sendEmail, emailTemplates } = await import('@/lib/email/client');
-        
-        const emailTemplate = emailTemplates.organizationInvitation(
-          orgData.name,
-          inviterName,
-          invitationUrl,
-          expiresAt
-        );
-
-        const emailResult = await sendEmail({
-          to: email,
-          subject: emailTemplate.subject,
-          html: emailTemplate.html,
-        });
-
-        // Update invitation record with email status
-        if (emailResult.success) {
-          await supabase
-            .from('organization_invitations')
-            .update({
-              email_sent: true,
-              email_sent_at: new Date().toISOString(),
-            })
-            .eq('id', data.id);
-        } else {
-          console.error('Failed to send invitation email:', emailResult.error);
-        }
-      }
-    } catch (emailError) {
-      // Don't fail the invitation if email fails, just log it
-      console.error('Error sending invitation email:', emailError);
+    if (!response.ok || !result.success) {
+      return {
+        success: false,
+        error: result.error || 'Failed to send invitation',
+      };
     }
 
     return {
       success: true,
       message: 'Invitation sent successfully',
-      invitation: transformInvitationFromDb(data),
+      invitation: transformInvitationFromDb(result.data),
     };
   } catch (error: any) {
     console.error('Error inviting to organization:', error);
@@ -753,27 +683,33 @@ export async function cancelInvitation(invitationId: string): Promise<OperationR
 }
 
 /**
- * Resend an invitation (updates expiry)
+ * Resend an invitation (updates expiry and sends email)
+ * Calls the API route to handle email sending on the server
  * @param invitationId Invitation ID
  * @returns Operation result
  */
 export async function resendInvitation(invitationId: string): Promise<OperationResult> {
   try {
-    // Update expiry date
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    // Call the API route to resend invitation and email
+    // This runs on the server where EMAIL_FROM and RESEND_API_KEY are accessible
+    const response = await fetch('/api/organizations/invitations/resend', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        invitationId,
+      }),
+    });
 
-    const { data, error } = await supabase
-      .from('organization_invitations')
-      .update({ expires_at: expiresAt.toISOString() })
-      .eq('id', invitationId)
-      .select()
-      .single();
+    const result = await response.json();
 
-    if (error) throw error;
-
-    // TODO: Resend email
-    // await sendInvitationEmail(data.email, data.token, data.organization_id);
+    if (!response.ok || !result.success) {
+      return {
+        success: false,
+        error: result.error || 'Failed to resend invitation',
+      };
+    }
 
     return {
       success: true,

@@ -91,7 +91,7 @@ export async function shareWithUser(
       throw error;
     }
 
-    // Send email notification (async, non-blocking)
+    // Send email notification via API route (async, non-blocking)
     try {
       // Get sharer's name from current authenticated user
       const sharerName = currentUser.user_metadata?.full_name 
@@ -99,15 +99,17 @@ export async function shareWithUser(
         || currentUser.email 
         || 'Someone';
       
-      // Import email service dynamically
-      const { sendSharingNotification } = await import('@/features/sharing/emailService');
-      
-      // Send notification (don't await - fire and forget)
-      sendSharingNotification({
-        recipientUserId: userId,
-        resourceType,
-        resourceId,
-        sharerName,
+      // Call API route to send notification (don't await - fire and forget)
+      // This runs on the server where EMAIL_FROM and RESEND_API_KEY are accessible
+      fetch('/api/sharing/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientUserId: userId,
+          resourceType,
+          resourceId,
+          sharerName,
+        }),
       }).catch((err) => {
         console.error('Failed to send sharing notification email:', err);
       });
