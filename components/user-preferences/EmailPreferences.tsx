@@ -12,6 +12,10 @@ interface EmailPreferencesData {
     resource_updates: boolean;
     marketing_emails: boolean;
     weekly_digest: boolean;
+    task_notifications: boolean;
+    comment_notifications: boolean;
+    message_notifications: boolean;
+    message_digest: boolean;
 }
 
 const EmailPreferences = () => {
@@ -21,6 +25,10 @@ const EmailPreferences = () => {
         resource_updates: true,
         marketing_emails: false,
         weekly_digest: true,
+        task_notifications: true,
+        comment_notifications: true,
+        message_notifications: true,
+        message_digest: false,
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -100,7 +108,12 @@ const EmailPreferences = () => {
                     </p>
                 </div>
 
-                <div className="space-y-4">
+                {/* Collaboration Section */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Collaboration
+                    </h4>
+                    
                     <div className="flex items-center justify-between py-2">
                         <div className="space-y-1">
                             <Label htmlFor="sharing_notifications">Sharing Notifications</Label>
@@ -131,6 +144,55 @@ const EmailPreferences = () => {
 
                     <div className="flex items-center justify-between py-2">
                         <div className="space-y-1">
+                            <Label htmlFor="task_notifications">Task Notifications</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Receive emails for task assignments and status changes
+                            </p>
+                        </div>
+                        <Switch
+                            id="task_notifications"
+                            checked={preferences.task_notifications}
+                            onCheckedChange={handleSwitchChange('task_notifications')}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="comment_notifications">Comment Notifications</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Receive emails when someone comments on your resources
+                            </p>
+                        </div>
+                        <Switch
+                            id="comment_notifications"
+                            checked={preferences.comment_notifications}
+                            onCheckedChange={handleSwitchChange('comment_notifications')}
+                        />
+                    </div>
+                </div>
+
+                {/* Communication Section */}
+                <div className="space-y-3 pt-4 border-t">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Communication
+                    </h4>
+
+                    <div className="flex items-center justify-between py-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="message_notifications">Message Notifications</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Receive emails for new messages when you're offline
+                            </p>
+                        </div>
+                        <Switch
+                            id="message_notifications"
+                            checked={preferences.message_notifications}
+                            onCheckedChange={handleSwitchChange('message_notifications')}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                        <div className="space-y-1">
                             <Label htmlFor="resource_updates">Resource Updates</Label>
                             <p className="text-sm text-muted-foreground">
                                 Receive updates about resources you're subscribed to
@@ -142,6 +204,13 @@ const EmailPreferences = () => {
                             onCheckedChange={handleSwitchChange('resource_updates')}
                         />
                     </div>
+                </div>
+
+                {/* Digests Section */}
+                <div className="space-y-3 pt-4 border-t">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Digests & Summaries
+                    </h4>
 
                     <div className="flex items-center justify-between py-2">
                         <div className="space-y-1">
@@ -156,6 +225,27 @@ const EmailPreferences = () => {
                             onCheckedChange={handleSwitchChange('weekly_digest')}
                         />
                     </div>
+
+                    <div className="flex items-center justify-between py-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="message_digest">Message Digest</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Receive a daily summary of unread messages
+                            </p>
+                        </div>
+                        <Switch
+                            id="message_digest"
+                            checked={preferences.message_digest}
+                            onCheckedChange={handleSwitchChange('message_digest')}
+                        />
+                    </div>
+                </div>
+
+                {/* Marketing Section */}
+                <div className="space-y-3 pt-4 border-t">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Marketing
+                    </h4>
 
                     <div className="flex items-center justify-between py-2">
                         <div className="space-y-1">

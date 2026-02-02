@@ -9,7 +9,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Building2, Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Building2, Globe, Mail, Loader2, CheckCircle } from 'lucide-react';
 import { useSharing, useIsOwner } from '@/utils/permissions';
 import type { ResourceType } from '@/utils/permissions';
 import { PermissionsList } from './PermissionsList';
@@ -17,6 +18,7 @@ import { ShareWithUserTab } from './tabs/ShareWithUserTab';
 import { ShareWithOrgTab } from './tabs/ShareWithOrgTab';
 import { PublicAccessTab } from './tabs/PublicAccessTab';
 import { getResourceTypeLabel } from '@/utils/permissions';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -52,6 +54,66 @@ export function ShareModal({
   isOwner,
 }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<'users' | 'organizations' | 'public'>('users');
+  const [emailingLink, setEmailingLink] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const { toast } = useToast();
+
+  // Generate the share URL
+  const getShareUrl = () => {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    // Common resource URL patterns
+    const resourcePaths: Record<string, string> = {
+      canvas: `/canvas/${resourceId}`,
+      prompt: `/prompts/${resourceId}`,
+      collection: `/collections/${resourceId}`,
+      workflow: `/workflows/${resourceId}`,
+      note: `/notes/${resourceId}`,
+      task: `/tasks/${resourceId}`,
+    };
+    const path = resourcePaths[resourceType] || `/${resourceType}/${resourceId}`;
+    return `${baseUrl}${path}`;
+  };
+
+  // Email link to self
+  const handleEmailLink = async () => {
+    setEmailingLink(true);
+    try {
+      const response = await fetch('/api/sharing/email-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resourceType: getResourceTypeLabel(resourceType),
+          resourceName,
+          shareUrl: getShareUrl(),
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setEmailSent(true);
+        toast({
+          title: 'Email sent',
+          description: 'Link has been emailed to you',
+        });
+        setTimeout(() => setEmailSent(false), 3000);
+      } else {
+        toast({
+          title: 'Failed to send email',
+          description: data.msg || 'Please try again',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send email',
+        variant: 'destructive',
+      });
+    } finally {
+      setEmailingLink(false);
+    }
+  };
 
   const {
     permissions,
@@ -76,10 +138,32 @@ export function ShareModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Share {resourceLabel}</DialogTitle>
-          <DialogDescription className="truncate">
-            {resourceName}
-          </DialogDescription>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <DialogTitle>Share {resourceLabel}</DialogTitle>
+              <DialogDescription className="truncate">
+                {resourceName}
+              </DialogDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEmailLink}
+              disabled={emailingLink}
+              className="flex-shrink-0"
+            >
+              {emailingLink ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : emailSent ? (
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              ) : (
+                <Mail className="h-4 w-4" />
+              )}
+              <span className="ml-1.5 hidden sm:inline">
+                {emailSent ? 'Sent!' : 'Email link'}
+              </span>
+            </Button>
+          </div>
         </DialogHeader>
 
         <Tabs

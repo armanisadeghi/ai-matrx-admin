@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Download, FileText, FileDown, Presentation as PresentationIcon, Loader2 } from 'lucide-react';
+import { Download, FileText, FileDown, Presentation as PresentationIcon, Loader2, Mail } from 'lucide-react';
 import { exportToPDF, exportToHTML, exportToPowerPoint, exportToGoogleSlides, getExportCapabilities, GOOGLE_SLIDES_SCOPE } from './presentation-export';
 import { PresentationData } from './Slideshow';
 import { useGoogleAPI } from '@/providers/google-provider/GoogleApiProvider';
@@ -9,6 +9,7 @@ import { useHTMLPages } from '@/features/html-pages/hooks/useHTMLPages';
 import { generatePresentationHTML } from './presentation-html-generator';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/selectors/userSelectors';
+import { toast } from 'sonner';
 
 interface PresentationExportMenuProps {
     presentationData: PresentationData;
@@ -41,6 +42,90 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
     const hasSlideScope = getGrantedScopes().includes(GOOGLE_SLIDES_SCOPE);
     
     const capabilities = getExportCapabilities();
+
+    // Email presentation link handler
+    const handleEmailLink = async () => {
+        if (!user?.email) {
+            toast.error('Please sign in to email presentations');
+            return;
+        }
+
+        setIsExporting(true);
+        setExportStatus('Sending email...');
+
+        try {
+            // If already published, use existing URL
+            if (publishedUrl) {
+                const response = await fetch('/api/sharing/email-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resourceType: 'Presentation',
+                        resourceName: presentationTitle || 'Presentation',
+                        shareUrl: publishedUrl,
+                        message: `${presentationData.slides.length} slides`,
+                    }),
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    toast.success('Email sent!', { description: 'Link has been emailed to you' });
+                    setIsOpen(false);
+                } else {
+                    throw new Error(data.msg || 'Failed to send email');
+                }
+            } else {
+                // First publish, then email
+                setExportStatus('Publishing presentation...');
+                const completeHtml = generatePresentationHTML(presentationData);
+                
+                const publishResult = await createHTMLPage(
+                    completeHtml,
+                    presentationTitle || 'Presentation',
+                    `Interactive presentation with ${presentationData.slides.length} slides`,
+                    {
+                        metaTitle: presentationTitle || 'Presentation',
+                        metaDescription: `Interactive presentation with ${presentationData.slides.length} slides`,
+                        metaKeywords: 'presentation, slides, interactive',
+                        ogImage: '',
+                        canonicalUrl: ''
+                    }
+                );
+
+                setPublishedUrl(publishResult.url);
+                setExportStatus('Sending email...');
+
+                const response = await fetch('/api/sharing/email-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resourceType: 'Presentation',
+                        resourceName: presentationTitle || 'Presentation',
+                        shareUrl: publishResult.url,
+                        message: `${presentationData.slides.length} slides`,
+                    }),
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    toast.success('Email sent!', { description: 'Link has been emailed to you' });
+                    setIsOpen(false);
+                } else {
+                    throw new Error(data.msg || 'Failed to send email');
+                }
+            }
+        } catch (error) {
+            console.error('Email failed:', error);
+            toast.error('Failed to send email', { 
+                description: error instanceof Error ? error.message : 'Please try again'
+            });
+        } finally {
+            setIsExporting(false);
+            setExportStatus(null);
+        }
+    };
 
     const handleExport = async (type: 'pdf' | 'html' | 'powerpoint' | 'googleSlides') => {
         setIsExporting(true);
@@ -360,6 +445,30 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     {capabilities.googleSlides.description}
+                                </p>
+                            </div>
+                        </button>
+
+                        {/* Email Link */}
+                        <button
+                            onClick={handleEmailLink}
+                            disabled={isExporting || !user}
+                            className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-start gap-3 border-t border-gray-100 dark:border-gray-700"
+                        >
+                            <Mail className="h-5 w-5 text-sky-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        Email to Me
+                                    </p>
+                                    {!user && (
+                                        <span className="px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
+                                            Sign In
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Email a link to this presentation
                                 </p>
                             </div>
                         </button>

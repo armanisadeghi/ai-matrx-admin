@@ -150,6 +150,17 @@ export async function updateTask(
   updates: UpdateTaskInput
 ): Promise<DatabaseTask | null> {
   try {
+    // If assignee is changing, get the current task first for comparison
+    let previousAssigneeId: string | null = null;
+    if (updates.assignee_id !== undefined) {
+      const { data: currentTask } = await supabase
+        .from('tasks')
+        .select('assignee_id')
+        .eq('id', taskId)
+        .single();
+      previousAssigneeId = currentTask?.assignee_id || null;
+    }
+
     const { data, error } = await supabase
       .from('tasks')
       .update(updates)
@@ -162,10 +173,44 @@ export async function updateTask(
       return null;
     }
 
+    // Send assignment notification if assignee changed to someone new
+    if (
+      updates.assignee_id &&
+      updates.assignee_id !== previousAssigneeId &&
+      data
+    ) {
+      // Fire and forget - don't block the update on notification
+      sendTaskAssignmentNotification(data).catch((err) => {
+        console.error('Error sending task assignment notification:', err);
+      });
+    }
+
     return data;
   } catch (error) {
     console.error('Exception updating task:', error);
     return null;
+  }
+}
+
+/**
+ * Send task assignment notification (internal helper)
+ */
+async function sendTaskAssignmentNotification(task: DatabaseTask): Promise<void> {
+  if (!task.assignee_id) return;
+
+  try {
+    await fetch('/api/notifications/task-assigned', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        assigneeId: task.assignee_id,
+        taskTitle: task.title,
+        taskId: task.id,
+        taskDescription: task.description,
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to send task assignment notification:', error);
   }
 }
 
@@ -326,9 +371,46 @@ export async function createTaskComment(
       return null;
     }
 
+    // Send comment notification to task owner
+    if (data) {
+      sendTaskCommentNotification(taskId, content).catch((err) => {
+        console.error('Error sending comment notification:', err);
+      });
+    }
+
     return data;
   } catch (error) {
     console.error('Exception creating task comment:', error);
     return null;
+  }
+}
+
+/**
+ * Send task comment notification (internal helper)
+ */
+async function sendTaskCommentNotification(taskId: string, commentText: string): Promise<void> {
+  try {
+    // Get the task to find the owner
+    const { data: task } = await supabase
+      .from('tasks')
+      .select('id, title, user_id')
+      .eq('id', taskId)
+      .single();
+
+    if (!task?.user_id) return;
+
+    await fetch('/api/notifications/comment-added', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        resourceOwnerId: task.user_id,
+        commentText,
+        resourceTitle: task.title,
+        resourceType: 'task',
+        resourceId: task.id,
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to send comment notification:', error);
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare } from "lucide-react";
+import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare, Mail } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
@@ -184,6 +184,29 @@ ${cssContent}
     });
   };
 
+  // Email to me handler
+  const handleEmailToMe = async () => {
+    const response = await fetch('/api/chat/email-response', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content,
+        metadata: {
+          ...metadata,
+          timestamp: new Date().toLocaleString(),
+        },
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.msg || 'Failed to send email');
+    }
+    
+    onClose();
+  };
+
 
   // Build menu items for AdvancedMenu (iOS-style: icon + label only)
   const menuItems: MenuItem[] = [
@@ -274,6 +297,16 @@ ${cssContent}
       category: "Export",
       successMessage: "HTML page copied",
       errorMessage: "Failed to copy HTML"
+    },
+    { 
+      key: 'email-to-me',
+      icon: Mail, 
+      iconColor: "text-sky-500 dark:text-sky-400", 
+      label: "Email to me",
+      action: handleEmailToMe,
+      category: "Export",
+      successMessage: "Email sent!",
+      errorMessage: "Failed to send email"
     },
     // Action Options
     { 

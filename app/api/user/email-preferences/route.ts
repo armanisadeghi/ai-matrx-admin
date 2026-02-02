@@ -73,6 +73,10 @@ export async function PATCH(request: Request) {
       resource_updates,
       marketing_emails,
       weekly_digest,
+      task_notifications,
+      comment_notifications,
+      message_notifications,
+      message_digest,
     } = body;
 
     // Validate boolean values
@@ -92,6 +96,18 @@ export async function PATCH(request: Request) {
     }
     if (typeof weekly_digest === "boolean") {
       preferences.weekly_digest = weekly_digest;
+    }
+    if (typeof task_notifications === "boolean") {
+      preferences.task_notifications = task_notifications;
+    }
+    if (typeof comment_notifications === "boolean") {
+      preferences.comment_notifications = comment_notifications;
+    }
+    if (typeof message_notifications === "boolean") {
+      preferences.message_notifications = message_notifications;
+    }
+    if (typeof message_digest === "boolean") {
+      preferences.message_digest = message_digest;
     }
 
     if (Object.keys(preferences).length === 0) {

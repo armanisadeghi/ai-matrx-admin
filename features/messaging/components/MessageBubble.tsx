@@ -77,12 +77,12 @@ export function MessageBubble({
     return (
       <div
         className={cn(
-          "flex items-end gap-2 py-0.5",
+          "flex gap-2",
           isOwn ? "justify-end" : "justify-start"
         )}
       >
-        {!isOwn && showAvatar && <div className="w-8" />}
-        <div className="px-3 py-2 rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+        {!isOwn && showAvatar && <div className="w-7 shrink-0" />}
+        <div className="px-3 py-1.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800">
           <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">
             Message deleted
           </p>
@@ -94,18 +94,18 @@ export function MessageBubble({
   return (
     <div
       className={cn(
-        "flex items-end gap-2 py-0.5",
+        "flex gap-2",
         isOwn ? "justify-end" : "justify-start"
       )}
     >
-      {/* Avatar (for received messages) */}
+      {/* Avatar (for received messages) - aligned to bottom of bubble */}
       {!isOwn && (
-        <div className="w-8 shrink-0">
-          {showAvatar && (
+        <div className="w-7 shrink-0 self-end pb-4">
+          {showAvatar ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage
                       src={sender?.avatar_url || undefined}
                       alt={senderName}
@@ -120,6 +120,8 @@ export function MessageBubble({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+          ) : (
+            <div className="w-7" />
           )}
         </div>
       )}
@@ -138,31 +140,28 @@ export function MessageBubble({
         {/* Bubble */}
         <div
           className={cn(
-            "px-3 py-2 rounded-2xl",
+            "px-3 py-1.5 rounded-2xl",
             isOwn
-              ? "bg-primary text-primary-foreground rounded-br-md"
-              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-bl-md"
+              ? "bg-primary text-primary-foreground rounded-br-sm"
+              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
           )}
         >
-          {/* Text content */}
           <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
         </div>
 
-        {/* Metadata (time, status, edited) */}
+        {/* Metadata (time, status) - compact */}
         <div
           className={cn(
-            "flex items-center gap-1 mt-0.5 px-1",
+            "flex items-center gap-1 px-1",
             isOwn ? "flex-row-reverse" : "flex-row"
           )}
         >
-          <span className="text-[10px] text-zinc-400">
+          <span className="text-[10px] text-zinc-400 leading-none">
             {formatTime(created_at)}
           </span>
-
           {edited_at && (
-            <span className="text-[10px] text-zinc-400 italic">(edited)</span>
+            <span className="text-[10px] text-zinc-400 italic leading-none">(edited)</span>
           )}
-
           {isOwn && status && <StatusIcon status={status} />}
         </div>
       </div>

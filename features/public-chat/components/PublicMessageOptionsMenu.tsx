@@ -1,10 +1,11 @@
 'use client';
 
-import React from "react";
-import { Copy, FileText, Eye, Globe, Brain, Edit } from "lucide-react";
+import React, { useState } from "react";
+import { Copy, FileText, Eye, Globe, Brain, Edit, Mail } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
+import { EmailInputDialog } from "@/components/dialogs/EmailInputDialog";
 
 interface PublicMessageOptionsMenuProps {
   content: string;
@@ -28,6 +29,33 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
   isOpen, 
   anchorElement 
 }) => {
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+
+  // Email to me handler - opens email input dialog
+  const handleOpenEmailDialog = () => {
+    setShowEmailDialog(true);
+    onClose();
+  };
+
+  // Send email with provided address
+  const handleSendEmail = async (email: string) => {
+    const response = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: `AI Chat Response - ${new Date().toLocaleDateString()}`,
+        content,
+        isMarkdown: true,
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.msg || 'Failed to send email');
+    }
+  };
 
   // Edit Content handler
   const handleEditContent = () => {
@@ -196,17 +224,38 @@ ${cssContent}
       successMessage: "HTML page copied",
       errorMessage: "Failed to copy HTML"
     },
+    { 
+      key: 'email-to-me',
+      icon: Mail, 
+      iconColor: "text-sky-500 dark:text-sky-400", 
+      label: "Email to me",
+      action: handleOpenEmailDialog,
+      category: "Export",
+      successMessage: "Opening email...",
+      showToast: false
+    },
   ];
 
   return (
-    <AdvancedMenu
-      isOpen={isOpen}
-      onClose={onClose}
-      items={menuItems}
-      title="Message Options"
-      position="bottom-left"
-      anchorElement={anchorElement}
-    />
+    <>
+      <AdvancedMenu
+        isOpen={isOpen}
+        onClose={onClose}
+        items={menuItems}
+        title="Message Options"
+        position="bottom-left"
+        anchorElement={anchorElement}
+      />
+      
+      <EmailInputDialog
+        isOpen={showEmailDialog}
+        onClose={() => setShowEmailDialog(false)}
+        onSubmit={handleSendEmail}
+        title="Email this response"
+        description="Enter your email address to receive this AI response."
+        submitLabel="Send to Email"
+      />
+    </>
   );
 };
 

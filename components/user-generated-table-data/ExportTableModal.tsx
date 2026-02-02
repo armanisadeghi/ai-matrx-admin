@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Download, ClipboardCopy, CheckCircle } from "lucide-react";
+import { Download, ClipboardCopy, CheckCircle, Mail, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -27,9 +27,11 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
   const [exportTab, setExportTab] = useState('download');
   const [downloadFormat, setDownloadFormat] = useState('csv');
   const [copyFormat, setCopyFormat] = useState('markdown');
+  const [emailFormat, setEmailFormat] = useState('csv');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [emailed, setEmailed] = useState(false);
 
   // Convert data to Markdown table format
   const convertToMarkdown = (tableData: any) => {
@@ -194,6 +196,31 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
           URL.revokeObjectURL(url);
           document.body.removeChild(a);
         }
+      } else if (exportTab === 'email') {
+        // Email export to user
+        const response = await fetch('/api/export/email-table', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tableId,
+            tableName,
+            format: emailFormat,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.msg || 'Failed to send email');
+        }
+        
+        setEmailed(true);
+        toast({
+          title: "Email sent",
+          description: `Table has been emailed to you as ${emailFormat.toUpperCase()}`,
+          variant: "success",
+        });
+        setTimeout(() => setEmailed(false), 2000);
       } else {
         // Copy to clipboard based on selected format
         if (copyFormat === 'markdown') {
@@ -259,7 +286,7 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
           )}
           
           <Tabs defaultValue="download" value={exportTab} onValueChange={setExportTab} className="w-full">
-            <TabsList className="grid grid-cols-2 mb-4">
+            <TabsList className="grid grid-cols-3 mb-4">
               <TabsTrigger value="download" className="flex items-center gap-1">
                 <Download className="h-4 w-4" />
                 Download
@@ -267,6 +294,10 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
               <TabsTrigger value="copy" className="flex items-center gap-1">
                 <ClipboardCopy className="h-4 w-4" />
                 Copy
+              </TabsTrigger>
+              <TabsTrigger value="email" className="flex items-center gap-1">
+                <Mail className="h-4 w-4" />
+                Email
               </TabsTrigger>
             </TabsList>
             
@@ -317,6 +348,29 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
                 </RadioGroup>
               </div>
             </TabsContent>
+            
+            <TabsContent value="email" className="space-y-4">
+              <div className="space-y-2">
+                <Label>Email Format</Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Send the table directly to your email
+                </p>
+                <RadioGroup value={emailFormat} onValueChange={setEmailFormat} className="flex flex-col space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="csv" id="email-csv" />
+                    <Label htmlFor="email-csv" className="font-normal">CSV (Comma Separated Values)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="json" id="email-json" />
+                    <Label htmlFor="email-json" className="font-normal">JSON (Simple Data Structure)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="markdown" id="email-markdown" />
+                    <Label htmlFor="email-markdown" className="font-normal">Markdown Table</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
         
@@ -336,7 +390,12 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
             disabled={loading}
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {loading ? 'Processing...' : (
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
               <>
                 {exportTab === 'copy' ? (
                   <>
@@ -346,6 +405,15 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
                       <ClipboardCopy className="mr-2 h-4 w-4" />
                     )}
                     Copy to Clipboard
+                  </>
+                ) : exportTab === 'email' ? (
+                  <>
+                    {emailed ? (
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Mail className="mr-2 h-4 w-4" />
+                    )}
+                    Email to Me
                   </>
                 ) : (
                   <>
