@@ -442,16 +442,20 @@ export function useConversations(userId: string | null): UseConversationsReturn 
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
 
   const mountedRef = useRef(true);
-  const supabase = createClient();
+  // Use ref to avoid recreating supabase client on every render
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   // Load conversations
   const loadConversations = useCallback(async () => {
     if (!userId) {
+      console.log('[DM] useConversations: No userId, skipping load');
       setConversations([]);
       setIsLoading(false);
       return;
     }
 
+    console.log('[DM] useConversations: Loading conversations for user:', userId);
     setIsLoading(true);
     setError(null);
 
@@ -459,13 +463,18 @@ export function useConversations(userId: string | null): UseConversationsReturn 
       // Use the database function for efficient loading
       const { data, error: fetchError } = await supabase
         .rpc('get_dm_conversations_with_details', { p_user_id: userId });
+      
+      console.log('[DM] useConversations: RPC result:', { data, error: fetchError });
 
       if (!mountedRef.current) return;
 
       if (fetchError) {
+        console.error('[DM] useConversations: Error fetching conversations:', fetchError);
         setError(fetchError.message);
         return;
       }
+
+      console.log('[DM] useConversations: Processing', data?.length || 0, 'conversations');
 
       // Fetch participants for each conversation
       const conversationsWithParticipants = await Promise.all(
@@ -498,8 +507,8 @@ export function useConversations(userId: string | null): UseConversationsReturn 
             group_name: conv.group_name,
             group_image_url: conv.group_image_url,
             created_by: null,
-            created_at: conv.created_at,
-            updated_at: conv.updated_at,
+            created_at: conv.conversation_created_at,
+            updated_at: conv.conversation_updated_at,
             participants: participantsWithUser || [],
             last_message: conv.last_message_content ? {
               id: '',
@@ -531,6 +540,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
 
       if (!mountedRef.current) return;
 
+      console.log('[DM] useConversations: Processed conversations:', conversationsWithParticipants);
       setConversations(conversationsWithParticipants);
       
       // Calculate total unread
@@ -539,6 +549,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         0
       );
       setTotalUnreadCount(total);
+      console.log('[DM] useConversations: Set', conversationsWithParticipants.length, 'conversations, total unread:', total);
     } catch (err) {
       if (!mountedRef.current) return;
       setError(err instanceof Error ? err.message : 'Failed to load conversations');
@@ -547,7 +558,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         setIsLoading(false);
       }
     }
-  }, [userId, supabase]);
+  }, [userId]); // supabase is a stable ref, no need to include
 
   // Initial load
   useEffect(() => {
@@ -600,7 +611,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
     await loadConversations();
 
     return newConv.id;
-  }, [userId, supabase, loadConversations]);
+  }, [userId, loadConversations]); // supabase is a stable ref
 
   return {
     conversations,

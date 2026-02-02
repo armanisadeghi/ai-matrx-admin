@@ -51,6 +51,7 @@ export {
   incrementUnreadCount,
   markConversationAsRead,
   resetUnreadCounts,
+  setTotalUnreadCount,
   setLoading,
   setError,
   setMessagingAvailable,

@@ -3,11 +3,10 @@
 import React, { useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import {
-  selectConversations,
   selectCurrentConversationId,
   setCurrentConversation,
-  selectMessagingIsLoading,
 } from "../redux/messagingSlice";
+import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,9 +31,10 @@ export function ConversationList({
   className,
 }: ConversationListProps) {
   const dispatch = useAppDispatch();
-  const conversations = useAppSelector(selectConversations);
   const currentConversationId = useAppSelector(selectCurrentConversationId);
-  const isLoading = useAppSelector(selectMessagingIsLoading);
+  
+  // Use the hook directly instead of Redux - much simpler!
+  const { conversations, isLoading } = useConversations(userId || null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewConversation, setShowNewConversation] = useState(false);

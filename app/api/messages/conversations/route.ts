@@ -90,8 +90,8 @@ export async function GET(request: NextRequest) {
           Type: conv.conversation_type,
           GroupName: conv.group_name,
           GroupImage: conv.group_image_url,
-          CreatedAt: conv.created_at,
-          UpdatedAt: conv.updated_at,
+          CreatedAt: conv.conversation_created_at,
+          UpdatedAt: conv.conversation_updated_at,
           DisplayName: conv.conversation_type === 'direct' && otherParticipant
             ? otherParticipant.user?.display_name || otherParticipant.user?.email || 'Unknown'
             : conv.group_name || 'Group Chat',

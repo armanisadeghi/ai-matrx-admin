@@ -248,6 +248,13 @@ export const messagingSlice = createSlice({
       });
     },
     
+    /**
+     * Set total unread count directly (for global badge)
+     */
+    setTotalUnreadCount: (state, action: PayloadAction<number>) => {
+      state.totalUnreadCount = action.payload;
+    },
+    
     // ========== Loading States ==========
     
     /**
@@ -300,6 +307,7 @@ export const {
   incrementUnreadCount,
   markConversationAsRead,
   resetUnreadCounts,
+  setTotalUnreadCount,
   setLoading,
   setError,
   setMessagingAvailable,
