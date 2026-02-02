@@ -416,13 +416,25 @@ export async function updateMemberRole(
       }
     }
 
-    const { error } = await supabase
+    // Use .select() to return updated rows - this helps verify the update actually worked
+    // When RLS blocks an update, Supabase returns success but updates 0 rows
+    const { data: updatedRows, error } = await supabase
       .from('organization_members')
       .update({ role: newRole })
       .eq('organization_id', orgId)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select();
 
     if (error) throw error;
+
+    // Check if any rows were actually updated
+    if (!updatedRows || updatedRows.length === 0) {
+      console.error('Update returned no rows - RLS may be blocking the operation');
+      return {
+        success: false,
+        error: 'Unable to update member role. You may not have permission to perform this action.',
+      };
+    }
 
     return {
       success: true,
@@ -471,13 +483,25 @@ export async function removeMember(
       }
     }
 
-    const { error } = await supabase
+    // Use .select() to return deleted rows - this helps verify the delete actually worked
+    // When RLS blocks a delete, Supabase returns success but deletes 0 rows
+    const { data: deletedRows, error } = await supabase
       .from('organization_members')
       .delete()
       .eq('organization_id', orgId)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select();
 
     if (error) throw error;
+
+    // Check if any rows were actually deleted
+    if (!deletedRows || deletedRows.length === 0) {
+      console.error('Delete returned no rows - RLS may be blocking the operation');
+      return {
+        success: false,
+        error: 'Unable to remove member. You may not have permission to perform this action.',
+      };
+    }
 
     return {
       success: true,

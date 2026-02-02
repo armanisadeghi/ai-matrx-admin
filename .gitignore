@@ -1,3 +1,6 @@
+# Cursor MCP config (contains access tokens)
+.cursor/mcp.json
+
 # dependencies
 /node_modules
 /.pnp
