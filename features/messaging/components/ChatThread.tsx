@@ -197,7 +197,7 @@ export function ChatThread({
                 </div>
 
                 {/* Messages for this date */}
-                <div className="space-y-0.5">
+                <div className="space-y-2">
                   {group.messages.map((message, index) => {
                     const isOwn = message.sender_id === userId;
                     const prevMessage = group.messages[index - 1];

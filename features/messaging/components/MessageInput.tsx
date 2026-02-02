@@ -106,7 +106,7 @@ export function MessageInput({
   return (
     <div
       className={cn(
-        "w-full shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-3 py-2",
+        "w-full shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-background px-3 py-2",
         className
       )}
     >
@@ -141,7 +141,7 @@ export function MessageInput({
           {isSending ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            <Send className="h-5 w-5" />
+            <Send className="h-4 w-4" />
           )}
         </button>
       </div>

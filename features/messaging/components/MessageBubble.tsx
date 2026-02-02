@@ -75,14 +75,9 @@ export function MessageBubble({
   // Deleted message display
   if (deleted_for_everyone) {
     return (
-      <div
-        className={cn(
-          "flex gap-2",
-          isOwn ? "justify-end" : "justify-start"
-        )}
-      >
-        {!isOwn && showAvatar && <div className="w-7 shrink-0" />}
-        <div className="px-3 py-1.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+      <div className={cn("flex items-end gap-2", isOwn ? "justify-end" : "justify-start")}>
+        {!isOwn && <div className="w-6 shrink-0" />}
+        <div className="px-3 py-2 rounded-2xl bg-zinc-100 dark:bg-zinc-800">
           <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">
             Message deleted
           </p>
@@ -92,78 +87,57 @@ export function MessageBubble({
   }
 
   return (
-    <div
-      className={cn(
-        "flex gap-2",
-        isOwn ? "justify-end" : "justify-start"
+    <div className={cn(isOwn ? "flex flex-col items-end" : "flex flex-col items-start")}>
+      {/* Sender name (for group chats) */}
+      {showSenderName && (
+        <span className={cn("text-xs text-zinc-500 dark:text-zinc-400 mb-0.5", !isOwn && "ml-8")}>
+          {senderName}
+        </span>
       )}
-    >
-      {/* Avatar (for received messages) - aligned to bottom of bubble */}
-      {!isOwn && (
-        <div className="w-7 shrink-0 self-end pb-4">
-          {showAvatar ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage
-                      src={sender?.avatar_url || undefined}
-                      alt={senderName}
-                    />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {getInitials(senderName)}
-                    </AvatarFallback>
-                  </Avatar>
-                </TooltipTrigger>
-                <TooltipContent side="top" align="start">
-                  <p className="text-xs">{senderName}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
-            <div className="w-7" />
-          )}
-        </div>
-      )}
-
-      {/* Message Content */}
-      <div
-        className={cn("max-w-[75%] flex flex-col", isOwn ? "items-end" : "items-start")}
-      >
-        {/* Sender name (for group chats) */}
-        {showSenderName && (
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5 px-3">
-            {senderName}
-          </span>
+      
+      {/* Avatar + Bubble Row */}
+      <div className="flex items-end gap-1.5">
+        {/* Avatar (for received messages) */}
+        {!isOwn && (
+          <div className="w-6 shrink-0">
+            {showAvatar ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={sender?.avatar_url || undefined} alt={senderName} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                        {getInitials(senderName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start">
+                    <p className="text-xs">{senderName}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : null}
+          </div>
         )}
 
         {/* Bubble */}
         <div
           className={cn(
-            "px-3 py-1.5 rounded-2xl",
+            "max-w-[75vw] md:max-w-[400px] px-3 py-2 rounded-2xl",
             isOwn
-              ? "bg-primary text-primary-foreground rounded-br-sm"
-              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
+              ? "bg-primary text-primary-foreground rounded-br-md"
+              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-bl-md"
           )}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
+          <span className="text-sm whitespace-pre-wrap break-words block">{content}</span>
         </div>
+      </div>
 
-        {/* Metadata (time, status) - compact */}
-        <div
-          className={cn(
-            "flex items-center gap-1 px-1",
-            isOwn ? "flex-row-reverse" : "flex-row"
-          )}
-        >
-          <span className="text-[10px] text-zinc-400 leading-none">
-            {formatTime(created_at)}
-          </span>
-          {edited_at && (
-            <span className="text-[10px] text-zinc-400 italic leading-none">(edited)</span>
-          )}
-          {isOwn && status && <StatusIcon status={status} />}
-        </div>
+      {/* Timestamp Row */}
+      <div className={cn("flex items-center gap-1 mt-0.5", isOwn ? "pr-1" : "pl-8")}>
+        {isOwn && status && <StatusIcon status={status} />}
+        <span className="text-[10px] text-zinc-400">{formatTime(created_at)}</span>
+        {edited_at && <span className="text-[10px] text-zinc-400 italic">(edited)</span>}
       </div>
     </div>
   );
