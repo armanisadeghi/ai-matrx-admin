@@ -188,12 +188,12 @@ export function NewConversationDialog({
                   onClick={() => handleSelectUser(result)}
                   disabled={isCreating}
                   className={cn(
-                    "w-full flex items-center gap-3 p-3 text-left transition-colors",
+                    "w-full flex items-start gap-3 p-3 text-left transition-colors",
                     "hover:bg-zinc-50 dark:hover:bg-zinc-800",
                     isCreating && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-10 w-10 flex-shrink-0">
                     <AvatarImage
                       src={result.avatar_url || undefined}
                       alt={result.display_name || result.email || ""}
@@ -203,12 +203,12 @@ export function NewConversationDialog({
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <p className="text-sm font-medium leading-tight text-zinc-900 dark:text-zinc-100 truncate">
                       {result.display_name || "Unknown User"}
                     </p>
-                    <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      <Mail className="h-3 w-3" />
+                    <div className="flex items-center gap-1 text-xs leading-tight text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      <Mail className="h-3 w-3 flex-shrink-0" />
                       <span className="truncate">{result.email || "No email"}</span>
                     </div>
                   </div>

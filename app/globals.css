@@ -2,6 +2,7 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 /* Enable dark mode variant for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -563,10 +564,12 @@
         letter-spacing: var(--typography-letter-spacing);
         line-height: var(--typography-p-lineHeight);
     }
-    /* Improved paragraph spacing */
-    p {
-        margin-bottom: var(--typography-p-margin);
-    }
+    /* 
+     * Paragraph spacing: Tailwind 4 Preflight resets all margins to 0.
+     * For content areas (articles, markdown, etc.), use the `prose` class 
+     * from @tailwindcss/typography which handles proper paragraph spacing.
+     * UI components should use explicit margin utilities when needed.
+     */
 
     /* Improved heading readability */
     h1,
