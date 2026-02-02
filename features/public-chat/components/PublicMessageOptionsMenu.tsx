@@ -37,9 +37,9 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
     onClose();
   };
 
-  // Send email with provided address
+  // Send email with provided address (uses public endpoint)
   const handleSendEmail = async (email: string) => {
-    const response = await fetch('/api/email/send', {
+    const response = await fetch('/api/public/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
