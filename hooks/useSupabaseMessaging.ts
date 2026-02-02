@@ -150,17 +150,18 @@ export function useMessages(
           // Update existing message (might be status change)
           return prev.map((m) => {
             if (m.id === newMessage.id) {
-              return { ...m, ...newMessage, sender: senderInfo || m.sender };
+              // Message confirmed in DB - mark as delivered
+              return { ...m, ...newMessage, status: 'delivered' as const, sender: senderInfo || m.sender };
             }
             if (m.client_message_id && m.client_message_id === newMessage.client_message_id) {
-              // Replace optimistic message with real one
-              return { ...m, ...newMessage, id: newMessage.id, sender: senderInfo || m.sender };
+              // Replace optimistic message with real one - mark as delivered
+              return { ...m, ...newMessage, id: newMessage.id, status: 'delivered' as const, sender: senderInfo || m.sender };
             }
             return m;
           });
         }
 
-        // Add new message
+        // Add new message (from other user, so no status needed)
         return [...prev, { ...newMessage, sender: senderInfo } as MessageWithSender];
       });
 

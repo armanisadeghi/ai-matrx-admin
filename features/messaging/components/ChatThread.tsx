@@ -225,11 +225,10 @@ export function ChatThread({
             {typingUsers.length > 0 && (
               <TypingIndicator typingUsers={typingUsers} />
             )}
-
-            {/* Scroll anchor */}
-            <div ref={messagesEndRef} />
           </div>
         )}
+        {/* Scroll anchor - outside space-y container to avoid extra spacing */}
+        <div ref={messagesEndRef} className="h-0" />
       </ScrollArea>
 
       {/* Error Display */}

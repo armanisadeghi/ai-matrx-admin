@@ -141,7 +141,7 @@ export function MessageBubble({
             "px-3 py-2 rounded-2xl",
             isOwn
               ? "bg-primary text-primary-foreground rounded-br-md"
-              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-md"
+              : "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-bl-md"
           )}
         >
           {/* Text content */}
