@@ -215,7 +215,8 @@ export function useMessages(
     setError(null);
 
     try {
-      await messagingService.sendMessage(
+      // Send the actual message with the SAME clientMessageId for matching
+      const sentMessage = await messagingService.sendMessage(
         conversationId,
         userId,
         content,
@@ -227,6 +228,16 @@ export function useMessages(
           replyToId: options?.reply_to_id,
           clientMessageId,
         }
+      );
+
+      // Immediately update the optimistic message with the real one
+      // This ensures the update happens even if realtime is delayed
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.client_message_id === clientMessageId
+            ? { ...m, ...sentMessage, status: 'sent' as const }
+            : m
+        )
       );
     } catch (err) {
       // Update optimistic message to failed status

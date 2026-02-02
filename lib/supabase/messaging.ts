@@ -315,44 +315,41 @@ export class MessagingService {
     const channel = this.getOrCreateChannel(conversationId);
     let typingTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    // Prevent duplicate handlers
-    const handlersKey = `typing:${conversationId}`;
-    const hadHandler = this.typingHandlersAdded.has(handlersKey);
-    this.typingHandlersAdded.add(handlersKey);
+    console.log(`[DM] Setting up typing subscription for ${channelName}`);
 
-    if (!hadHandler) {
-      // Listen to presence sync events
-      channel.on('presence', { event: 'sync' }, () => {
-        const presenceState = channel.presenceState() as RealtimePresenceState<TypingUser>;
-        const typingUsers: TypingUser[] = [];
+    // Listen to presence sync events
+    // Note: We always add the listener - Supabase handles deduplication internally
+    channel.on('presence', { event: 'sync' }, () => {
+      const presenceState = channel.presenceState() as RealtimePresenceState<TypingUser>;
+      const typingUsers: TypingUser[] = [];
 
-        // Extract typing users from presence state
-        Object.values(presenceState).forEach((presences) => {
-          (presences as TypingUser[]).forEach((presence) => {
-            if (presence.is_typing && presence.user_id !== currentUserId) {
-              // Only show typing if it was recent (within 5 seconds)
-              const isRecent = Date.now() - presence.last_typed_at < 5000;
-              if (isRecent) {
-                typingUsers.push({
-                  user_id: presence.user_id,
-                  display_name: presence.display_name,
-                  is_typing: true,
-                  last_typed_at: presence.last_typed_at,
-                });
-              }
+      // Extract typing users from presence state
+      Object.values(presenceState).forEach((presences) => {
+        (presences as TypingUser[]).forEach((presence) => {
+          if (presence.is_typing && presence.user_id !== currentUserId) {
+            // Only show typing if it was recent (within 5 seconds)
+            const isRecent = Date.now() - presence.last_typed_at < 5000;
+            if (isRecent) {
+              typingUsers.push({
+                user_id: presence.user_id,
+                display_name: presence.display_name,
+                is_typing: true,
+                last_typed_at: presence.last_typed_at,
+              });
             }
-          });
+          }
         });
-
-        onTypingUpdate(typingUsers);
       });
-    }
+
+      onTypingUpdate(typingUsers);
+    });
 
     // Subscribe if not already subscribed
     const isAlreadySubscribed = this.subscribedChannels.has(channelName);
     if (!isAlreadySubscribed) {
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
+          console.log(`[DM] ✓ Typing channel subscribed: ${channelName}`);
           this.subscribedChannels.add(channelName);
           // Track own presence (initially not typing)
           await channel.track({
@@ -365,6 +362,7 @@ export class MessagingService {
       });
     } else {
       // Channel already subscribed, just track presence
+      console.log(`[DM] Channel ${channelName} already subscribed, tracking presence only`);
       channel.track({
         user_id: currentUserId,
         display_name: displayName,
@@ -415,7 +413,6 @@ export class MessagingService {
           is_typing: false,
           last_typed_at: Date.now(),
         });
-        this.typingHandlersAdded.delete(handlersKey);
       },
     };
   }
