@@ -6,7 +6,7 @@ import {
   setMessagingAvailable,
   setTotalUnreadCount,
 } from "../redux/messagingSlice";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 /**
  * MessagingInitializer - Sets up messaging availability and realtime subscriptions
@@ -20,7 +20,8 @@ import { supabase } from "@/utils/supabase/client";
  */
 export function MessagingInitializer() {
   const dispatch = useAppDispatch();
-  // Use singleton supabase client (shared across all hooks)
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Get user from Redux
@@ -65,25 +66,8 @@ export function MessagingInitializer() {
   useEffect(() => {
     if (!userId) return;
 
-    const channelName = `dm_global:${userId}`;
-    console.log(`[DM Global] ⚙️ Setting up subscription for ${channelName}`);
-    console.log(`[DM Global] UserId: ${userId}`);
-    
-    // Check if channel already exists
-    const existingChannels = (supabase as any).channels || new Map();
-    const existingChannel = existingChannels.get?.(channelName);
-    if (existingChannel) {
-      console.warn(`[DM Global] ⚠️ Channel ${channelName} already exists! State:`, existingChannel.state);
-    }
+    const channel = supabase.channel(`dm_global:${userId}`);
 
-    const channel = supabase.channel(channelName, {
-      config: {
-        broadcast: { self: false },
-      },
-    });
-
-    // Add listeners BEFORE subscribing
-    console.log(`[DM Global] 📝 Adding listener 1: INSERT on dm_messages`);
     // 1. Listen for NEW messages (increase unread count)
     channel.on(
       'postgres_changes',
@@ -103,7 +87,6 @@ export function MessagingInitializer() {
       }
     );
 
-    console.log(`[DM Global] 📝 Adding listener 2: UPDATE on dm_conversation_participants (user_id=eq.${userId})`);
     // 2. Listen for messages marked as READ (decrease unread count)
     channel.on(
       'postgres_changes',
@@ -125,15 +108,11 @@ export function MessagingInitializer() {
       }
     );
 
-    // Subscribe after all listeners are added
-    console.log(`[DM Global] 🔌 Subscribing to ${channelName}... (channel state: ${channel.state})`);
     channel.subscribe((status, err) => {
       if (status === 'SUBSCRIBED') {
-        console.log(`[DM Global] ✅ Subscribed to ${channelName}`);
+        console.log('[DM Global] Subscribed to global DM updates');
       } else if (status === 'CHANNEL_ERROR') {
-        console.error(`[DM Global] ❌ Channel error for ${channelName}:`, err);
-      } else if (status === 'TIMED_OUT') {
-        console.error(`[DM Global] ⏱️ Subscription timed out for ${channelName}`);
+        console.error('[DM Global] Channel error:', err);
       }
     });
 
@@ -141,18 +120,11 @@ export function MessagingInitializer() {
 
     return () => {
       if (subscriptionRef.current) {
-        console.log(`[DM Global] 🧹 Cleanup: Unsubscribing from ${channelName} (channel state: ${subscriptionRef.current.state})...`);
-        
-        try {
-          supabase.removeChannel(subscriptionRef.current);
-          subscriptionRef.current = null;
-          console.log(`[DM Global] ✅ Cleanup complete for ${channelName}`);
-        } catch (err) {
-          console.error(`[DM Global] ❌ Error during cleanup for ${channelName}:`, err);
-        }
+        supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
       }
     };
-  }, [userId]); // Removed supabase and updateUnreadCount - both are stable
+  }, [userId, supabase, updateUnreadCount]);
 
   return null;
 }

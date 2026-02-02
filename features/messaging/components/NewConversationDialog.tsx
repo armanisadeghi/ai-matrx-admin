@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Loader2, User, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux";
 import { useConversations } from "@/hooks/useSupabaseMessaging";
 import type { UserBasicInfo } from "../types";
@@ -40,7 +40,7 @@ export function NewConversationDialog({
   const currentUserId = user?.id;
 
   const { createConversation } = useConversations(currentUserId || null);
-  // Use singleton supabase client (shared across all hooks)
+  const supabase = createClient();
 
   // Search for users by email using lookup_user_by_email function
   const handleSearch = useCallback(async () => {

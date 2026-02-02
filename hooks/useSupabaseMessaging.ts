@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMessagingService } from '@/lib/supabase/messaging';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import type {
   Message,
   MessageWithSender,
@@ -52,7 +52,9 @@ export function useMessages(
   
   const mountedRef = useRef(true);
   const messagingService = getMessagingService();
-  // Use singleton supabase client (shared across all hooks)
+  // Use ref to avoid recreating supabase client on every render
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   // Load initial messages
   useEffect(() => {
@@ -111,7 +113,6 @@ export function useMessages(
 
         // Auto-mark as read
         if (autoMarkAsRead && userId && data?.length > 0) {
-          console.log('[DM] Auto-marking conversation as read on load');
           await messagingService.markConversationAsRead(conversationId, userId);
         }
       } catch (err) {
@@ -166,8 +167,7 @@ export function useMessages(
 
       // Auto-mark as read when receiving messages
       if (autoMarkAsRead && userId && newMessage.sender_id !== userId) {
-        console.log('[DM] Auto-marking conversation as read after receiving message');
-        await messagingService.markConversationAsRead(conversationId, userId);
+        messagingService.markConversationAsRead(conversationId, userId);
       }
     };
 
@@ -456,7 +456,9 @@ export function useConversations(userId: string | null): UseConversationsReturn 
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
 
   const mountedRef = useRef(true);
-  // Use singleton supabase client (shared across all hooks)
+  // Use ref to avoid recreating supabase client on every render
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   // Load conversations
   const loadConversations = useCallback(async () => {
@@ -586,112 +588,8 @@ export function useConversations(userId: string | null): UseConversationsReturn 
   useEffect(() => {
     if (!userId) return;
 
-    let mounted = true;
-    const channelName = `dm_conversations_list:${userId}`;
-    
-    console.log(`[DM Conversations] ⚙️ Setting up subscription for ${channelName}`);
-    console.log(`[DM Conversations] Mounted: ${mounted}, UserId: ${userId}`);
-    
-    // Check if channel already exists (shouldn't happen, but let's verify)
-    const existingChannels = (supabase as any).channels || new Map();
-    const existingChannel = existingChannels.get?.(channelName);
-    if (existingChannel) {
-      console.warn(`[DM Conversations] ⚠️ Channel ${channelName} already exists! State:`, existingChannel.state);
-    }
-    
-    const channel = supabase.channel(channelName, {
-      config: {
-        broadcast: { self: false },
-      },
-    });
+    const channel = supabase.channel(`dm_conversations:${userId}`);
 
-    // Helper to refresh if mounted
-    const refreshIfMounted = async (logMessage: string) => {
-      if (!mounted) return;
-      console.log(logMessage);
-      
-      try {
-        // Fetch updated conversations
-        const { data, error: fetchError } = await supabase
-          .rpc('get_dm_conversations_with_details', { p_user_id: userId });
-        
-        if (!mounted || fetchError) return;
-
-        // Process conversations (same logic as loadConversations)
-        const conversationsWithParticipants = await Promise.all(
-          (data || []).map(async (conv: Record<string, unknown>) => {
-            const { data: participants } = await supabase
-              .from('dm_conversation_participants')
-              .select('*')
-              .eq('conversation_id', conv.conversation_id);
-
-            const participantsWithUser = await Promise.all(
-              (participants || []).map(async (p) => {
-                const { data: userInfo } = await supabase
-                  .rpc('get_dm_user_info', { p_user_id: p.user_id });
-                return {
-                  ...p,
-                  user: userInfo?.[0] || null,
-                };
-              })
-            );
-
-            const otherParticipant = participantsWithUser.find(
-              (p) => p.user_id !== userId
-            );
-
-            return {
-              id: conv.conversation_id,
-              type: conv.conversation_type,
-              group_name: conv.group_name,
-              group_image_url: conv.group_image_url,
-              created_by: null,
-              created_at: conv.conversation_created_at,
-              updated_at: conv.conversation_updated_at,
-              participants: participantsWithUser || [],
-              last_message: conv.last_message_content ? {
-                id: '',
-                conversation_id: conv.conversation_id as string,
-                sender_id: conv.last_message_sender_id as string,
-                content: conv.last_message_content as string,
-                message_type: 'text' as const,
-                media_url: null,
-                media_thumbnail_url: null,
-                media_metadata: null,
-                status: 'sent' as const,
-                reply_to_id: null,
-                deleted_at: null,
-                deleted_for_everyone: false,
-                created_at: conv.last_message_at as string,
-                edited_at: null,
-                client_message_id: null,
-              } : null,
-              unread_count: conv.unread_count as number,
-              display_name: conv.conversation_type === 'direct' && otherParticipant
-                ? otherParticipant.user?.display_name || otherParticipant.user?.email || 'Unknown'
-                : conv.group_name || 'Group Chat',
-              display_image: conv.conversation_type === 'direct' && otherParticipant
-                ? otherParticipant.user?.avatar_url
-                : conv.group_image_url,
-            } as ConversationWithDetails;
-          })
-        );
-
-        if (!mounted) return;
-        
-        setConversations(conversationsWithParticipants);
-        const total = conversationsWithParticipants.reduce(
-          (sum, conv) => sum + (conv.unread_count || 0),
-          0
-        );
-        setTotalUnreadCount(total);
-      } catch (err) {
-        console.error('[DM Conversations] Error refreshing:', err);
-      }
-    };
-
-    // Add listeners BEFORE subscribing (Supabase requirement)
-    console.log(`[DM Conversations] 📝 Adding listener 1: INSERT on dm_messages`);
     // 1. Listen for NEW messages - updates last_message and unread_count
     channel.on(
       'postgres_changes',
@@ -701,11 +599,11 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         table: 'dm_messages',
       },
       async () => {
-        await refreshIfMounted('[DM Conversations] New message received, refreshing list');
+        console.log('[DM Conversations] New message received, refreshing list');
+        await loadConversations();
       }
     );
 
-    console.log(`[DM Conversations] 📝 Adding listener 2: UPDATE on dm_conversation_participants (user_id=eq.${userId})`);
     // 2. Listen for messages marked as READ - updates unread_count
     channel.on(
       'postgres_changes',
@@ -721,35 +619,22 @@ export function useConversations(userId: string | null): UseConversationsReturn 
         
         // Only refresh if last_read_at changed
         if (oldData.last_read_at !== newData.last_read_at) {
-          await refreshIfMounted('[DM Conversations] Messages marked as read, refreshing list');
+          console.log('[DM Conversations] Messages marked as read, refreshing list');
+          await loadConversations();
         }
       }
     );
 
-    // Now subscribe (after all listeners are added)
-    console.log(`[DM Conversations] 🔌 Subscribing to ${channelName}... (channel state: ${channel.state})`);
-    channel.subscribe((status, err) => {
+    channel.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        console.log(`[DM Conversations] ✅ Subscribed to ${channelName}`);
-      } else if (status === 'CHANNEL_ERROR') {
-        console.error(`[DM Conversations] ❌ Channel error for ${channelName}:`, err);
-      } else if (status === 'TIMED_OUT') {
-        console.error(`[DM Conversations] ⏱️ Subscription timed out for ${channelName}`);
+        console.log('[DM Conversations] Subscribed to conversation updates');
       }
     });
 
     return () => {
-      mounted = false;
-      console.log(`[DM Conversations] 🧹 Cleanup: Unsubscribing from ${channelName} (channel state: ${channel.state})...`);
-      
-      try {
-        supabase.removeChannel(channel);
-        console.log(`[DM Conversations] ✅ Cleanup complete for ${channelName}`);
-      } catch (err) {
-        console.error(`[DM Conversations] ❌ Error during cleanup for ${channelName}:`, err);
-      }
+      supabase.removeChannel(channel);
     };
-  }, [userId]); // Removed supabase from dependencies - it's stable
+  }, [userId, supabase, loadConversations]);
 
   // Create or find existing conversation
   const createConversation = useCallback(async (participantId: string): Promise<string> => {
