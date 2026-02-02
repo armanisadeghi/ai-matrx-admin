@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase/client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TableIcon, Plus, Loader, Trash2, Edit2, Calendar } from 'lucide-react';
+import { TableIcon, Plus, Loader, Trash2, Edit2, Calendar, Users, Eye } from 'lucide-react';
 import Link from 'next/link';
 import CreateTableModal from './CreateTableModal';
 import EditTableModal from './EditTableModal';
@@ -30,6 +30,7 @@ interface UserTable {
   updated_at: string;
   is_public: boolean;
   authenticated_read: boolean;
+  user_id: string;
 }
 
 export default function TableCards() {
@@ -39,11 +40,28 @@ export default function TableCards() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<UserTable | null>(null);
   const [tableToEdit, setTableToEdit] = useState<UserTable | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchUserTables();
   }, []);
+
+  // Fetch current user ID
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUserId(user?.id || null);
+  };
+
+  // Check if user owns the table
+  const isOwner = (table: UserTable) => {
+    return currentUserId && table.user_id === currentUserId;
+  };
+
+  // Separate tables into owned and shared
+  const ownedTables = tables.filter(table => isOwner(table));
+  const sharedTables = tables.filter(table => !isOwner(table));
 
   // Fetch user tables
   const fetchUserTables = async () => {
@@ -172,115 +190,175 @@ export default function TableCards() {
     );
   }
 
+  // Render a single table card
+  const renderTableCard = (table: UserTable, owned: boolean) => (
+    <Link key={table.id} href={`/data/${table.id}`} className="group">
+      <Card className={`h-[300px] bg-white dark:bg-gray-950 border-border hover:shadow-md dark:hover:shadow-black/30 transition-all cursor-pointer flex flex-col ${
+        owned 
+          ? 'group-hover:border-blue-300 dark:group-hover:border-blue-700' 
+          : 'group-hover:border-purple-300 dark:group-hover:border-purple-700 border-l-4 border-l-purple-400 dark:border-l-purple-600'
+      }`}>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <CardTitle className={`text-lg truncate ${
+                owned
+                  ? 'text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                  : 'text-gray-800 dark:text-gray-200 group-hover:text-purple-600 dark:group-hover:text-purple-400'
+              } transition-colors`}>
+                {table.table_name}
+              </CardTitle>
+              {!owned && (
+                <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 whitespace-nowrap flex-shrink-0">
+                  <Eye size={10} className="mr-1" />
+                  Shared
+                </span>
+              )}
+            </div>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {owned ? (
+                <>
+                  <button 
+                    onClick={(e) => openEditModal(table, e)}
+                    className="text-gray-400 hover:text-blue-500 dark:text-gray-600 dark:hover:text-blue-400"
+                    title="Edit table"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button 
+                    onClick={(e) => confirmDelete(table, e)}
+                    className="text-gray-400 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400"
+                    title="Delete table"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              ) : (
+                <span className="text-xs text-gray-400 dark:text-gray-500" title="View only - you don't own this table">
+                  <Eye size={16} className="text-purple-400 dark:text-purple-500" />
+                </span>
+              )}
+              <TableIcon size={18} className={`${
+                owned
+                  ? 'text-gray-400 dark:text-gray-600 group-hover:text-blue-500 dark:group-hover:text-blue-500'
+                  : 'text-purple-400 dark:text-purple-500'
+              }`} />
+            </div>
+          </div>
+          
+          <CardDescription className="text-gray-500 dark:text-gray-400 min-h-[3rem] mt-1 line-clamp-2">
+            {table.description || <span className="text-gray-400 dark:text-gray-600 italic">No description</span>}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="flex-1">
+          <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md text-sm mb-3">
+            <div className="flex justify-between mb-1">
+              <span className="text-gray-600 dark:text-gray-400">Rows:</span>
+              <span className="font-medium text-gray-800 dark:text-gray-300">{table.row_count}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Fields:</span>
+              <span className="font-medium text-gray-800 dark:text-gray-300">{table.field_count}</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center text-xs text-gray-500 dark:text-gray-500">
+              <Calendar size={12} className="mr-1" />
+              <span>Last updated: {formatDate(table.updated_at)}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {table.is_public && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                  Public
+                </span>
+              )}
+              {table.authenticated_read && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                  Authenticated
+                </span>
+              )}
+              {!table.is_public && !table.authenticated_read && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  Private
+                </span>
+              )}
+            </div>
+          </div>
+        </CardContent>
+        
+        <CardFooter className="mt-auto">
+          <Button 
+            className={`w-full ${
+              owned
+                ? 'bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800'
+                : 'bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-700 dark:hover:bg-purple-800'
+            }`}
+          >
+            {owned ? 'View Table' : 'View (Read Only)'}
+          </Button>
+        </CardFooter>
+      </Card>
+    </Link>
+  );
+
   return (
     <div className="space-y-6 mt-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tables.map((table) => (
-          <Link key={table.id} href={`/data/${table.id}`} className="group">
-            <Card className="h-[300px] bg-white dark:bg-gray-950 border-border hover:shadow-md dark:hover:shadow-black/30 transition-all cursor-pointer group-hover:border-blue-300 dark:group-hover:border-blue-700 flex flex-col">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {table.table_name}
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={(e) => openEditModal(table, e)}
-                      className="text-gray-400 hover:text-blue-500 dark:text-gray-600 dark:hover:text-blue-400"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button 
-                      onClick={(e) => confirmDelete(table, e)}
-                      className="text-gray-400 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                    <TableIcon size={18} className="text-gray-400 dark:text-gray-600 group-hover:text-blue-500 dark:group-hover:text-blue-500" />
-                  </div>
-                </div>
-                
-                <CardDescription className="text-gray-500 dark:text-gray-400 min-h-[3rem] mt-1 line-clamp-2">
-                  {table.description || <span className="text-gray-400 dark:text-gray-600 italic">No description</span>}
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="flex-1">
-                <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md text-sm mb-3">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-600 dark:text-gray-400">Rows:</span>
-                    <span className="font-medium text-gray-800 dark:text-gray-300">{table.row_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Fields:</span>
-                    <span className="font-medium text-gray-800 dark:text-gray-300">{table.field_count}</span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-500">
-                    <Calendar size={12} className="mr-1" />
-                    <span>Last updated: {formatDate(table.updated_at)}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {table.is_public && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                        Public
-                      </span>
-                    )}
-                    {table.authenticated_read && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-                        Authenticated
-                      </span>
-                    )}
-                    {!table.is_public && !table.authenticated_read && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                        Private
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-              
-              <CardFooter className="mt-auto">
-                <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
-                >
-                  View Table
-                </Button>
-              </CardFooter>
-            </Card>
-          </Link>
-        ))}
+      {/* My Tables Section */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <TableIcon size={18} className="text-blue-600 dark:text-blue-400" />
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">My Tables</h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400">({ownedTables.length})</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {ownedTables.map((table) => renderTableCard(table, true))}
 
-        {/* Create New Table Card */}
-        <Card 
-          className="h-[300px] bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 border border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md dark:hover:shadow-black/30 transition-all cursor-pointer flex flex-col"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Create New Table</CardTitle>
-            <CardDescription className="text-gray-500 dark:text-gray-400 min-h-[3rem] mt-1">
-              Generate or import a new data table
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="flex-1 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Plus size={24} className="text-blue-600 dark:text-blue-400" />
-            </div>
-          </CardContent>
-          
-          <CardFooter className="mt-auto">
-            <Button 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
-            >
-              Create Table
-            </Button>
-          </CardFooter>
-        </Card>
+          {/* Create New Table Card */}
+          <Card 
+            className="h-[300px] bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 border border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md dark:hover:shadow-black/30 transition-all cursor-pointer flex flex-col"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Create New Table</CardTitle>
+              <CardDescription className="text-gray-500 dark:text-gray-400 min-h-[3rem] mt-1">
+                Generate or import a new data table
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="flex-1 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Plus size={24} className="text-blue-600 dark:text-blue-400" />
+              </div>
+            </CardContent>
+            
+            <CardFooter className="mt-auto">
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
+              >
+                Create Table
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
+
+      {/* Shared With Me Section */}
+      {sharedTables.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Users size={18} className="text-purple-600 dark:text-purple-400" />
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Shared With Me</h2>
+            <span className="text-sm text-gray-500 dark:text-gray-400">({sharedTables.length})</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">View only</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sharedTables.map((table) => renderTableCard(table, false))}
+          </div>
+        </div>
+      )}
 
       {/* Create Table Modal */}
       <CreateTableModal 

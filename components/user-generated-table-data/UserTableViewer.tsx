@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/utils/supabase/client';
 import TableToolbar from './TableToolbar';
-import { Pencil, Trash, Loader, Expand, Link, Wand2 } from 'lucide-react';
+import { Pencil, Trash, Loader, Expand, Link, Wand2, Eye, AlertCircle } from 'lucide-react';
 import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
 import { useRouter } from 'next/navigation';
 import {
@@ -38,6 +38,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
 import TableReferenceModal from './TableReferenceModal';
 
 interface UserTable {
@@ -46,6 +47,7 @@ interface UserTable {
   description: string;
   row_count: number;
   field_count: number;
+  user_id?: string;
 }
 
 interface UserTableViewerProps {
@@ -55,11 +57,15 @@ interface UserTableViewerProps {
 
 const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewerProps) => {
   const router = useRouter();
-  const [tableInfo, setTableInfo] = useState(null);
+  const [tableInfo, setTableInfo] = useState<any>(null);
   const [fields, setFields] = useState([]);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Ownership state
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,6 +114,32 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   // Row ordering state
   const [rowOrderingEnabled, setRowOrderingEnabled] = useState(false);
   const [showRowOrderingModal, setShowRowOrderingModal] = useState(false);
+  
+  // Fetch current user on mount
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    fetchCurrentUser();
+  }, []);
+  
+  // Update isReadOnly when tableInfo or currentUserId changes
+  useEffect(() => {
+    if (tableInfo && currentUserId !== null) {
+      const tableOwnerId = tableInfo.user_id;
+      setIsReadOnly(tableOwnerId !== currentUserId);
+    }
+  }, [tableInfo, currentUserId]);
+  
+  // Show toast when trying to edit in read-only mode
+  const showReadOnlyToast = () => {
+    toast({
+      title: "View Only",
+      description: "You don't have edit access to this shared table. You would need to duplicate it first to make changes.",
+      variant: "default",
+    });
+  };
   
   // Add this helper function after the other state declarations and before formatCellValue
   const cleanupHtmlText = (text: string): string => {
@@ -837,6 +869,15 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         )}
       </div>
       
+      {/* Read-only banner for shared tables */}
+      {isReadOnly && (
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm">
+          <Eye className="h-4 w-4" />
+          <span className="font-medium">Shared Table</span>
+          <span className="text-purple-500 dark:text-purple-400">(read only)</span>
+        </div>
+      )}
+      
       {/* Toolbar with search */}
       <TableToolbar 
         tableId={tableId}
@@ -845,6 +886,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         loadTableData={(forceReload) => loadTableData(currentPage, limit, sortField, sortDirection, searchTerm, forceReload)}
         selectedRowId={selectedRowId}
         selectedRowData={selectedRowData}
+        isReadOnly={isReadOnly}
         
         // Search props
         searchTerm={searchTerm}
@@ -954,9 +996,15 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                   key={row.id} 
                   className={`
                     ${index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-gray-50 dark:bg-gray-900"}
-                    hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer
+                    hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isReadOnly ? 'cursor-default' : 'cursor-pointer'}
                   `}
-                  onClick={() => handleEditRow(row.id, row.data)}
+                  onClick={() => {
+                    if (isReadOnly) {
+                      // In read-only mode, don't open edit modal
+                      return;
+                    }
+                    handleEditRow(row.id, row.data);
+                  }}
                 >
                   {fields.map((field) => (
                     <TableCell key={`${row.id}-${field.id}`} className="py-3 max-w-0">
@@ -1019,28 +1067,45 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                       >
                         <Link className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditRow(row.id, row.data);
-                        }}
-                        title="Edit Row"
-                      >
-                        <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteRow(row.id);
-                        }}
-                        title="Delete Row"
-                      >
-                        <Trash className="h-4 w-4 text-red-500 dark:text-red-400" />
-                      </Button>
+                      {isReadOnly ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            showReadOnlyToast();
+                          }}
+                          title="View only - no edit access"
+                          className="cursor-not-allowed"
+                        >
+                          <Eye className="h-4 w-4 text-purple-400 dark:text-purple-500" />
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditRow(row.id, row.data);
+                            }}
+                            title="Edit Row"
+                          >
+                            <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteRow(row.id);
+                            }}
+                            title="Delete Row"
+                          >
+                            <Trash className="h-4 w-4 text-red-500 dark:text-red-400" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

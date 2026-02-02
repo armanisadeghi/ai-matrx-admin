@@ -10,7 +10,8 @@ import TableReferenceOverlay from './TableReferenceOverlay';
 import RowOrderingModal from './RowOrderingModal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, Download, Pencil, Trash, Settings, Plus, Link, Wand2, ArrowUpDown, GripVertical } from 'lucide-react';
+import { Search, X, Download, Pencil, Trash, Settings, Plus, Link, Wand2, ArrowUpDown, GripVertical, Eye } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 interface TableToolbarProps {
   tableId: string;
@@ -19,6 +20,7 @@ interface TableToolbarProps {
   loadTableData: (forceReload?: boolean) => void;
   selectedRowId: string | null;
   selectedRowData: Record<string, any> | null;
+  isReadOnly?: boolean;
   
   // Search props
   searchTerm: string;
@@ -70,6 +72,7 @@ export default function TableToolbar({
   loadTableData,
   selectedRowId,
   selectedRowData,
+  isReadOnly = false,
   
   // Search props
   searchTerm,
@@ -113,28 +116,47 @@ export default function TableToolbar({
   disableRowOrdering,
   onRowOrderingSuccess
 }: TableToolbarProps) {
+  // Show toast when trying to use edit features in read-only mode
+  const showReadOnlyToast = () => {
+    toast({
+      title: "View Only",
+      description: "You don't have edit access to this shared table. You would need to duplicate it first to make changes.",
+      variant: "default",
+    });
+  };
   return (
     <>
       {/* Toolbar UI */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
         <div className="flex items-center w-full md:w-auto space-x-2">
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAddColumnModal(true)}
-            className="whitespace-nowrap"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden md:inline">Column</span>
-          </Button>
-          <Button 
-            size="sm"
-            onClick={() => setShowAddRowModal(true)}
-            className="whitespace-nowrap"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden md:inline">Row</span>
-          </Button>
+          {isReadOnly ? (
+            // Read-only mode: show disabled-style buttons with view icon
+            <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400">
+              <Eye className="h-4 w-4" />
+              <span className="hidden md:inline">View Only</span>
+            </div>
+          ) : (
+            // Edit mode: show normal action buttons
+            <>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddColumnModal(true)}
+                className="whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden md:inline">Column</span>
+              </Button>
+              <Button 
+                size="sm"
+                onClick={() => setShowAddRowModal(true)}
+                className="whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden md:inline">Row</span>
+              </Button>
+            </>
+          )}
         </div>
         
         <div className="flex-1 w-full max-w-full md:max-w-md">
@@ -164,29 +186,32 @@ export default function TableToolbar({
         </div>
         
         <div className="flex items-center w-full md:w-auto justify-end space-x-2">
-          {/* Row Ordering Controls */}
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (!rowOrderingEnabled && enableRowOrdering) {
-                // Auto-enable ordering and open modal
-                enableRowOrdering().then(() => {
+          {/* Row Ordering Controls - only show if not read-only */}
+          {!isReadOnly && (
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!rowOrderingEnabled && enableRowOrdering) {
+                  // Auto-enable ordering and open modal
+                  enableRowOrdering().then(() => {
+                    setShowRowOrderingModal(true);
+                  });
+                } else {
+                  // Just open modal if already enabled
                   setShowRowOrderingModal(true);
-                });
-              } else {
-                // Just open modal if already enabled
-                setShowRowOrderingModal(true);
-              }
-            }}
-            className="whitespace-nowrap text-green-600 dark:text-green-400 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-            title={!rowOrderingEnabled ? "Enable row ordering and open reorder modal" : "Open row reordering modal"}
-          >
-            <GripVertical className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Reorder Rows</span>
-          </Button>
+                }
+              }}
+              className="whitespace-nowrap text-green-600 dark:text-green-400 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+              title={!rowOrderingEnabled ? "Enable row ordering and open reorder modal" : "Open row reordering modal"}
+            >
+              <GripVertical className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Reorder Rows</span>
+            </Button>
+          )}
           
-          {hasCleanableHtmlInTable && handleBulkHtmlCleanup && (
+          {/* Clean HTML - only show if not read-only */}
+          {!isReadOnly && hasCleanableHtmlInTable && handleBulkHtmlCleanup && (
             <Button 
               variant="outline"
               size="sm"
@@ -198,6 +223,8 @@ export default function TableToolbar({
               <span className="hidden md:inline">Clean All HTML</span>
             </Button>
           )}
+          
+          {/* Reference - always available (read-only action) */}
           <Button 
             variant="outline"
             size="sm"
@@ -207,6 +234,8 @@ export default function TableToolbar({
           >
             <Link className="h-4 w-4 md:mr-2" />
           </Button>
+          
+          {/* Export - always available (read-only action) */}
           <Button 
             variant="outline"
             size="sm"
@@ -215,55 +244,72 @@ export default function TableToolbar({
           >
             <Download className="h-4 w-4 md:mr-2" />
           </Button>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={() => setShowTableSettingsModal(true)}
-            className="whitespace-nowrap"
-          >
-            <Settings className="h-4 w-4 md:mr-2" />
-          </Button>
+          
+          {/* Settings - only show if not read-only */}
+          {!isReadOnly && (
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTableSettingsModal(true)}
+              className="whitespace-nowrap"
+            >
+              <Settings className="h-4 w-4 md:mr-2" />
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Modals */}
-      <AddColumnModal
-        tableId={tableId}
-        isOpen={showAddColumnModal}
-        onClose={() => setShowAddColumnModal(false)}
-        onSuccess={() => loadTableData(true)}
-      />
-      <AddRowModal
-        tableId={tableId}
-        isOpen={showAddRowModal}
-        onClose={() => setShowAddRowModal(false)}
-        onSuccess={() => loadTableData()}
-      />
-      <EditRowModal
-        tableId={tableId}
-        rowId={selectedRowId}
-        rowData={selectedRowData}
-        fields={fields}
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onSuccess={onEditSuccess}
-        cleanupHtmlText={cleanupHtmlText}
-        containsCleanableHtml={containsCleanableHtml}
-      />
-      <DeleteRowModal
-        rowId={selectedRowId}
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onSuccess={onDeleteSuccess}
-      />
-      <TableConfigModal
-        tableId={tableId}
-        tableInfo={tableInfo}
-        fields={fields}
-        isOpen={showTableSettingsModal}
-        onClose={() => setShowTableSettingsModal(false)}
-        onSuccess={() => loadTableData(true)}
-      />
+      {/* Modals - Edit modals only rendered when not read-only */}
+      {!isReadOnly && (
+        <>
+          <AddColumnModal
+            tableId={tableId}
+            isOpen={showAddColumnModal}
+            onClose={() => setShowAddColumnModal(false)}
+            onSuccess={() => loadTableData(true)}
+          />
+          <AddRowModal
+            tableId={tableId}
+            isOpen={showAddRowModal}
+            onClose={() => setShowAddRowModal(false)}
+            onSuccess={() => loadTableData()}
+          />
+          <EditRowModal
+            tableId={tableId}
+            rowId={selectedRowId}
+            rowData={selectedRowData}
+            fields={fields}
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            onSuccess={onEditSuccess}
+            cleanupHtmlText={cleanupHtmlText}
+            containsCleanableHtml={containsCleanableHtml}
+          />
+          <DeleteRowModal
+            rowId={selectedRowId}
+            isOpen={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onSuccess={onDeleteSuccess}
+          />
+          <TableConfigModal
+            tableId={tableId}
+            tableInfo={tableInfo}
+            fields={fields}
+            isOpen={showTableSettingsModal}
+            onClose={() => setShowTableSettingsModal(false)}
+            onSuccess={() => loadTableData(true)}
+          />
+          <RowOrderingModal
+            isOpen={showRowOrderingModal}
+            onClose={() => setShowRowOrderingModal(false)}
+            tableId={tableId}
+            tableInfo={tableInfo}
+            onSuccess={onRowOrderingSuccess || (() => loadTableData(true))}
+          />
+        </>
+      )}
+      
+      {/* Read-only modals - Export and Reference are always available */}
       <ExportTableModal
         tableId={tableId}
         tableName={tableInfo?.table_name || 'table'}
@@ -276,13 +322,6 @@ export default function TableToolbar({
         tableId={tableId}
         tableInfo={tableInfo}
         fields={fields}
-      />
-      <RowOrderingModal
-        isOpen={showRowOrderingModal}
-        onClose={() => setShowRowOrderingModal(false)}
-        tableId={tableId}
-        tableInfo={tableInfo}
-        onSuccess={onRowOrderingSuccess || (() => loadTableData(true))}
       />
     </>
   );
