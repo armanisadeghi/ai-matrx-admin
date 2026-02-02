@@ -84,6 +84,7 @@ export function MessagingInitializer() {
     });
 
     // Add listeners BEFORE subscribing
+    console.log(`[DM Global] 📝 Adding listener 1: INSERT on dm_messages`);
     // 1. Listen for NEW messages (increase unread count)
     channel.on(
       'postgres_changes',
@@ -103,6 +104,7 @@ export function MessagingInitializer() {
       }
     );
 
+    console.log(`[DM Global] 📝 Adding listener 2: UPDATE on dm_conversation_participants (user_id=eq.${userId})`);
     // 2. Listen for messages marked as READ (decrease unread count)
     channel.on(
       'postgres_changes',
@@ -125,14 +127,14 @@ export function MessagingInitializer() {
     );
 
     // Subscribe after all listeners are added
-    console.log(`[DM Global] Subscribing to ${channelName}...`);
+    console.log(`[DM Global] 🔌 Subscribing to ${channelName}... (channel state: ${channel.state})`);
     channel.subscribe((status, err) => {
       if (status === 'SUBSCRIBED') {
-        console.log(`[DM Global] ✓ Subscribed to ${channelName}`);
+        console.log(`[DM Global] ✅ Subscribed to ${channelName}`);
       } else if (status === 'CHANNEL_ERROR') {
-        console.error(`[DM Global] Channel error for ${channelName}:`, err);
+        console.error(`[DM Global] ❌ Channel error for ${channelName}:`, err);
       } else if (status === 'TIMED_OUT') {
-        console.error(`[DM Global] Subscription timed out for ${channelName}`);
+        console.error(`[DM Global] ⏱️ Subscription timed out for ${channelName}`);
       }
     });
 
@@ -140,10 +142,15 @@ export function MessagingInitializer() {
 
     return () => {
       if (subscriptionRef.current) {
-        console.log(`[DM Global] Unsubscribing from ${channelName}...`);
-        supabase.removeChannel(subscriptionRef.current);
-        subscriptionRef.current = null;
-        console.log(`[DM Global] ✓ Unsubscribed from ${channelName}`);
+        console.log(`[DM Global] 🧹 Cleanup: Unsubscribing from ${channelName} (channel state: ${subscriptionRef.current.state})...`);
+        
+        try {
+          supabase.removeChannel(subscriptionRef.current);
+          subscriptionRef.current = null;
+          console.log(`[DM Global] ✅ Cleanup complete for ${channelName}`);
+        } catch (err) {
+          console.error(`[DM Global] ❌ Error during cleanup for ${channelName}:`, err);
+        }
       }
     };
   }, [userId]); // Removed supabase and updateUnreadCount - both are stable
