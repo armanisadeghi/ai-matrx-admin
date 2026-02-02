@@ -247,6 +247,27 @@ export async function getOrganization(orgId: string): Promise<Organization | nul
 }
 
 /**
+ * Get an organization by slug
+ * @param slug Organization slug
+ * @returns Organization or null
+ */
+export async function getOrganizationBySlug(slug: string): Promise<Organization | null> {
+  try {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error) throw error;
+    return transformOrganizationFromDb(data);
+  } catch (error) {
+    console.error('Error fetching organization by slug:', error);
+    return null;
+  }
+}
+
+/**
  * Get all organizations for current user
  * @returns Array of organizations with user's role
  */
@@ -370,6 +391,7 @@ export async function getOrganizationMembers(
         id: row.user_id,
         email: row.user_email || '',
         displayName: row.user_display_name || undefined,
+        avatarUrl: row.user_avatar_url || undefined,
       },
     }));
   } catch (error) {

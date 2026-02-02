@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Save, X, Loader2, Check } from 'lucide-react';
+import { Save, X, Loader2, Check, Copy, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -98,6 +98,13 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
     setIsEditing(false);
   };
 
+  // Handle copy URL
+  const handleCopyUrl = () => {
+    const orgUrl = `https://aimatrx.com/org/${organization.slug}`;
+    navigator.clipboard.writeText(orgUrl);
+    toast.success('Organization URL copied to clipboard');
+  };
+
   return (
     <div className="space-y-5">
       {/* Edit/Save buttons */}
@@ -168,10 +175,26 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
 
         {/* Slug (Read-only) */}
         <div className="space-y-2">
-          <Label htmlFor="slug">URL Slug</Label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">aimatrx.com/org/</span>
-            <span className="text-sm font-medium">{organization.slug}</span>
+          <Label htmlFor="slug">Organization URL</Label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <a
+              href={`https://aimatrx.com/org/${organization.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-dotted underline-offset-4 flex items-center gap-1"
+            >
+              aimatrx.com/org/{organization.slug}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyUrl}
+              className="h-7 px-2"
+            >
+              <Copy className="h-3 w-3 mr-1" />
+              Copy
+            </Button>
             <Badge variant="secondary" className="text-xs">Read-only</Badge>
           </div>
           <p className="text-xs text-muted-foreground">

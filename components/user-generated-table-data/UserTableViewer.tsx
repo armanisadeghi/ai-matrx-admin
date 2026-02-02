@@ -74,8 +74,11 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   const [totalPages, setTotalPages] = useState(0);
   
   // Sorting state
-  const [sortField, setSortField] = useState(null);
-  const [sortDirection, setSortDirection] = useState('asc');
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [savedSortField, setSavedSortField] = useState<string | null>(null);
+  const [savedSortDirection, setSavedSortDirection] = useState<'asc' | 'desc' | null>(null);
+  const [savingSortPreference, setSavingSortPreference] = useState(false);
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -332,6 +335,32 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       setRowOrderingEnabled(checkRowOrderingEnabled());
     }
   }, [tableInfo]);
+  
+  // Load saved sort preference when table info loads
+  useEffect(() => {
+    if (tableInfo?.row_ordering_config?.default_sort) {
+      const { field, direction } = tableInfo.row_ordering_config.default_sort;
+      setSavedSortField(field);
+      setSavedSortDirection(direction || 'asc');
+    } else if (tableInfo) {
+      setSavedSortField(null);
+      setSavedSortDirection(null);
+    }
+  }, [tableInfo?.row_ordering_config?.default_sort]);
+  
+  // Apply saved sort on initial load (only once when we have fields and saved sort, but no active sort)
+  useEffect(() => {
+    if (savedSortField && fields.length > 0 && !sortField && !loading) {
+      // Verify the saved field exists in the current fields
+      const fieldExists = fields.some((f: any) => f.field_name === savedSortField);
+      if (fieldExists) {
+        setSortField(savedSortField);
+        setSortDirection(savedSortDirection || 'asc');
+        // Load data with the saved sort
+        loadTableData(1, limit, savedSortField, savedSortDirection || 'asc', searchTerm);
+      }
+    }
+  }, [savedSortField, fields.length]);
   
   // Handle page change
   const handlePageChange = (page) => {
@@ -656,6 +685,83 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     }
   };
   
+  // Save current sort as default
+  const saveDefaultSort = async () => {
+    if (!sortField) return;
+    
+    try {
+      setSavingSortPreference(true);
+      
+      const { data, error } = await supabase.rpc('update_user_table_default_sort', {
+        p_table_id: tableId,
+        p_sort_field: sortField,
+        p_sort_direction: sortDirection
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to save sort preference');
+      
+      // Update saved sort state
+      setSavedSortField(sortField);
+      setSavedSortDirection(sortDirection);
+      
+      // Update tableInfo to reflect the change
+      if (tableInfo) {
+        setTableInfo({
+          ...tableInfo,
+          row_ordering_config: {
+            ...tableInfo.row_ordering_config,
+            default_sort: { field: sortField, direction: sortDirection }
+          }
+        });
+      }
+      
+    } catch (err) {
+      console.error('Error saving sort preference:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save sort preference');
+    } finally {
+      setSavingSortPreference(false);
+    }
+  };
+  
+  // Clear saved default sort
+  const clearDefaultSort = async () => {
+    try {
+      setSavingSortPreference(true);
+      
+      const { data, error } = await supabase.rpc('update_user_table_default_sort', {
+        p_table_id: tableId,
+        p_sort_field: null
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to clear sort preference');
+      
+      // Clear saved sort state
+      setSavedSortField(null);
+      setSavedSortDirection(null);
+      
+      // Update tableInfo to reflect the change
+      if (tableInfo) {
+        const newConfig = { ...tableInfo.row_ordering_config };
+        delete newConfig.default_sort;
+        setTableInfo({
+          ...tableInfo,
+          row_ordering_config: newConfig
+        });
+      }
+      
+    } catch (err) {
+      console.error('Error clearing sort preference:', err);
+      setError(err instanceof Error ? err.message : 'Failed to clear sort preference');
+    } finally {
+      setSavingSortPreference(false);
+    }
+  };
+  
+  // Check if current sort matches saved sort
+  const isSortSaved = sortField === savedSortField && sortDirection === savedSortDirection;
+  
   // Check if any data in the current table contains cleanable HTML
   const hasCleanableHtmlInTable = () => {
     if (!data || !fields) return false;
@@ -875,6 +981,44 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           <Eye className="h-4 w-4" />
           <span className="font-medium">Shared Table</span>
           <span className="text-purple-500 dark:text-purple-400">(read only)</span>
+        </div>
+      )}
+      
+      {/* Sort indicator with save option */}
+      {sortField && !isReadOnly && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-gray-500 dark:text-gray-400">
+            Sorted by <span className="font-medium text-gray-700 dark:text-gray-300">{fields.find((f: any) => f.field_name === sortField)?.display_name || sortField}</span>
+            <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+          </span>
+          {isSortSaved ? (
+            <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              Saved as default
+            </span>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+              onClick={saveDefaultSort}
+              disabled={savingSortPreference}
+            >
+              {savingSortPreference ? 'Saving...' : 'Save as default'}
+            </Button>
+          )}
+          {savedSortField && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+              onClick={clearDefaultSort}
+              disabled={savingSortPreference}
+              title="Clear saved sort"
+            >
+              Clear
+            </Button>
+          )}
         </div>
       )}
       
