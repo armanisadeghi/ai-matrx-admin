@@ -310,6 +310,41 @@ export function AppletHeader(props: AppletHeaderProps) {
   );
 }
 
+interface MessagesHeaderProps {
+  title?: string;
+  showBack?: boolean;
+  backHref?: string;
+  onBack?: () => void;
+}
+
+export function MessagesHeader(props: MessagesHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on messages pages
+  if (!pathname?.includes('/messages')) {
+    return null;
+  }
+
+  // Dynamically import the component to avoid SSR issues
+  const [MessagesHeaderCompact, setMessagesHeaderCompact] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/messaging/components/MessagesHeaderCompact').then((module) => {
+      setMessagesHeaderCompact(() => module.MessagesHeaderCompact);
+    });
+  }, []);
+
+  if (!MessagesHeaderCompact) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <MessagesHeaderCompact {...props} />
+    </PageSpecificHeader>
+  );
+}
+
 interface ModuleHeaderProps {
   pages: Array<{
     title: string;

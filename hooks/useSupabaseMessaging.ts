@@ -52,7 +52,9 @@ export function useMessages(
   
   const mountedRef = useRef(true);
   const messagingService = getMessagingService();
-  const supabase = createClient();
+  // Use ref to avoid recreating supabase client on every render
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   // Load initial messages
   useEffect(() => {
@@ -176,7 +178,7 @@ export function useMessages(
         unsubscribe();
       }
     };
-  }, [conversationId, userId, initialPageSize, autoMarkAsRead, supabase, messagingService]);
+  }, [conversationId, userId, initialPageSize, autoMarkAsRead, messagingService]);
 
   // Send message
   const sendMessage = useCallback(async (

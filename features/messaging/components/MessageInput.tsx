@@ -106,11 +106,11 @@ export function MessageInput({
   return (
     <div
       className={cn(
-        "border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-2",
+        "w-full shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 px-3 py-2",
         className
       )}
     >
-      <div className="relative flex items-end">
+      <div className="relative w-full">
         <Textarea
           ref={textareaRef}
           value={content}
@@ -121,6 +121,7 @@ export function MessageInput({
           className={cn(
             "w-full min-h-[44px] max-h-[150px] resize-none text-base pr-12",
             "rounded-xl border-zinc-300 dark:border-zinc-700",
+            "bg-zinc-100 dark:bg-zinc-800/50",
             "focus-visible:ring-1 focus-visible:ring-primary",
             "placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
           )}
@@ -131,7 +132,7 @@ export function MessageInput({
           onClick={handleSend}
           disabled={!content.trim() || isSending || disabled}
           className={cn(
-            "absolute right-2 bottom-2 p-1.5 rounded-full transition-colors",
+            "absolute right-3 bottom-2.5 p-1 rounded-full transition-colors",
             "text-zinc-400 hover:text-primary",
             "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-zinc-400",
             content.trim() && !isSending && !disabled && "text-primary hover:text-primary/80"
