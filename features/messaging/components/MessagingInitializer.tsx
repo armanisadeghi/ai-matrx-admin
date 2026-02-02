@@ -6,7 +6,7 @@ import {
   setMessagingAvailable,
   setTotalUnreadCount,
 } from "../redux/messagingSlice";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 
 /**
  * MessagingInitializer - Sets up messaging availability and realtime subscriptions
@@ -20,8 +20,7 @@ import { createClient } from "@/utils/supabase/client";
  */
 export function MessagingInitializer() {
   const dispatch = useAppDispatch();
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
+  // Use singleton supabase client (shared across all hooks)
   const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Get user from Redux

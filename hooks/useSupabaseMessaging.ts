@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMessagingService } from '@/lib/supabase/messaging';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import type {
   Message,
   MessageWithSender,
@@ -52,9 +52,7 @@ export function useMessages(
   
   const mountedRef = useRef(true);
   const messagingService = getMessagingService();
-  // Use ref to avoid recreating supabase client on every render
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
+  // Use singleton supabase client (shared across all hooks)
 
   // Load initial messages
   useEffect(() => {
@@ -458,9 +456,7 @@ export function useConversations(userId: string | null): UseConversationsReturn 
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
 
   const mountedRef = useRef(true);
-  // Use ref to avoid recreating supabase client on every render
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
+  // Use singleton supabase client (shared across all hooks)
 
   // Load conversations
   const loadConversations = useCallback(async () => {
