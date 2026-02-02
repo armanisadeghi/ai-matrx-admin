@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -107,36 +106,44 @@ export function MessageInput({
   return (
     <div
       className={cn(
-        "flex items-end gap-2 p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50",
+        "border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-2",
         className
       )}
     >
-      <Textarea
-        ref={textareaRef}
-        value={content}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(
-          "min-h-[40px] max-h-[150px] resize-none text-base",
-          "focus-visible:ring-1 focus-visible:ring-primary"
-        )}
-        rows={1}
-      />
-
-      <Button
-        onClick={handleSend}
-        disabled={!content.trim() || isSending || disabled}
-        size="icon"
-        className="h-10 w-10 shrink-0"
-      >
-        {isSending ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Send className="h-5 w-5" />
-        )}
-      </Button>
+      <div className="relative flex items-end">
+        <Textarea
+          ref={textareaRef}
+          value={content}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn(
+            "w-full min-h-[44px] max-h-[150px] resize-none text-base pr-12",
+            "rounded-xl border-zinc-300 dark:border-zinc-700",
+            "focus-visible:ring-1 focus-visible:ring-primary",
+            "placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+          )}
+          rows={1}
+        />
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={!content.trim() || isSending || disabled}
+          className={cn(
+            "absolute right-2 bottom-2 p-1.5 rounded-full transition-colors",
+            "text-zinc-400 hover:text-primary",
+            "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-zinc-400",
+            content.trim() && !isSending && !disabled && "text-primary hover:text-primary/80"
+          )}
+        >
+          {isSending ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
