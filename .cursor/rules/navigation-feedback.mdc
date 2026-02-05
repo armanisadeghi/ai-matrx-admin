@@ -1,5 +1,10 @@
 ---
-alwaysApply: false
+description: Navigation feedback pattern for clickable cards, grids, and list items that route to new pages. Apply when implementing navigation on cards, handling route transitions, or adding loading states to clickable elements.
+globs:
+  - "**/components/**/*Card*.tsx"
+  - "**/components/**/*Grid*.tsx"
+  - "**/components/**/*List*.tsx"
+  - "**/features/**/components/*.tsx"
 ---
 # Navigation Feedback Pattern
 

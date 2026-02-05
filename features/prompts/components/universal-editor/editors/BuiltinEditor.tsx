@@ -124,8 +124,9 @@ export function BuiltinEditor({
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to save builtin');
+                const text = await response.text();
+                const error = text ? JSON.parse(text) : {};
+                throw new Error(error.error || `Failed to save builtin (${response.status})`);
             }
 
             toast.success('Builtin saved successfully');

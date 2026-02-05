@@ -81,19 +81,50 @@ export const executeBuiltinWithJsonExtraction = createAsyncThunk<
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
 
       // 3. Wait for completion and get full response
+      // Uses socket health monitoring to detect disconnections early
       const startTime = Date.now();
       let fullResponse = '';
       let isResponseEnded = false;
+      let lastTextLength = 0;
+      let lastProgressTime = Date.now();
+      const STALE_THRESHOLD_MS = 30000; // 30s without progress = check socket health
 
       while (!isResponseEnded && (Date.now() - startTime < timeoutMs)) {
-        await new Promise(resolve => setTimeout(resolve, pollingIntervalMs));
+        await new Promise(resolve => setTimeout(resolve, Math.max(pollingIntervalMs, 500)));
         const state = getState();
         fullResponse = selectStreamingTextForInstance(state, runId);
         isResponseEnded = selectIsResponseEndedForInstance(state, runId);
+
+        // Track streaming progress
+        if (fullResponse.length > lastTextLength) {
+          lastTextLength = fullResponse.length;
+          lastProgressTime = Date.now();
+        }
+
+        // Early detection: if stalled, check socket health
+        if (!isResponseEnded && (Date.now() - lastProgressTime > STALE_THRESHOLD_MS)) {
+          try {
+            const { SocketConnectionManager } = require('../../socket-io/connection/socketConnectionManager');
+            const socketManager = SocketConnectionManager.getInstance();
+            if (!socketManager.isConnectionHealthy()) {
+              throw new Error(
+                'Lost connection to the server. This typically happens when the browser tab is in the background. ' +
+                'Please keep this tab active and try again.'
+              );
+            }
+          } catch (healthError: any) {
+            if (healthError.message.includes('Lost connection')) throw healthError;
+            // If we can't check socket health, fall through to timeout
+          }
+        }
       }
 
       if (!isResponseEnded) {
-        throw new Error('AI response timed out.');
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        throw new Error(
+          `AI response timed out after ${elapsed} seconds. ` +
+          'If you switched browser tabs during this process, that may have caused the connection to drop.'
+        );
       }
 
       // 4. Extract JSON from the full response

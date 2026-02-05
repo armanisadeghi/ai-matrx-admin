@@ -1,13 +1,15 @@
 ---
+description: 
 alwaysApply: true
 ---
+
 ---
 alwaysApply: true
 ---
 
 # AI Matrx Development Guidelines
 
-**Stack:** React 19, Next.js 15/16, Tailwind CSS, TypeScript, Redux (@/lib/redux/store.ts), Supabase (@/utils/supabase/client.ts)
+**Stack:** React 19, Next.js 16, Tailwind CSS, TypeScript, Redux (@/lib/redux/store.ts), Supabase (@/utils/supabase/client.ts)
 **Lead Developer:** Arman (Expert in React 19, Next.js 15/16, Tailwind CSS, TypeScript, PostgreSQL and Python)
 
 <file_organization>

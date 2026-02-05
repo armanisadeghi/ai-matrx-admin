@@ -21,7 +21,9 @@ import {
   MessageCircle,
   Type,
   ListOrdered,
-  Loader2
+  Loader2,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatTitleCase } from '@/utils/text/text-case-converter';
@@ -81,7 +83,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   }
 
   // Auto-create hook
-  const { createApp, isCreating, progress, codeTaskId, metadataTaskId } = useAutoCreateApp({
+  const { createApp, retry, isCreating, progress, codeTaskId, metadataTaskId, wasBackgrounded, canRetry } = useAutoCreateApp({
     onSuccess: (appId) => {
       console.log('[AutoCreatePromptAppForm] App created successfully:', appId);
       onSuccess?.();
@@ -211,7 +213,7 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
       return <AutoCreateDebugView codeTaskId={codeTaskId} metadataTaskId={metadataTaskId} progress={progress} />;
     }
 
-    // Normal mode: show spinner
+    // Normal mode: show spinner with background tab warning
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="w-full max-w-md">
@@ -238,8 +240,18 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
               </div>
 
               <p className="text-xs text-center text-muted-foreground">
-                This may take up to 30 seconds...
+                This may take 1-2 minutes. Please keep this tab active.
               </p>
+
+              {/* Background tab warning */}
+              {wasBackgrounded && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-amber-800 dark:text-amber-200">
+                    Connection was briefly interrupted. Attempting to recover...
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -349,8 +361,22 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
           {/* Error Message */}
           {error && (
             <Card className="border-destructive bg-destructive/10">
-              <CardContent className="pt-0">
-                <p className="text-destructive font-semibold">{error}</p>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <p className="text-destructive font-semibold text-sm">{error}</p>
+                </div>
+                {canRetry && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={retry}
+                    className="gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Try Again
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
@@ -440,8 +466,22 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
       {/* Error Message */}
       {error && (
         <Card className="border-destructive bg-destructive/10">
-          <CardContent className="pt-0">
-            <p className="text-destructive font-semibold">{error}</p>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+              <p className="text-destructive font-semibold text-sm">{error}</p>
+            </div>
+            {canRetry && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={retry}
+                className="gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Try Again
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}

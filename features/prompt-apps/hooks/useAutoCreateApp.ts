@@ -1,16 +1,25 @@
 /**
  * Hook for Auto Creating Prompt Apps
  * 
- * Handles the execution of prompt builtins, code extraction, and app creation
+ * Handles the execution of prompt builtins, code extraction, and app creation.
+ * 
+ * IMPORTANT: This hook includes protection against background tab failures.
+ * Browser tabs that go to background can suspend WebSocket connections, causing
+ * socket.io streaming to fail silently. This hook uses:
+ * - Web Locks API to prevent tab suspension during long-running operations
+ * - Visibility change detection to catch connection drops early
+ * - Automatic retry logic for recoverable failures
+ * - Clear error surfacing so failures are never silent
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { supabase } from '@/utils/supabase/client';
 import { executeBuiltinWithCodeExtraction, executeBuiltinWithJsonExtraction } from '@/lib/redux/prompt-execution';
 import { validateSlugsInBatch, generateSlugCandidates } from '../services/slug-service';
 import { getDefaultImportsForNewApps } from '../utils/allowed-imports';
+import { SocketConnectionManager } from '@/lib/redux/socket-io/connection/socketConnectionManager';
 import type { AppMetadata } from '../types';
 
 export type AutoCreateMode = 'standard' | 'lightning';
@@ -35,6 +44,34 @@ interface AutoCreateAppData {
   mode?: AutoCreateMode;
 }
 
+/**
+ * Acquire a Web Lock to discourage the browser from freezing this tab.
+ * Returns a release function. If Web Locks API is unavailable, returns a no-op.
+ */
+async function acquireWebLock(name: string): Promise<() => void> {
+  if (typeof navigator === 'undefined' || !navigator.locks) {
+    return () => {};
+  }
+
+  let releaseLock: (() => void) | null = null;
+  const lockPromise = new Promise<void>((resolve) => {
+    releaseLock = resolve;
+  });
+
+  // Request a lock and hold it until we call releaseLock()
+  // This signals to the browser that this tab has important work in progress
+  navigator.locks.request(name, { mode: 'exclusive', ifAvailable: true }, async (lock) => {
+    if (!lock) return; // Lock not available (another tab has it)
+    await lockPromise;
+  }).catch(() => {
+    // Lock API not supported or failed - continue without it
+  });
+
+  return () => {
+    releaseLock?.();
+  };
+}
+
 export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -42,14 +79,62 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
   const [progress, setProgress] = useState<string>('');
   const [codeTaskId, setCodeTaskId] = useState<string | null>(null);
   const [metadataTaskId, setMetadataTaskId] = useState<string | null>(null);
+  const [wasBackgrounded, setWasBackgrounded] = useState(false);
+  const [lastAttemptData, setLastAttemptData] = useState<AutoCreateAppData | null>(null);
 
-  const createApp = async (data: AutoCreateAppData) => {
+  // Refs for tracking background state during async operations
+  const isCreatingRef = useRef(false);
+  const tabWasHiddenDuringCreation = useRef(false);
+  const creationStartTime = useRef<number>(0);
+
+  // Stable refs for callback options to avoid useCallback dependency churn.
+  // The options object is created inline by the consumer on every render,
+  // so we capture the latest callbacks in refs instead.
+  const onSuccessRef = useRef(options.onSuccess);
+  const onErrorRef = useRef(options.onError);
+  onSuccessRef.current = options.onSuccess;
+  onErrorRef.current = options.onError;
+
+  // Monitor tab visibility during creation
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && isCreatingRef.current) {
+        tabWasHiddenDuringCreation.current = true;
+        console.warn('[AutoCreateApp] Tab went to background during app creation');
+      }
+
+      if (document.visibilityState === 'visible' && isCreatingRef.current) {
+        // Tab came back - check socket health
+        const socketManager = SocketConnectionManager.getInstance();
+        const isHealthy = socketManager.isConnectionHealthy();
+
+        if (!isHealthy) {
+          console.warn('[AutoCreateApp] Socket disconnected while tab was in background - forcing reconnect');
+          socketManager.forceReconnectAll();
+          setWasBackgrounded(true);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  const createApp = useCallback(async (data: AutoCreateAppData) => {
     setIsCreating(true);
+    isCreatingRef.current = true;
+    tabWasHiddenDuringCreation.current = false;
+    creationStartTime.current = Date.now();
+    setWasBackgrounded(false);
+    setLastAttemptData(data);
     setProgress('Initializing AI generation...');
+
+    // Acquire a Web Lock to discourage browser from freezing this tab
+    const releaseLock = await acquireWebLock('auto-create-prompt-app');
 
     try {
       // Generate metadata first (fast)
-      setProgress('Generating metadata...');
+      setProgress('Generating app metadata with AI...');
       
       const metadataResult = await dispatch(executeBuiltinWithJsonExtraction({
         builtinKey: 'prompt-app-metadata-generator',
@@ -64,13 +149,17 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       }
       
       if (!metadataResult.success) {
-        throw new Error(`Metadata generation failed: ${metadataResult.error}`);
+        // Check if this was likely a background tab issue
+        const failureContext = tabWasHiddenDuringCreation.current
+          ? ' This may have failed because the browser tab was in the background. Please keep this tab active during app creation.'
+          : '';
+        throw new Error(`Metadata generation failed: ${metadataResult.error}${failureContext}`);
       }
 
       const metadata: AppMetadata = metadataResult.data;
       
-      // Generate code second (slow)
-      setProgress('Generating code...');
+      // Generate code second (slow - this is the most vulnerable to background tab issues)
+      setProgress('Generating app code with AI (this takes 1-2 minutes)...');
       
       const codeBuiltinKey = data.mode === 'lightning' 
         ? 'prompt-app-auto-create-lightning'
@@ -87,7 +176,10 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       }
       
       if (!codeResult.success) {
-        throw new Error(`Code generation failed: ${codeResult.error}`);
+        const failureContext = tabWasHiddenDuringCreation.current
+          ? ' This may have failed because the browser tab was in the background. Please keep this tab active during app creation.'
+          : '';
+        throw new Error(`Code generation failed: ${codeResult.error}${failureContext}`);
       }
 
       // Prepare variable schema
@@ -168,7 +260,7 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
 
       setProgress('App created successfully!');
       
-      options.onSuccess?.(appData.id);
+      onSuccessRef.current?.(appData.id);
       
       // Redirect to app page
       setTimeout(() => {
@@ -178,20 +270,44 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       return appData;
 
     } catch (error: any) {
-      const errorMessage = error.message || 'An unexpected error occurred';
-      options.onError?.(errorMessage);
+      const rawMessage = error.message || 'An unexpected error occurred';
+      
+      // Enhance error message if tab was backgrounded
+      let errorMessage = rawMessage;
+      if (tabWasHiddenDuringCreation.current && !rawMessage.includes('background')) {
+        errorMessage = `${rawMessage}. The browser tab was in the background during creation, which likely caused this failure. Please keep this tab active and try again.`;
+      }
+      
+      console.error('[AutoCreateApp] Creation failed:', errorMessage);
+      onErrorRef.current?.(errorMessage);
+      
+      // ALWAYS reset creating state so the UI never gets stuck
       setIsCreating(false);
+      isCreatingRef.current = false;
       setProgress('');
       return null;
+    } finally {
+      // ALWAYS release the web lock and reset refs
+      releaseLock();
+      isCreatingRef.current = false;
     }
-  };
+  }, [dispatch, router]);
+
+  const retry = useCallback(() => {
+    if (lastAttemptData) {
+      createApp(lastAttemptData);
+    }
+  }, [lastAttemptData, createApp]);
 
   return {
     createApp,
+    retry,
     isCreating,
     progress,
     codeTaskId,
     metadataTaskId,
+    wasBackgrounded,
+    canRetry: !isCreating && lastAttemptData !== null,
   };
 }
 

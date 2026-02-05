@@ -24,9 +24,12 @@ export class SocketConnectionManager {
     public static readonly LOCAL_URL = "http://localhost:8000";
     public static readonly DEFAULT_NAMESPACE = "/UserSession";
 
+    private visibilityHandler: (() => void) | null = null;
+
     private constructor() {
         if (this.isClientSide) {
             this.startKeepAlive();
+            this.startVisibilityHandler();
         }
     }
 
@@ -279,6 +282,61 @@ export class SocketConnectionManager {
         return connections;
     }
 
+    /**
+     * Check if a specific connection (or any connection) is healthy
+     */
+    public isConnectionHealthy(connectionId?: string): boolean {
+        if (connectionId) {
+            const socket = this.sockets.get(connectionId);
+            return !!(socket && socket.connected);
+        }
+        // Check primary connection
+        const primarySocket = this.sockets.get("primary");
+        return !!(primarySocket && primarySocket.connected);
+    }
+
+    /**
+     * Force immediate reconnection of all sockets (useful after tab regains focus)
+     */
+    public async forceReconnectAll(): Promise<void> {
+        const reconnectPromises: Promise<any>[] = [];
+
+        this.sockets.forEach((socket, connectionId) => {
+            if (socket && !socket.connected) {
+                console.log(`[SOCKET] Force reconnecting ${connectionId} after visibility change`);
+                reconnectPromises.push(this.reconnect(connectionId));
+            }
+        });
+
+        if (reconnectPromises.length > 0) {
+            await Promise.allSettled(reconnectPromises);
+        }
+    }
+
+    /**
+     * Handle visibility changes to reconnect sockets immediately when tab regains focus
+     */
+    private startVisibilityHandler(): void {
+        if (typeof document === "undefined") return;
+
+        this.visibilityHandler = () => {
+            if (document.visibilityState === "visible") {
+                // Tab became visible - immediately check and reconnect all sockets
+                this.sockets.forEach((socket, connectionId) => {
+                    if (socket && !socket.connected) {
+                        console.log(`[SOCKET] Tab visible - reconnecting ${connectionId}`);
+                        socket.connect(); // Immediate reconnect attempt
+                    } else if (socket && socket.connected) {
+                        // Socket still connected - send a ping to verify
+                        socket.emit("ping", { timestamp: Date.now() });
+                    }
+                });
+            }
+        };
+
+        document.addEventListener("visibilitychange", this.visibilityHandler);
+    }
+
     private startKeepAlive(): void {
         // Existing Supabase session keep-alive
         setInterval(async () => {
@@ -293,15 +351,15 @@ export class SocketConnectionManager {
             }
         }, 5 * 60 * 1000);
 
-        // New: Socket connection keep-alive ping
+        // Socket connection keep-alive ping - aggressive interval to prevent
+        // background tab disconnection during long-running operations
         setInterval(() => {
             this.sockets.forEach((socket, connectionId) => {
                 if (socket && socket.connected) {
-                    // Send a ping to keep the connection alive
                     socket.emit("ping", { timestamp: Date.now() });
                     if (DEBUG) console.log(`[SOCKET] Sent keep-alive ping to ${connectionId}`);
                 }
             });
-        }, 15 * 60 * 1000); // Every 15 minutes
+        }, 25 * 1000); // Every 25 seconds (was 15 minutes)
     }
 }
