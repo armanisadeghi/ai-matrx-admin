@@ -8,7 +8,8 @@ import { useApiAuth } from '@/hooks/useApiAuth';
 import { useGuestLimit } from '@/hooks/useGuestLimit';
 import { GuestLimitWarning } from '@/components/guest/GuestLimitWarning';
 import { SignupConversionModal } from '@/components/guest/SignupConversionModal';
-import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
+import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
+import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import MarkdownStream from '@/components/MarkdownStream';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import type { PromptApp } from '../types';
@@ -449,6 +450,12 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             // Build scope with allowed imports
             const scope = buildComponentScope(app.allowed_imports || []);
             
+            // Patch scope with fallbacks for any PascalCase identifiers in the code
+            // that aren't already available (e.g., non-existent Lucide icons)
+            if (transformed) {
+                patchScopeForMissingIdentifiers(transformed, scope);
+            }
+            
             // Get valid parameter names (filter out invalid JS identifiers)
             const { paramNames, paramValues } = getScopeFunctionParameters(scope);
             
@@ -461,7 +468,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             console.error('Failed to transform custom UI:', error);
             return null;
         }
-    }, [app.component_code, TestComponent]);
+    }, [app.component_code, app.allowed_imports, TestComponent]);
 
     // Extract response text from stream events for backward compatibility
     const responseText = useMemo(() => {
@@ -496,18 +503,20 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             {/* Custom UI or fallback */}
             <div className="flex-1 overflow-auto">
                 {CustomUIComponent ? (
-                    <CustomUIComponent
-                        onExecute={handleExecute}
-                        response={responseText}
-                        streamEvents={streamEvents}
-                        isStreaming={!isStreamComplete && isExecuting}
-                        isExecuting={isExecuting}
-                        error={error}
-                        rateLimitInfo={!isAuthenticated ? {
-                            remaining: guestLimit.remaining,
-                            total: 5
-                        } : null}
-                    />
+                    <PromptAppErrorBoundary appName={app.name}>
+                        <CustomUIComponent
+                            onExecute={handleExecute}
+                            response={responseText}
+                            streamEvents={streamEvents}
+                            isStreaming={!isStreamComplete && isExecuting}
+                            isExecuting={isExecuting}
+                            error={error}
+                            rateLimitInfo={!isAuthenticated ? {
+                                remaining: guestLimit.remaining,
+                                total: 5
+                            } : null}
+                        />
+                    </PromptAppErrorBoundary>
                 ) : (
                     <div className="p-6 max-w-4xl mx-auto">
                         <div className="mb-6">

@@ -7,7 +7,8 @@ import { getFingerprint } from '@/lib/services/fingerprint-service';
 import { useGuestLimit } from '@/hooks/useGuestLimit';
 import { GuestLimitWarning } from '@/components/guest/GuestLimitWarning';
 import { SignupConversionModal } from '@/components/guest/SignupConversionModal';
-import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
+import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
+import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import type { PromptApp } from '../types';
 
 interface ExecuteAppResponse {
@@ -440,6 +441,12 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             // Build component scope using centralized import resolver
             const scope = buildComponentScope(app.allowed_imports);
             
+            // Patch scope with fallbacks for any PascalCase identifiers in the code
+            // that aren't already available (e.g., non-existent Lucide icons)
+            if (code) {
+                patchScopeForMissingIdentifiers(code, scope);
+            }
+            
             // Get valid parameter names (filter out invalid JS identifiers)
             const { paramNames, paramValues } = getScopeFunctionParameters(scope);
             
@@ -453,20 +460,42 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
         } catch (err) {
             console.error('Component render error:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
             return () => (
-                <div className="p-6 bg-destructive/10 border border-destructive rounded-lg">
-                    <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
-                        <div>
-                            <h3 className="font-semibold text-destructive">Component Error</h3>
-                            <p className="text-sm text-destructive/80 mt-1">
-                                Failed to load app component.
-                            </p>
-                            {err instanceof Error && (
-                                <p className="text-xs text-muted-foreground mt-2 font-mono">
-                                    {err.message}
+                <div className="flex items-center justify-center min-h-[400px] p-6">
+                    <div className="w-full max-w-lg">
+                        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+                            <div className="bg-destructive/5 border-b border-destructive/10 px-6 py-5">
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                                        <AlertCircle className="w-5 h-5 text-destructive" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-base font-semibold text-foreground">
+                                            Failed to load app
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            The app component could not be compiled
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="px-6 py-5 space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                    There was an error building the app component. This usually means the app code has a syntax or import issue.
                                 </p>
-                            )}
+                                <div className="p-3 bg-muted/50 rounded-lg">
+                                    <p className="text-xs font-mono text-destructive break-all">
+                                        {errorMessage}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                                >
+                                    Reload Page
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -503,13 +532,15 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
             {/* Main content with scroll */}
             <div className="flex-1 overflow-auto">
-                <CustomComponent
-                    onExecute={handleExecute}
-                    response={response}
-                    isStreaming={!isStreamComplete && !!taskId}
-                    isExecuting={isExecuting}
-                    error={error}
-                />
+                <PromptAppErrorBoundary appName={app.name}>
+                    <CustomComponent
+                        onExecute={handleExecute}
+                        response={response}
+                        isStreaming={!isStreamComplete && !!taskId}
+                        isExecuting={isExecuting}
+                        error={error}
+                    />
+                </PromptAppErrorBoundary>
             </div>
         </div>
     );
