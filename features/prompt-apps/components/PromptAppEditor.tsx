@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, lazy, Suspense, useTransition } from 'react';
+import { useState, useEffect, lazy, Suspense, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3 } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
@@ -46,6 +46,26 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [editRateLimitWindowHours, setEditRateLimitWindowHours] = useState(app.rate_limit_window_hours.toString());
   const [editRateLimitAuthenticated, setEditRateLimitAuthenticated] = useState(app.rate_limit_authenticated.toString());
   const [isIframeLoading, setIsIframeLoading] = useState(false);
+  const [promptName, setPromptName] = useState<string | null>(null);
+
+  // Fetch the prompt name for display
+  useEffect(() => {
+    if (!app.prompt_id) return;
+    
+    const fetchPromptName = async () => {
+      const { data, error } = await supabase
+        .from('prompts')
+        .select('name')
+        .eq('id', app.prompt_id)
+        .single();
+      
+      if (!error && data) {
+        setPromptName(data.name);
+      }
+    };
+    
+    fetchPromptName();
+  }, [app.prompt_id]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -402,6 +422,30 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                         </a>
                       </div>
                     </div>
+                    {/* Prompt Info */}
+                    {app.prompt_id && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Powered by Prompt</label>
+                        <div className="flex items-center gap-2">
+                          <Wand2 className="w-4 h-4 text-primary shrink-0" />
+                          <Link
+                            href={`/ai/prompts/edit-redux/${app.prompt_id}`}
+                            className="text-sm font-medium text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors"
+                          >
+                            {promptName || 'Loading prompt...'}
+                          </Link>
+                          <Link
+                            href={`/ai/prompts/edit-redux/${app.prompt_id}`}
+                            className="shrink-0"
+                          >
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 cursor-pointer hover:bg-primary/10 transition-colors">
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              Open in Prompt Builder
+                            </Badge>
+                          </Link>
+                        </div>
+                      </div>
+                    )}
                     {app.description && (
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</label>

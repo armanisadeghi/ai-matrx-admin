@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Bug, Send, X, Check, PartyPopper } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Bug, Send, X, Check, PartyPopper, Clipboard, Plus } from 'lucide-react';
 import { submitFeedback } from '@/actions/feedback.actions';
 import { FeedbackType } from '@/types/feedback.types';
 import { usePathname } from 'next/navigation';
@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { FileUploadWithStorage, UploadedFileResult } from '@/components/ui/file-upload/FileUploadWithStorage';
+import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 import { toast } from 'sonner';
 
 interface FeedbackButtonProps {
@@ -40,8 +41,12 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const [description, setDescription] = useState('');
     const [uploadedImages, setUploadedImages] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPasting, setIsPasting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [showNewFeatureHighlight, setShowNewFeatureHighlight] = useState(false);
+
+    // Upload hook for programmatic paste uploads only
+    const { uploadToPublicUserAssets, isLoading: isUploadHookLoading } = useFileUploadWithStorage('user-public-assets', 'feedback-images');
 
     // Show new feature highlight for first 5 views
     useEffect(() => {
@@ -66,6 +71,50 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
             return () => clearTimeout(timer);
         }
     }, [feedbackFeatureViewCount, dispatch]);
+
+    // Upload a pasted image via the storage hook
+    const uploadPastedImage = useCallback(async (file: File) => {
+        setIsPasting(true);
+        try {
+            const result = await uploadToPublicUserAssets(file);
+            if (result?.url) {
+                setUploadedImages(prev => [...prev, result.url]);
+                toast.success('Image pasted and uploaded');
+            }
+        } catch (err) {
+            console.error('Paste upload failed:', err);
+            toast.error('Failed to upload pasted image');
+        } finally {
+            setIsPasting(false);
+        }
+    }, [uploadToPublicUserAssets]);
+
+    // Clipboard paste handler (Ctrl+V when form is open)
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handlePaste = async (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of Array.from(items)) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        const timestamp = Date.now();
+                        const ext = file.type.split('/')[1] || 'png';
+                        const namedFile = new File([file], `pasted-image-${timestamp}.${ext}`, { type: file.type });
+                        await uploadPastedImage(namedFile);
+                    }
+                    break;
+                }
+            }
+        };
+
+        document.addEventListener('paste', handlePaste);
+        return () => document.removeEventListener('paste', handlePaste);
+    }, [isOpen, uploadPastedImage]);
 
     const handleSubmit = async () => {
         if (!description.trim()) return;
@@ -108,10 +157,36 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
         setIsOpen(false);
     };
 
+    // Callback from FileUploadWithStorage (drag/click uploads)
     const handleUploadComplete = (results: UploadedFileResult[]) => {
         const urls = results.map(r => r.url);
         setUploadedImages(prev => [...prev, ...urls]);
     };
+
+    // Remove an uploaded image
+    const removeImage = useCallback((index: number) => {
+        setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    // Paste button handler (uses Clipboard API)
+    const handlePasteButton = useCallback(async () => {
+        try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+                const imageType = item.types.find(t => t.startsWith('image/'));
+                if (imageType) {
+                    const blob = await item.getType(imageType);
+                    const ext = imageType.split('/')[1] || 'png';
+                    const file = new File([blob], `pasted-image-${Date.now()}.${ext}`, { type: imageType });
+                    await uploadPastedImage(file);
+                    return;
+                }
+            }
+            toast.info('No image found in clipboard');
+        } catch {
+            toast.info('Copy an image to your clipboard first, then click Paste or press Ctrl+V');
+        }
+    }, [uploadPastedImage]);
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -144,8 +219,13 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                                 <div className="bg-blue-600 text-white text-xs font-medium px-3 py-2 pr-8 rounded-lg shadow-lg whitespace-nowrap animate-bounce relative">
                                     <PartyPopper className="w-4 h-4 inline mr-1" /> NEW! Report bugs & issues
                                     <button
+                                        onPointerDown={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                        }}
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            e.preventDefault();
                                             setShowNewFeatureHighlight(false);
                                             // Mark as seen by setting count to max
                                             dispatch(setModulePreferences({
@@ -271,6 +351,8 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                         Screenshots (optional)
                                     </label>
+                                    
+                                    {/* Original file uploader -- handles drag/drop and click-to-upload */}
                                     <FileUploadWithStorage
                                         bucket="userContent"
                                         path="feedback-images"
@@ -280,9 +362,51 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                                         useMiniUploader={true}
                                         maxHeight="150px"
                                     />
+
+                                    {/* Paste button */}
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handlePasteButton}
+                                            disabled={isSubmitting || isPasting}
+                                            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
+                                        >
+                                            <Clipboard className="w-3 h-3" />
+                                            {isPasting ? 'Pasting...' : 'Paste Image'}
+                                        </button>
+                                        <span className="text-[10px] text-muted-foreground">
+                                            or Ctrl+V
+                                        </span>
+                                    </div>
+
+                                    {/* Image thumbnails with remove */}
                                     {uploadedImages.length > 0 && (
-                                        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                                            {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} uploaded
+                                        <div className="mt-2">
+                                            <p className="text-xs text-muted-foreground mb-1.5">
+                                                {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} attached
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {uploadedImages.map((url, index) => (
+                                                    <div
+                                                        key={`img-${index}`}
+                                                        className="relative group w-14 h-14 rounded-md overflow-hidden border border-border bg-muted"
+                                                    >
+                                                        <img
+                                                            src={url}
+                                                            alt={`Attachment ${index + 1}`}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeImage(index)}
+                                                            className="absolute top-0 right-0 p-0.5 bg-black/60 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            aria-label={`Remove image ${index + 1}`}
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -321,4 +445,3 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
         </DropdownMenu>
     );
 }
-
