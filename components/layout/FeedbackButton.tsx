@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Bug, Send, X, Check, PartyPopper, Clipboard, Plus } from 'lucide-react';
-import { submitFeedback } from '@/actions/feedback.actions';
+import { Bug, Send, X, Check, PartyPopper, Clipboard, Plus, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { submitFeedback, getUserFeedback } from '@/actions/feedback.actions';
 import { FeedbackType } from '@/types/feedback.types';
 import { usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
@@ -43,6 +44,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPasting, setIsPasting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [feedbackStats, setFeedbackStats] = useState<{ total: number; pending: number; resolved: number } | null>(null);
     const [showNewFeatureHighlight, setShowNewFeatureHighlight] = useState(false);
 
     // Upload hook for programmatic paste uploads only
@@ -132,12 +134,16 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                 setSubmitted(true);
                 setDescription('');
                 setUploadedImages([]);
-                toast.success('Feedback submitted successfully! Thank you.');
-                // Reset after 2 seconds
-                setTimeout(() => {
-                    setSubmitted(false);
-                    setIsOpen(false);
-                }, 2000);
+
+                // Fetch user's feedback stats to show in the confirmation
+                getUserFeedback().then(res => {
+                    if (res.success && res.data) {
+                        const items = res.data;
+                        const pending = items.filter(i => ['new', 'in_progress'].includes(i.status)).length;
+                        const resolved = items.filter(i => ['resolved', 'closed'].includes(i.status)).length;
+                        setFeedbackStats({ total: items.length, pending, resolved });
+                    }
+                }).catch(() => { /* stats are optional, don't block */ });
             } else {
                 toast.error('Failed to submit feedback: ' + result.error);
             }
@@ -270,15 +276,55 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                     {submitted ? (
                         // Success Message
                         <div className="p-6 text-center">
-                            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-green-100 dark:bg-green-900/30">
-                                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+                            <div className="inline-flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-green-100 dark:bg-green-900/30">
+                                <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
                             </div>
-                            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                            <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-gray-100">
                                 Thank You!
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                Your feedback has been submitted successfully.
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                Your feedback has been submitted and we&apos;ll get on it.
                             </p>
+
+                            {/* Stats */}
+                            {feedbackStats && (
+                                <div className="flex justify-center gap-4 mb-3 text-xs">
+                                    <div className="text-center">
+                                        <div className="text-lg font-bold text-foreground">{feedbackStats.total}</div>
+                                        <div className="text-muted-foreground">Submitted</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{feedbackStats.pending}</div>
+                                        <div className="text-muted-foreground">Pending</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-lg font-bold text-green-600 dark:text-green-400">{feedbackStats.resolved}</div>
+                                        <div className="text-muted-foreground">Resolved</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Link to feedback portal */}
+                            <Link
+                                href="/settings/feedback"
+                                onClick={() => { setSubmitted(false); setIsOpen(false); }}
+                                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                            >
+                                View all your submissions
+                                <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+
+                            {/* Close button */}
+                            <div className="mt-3">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => { setSubmitted(false); setFeedbackStats(null); setIsOpen(false); }}
+                                    className="text-xs text-muted-foreground"
+                                >
+                                    Close
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         // Feedback Form
