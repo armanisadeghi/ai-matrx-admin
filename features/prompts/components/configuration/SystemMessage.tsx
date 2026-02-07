@@ -58,6 +58,7 @@ export function SystemMessage({
     // Inline ref callbacks create new function refs on every render (React Compiler not enabled),
     // so React re-runs them on each keystroke. Without this guard, height="auto" in the ref
     // callback collapses the textarea without scroll protection.
+    // Cleanup is handled via useLayoutEffect on isEditing (not in ref callback's else branch).
     const textareaInitializedRef = useRef(false);
     
     // ⚠️ SCROLL FIX: Bridge scroll position from event handlers to useLayoutEffect.
@@ -97,6 +98,14 @@ export function SystemMessage({
         // Clear the lock
         scrollLockRef.current = null;
     }, [developerMessage, isEditing, scrollContainerRef, textareaRefs, systemMessageIndex]);
+    
+    // Clear initialization tracking when editing stops, so the textarea
+    // re-initializes properly when editing resumes.
+    useLayoutEffect(() => {
+        if (!isEditing) {
+            textareaInitializedRef.current = false;
+        }
+    }, [isEditing]);
     
     // Optimizer state
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
@@ -344,21 +353,16 @@ export function SystemMessage({
                                     }
                                     if (el) {
                                         // ⚠️ SCROLL FIX: Only run initialization on FIRST mount.
-                                        // This ref callback is an inline function, so React re-runs it
-                                        // on every render (new function reference). Without this guard,
-                                        // height="auto" runs on every keystroke WITHOUT scroll protection,
-                                        // collapsing the textarea and causing the scroll container to jump.
-                                        // Height updates during typing are handled by useLayoutEffect above.
+                                        // DO NOT add an else branch to clear textareaInitializedRef here!
+                                        // Inline ref callbacks create new function refs on every render,
+                                        // so React calls old ref(null) then new ref(el) on each re-render.
+                                        // Cleanup is handled by the useLayoutEffect on isEditing.
                                         if (!textareaInitializedRef.current) {
                                             textareaInitializedRef.current = true;
                                             el.style.height = "auto";
                                             el.style.height = el.scrollHeight + "px";
                                             el.focus({ preventScroll: true });
                                         }
-                                    } else {
-                                        // Element unmounting (isEditing toggled to false)
-                                        // Reset so next mount re-initializes
-                                        textareaInitializedRef.current = false;
                                     }
                                 }}
                                 value={developerMessage}

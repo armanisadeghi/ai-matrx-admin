@@ -63,11 +63,24 @@ export function PromptMessages({
     const contextMenuOpenRef = useRef(false);
     
     // ⚠️ SCROLL FIX: Track which message textareas have been initialized (mounted).
+    // IMPORTANT: Do NOT clear this in the ref callback's else branch. Inline ref callbacks
+    // create new function references on every render, so React calls old ref with null then
+    // new ref with element. Clearing on null would reset the flag on EVERY render, causing
+    // height="auto" + focus to re-run without scroll protection. Instead, clear via useEffect
+    // when editing state changes.
     const initializedTextareasRef = useRef(new Set<number>());
     
     // ⚠️ SCROLL FIX: Bridge scroll position from event handlers to useLayoutEffect.
     // See SystemMessage.tsx for detailed explanation.
     const scrollLockRef = useRef<{ scrollTop: number; overflow: string } | null>(null);
+    
+    // Clear initialization tracking when editing stops, so the textarea
+    // re-initializes properly when editing resumes.
+    useLayoutEffect(() => {
+        if (editingMessageIndex === null) {
+            initializedTextareasRef.current.clear();
+        }
+    }, [editingMessageIndex]);
     
     // ⚠️ SCROLL FIX: Restore scroll position and overflow AFTER React re-renders.
     useLayoutEffect(() => {
@@ -328,17 +341,19 @@ export function PromptMessages({
                                                     textareaRefs.current[index] = el;
                                                     if (el) {
                                                         // ⚠️ SCROLL FIX: Only run initialization on FIRST mount.
-                                                        // See SystemMessage.tsx for detailed explanation.
-                                                        // Height updates during typing handled by useLayoutEffect above.
+                                                        // Height updates during typing handled by useLayoutEffect.
+                                                        // DO NOT add an else branch to clear initializedTextareasRef here!
+                                                        // Inline ref callbacks create new function refs on every render,
+                                                        // so React calls old ref(null) then new ref(el) on each re-render.
+                                                        // An else branch would clear the flag on every render, causing
+                                                        // height="auto" + focus to re-run without scroll protection.
+                                                        // Cleanup is handled by the useLayoutEffect on editingMessageIndex.
                                                         if (!initializedTextareasRef.current.has(index)) {
                                                             initializedTextareasRef.current.add(index);
                                                             el.style.height = "auto";
                                                             el.style.height = el.scrollHeight + "px";
                                                             el.focus({ preventScroll: true });
                                                         }
-                                                    } else {
-                                                        // Element unmounting - reset so next mount re-initializes
-                                                        initializedTextareasRef.current.delete(index);
                                                     }
                                                 }}
                                                 value={message.content}
