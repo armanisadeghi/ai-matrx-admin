@@ -71,18 +71,30 @@ Read the response:
 
 For each of the 3 items in `batch`:
 
-**a) Read the item**
+**a) View screenshots FIRST (MANDATORY)**
+
+> **CRITICAL: If `image_urls` is not null, you MUST view every screenshot BEFORE analyzing the item.** Screenshots are the single most reliable source of truth — they show exactly what the user saw. Failing to view screenshots has caused agents to fix the wrong component entirely. This is a non-negotiable step.
+
+- Fetch signed URLs: `GET /api/admin/feedback/images?feedback_id=<uuid>`
+- Open **every** signed URL in the browser and study what is shown
+- Cross-reference what you see in the screenshot with the user's description
+- The screenshot determines what component/element is actually involved — not the route
+
+**b) Read the item**
 - `description`, `feedback_type`, `username`, and `route`
-- **Important:** The `route` field is where the user was when they clicked "Submit Feedback" — NOT necessarily where the bug occurs. Users often report bugs from a different page. Treat it as a weak hint. Determine the actual affected route/files from the description and your own code research.
 - Check `admin_notes` — admin may have added context before you saw this
 - Check for existing comments: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
 
-**b) View screenshots (if any)**
-- If `image_urls` is not null: `GET /api/admin/feedback/images?feedback_id=<uuid>`
-- Open signed URLs in browser
+> **WARNING — `route` is NOT the bug location.** The `route` field is ONLY where the user happened to be when they clicked "Submit Feedback." It tells you nothing about where the bug actually is. Real-world examples of how this misleads:
+> - User reports a bug in the **header feedback submission modal** → route says `/administration/feedback` (that's just the page they were on)
+> - User reports a **sidebar navigation issue** → route says `/notes` (irrelevant — the sidebar is in the layout)
+> - User reports a **toast notification problem** → route says `/data/some-id` (toast is a global component)
+>
+> **The bug could be in:** a shared layout, the header, the sidebar, a global provider, a toast system, a modal triggered from anywhere, or a component that appears on every page. You MUST determine the actual location from the description + screenshots + code research. Never assume the route is relevant unless you have confirmed it from another source.
 
 **c) Research the code**
 - Use explore agents to find relevant files
+- Cross-reference your findings with the screenshots and description
 - Understand the root cause
 
 **d) Compute autonomy score (1-5)**

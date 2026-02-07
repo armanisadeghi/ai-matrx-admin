@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { getAllFeedback, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
 import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
@@ -223,8 +223,9 @@ export default function FeedbackTable() {
     const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
     const [imagePreviewFeedbackId, setImagePreviewFeedbackId] = useState<string | null>(null);
 
-    // Pipeline stage (primary filter)
+    // Pipeline stage (primary filter) — initial value overridden by useEffect below
     const [activeStage, setActiveStage] = useState<PipelineStage>('untriaged');
+    const initialStageSet = useRef(false);
 
     // Secondary filters (work alongside or override pipeline)
     const [searchTerm, setSearchTerm] = useState('');
@@ -324,6 +325,18 @@ export default function FeedbackTable() {
         return counts;
     }, [feedback]);
 
+    // Auto-select the first non-empty pipeline stage on initial load
+    useEffect(() => {
+        if (!initialStageSet.current && feedback.length > 0) {
+            initialStageSet.current = true;
+            const stageOrder: PipelineStage[] = ['untriaged', 'your_decision', 'agent_working', 'test_results', 'done'];
+            const firstNonEmpty = stageOrder.find(key => stageCounts[key] > 0);
+            if (firstNonEmpty) {
+                setActiveStage(firstNonEmpty);
+            }
+        }
+    }, [feedback, stageCounts]);
+
     const filteredAndSortedFeedback = useMemo(() => {
         let filtered = feedback.filter(item => {
             // Pipeline stage filter
@@ -396,18 +409,24 @@ export default function FeedbackTable() {
 
     const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || searchTerm !== '';
 
-    if (loading) {
-        return (
-            <Card className="p-8 text-center">
-                <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Loading feedback...</p>
-            </Card>
-        );
-    }
+    // Initial load: show skeleton but still render dialogs below so they don't unmount
+    const isInitialLoad = loading && feedback.length === 0;
 
     return (
         <>
-            <Card className="p-4">
+            {isInitialLoad ? (
+                <Card className="p-8 text-center">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Loading feedback...</p>
+                </Card>
+            ) : (
+            <Card className="p-4 relative">
+                {/* Subtle loading overlay for refreshes (not initial load) */}
+                {loading && (
+                    <div className="absolute inset-0 bg-background/50 z-10 flex items-center justify-center rounded-lg">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                )}
                 {/* Pipeline Stage Selector */}
                 <div className="mb-4">
                     <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
@@ -823,6 +842,7 @@ export default function FeedbackTable() {
                     </Table>
                 </div>
             </Card>
+            )}
 
             {selectedFeedback && (
                 <FeedbackDetailDialog

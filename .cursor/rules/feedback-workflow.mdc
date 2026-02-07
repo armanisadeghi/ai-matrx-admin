@@ -162,16 +162,26 @@ SELECT * FROM get_untriaged_feedback();
 
 For each item:
 
-1. Read `description`, `feedback_type`, `username`, `image_urls`, and `route`
-   - **Important:** The `route` field is where the user happened to be when they clicked "Submit Feedback" — it is NOT necessarily where the bug occurs. Users often report bugs from a different page than where they saw the issue. Treat `route` as a weak hint, not a source of truth. Always determine the actual affected route/files from the description and your own code research.
-2. **Check for admin early-feedback** — the admin may have seen this item first and left context:
+1. **View screenshots FIRST (MANDATORY)**
+   > **CRITICAL: If `image_urls` is not null, you MUST view every screenshot BEFORE doing anything else.** Screenshots are the single most reliable source of truth — they show exactly what the user saw. Failing to view screenshots has caused agents to misidentify the component and fix the wrong thing entirely. This is a non-negotiable step.
+   - Fetch signed URLs: `GET /api/admin/feedback/images?feedback_id=<uuid>`
+   - Open **every** signed URL in the browser and study what is shown
+   - Cross-reference what you see with the user's description
+   - The screenshot determines what component/element is actually involved — not the route
+2. Read `description`, `feedback_type`, `username`, and `route`
+   > **WARNING — `route` is NOT the bug location.** The `route` field is ONLY where the user happened to be when they clicked "Submit Feedback." It tells you nothing about where the bug actually is. Real-world examples of how this misleads:
+   > - User reports a bug in the **header feedback submission modal** → route says `/administration/feedback` (that's just the page they were on)
+   > - User reports a **sidebar navigation issue** → route says `/notes` (irrelevant — the sidebar is in the layout)
+   > - User reports a **toast notification problem** → route says `/data/some-id` (toast is a global component)
+   >
+   > **The bug could be in:** a shared layout, the header, the sidebar, a global provider, a toast system, a modal triggered from anywhere, or a component that appears on every page. You MUST determine the actual location from the description + screenshots + code research. Never assume the route is relevant unless you have confirmed it from another source.
+3. **Check for admin early-feedback** — the admin may have seen this item first and left context:
    - Read `admin_notes` field on the item (may contain admin's initial thoughts)
    - Check for existing comments: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
    - If the admin has already provided direction or context, factor it into your analysis. This can save significant time — the admin may have already identified the root cause or pointed you to specific files.
-3. If `image_urls` is not null, view screenshots:
-   - `GET /api/admin/feedback/images?feedback_id=<uuid>` for signed URLs
-   - Open signed URLs in browser to see the issue
 4. Research relevant code to understand the problem
+   - Cross-reference your findings with the screenshots and description
+   - Understand the root cause — confirm it matches what the screenshots show
 5. Compute **autonomy score (1-5)**:
 
 | Factor | +1 if True |
@@ -262,10 +272,12 @@ Your job ends at `awaiting_review`. Period.
 ### Testing Instructions Quality
 
 Testing instructions must be specific enough that the admin can verify in under 60 seconds:
-- Include the exact URL/route **where the fix can be verified** — this may differ from the `route` field on the item (which is just where the user was when they submitted, not necessarily where the bug is)
+- Include the exact URL/route **where the fix can be verified** — this is almost certainly NOT the `route` field on the item. Determine the real location from screenshots + description + your code research.
+- If the bug is in a **shared/global element** (header, sidebar, layout, toast, modal), the testing URL should be ANY page where that element appears, with instructions to trigger it (e.g., "Go to any page, click the bug icon in the header, submit feedback, then verify the confirmation modal closes on outside click")
 - List exact steps to reproduce or verify
 - Describe what "fixed" looks like vs what "broken" looked like
 - Mention if multiple modes need testing (dark mode, mobile, etc.)
+- **Sanity check:** Before submitting, re-read the user's description and look at the screenshots one more time. Ask yourself: "Do my testing instructions actually test what the user reported?" If not, you have the wrong component.
 
 ## Step 4: Brief Chat Summary
 

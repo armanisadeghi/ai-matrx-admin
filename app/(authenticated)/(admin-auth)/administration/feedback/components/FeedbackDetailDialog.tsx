@@ -278,25 +278,30 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const handleTestingResult = async (result: TestingResult) => {
         setIsSaving(true);
         try {
-            // pass → resolved (admin verified), fail → in_progress (agent reworks), partial → stays
-            const newStatus: FeedbackStatus = result === 'pass' ? 'resolved' : result === 'fail' ? 'in_progress' : item.status;
+            // pass → resolved (admin verified), fail/partial → in_progress (agent reworks)
+            const newStatus: FeedbackStatus = result === 'pass' ? 'resolved' : 'in_progress';
+            const notePrefix = adminNotes ? adminNotes + '\n' : '';
+            const noteMap: Record<string, string> = {
+                pass: `${notePrefix}Testing passed - verified.`,
+                fail: `${notePrefix}Testing FAILED - sent back to agent for fixes.`,
+                partial: `${notePrefix}Testing PARTIAL - some issues fixed, others remain. Sent back to agent.`,
+            };
+
             const updateResult = await updateFeedback(item.id, {
                 testing_result: result,
-                ...(newStatus !== item.status ? { status: newStatus } : {}),
-                ...(result === 'pass' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing passed - verified.` } : {}),
-                ...(result === 'fail' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing failed - sent back for fixes.` } : {}),
+                status: newStatus,
+                admin_notes: noteMap[result],
             });
 
             if (updateResult.success) {
                 // Re-fetch to show true server state in the modal
                 await refreshItem();
-                toast.success(
-                    result === 'pass'
-                        ? 'Marked as passed - verified'
-                        : result === 'fail'
-                        ? 'Marked as failed - sent back to agent'
-                        : 'Testing result saved'
-                );
+                const messages: Record<string, string> = {
+                    pass: 'Marked as passed — verified',
+                    fail: 'Marked as failed — sent back to agent',
+                    partial: 'Marked as partial — sent back to agent for remaining fixes',
+                };
+                toast.success(messages[result]);
                 onUpdate(); // Refresh parent table in background
             } else {
                 toast.error(`Failed to save: ${updateResult.error}`);
@@ -956,7 +961,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                 <p className="text-xs text-muted-foreground mt-2">
                                                     {item.testing_result === 'pass' && 'Verified — moved to Done.'}
                                                     {item.testing_result === 'fail' && 'Sent back to agent for fixes.'}
-                                                    {item.testing_result === 'partial' && 'Partial pass recorded. Review for follow-up.'}
+                                                    {item.testing_result === 'partial' && 'Sent back to agent for remaining fixes.'}
                                                 </p>
                                             )}
                                         </div>
