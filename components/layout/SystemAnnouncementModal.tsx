@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { setModulePreferences, saveModulePreferencesToDatabase } from '@/lib/redux/slices/userPreferencesSlice';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { renderAnnouncementMessage } from '@/utils/render-announcement-message';
 
 interface SystemAnnouncementModalProps {
     announcement: SystemAnnouncement;
@@ -124,7 +125,7 @@ export default function SystemAnnouncementModal({ announcement }: SystemAnnounce
                     {/* Message */}
                     <div className="prose dark:prose-invert max-w-none mb-8">
                         <p className="text-lg text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                            {announcement.message}
+                            {renderAnnouncementMessage(announcement.message)}
                         </p>
                     </div>
 

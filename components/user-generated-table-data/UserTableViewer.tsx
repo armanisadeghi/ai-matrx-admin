@@ -1081,6 +1081,10 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           loadTableData(currentPage, limit);
         }}
         
+        // Sort state for export
+        sortField={sortField}
+        sortDirection={sortDirection}
+        
         // HTML cleanup functions
         cleanupHtmlText={cleanupHtmlText}
         containsCleanableHtml={containsCleanableHtml}

@@ -58,6 +58,10 @@ interface TableToolbarProps {
   hasCleanableHtmlInTable?: boolean;
   handleBulkHtmlCleanup?: () => Promise<void>;
   
+  // Sort state for export
+  sortField?: string | null;
+  sortDirection?: 'asc' | 'desc';
+  
   // Row ordering functions
   rowOrderingEnabled?: boolean;
   enableRowOrdering?: () => Promise<void>;
@@ -109,6 +113,10 @@ export default function TableToolbar({
   containsCleanableHtml,
   hasCleanableHtmlInTable,
   handleBulkHtmlCleanup,
+  
+  // Sort state for export
+  sortField,
+  sortDirection = 'asc',
   
   // Row ordering functions
   rowOrderingEnabled,
@@ -315,6 +323,8 @@ export default function TableToolbar({
         tableName={tableInfo?.table_name || 'table'}
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
+        sortField={sortField}
+        sortDirection={sortDirection}
       />
       <TableReferenceOverlay
         isOpen={showReferenceOverlay}

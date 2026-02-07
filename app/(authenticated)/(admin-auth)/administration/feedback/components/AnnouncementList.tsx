@@ -19,6 +19,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { renderAnnouncementMessage } from '@/utils/render-announcement-message';
 
 const announcementIcons: Record<AnnouncementType, React.ReactNode> = {
     info: <Info className="w-5 h-5 text-blue-500" />,
@@ -122,7 +123,7 @@ export default function AnnouncementList() {
                             {/* Message */}
                             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                                 <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                                    {announcement.message}
+                                    {renderAnnouncementMessage(announcement.message)}
                                 </p>
                             </div>
 
@@ -159,7 +160,7 @@ export default function AnnouncementList() {
             </div>
 
             {/* Delete Confirmation Dialog */}
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setAnnouncementToDelete(null); }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>

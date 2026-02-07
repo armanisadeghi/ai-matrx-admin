@@ -17,15 +17,44 @@ const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 ### 2. Textarea Mount (SystemMessage.tsx, PromptMessages.tsx)
 ```typescript
+// Track initialization to prevent ref callback from re-running on every render
+const textareaInitializedRef = useRef(false);
+
 ref={(el) => {
+  textareaRefs.current[index] = el;
   if (el) {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-    el.focus({ preventScroll: true }); // No setTimeout
+    if (!textareaInitializedRef.current) {
+      textareaInitializedRef.current = true;
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+      el.focus({ preventScroll: true });
+    }
+  } else {
+    textareaInitializedRef.current = false;
   }
 }}
 ```
-**Critical:** Immediate focus with `preventScroll: true`. Height set before focus to prevent resize glitch.
+**CRITICAL:** The ref callback is an inline function, so React creates a new reference on every render (React Compiler is not enabled). Without the initialization guard, React re-runs the callback on every keystroke, causing `height="auto"` to collapse the textarea WITHOUT scroll protection — this is what caused the scroll-to-top-of-system-message bug.
+
+### 2b. Post-Render Height Sync (useLayoutEffect)
+```typescript
+useLayoutEffect(() => {
+  if (!isEditing) return;
+  const textarea = textareaRefs?.current?.[index];
+  if (!textarea || !scrollContainerRef?.current) return;
+  
+  const scrollContainer = scrollContainerRef.current;
+  const savedScroll = scrollContainer.scrollTop;
+  const savedOverflow = scrollContainer.style.overflow;
+  
+  scrollContainer.style.overflow = "hidden";
+  textarea.style.height = "auto";
+  textarea.style.height = textarea.scrollHeight + "px";
+  scrollContainer.scrollTop = savedScroll;
+  scrollContainer.style.overflow = savedOverflow;
+}, [content, isEditing]);
+```
+**Why:** After React re-renders with new content, the textarea height may need updating. `useLayoutEffect` runs synchronously after DOM mutations but BEFORE browser paint, so height changes never cause visible scroll jumps. The overflow lock prevents scroll during the momentary height="auto" collapse.
 
 ### 3. Display Div Click Handler
 ```typescript
@@ -147,6 +176,12 @@ onSelect={(e) => {
 ```
 **Why:** Fires on cursor position changes (clicks, arrow keys). Final safety net.
 
+### 5. Scroll Container (PromptBuilderLeftPanel.tsx)
+```typescript
+<div ref={scrollContainerRef} style={{ overflowAnchor: "none" }}>
+```
+**Why:** Disables browser scroll anchoring. Scroll anchoring tries to keep visible content in place when heights change, but it can fight with our manual scroll management, causing unexpected position adjustments during textarea resizing.
+
 ## Event Sequence
 ```
 User types "a":
@@ -165,7 +200,9 @@ User types "a":
 - ❌ Remove overflow hiding from onChange
 - ❌ Use `querySelector` instead of direct ref
 - ❌ Add `setTimeout` to focus call
-- ❌ Remove height setting from ref callback
+- ❌ Remove the initialization guard from ref callback (causes scroll jumps on every keystroke)
+- ❌ Remove the `useLayoutEffect` height sync (handles post-render height updates safely)
+- ❌ Remove `overflow-anchor: none` from scroll container
 - ❌ Reduce RAF count in onKeyDown (needs double for undo/redo)
 
 ### Files:

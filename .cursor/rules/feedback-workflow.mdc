@@ -190,6 +190,8 @@ SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
 
 ## Step 3: Resolve with Testing
 
+**CRITICAL: ALWAYS use `resolve_with_testing()` when you finish a fix.** NEVER set `status = 'resolved'` directly via UPDATE — that skips the testing stage and the admin won't see it. Only the admin moves items from `awaiting_review` to `resolved` after they verify the fix works.
+
 After fixing, push resolution + testing instructions:
 
 ```sql
@@ -202,6 +204,8 @@ SELECT * FROM resolve_with_testing(
 ```
 
 This sets status to `awaiting_review`. The admin sees it in the **Test Results** pipeline stage with your testing instructions and a clickable URL.
+
+**DO NOT** use raw SQL `UPDATE user_feedback SET status = 'resolved'` or `SET status = 'awaiting_review'`. Always use `resolve_with_testing()` — it handles status transition, timestamps, and ensures testing fields are populated.
 
 **Testing instructions must be specific enough that the admin can verify in under 60 seconds:**
 - Include the exact URL/route **where the fix can be verified** — this may differ from the `route` field on the item (which is just where the user was when they submitted, not necessarily where the bug is)

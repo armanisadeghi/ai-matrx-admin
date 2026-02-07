@@ -117,9 +117,12 @@ function FeedbackItem({ item, onUpdate }: { item: UserFeedback; onUpdate: () => 
     return (
         <div className="border border-border rounded-lg bg-card overflow-hidden">
             {/* Summary Row */}
-            <button
+            <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors cursor-pointer"
             >
                 {expanded ? (
                     <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -152,7 +155,7 @@ function FeedbackItem({ item, onUpdate }: { item: UserFeedback; onUpdate: () => 
                 <span className="text-xs text-muted-foreground flex-shrink-0 hidden sm:inline">
                     {formattedDate}
                 </span>
-            </button>
+            </div>
 
             {/* Expanded Detail */}
             {expanded && (

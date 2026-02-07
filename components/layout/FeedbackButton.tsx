@@ -390,6 +390,9 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                                         className="min-h-[100px] resize-none"
                                         disabled={isSubmitting}
                                     />
+                                    <p className="text-[10px] text-muted-foreground mt-1">
+                                        Tip: Paste screenshots anytime with Ctrl+V
+                                    </p>
                                 </div>
 
                                 {/* Screenshot/Image Upload */}

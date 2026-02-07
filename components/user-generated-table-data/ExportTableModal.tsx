@@ -21,9 +21,11 @@ interface ExportTableModalProps {
   tableName: string;
   isOpen: boolean;
   onClose: () => void;
+  sortField?: string | null;
+  sortDirection?: 'asc' | 'desc';
 }
 
-export default function ExportTableModal({ tableId, tableName, isOpen, onClose }: ExportTableModalProps) {
+export default function ExportTableModal({ tableId, tableName, isOpen, onClose, sortField, sortDirection = 'asc' }: ExportTableModalProps) {
   const [exportTab, setExportTab] = useState('download');
   const [downloadFormat, setDownloadFormat] = useState('csv');
   const [copyFormat, setCopyFormat] = useState('markdown');
@@ -116,7 +118,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         if (downloadFormat === 'csv') {
           // Call the CSV export function
           const { data, error } = await supabase.rpc('export_user_table_as_csv', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (error) throw error;
@@ -135,7 +139,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         } else if (downloadFormat === 'json') {
           // Fetch the complete table data
           const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (error) throw error;
@@ -158,7 +164,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         } else if (downloadFormat === 'markdown') {
           // Fetch the complete table data for markdown conversion
           const { data: tableData, error: tableError } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (tableError) throw tableError;
@@ -178,7 +186,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         } else if (downloadFormat === 'fullSchema') {
           // Export the full internal schema
           const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (error) throw error;
@@ -226,7 +236,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         if (copyFormat === 'markdown') {
           // Fetch the complete table data for markdown conversion
           const { data: tableData, error: tableError } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (tableError) throw tableError;
@@ -238,7 +250,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         } else if (copyFormat === 'json') {
           // Fetch data and copy as simplified JSON
           const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (error) throw error;
@@ -251,7 +265,9 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose }
         } else if (copyFormat === 'fullSchema') {
           // Copy internal schema as JSON
           const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId
+            p_table_id: tableId,
+            p_sort_field: sortField || null,
+            p_sort_direction: sortDirection,
           });
           
           if (error) throw error;

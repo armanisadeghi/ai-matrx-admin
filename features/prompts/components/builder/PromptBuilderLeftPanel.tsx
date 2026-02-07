@@ -115,6 +115,7 @@ export function PromptBuilderLeftPanel({
                 className="flex-1 overflow-y-auto overflow-x-hidden pl-2 pr-1 space-y-3 scrollbar-thin" 
                 style={{ 
                     scrollbarGutter: "stable",
+                    overflowAnchor: "none", // Disable browser scroll anchoring - we manage scroll position manually
                 }}
             >
                 {/* Model Configuration - Always visible, but details conditionally shown */}

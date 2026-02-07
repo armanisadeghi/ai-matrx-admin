@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import FeedbackManagementContainer from './components/FeedbackManagementContainer';
 
 export const metadata = {
@@ -9,7 +9,9 @@ export const metadata = {
 export default function FeedbackManagementPage() {
     return (
         <div className="h-full w-full overflow-auto">
-            <FeedbackManagementContainer />
+            <Suspense>
+                <FeedbackManagementContainer />
+            </Suspense>
         </div>
     );
 }

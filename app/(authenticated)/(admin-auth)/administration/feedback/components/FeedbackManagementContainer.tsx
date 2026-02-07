@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FeedbackTable from './FeedbackTable';
 import WorkQueueTab from './WorkQueueTab';
@@ -9,9 +10,29 @@ import CreateAnnouncementDialog from './CreateAnnouncementDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, Megaphone, ListOrdered } from 'lucide-react';
 
+const VALID_TABS = ['feedback', 'work-queue', 'announcements'] as const;
+type TabValue = typeof VALID_TABS[number];
+
 export default function FeedbackManagementContainer() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const tabParam = searchParams.get('tab');
+    const activeTab: TabValue = VALID_TABS.includes(tabParam as TabValue) ? (tabParam as TabValue) : 'feedback';
+
+    const setActiveTab = useCallback((tab: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (tab === 'feedback') {
+            params.delete('tab');
+        } else {
+            params.set('tab', tab);
+        }
+        const query = params.toString();
+        router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
+    }, [searchParams, router, pathname]);
+
     const [isCreateAnnouncementOpen, setIsCreateAnnouncementOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState('feedback');
     const [announcementKey, setAnnouncementKey] = useState(0);
 
     return (

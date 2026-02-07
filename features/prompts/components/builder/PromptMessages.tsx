@@ -1,4 +1,4 @@
-import React, { RefObject, useRef } from "react";
+import React, { RefObject, useRef, useLayoutEffect } from "react";
 import { Braces, X, Edit2, Maximize2, Eraser, FileText, Eye } from "lucide-react";
 import { VariableSelector } from "../VariableSelector";
 import { Label } from "@/components/ui/label";
@@ -61,6 +61,33 @@ export function PromptMessages({
     const variableNames = variableDefaults.map(v => v.name);
     // Track if context menu is open to prevent blur from closing edit mode
     const contextMenuOpenRef = useRef(false);
+    
+    // ⚠️ SCROLL FIX: Track which message textareas have been initialized (mounted).
+    const initializedTextareasRef = useRef(new Set<number>());
+    
+    // ⚠️ SCROLL FIX: Bridge scroll position from event handlers to useLayoutEffect.
+    // See SystemMessage.tsx for detailed explanation.
+    const scrollLockRef = useRef<{ scrollTop: number; overflow: string } | null>(null);
+    
+    // ⚠️ SCROLL FIX: Restore scroll position and overflow AFTER React re-renders.
+    useLayoutEffect(() => {
+        if (editingMessageIndex === null) return;
+        const textarea = textareaRefs.current[editingMessageIndex];
+        const scrollContainer = scrollContainerRef?.current;
+        if (!textarea || !scrollContainer) return;
+        
+        const lockData = scrollLockRef.current;
+        const savedScroll = lockData?.scrollTop ?? scrollContainer.scrollTop;
+        const originalOverflow = lockData?.overflow ?? scrollContainer.style.overflow;
+        
+        scrollContainer.style.overflow = "hidden";
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+        scrollContainer.scrollTop = savedScroll;
+        scrollContainer.style.overflow = originalOverflow;
+        
+        scrollLockRef.current = null;
+    }, [messages, editingMessageIndex, scrollContainerRef, textareaRefs]);
     
     return (
         <>
@@ -299,42 +326,49 @@ export function PromptMessages({
                                             <textarea
                                                 ref={(el) => {
                                                     textareaRefs.current[index] = el;
-                                                    // ⚠️ CRITICAL: preventScroll is required - see ../SCROLL_FIX.md
                                                     if (el) {
-                                                        // Set correct height BEFORE focusing to prevent glitch
-                                                        el.style.height = "auto";
-                                                        el.style.height = el.scrollHeight + "px";
-                                                        
-                                                        // Focus immediately with preventScroll (no setTimeout needed)
-                                                        el.focus({ preventScroll: true });
+                                                        // ⚠️ SCROLL FIX: Only run initialization on FIRST mount.
+                                                        // See SystemMessage.tsx for detailed explanation.
+                                                        // Height updates during typing handled by useLayoutEffect above.
+                                                        if (!initializedTextareasRef.current.has(index)) {
+                                                            initializedTextareasRef.current.add(index);
+                                                            el.style.height = "auto";
+                                                            el.style.height = el.scrollHeight + "px";
+                                                            el.focus({ preventScroll: true });
+                                                        }
+                                                    } else {
+                                                        // Element unmounting - reset so next mount re-initializes
+                                                        initializedTextareasRef.current.delete(index);
                                                     }
                                                 }}
                                                 value={message.content}
                                                 onChange={(e) => {
-                                                    onMessageContentChange(index, e.target.value);
-                                                    
                                                     if (!scrollContainerRef?.current) {
-                                                        // Fallback if no scroll container ref
+                                                        onMessageContentChange(index, e.target.value);
                                                         e.target.style.height = "auto";
                                                         e.target.style.height = e.target.scrollHeight + "px";
                                                         return;
                                                     }
                                                     
-                                                    // ⚠️ CRITICAL: Temporarily disable scroll to prevent browser auto-scroll
+                                                    // ⚠️ SCROLL FIX: Lock overflow BEFORE state update.
+                                                    // Stays hidden until useLayoutEffect restores it after re-render.
                                                     const scrollContainer = scrollContainerRef.current;
-                                                    const savedScroll = scrollContainer.scrollTop;
-                                                    const savedOverflow = scrollContainer.style.overflow;
-                                                    
-                                                    // Lock scroll by hiding overflow temporarily
+                                                    if (!scrollLockRef.current) {
+                                                        scrollLockRef.current = {
+                                                            scrollTop: scrollContainer.scrollTop,
+                                                            overflow: scrollContainer.style.overflow,
+                                                        };
+                                                    } else {
+                                                        scrollLockRef.current.scrollTop = scrollContainer.scrollTop;
+                                                    }
                                                     scrollContainer.style.overflow = "hidden";
                                                     
-                                                    // Auto-resize textarea
+                                                    onMessageContentChange(index, e.target.value);
+                                                    
                                                     e.target.style.height = "auto";
                                                     e.target.style.height = e.target.scrollHeight + "px";
-                                                    
-                                                    // Restore scroll position and overflow immediately
-                                                    scrollContainer.scrollTop = savedScroll;
-                                                    scrollContainer.style.overflow = savedOverflow;
+                                                    scrollContainer.scrollTop = scrollLockRef.current.scrollTop;
+                                                    // DO NOT restore overflow — useLayoutEffect handles it
                                                 }}
                                                 onKeyDown={(e) => {
                                                     // ⚠️ CRITICAL: Lock scroll on keyboard input to prevent browser auto-scroll
