@@ -334,7 +334,7 @@ export default function TableCards() {
                     </button>
                   </>
                 ) : (
-                  <Eye size={16} className="text-purple-400 dark:text-purple-500" title="View only" />
+                  <Eye size={16} className="text-purple-400 dark:text-purple-500" />
                 )}
                 <TableIcon size={18} className={cn(
                   owned

@@ -472,7 +472,7 @@ export async function fetchAppsAdmin(filters?: {
             .rpc('get_user_emails_by_ids', { user_ids: userIds });
 
         if (users && users.length > 0) {
-            const userMap = new Map(users.map((user: { id: string; email: string }) => [user.id, user]));
+            const userMap = new Map((users as { id: string; email: string }[]).map((user) => [user.id, user]));
 
             return data.map(item => ({
                 ...item,

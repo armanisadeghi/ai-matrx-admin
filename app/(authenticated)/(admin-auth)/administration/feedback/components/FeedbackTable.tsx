@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 
 const statusOptions: { value: FeedbackStatus; label: string; color: string }[] = [
     { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-    { value: 'in_review', label: 'In Review', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
+    { value: 'awaiting_review', label: 'Awaiting Review', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
     { value: 'in_progress', label: 'In Progress', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
     { value: 'resolved', label: 'Resolved', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
     { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
@@ -189,7 +189,7 @@ export default function FeedbackTable() {
 
     const filteredAndSortedFeedback = useMemo(() => {
         const closedStatuses: FeedbackStatus[] = ['resolved', 'closed', 'wont_fix'];
-        const openStatuses: FeedbackStatus[] = ['new', 'in_review', 'in_progress'];
+        const openStatuses: FeedbackStatus[] = ['new', 'awaiting_review', 'in_progress'];
         
         let filtered = feedback.filter(item => {
             // Quick filter (open/closed/all)

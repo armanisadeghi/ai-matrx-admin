@@ -167,7 +167,7 @@ export function showDesktopNotification(
       icon: '/logo.svg',
       tag: 'new-message', // Prevents duplicate notifications
       renotify: true,
-    });
+    } as NotificationOptions & { renotify: boolean });
     
     if (onClick) {
       notification.onclick = () => {

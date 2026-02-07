@@ -29,6 +29,7 @@ import CodingPreferences from './CodingPreferences';
 import FlashcardPreferences from './FlashcardPreferences';
 import PlaygroundPreferences from './PlaygroundPreferences';
 import AiModelsPreferences from './AiModelsPreferences';
+import MessagingPreferences from './MessagingPreferences';
 import { PreferenceTab } from './PreferencesPage';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -81,6 +82,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         flashcard: <FlashcardPreferences />,
         playground: <PlaygroundPreferences />,
         aiModels: <AiModelsPreferences />,
+        messaging: <MessagingPreferences />,
     };
 
     const tabLabels: Record<PreferenceTab, string> = {
@@ -97,6 +99,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         coding: 'Coding',
         flashcard: 'Flashcards',
         playground: 'Playground',
+        messaging: 'Messaging',
         aiModels: 'AI Models',
     };
 
