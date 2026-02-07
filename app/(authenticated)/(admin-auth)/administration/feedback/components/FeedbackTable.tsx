@@ -1,22 +1,28 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { getAllFeedback, updateFeedback } from '@/actions/feedback.actions';
-import { UserFeedback, FeedbackStatus, FeedbackType } from '@/types/feedback.types';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { getAllFeedback, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
+import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import {
+    AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
+    ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
+    ClipboardCheck, Archive, ChevronDown,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const statusOptions: { value: FeedbackStatus; label: string; color: string }[] = [
     { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+    { value: 'triaged', label: 'Triaged', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
     { value: 'awaiting_review', label: 'Awaiting Review', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
     { value: 'in_progress', label: 'In Progress', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
     { value: 'resolved', label: 'Resolved', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
@@ -31,10 +37,98 @@ const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
     other: <HelpCircle className="w-4 h-4 text-gray-500" />,
 };
 
-type SortField = 'created_at' | 'status' | 'feedback_type' | 'username';
+type SortField = 'created_at' | 'status' | 'feedback_type' | 'username' | 'work_priority';
 type SortDirection = 'asc' | 'desc';
 
-type QuickFilter = 'open' | 'closed' | 'all';
+// Mutually exclusive pipeline stages
+type PipelineStage = 'untriaged' | 'your_decision' | 'agent_working' | 'test_results' | 'done' | 'all';
+
+interface StageConfig {
+    key: PipelineStage;
+    label: string;
+    shortLabel: string;
+    owner: 'agent' | 'admin' | 'none';
+    icon: React.ReactNode;
+    color: string;
+    activeColor: string;
+    borderColor: string;
+    match: (item: UserFeedback) => boolean;
+}
+
+const DONE_STATUSES: FeedbackStatus[] = ['resolved', 'closed', 'wont_fix', 'deferred'];
+
+const pipelineStages: StageConfig[] = [
+    {
+        key: 'untriaged',
+        label: 'Untriaged',
+        shortLabel: 'New',
+        owner: 'agent',
+        icon: <Bot className="w-3.5 h-3.5" />,
+        color: 'text-blue-700 dark:text-blue-400',
+        activeColor: 'bg-blue-600 dark:bg-blue-600 text-white',
+        borderColor: 'border-blue-300 dark:border-blue-700',
+        match: (item) => item.status === 'new',
+    },
+    {
+        key: 'your_decision',
+        label: 'Your Decision',
+        shortLabel: 'Decide',
+        owner: 'admin',
+        icon: <User className="w-3.5 h-3.5" />,
+        color: 'text-amber-700 dark:text-amber-400',
+        activeColor: 'bg-amber-600 dark:bg-amber-600 text-white',
+        borderColor: 'border-amber-300 dark:border-amber-700',
+        match: (item) =>
+            item.status === 'triaged' &&
+            (item.admin_decision === 'pending' || !item.admin_decision),
+    },
+    {
+        key: 'agent_working',
+        label: 'Agent Working',
+        shortLabel: 'Fixing',
+        owner: 'agent',
+        icon: <Bot className="w-3.5 h-3.5" />,
+        color: 'text-purple-700 dark:text-purple-400',
+        activeColor: 'bg-purple-600 dark:bg-purple-600 text-white',
+        borderColor: 'border-purple-300 dark:border-purple-700',
+        match: (item) =>
+            item.admin_decision === 'approved' &&
+            ['triaged', 'in_progress'].includes(item.status) &&
+            !DONE_STATUSES.includes(item.status),
+    },
+    {
+        key: 'test_results',
+        label: 'Test Results',
+        shortLabel: 'Test',
+        owner: 'admin',
+        icon: <ClipboardCheck className="w-3.5 h-3.5" />,
+        color: 'text-green-700 dark:text-green-400',
+        activeColor: 'bg-green-600 dark:bg-green-600 text-white',
+        borderColor: 'border-green-300 dark:border-green-700',
+        match: (item) => item.status === 'awaiting_review',
+    },
+    {
+        key: 'done',
+        label: 'Done',
+        shortLabel: 'Done',
+        owner: 'none',
+        icon: <Archive className="w-3.5 h-3.5" />,
+        color: 'text-gray-500 dark:text-gray-500',
+        activeColor: 'bg-gray-600 dark:bg-gray-600 text-white',
+        borderColor: 'border-gray-300 dark:border-gray-700',
+        match: (item) => DONE_STATUSES.includes(item.status),
+    },
+];
+
+function getItemStage(item: UserFeedback): PipelineStage {
+    for (const stage of pipelineStages) {
+        if (stage.match(item)) return stage.key;
+    }
+    // Fallback for edge cases (e.g. split items, rejected but not wont_fix)
+    return 'done';
+}
+
+// ---------- Image Preview Modal (unchanged) ----------
 
 function ImagePreviewModal({
     open,
@@ -84,7 +178,6 @@ function ImagePreviewModal({
                     </div>
                 ) : (
                     <div className="relative">
-                        {/* Image */}
                         <div className="flex items-center justify-center min-h-[400px] max-h-[80vh]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -93,8 +186,6 @@ function ImagePreviewModal({
                                 className="max-w-full max-h-[80vh] object-contain"
                             />
                         </div>
-
-                        {/* Navigation */}
                         {signedUrls.length > 1 && (
                             <>
                                 <button
@@ -109,8 +200,6 @@ function ImagePreviewModal({
                                 >
                                     <ChevronRight className="h-5 w-5" />
                                 </button>
-
-                                {/* Counter */}
                                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
                                     {currentIndex + 1} / {signedUrls.length}
                                 </div>
@@ -123,6 +212,8 @@ function ImagePreviewModal({
     );
 }
 
+// ---------- Main Component ----------
+
 export default function FeedbackTable() {
     const [feedback, setFeedback] = useState<UserFeedback[]>([]);
     const [loading, setLoading] = useState(true);
@@ -130,13 +221,17 @@ export default function FeedbackTable() {
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
     const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
     const [imagePreviewFeedbackId, setImagePreviewFeedbackId] = useState<string | null>(null);
-    
-    // Filters
-    const [quickFilter, setQuickFilter] = useState<QuickFilter>('open');
+
+    // Pipeline stage (primary filter)
+    const [activeStage, setActiveStage] = useState<PipelineStage>('untriaged');
+
+    // Secondary filters (work alongside or override pipeline)
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<FeedbackStatus | 'all'>('all');
     const [filterType, setFilterType] = useState<FeedbackType | 'all'>('all');
-    
+    const [filterDecision, setFilterDecision] = useState<AdminDecision | 'all'>('all');
+    const [showFilters, setShowFilters] = useState(false);
+
     // Sorting
     const [sortField, setSortField] = useState<SortField>('created_at');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -167,12 +262,30 @@ export default function FeedbackTable() {
         }
     };
 
+    const handleQuickApprove = useCallback(async (feedbackId: string) => {
+        const maxPriority = feedback
+            .filter(f => f.work_priority !== null)
+            .reduce((max, f) => Math.max(max, f.work_priority || 0), 0);
+        const newPriority = maxPriority + 1;
+
+        const result = await setAdminDecision(feedbackId, 'approved', undefined, newPriority);
+        if (result.success) {
+            toast.success('Approved and added to work queue');
+            await loadFeedback();
+            if (selectedFeedback?.id === feedbackId && result.data) {
+                setSelectedFeedback(result.data);
+            }
+        } else {
+            toast.error(`Failed to approve: ${result.error}`);
+        }
+    }, [feedback, selectedFeedback]);
+
     const handleSort = (field: SortField) => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
         } else {
             setSortField(field);
-            setSortDirection('desc');
+            setSortDirection(field === 'work_priority' ? 'asc' : 'desc');
         }
     };
 
@@ -187,22 +300,37 @@ export default function FeedbackTable() {
         setImagePreviewOpen(true);
     };
 
+    // Count items per pipeline stage
+    const stageCounts = useMemo(() => {
+        const counts: Record<PipelineStage, number> = {
+            untriaged: 0,
+            your_decision: 0,
+            agent_working: 0,
+            test_results: 0,
+            done: 0,
+            all: feedback.length,
+        };
+        for (const item of feedback) {
+            const stage = getItemStage(item);
+            counts[stage]++;
+        }
+        return counts;
+    }, [feedback]);
+
     const filteredAndSortedFeedback = useMemo(() => {
-        const closedStatuses: FeedbackStatus[] = ['resolved', 'closed', 'wont_fix'];
-        const openStatuses: FeedbackStatus[] = ['new', 'awaiting_review', 'in_progress'];
-        
         let filtered = feedback.filter(item => {
-            // Quick filter (open/closed/all)
-            if (quickFilter === 'open' && !openStatuses.includes(item.status)) return false;
-            if (quickFilter === 'closed' && !closedStatuses.includes(item.status)) return false;
-            
-            // Status filter
+            // Pipeline stage filter
+            if (activeStage !== 'all') {
+                const stage = pipelineStages.find(s => s.key === activeStage);
+                if (stage && !stage.match(item)) return false;
+            }
+
+            // Secondary filters
             if (filterStatus !== 'all' && item.status !== filterStatus) return false;
-            
-            // Type filter
             if (filterType !== 'all' && item.feedback_type !== filterType) return false;
-            
-            // Search filter
+            if (filterDecision !== 'all' && item.admin_decision !== filterDecision) return false;
+
+            // Search
             if (searchTerm) {
                 const search = searchTerm.toLowerCase();
                 return (
@@ -211,14 +339,14 @@ export default function FeedbackTable() {
                     item.route.toLowerCase().includes(search)
                 );
             }
-            
+
             return true;
         });
 
-        // Sorting
+        // Smart default sort per stage
         filtered.sort((a, b) => {
-            let aVal: any, bVal: any;
-            
+            let aVal: string | number, bVal: string | number;
+
             switch (sortField) {
                 case 'created_at':
                     aVal = new Date(a.created_at).getTime();
@@ -236,26 +364,36 @@ export default function FeedbackTable() {
                     aVal = a.username || '';
                     bVal = b.username || '';
                     break;
+                case 'work_priority':
+                    if (a.work_priority === null && b.work_priority === null) return 0;
+                    if (a.work_priority === null) return 1;
+                    if (b.work_priority === null) return -1;
+                    aVal = a.work_priority;
+                    bVal = b.work_priority;
+                    break;
                 default:
                     return 0;
             }
-            
+
             if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
             if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
             return 0;
         });
 
         return filtered;
-    }, [feedback, quickFilter, searchTerm, filterStatus, filterType, sortField, sortDirection]);
+    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, sortField, sortDirection]);
 
     const getStatusOption = (status: FeedbackStatus) => {
         return statusOptions.find(s => s.value === status);
     };
 
+    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || searchTerm !== '';
+
     if (loading) {
         return (
             <Card className="p-8 text-center">
-                <p className="text-gray-600 dark:text-gray-400">Loading feedback...</p>
+                <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Loading feedback...</p>
             </Card>
         );
     }
@@ -263,104 +401,205 @@ export default function FeedbackTable() {
     return (
         <>
             <Card className="p-4">
-                {/* Quick Filter Buttons */}
-                <div className="flex gap-2 mb-4 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg w-fit">
-                    <Button
-                        variant={quickFilter === 'open' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setQuickFilter('open')}
-                        className="gap-2"
-                    >
-                        Open
-                        {quickFilter === 'open' && (
-                            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
-                                {feedback.filter(f => ['new', 'in_review', 'in_progress'].includes(f.status)).length}
-                            </Badge>
-                        )}
-                    </Button>
-                    <Button
-                        variant={quickFilter === 'closed' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setQuickFilter('closed')}
-                        className="gap-2"
-                    >
-                        Closed
-                        {quickFilter === 'closed' && (
-                            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
-                                {feedback.filter(f => ['resolved', 'closed', 'wont_fix'].includes(f.status)).length}
-                            </Badge>
-                        )}
-                    </Button>
-                    <Button
-                        variant={quickFilter === 'all' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setQuickFilter('all')}
-                    >
-                        All
-                    </Button>
+                {/* Pipeline Stage Selector */}
+                <div className="mb-4">
+                    <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+                        {pipelineStages.map((stage, index) => {
+                            const count = stageCounts[stage.key];
+                            const isActive = activeStage === stage.key;
+                            const isAdminTurn = stage.owner === 'admin';
+
+                            return (
+                                <React.Fragment key={stage.key}>
+                                    {index > 0 && (
+                                        <ArrowRight className="w-3 h-3 text-muted-foreground/40 flex-shrink-0 hidden sm:block" />
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            setActiveStage(stage.key);
+                                            // Reset secondary filters when changing stage
+                                            setFilterStatus('all');
+                                            setFilterType('all');
+                                            setFilterDecision('all');
+                                            // Smart sort defaults
+                                            if (stage.key === 'agent_working') {
+                                                setSortField('work_priority');
+                                                setSortDirection('asc');
+                                            } else {
+                                                setSortField('created_at');
+                                                setSortDirection('desc');
+                                            }
+                                        }}
+                                        className={cn(
+                                            'relative flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all flex-1 justify-center',
+                                            isActive
+                                                ? stage.activeColor
+                                                : 'hover:bg-muted text-muted-foreground hover:text-foreground',
+                                        )}
+                                    >
+                                        {stage.icon}
+                                        <span className="hidden sm:inline">{stage.label}</span>
+                                        <span className="sm:hidden">{stage.shortLabel}</span>
+                                        {count > 0 && (
+                                            <span
+                                                className={cn(
+                                                    'min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold leading-none px-1',
+                                                    isActive
+                                                        ? 'bg-white/25 text-white'
+                                                        : isAdminTurn && count > 0
+                                                        ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                                                        : 'bg-muted-foreground/10 text-muted-foreground'
+                                                )}
+                                            >
+                                                {count}
+                                            </span>
+                                        )}
+                                        {/* "Your turn" indicator for admin stages with items */}
+                                        {!isActive && isAdminTurn && count > 0 && (
+                                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                        )}
+                                    </button>
+                                </React.Fragment>
+                            );
+                        })}
+                        {/* All items button */}
+                        <div className="w-px h-6 bg-border mx-1 flex-shrink-0" />
+                        <button
+                            onClick={() => {
+                                setActiveStage('all');
+                                setSortField('created_at');
+                                setSortDirection('desc');
+                            }}
+                            className={cn(
+                                'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all',
+                                activeStage === 'all'
+                                    ? 'bg-foreground text-background'
+                                    : 'hover:bg-muted text-muted-foreground hover:text-foreground',
+                            )}
+                        >
+                            All
+                            <span className={cn(
+                                'min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold leading-none px-1',
+                                activeStage === 'all' ? 'bg-white/25 text-white dark:bg-black/25 dark:text-black' : 'bg-muted-foreground/10 text-muted-foreground',
+                            )}>
+                                {feedback.length}
+                            </span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* Filters and Search */}
-                <div className="flex flex-col md:flex-row gap-3 mb-4">
+                {/* Search + Filter Toggle */}
+                <div className="flex gap-3 mb-3">
                     <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                             placeholder="Search description, user, or route..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-9"
                         />
                     </div>
-                    <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as FeedbackStatus | 'all')}>
-                        <SelectTrigger className="w-full md:w-[180px]">
-                            <SelectValue placeholder="Filter by status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Statuses</SelectItem>
-                            {statusOptions.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={filterType} onValueChange={(value) => setFilterType(value as FeedbackType | 'all')}>
-                        <SelectTrigger className="w-full md:w-[180px]">
-                            <SelectValue placeholder="Filter by type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="bug">Bug Report</SelectItem>
-                            <SelectItem value="feature">Feature Request</SelectItem>
-                            <SelectItem value="suggestion">Suggestion</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between mb-4 text-sm text-gray-600 dark:text-gray-400">
-                    <span>
-                        Showing <strong>{filteredAndSortedFeedback.length}</strong> of <strong>{feedback.length}</strong> items
-                    </span>
                     <Button
-                        variant="outline"
+                        variant={showFilters || hasActiveFilters ? 'secondary' : 'outline'}
                         size="sm"
-                        onClick={loadFeedback}
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="gap-1.5 h-9"
                     >
+                        <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showFilters && 'rotate-180')} />
+                        Filters
+                        {hasActiveFilters && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        )}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={loadFeedback} className="h-9">
                         Refresh
                     </Button>
+                </div>
+
+                {/* Collapsible Filters */}
+                {showFilters && (
+                    <div className="flex flex-col md:flex-row gap-3 mb-3 p-3 bg-muted/30 rounded-lg border">
+                        <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as FeedbackStatus | 'all')}>
+                            <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                {statusOptions.map(option => (
+                                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={filterType} onValueChange={(value) => setFilterType(value as FeedbackType | 'all')}>
+                            <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
+                                <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Types</SelectItem>
+                                <SelectItem value="bug">Bug Report</SelectItem>
+                                <SelectItem value="feature">Feature Request</SelectItem>
+                                <SelectItem value="suggestion">Suggestion</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={filterDecision} onValueChange={(value) => setFilterDecision(value as AdminDecision | 'all')}>
+                            <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
+                                <SelectValue placeholder="Decision" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Decisions</SelectItem>
+                                {Object.entries(ADMIN_DECISION_LABELS).map(([value, label]) => (
+                                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {hasActiveFilters && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={() => {
+                                    setFilterStatus('all');
+                                    setFilterType('all');
+                                    setFilterDecision('all');
+                                    setSearchTerm('');
+                                }}
+                            >
+                                Clear all
+                            </Button>
+                        )}
+                    </div>
+                )}
+
+                {/* Results count */}
+                <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
+                    <span>
+                        <strong className="text-foreground">{filteredAndSortedFeedback.length}</strong> item{filteredAndSortedFeedback.length !== 1 ? 's' : ''}
+                        {activeStage !== 'all' && (
+                            <> in <strong className="text-foreground">{pipelineStages.find(s => s.key === activeStage)?.label || 'All'}</strong></>
+                        )}
+                    </span>
                 </div>
 
                 {/* Table */}
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-gray-50 dark:bg-gray-900">
-                                <TableHead className="w-[100px]">
+                            <TableRow className="bg-muted/30">
+                                <TableHead className="w-[70px]">
+                                    <button
+                                        onClick={() => handleSort('work_priority')}
+                                        className="flex items-center gap-1 font-semibold hover:text-foreground"
+                                    >
+                                        <Hash className="w-3 h-3" />
+                                        Pri
+                                        <ArrowUpDown className="w-3 h-3" />
+                                    </button>
+                                </TableHead>
+                                <TableHead className="w-[90px]">
                                     <button
                                         onClick={() => handleSort('feedback_type')}
-                                        className="flex items-center gap-1 font-semibold hover:text-gray-900 dark:hover:text-gray-100"
+                                        className="flex items-center gap-1 font-semibold hover:text-foreground"
                                     >
                                         Type
                                         <ArrowUpDown className="w-3 h-3" />
@@ -369,93 +608,145 @@ export default function FeedbackTable() {
                                 <TableHead className="w-[120px]">
                                     <button
                                         onClick={() => handleSort('status')}
-                                        className="flex items-center gap-1 font-semibold hover:text-gray-900 dark:hover:text-gray-100"
+                                        className="flex items-center gap-1 font-semibold hover:text-foreground"
                                     >
                                         Status
                                         <ArrowUpDown className="w-3 h-3" />
                                     </button>
                                 </TableHead>
                                 <TableHead>Description</TableHead>
-                                <TableHead className="w-[150px]">
+                                <TableHead className="w-[150px]">Decision</TableHead>
+                                <TableHead className="w-[130px]">
                                     <button
                                         onClick={() => handleSort('username')}
-                                        className="flex items-center gap-1 font-semibold hover:text-gray-900 dark:hover:text-gray-100"
+                                        className="flex items-center gap-1 font-semibold hover:text-foreground"
                                     >
                                         User
                                         <ArrowUpDown className="w-3 h-3" />
                                     </button>
                                 </TableHead>
-                                <TableHead className="w-[200px]">Route</TableHead>
-                                <TableHead className="w-[120px]">
+                                <TableHead className="w-[100px]">
                                     <button
                                         onClick={() => handleSort('created_at')}
-                                        className="flex items-center gap-1 font-semibold hover:text-gray-900 dark:hover:text-gray-100"
+                                        className="flex items-center gap-1 font-semibold hover:text-foreground"
                                     >
                                         Created
                                         <ArrowUpDown className="w-3 h-3" />
                                     </button>
                                 </TableHead>
-                                <TableHead className="w-[100px]">Actions</TableHead>
+                                <TableHead className="w-[80px]">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredAndSortedFeedback.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                                        No feedback found
+                                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                                        <div className="flex flex-col items-center gap-1">
+                                            {activeStage === 'untriaged' && (
+                                                <>
+                                                    <Bot className="w-6 h-6 opacity-30 mb-1" />
+                                                    <span className="text-sm">No untriaged items</span>
+                                                    <span className="text-xs">All feedback has been analyzed</span>
+                                                </>
+                                            )}
+                                            {activeStage === 'your_decision' && (
+                                                <>
+                                                    <CheckCircle2 className="w-6 h-6 opacity-30 mb-1" />
+                                                    <span className="text-sm">Nothing needs your decision</span>
+                                                    <span className="text-xs">All triaged items have been reviewed</span>
+                                                </>
+                                            )}
+                                            {activeStage === 'agent_working' && (
+                                                <>
+                                                    <Bot className="w-6 h-6 opacity-30 mb-1" />
+                                                    <span className="text-sm">No items in the work queue</span>
+                                                    <span className="text-xs">Approve items to add them here</span>
+                                                </>
+                                            )}
+                                            {activeStage === 'test_results' && (
+                                                <>
+                                                    <ClipboardCheck className="w-6 h-6 opacity-30 mb-1" />
+                                                    <span className="text-sm">Nothing to test</span>
+                                                    <span className="text-xs">Completed fixes will appear here for testing</span>
+                                                </>
+                                            )}
+                                            {(activeStage === 'done' || activeStage === 'all') && (
+                                                <span className="text-sm">No items found</span>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 filteredAndSortedFeedback.map((item) => {
                                     const statusOption = getStatusOption(item.status);
+                                    const decisionColors = ADMIN_DECISION_COLORS[item.admin_decision] || ADMIN_DECISION_COLORS.pending;
+                                    const decisionLabel = ADMIN_DECISION_LABELS[item.admin_decision] || ADMIN_DECISION_LABELS.pending;
+                                    const isTriaged = item.status === 'triaged';
+                                    const needsDecision = (item.status === 'triaged' || item.status === 'new') &&
+                                        (item.admin_decision === 'pending' || !item.admin_decision);
+                                    const isApproved = item.admin_decision === 'approved';
+                                    const isClosed = DONE_STATUSES.includes(item.status);
+                                    const isDeferred = item.admin_decision === 'deferred';
+
                                     return (
-                                        <TableRow 
+                                        <TableRow
                                             key={item.id}
-                                            className="hover:bg-gray-50 dark:hover:bg-gray-900/50 cursor-pointer"
+                                            className={cn(
+                                                'hover:bg-muted/50 cursor-pointer',
+                                                isApproved && !isClosed && 'bg-green-500/5',
+                                                isDeferred && 'opacity-60',
+                                            )}
                                             onClick={() => handleViewDetails(item)}
                                         >
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
+                                                <div className="text-sm font-medium">
+                                                    {item.work_priority !== null ? (
+                                                        <span className="text-foreground/80">#{item.work_priority}</span>
+                                                    ) : (
+                                                        <span className="text-muted-foreground/40">-</span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-1.5">
                                                     {feedbackTypeIcons[item.feedback_type]}
-                                                    <span className="text-xs font-medium capitalize">
-                                                        {item.feedback_type}
-                                                    </span>
+                                                    <span className="text-xs font-medium capitalize">{item.feedback_type}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <Select
                                                     value={item.status}
-                                                    onValueChange={(value) => {
-                                                        handleStatusChange(item.id, value as FeedbackStatus);
-                                                    }}
+                                                    onValueChange={(value) => handleStatusChange(item.id, value as FeedbackStatus)}
                                                 >
-                                                    <SelectTrigger 
-                                                        className="h-7 text-xs"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
+                                                    <SelectTrigger className="h-7 text-xs" onClick={(e) => e.stopPropagation()}>
                                                         <Badge className={`${statusOption?.color} border-0`}>
                                                             {statusOption?.label}
                                                         </Badge>
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {statusOptions.map(option => (
-                                                            <SelectItem key={option.value} value={option.value}>
-                                                                {option.label}
-                                                            </SelectItem>
+                                                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-start gap-2">
-                                                    <p className="line-clamp-2 text-sm flex-1">
-                                                        {item.description}
-                                                    </p>
+                                                    <p className="line-clamp-2 text-sm flex-1">{item.description}</p>
+                                                    {isTriaged && item.ai_solution_proposal && (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="flex-shrink-0 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800"
+                                                            title="AI triaged with solution proposal"
+                                                        >
+                                                            <Brain className="w-3 h-3 mr-1 text-indigo-600 dark:text-indigo-400" />
+                                                        </Badge>
+                                                    )}
                                                     {item.image_urls && item.image_urls.length > 0 && (
                                                         <button
                                                             onClick={(e) => handleViewImages(e, item.id)}
                                                             className="flex-shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors text-xs"
-                                                            title="View attached screenshots"
+                                                            title="View screenshots"
                                                         >
                                                             <ImageIcon className="h-3 w-3" />
                                                             {item.image_urls.length}
@@ -463,13 +754,29 @@ export default function FeedbackTable() {
                                                     )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-sm">
-                                                {item.username || 'Anonymous'}
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge className={`${decisionColors.bg} ${decisionColors.text} border-0 text-xs`}>
+                                                        {decisionLabel}
+                                                    </Badge>
+                                                    {needsDecision && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleQuickApprove(item.id);
+                                                            }}
+                                                            title="Quick approve"
+                                                        >
+                                                            <CheckCircle2 className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </TableCell>
-                                            <TableCell className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                                                {item.route}
-                                            </TableCell>
-                                            <TableCell className="text-xs text-gray-600 dark:text-gray-400">
+                                            <TableCell className="text-xs">{item.username || 'Anonymous'}</TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">
                                                 {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                                             </TableCell>
                                             <TableCell>
@@ -511,4 +818,3 @@ export default function FeedbackTable() {
         </>
     );
 }
-

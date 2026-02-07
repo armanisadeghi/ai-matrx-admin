@@ -1,17 +1,56 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { updateFeedback } from '@/actions/feedback.actions';
-import { UserFeedback, FeedbackStatus, FeedbackType } from '@/types/feedback.types';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment } from '@/actions/feedback.actions';
+import {
+    UserFeedback,
+    FeedbackStatus,
+    FeedbackType,
+    FeedbackComment,
+    AdminDecision,
+    TestingResult,
+    FEEDBACK_STATUS_COLORS,
+    FEEDBACK_STATUS_LABELS,
+    ADMIN_DECISION_COLORS,
+    ADMIN_DECISION_LABELS,
+} from '@/types/feedback.types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Sparkles, Lightbulb, HelpCircle, Calendar, User, MapPin, MessageSquare, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
+import {
+    AlertCircle,
+    Sparkles,
+    Lightbulb,
+    HelpCircle,
+    Calendar,
+    User,
+    MapPin,
+    MessageSquare,
+    Image as ImageIcon,
+    Loader2,
+    Brain,
+    Shield,
+    TestTube,
+    CheckCircle2,
+    XCircle,
+    MinusCircle,
+    Send,
+    FileCode,
+    Gauge,
+    ArrowRight,
+    ExternalLink,
+    Clock,
+    Bot,
+    UserCircle,
+} from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface FeedbackDetailDialogProps {
     feedback: UserFeedback;
@@ -20,31 +59,68 @@ interface FeedbackDetailDialogProps {
     onUpdate: () => void;
 }
 
-const statusOptions: { value: FeedbackStatus; label: string; color: string }[] = [
-    { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-    { value: 'awaiting_review', label: 'Awaiting Review', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    { value: 'in_progress', label: 'In Progress', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
-    { value: 'resolved', label: 'Resolved', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
-    { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
-    { value: 'wont_fix', label: "Won't Fix", color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
-];
-
-const feedbackTypeIcons: Record<string, React.ReactNode> = {
+const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
     bug: <AlertCircle className="w-5 h-5 text-red-500" />,
     feature: <Sparkles className="w-5 h-5 text-purple-500" />,
     suggestion: <Lightbulb className="w-5 h-5 text-yellow-500" />,
     other: <HelpCircle className="w-5 h-5 text-gray-500" />,
 };
 
+const feedbackTypeLabels: Record<FeedbackType, string> = {
+    bug: 'Bug Report',
+    feature: 'Feature Request',
+    suggestion: 'Suggestion',
+    other: 'Other',
+};
+
+const authorTypeConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
+    admin: {
+        icon: <Shield className="w-3.5 h-3.5" />,
+        label: 'Admin',
+        color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10',
+    },
+    ai_agent: {
+        icon: <Bot className="w-3.5 h-3.5" />,
+        label: 'AI Agent',
+        color: 'text-purple-600 dark:text-purple-400 bg-purple-500/10',
+    },
+    user: {
+        icon: <UserCircle className="w-3.5 h-3.5" />,
+        label: 'User',
+        color: 'text-gray-600 dark:text-gray-400 bg-gray-500/10',
+    },
+};
+
+const complexityConfig: Record<string, { label: string; color: string }> = {
+    simple: { label: 'Simple', color: 'bg-green-500/15 text-green-700 dark:text-green-400' },
+    moderate: { label: 'Moderate', color: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400' },
+    complex: { label: 'Complex', color: 'bg-red-500/15 text-red-700 dark:text-red-400' },
+};
+
 export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onUpdate }: FeedbackDetailDialogProps) {
-    const [description, setDescription] = useState(feedback.description);
-    const [feedbackType, setFeedbackType] = useState<FeedbackType>(feedback.feedback_type);
-    const [route, setRoute] = useState(feedback.route);
-    const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
-    const [status, setStatus] = useState(feedback.status);
+    const [activeTab, setActiveTab] = useState('submission');
     const [isSaving, setIsSaving] = useState(false);
     const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
     const [isLoadingImages, setIsLoadingImages] = useState(false);
+
+    // Admin decision state
+    const [decision, setDecision] = useState<AdminDecision>(feedback.admin_decision || 'pending');
+    const [direction, setDirection] = useState(feedback.admin_direction || '');
+    const [workPriority, setWorkPriority] = useState<string>(
+        feedback.work_priority !== null ? String(feedback.work_priority) : ''
+    );
+    const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
+    const [status, setStatus] = useState<FeedbackStatus>(feedback.status);
+
+    // Comments state
+    const [comments, setComments] = useState<FeedbackComment[]>([]);
+    const [isLoadingComments, setIsLoadingComments] = useState(false);
+    const [newComment, setNewComment] = useState('');
+    const [isSendingComment, setIsSendingComment] = useState(false);
+    const commentsEndRef = useRef<HTMLDivElement>(null);
+
+    // Testing state
+    const [testingResult, setTestingResult] = useState<TestingResult | null>(feedback.testing_result);
 
     const fetchSignedUrls = useCallback(async (feedbackId: string) => {
         setIsLoadingImages(true);
@@ -67,249 +143,764 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     }, []);
 
+    const loadComments = useCallback(async () => {
+        setIsLoadingComments(true);
+        try {
+            const result = await getFeedbackComments(feedback.id);
+            if (result.success && result.data) {
+                setComments(result.data);
+            }
+        } catch (error) {
+            console.error('Error loading comments:', error);
+        } finally {
+            setIsLoadingComments(false);
+        }
+    }, [feedback.id]);
+
+    // Reset state when feedback changes
     useEffect(() => {
-        setDescription(feedback.description);
-        setFeedbackType(feedback.feedback_type);
-        setRoute(feedback.route);
+        setDecision(feedback.admin_decision || 'pending');
+        setDirection(feedback.admin_direction || '');
+        setWorkPriority(feedback.work_priority !== null ? String(feedback.work_priority) : '');
         setAdminNotes(feedback.admin_notes || '');
         setStatus(feedback.status);
+        setTestingResult(feedback.testing_result);
         setSignedUrls({});
+        setComments([]);
+        setNewComment('');
     }, [feedback]);
 
+    // Fetch images when dialog opens
     useEffect(() => {
         if (open && feedback.image_urls && feedback.image_urls.length > 0) {
             fetchSignedUrls(feedback.id);
         }
     }, [open, feedback.id, feedback.image_urls, fetchSignedUrls]);
 
-    const handleSave = async () => {
-        if (!description.trim()) {
-            toast.error('Description cannot be empty');
-            return;
+    // Fetch comments when comments tab is selected
+    useEffect(() => {
+        if (open && activeTab === 'comments') {
+            loadComments();
         }
+    }, [open, activeTab, loadComments]);
 
+    // Auto-scroll comments
+    useEffect(() => {
+        commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [comments]);
+
+    const handleSaveDecision = async () => {
         setIsSaving(true);
         try {
-            // Build updates object with all changed fields
-            const updates: any = {};
-            
-            if (description !== feedback.description) {
-                updates.description = description;
+            // Save admin decision via RPC
+            const decisionResult = await setAdminDecision(
+                feedback.id,
+                decision,
+                direction || undefined,
+                workPriority ? parseInt(workPriority, 10) : undefined
+            );
+
+            if (!decisionResult.success) {
+                toast.error(`Failed to save decision: ${decisionResult.error}`);
+                setIsSaving(false);
+                return;
             }
-            
-            if (feedbackType !== feedback.feedback_type) {
-                updates.feedback_type = feedbackType;
-            }
-            
-            if (route !== feedback.route) {
-                updates.route = route;
-            }
-            
-            if (status !== feedback.status) {
-                updates.status = status;
-            }
-            
+
+            // Save additional fields via updateFeedback
+            const updates: Record<string, unknown> = {};
             if (adminNotes !== (feedback.admin_notes || '')) {
                 updates.admin_notes = adminNotes;
             }
+            if (status !== feedback.status) {
+                updates.status = status;
+            }
 
             if (Object.keys(updates).length > 0) {
-                const result = await updateFeedback(feedback.id, updates);
-                if (result.success) {
-                    toast.success('Feedback updated successfully');
-                    onUpdate();
-                    onOpenChange(false);
-                } else {
-                    toast.error(`Failed to save changes: ${result.error}`);
+                const updateResult = await updateFeedback(feedback.id, updates);
+                if (!updateResult.success) {
+                    toast.error(`Failed to save updates: ${updateResult.error}`);
+                    setIsSaving(false);
+                    return;
                 }
-            } else {
-                onOpenChange(false);
             }
+
+            toast.success('Changes saved successfully');
+            onUpdate();
         } catch (error) {
-            console.error('Error saving feedback:', error);
-            toast.error('An error occurred while saving. Please try again.');
+            console.error('Error saving:', error);
+            toast.error('An error occurred while saving');
         } finally {
             setIsSaving(false);
         }
     };
 
-    const statusOption = statusOptions.find(s => s.value === status);
+    const handleSendComment = async () => {
+        if (!newComment.trim()) return;
+        setIsSendingComment(true);
+        try {
+            const result = await addFeedbackComment(feedback.id, 'admin', newComment.trim());
+            if (result.success) {
+                setNewComment('');
+                await loadComments();
+            } else {
+                toast.error(`Failed to send comment: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Error sending comment:', error);
+            toast.error('Failed to send comment');
+        } finally {
+            setIsSendingComment(false);
+        }
+    };
+
+    const handleTestingResult = async (result: TestingResult) => {
+        setIsSaving(true);
+        try {
+            const newStatus: FeedbackStatus = result === 'pass' ? 'closed' : result === 'fail' ? 'in_progress' : feedback.status;
+            const updateResult = await updateFeedback(feedback.id, {
+                testing_result: result,
+                ...(newStatus !== feedback.status ? { status: newStatus } : {}),
+                ...(result === 'pass' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing passed - closing item.` } : {}),
+                ...(result === 'fail' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing failed - reopening for fixes.` } : {}),
+            });
+
+            if (updateResult.success) {
+                setTestingResult(result);
+                if (newStatus !== feedback.status) {
+                    setStatus(newStatus);
+                }
+                toast.success(
+                    result === 'pass'
+                        ? 'Marked as passed - item closed'
+                        : result === 'fail'
+                        ? 'Marked as failed - reopened for fixes'
+                        : 'Testing result saved'
+                );
+                onUpdate();
+            } else {
+                toast.error(`Failed to save: ${updateResult.error}`);
+            }
+        } catch (error) {
+            console.error('Error saving testing result:', error);
+            toast.error('Failed to save testing result');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const statusColors = FEEDBACK_STATUS_COLORS[feedback.status];
+    const hasAiAnalysis = !!(feedback.ai_solution_proposal || feedback.ai_assessment || feedback.ai_complexity);
+    const hasTesting = !!(feedback.testing_instructions || feedback.testing_url || feedback.resolution_notes);
+    const isResolved = ['resolved', 'awaiting_review', 'closed'].includes(feedback.status);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3">
-                        {feedbackTypeIcons[feedback.feedback_type]}
-                        Feedback Details
-                    </DialogTitle>
-                    <DialogDescription>
-                        View and manage feedback submission
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-6 py-4">
-                    {/* Read-only Metadata */}
-                    <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm">
-                            <User className="w-4 h-4 text-gray-500" />
-                            <div>
-                                <div className="text-xs text-gray-500">User</div>
-                                <div className="font-medium">{feedback.username || 'Anonymous'}</div>
+            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 border-b flex-shrink-0">
+                    <DialogHeader>
+                        <div className="flex items-center gap-3">
+                            {feedbackTypeIcons[feedback.feedback_type]}
+                            <div className="flex-1">
+                                <DialogTitle className="flex items-center gap-2">
+                                    {feedbackTypeLabels[feedback.feedback_type]}
+                                    <Badge className={`${statusColors.bg} ${statusColors.text} border-0 text-xs ml-2`}>
+                                        {FEEDBACK_STATUS_LABELS[feedback.status]}
+                                    </Badge>
+                                    {feedback.admin_decision !== 'pending' && (
+                                        <Badge
+                                            className={`${ADMIN_DECISION_COLORS[feedback.admin_decision].bg} ${ADMIN_DECISION_COLORS[feedback.admin_decision].text} border-0 text-xs`}
+                                        >
+                                            {ADMIN_DECISION_LABELS[feedback.admin_decision]}
+                                        </Badge>
+                                    )}
+                                </DialogTitle>
+                                <DialogDescription className="mt-1">
+                                    <span className="flex items-center gap-4 text-xs">
+                                        <span className="flex items-center gap-1">
+                                            <User className="w-3 h-3" />
+                                            {feedback.username || 'Anonymous'}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <MapPin className="w-3 h-3" />
+                                            {feedback.route}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Calendar className="w-3 h-3" />
+                                            {formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}
+                                        </span>
+                                        {feedback.work_priority !== null && (
+                                            <span className="flex items-center gap-1 font-medium text-foreground">
+                                                Priority #{feedback.work_priority}
+                                            </span>
+                                        )}
+                                    </span>
+                                </DialogDescription>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="w-4 h-4 text-gray-500" />
-                            <div>
-                                <div className="text-xs text-gray-500">Submitted</div>
-                                <div className="font-medium">
-                                    {formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}
+                    </DialogHeader>
+                </div>
+
+                {/* Tabbed Content */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <div className="px-6 pt-2 flex-shrink-0">
+                        <TabsList className="w-full justify-start">
+                            <TabsTrigger value="submission" className="gap-1.5 text-xs">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Submission
+                            </TabsTrigger>
+                            <TabsTrigger value="analysis" className="gap-1.5 text-xs" disabled={!hasAiAnalysis}>
+                                <Brain className="w-3.5 h-3.5" />
+                                AI Analysis
+                                {hasAiAnalysis && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-1" />
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger value="decision" className="gap-1.5 text-xs">
+                                <Shield className="w-3.5 h-3.5" />
+                                Decision
+                            </TabsTrigger>
+                            <TabsTrigger value="comments" className="gap-1.5 text-xs">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Comments
+                            </TabsTrigger>
+                            <TabsTrigger value="testing" className="gap-1.5 text-xs" disabled={!hasTesting && !isResolved}>
+                                <TestTube className="w-3.5 h-3.5" />
+                                Testing
+                                {hasTesting && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 ml-1" />
+                                )}
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+
+                    <div className="flex-1 min-h-0 overflow-y-auto">
+                        <div className="px-6 py-4">
+                            {/* SECTION 1: User Submission */}
+                            <TabsContent value="submission" className="mt-0 space-y-4">
+                                {/* Description */}
+                                <div>
+                                    <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                        Description
+                                    </label>
+                                    <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap">
+                                        {feedback.description}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Editable Type */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Feedback Type</label>
-                        <Select value={feedbackType} onValueChange={(value) => setFeedbackType(value as FeedbackType)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="bug">Bug Report</SelectItem>
-                                <SelectItem value="feature">Feature Request</SelectItem>
-                                <SelectItem value="suggestion">Suggestion</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Editable Route */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Route</label>
-                        <Input
-                            value={route}
-                            onChange={(e) => setRoute(e.target.value)}
-                            placeholder="/path/to/page"
-                        />
-                    </div>
-
-                    {/* Status */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Status</label>
-                        <Select value={status} onValueChange={(value) => setStatus(value as FeedbackStatus)}>
-                            <SelectTrigger>
-                                <Badge className={statusOption?.color}>
-                                    {statusOption?.label}
-                                </Badge>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {statusOptions.map(option => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Editable Description */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Description</label>
-                        <Textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Feedback description..."
-                            className="min-h-[120px]"
-                        />
-                    </div>
-
-                    {/* Attached Images */}
-                    {feedback.image_urls && feedback.image_urls.length > 0 && (
-                        <div>
-                            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4" />
-                                Attached Screenshots ({feedback.image_urls.length})
-                            </label>
-                            {isLoadingImages ? (
-                                <div className="flex items-center justify-center py-8 text-muted-foreground">
-                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                    Loading images...
+                                {/* Metadata Grid */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                        <div className="text-xs text-muted-foreground mb-1">Type</div>
+                                        <div className="flex items-center gap-2 text-sm font-medium">
+                                            {feedbackTypeIcons[feedback.feedback_type]}
+                                            {feedbackTypeLabels[feedback.feedback_type]}
+                                        </div>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                        <div className="text-xs text-muted-foreground mb-1">Priority</div>
+                                        <div className="text-sm font-medium capitalize">
+                                            {feedback.priority}
+                                        </div>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                        <div className="text-xs text-muted-foreground mb-1">Route</div>
+                                        <div className="text-sm font-medium font-mono">
+                                            {feedback.route}
+                                        </div>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                        <div className="text-xs text-muted-foreground mb-1">Submitted</div>
+                                        <div className="text-sm font-medium">
+                                            {format(new Date(feedback.created_at), 'MMM d, yyyy h:mm a')}
+                                        </div>
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    {feedback.image_urls.map((url, index) => {
-                                        const resolvedUrl = signedUrls[url] || url;
-                                        return (
-                                            <a
-                                                key={index}
-                                                href={resolvedUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="relative aspect-video rounded-lg overflow-hidden border border-border hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
-                                            >
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={resolvedUrl}
-                                                    alt={`Screenshot ${index + 1}`}
-                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                                />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                                    <ImageIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                {/* Screenshots */}
+                                {feedback.image_urls && feedback.image_urls.length > 0 && (
+                                    <div>
+                                        <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
+                                            <ImageIcon className="w-4 h-4" />
+                                            Screenshots ({feedback.image_urls.length})
+                                        </label>
+                                        {isLoadingImages ? (
+                                            <div className="flex items-center justify-center py-8 text-muted-foreground">
+                                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                                Loading images...
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                {feedback.image_urls.map((url, index) => {
+                                                    const resolvedUrl = signedUrls[url] || url;
+                                                    return (
+                                                        <a
+                                                            key={index}
+                                                            href={resolvedUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary transition-colors group"
+                                                        >
+                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                            <img
+                                                                src={resolvedUrl}
+                                                                alt={`Screenshot ${index + 1}`}
+                                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                                <ExternalLink className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                                                            </div>
+                                                        </a>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Resolution Notes (if resolved) */}
+                                {feedback.resolution_notes && (
+                                    <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20">
+                                        <div className="text-xs font-medium text-green-700 dark:text-green-400 mb-1.5 flex items-center gap-1.5">
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            Resolution Notes
+                                        </div>
+                                        <div className="text-sm whitespace-pre-wrap">
+                                            {feedback.resolution_notes}
+                                        </div>
+                                        {feedback.resolved_at && (
+                                            <div className="text-xs text-muted-foreground mt-2">
+                                                Resolved {formatDistanceToNow(new Date(feedback.resolved_at), { addSuffix: true })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </TabsContent>
+
+                            {/* SECTION 2: AI Analysis */}
+                            <TabsContent value="analysis" className="mt-0 space-y-4">
+                                {hasAiAnalysis ? (
+                                    <>
+                                        {/* AI Assessment */}
+                                        {feedback.ai_assessment && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                                    AI Assessment
+                                                </label>
+                                                <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-sm whitespace-pre-wrap">
+                                                    {feedback.ai_assessment}
                                                 </div>
-                                            </a>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                            </div>
+                                        )}
 
-                    {/* Admin Notes */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Admin Notes</label>
-                        <Textarea
-                            value={adminNotes}
-                            onChange={(e) => setAdminNotes(e.target.value)}
-                            placeholder="Add notes about this feedback..."
-                            className="min-h-[120px]"
-                        />
+                                        {/* Solution Proposal */}
+                                        {feedback.ai_solution_proposal && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                                    Solution Proposal
+                                                </label>
+                                                <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap">
+                                                    {feedback.ai_solution_proposal}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Analysis Metadata Grid */}
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                            {feedback.ai_suggested_priority && (
+                                                <div className="p-3 rounded-lg bg-muted/50 border">
+                                                    <div className="text-xs text-muted-foreground mb-1">Suggested Priority</div>
+                                                    <div className="text-sm font-medium capitalize">
+                                                        {feedback.ai_suggested_priority}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {feedback.ai_complexity && (
+                                                <div className="p-3 rounded-lg bg-muted/50 border">
+                                                    <div className="text-xs text-muted-foreground mb-1">Complexity</div>
+                                                    <Badge className={`${complexityConfig[feedback.ai_complexity]?.color || ''} border-0`}>
+                                                        {complexityConfig[feedback.ai_complexity]?.label || feedback.ai_complexity}
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                            {feedback.autonomy_score !== null && (
+                                                <div className="p-3 rounded-lg bg-muted/50 border">
+                                                    <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                                        <Gauge className="w-3 h-3" />
+                                                        Autonomy Score
+                                                    </div>
+                                                    <div className="text-sm font-medium">
+                                                        {feedback.autonomy_score} / 5
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Estimated Files */}
+                                        {feedback.ai_estimated_files && feedback.ai_estimated_files.length > 0 && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                                                    <FileCode className="w-4 h-4" />
+                                                    Estimated Files to Change ({feedback.ai_estimated_files.length})
+                                                </label>
+                                                <div className="space-y-1">
+                                                    {feedback.ai_estimated_files.map((file, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="px-3 py-1.5 rounded bg-muted/50 border text-xs font-mono"
+                                                        >
+                                                            {file}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                                        <Brain className="w-8 h-8 mb-2 opacity-30" />
+                                        <p className="text-sm">No AI analysis yet</p>
+                                        <p className="text-xs mt-1">The agent will populate this after triage</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+
+                            {/* SECTION 3: Admin Decision */}
+                            <TabsContent value="decision" className="mt-0 space-y-4">
+                                {/* Status */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 block">Status</label>
+                                    <Select value={status} onValueChange={(value) => setStatus(value as FeedbackStatus)}>
+                                        <SelectTrigger>
+                                            <Badge className={`${FEEDBACK_STATUS_COLORS[status]?.bg || ''} ${FEEDBACK_STATUS_COLORS[status]?.text || ''} border-0`}>
+                                                {FEEDBACK_STATUS_LABELS[status] || status}
+                                            </Badge>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(FEEDBACK_STATUS_LABELS).map(([value, label]) => (
+                                                <SelectItem key={value} value={value}>
+                                                    {label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Decision */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 block">Decision</label>
+                                    <Select value={decision} onValueChange={(value) => setDecision(value as AdminDecision)}>
+                                        <SelectTrigger>
+                                            <Badge className={`${ADMIN_DECISION_COLORS[decision]?.bg || ''} ${ADMIN_DECISION_COLORS[decision]?.text || ''} border-0`}>
+                                                {ADMIN_DECISION_LABELS[decision] || decision}
+                                            </Badge>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(ADMIN_DECISION_LABELS).map(([value, label]) => (
+                                                <SelectItem key={value} value={value}>
+                                                    {label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Work Priority */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 block">
+                                        Work Priority
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        placeholder="e.g. 1 (highest priority)"
+                                        value={workPriority}
+                                        onChange={(e) => setWorkPriority(e.target.value)}
+                                        className="w-40"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Lower number = higher priority. Agent works through these in order.
+                                    </p>
+                                </div>
+
+                                {/* Admin Direction */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 block">
+                                        Direction for Agent
+                                    </label>
+                                    <Textarea
+                                        value={direction}
+                                        onChange={(e) => setDirection(e.target.value)}
+                                        placeholder="Specific instructions for the AI agent before it starts working on this..."
+                                        className="min-h-[80px]"
+                                    />
+                                </div>
+
+                                {/* Admin Notes */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 block">
+                                        Admin Notes
+                                    </label>
+                                    <Textarea
+                                        value={adminNotes}
+                                        onChange={(e) => setAdminNotes(e.target.value)}
+                                        placeholder="Internal notes about this feedback..."
+                                        className="min-h-[80px]"
+                                    />
+                                </div>
+
+                                <Separator />
+
+                                {/* Quick Actions */}
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            setDecision('approved');
+                                            setStatus(feedback.status === 'triaged' ? 'in_progress' : feedback.status);
+                                        }}
+                                        className="gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+                                    >
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        Approve
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            setDecision('rejected');
+                                            setStatus('wont_fix');
+                                        }}
+                                        className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                    >
+                                        <XCircle className="w-4 h-4" />
+                                        Reject
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            setDecision('deferred');
+                                            setStatus('deferred');
+                                        }}
+                                        className="gap-1.5 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
+                                    >
+                                        <Clock className="w-4 h-4" />
+                                        Defer
+                                    </Button>
+                                </div>
+
+                                {/* Save */}
+                                <div className="flex gap-3 justify-end pt-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => onOpenChange(false)}
+                                        disabled={isSaving}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleSaveDecision} disabled={isSaving}>
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            'Save Changes'
+                                        )}
+                                    </Button>
+                                </div>
+                            </TabsContent>
+
+                            {/* SECTION 4: Comments */}
+                            <TabsContent value="comments" className="mt-0 flex flex-col">
+                                {isLoadingComments ? (
+                                    <div className="flex items-center justify-center py-12 text-muted-foreground">
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                        Loading comments...
+                                    </div>
+                                ) : comments.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                                        <MessageSquare className="w-8 h-8 mb-2 opacity-30" />
+                                        <p className="text-sm">No comments yet</p>
+                                        <p className="text-xs mt-1">Start a conversation about this feedback item</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 mb-4">
+                                        {comments.map((comment) => {
+                                            const config = authorTypeConfig[comment.author_type] || authorTypeConfig.user;
+                                            return (
+                                                <div key={comment.id} className="flex gap-3">
+                                                    <div className={cn('flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center', config.color)}>
+                                                        {config.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <span className="text-sm font-medium">
+                                                                {comment.author_name || config.label}
+                                                            </span>
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                                                {config.label}
+                                                            </Badge>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-sm whitespace-pre-wrap text-foreground/90">
+                                                            {comment.content}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        <div ref={commentsEndRef} />
+                                    </div>
+                                )}
+
+                                {/* Comment Input */}
+                                <div className="relative pt-3 border-t mt-auto">
+                                    <Textarea
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="Add a comment..."
+                                        className="min-h-[60px] w-full pr-12"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                                handleSendComment();
+                                            }
+                                        }}
+                                    />
+                                    <Button
+                                        onClick={handleSendComment}
+                                        disabled={!newComment.trim() || isSendingComment}
+                                        size="sm"
+                                        className="absolute right-2 bottom-2 h-8 w-8 p-0"
+                                    >
+                                        {isSendingComment ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Send className="w-4 h-4" />
+                                        )}
+                                    </Button>
+                                </div>
+                            </TabsContent>
+
+                            {/* SECTION 5: Testing */}
+                            <TabsContent value="testing" className="mt-0 space-y-4">
+                                {hasTesting || isResolved ? (
+                                    <>
+                                        {/* Testing URL */}
+                                        {feedback.testing_url && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                                    Testing URL
+                                                </label>
+                                                <a
+                                                    href={feedback.testing_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20 transition-colors text-sm font-mono"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                    {feedback.testing_url}
+                                                </a>
+                                            </div>
+                                        )}
+
+                                        {/* Testing Instructions */}
+                                        {feedback.testing_instructions && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                                    Testing Instructions
+                                                </label>
+                                                <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap">
+                                                    {feedback.testing_instructions}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Resolution Notes */}
+                                        {feedback.resolution_notes && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                                    Resolution Notes
+                                                </label>
+                                                <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20 text-sm whitespace-pre-wrap">
+                                                    {feedback.resolution_notes}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <Separator />
+
+                                        {/* Testing Result Buttons */}
+                                        <div>
+                                            <label className="text-sm font-medium mb-2 block">
+                                                Testing Result
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant={testingResult === 'pass' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => handleTestingResult('pass')}
+                                                    disabled={isSaving}
+                                                    className={cn(
+                                                        'gap-1.5',
+                                                        testingResult === 'pass' && 'bg-green-600 hover:bg-green-700'
+                                                    )}
+                                                >
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    Pass
+                                                </Button>
+                                                <Button
+                                                    variant={testingResult === 'fail' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => handleTestingResult('fail')}
+                                                    disabled={isSaving}
+                                                    className={cn(
+                                                        'gap-1.5',
+                                                        testingResult === 'fail' && 'bg-red-600 hover:bg-red-700'
+                                                    )}
+                                                >
+                                                    <XCircle className="w-4 h-4" />
+                                                    Fail
+                                                </Button>
+                                                <Button
+                                                    variant={testingResult === 'partial' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => handleTestingResult('partial')}
+                                                    disabled={isSaving}
+                                                    className={cn(
+                                                        'gap-1.5',
+                                                        testingResult === 'partial' && 'bg-yellow-600 hover:bg-yellow-700'
+                                                    )}
+                                                >
+                                                    <MinusCircle className="w-4 h-4" />
+                                                    Partial
+                                                </Button>
+                                            </div>
+                                            {testingResult && (
+                                                <p className="text-xs text-muted-foreground mt-2">
+                                                    {testingResult === 'pass' && 'Item will be closed.'}
+                                                    {testingResult === 'fail' && 'Item will be reopened for further fixes.'}
+                                                    {testingResult === 'partial' && 'Partial pass recorded. Review for follow-up.'}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                                        <TestTube className="w-8 h-8 mb-2 opacity-30" />
+                                        <p className="text-sm">No testing information yet</p>
+                                        <p className="text-xs mt-1">Testing data will appear after the agent resolves this item</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                        </div>
                     </div>
-
-                    {/* Resolution Info */}
-                    {feedback.resolved_at && (
-                        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                            <div className="text-sm">
-                                <div className="font-medium text-green-800 dark:text-green-400 mb-1">
-                                    Resolved
-                                </div>
-                                <div className="text-green-700 dark:text-green-300">
-                                    {formatDistanceToNow(new Date(feedback.resolved_at), { addSuffix: true })}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 justify-end pt-4 border-t">
-                    <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                        disabled={isSaving}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                    >
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                </div>
+                </Tabs>
             </DialogContent>
         </Dialog>
     );
 }
-

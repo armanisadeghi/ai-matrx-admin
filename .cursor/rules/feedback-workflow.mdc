@@ -3,215 +3,281 @@ description: Autonomous feedback resolution workflow - use when handling user fe
 alwaysApply: false
 ---
 
-# Autonomous Feedback Resolution Workflow
+# DB-First Feedback Resolution Workflow
 
-This rule defines the complete workflow for triaging, fixing, and closing user feedback items using the Supabase MCP tools.
+All state lives in the database. No markdown files. No chat-based reporting. The admin UI at `/administration/feedback` is the source of truth.
 
-## Quick Reference: Supabase MCP SQL Commands
+## Pipeline Overview
 
-All database operations use the Supabase MCP `execute_sql` tool.
+The admin UI has a pipeline view with these mutually exclusive stages:
+
+| Stage | Who Acts | What's Here |
+|-------|----------|-------------|
+| **Untriaged** | Agent | `status = 'new'` — agent hasn't analyzed yet |
+| **Your Decision** | Admin | `status = 'triaged'` + `admin_decision = 'pending'` — agent analyzed, admin hasn't decided |
+| **Agent Working** | Agent | `admin_decision = 'approved'` + `status IN ('triaged','in_progress')` — approved, agent fixing |
+| **Test Results** | Admin | `status = 'awaiting_review'` — agent fixed, admin testing |
+| **Done** | — | `status IN ('resolved','closed','wont_fix','deferred')` |
+
+**Your two lists on each session:**
+- **List 1 (Untriaged):** `SELECT * FROM get_untriaged_feedback();` — items to analyze
+- **List 2 (Work Queue):** `SELECT * FROM get_agent_work_queue();` — approved items to fix, in priority order
+
+## SQL Quick Reference
+
+All operations use the Supabase MCP `execute_sql` tool.
 
 ```sql
--- Get all pending items
-SELECT * FROM get_pending_feedback();
+-- LIST 1: Get untriaged items (status='new', excludes split children, oldest first)
+SELECT * FROM get_untriaged_feedback();
 
--- Get summary counts
+-- LIST 2: Get approved work queue (ordered by work_priority ASC)
+SELECT * FROM get_agent_work_queue();
+
+-- Summary counts (excludes closed from totals)
 SELECT get_feedback_summary();
 
--- Get items by status
+-- Items by specific status
 SELECT * FROM get_feedback_by_status('in_progress');
-SELECT * FROM get_feedback_by_status('awaiting_review');
 
--- Claim an item (start working on it)
-SELECT * FROM claim_feedback_item(
-  'feedback-uuid'::uuid,
-  'Admin notes about approach',
-  'AI assessment of the issue',
-  4  -- autonomy score 1-5
+-- TRIAGE: Push AI analysis (sets status → 'triaged')
+SELECT * FROM triage_feedback_item(
+  '<uuid>'::uuid,
+  'Proposed solution approach',           -- p_ai_solution_proposal
+  'high',                                  -- p_ai_suggested_priority (low/medium/high/critical)
+  'moderate',                              -- p_ai_complexity (simple/moderate/complex)
+  ARRAY['path/to/file1.tsx'],              -- p_ai_estimated_files
+  4,                                       -- p_autonomy_score (1-5)
+  'Detailed assessment of the issue'       -- p_ai_assessment
 );
 
--- Resolve an item (fix is complete)
-SELECT * FROM resolve_feedback_item(
-  'feedback-uuid'::uuid,
-  'Description of what was fixed and how',
-  'resolver-user-uuid'::uuid
+-- APPROVE (agent auto-approve for score 4-5): Sets decision + transitions status
+SELECT * FROM set_admin_decision(
+  '<uuid>'::uuid,
+  'approved',                              -- p_decision
+  NULL,                                    -- p_direction (optional admin instructions)
+  1                                        -- p_work_priority (1 = highest)
 );
 
--- Close an item (final status)
+-- RESOLVE: Push fix details + testing info (sets status → 'awaiting_review')
+SELECT * FROM resolve_with_testing(
+  '<uuid>'::uuid,
+  'What was fixed and how',                -- p_resolution_notes
+  'Step-by-step testing instructions',     -- p_testing_instructions
+  'http://localhost:3000/page'             -- p_testing_url
+);
+
+-- COMMENT: Add a comment (for mid-work notes, explanations)
+SELECT * FROM add_feedback_comment(
+  '<uuid>'::uuid,
+  'ai_agent',                              -- p_author_type ('user'|'admin'|'ai_agent')
+  'AI Agent',                              -- p_author_name
+  'Comment content here'                   -- p_content
+);
+
+-- READ COMMENTS on an item
+SELECT * FROM get_feedback_comments('<uuid>'::uuid);
+
+-- CLOSE (admin confirms fix works)
 SELECT * FROM close_feedback_item(
-  'feedback-uuid'::uuid,
-  'resolved',  -- or 'closed' or 'wont_fix'
-  'Optional admin notes'
+  '<uuid>'::uuid,
+  'resolved',                              -- p_status ('resolved'|'closed'|'wont_fix')
+  'Verified by admin'                      -- p_admin_notes
 );
 
--- Get a user's feedback
-SELECT * FROM get_user_own_feedback('user-uuid'::uuid);
+-- SPLIT a parent into sub-tasks (parent → 'split', children created as 'new')
+SELECT * FROM split_feedback_item(
+  '<parent_uuid>'::uuid,
+  ARRAY['Sub-task 1 description', 'Sub-task 2 description']
+);
 ```
 
 ## Status Lifecycle
 
 ```
-new → in_progress → awaiting_review → resolved → closed
-new → wont_fix (declined)
-awaiting_review → in_progress (admin found issues with fix)
+new → triaged → in_progress → awaiting_review → resolved → closed
+new → wont_fix
+triaged → deferred
+triaged → split (children go through their own lifecycle)
 ```
 
-- **new**: Submitted, not yet triaged
-- **in_progress**: Actively being worked on
-- **awaiting_review**: Fix deployed, needs admin (Arman) to test
-- **resolved**: Admin verified the fix, user notified via email
-- **closed**: User confirmed or auto-closed after 14 days
-- **wont_fix**: Declined with reason in admin_notes
+- **new**: Submitted, agent hasn't analyzed
+- **triaged**: Agent analyzed, awaiting admin decision
+- **in_progress**: Admin approved, agent actively fixing
+- **awaiting_review**: Fix done, admin needs to test
+- **resolved**: Admin verified fix works
+- **closed**: User confirmed or auto-closed
+- **wont_fix**: Declined with reason
+- **split**: Parent broken into sub-tasks
+- **deferred**: Pushed to later
 
-## Step 1: Triage
-
-When asked to handle feedback, start by pulling data:
+## Step 1: Triage Untriaged Items
 
 ```sql
-SELECT get_feedback_summary();
-SELECT * FROM get_pending_feedback();
+SELECT * FROM get_untriaged_feedback();
 ```
 
-For each item, read the description, route, feedback_type, username, and image_urls.
+For each item:
 
-## Step 2: Autonomy Assessment
-
-For each item, compute an **autonomy score (1-5)** based on these additive factors:
+1. Read `description`, `route`, `feedback_type`, `username`, `image_urls`
+2. **Check for admin early-feedback** — the admin may have seen this item first and left context:
+   - Read `admin_notes` field on the item (may contain admin's initial thoughts)
+   - Check for existing comments: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
+   - If the admin has already provided direction or context, factor it into your analysis. This can save significant time — the admin may have already identified the root cause or pointed you to specific files.
+3. If `image_urls` is not null, view screenshots:
+   - `GET /api/admin/feedback/images?feedback_id=<uuid>` for signed URLs
+   - Open signed URLs in browser to see the issue
+4. Research relevant code to understand the problem
+5. Compute **autonomy score (1-5)**:
 
 | Factor | +1 if True |
 |--------|-----------|
 | Requested by `arman@armansadeghi.com` (lead developer, trusted) | Yes |
-| Clearly a bug — app is objectively broken, not a matter of opinion | Yes |
+| Clearly a bug — app is objectively broken | Yes |
 | Not opinion-based — the fix is objectively correct | Yes |
-| Zero risk of negative side effects on other features | Yes |
+| Zero risk of negative side effects | Yes |
 | Simple fix — CSS, typo, config, single-file change | Yes |
 
-### Decision Matrix
+6. Push analysis to DB:
 
-- **Score 4-5**: Auto-fix. Claim the item, implement the fix, resolve when done. No approval needed.
-- **Score 2-3**: Present assessment to Arman with recommendation. Wait for approval before fixing.
-- **Score 0-1**: Present to Arman for discussion. Likely needs design decisions or has trade-offs.
-
-### Trust Rules
-
-- `arman@armansadeghi.com` = lead developer. Requests from this user have inherently higher trust. If Arman reports it AND it's clearly a bug, auto-fix.
-- Other users = valid reporters. Bug reports that are objectively broken can still be auto-fixed. Feature requests from non-admins always require approval.
-- All bug fixes where the app is clearly broken = high autonomy regardless of who reported it.
-- Feature requests = always present for approval unless from Arman AND trivially safe.
-
-## Step 3: Image Investigation
-
-If `image_urls` is not null:
-
-1. Use the browser to call: `GET /api/admin/feedback/images?feedback_id=<uuid>`
-2. This returns signed URLs (1 hour expiry) for each attached screenshot
-3. Open the signed URLs in the browser to view the screenshots
-4. Use the visual context to understand the issue better
-
-## Step 4: Fix Workflow
-
-For each item being fixed:
-
-1. **Claim it**:
-   ```sql
-   SELECT * FROM claim_feedback_item('<id>'::uuid, 'Working on fix', '<your assessment>', <score>);
-   ```
-
-2. **Research the code**: Use explore agents to find relevant files, understand the issue.
-
-3. **Implement the fix**: Make the code changes.
-
-4. **Resolve it**:
-   ```sql
-   SELECT * FROM resolve_feedback_item('<id>'::uuid, 'Detailed description of what was changed', null);
-   ```
-
-5. **Notify the user** (for non-admin users): Make a POST request to `/api/feedback/notify` with body:
-   ```json
-   { "feedback_id": "<uuid>", "status": "awaiting_review" }
-   ```
-
-## Step 5: Testing Checklist for Admin Review
-
-After fixing items, generate a **Testing Checklist** that Arman can quickly walk through to verify each fix. This is the primary deliverable after a batch of fixes.
-
-### Format
-
-For each resolved item, provide:
-1. **The original request** (one sentence summary)
-2. **Where to go** (full localhost URL)
-3. **What to do** (specific steps to reproduce or verify)
-4. **What to look for** (expected behavior that confirms the fix works)
-
-### Example
-
-```
-### Notes Bottom Padding (8ca13bc1)
-**Request:** Notes app needs padding at the bottom so the last sentence isn't stuck to the bottom.
-- Go to **http://localhost:3000/notes**
-- Open any note with at least a page of content
-- Scroll to the very bottom
-- Confirm there's generous empty space below the last line (~half the screen)
-- Test in both **plain text mode** and **preview mode**
-```
-
-### Guidelines
-- Keep it scannable -- Arman should be able to test each item in under 60 seconds
-- Include the specific route from the feedback item when possible
-- For UI fixes: describe what the broken state looked like vs what it should look like now
-- For data/API fixes: describe what action to take and what result to expect
-- For complex features: break the test into numbered steps
-- Always mention if multiple views/modes need testing (mobile, desktop, dark mode, etc.)
-
-### After the Checklist
-
-Also include (below the checklist):
-- The detailed technical summary of what was changed and why (files modified, approach taken)
-- Which items are `awaiting_review`
-- Any items that need discussion (low autonomy score)
-- Any items that were skipped and why
-
-## Step 6: Admin Confirmation
-
-When Arman confirms a fix works:
 ```sql
-SELECT * FROM close_feedback_item('<id>'::uuid, 'resolved', 'Verified by admin');
+SELECT * FROM triage_feedback_item(
+  '<id>'::uuid, 'Proposed approach: ...', 'high', 'moderate',
+  ARRAY['file1.tsx', 'file2.ts'], 4, 'Assessment: ...'
+);
 ```
 
-When Arman says a fix doesn't work:
+This sets status to `triaged`. **Do NOT set `in_progress` during triage.**
+
+### Auto-Approve (Score 4-5 Only)
+
+If the autonomy score is 4 or 5, you may auto-approve immediately after triaging:
+
+1. First triage the item (above)
+2. Then approve it:
 ```sql
--- Move back to in_progress
-UPDATE user_feedback SET status = 'in_progress', admin_notes = 'Fix needs revision: <reason>', updated_at = now() WHERE id = '<id>';
+SELECT * FROM set_admin_decision('<id>'::uuid, 'approved', NULL, <next_priority>);
+```
+3. Add an explanatory comment:
+```sql
+SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
+  'Auto-approved: autonomy score 5/5. Clear bug from lead dev, safe fix, no side effects.');
+```
+4. The item now appears in the work queue — proceed to fix it
+
+**Score 2-3**: Triage only. Wait for admin decision via the UI.
+**Score 0-1**: Triage only. Add a comment flagging concerns for admin.
+
+## Step 2: Work Through Approved Queue
+
+```sql
+SELECT * FROM get_agent_work_queue();
 ```
 
-## Step 7: Reporting
+Returns items ordered by `work_priority ASC` (1 = do first).
 
-After processing feedback, regenerate `SUBMIT_FEEDBACK_TASKS.md` from the database state. The file is a human-readable view; the database is the source of truth.
+For each item:
+1. Check `admin_direction` for specific instructions from admin
+2. Check comments for additional context: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
+3. Research the code
+4. Add progress comments as you work:
+```sql
+SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
+  'Found root cause in components/Foo.tsx line 42. The issue is...');
+```
+5. Implement the fix
 
-## User Feedback Portal
+## Step 3: Resolve with Testing
 
-Users can see their feedback status at `/settings/feedback`. When items are resolved, users can click "Confirm Fix Works" to close them. Email notifications are sent when status changes to `resolved`.
+After fixing, push resolution + testing instructions:
+
+```sql
+SELECT * FROM resolve_with_testing(
+  '<id>'::uuid,
+  'Fixed the padding issue by adding pb-32 to NoteEditor.tsx content container',
+  '1. Go to http://localhost:3000/notes\n2. Open any note with lots of content\n3. Scroll to the bottom\n4. Verify generous padding below last line\n5. Test in both plain text and preview modes',
+  'http://localhost:3000/notes'
+);
+```
+
+This sets status to `awaiting_review`. The admin sees it in the **Test Results** pipeline stage with your testing instructions and a clickable URL.
+
+**Testing instructions must be specific enough that the admin can verify in under 60 seconds:**
+- Include the exact URL/route
+- List exact steps to reproduce or verify
+- Describe what "fixed" looks like vs what "broken" looked like
+- Mention if multiple modes need testing (dark mode, mobile, etc.)
+
+## Step 4: Brief Chat Summary
+
+After processing a batch, give a **brief** summary in chat:
+
+- How many items triaged
+- How many items fixed
+- Any items needing admin discussion (low autonomy)
+- Any items skipped and why
+
+**Do NOT reproduce testing checklists or resolution notes in chat** — they're in the DB. The admin reviews everything via the pipeline UI at `/administration/feedback`.
+
+## Step 5: Handle Failed Tests
+
+After the admin tests items, check for items that moved back:
+
+```sql
+SELECT * FROM get_feedback_by_status('in_progress');
+```
+
+If an item was previously `awaiting_review` and is now `in_progress`, the admin rejected the fix. Check comments for their feedback:
+
+```sql
+SELECT * FROM get_feedback_comments('<id>'::uuid);
+```
+
+Fix the issue and resolve again.
 
 ## Database Schema Reference
 
 **Table: `user_feedback`**
+
 | Column | Type | Notes |
 |--------|------|-------|
-| id | uuid | PK, auto-generated |
+| id | uuid | PK |
 | user_id | uuid | FK to auth.users |
 | username | text | Email or display name |
 | feedback_type | text | bug, feature, suggestion, other |
-| route | text | Page route where issue was found |
+| route | text | Page route |
 | description | text | User's description |
-| status | text | new, in_progress, awaiting_review, resolved, closed, wont_fix |
-| priority | text | low, medium, high, critical (default: medium) |
+| status | text | new, triaged, in_progress, awaiting_review, resolved, closed, wont_fix, split, deferred |
+| priority | text | low, medium, high, critical |
+| parent_id | uuid | FK self — for split sub-tasks |
 | admin_notes | text | Internal notes |
-| ai_assessment | text | Agent's analysis |
+| admin_direction | text | Admin's specific instructions for agent (read this before working) |
+| admin_decision | text | pending, approved, rejected, deferred, split |
+| work_priority | integer | Sort order (1 = do first) |
+| ai_assessment | text | Agent's analysis of the issue |
+| ai_solution_proposal | text | Agent's proposed approach |
+| ai_suggested_priority | text | Agent's recommended priority |
+| ai_complexity | text | simple, moderate, complex |
+| ai_estimated_files | text[] | Expected file changes |
 | autonomy_score | integer | 1-5 confidence score |
 | resolution_notes | text | What was done to fix it |
-| image_urls | text[] | Array of screenshot URLs |
+| testing_instructions | text | Step-by-step test guide for admin |
+| testing_url | text | Direct URL to test |
+| testing_result | text | pass, fail, partial (set by admin) |
+| image_urls | text[] | Screenshot URLs |
 | created_at | timestamptz | Submission time |
 | updated_at | timestamptz | Last update |
-| resolved_at | timestamptz | When fix was applied |
-| resolved_by | uuid | Who resolved it |
-| user_confirmed_at | timestamptz | When user confirmed fix |
+| resolved_at | timestamptz | When resolved |
+| resolved_by | uuid | Who resolved |
+| user_confirmed_at | timestamptz | User confirmation |
+
+**Table: `feedback_comments`**
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid | PK |
+| feedback_id | uuid | FK to user_feedback (CASCADE delete) |
+| author_type | text | user, admin, ai_agent |
+| author_name | text | Display name |
+| content | text | Comment body |
+| created_at | timestamptz | When posted |

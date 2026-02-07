@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FeedbackTable from './FeedbackTable';
+import WorkQueueTab from './WorkQueueTab';
 import AnnouncementTable from './AnnouncementTable';
 import CreateAnnouncementDialog from './CreateAnnouncementDialog';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare, Megaphone } from 'lucide-react';
+import { Plus, MessageSquare, Megaphone, ListOrdered } from 'lucide-react';
 
 export default function FeedbackManagementContainer() {
     const [isCreateAnnouncementOpen, setIsCreateAnnouncementOpen] = useState(false);
@@ -31,6 +32,10 @@ export default function FeedbackManagementContainer() {
                             <MessageSquare className="w-4 h-4" />
                             <span className="hidden sm:inline">Feedback</span>
                         </TabsTrigger>
+                        <TabsTrigger value="work-queue" className="gap-2">
+                            <ListOrdered className="w-4 h-4" />
+                            <span className="hidden sm:inline">Work Queue</span>
+                        </TabsTrigger>
                         <TabsTrigger value="announcements" className="gap-2">
                             <Megaphone className="w-4 h-4" />
                             <span className="hidden sm:inline">Announcements</span>
@@ -52,6 +57,10 @@ export default function FeedbackManagementContainer() {
                     <FeedbackTable />
                 </TabsContent>
 
+                <TabsContent value="work-queue" className="mt-0">
+                    <WorkQueueTab />
+                </TabsContent>
+
                 <TabsContent value="announcements" className="mt-0">
                     <AnnouncementTable key={announcementKey} />
                 </TabsContent>
@@ -68,4 +77,3 @@ export default function FeedbackManagementContainer() {
         </div>
     );
 }
-

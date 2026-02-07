@@ -6,6 +6,9 @@ import {
     UpdateFeedbackInput,
     UserFeedback,
     FeedbackStatus,
+    FeedbackComment,
+    AdminDecision,
+    TestingResult,
     CreateAnnouncementInput,
     UpdateAnnouncementInput,
     SystemAnnouncement,
@@ -138,6 +141,171 @@ export async function updateUserOwnFeedback(
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'An unexpected error occurred';
         console.error('Error in updateUserOwnFeedback:', error);
+        return { success: false, error: message };
+    }
+}
+
+// ============= TRIAGE & WORKFLOW ACTIONS =============
+
+/** Triage a feedback item (AI agent pushes analysis to DB) */
+export async function triageFeedbackItem(
+    feedbackId: string,
+    triage: {
+        ai_solution_proposal?: string;
+        ai_suggested_priority?: string;
+        ai_complexity?: string;
+        ai_estimated_files?: string[];
+        autonomy_score?: number;
+        ai_assessment?: string;
+    }
+): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('triage_feedback_item', {
+            p_id: feedbackId,
+            p_ai_solution_proposal: triage.ai_solution_proposal || null,
+            p_ai_suggested_priority: triage.ai_suggested_priority || null,
+            p_ai_complexity: triage.ai_complexity || null,
+            p_ai_estimated_files: triage.ai_estimated_files || null,
+            p_autonomy_score: triage.autonomy_score || null,
+            p_ai_assessment: triage.ai_assessment || null,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Get the agent work queue (approved items in priority order) */
+export async function getAgentWorkQueue(): Promise<{ success: boolean; error?: string; data?: UserFeedback[] }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('get_agent_work_queue');
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Get untriaged feedback items */
+export async function getUntriagedFeedback(): Promise<{ success: boolean; error?: string; data?: UserFeedback[] }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('get_untriaged_feedback');
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Set admin decision on a feedback item */
+export async function setAdminDecision(
+    feedbackId: string,
+    decision: AdminDecision,
+    direction?: string,
+    workPriority?: number
+): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('set_admin_decision', {
+            p_id: feedbackId,
+            p_decision: decision,
+            p_direction: direction || null,
+            p_work_priority: workPriority || null,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Split a feedback item into sub-tasks */
+export async function splitFeedbackItem(
+    parentId: string,
+    descriptions: string[]
+): Promise<{ success: boolean; error?: string; data?: UserFeedback[] }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('split_feedback_item', {
+            p_parent_id: parentId, p_descriptions: descriptions,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Add a comment to a feedback item */
+export async function addFeedbackComment(
+    feedbackId: string,
+    authorType: 'user' | 'admin' | 'ai_agent',
+    content: string,
+    authorName?: string
+): Promise<{ success: boolean; error?: string; data?: FeedbackComment }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        const name = authorName || user?.email || (authorType === 'ai_agent' ? 'AI Agent' : 'Unknown');
+        const { data, error } = await supabase.rpc('add_feedback_comment', {
+            p_feedback_id: feedbackId,
+            p_author_type: authorType,
+            p_author_name: name,
+            p_content: content,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Get all comments for a feedback item */
+export async function getFeedbackComments(
+    feedbackId: string
+): Promise<{ success: boolean; error?: string; data?: FeedbackComment[] }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('get_feedback_comments', {
+            p_feedback_id: feedbackId,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
+/** Resolve a feedback item with testing instructions */
+export async function resolveWithTesting(
+    feedbackId: string,
+    resolutionNotes: string,
+    testingInstructions?: string,
+    testingUrl?: string
+): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('resolve_with_testing', {
+            p_id: feedbackId,
+            p_resolution_notes: resolutionNotes,
+            p_testing_instructions: testingInstructions || null,
+            p_testing_url: testingUrl || null,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
         return { success: false, error: message };
     }
 }

@@ -182,34 +182,45 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     // Use directly passed tool updates if provided, otherwise fall back to Redux
     const toolUpdates = toolUpdatesProp !== undefined ? toolUpdatesProp : toolUpdatesFromRedux;
 
-    // Update internal content when prop changes - but prevent infinite loops
+    // Update internal content when prop changes
+    // IMPORTANT: Only depend on `content` — including `currentContent` creates an infinite
+    // re-render loop when table content or other processing triggers additional state updates.
     useEffect(() => {
         try {
-            if (content !== currentContent) {
-                setCurrentContent(content);
-            }
+            setCurrentContent(content);
         } catch (error) {
             console.error("[MarkdownStream] Error updating content:", error);
             setHasError(true);
         }
-    }, [content, currentContent]);
+    }, [content]);
 
     // Memoize the content splitting to avoid unnecessary re-processing
     // Skip expensive processing if we're in loading state
-    const blocks = useMemo(() => {
-        if (isWaitingForContent) return [];
+    // NOTE: Do NOT call setState (like setHasError) inside useMemo — it's a React anti-pattern
+    // that triggers re-renders during render, potentially causing infinite loops.
+    const { blocks, blockError } = useMemo(() => {
+        if (isWaitingForContent) return { blocks: [], blockError: false };
         
         try {
             const result = splitContentIntoBlocksV2(currentContent);
             
-            return Array.isArray(result) ? result : [];
+            return { blocks: Array.isArray(result) ? result : [], blockError: false };
         } catch (error) {
             console.error("[MarkdownStream] Error splitting content into blocks:", error);
-            setHasError(true);
             // Return a single text block with the original content as fallback
-            return [{ type: "text" as const, content: currentContent, startLine: 0, endLine: 0 }];
+            return { 
+                blocks: [{ type: "text" as const, content: currentContent, startLine: 0, endLine: 0 }], 
+                blockError: true 
+            };
         }
     }, [currentContent, isWaitingForContent, useV2Parser]);
+
+    // Handle block processing errors outside of useMemo to avoid setState during render
+    useEffect(() => {
+        if (blockError) {
+            setHasError(true);
+        }
+    }, [blockError]);
 
     // Find the index of the last reasoning block for animation purposes
     const lastReasoningBlockIndex = useMemo(() => {
