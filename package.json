@@ -16,7 +16,9 @@
     "analyze": "ANALYZE=true pnpm build",
     "analyze:win": "set ANALYZE=true && pnpm build",
     "migrate-content-blocks": "npx tsx scripts/migrate-content-blocks.ts",
-    "capture-errors": "NODE_OPTIONS='--max-old-space-size=8192' npx tsx capture_ts_errors.ts"
+    "capture-errors": "NODE_OPTIONS='--max-old-space-size=8192' npx tsx capture_ts_errors.ts",
+    "env:pull": "doppler secrets download --project ai-matrx-admin --config dev --no-file --format env > .env.local && echo '✓ Env updated from Doppler'",
+    "env:push": "doppler secrets upload --project ai-matrx-admin --config dev .env.local && echo '✓ Env pushed to Doppler'"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.52",
