@@ -1,0 +1,152 @@
+---
+description: Batch triage workflow - processes feedback items 3 at a time for efficiency. Use this instead of feedback-workflow.mdc when triaging new feedback items.
+alwaysApply: false
+---
+
+# Batch Triage Workflow
+
+This is a focused triage-only workflow that processes untriaged feedback items in batches of 3. It replaces **Step 1 (Triage)** from the main `feedback-workflow.mdc` rule. For all other steps (working the queue, resolving, etc.), use the main workflow rule.
+
+## Why Batches of 3
+
+Triaging requires reading user descriptions, viewing screenshots, researching code, and writing analysis. Processing 3 items at a time keeps context manageable and prevents quality degradation from trying to juggle too many items.
+
+## The One Command
+
+Run this single command to get your batch:
+
+```sql
+SELECT get_triage_batch(3);
+```
+
+This returns a JSON object with three sections:
+
+```json
+{
+  "batch": [ /* 3 full item objects - oldest first */ ],
+  "pipeline": {
+    "untriaged": 12,       /* total new items remaining */
+    "your_decision": 5,    /* triaged, awaiting admin */
+    "agent_working": 2,    /* approved, being fixed */
+    "test_results": 1,     /* awaiting admin testing */
+    "done": 45             /* resolved/closed */
+  },
+  "other_untriaged": [
+    /* brief preview of remaining items beyond the batch:
+       id, feedback_type, route, username, description_preview (120 chars),
+       has_images, has_admin_notes, created_at */
+  ]
+}
+```
+
+## Workflow
+
+### 1. Get Batch
+
+```sql
+SELECT get_triage_batch(3);
+```
+
+Read the response:
+- **`pipeline`**: Glance at counts for situational awareness. Note how many items are in each stage.
+- **`batch`**: These are your 3 items to triage now. Process them in order.
+- **`other_untriaged`**: Scan briefly for awareness. Don't analyze these yet — just note any patterns (e.g. "5 more bugs on /notes route" or "admin left notes on 2 items").
+
+### 2. Process Each Item in the Batch
+
+For each of the 3 items in `batch`:
+
+**a) Read the item**
+- `description`, `feedback_type`, `username`, and `route`
+- **Important:** The `route` field is where the user was when they clicked "Submit Feedback" — NOT necessarily where the bug occurs. Users often report bugs from a different page. Treat it as a weak hint. Determine the actual affected route/files from the description and your own code research.
+- Check `admin_notes` — admin may have added context before you saw this
+- Check for existing comments: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
+
+**b) View screenshots (if any)**
+- If `image_urls` is not null: `GET /api/admin/feedback/images?feedback_id=<uuid>`
+- Open signed URLs in browser
+
+**c) Research the code**
+- Use explore agents to find relevant files
+- Understand the root cause
+
+**d) Compute autonomy score (1-5)**
+
+| Factor | +1 if True |
+|--------|-----------|
+| From `arman@armansadeghi.com` (lead dev, trusted) | Yes |
+| Clearly a bug — app is objectively broken | Yes |
+| Not opinion-based — fix is objectively correct | Yes |
+| Zero risk of negative side effects | Yes |
+| Simple fix — CSS, typo, config, single-file | Yes |
+
+**e) Push triage to DB**
+
+```sql
+SELECT * FROM triage_feedback_item(
+  '<id>'::uuid,
+  'Proposed approach: ...',
+  'high',                          -- low/medium/high/critical
+  'moderate',                      -- simple/moderate/complex
+  ARRAY['path/to/file1.tsx'],
+  4,                               -- autonomy score
+  'Assessment: ...'
+);
+```
+
+**f) Auto-approve if score 4-5**
+
+```sql
+-- Only for score 4-5
+SELECT * FROM set_admin_decision('<id>'::uuid, 'approved', NULL, <next_priority>);
+SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
+  'Auto-approved: autonomy score 5/5. Clear bug, safe fix, no side effects.');
+```
+
+For score 0-3: triage only, wait for admin decision.
+
+### 3. Get Next Batch
+
+After triaging all 3, run the command again:
+
+```sql
+SELECT get_triage_batch(3);
+```
+
+If `batch` is empty, triage is complete. Report your summary.
+
+### 4. Summary
+
+After all batches are done, provide a brief chat summary:
+
+- Total items triaged in this session
+- How many auto-approved (score 4-5)
+- How many need admin decision
+- Any notable patterns or concerns
+- Current pipeline counts
+
+**All details are in the DB.** Don't reproduce full analyses in chat.
+
+## Quick Reference
+
+```sql
+-- Get batch of 3
+SELECT get_triage_batch(3);
+
+-- Triage an item
+SELECT * FROM triage_feedback_item('<id>'::uuid, 'proposal', 'priority', 'complexity',
+  ARRAY['files'], score, 'assessment');
+
+-- Auto-approve (score 4-5 only)
+SELECT * FROM set_admin_decision('<id>'::uuid, 'approved', NULL, <priority>);
+
+-- Add comment
+SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent', 'content');
+
+-- Check existing comments
+SELECT * FROM get_feedback_comments('<id>'::uuid);
+
+-- Check work queue priority (for auto-approve numbering)
+SELECT COALESCE(MAX(work_priority), 0) + 1 AS next_priority
+FROM user_feedback WHERE work_priority IS NOT NULL;
+```

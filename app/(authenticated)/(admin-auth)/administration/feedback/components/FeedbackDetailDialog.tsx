@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment } from '@/actions/feedback.actions';
+import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment, getFeedbackById } from '@/actions/feedback.actions';
 import {
     UserFeedback,
     FeedbackStatus,
@@ -98,19 +98,22 @@ const complexityConfig: Record<string, { label: string; color: string }> = {
 };
 
 export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onUpdate }: FeedbackDetailDialogProps) {
+    // Live local copy of the feedback item — updated from server responses
+    const [item, setItem] = useState<UserFeedback>(feedback);
+
     const [activeTab, setActiveTab] = useState('submission');
     const [isSaving, setIsSaving] = useState(false);
     const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
     const [isLoadingImages, setIsLoadingImages] = useState(false);
 
-    // Admin decision state
+    // Admin decision form state (editable fields)
     const [decision, setDecision] = useState<AdminDecision>(feedback.admin_decision || 'pending');
     const [direction, setDirection] = useState(feedback.admin_direction || '');
     const [workPriority, setWorkPriority] = useState<string>(
         feedback.work_priority !== null ? String(feedback.work_priority) : ''
     );
     const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
-    const [status, setStatus] = useState<FeedbackStatus>(feedback.status);
+    const [formStatus, setFormStatus] = useState<FeedbackStatus>(feedback.status);
 
     // Comments state
     const [comments, setComments] = useState<FeedbackComment[]>([]);
@@ -119,8 +122,23 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [isSendingComment, setIsSendingComment] = useState(false);
     const commentsEndRef = useRef<HTMLDivElement>(null);
 
-    // Testing state
-    const [testingResult, setTestingResult] = useState<TestingResult | null>(feedback.testing_result);
+    /** Apply fresh server data to both the live item and all form fields */
+    const applyFreshData = useCallback((fresh: UserFeedback) => {
+        setItem(fresh);
+        setDecision(fresh.admin_decision || 'pending');
+        setDirection(fresh.admin_direction || '');
+        setWorkPriority(fresh.work_priority !== null ? String(fresh.work_priority) : '');
+        setAdminNotes(fresh.admin_notes || '');
+        setFormStatus(fresh.status);
+    }, []);
+
+    /** Re-fetch the item from the server and update local state */
+    const refreshItem = useCallback(async () => {
+        const result = await getFeedbackById(item.id);
+        if (result.success && result.data) {
+            applyFreshData(result.data);
+        }
+    }, [item.id, applyFreshData]);
 
     const fetchSignedUrls = useCallback(async (feedbackId: string) => {
         setIsLoadingImages(true);
@@ -129,9 +147,9 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
             const data = await res.json();
             if (data.success && data.signed_urls) {
                 const urlMap: Record<string, string> = {};
-                for (const item of data.signed_urls) {
-                    if (item.signed_url) {
-                        urlMap[item.original_url] = item.signed_url;
+                for (const urlItem of data.signed_urls) {
+                    if (urlItem.signed_url) {
+                        urlMap[urlItem.original_url] = urlItem.signed_url;
                     }
                 }
                 setSignedUrls(urlMap);
@@ -146,7 +164,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const loadComments = useCallback(async () => {
         setIsLoadingComments(true);
         try {
-            const result = await getFeedbackComments(feedback.id);
+            const result = await getFeedbackComments(item.id);
             if (result.success && result.data) {
                 setComments(result.data);
             }
@@ -155,27 +173,27 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         } finally {
             setIsLoadingComments(false);
         }
-    }, [feedback.id]);
+    }, [item.id]);
 
-    // Reset state when feedback changes
+    // Sync from prop when a different item is opened or the parent provides fresher data
     useEffect(() => {
+        setItem(feedback);
         setDecision(feedback.admin_decision || 'pending');
         setDirection(feedback.admin_direction || '');
         setWorkPriority(feedback.work_priority !== null ? String(feedback.work_priority) : '');
         setAdminNotes(feedback.admin_notes || '');
-        setStatus(feedback.status);
-        setTestingResult(feedback.testing_result);
+        setFormStatus(feedback.status);
         setSignedUrls({});
         setComments([]);
         setNewComment('');
-    }, [feedback]);
+    }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
 
     // Fetch images when dialog opens
     useEffect(() => {
-        if (open && feedback.image_urls && feedback.image_urls.length > 0) {
-            fetchSignedUrls(feedback.id);
+        if (open && item.image_urls && item.image_urls.length > 0) {
+            fetchSignedUrls(item.id);
         }
-    }, [open, feedback.id, feedback.image_urls, fetchSignedUrls]);
+    }, [open, item.id, item.image_urls, fetchSignedUrls]);
 
     // Fetch comments when comments tab is selected
     useEffect(() => {
@@ -194,7 +212,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         try {
             // Save admin decision via RPC
             const decisionResult = await setAdminDecision(
-                feedback.id,
+                item.id,
                 decision,
                 direction || undefined,
                 workPriority ? parseInt(workPriority, 10) : undefined
@@ -208,15 +226,15 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
 
             // Save additional fields via updateFeedback
             const updates: Record<string, unknown> = {};
-            if (adminNotes !== (feedback.admin_notes || '')) {
+            if (adminNotes !== (item.admin_notes || '')) {
                 updates.admin_notes = adminNotes;
             }
-            if (status !== feedback.status) {
-                updates.status = status;
+            if (formStatus !== item.status) {
+                updates.status = formStatus;
             }
 
             if (Object.keys(updates).length > 0) {
-                const updateResult = await updateFeedback(feedback.id, updates);
+                const updateResult = await updateFeedback(item.id, updates);
                 if (!updateResult.success) {
                     toast.error(`Failed to save updates: ${updateResult.error}`);
                     setIsSaving(false);
@@ -224,8 +242,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 }
             }
 
+            // Always re-fetch to ensure modal shows true server state
+            await refreshItem();
             toast.success('Changes saved successfully');
-            onUpdate();
+            onUpdate(); // Refresh parent table in background
         } catch (error) {
             console.error('Error saving:', error);
             toast.error('An error occurred while saving');
@@ -238,7 +258,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         if (!newComment.trim()) return;
         setIsSendingComment(true);
         try {
-            const result = await addFeedbackComment(feedback.id, 'admin', newComment.trim());
+            const result = await addFeedbackComment(item.id, 'admin', newComment.trim());
             if (result.success) {
                 setNewComment('');
                 await loadComments();
@@ -256,19 +276,17 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const handleTestingResult = async (result: TestingResult) => {
         setIsSaving(true);
         try {
-            const newStatus: FeedbackStatus = result === 'pass' ? 'closed' : result === 'fail' ? 'in_progress' : feedback.status;
-            const updateResult = await updateFeedback(feedback.id, {
+            const newStatus: FeedbackStatus = result === 'pass' ? 'closed' : result === 'fail' ? 'in_progress' : item.status;
+            const updateResult = await updateFeedback(item.id, {
                 testing_result: result,
-                ...(newStatus !== feedback.status ? { status: newStatus } : {}),
+                ...(newStatus !== item.status ? { status: newStatus } : {}),
                 ...(result === 'pass' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing passed - closing item.` } : {}),
                 ...(result === 'fail' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing failed - reopening for fixes.` } : {}),
             });
 
             if (updateResult.success) {
-                setTestingResult(result);
-                if (newStatus !== feedback.status) {
-                    setStatus(newStatus);
-                }
+                // Re-fetch to show true server state in the modal
+                await refreshItem();
                 toast.success(
                     result === 'pass'
                         ? 'Marked as passed - item closed'
@@ -276,7 +294,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                         ? 'Marked as failed - reopened for fixes'
                         : 'Testing result saved'
                 );
-                onUpdate();
+                onUpdate(); // Refresh parent table in background
             } else {
                 toast.error(`Failed to save: ${updateResult.error}`);
             }
@@ -288,10 +306,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     };
 
-    const statusColors = FEEDBACK_STATUS_COLORS[feedback.status];
-    const hasAiAnalysis = !!(feedback.ai_solution_proposal || feedback.ai_assessment || feedback.ai_complexity);
-    const hasTesting = !!(feedback.testing_instructions || feedback.testing_url || feedback.resolution_notes);
-    const isResolved = ['resolved', 'awaiting_review', 'closed'].includes(feedback.status);
+    const statusColors = FEEDBACK_STATUS_COLORS[item.status];
+    const hasAiAnalysis = !!(item.ai_solution_proposal || item.ai_assessment || item.ai_complexity);
+    const hasTesting = !!(item.testing_instructions || item.testing_url || item.resolution_notes);
+    const isResolved = ['resolved', 'awaiting_review', 'closed'].includes(item.status);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -300,18 +318,18 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 <div className="px-6 pt-6 pb-4 border-b flex-shrink-0">
                     <DialogHeader>
                         <div className="flex items-center gap-3">
-                            {feedbackTypeIcons[feedback.feedback_type]}
+                            {feedbackTypeIcons[item.feedback_type]}
                             <div className="flex-1">
                                 <DialogTitle className="flex items-center gap-2">
-                                    {feedbackTypeLabels[feedback.feedback_type]}
+                                    {feedbackTypeLabels[item.feedback_type]}
                                     <Badge className={`${statusColors.bg} ${statusColors.text} border-0 text-xs ml-2`}>
-                                        {FEEDBACK_STATUS_LABELS[feedback.status]}
+                                        {FEEDBACK_STATUS_LABELS[item.status]}
                                     </Badge>
-                                    {feedback.admin_decision !== 'pending' && (
+                                    {item.admin_decision !== 'pending' && (
                                         <Badge
-                                            className={`${ADMIN_DECISION_COLORS[feedback.admin_decision].bg} ${ADMIN_DECISION_COLORS[feedback.admin_decision].text} border-0 text-xs`}
+                                            className={`${ADMIN_DECISION_COLORS[item.admin_decision].bg} ${ADMIN_DECISION_COLORS[item.admin_decision].text} border-0 text-xs`}
                                         >
-                                            {ADMIN_DECISION_LABELS[feedback.admin_decision]}
+                                            {ADMIN_DECISION_LABELS[item.admin_decision]}
                                         </Badge>
                                     )}
                                 </DialogTitle>
@@ -319,19 +337,19 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                     <span className="flex items-center gap-4 text-xs">
                                         <span className="flex items-center gap-1">
                                             <User className="w-3 h-3" />
-                                            {feedback.username || 'Anonymous'}
+                                            {item.username || 'Anonymous'}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <MapPin className="w-3 h-3" />
-                                            {feedback.route}
+                                            {item.route}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <Calendar className="w-3 h-3" />
-                                            {formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}
+                                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                                         </span>
-                                        {feedback.work_priority !== null && (
+                                        {item.work_priority !== null && (
                                             <span className="flex items-center gap-1 font-medium text-foreground">
-                                                Priority #{feedback.work_priority}
+                                                Priority #{item.work_priority}
                                             </span>
                                         )}
                                     </span>
@@ -384,7 +402,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         Description
                                     </label>
                                     <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap">
-                                        {feedback.description}
+                                        {item.description}
                                     </div>
                                 </div>
 
@@ -393,36 +411,36 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                     <div className="p-3 rounded-lg bg-muted/50 border">
                                         <div className="text-xs text-muted-foreground mb-1">Type</div>
                                         <div className="flex items-center gap-2 text-sm font-medium">
-                                            {feedbackTypeIcons[feedback.feedback_type]}
-                                            {feedbackTypeLabels[feedback.feedback_type]}
+                                            {feedbackTypeIcons[item.feedback_type]}
+                                            {feedbackTypeLabels[item.feedback_type]}
                                         </div>
                                     </div>
                                     <div className="p-3 rounded-lg bg-muted/50 border">
                                         <div className="text-xs text-muted-foreground mb-1">Priority</div>
                                         <div className="text-sm font-medium capitalize">
-                                            {feedback.priority}
+                                            {item.priority}
                                         </div>
                                     </div>
                                     <div className="p-3 rounded-lg bg-muted/50 border">
                                         <div className="text-xs text-muted-foreground mb-1">Route</div>
                                         <div className="text-sm font-medium font-mono">
-                                            {feedback.route}
+                                            {item.route}
                                         </div>
                                     </div>
                                     <div className="p-3 rounded-lg bg-muted/50 border">
                                         <div className="text-xs text-muted-foreground mb-1">Submitted</div>
                                         <div className="text-sm font-medium">
-                                            {format(new Date(feedback.created_at), 'MMM d, yyyy h:mm a')}
+                                            {format(new Date(item.created_at), 'MMM d, yyyy h:mm a')}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Screenshots */}
-                                {feedback.image_urls && feedback.image_urls.length > 0 && (
+                                {item.image_urls && item.image_urls.length > 0 && (
                                     <div>
                                         <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
                                             <ImageIcon className="w-4 h-4" />
-                                            Screenshots ({feedback.image_urls.length})
+                                            Screenshots ({item.image_urls.length})
                                         </label>
                                         {isLoadingImages ? (
                                             <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -431,7 +449,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                {feedback.image_urls.map((url, index) => {
+                                                {item.image_urls.map((url, index) => {
                                                     const resolvedUrl = signedUrls[url] || url;
                                                     return (
                                                         <a
@@ -459,18 +477,18 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 )}
 
                                 {/* Resolution Notes (if resolved) */}
-                                {feedback.resolution_notes && (
+                                {item.resolution_notes && (
                                     <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20">
                                         <div className="text-xs font-medium text-green-700 dark:text-green-400 mb-1.5 flex items-center gap-1.5">
                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                             Resolution Notes
                                         </div>
                                         <div className="text-sm whitespace-pre-wrap">
-                                            {feedback.resolution_notes}
+                                            {item.resolution_notes}
                                         </div>
-                                        {feedback.resolved_at && (
+                                        {item.resolved_at && (
                                             <div className="text-xs text-muted-foreground mt-2">
-                                                Resolved {formatDistanceToNow(new Date(feedback.resolved_at), { addSuffix: true })}
+                                                Resolved {formatDistanceToNow(new Date(item.resolved_at), { addSuffix: true })}
                                             </div>
                                         )}
                                     </div>
@@ -482,69 +500,69 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 {hasAiAnalysis ? (
                                     <>
                                         {/* AI Assessment */}
-                                        {feedback.ai_assessment && (
+                                        {item.ai_assessment && (
                                             <div>
                                                 <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                                                     AI Assessment
                                                 </label>
                                                 <div className="p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/20 text-sm whitespace-pre-wrap">
-                                                    {feedback.ai_assessment}
+                                                    {item.ai_assessment}
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Solution Proposal */}
-                                        {feedback.ai_solution_proposal && (
+                                        {item.ai_solution_proposal && (
                                             <div>
                                                 <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                                                     Solution Proposal
                                                 </label>
                                                 <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap">
-                                                    {feedback.ai_solution_proposal}
+                                                    {item.ai_solution_proposal}
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Analysis Metadata Grid */}
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            {feedback.ai_suggested_priority && (
+                                            {item.ai_suggested_priority && (
                                                 <div className="p-3 rounded-lg bg-muted/50 border">
                                                     <div className="text-xs text-muted-foreground mb-1">Suggested Priority</div>
                                                     <div className="text-sm font-medium capitalize">
-                                                        {feedback.ai_suggested_priority}
+                                                        {item.ai_suggested_priority}
                                                     </div>
                                                 </div>
                                             )}
-                                            {feedback.ai_complexity && (
+                                            {item.ai_complexity && (
                                                 <div className="p-3 rounded-lg bg-muted/50 border">
                                                     <div className="text-xs text-muted-foreground mb-1">Complexity</div>
-                                                    <Badge className={`${complexityConfig[feedback.ai_complexity]?.color || ''} border-0`}>
-                                                        {complexityConfig[feedback.ai_complexity]?.label || feedback.ai_complexity}
+                                                    <Badge className={`${complexityConfig[item.ai_complexity]?.color || ''} border-0`}>
+                                                        {complexityConfig[item.ai_complexity]?.label || item.ai_complexity}
                                                     </Badge>
                                                 </div>
                                             )}
-                                            {feedback.autonomy_score !== null && (
+                                            {item.autonomy_score !== null && (
                                                 <div className="p-3 rounded-lg bg-muted/50 border">
                                                     <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                                                         <Gauge className="w-3 h-3" />
                                                         Autonomy Score
                                                     </div>
                                                     <div className="text-sm font-medium">
-                                                        {feedback.autonomy_score} / 5
+                                                        {item.autonomy_score} / 5
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
 
                                         {/* Estimated Files */}
-                                        {feedback.ai_estimated_files && feedback.ai_estimated_files.length > 0 && (
+                                        {item.ai_estimated_files && item.ai_estimated_files.length > 0 && (
                                             <div>
                                                 <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
                                                     <FileCode className="w-4 h-4" />
-                                                    Estimated Files to Change ({feedback.ai_estimated_files.length})
+                                                    Estimated Files to Change ({item.ai_estimated_files.length})
                                                 </label>
                                                 <div className="space-y-1">
-                                                    {feedback.ai_estimated_files.map((file, index) => (
+                                                    {item.ai_estimated_files.map((file, index) => (
                                                         <div
                                                             key={index}
                                                             className="px-3 py-1.5 rounded bg-muted/50 border text-xs font-mono"
@@ -570,10 +588,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 {/* Status */}
                                 <div>
                                     <label className="text-sm font-medium mb-1.5 block">Status</label>
-                                    <Select value={status} onValueChange={(value) => setStatus(value as FeedbackStatus)}>
+                                    <Select value={formStatus} onValueChange={(value) => setFormStatus(value as FeedbackStatus)}>
                                         <SelectTrigger>
-                                            <Badge className={`${FEEDBACK_STATUS_COLORS[status]?.bg || ''} ${FEEDBACK_STATUS_COLORS[status]?.text || ''} border-0`}>
-                                                {FEEDBACK_STATUS_LABELS[status] || status}
+                                            <Badge className={`${FEEDBACK_STATUS_COLORS[formStatus]?.bg || ''} ${FEEDBACK_STATUS_COLORS[formStatus]?.text || ''} border-0`}>
+                                                {FEEDBACK_STATUS_LABELS[formStatus] || formStatus}
                                             </Badge>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -658,7 +676,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         size="sm"
                                         onClick={() => {
                                             setDecision('approved');
-                                            setStatus(feedback.status === 'triaged' ? 'in_progress' : feedback.status);
+                                            setFormStatus(item.status === 'triaged' ? 'in_progress' : item.status);
                                         }}
                                         className="gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
                                     >
@@ -670,7 +688,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         size="sm"
                                         onClick={() => {
                                             setDecision('rejected');
-                                            setStatus('wont_fix');
+                                            setFormStatus('wont_fix');
                                         }}
                                         className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
                                     >
@@ -682,7 +700,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         size="sm"
                                         onClick={() => {
                                             setDecision('deferred');
-                                            setStatus('deferred');
+                                            setFormStatus('deferred');
                                         }}
                                         className="gap-1.5 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
                                     >
@@ -791,43 +809,43 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 {hasTesting || isResolved ? (
                                     <>
                                         {/* Testing URL */}
-                                        {feedback.testing_url && (
+                                        {item.testing_url && (
                                             <div>
                                                 <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                                                     Testing URL
                                                 </label>
                                                 <a
-                                                    href={feedback.testing_url}
+                                                    href={item.testing_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20 transition-colors text-sm font-mono"
                                                 >
                                                     <ExternalLink className="w-4 h-4" />
-                                                    {feedback.testing_url}
+                                                    {item.testing_url}
                                                 </a>
                                             </div>
                                         )}
 
                                         {/* Testing Instructions */}
-                                        {feedback.testing_instructions && (
+                                        {item.testing_instructions && (
                                             <div>
                                                 <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                                                     Testing Instructions
                                                 </label>
                                                 <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap">
-                                                    {feedback.testing_instructions}
+                                                    {item.testing_instructions}
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Resolution Notes */}
-                                        {feedback.resolution_notes && (
+                                        {item.resolution_notes && (
                                             <div>
                                                 <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                                                     Resolution Notes
                                                 </label>
                                                 <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20 text-sm whitespace-pre-wrap">
-                                                    {feedback.resolution_notes}
+                                                    {item.resolution_notes}
                                                 </div>
                                             </div>
                                         )}
@@ -841,50 +859,50 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                             </label>
                                             <div className="flex gap-2">
                                                 <Button
-                                                    variant={testingResult === 'pass' ? 'default' : 'outline'}
+                                                    variant={item.testing_result === 'pass' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('pass')}
                                                     disabled={isSaving}
                                                     className={cn(
                                                         'gap-1.5',
-                                                        testingResult === 'pass' && 'bg-green-600 hover:bg-green-700'
+                                                        item.testing_result === 'pass' && 'bg-green-600 hover:bg-green-700'
                                                     )}
                                                 >
-                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                                     Pass
                                                 </Button>
                                                 <Button
-                                                    variant={testingResult === 'fail' ? 'default' : 'outline'}
+                                                    variant={item.testing_result === 'fail' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('fail')}
                                                     disabled={isSaving}
                                                     className={cn(
                                                         'gap-1.5',
-                                                        testingResult === 'fail' && 'bg-red-600 hover:bg-red-700'
+                                                        item.testing_result === 'fail' && 'bg-red-600 hover:bg-red-700'
                                                     )}
                                                 >
-                                                    <XCircle className="w-4 h-4" />
+                                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                                     Fail
                                                 </Button>
                                                 <Button
-                                                    variant={testingResult === 'partial' ? 'default' : 'outline'}
+                                                    variant={item.testing_result === 'partial' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('partial')}
                                                     disabled={isSaving}
                                                     className={cn(
                                                         'gap-1.5',
-                                                        testingResult === 'partial' && 'bg-yellow-600 hover:bg-yellow-700'
+                                                        item.testing_result === 'partial' && 'bg-yellow-600 hover:bg-yellow-700'
                                                     )}
                                                 >
-                                                    <MinusCircle className="w-4 h-4" />
+                                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <MinusCircle className="w-4 h-4" />}
                                                     Partial
                                                 </Button>
                                             </div>
-                                            {testingResult && (
+                                            {item.testing_result && (
                                                 <p className="text-xs text-muted-foreground mt-2">
-                                                    {testingResult === 'pass' && 'Item will be closed.'}
-                                                    {testingResult === 'fail' && 'Item will be reopened for further fixes.'}
-                                                    {testingResult === 'partial' && 'Partial pass recorded. Review for follow-up.'}
+                                                    {item.testing_result === 'pass' && 'Item closed successfully.'}
+                                                    {item.testing_result === 'fail' && 'Item reopened for further fixes.'}
+                                                    {item.testing_result === 'partial' && 'Partial pass recorded. Review for follow-up.'}
                                                 </p>
                                             )}
                                         </div>

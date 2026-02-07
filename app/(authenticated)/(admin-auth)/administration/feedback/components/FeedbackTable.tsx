@@ -245,6 +245,12 @@ export default function FeedbackTable() {
         const result = await getAllFeedback();
         if (result.success && result.data) {
             setFeedback(result.data);
+            // Keep selectedFeedback fresh from the reloaded list
+            setSelectedFeedback(prev => {
+                if (!prev) return prev;
+                const fresh = result.data!.find(f => f.id === prev.id);
+                return fresh ?? prev;
+            });
         }
         setLoading(false);
     };

@@ -119,7 +119,8 @@ SELECT * FROM get_untriaged_feedback();
 
 For each item:
 
-1. Read `description`, `route`, `feedback_type`, `username`, `image_urls`
+1. Read `description`, `feedback_type`, `username`, `image_urls`, and `route`
+   - **Important:** The `route` field is where the user happened to be when they clicked "Submit Feedback" — it is NOT necessarily where the bug occurs. Users often report bugs from a different page than where they saw the issue. Treat `route` as a weak hint, not a source of truth. Always determine the actual affected route/files from the description and your own code research.
 2. **Check for admin early-feedback** — the admin may have seen this item first and left context:
    - Read `admin_notes` field on the item (may contain admin's initial thoughts)
    - Check for existing comments: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
@@ -203,7 +204,7 @@ SELECT * FROM resolve_with_testing(
 This sets status to `awaiting_review`. The admin sees it in the **Test Results** pipeline stage with your testing instructions and a clickable URL.
 
 **Testing instructions must be specific enough that the admin can verify in under 60 seconds:**
-- Include the exact URL/route
+- Include the exact URL/route **where the fix can be verified** — this may differ from the `route` field on the item (which is just where the user was when they submitted, not necessarily where the bug is)
 - List exact steps to reproduce or verify
 - Describe what "fixed" looks like vs what "broken" looked like
 - Mention if multiple modes need testing (dark mode, mobile, etc.)
@@ -245,7 +246,7 @@ Fix the issue and resolve again.
 | user_id | uuid | FK to auth.users |
 | username | text | Email or display name |
 | feedback_type | text | bug, feature, suggestion, other |
-| route | text | Page route |
+| route | text | Page user was on when submitting (NOT necessarily where the bug is) |
 | description | text | User's description |
 | status | text | new, triaged, in_progress, awaiting_review, resolved, closed, wont_fix, split, deferred |
 | priority | text | low, medium, high, critical |

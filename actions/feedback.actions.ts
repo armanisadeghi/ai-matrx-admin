@@ -204,6 +204,44 @@ export async function getUntriagedFeedback(): Promise<{ success: boolean; error?
     }
 }
 
+/** Get a batch of untriaged items with pipeline context */
+export async function getTriageBatch(batchSize: number = 3): Promise<{
+    success: boolean;
+    error?: string;
+    data?: {
+        batch: UserFeedback[];
+        pipeline: {
+            untriaged: number;
+            your_decision: number;
+            agent_working: number;
+            test_results: number;
+            done: number;
+        };
+        other_untriaged: {
+            id: string;
+            feedback_type: string;
+            route: string;
+            username: string | null;
+            description_preview: string;
+            has_images: boolean;
+            has_admin_notes: boolean;
+            created_at: string;
+        }[];
+    };
+}> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('get_triage_batch', {
+            p_batch_size: batchSize,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
+    }
+}
+
 /** Set admin decision on a feedback item */
 export async function setAdminDecision(
     feedbackId: string,
@@ -372,8 +410,6 @@ export async function updateFeedback(
             updateData.user_confirmed_at = new Date().toISOString();
         }
 
-        console.log('Updating feedback:', feedbackId, 'with data:', updateData);
-
         const { data, error } = await supabase
             .from('user_feedback')
             .update(updateData)
@@ -386,11 +422,35 @@ export async function updateFeedback(
             return { success: false, error: error.message };
         }
 
-        console.log('Feedback updated successfully:', data);
         return { success: true, data };
     } catch (error: any) {
         console.error('Error in updateFeedback:', error);
         return { success: false, error: error.message || 'An unexpected error occurred' };
+    }
+}
+
+/**
+ * Fetch a single feedback item by ID (admin only)
+ */
+export async function getFeedbackById(
+    feedbackId: string
+): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'User not authenticated' };
+
+        const { data, error } = await supabase
+            .from('user_feedback')
+            .select('*')
+            .eq('id', feedbackId)
+            .single();
+
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message };
     }
 }
 
