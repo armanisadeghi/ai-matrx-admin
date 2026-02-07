@@ -283,7 +283,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       // Then load paginated data
       const offset = (page - 1) * pageLimit;
       const { data: paginatedData, error: paginatedError } = await supabase
-        .rpc('get_user_table_data_paginated', { 
+        .rpc('get_user_table_data_paginated_v2', { 
           p_table_id: tableId,
           p_limit: pageLimit,
           p_offset: offset,

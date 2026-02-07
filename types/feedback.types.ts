@@ -69,7 +69,8 @@ export interface UpdateFeedbackInput {
     ai_assessment?: string;
     autonomy_score?: number;
     resolution_notes?: string;
-    resolved_by?: string;
+    resolved_at?: string | null;
+    resolved_by?: string | null;
     admin_direction?: string;
     admin_decision?: AdminDecision;
     work_priority?: number;

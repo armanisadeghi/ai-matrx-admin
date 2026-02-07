@@ -27,6 +27,16 @@ The agent's terminal status is **`awaiting_review`**. That's it. Once you call `
 | Calling `close_feedback_item()` | This is an ADMIN-ONLY function |
 | Using raw SQL UPDATE on status to any "done" state | Bypasses the pipeline — admin never sees it |
 
+### Database-Level Enforcement (Trigger)
+
+A PostgreSQL trigger (`trg_enforce_testing_before_close`) **physically prevents** setting status to `closed` or `resolved` unless `testing_result` is set (Pass/Fail/Partial). This means:
+
+- Even if you try `UPDATE user_feedback SET status = 'closed'`, **the database will reject it** with an error.
+- The ONLY way an item reaches `closed`/`resolved` is through the admin UI's testing flow, which sets `testing_result` in the same transaction.
+- `wont_fix` and `deferred` are NOT affected by this trigger (those are admin decision flows that don't require testing).
+
+**If you see an error like** `"Cannot set status to closed without a testing_result"` — that means you tried to close an item, which you are not allowed to do. Use `resolve_with_testing()` instead, which correctly sets status to `awaiting_review`.
+
 ### Allowed Agent Status Transitions
 
 | From | To | How | When |
@@ -133,11 +143,12 @@ AGENT transitions:
   new → triaged                    (triage_feedback_item)
   in_progress → awaiting_review    (resolve_with_testing — agent's FINAL action)
 
-ADMIN-ONLY transitions:
-  awaiting_review → resolved       (admin verified fix works)
-  resolved → closed                (admin or user confirmed)
-  any → wont_fix                   (admin declines)
-  triaged → deferred               (admin defers)
+ADMIN-ONLY transitions (DB trigger enforces testing_result for closed/resolved):
+  awaiting_review → resolved       (admin verified fix works — requires testing_result)
+  awaiting_review → in_progress    (admin tested, FAILED or PARTIAL — sent back to agent)
+  resolved → closed                (admin or user confirmed — requires testing_result)
+  any → wont_fix                   (admin declines — NO testing required)
+  triaged → deferred               (admin defers — NO testing required)
   triaged → split                  (admin splits into sub-tasks)
 
 SYSTEM transitions:
@@ -146,7 +157,7 @@ SYSTEM transitions:
 
 - **new**: Submitted, agent hasn't analyzed
 - **triaged**: Agent analyzed, awaiting admin decision
-- **in_progress**: Admin approved, agent actively fixing
+- **in_progress**: Admin approved, agent actively fixing (OR sent back from failed/partial testing)
 - **awaiting_review**: Fix done, **admin needs to test** — this is the agent's LAST stop
 - **resolved**: **ADMIN ONLY** — admin verified fix works
 - **closed**: **ADMIN ONLY** — user confirmed or auto-closed
@@ -290,21 +301,53 @@ After processing a batch, give a **brief** summary in chat:
 
 **Do NOT reproduce testing checklists or resolution notes in chat** — they're in the DB. The admin reviews everything via the pipeline UI at `/administration/feedback`.
 
-## Step 5: Handle Failed Tests
+## Step 5: Handle Failed/Partial Tests (Rework Cycle)
 
-After the admin tests items, check for items that moved back:
+When the admin tests your fix and it fails or is only partially correct, the item is sent back to you:
+- Status changes from `awaiting_review` → `in_progress`
+- `testing_result` is set to `'fail'` or `'partial'`
+- The admin leaves comments explaining what's wrong or what still needs work
+
+**These items appear in your normal work queue** (`get_agent_work_queue()`). You MUST check for them every session because they are higher priority than new work — the admin is blocked waiting for your fix.
+
+### How to Identify Rework Items
 
 ```sql
-SELECT * FROM get_feedback_by_status('in_progress');
+-- Items returned from testing show up in the regular work queue
+SELECT * FROM get_agent_work_queue();
+
+-- To specifically find items sent back from testing:
+SELECT id, LEFT(description, 80), testing_result, work_priority
+FROM user_feedback
+WHERE admin_decision = 'approved'
+  AND status = 'in_progress'
+  AND testing_result IN ('fail', 'partial')
+ORDER BY work_priority ASC NULLS LAST;
 ```
 
-If an item was previously `awaiting_review` and is now `in_progress`, the admin rejected the fix. Check comments for their feedback:
+### How to Handle Rework Items
 
-```sql
-SELECT * FROM get_feedback_comments('<id>'::uuid);
-```
+1. **Read the admin's comments** — they explain exactly what failed or what's left to do:
+   ```sql
+   SELECT * FROM get_feedback_comments('<id>'::uuid);
+   ```
+2. **Read the previous `testing_result`** — `'fail'` means the fix didn't work at all; `'partial'` means some parts work but others don't
+3. **Fix the remaining issues**
+4. **Add a comment** acknowledging the failure and explaining what you changed:
+   ```sql
+   SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
+     'Acknowledged: [what the admin said was wrong]. Fixed by [what you changed]. Re-submitting for testing.');
+   ```
+5. **Re-submit with `resolve_with_testing()`** — this clears `testing_result` automatically and moves the item back to **Test Results** for fresh admin testing:
+   ```sql
+   SELECT * FROM resolve_with_testing('<id>'::uuid,
+     'Updated resolution notes...',
+     'Updated testing instructions...',
+     'http://localhost:3000/...'
+   );
+   ```
 
-Fix the issue and resolve again.
+**The rework cycle repeats** until the admin marks the item as Pass. Never skip the comment step — the admin needs to see that you understood their feedback before re-testing.
 
 ## Database Schema Reference
 

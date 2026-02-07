@@ -124,6 +124,11 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [isSendingComment, setIsSendingComment] = useState(false);
     const commentsEndRef = useRef<HTMLDivElement>(null);
 
+    // Testing feedback state — shown after clicking Fail/Partial
+    const [pendingTestResult, setPendingTestResult] = useState<'fail' | 'partial' | null>(null);
+    const [testFeedbackText, setTestFeedbackText] = useState('');
+    const [isSendingTestFeedback, setIsSendingTestFeedback] = useState(false);
+
     /** Apply fresh server data to both the live item and all form fields */
     const applyFreshData = useCallback((fresh: UserFeedback) => {
         setItem(fresh);
@@ -188,6 +193,8 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setSignedUrls({});
         setComments([]);
         setNewComment('');
+        setPendingTestResult(null);
+        setTestFeedbackText('');
     }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
 
     // Fetch images when dialog opens
@@ -276,41 +283,85 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     };
 
     const handleTestingResult = async (result: TestingResult) => {
-        setIsSaving(true);
+        if (result === 'pass') {
+            // Pass: save immediately and resolve
+            setIsSaving(true);
+            try {
+                const updateResult = await updateFeedback(item.id, {
+                    testing_result: 'pass',
+                    status: 'resolved' as FeedbackStatus,
+                    admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing passed - verified.`,
+                });
+                if (updateResult.success) {
+                    await refreshItem();
+                    toast.success('Marked as passed — verified');
+                    onUpdate();
+                } else {
+                    toast.error(`Failed to save: ${updateResult.error}`);
+                }
+            } catch (error) {
+                console.error('Error saving testing result:', error);
+                toast.error('Failed to save testing result');
+            } finally {
+                setIsSaving(false);
+            }
+        } else {
+            // Fail/Partial: save the status change immediately, then show feedback textarea
+            setIsSaving(true);
+            try {
+                const label = result === 'fail' ? 'FAILED' : 'PARTIAL';
+                const updateResult = await updateFeedback(item.id, {
+                    testing_result: result,
+                    status: 'in_progress' as FeedbackStatus,
+                    admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing ${label} - sent back to agent.`,
+                    resolved_at: null,
+                    resolved_by: null,
+                });
+                if (updateResult.success) {
+                    await refreshItem();
+                    setPendingTestResult(result as 'fail' | 'partial');
+                    setTestFeedbackText('');
+                    toast.success(result === 'fail'
+                        ? 'Marked as failed — provide feedback below'
+                        : 'Marked as partial — provide feedback below'
+                    );
+                    onUpdate();
+                } else {
+                    toast.error(`Failed to save: ${updateResult.error}`);
+                }
+            } catch (error) {
+                console.error('Error saving testing result:', error);
+                toast.error('Failed to save testing result');
+            } finally {
+                setIsSaving(false);
+            }
+        }
+    };
+
+    /** Send the structured test feedback comment to the agent */
+    const handleSendTestFeedback = async () => {
+        if (!testFeedbackText.trim() || !pendingTestResult) return;
+        setIsSendingTestFeedback(true);
         try {
-            // pass → resolved (admin verified), fail/partial → in_progress (agent reworks)
-            const newStatus: FeedbackStatus = result === 'pass' ? 'resolved' : 'in_progress';
-            const notePrefix = adminNotes ? adminNotes + '\n' : '';
-            const noteMap: Record<string, string> = {
-                pass: `${notePrefix}Testing passed - verified.`,
-                fail: `${notePrefix}Testing FAILED - sent back to agent for fixes.`,
-                partial: `${notePrefix}Testing PARTIAL - some issues fixed, others remain. Sent back to agent.`,
-            };
+            const header = pendingTestResult === 'fail'
+                ? '⛔ TEST FAILED — REQUIRES AGENT FIXES'
+                : '⚠️ TEST PARTIAL — REMAINING ISSUES';
 
-            const updateResult = await updateFeedback(item.id, {
-                testing_result: result,
-                status: newStatus,
-                admin_notes: noteMap[result],
-            });
+            const structuredComment = `${header}\n\n${testFeedbackText.trim()}\n\n---\nThe item has been sent back to your work queue (status: in_progress). Read the above carefully, fix the issues, and re-submit with resolve_with_testing().`;
 
-            if (updateResult.success) {
-                // Re-fetch to show true server state in the modal
-                await refreshItem();
-                const messages: Record<string, string> = {
-                    pass: 'Marked as passed — verified',
-                    fail: 'Marked as failed — sent back to agent',
-                    partial: 'Marked as partial — sent back to agent for remaining fixes',
-                };
-                toast.success(messages[result]);
-                onUpdate(); // Refresh parent table in background
+            const result = await addFeedbackComment(item.id, 'admin', structuredComment);
+            if (result.success) {
+                toast.success('Feedback sent to agent');
+                setPendingTestResult(null);
+                setTestFeedbackText('');
             } else {
-                toast.error(`Failed to save: ${updateResult.error}`);
+                toast.error(`Failed to send feedback: ${result.error}`);
             }
         } catch (error) {
-            console.error('Error saving testing result:', error);
-            toast.error('Failed to save testing result');
+            console.error('Error sending test feedback:', error);
+            toast.error('Failed to send feedback');
         } finally {
-            setIsSaving(false);
+            setIsSendingTestFeedback(false);
         }
     };
 
@@ -912,7 +963,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         <Separator />
 
                                         {/* Testing Result Buttons */}
-                                        <div>
+                                        <div className="space-y-3">
                                             <label className="text-sm font-medium mb-2 block">
                                                 Testing Result
                                             </label>
@@ -921,48 +972,120 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     variant={item.testing_result === 'pass' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('pass')}
-                                                    disabled={isSaving}
+                                                    disabled={isSaving || !!pendingTestResult}
                                                     className={cn(
                                                         'gap-1.5',
                                                         item.testing_result === 'pass' && 'bg-green-600 hover:bg-green-700'
                                                     )}
                                                 >
-                                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                                    {isSaving && !pendingTestResult ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                                     Pass
                                                 </Button>
                                                 <Button
-                                                    variant={item.testing_result === 'fail' ? 'default' : 'outline'}
+                                                    variant={pendingTestResult === 'fail' || item.testing_result === 'fail' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('fail')}
-                                                    disabled={isSaving}
+                                                    disabled={isSaving || !!pendingTestResult}
                                                     className={cn(
                                                         'gap-1.5',
-                                                        item.testing_result === 'fail' && 'bg-red-600 hover:bg-red-700'
+                                                        (pendingTestResult === 'fail' || item.testing_result === 'fail') && 'bg-red-600 hover:bg-red-700'
                                                     )}
                                                 >
-                                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                                    {isSaving && !pendingTestResult ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                                     Fail
                                                 </Button>
                                                 <Button
-                                                    variant={item.testing_result === 'partial' ? 'default' : 'outline'}
+                                                    variant={pendingTestResult === 'partial' || item.testing_result === 'partial' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('partial')}
-                                                    disabled={isSaving}
+                                                    disabled={isSaving || !!pendingTestResult}
                                                     className={cn(
                                                         'gap-1.5',
-                                                        item.testing_result === 'partial' && 'bg-yellow-600 hover:bg-yellow-700'
+                                                        (pendingTestResult === 'partial' || item.testing_result === 'partial') && 'bg-yellow-600 hover:bg-yellow-700'
                                                     )}
                                                 >
-                                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <MinusCircle className="w-4 h-4" />}
+                                                    {isSaving && !pendingTestResult ? <Loader2 className="w-4 h-4 animate-spin" /> : <MinusCircle className="w-4 h-4" />}
                                                     Partial
                                                 </Button>
                                             </div>
-                                            {item.testing_result && (
-                                                <p className="text-xs text-muted-foreground mt-2">
+
+                                            {/* Status confirmation (shown after result saved, no pending feedback) */}
+                                            {item.testing_result && !pendingTestResult && (
+                                                <p className="text-xs text-muted-foreground">
                                                     {item.testing_result === 'pass' && 'Verified — moved to Done.'}
                                                     {item.testing_result === 'fail' && 'Sent back to agent for fixes.'}
                                                     {item.testing_result === 'partial' && 'Sent back to agent for remaining fixes.'}
                                                 </p>
+                                            )}
+
+                                            {/* Feedback textarea — appears after clicking Fail or Partial */}
+                                            {pendingTestResult && (
+                                                <div className={cn(
+                                                    'rounded-lg border p-4 space-y-3',
+                                                    pendingTestResult === 'fail'
+                                                        ? 'bg-red-500/5 border-red-500/20'
+                                                        : 'bg-yellow-500/5 border-yellow-500/20'
+                                                )}>
+                                                    <div className="flex items-center gap-2">
+                                                        {pendingTestResult === 'fail'
+                                                            ? <XCircle className="w-4 h-4 text-red-500" />
+                                                            : <MinusCircle className="w-4 h-4 text-yellow-500" />
+                                                        }
+                                                        <span className={cn(
+                                                            'text-sm font-semibold',
+                                                            pendingTestResult === 'fail' ? 'text-red-700 dark:text-red-400' : 'text-yellow-700 dark:text-yellow-400'
+                                                        )}>
+                                                            {pendingTestResult === 'fail'
+                                                                ? 'What failed? Describe what the agent needs to fix.'
+                                                                : 'What still needs work? Describe the remaining issues.'
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <Textarea
+                                                        value={testFeedbackText}
+                                                        onChange={(e) => setTestFeedbackText(e.target.value)}
+                                                        placeholder={pendingTestResult === 'fail'
+                                                            ? 'e.g. The fix didn\'t work — the button still doesn\'t respond when clicked. Also, the loading state is missing...'
+                                                            : 'e.g. The main issue is fixed, but there\'s still a layout shift when the modal opens. Also need to handle the empty state...'
+                                                        }
+                                                        className="min-h-[100px] text-sm"
+                                                    />
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-xs text-muted-foreground">
+                                                            This will be posted as a structured comment the agent sees first.
+                                                        </p>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setPendingTestResult(null);
+                                                                    setTestFeedbackText('');
+                                                                }}
+                                                                disabled={isSendingTestFeedback}
+                                                            >
+                                                                Skip
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={handleSendTestFeedback}
+                                                                disabled={!testFeedbackText.trim() || isSendingTestFeedback}
+                                                                className={cn(
+                                                                    'gap-1.5',
+                                                                    pendingTestResult === 'fail'
+                                                                        ? 'bg-red-600 hover:bg-red-700'
+                                                                        : 'bg-yellow-600 hover:bg-yellow-700'
+                                                                )}
+                                                            >
+                                                                {isSendingTestFeedback
+                                                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    : <Send className="w-4 h-4" />
+                                                                }
+                                                                Send Feedback to Agent
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     </>

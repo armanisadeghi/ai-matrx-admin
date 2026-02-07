@@ -22,6 +22,8 @@ Agents have a strict, limited role in the feedback pipeline:
 
 The agent's terminal status is **`awaiting_review`**. Once you call `resolve_with_testing()`, you are DONE. The admin tests it and decides what happens next. Only the admin can move items to "Done".
 
+**Database enforcement:** A PostgreSQL trigger (`trg_enforce_testing_before_close`) physically prevents setting status to `closed` or `resolved` without `testing_result` being set. Even if you try, the database will reject it. This is a hard guardrail — there is no way around it. Use `resolve_with_testing()` which correctly sets `awaiting_review`.
+
 ## Why Batches of 3
 
 Triaging requires reading user descriptions, viewing screenshots, researching code, and writing analysis. Processing 3 items at a time keeps context manageable and prevents quality degradation from trying to juggle too many items.
@@ -154,6 +156,21 @@ After all batches are done, provide a brief chat summary:
 
 **All details are in the DB.** Don't reproduce full analyses in chat.
 
+## Rework Items (Failed/Partial Tests)
+
+Before starting a new triage batch, always check for items the admin sent back from testing — these are **higher priority** than new triage work:
+
+```sql
+-- Items returned from testing (fail or partial)
+SELECT id, LEFT(description, 80), testing_result, work_priority
+FROM user_feedback
+WHERE admin_decision = 'approved' AND status = 'in_progress'
+  AND testing_result IN ('fail', 'partial')
+ORDER BY work_priority ASC NULLS LAST;
+```
+
+If any exist: read the admin's comments (`get_feedback_comments`), fix the issues, add a comment acknowledging the failure and explaining your changes, then re-submit with `resolve_with_testing()`. This clears `testing_result` and sends the item back to the admin's **Test Results** stage.
+
 ## Quick Reference
 
 ```sql
@@ -183,4 +200,5 @@ SELECT * FROM resolve_with_testing('<id>'::uuid, 'what was fixed', 'test steps',
 
 -- NEVER call close_feedback_item() — that is ADMIN-ONLY
 -- NEVER set status to resolved/closed/wont_fix/deferred — ADMIN-ONLY
+-- DB TRIGGER will reject any attempt to set closed/resolved without testing_result
 ```

@@ -266,9 +266,13 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                 align="end" 
                 className="w-[400px] p-0"
                 onInteractOutside={(e) => {
-                    // Prevent closing when clicking inside
-                    if (isSubmitting || submitted) {
+                    // Only prevent closing while actively submitting
+                    if (isSubmitting) {
                         e.preventDefault();
+                    } else if (submitted) {
+                        // Clicking outside the success confirmation closes it and resets state
+                        setSubmitted(false);
+                        setFeedbackStats(null);
                     }
                 }}
             >
