@@ -429,13 +429,13 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                         <div className="flex items-center gap-2">
                           <Wand2 className="w-4 h-4 text-primary shrink-0" />
                           <Link
-                            href={`/ai/prompts/edit-redux/${app.prompt_id}`}
+                            href={`/ai/prompts/edit/${app.prompt_id}`}
                             className="text-sm font-medium text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors"
                           >
                             {promptName || 'Loading prompt...'}
                           </Link>
                           <Link
-                            href={`/ai/prompts/edit-redux/${app.prompt_id}`}
+                            href={`/ai/prompts/edit/${app.prompt_id}`}
                             className="shrink-0"
                           >
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 cursor-pointer hover:bg-primary/10 transition-colors">
