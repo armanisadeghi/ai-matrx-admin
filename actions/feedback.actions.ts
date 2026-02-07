@@ -5,6 +5,7 @@ import {
     CreateFeedbackInput,
     UpdateFeedbackInput,
     UserFeedback,
+    FeedbackStatus,
     CreateAnnouncementInput,
     UpdateAnnouncementInput,
     SystemAnnouncement,
@@ -83,6 +84,64 @@ export async function getUserFeedback(): Promise<{ success: boolean; error?: str
     }
 }
 
+/**
+ * Update user's own feedback (only allowed when status is 'new')
+ */
+export async function updateUserOwnFeedback(
+    feedbackId: string,
+    updates: { description?: string; feedback_type?: 'bug' | 'feature' | 'suggestion' | 'other' }
+): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        // First verify ownership and status
+        const { data: existing, error: fetchError } = await supabase
+            .from('user_feedback')
+            .select('id, user_id, status')
+            .eq('id', feedbackId)
+            .single();
+
+        if (fetchError || !existing) {
+            return { success: false, error: 'Feedback item not found' };
+        }
+
+        if (existing.user_id !== user.id) {
+            return { success: false, error: 'You can only edit your own feedback' };
+        }
+
+        if (existing.status !== 'new') {
+            return { success: false, error: 'Can only edit feedback that hasn\'t been picked up yet' };
+        }
+
+        const { data, error } = await supabase
+            .from('user_feedback')
+            .update({
+                ...updates,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', feedbackId)
+            .eq('user_id', user.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating own feedback:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error in updateUserOwnFeedback:', error);
+        return { success: false, error: message };
+    }
+}
+
 // ============= ADMIN FEEDBACK ACTIONS =============
 
 /**
@@ -129,15 +188,20 @@ export async function updateFeedback(
             return { success: false, error: 'User not authenticated' };
         }
 
-        const updateData: any = {
+        const updateData: Record<string, unknown> = {
             ...updates,
             updated_at: new Date().toISOString(),
         };
 
-        // If marking as resolved, set resolved_at and resolved_by
+        // If marking as resolved or closed, set resolved_at and resolved_by
         if (updates.status === 'resolved' || updates.status === 'closed') {
             updateData.resolved_at = new Date().toISOString();
             updateData.resolved_by = user.id;
+        }
+
+        // If user confirms (closed), set user_confirmed_at
+        if (updates.status === 'closed') {
+            updateData.user_confirmed_at = new Date().toISOString();
         }
 
         console.log('Updating feedback:', feedbackId, 'with data:', updateData);
@@ -159,6 +223,94 @@ export async function updateFeedback(
     } catch (error: any) {
         console.error('Error in updateFeedback:', error);
         return { success: false, error: error.message || 'An unexpected error occurred' };
+    }
+}
+
+/**
+ * Get feedback items by status (admin only)
+ */
+export async function getFeedbackByStatus(status: FeedbackStatus): Promise<{ success: boolean; error?: string; data?: UserFeedback[] }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        const { data, error } = await supabase
+            .rpc('get_feedback_by_status', { p_status: status });
+
+        if (error) {
+            console.error('Error fetching feedback by status:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data: data || [] };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error in getFeedbackByStatus:', error);
+        return { success: false, error: message };
+    }
+}
+
+/**
+ * Get feedback summary counts (admin only)
+ */
+export async function getFeedbackSummary(): Promise<{ success: boolean; error?: string; data?: Record<string, unknown> }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        const { data, error } = await supabase
+            .rpc('get_feedback_summary');
+
+        if (error) {
+            console.error('Error fetching feedback summary:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error in getFeedbackSummary:', error);
+        return { success: false, error: message };
+    }
+}
+
+/**
+ * User confirms a resolved feedback item (marks as closed)
+ */
+export async function confirmFeedbackResolution(feedbackId: string): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        const { data, error } = await supabase
+            .rpc('close_feedback_item', {
+                p_id: feedbackId,
+                p_status: 'closed',
+                p_admin_notes: 'Confirmed by user',
+            });
+
+        if (error) {
+            console.error('Error confirming feedback:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error in confirmFeedbackResolution:', error);
+        return { success: false, error: message };
     }
 }
 

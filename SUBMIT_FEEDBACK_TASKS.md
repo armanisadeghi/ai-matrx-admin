@@ -1,327 +1,313 @@
 # User Feedback Tasks
 
-> **Workflow:** Check items to approve → I fix them → You verify → Check "Tested" → I update DB and remove item
+> **Source of truth:** Supabase `user_feedback` table (queried via MCP)
+> **Last synced:** 2026-02-07
+> **Summary:** 18 total | 14 new | 1 in_progress | 1 resolved | 1 closed | 2 wont_fix
+
+## Workflow
+
+1. Review items below and check **Approve** for items you want fixed
+2. I fix approved items (auto-fix for score 4-5, ask first for lower)
+3. You test and check **Tested**
+4. I update DB status and remove from this list
 
 ---
 
-## Pending Feedback Items
+## NEW Items (14)
 
-### 1. Notes App Bottom Padding
+### 1. Prompt Builder Editor Auto-Scrolling Bug
+| Field | Value |
+|-------|-------|
+| **ID** | `0cbf8e6f-3416-48bf-8fc5-6c1c66007812` |
+| **Type** | Bug | **Priority** | Medium |
+| **Route** | `/ai/prompts/edit/...` |
+| **User** | arman@armansadeghi.com |
+| **Date** | 2026-02-07 |
+| **Autonomy Score** | 3/5 (Arman +1, clearly a bug +1, not opinion +1, but complex fix with risk 0, not simple 0) |
+
+**Description:** When typing in the system prompt editor (which is typically 3-6 pages of text), the UI auto-scrolls to the top of the system prompt instead of staying where the user is typing. Every few characters cause 3-4 pages of unwanted scrolling. Related to save behavior, refreshes, or scroll restoration.
+
+**Research:** Start at `app/(authenticated)/ai/prompts/edit/[id]/page.tsx`. The scrolling container holds model selection, settings, variables, system prompt, and messages. The issue is likely `scrollIntoView` or focus restoration triggered during auto-save.
+
+- [ ] **Approve** | - [ ] **Tested**
+
+---
+
+### 2. Token Management - Session Expired Prematurely
+| Field | Value |
+|-------|-------|
+| **ID** | `fd392160-85f0-42f0-879c-d93dfd678737` |
+| **Type** | Bug | **Priority** | Medium |
+| **Route** | `/ai/prompts/edit/...` |
+| **User** | arman@armansadeghi.com |
+| **Date** | 2026-02-07 |
+| **Autonomy Score** | 2/5 (Arman +1, clearly a bug +1, but auth is high-risk 0, not simple 0, needs design discussion 0) |
+
+**Description:** Sessions are expiring before the weekly Supabase limit. Error: `Invalid Refresh Token: Session Expired (Revoked by Newer Login)`. The token management system should silently refresh for valid users instead of logging them out.
+
+**Research:** Check Supabase auth config, token refresh logic, and whether multiple tabs/devices are revoking each other's sessions. This is an auth infrastructure issue requiring careful investigation.
+
+- [ ] **Approve** | - [ ] **Tested**
+
+---
+
+### 3. Bug Reporter - Allow Multiple Image Attachments
+| Field | Value |
+|-------|-------|
+| **ID** | `12ddfc4e-2187-4467-a76f-967b798a3dea` |
+| **Type** | Bug | **Priority** | Medium |
+| **Route** | `/ai/prompts/edit/...` |
+| **User** | arman@armansadeghi.com |
+| **Date** | 2026-02-07 |
+| **Autonomy Score** | 4/5 (Arman +1, bug +1, not opinion +1, low risk +1, moderately simple 0) |
+
+**Description:** The feedback/bug submission system should allow attaching/pasting more than one image without making the UI more complex. Currently limited to a single image.
+
+**Research:** `components/layout/FeedbackButton.tsx` -- uses `FileUploadWithStorage`. The `image_urls` column is already an array. Need to allow multiple uploads in sequence with a minimal UI addition (e.g., small "+" button after first image).
+
+- [ ] **Approve** | - [ ] **Tested**
+
+---
+
+### 4. Notes App Bottom Padding
 | Field | Value |
 |-------|-------|
 | **ID** | `8ca13bc1-aac5-45b7-971b-b5c9427c4741` |
-| **Type** | Feature |
+| **Type** | Feature | **Priority** | Medium |
 | **Route** | `/notes` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-04 |
+| **Autonomy Score** | 5/5 (Arman +1, clear UX issue +1, not opinion +1, zero risk +1, simple CSS +1) |
 
-**Description:**
-> The notes app needs to have padding at the bottom of individual notes to allow us to scroll past it so the last sentence is not stuck to the bottom of the page
+**Description:** Notes app needs padding at the bottom of individual notes so the last sentence isn't stuck to the bottom of the page.
 
-**Research Context:**
-- **Files to modify:**
-  - `features/notes/components/mobile/MobileNoteEditor.tsx` (lines 233, 272) - Add `pb-safe` to scrollable content and sticky save button
-  - `features/notes/components/NoteEditor.tsx` (line 600) - Add `pb-safe` to preview mode content wrapper
-- **Fix:** Add `pb-safe` class for iOS safe area support and additional bottom padding
+**Research:**
+- `features/notes/components/mobile/MobileNoteEditor.tsx` (lines 233, 272) - Add `pb-safe` / extra padding
+- `features/notes/components/NoteEditor.tsx` (line 600) - Add bottom padding to preview mode
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 2. Centralize Contacts List for Sharing
+### 5. Centralize Contacts List for Sharing
 | Field | Value |
 |-------|-------|
 | **ID** | `dae0f40e-3d9b-45cb-875e-87b9dce818f0` |
-| **Type** | Feature |
+| **Type** | Feature | **Priority** | Medium |
 | **Route** | `/ai/prompts` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 2/5 (Arman +1, not opinion +1, but architecture decision 0, moderate risk 0, not simple 0) |
 
-**Description:**
-> When sharing a prompt, even though the system has a list of my 'contacts' it's not showing them to me so we need to take the email system's list creation logic and centralize it so we have it everywhere
+**Description:** When sharing a prompt, the contact list from the email system isn't available. Need to centralize user lookup logic so contacts are available everywhere (sharing, email, messaging).
 
-**Research Context:**
-- **Email system location:** `/app/(authenticated)/admin/email/page.tsx` - Has user selection UI
-- **Prompt sharing:** `/features/sharing/components/tabs/ShareWithUserTab.tsx` - Uses `lookup_user_by_email` RPC
-- **RPC functions used:** `lookup_user_by_email`, `get_user_emails_by_ids`
-- **Fix:** Create centralized user lookup service/utility that wraps these RPC calls. Add a contact selection component reusable across email, sharing, messaging.
+**Research:** Email system at `/app/(authenticated)/admin/email/page.tsx`. Sharing at `/features/sharing/components/tabs/ShareWithUserTab.tsx`. Both use `lookup_user_by_email` and `get_user_emails_by_ids` RPCs independently. Need a shared service/hook.
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 3. RLS Error When Sharing Prompt with Organization
+### 6. RLS Error Sharing Prompt with Organization
 | Field | Value |
 |-------|-------|
 | **ID** | `ac389b5c-d768-495b-a55a-2a76d675711e` |
-| **Type** | Feature |
+| **Type** | Feature | **Priority** | Medium |
 | **Route** | `/ai/prompts` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
-| **Screenshot** | Yes (1 image) |
+| **Screenshots** | 1 image |
+| **Autonomy Score** | 3/5 (Arman +1, clearly a bug +1, not opinion +1, but DB/RLS risk 0, not simple 0) |
 
-**Description:**
-> When trying to share a prompt with an organization, we get a "row level security policy error" for table: "Permissions"
+**Description:** "Row level security policy error" for table "Permissions" when sharing a prompt with an organization.
 
-**Research Context:**
-- **Core file:** `utils/permissions/service.ts` - `shareWithOrg()` function (lines 140-204)
-- **Issue:** Direct insert to `permissions` table (lines 169-179) without organization membership verification
-- **Root cause:** RLS policy likely requires:
-  1. User is member of the organization, OR
-  2. User owns the resource being shared
-- **Fix options:**
-  1. Add membership verification before insert
-  2. Create `share_resource_with_organization()` SECURITY DEFINER RPC function (similar to user sharing)
-  3. Review/update RLS policies on `permissions` table
+**Research:** `utils/permissions/service.ts` - `shareWithOrg()` (lines 140-204) inserts directly into `permissions` table without org membership verification. Need SECURITY DEFINER RPC function or RLS policy update.
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 4. Add Screenshot Capture to Bug Reporter
+### 7. Add Screenshot Paste/Capture to Bug Reporter
 | Field | Value |
 |-------|-------|
 | **ID** | `ff39b841-293f-4b2a-ac21-390c906554d0` |
-| **Type** | Feature |
+| **Type** | Feature | **Priority** | Medium |
 | **Route** | `/ai/prompts` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 4/5 (Arman +1, not opinion +1, zero risk +1, existing hook available +1, moderately complex 0) |
 
-**Description:**
-> This bug tool needs to allow pasting a screenshot or even add a feature to take an automated screenshot since we've already built that.
+**Description:** The bug reporting tool needs clipboard paste support for screenshots and an automated screenshot capture button.
 
-**Research Context:**
-- **Bug reporter:** `components/layout/FeedbackButton.tsx` - Currently uses manual file upload only
-- **Existing screenshot hook:** `hooks/useScreenshot.ts` - Production-ready, uses `html2canvas`
-  - Returns `fullSize`, `compressed`, `thumbnail` formats
-  - Includes metadata (timestamp, viewport, pathname)
-- **Fix:** 
-  1. Import `useScreenshot` hook into `FeedbackButton`
-  2. Add "Capture Screenshot" button that calls `captureScreen()`
-  3. Add paste handler for clipboard images (`Ctrl+V`)
-  4. Convert base64 to blob and upload to Supabase storage
+**Research:**
+- `components/layout/FeedbackButton.tsx` - Currently manual upload only
+- `hooks/useScreenshot.ts` - Production-ready, uses html2canvas, returns fullSize/compressed/thumbnail
+- Add paste handler (Ctrl+V) and "Capture" button using existing hook
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 5. Show Prompt Info in Prompt-App View
+### 8. Show Prompt Info in Prompt-App View
 | Field | Value |
 |-------|-------|
 | **ID** | `f46cb12a-7782-48ff-a394-b30584372def` |
-| **Type** | Feature |
-| **Route** | `/prompt-apps/a093eb0a-742d-4b77-96b7-029ab76b7011` |
+| **Type** | Feature | **Priority** | Medium |
+| **Route** | `/prompt-apps/...` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 4/5 (Arman +1, not opinion +1, zero risk +1, simple addition +1, but needs data fetch 0) |
 
-**Description:**
-> When inside of a prompt-app, since we know what prompt drives it, it would be nice to clearly see that and also offer a link that takes you to prompt builder for that prompt
+**Description:** When inside a prompt-app, show which prompt drives it and offer a link to the prompt builder.
 
-**Research Context:**
-- **Page:** `app/(authenticated)/prompt-apps/[id]/page.tsx` - Server component
-- **Editor:** `features/prompt-apps/components/PromptAppEditor.tsx` - Client component
-- **Type:** `PromptApp` has `prompt_id: string` field
-- **Prompt builder routes:** `/ai/prompts/edit-redux/[id]` (new) or `/ai/prompts/edit/[id]` (legacy)
-- **Fix:** 
-  1. Fetch prompt name in server component or client-side using `prompt_id`
-  2. Add prompt info section in "Basic Information" tab (around line 403)
-  3. Include link to prompt builder: `/ai/prompts/edit-redux/${app.prompt_id}`
+**Research:**
+- `features/prompt-apps/components/PromptAppEditor.tsx` - Has `app.prompt_id`
+- Add prompt name display and link to `/ai/prompts/edit-redux/${app.prompt_id}` in "Basic Information" tab
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 6. Data Download Missing Records & Wrong Sort
+### 9. Data Download Missing Records & Wrong Sort
 | Field | Value |
 |-------|-------|
 | **ID** | `6b249e3c-617c-4dd3-ab63-6284e41aaa04` |
-| **Type** | Bug |
-| **Route** | `/data/f692c065-6f50-488a-8ffd-e5f89ee651b6` |
+| **Type** | Bug | **Priority** | Medium |
+| **Route** | `/data/...` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 3/5 (Arman +1, clearly a bug +1, not opinion +1, moderate complexity 0, some risk 0) |
 
-**Description:**
-> The data download/copy isn't getting everything. Maybe a pagination problem. Also, it's not getting the same sort as the one you actively have.
+**Description:** Data download/copy isn't getting all records (pagination issue) and doesn't respect the active sort.
 
-**Research Context:**
-- **Export modal:** `components/user-generated-table-data/ExportTableModal.tsx`
-- **Table viewer:** `components/user-generated-table-data/UserTableViewer.tsx` - Has `sortField`, `sortDirection`, pagination state
-- **Toolbar:** `components/user-generated-table-data/TableToolbar.tsx` - Only passes `tableId`, `tableName` to export modal
-- **Root cause:**
-  1. Export modal doesn't receive sort/pagination state
-  2. DB functions `export_user_table_as_csv` and `get_user_table_complete` ignore sort
-  3. `get_user_table_data_paginated` supports sorting but isn't used for exports
-- **Fix:**
-  1. Pass sort state from `UserTableViewer` → `TableToolbar` → `ExportTableModal`
-  2. Use `get_user_table_data_paginated` with large limit + current sort for export
-  3. Convert fetched data to CSV/JSON/Markdown client-side
+**Research:**
+- `components/user-generated-table-data/ExportTableModal.tsx` - doesn't receive sort state
+- `components/user-generated-table-data/UserTableViewer.tsx` - has sort state but doesn't pass it
+- DB functions `export_user_table_as_csv` and `get_user_table_complete` ignore sort
+- Fix: pass sort state through, use `get_user_table_data_paginated` with large limit
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 7. Admin Feedback Images RLS Issue
+### 10. Admin Feedback Images RLS Issue
 | Field | Value |
 |-------|-------|
 | **ID** | `f300a3e0-153c-4329-b29a-797d60d6043c` |
-| **Type** | Bug |
+| **Type** | Bug | **Priority** | Medium |
 | **Route** | `/administration/feedback` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 4/5 (Arman +1, clearly a bug +1, not opinion +1, zero risk +1, moderate fix 0) |
 
-**Description:**
-> In admin feedback, there is an RLS issue with seeing the attached images
+**Description:** In admin feedback page, attached images can't be viewed due to RLS on storage.
 
-**Research Context:**
-- **Dialog:** `app/(authenticated)/(admin-auth)/administration/feedback/components/FeedbackDetailDialog.tsx`
-- **Image display:** Lines 207-224 - Direct `src={url}` without authentication
-- **Storage bucket:** `userContent` at path `feedback-images/`
-- **Existing pattern:** `useSignedUrl` hook in `features/transcripts/hooks/useSignedUrl.ts`
-- **Fix:**
-  1. Detect Supabase storage URLs and convert to signed URLs
-  2. Use existing `useSignedUrl` hook for each image
-  3. OR create API route to proxy images with authentication
+**Research:**
+- `app/(authenticated)/(admin-auth)/administration/feedback/components/FeedbackDetailDialog.tsx` (lines 207-224) - Uses raw `src={url}` without auth
+- Use existing `useSignedUrl` hook or the new `/api/admin/feedback/images` endpoint we just built
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 8. User Feedback Status View
+### 11. User Feedback Status View (COMPLETED)
 | Field | Value |
 |-------|-------|
 | **ID** | `3637e739-c400-4e37-b3fa-0c84a02e73b1` |
-| **Type** | Feature |
-| **Route** | `/data/f692c065-6f50-488a-8ffd-e5f89ee651b6` |
+| **Type** | Feature | **Priority** | Medium |
+| **Route** | `/data/...` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 5/5 |
 
-**Description:**
-> Add a feature to the bug reporting system where the user can see the things they've reported and the status of each.
+**Description:** Add a feature where users can see their reported items and status.
 
-**Research Context:**
-- **Backend exists:** `actions/feedback.actions.ts` - `getUserFeedback()` function already fetches user's own feedback
-- **No UI exists:** Need to create user-facing feedback view
-- **Fix:**
-  1. Create `/features/feedback/components/UserFeedbackList.tsx`
-  2. Add route `/account/feedback` or add tab to existing account/settings page
-  3. Display list with: type, description, status, date, images
-  4. Use existing `getUserFeedback()` server action
+**Status:** JUST COMPLETED as part of this feedback system build. User portal is at `/settings/feedback`. Ready for DB status update once you confirm.
 
-- [ ] **Approve** | - [ ] **Tested**
+- [x] **Approve** (auto-approved: built as part of system) | - [ ] **Tested**
 
 ---
 
-### 9. Download/Copy Current Search & Single Row
+### 12. Download/Copy Current Search & Single Row
 | Field | Value |
 |-------|-------|
 | **ID** | `0b192ef8-8d22-4b2f-914e-91659e4bab3a` |
-| **Type** | Feature |
-| **Route** | `/data/f692c065-6f50-488a-8ffd-e5f89ee651b6` |
+| **Type** | Feature | **Priority** | Medium |
+| **Route** | `/data/...` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-02-03 |
+| **Autonomy Score** | 3/5 (Arman +1, not opinion +1, zero risk +1, but moderate complexity 0, not simple 0) |
 
-**Description:**
-> Add a feature to download or copy the current search you have as opposed to only the entire table. Also, add a feature to the view/edit of a row where you can copy/download the row.
+**Description:** Add ability to download/copy the current filtered search results (not just the full table). Also add row-level copy/download in the view/edit dialog.
 
-**Research Context:**
-- **Related to #6** - Same files need modification
-- **Export modal:** `components/user-generated-table-data/ExportTableModal.tsx`
-- **Table viewer:** `components/user-generated-table-data/UserTableViewer.tsx`
-- **Fix:**
-  1. Pass current search/filter state to export modal
-  2. Add "Export Current View" option that respects filters
-  3. Add "Copy Row" / "Download Row" buttons to row detail/edit dialog
-  4. Format single row as JSON/CSV for copy/download
+**Research:** Related to #9, same files. `ExportTableModal.tsx`, `UserTableViewer.tsx`, `TableToolbar.tsx`. Implement "Export Current View" option and row-level export buttons.
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 10. Table Last Column Cut Off in Prompt Output
+### 13. Table Last Column Cut Off in Prompt Output
 | Field | Value |
 |-------|-------|
 | **ID** | `fee2af21-d1e5-4cc0-8181-583c2f277a91` |
-| **Type** | Bug |
-| **Route** | `/ai/prompts/run/f89aa9d0-49f4-4816-86be-6c18aa09c5d4` |
+| **Type** | Bug | **Priority** | Medium |
+| **Route** | `/ai/prompts/run/...` |
 | **User** | seo@titaniumsuccess.com |
 | **Date** | 2026-02-02 |
-| **Screenshot** | Yes (1 image) |
+| **Screenshots** | 1 image |
+| **Autonomy Score** | 5/5 (clearly a bug +1, not opinion +1, zero risk +1, simple CSS fix +1, external user but obvious fix +1) |
 
-**Description:**
-> When PROMPT is generating TABLE then last column is not full visible and hiding data
+**Description:** When a prompt generates a table, the last column is not fully visible and data is hidden.
 
-**Research Context:**
-- **File:** `components/mardown-display/blocks/table/StreamingTableRenderer.tsx`
-- **Line 591:** Uses `overflow-hidden` which clips content
-- **Fix:** Change `overflow-hidden` to `overflow-x-auto` to allow horizontal scrolling for wide tables
-
-```tsx
-// Before (line 591)
-<div className={cn("overflow-hidden border border-border rounded-lg shadow-sm", ...)}>
-
-// After
-<div className={cn("overflow-x-auto border border-border rounded-lg shadow-sm", ...)}>
-```
+**Research:**
+- `components/mardown-display/blocks/table/StreamingTableRenderer.tsx` line 591
+- Change `overflow-hidden` to `overflow-x-auto` to allow horizontal scrolling
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-### 11. Organization Email Sending
+### 14. Organization Email Sending
 | Field | Value |
 |-------|-------|
 | **ID** | `1a523a09-ece1-4f97-b821-22a16c219f75` |
-| **Type** | Bug |
-| **Route** | `/organizations/f9cb3e35-2a65-4f2a-8525-088d6551071c/settings` |
+| **Type** | Bug | **Priority** | Medium |
+| **Route** | `/organizations/.../settings` |
 | **User** | arman@armansadeghi.com |
 | **Date** | 2026-01-30 |
-| **Screenshot** | Yes (1 image) |
+| **Screenshots** | 1 image |
+| **Autonomy Score** | 2/5 (Arman +1, not opinion +1, but significant scope 0, moderate risk 0, not simple 0) |
 
-**Description:**
-> Set it up so that you can send emails here: https://www.aimatrx.com/organizations/f9cb3e35-2a65-4f2a-8525-088d6551071c/settings
-> With the new email system in place, this should be doable.
+**Description:** Enable email sending from organization settings page. Email infrastructure (Resend) already exists.
 
-**Research Context:**
-- **Org settings:** `features/organizations/components/OrgSettings.tsx` - Has tabs: General, Members, Invitations, Danger Zone
-- **Email infrastructure exists:**
-  - `lib/email/client.ts` - Resend client
-  - `app/api/email/send/route.ts` - Generic email sending
-  - `components/admin/EmailComposeSheet.tsx` - Email compose UI
-- **Fix:**
-  1. Add "Email" tab to `OrgSettings.tsx`
-  2. Create `EmailSettings.tsx` component with:
-     - Email compose/send functionality (reuse `EmailComposeSheet`)
-     - Member email list from organization members
-  3. Connect to existing email API route
+**Research:**
+- `features/organizations/components/OrgSettings.tsx` - Add "Email" tab
+- Reuse `components/admin/EmailComposeSheet.tsx` and `lib/email/client.ts`
+- Need new tab component with member email list and compose UI
 
 - [ ] **Approve** | - [ ] **Tested**
 
 ---
 
-## Summary by Priority
+## Priority Summary
 
-### Quick Fixes (< 30 min each)
-- [ ] **#1** Notes padding - Simple CSS change
-- [ ] **#10** Table overflow - Single line CSS fix
+### Auto-fixable (Score 4-5) -- Can fix without approval
+| # | Item | Score | Complexity |
+|---|------|-------|------------|
+| 4 | Notes bottom padding | 5/5 | Simple CSS |
+| 13 | Table overflow cut off | 5/5 | Single line CSS |
+| 11 | User feedback portal | 5/5 | DONE |
+| 3 | Multiple image attachments | 4/5 | Moderate |
+| 7 | Screenshot paste/capture | 4/5 | Moderate |
+| 8 | Prompt info in prompt-app | 4/5 | Moderate |
+| 10 | Admin images RLS | 4/5 | Moderate |
 
-### Medium Complexity (1-2 hours each)
-- [ ] **#4** Screenshot capture - Hook integration
-- [ ] **#5** Prompt-app info - Fetch + display
-- [ ] **#7** Admin images RLS - Signed URL integration
-- [ ] **#8** User feedback view - New component + route
-
-### Higher Complexity (2-4 hours each)
-- [ ] **#6** & **#9** Data export fixes - Related, do together
-- [ ] **#3** Org sharing RLS - May need DB function
-- [ ] **#11** Org email - New settings tab + compose
-
-### Requires More Planning
-- [ ] **#2** Centralize contacts - Architecture decision needed
-
----
-
-## Status Legend
-- **new** - Not yet addressed
-- **resolved** - Fix implemented
-- **closed** - Verified working
-- **wont_fix** - Declined
+### Needs Approval (Score 2-3) -- Present for review
+| # | Item | Score | Complexity |
+|---|------|-------|------------|
+| 1 | Prompt editor scrolling | 3/5 | Complex |
+| 6 | Org sharing RLS | 3/5 | DB changes |
+| 9 | Data export sort/pagination | 3/5 | Moderate |
+| 12 | Export current search | 3/5 | Moderate |
+| 5 | Centralize contacts | 2/5 | Architecture |
+| 14 | Org email sending | 2/5 | Large scope |
+| 2 | Token/session management | 2/5 | Auth infrastructure |

@@ -1,0 +1,217 @@
+---
+description: Autonomous feedback resolution workflow - use when handling user feedback, bug reports, or feature requests from the feedback system
+alwaysApply: false
+---
+
+# Autonomous Feedback Resolution Workflow
+
+This rule defines the complete workflow for triaging, fixing, and closing user feedback items using the Supabase MCP tools.
+
+## Quick Reference: Supabase MCP SQL Commands
+
+All database operations use the Supabase MCP `execute_sql` tool.
+
+```sql
+-- Get all pending items
+SELECT * FROM get_pending_feedback();
+
+-- Get summary counts
+SELECT get_feedback_summary();
+
+-- Get items by status
+SELECT * FROM get_feedback_by_status('in_progress');
+SELECT * FROM get_feedback_by_status('awaiting_review');
+
+-- Claim an item (start working on it)
+SELECT * FROM claim_feedback_item(
+  'feedback-uuid'::uuid,
+  'Admin notes about approach',
+  'AI assessment of the issue',
+  4  -- autonomy score 1-5
+);
+
+-- Resolve an item (fix is complete)
+SELECT * FROM resolve_feedback_item(
+  'feedback-uuid'::uuid,
+  'Description of what was fixed and how',
+  'resolver-user-uuid'::uuid
+);
+
+-- Close an item (final status)
+SELECT * FROM close_feedback_item(
+  'feedback-uuid'::uuid,
+  'resolved',  -- or 'closed' or 'wont_fix'
+  'Optional admin notes'
+);
+
+-- Get a user's feedback
+SELECT * FROM get_user_own_feedback('user-uuid'::uuid);
+```
+
+## Status Lifecycle
+
+```
+new → in_progress → awaiting_review → resolved → closed
+new → wont_fix (declined)
+awaiting_review → in_progress (admin found issues with fix)
+```
+
+- **new**: Submitted, not yet triaged
+- **in_progress**: Actively being worked on
+- **awaiting_review**: Fix deployed, needs admin (Arman) to test
+- **resolved**: Admin verified the fix, user notified via email
+- **closed**: User confirmed or auto-closed after 14 days
+- **wont_fix**: Declined with reason in admin_notes
+
+## Step 1: Triage
+
+When asked to handle feedback, start by pulling data:
+
+```sql
+SELECT get_feedback_summary();
+SELECT * FROM get_pending_feedback();
+```
+
+For each item, read the description, route, feedback_type, username, and image_urls.
+
+## Step 2: Autonomy Assessment
+
+For each item, compute an **autonomy score (1-5)** based on these additive factors:
+
+| Factor | +1 if True |
+|--------|-----------|
+| Requested by `arman@armansadeghi.com` (lead developer, trusted) | Yes |
+| Clearly a bug — app is objectively broken, not a matter of opinion | Yes |
+| Not opinion-based — the fix is objectively correct | Yes |
+| Zero risk of negative side effects on other features | Yes |
+| Simple fix — CSS, typo, config, single-file change | Yes |
+
+### Decision Matrix
+
+- **Score 4-5**: Auto-fix. Claim the item, implement the fix, resolve when done. No approval needed.
+- **Score 2-3**: Present assessment to Arman with recommendation. Wait for approval before fixing.
+- **Score 0-1**: Present to Arman for discussion. Likely needs design decisions or has trade-offs.
+
+### Trust Rules
+
+- `arman@armansadeghi.com` = lead developer. Requests from this user have inherently higher trust. If Arman reports it AND it's clearly a bug, auto-fix.
+- Other users = valid reporters. Bug reports that are objectively broken can still be auto-fixed. Feature requests from non-admins always require approval.
+- All bug fixes where the app is clearly broken = high autonomy regardless of who reported it.
+- Feature requests = always present for approval unless from Arman AND trivially safe.
+
+## Step 3: Image Investigation
+
+If `image_urls` is not null:
+
+1. Use the browser to call: `GET /api/admin/feedback/images?feedback_id=<uuid>`
+2. This returns signed URLs (1 hour expiry) for each attached screenshot
+3. Open the signed URLs in the browser to view the screenshots
+4. Use the visual context to understand the issue better
+
+## Step 4: Fix Workflow
+
+For each item being fixed:
+
+1. **Claim it**:
+   ```sql
+   SELECT * FROM claim_feedback_item('<id>'::uuid, 'Working on fix', '<your assessment>', <score>);
+   ```
+
+2. **Research the code**: Use explore agents to find relevant files, understand the issue.
+
+3. **Implement the fix**: Make the code changes.
+
+4. **Resolve it**:
+   ```sql
+   SELECT * FROM resolve_feedback_item('<id>'::uuid, 'Detailed description of what was changed', null);
+   ```
+
+5. **Notify the user** (for non-admin users): Make a POST request to `/api/feedback/notify` with body:
+   ```json
+   { "feedback_id": "<uuid>", "status": "awaiting_review" }
+   ```
+
+## Step 5: Testing Checklist for Admin Review
+
+After fixing items, generate a **Testing Checklist** that Arman can quickly walk through to verify each fix. This is the primary deliverable after a batch of fixes.
+
+### Format
+
+For each resolved item, provide:
+1. **The original request** (one sentence summary)
+2. **Where to go** (full localhost URL)
+3. **What to do** (specific steps to reproduce or verify)
+4. **What to look for** (expected behavior that confirms the fix works)
+
+### Example
+
+```
+### Notes Bottom Padding (8ca13bc1)
+**Request:** Notes app needs padding at the bottom so the last sentence isn't stuck to the bottom.
+- Go to **http://localhost:3000/notes**
+- Open any note with at least a page of content
+- Scroll to the very bottom
+- Confirm there's generous empty space below the last line (~half the screen)
+- Test in both **plain text mode** and **preview mode**
+```
+
+### Guidelines
+- Keep it scannable -- Arman should be able to test each item in under 60 seconds
+- Include the specific route from the feedback item when possible
+- For UI fixes: describe what the broken state looked like vs what it should look like now
+- For data/API fixes: describe what action to take and what result to expect
+- For complex features: break the test into numbered steps
+- Always mention if multiple views/modes need testing (mobile, desktop, dark mode, etc.)
+
+### After the Checklist
+
+Also include (below the checklist):
+- The detailed technical summary of what was changed and why (files modified, approach taken)
+- Which items are `awaiting_review`
+- Any items that need discussion (low autonomy score)
+- Any items that were skipped and why
+
+## Step 6: Admin Confirmation
+
+When Arman confirms a fix works:
+```sql
+SELECT * FROM close_feedback_item('<id>'::uuid, 'resolved', 'Verified by admin');
+```
+
+When Arman says a fix doesn't work:
+```sql
+-- Move back to in_progress
+UPDATE user_feedback SET status = 'in_progress', admin_notes = 'Fix needs revision: <reason>', updated_at = now() WHERE id = '<id>';
+```
+
+## Step 7: Reporting
+
+After processing feedback, regenerate `SUBMIT_FEEDBACK_TASKS.md` from the database state. The file is a human-readable view; the database is the source of truth.
+
+## User Feedback Portal
+
+Users can see their feedback status at `/settings/feedback`. When items are resolved, users can click "Confirm Fix Works" to close them. Email notifications are sent when status changes to `resolved`.
+
+## Database Schema Reference
+
+**Table: `user_feedback`**
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid | PK, auto-generated |
+| user_id | uuid | FK to auth.users |
+| username | text | Email or display name |
+| feedback_type | text | bug, feature, suggestion, other |
+| route | text | Page route where issue was found |
+| description | text | User's description |
+| status | text | new, in_progress, awaiting_review, resolved, closed, wont_fix |
+| priority | text | low, medium, high, critical (default: medium) |
+| admin_notes | text | Internal notes |
+| ai_assessment | text | Agent's analysis |
+| autonomy_score | integer | 1-5 confidence score |
+| resolution_notes | text | What was done to fix it |
+| image_urls | text[] | Array of screenshot URLs |
+| created_at | timestamptz | Submission time |
+| updated_at | timestamptz | Last update |
+| resolved_at | timestamptz | When fix was applied |
+| resolved_by | uuid | Who resolved it |
+| user_confirmed_at | timestamptz | When user confirmed fix |

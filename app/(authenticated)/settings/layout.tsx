@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Settings as SettingsIcon, Building2, Chrome, ArrowLeft, Menu, Mic, FileText } from 'lucide-react';
+import { User, Settings as SettingsIcon, Building2, Chrome, ArrowLeft, Menu, Mic, FileText, MessageSquareMore } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -46,6 +46,12 @@ const settingsNavItems: SettingsNavItem[] = [
     href: '/settings/organizations',
     icon: <Building2 className="h-4 w-4" />,
     description: 'Manage your organizations',
+  },
+  {
+    title: 'My Feedback',
+    href: '/settings/feedback',
+    icon: <MessageSquareMore className="h-4 w-4" />,
+    description: 'Track your bug reports and feature requests',
   },
   {
     title: 'Extension',

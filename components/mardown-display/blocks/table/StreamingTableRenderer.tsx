@@ -588,7 +588,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                 </div>
             ) : (
                 <>
-                    <div className={cn("overflow-hidden border border-border rounded-lg shadow-sm", isEditingEnabled && "border-dashed border-red-500 border-2")}>
+                    <div className={cn("overflow-x-auto border border-border rounded-lg shadow-sm", isEditingEnabled && "border-dashed border-red-500 border-2")}>
                         <table className="min-w-full divide-y divide-border" style={{ fontSize: `${fontSize}px` }}>
                             {/* Header */}
                             <thead className={tableTheme.header} onClick={handleHeaderClick}>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { updateFeedback } from '@/actions/feedback.actions';
 import { UserFeedback, FeedbackStatus, FeedbackType } from '@/types/feedback.types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,9 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Sparkles, Lightbulb, HelpCircle, Calendar, User, MapPin, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { AlertCircle, Sparkles, Lightbulb, HelpCircle, Calendar, User, MapPin, MessageSquare, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import Image from 'next/image';
 import { toast } from 'sonner';
 
 interface FeedbackDetailDialogProps {
@@ -44,6 +43,29 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
     const [status, setStatus] = useState(feedback.status);
     const [isSaving, setIsSaving] = useState(false);
+    const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+    const [isLoadingImages, setIsLoadingImages] = useState(false);
+
+    const fetchSignedUrls = useCallback(async (feedbackId: string) => {
+        setIsLoadingImages(true);
+        try {
+            const res = await fetch(`/api/admin/feedback/images?feedback_id=${feedbackId}`);
+            const data = await res.json();
+            if (data.success && data.signed_urls) {
+                const urlMap: Record<string, string> = {};
+                for (const item of data.signed_urls) {
+                    if (item.signed_url) {
+                        urlMap[item.original_url] = item.signed_url;
+                    }
+                }
+                setSignedUrls(urlMap);
+            }
+        } catch (error) {
+            console.error('Error fetching signed URLs:', error);
+        } finally {
+            setIsLoadingImages(false);
+        }
+    }, []);
 
     useEffect(() => {
         setDescription(feedback.description);
@@ -51,7 +73,14 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setRoute(feedback.route);
         setAdminNotes(feedback.admin_notes || '');
         setStatus(feedback.status);
+        setSignedUrls({});
     }, [feedback]);
+
+    useEffect(() => {
+        if (open && feedback.image_urls && feedback.image_urls.length > 0) {
+            fetchSignedUrls(feedback.id);
+        }
+    }, [open, feedback.id, feedback.image_urls, fetchSignedUrls]);
 
     const handleSave = async () => {
         if (!description.trim()) {
@@ -203,27 +232,37 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 <ImageIcon className="w-4 h-4" />
                                 Attached Screenshots ({feedback.image_urls.length})
                             </label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {feedback.image_urls.map((url, index) => (
-                                    <a
-                                        key={index}
-                                        href={url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="relative aspect-video rounded-lg overflow-hidden border-border hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
-                                    >
-                                        <Image
-                                            src={url}
-                                            alt={`Screenshot ${index + 1}`}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform"
-                                        />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                            <ImageIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </div>
-                                    </a>
-                                ))}
-                            </div>
+                            {isLoadingImages ? (
+                                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                    Loading images...
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    {feedback.image_urls.map((url, index) => {
+                                        const resolvedUrl = signedUrls[url] || url;
+                                        return (
+                                            <a
+                                                key={index}
+                                                href={resolvedUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="relative aspect-video rounded-lg overflow-hidden border border-border hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={resolvedUrl}
+                                                    alt={`Screenshot ${index + 1}`}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                    <ImageIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 

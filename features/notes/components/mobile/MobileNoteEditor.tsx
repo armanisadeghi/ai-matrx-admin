@@ -231,7 +231,7 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch">
-        <div className="p-3">
+        <div className="p-3 pb-[50vh]">
           <Textarea
             ref={contentRef}
             value={localContent}

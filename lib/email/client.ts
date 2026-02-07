@@ -286,4 +286,86 @@ export const emailTemplates = {
       </div>
     `,
   }),
+
+  feedbackStatusUpdate: (
+    username: string,
+    feedbackType: string,
+    description: string,
+    status: string,
+    resolutionNotes?: string,
+    portalUrl?: string
+  ) => {
+    const statusLabels: Record<string, string> = {
+      in_progress: "In Progress",
+      awaiting_review: "Fix Ready - Under Review",
+      resolved: "Resolved",
+      closed: "Closed",
+      wont_fix: "Won't Fix",
+    };
+
+    const statusColors: Record<string, string> = {
+      in_progress: "#eab308",
+      awaiting_review: "#f97316",
+      resolved: "#22c55e",
+      closed: "#6b7280",
+      wont_fix: "#ef4444",
+    };
+
+    const statusLabel = statusLabels[status] || status;
+    const statusColor = statusColors[status] || "#3b82f6";
+    const truncatedDescription =
+      description.length > 200 ? description.slice(0, 200) + "..." : description;
+
+    return {
+      subject: `Your ${feedbackType} report has been updated - ${statusLabel}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #3b82f6;">Feedback Update</h1>
+          <p>Hi ${username},</p>
+          <p>Your <strong>${feedbackType}</strong> report has been updated.</p>
+
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">Your report:</p>
+            <p style="margin: 0; color: #1f2937;">${truncatedDescription}</p>
+          </div>
+
+          <div style="margin: 16px 0;">
+            <span style="display: inline-block; background: ${statusColor}22; color: ${statusColor}; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 14px;">
+              ${statusLabel}
+            </span>
+          </div>
+
+          ${
+            resolutionNotes
+              ? `
+            <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+              <p style="margin: 0 0 4px 0; font-weight: 600; color: #15803d; font-size: 14px;">Resolution Notes:</p>
+              <p style="margin: 0; color: #166534;">${resolutionNotes}</p>
+            </div>
+          `
+              : ""
+          }
+
+          ${
+            portalUrl
+              ? `
+            <div style="margin: 24px 0;">
+              <a href="${portalUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">View Your Feedback</a>
+            </div>
+          `
+              : ""
+          }
+
+          <p style="color: #666; font-size: 14px;">
+            ${
+              status === "resolved"
+                ? "If the fix looks good, you can confirm it in the feedback portal."
+                : "You can track all your feedback items in the feedback portal."
+            }
+          </p>
+          <p>Best regards,<br>The AI Matrx Team</p>
+        </div>
+      `,
+    };
+  },
 };

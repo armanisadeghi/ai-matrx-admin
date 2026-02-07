@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye } from 'lucide-react';
+import { AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 const statusOptions: { value: FeedbackStatus; label: string; color: string }[] = [
@@ -35,11 +36,100 @@ type SortDirection = 'asc' | 'desc';
 
 type QuickFilter = 'open' | 'closed' | 'all';
 
+function ImagePreviewModal({
+    open,
+    onOpenChange,
+    feedbackId,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    feedbackId: string | null;
+}) {
+    const [signedUrls, setSignedUrls] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (open && feedbackId) {
+            setIsLoading(true);
+            setCurrentIndex(0);
+            fetch(`/api/admin/feedback/images?feedback_id=${feedbackId}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success && data.signed_urls) {
+                        setSignedUrls(
+                            data.signed_urls
+                                .filter((item: { signed_url: string | null }) => item.signed_url)
+                                .map((item: { signed_url: string }) => item.signed_url)
+                        );
+                    }
+                })
+                .catch(console.error)
+                .finally(() => setIsLoading(false));
+        } else {
+            setSignedUrls([]);
+        }
+    }, [open, feedbackId]);
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden bg-black/95">
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-96">
+                        <Loader2 className="h-8 w-8 animate-spin text-white" />
+                    </div>
+                ) : signedUrls.length === 0 ? (
+                    <div className="flex items-center justify-center h-96 text-white/60">
+                        No images found
+                    </div>
+                ) : (
+                    <div className="relative">
+                        {/* Image */}
+                        <div className="flex items-center justify-center min-h-[400px] max-h-[80vh]">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={signedUrls[currentIndex]}
+                                alt={`Screenshot ${currentIndex + 1}`}
+                                className="max-w-full max-h-[80vh] object-contain"
+                            />
+                        </div>
+
+                        {/* Navigation */}
+                        {signedUrls.length > 1 && (
+                            <>
+                                <button
+                                    onClick={() => setCurrentIndex((i) => (i === 0 ? signedUrls.length - 1 : i - 1))}
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
+                                >
+                                    <ChevronLeft className="h-5 w-5" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentIndex((i) => (i === signedUrls.length - 1 ? 0 : i + 1))}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
+                                >
+                                    <ChevronRight className="h-5 w-5" />
+                                </button>
+
+                                {/* Counter */}
+                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                                    {currentIndex + 1} / {signedUrls.length}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function FeedbackTable() {
     const [feedback, setFeedback] = useState<UserFeedback[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedFeedback, setSelectedFeedback] = useState<UserFeedback | null>(null);
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+    const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
+    const [imagePreviewFeedbackId, setImagePreviewFeedbackId] = useState<string | null>(null);
     
     // Filters
     const [quickFilter, setQuickFilter] = useState<QuickFilter>('open');
@@ -89,6 +179,12 @@ export default function FeedbackTable() {
     const handleViewDetails = (item: UserFeedback) => {
         setSelectedFeedback(item);
         setDetailDialogOpen(true);
+    };
+
+    const handleViewImages = (e: React.MouseEvent, feedbackId: string) => {
+        e.stopPropagation();
+        setImagePreviewFeedbackId(feedbackId);
+        setImagePreviewOpen(true);
     };
 
     const filteredAndSortedFeedback = useMemo(() => {
@@ -351,9 +447,21 @@ export default function FeedbackTable() {
                                                 </Select>
                                             </TableCell>
                                             <TableCell>
-                                                <p className="line-clamp-2 text-sm">
-                                                    {item.description}
-                                                </p>
+                                                <div className="flex items-start gap-2">
+                                                    <p className="line-clamp-2 text-sm flex-1">
+                                                        {item.description}
+                                                    </p>
+                                                    {item.image_urls && item.image_urls.length > 0 && (
+                                                        <button
+                                                            onClick={(e) => handleViewImages(e, item.id)}
+                                                            className="flex-shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors text-xs"
+                                                            title="View attached screenshots"
+                                                        >
+                                                            <ImageIcon className="h-3 w-3" />
+                                                            {item.image_urls.length}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-sm">
                                                 {item.username || 'Anonymous'}
@@ -394,6 +502,12 @@ export default function FeedbackTable() {
                     onUpdate={loadFeedback}
                 />
             )}
+
+            <ImagePreviewModal
+                open={imagePreviewOpen}
+                onOpenChange={setImagePreviewOpen}
+                feedbackId={imagePreviewFeedbackId}
+            />
         </>
     );
 }

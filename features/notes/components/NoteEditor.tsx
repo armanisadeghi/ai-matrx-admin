@@ -495,7 +495,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             value={localContent}
                             onChange={(e) => handleContentChange(e.target.value)}
                             placeholder="Start typing your note..."
-                            className="absolute inset-0 w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3"
+                            className="absolute inset-0 w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3 pb-[50vh]"
                         />
                     </UnifiedContextMenu>
                 )}
@@ -598,7 +598,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                         enabledPlacements={['ai-action', 'content-block', 'quick-action', 'organization-tool', 'user-tool']}
                     >
                         <ScrollArea className="absolute inset-0 w-full h-full">
-                            <div className="p-6 bg-textured">
+                            <div className="p-6 pb-[50vh] bg-textured">
                                 {localContent.trim() ? (
                                     <MarkdownStream content={localContent} />
                                 ) : (
