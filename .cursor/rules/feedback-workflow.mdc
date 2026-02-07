@@ -7,6 +7,36 @@ alwaysApply: false
 
 All state lives in the database. No markdown files. No chat-based reporting. The admin UI at `/administration/feedback` is the source of truth.
 
+## CRITICAL: Agent Boundaries — READ THIS FIRST
+
+**Agents are NEVER permitted to mark items as "done".** The admin is the ONLY person who can move items to resolved, closed, wont_fix, or deferred status. Agents have exactly two jobs:
+
+1. **Triage** — analyze new items and push AI assessment (`new` → `triaged`)
+2. **Fix & submit for testing** — implement approved fixes and submit them for admin review (`in_progress` → `awaiting_review`)
+
+The agent's terminal status is **`awaiting_review`**. That's it. Once you call `resolve_with_testing()`, you are DONE with that item. Walk away. The admin will test it and decide what happens next.
+
+### Forbidden Agent Actions
+
+| Action | Why It's Forbidden |
+|--------|--------------------|
+| Setting status to `resolved` | Only the admin can verify a fix works |
+| Setting status to `closed` | Only the admin closes items |
+| Setting status to `wont_fix` | Only the admin can decline items |
+| Setting status to `deferred` | Only the admin can defer items |
+| Calling `close_feedback_item()` | This is an ADMIN-ONLY function |
+| Using raw SQL UPDATE on status to any "done" state | Bypasses the pipeline — admin never sees it |
+
+### Allowed Agent Status Transitions
+
+| From | To | How | When |
+|------|----|-----|------|
+| `new` | `triaged` | `triage_feedback_item()` | After analyzing the item |
+| `triaged` | `in_progress` | Automatic when agent starts working (via work queue) | After admin approves |
+| `in_progress` | `awaiting_review` | `resolve_with_testing()` | After implementing the fix |
+
+That's the complete list. There are NO other status transitions an agent is allowed to make.
+
 ## Pipeline Overview
 
 The admin UI has a pipeline view with these mutually exclusive stages:
@@ -16,8 +46,8 @@ The admin UI has a pipeline view with these mutually exclusive stages:
 | **Untriaged** | Agent | `status = 'new'` — agent hasn't analyzed yet |
 | **Your Decision** | Admin | `status = 'triaged'` + `admin_decision = 'pending'` — agent analyzed, admin hasn't decided |
 | **Agent Working** | Agent | `admin_decision = 'approved'` + `status IN ('triaged','in_progress')` — approved, agent fixing |
-| **Test Results** | Admin | `status = 'awaiting_review'` — agent fixed, admin testing |
-| **Done** | — | `status IN ('resolved','closed','wont_fix','deferred')` |
+| **Test Results** | Admin | `status = 'awaiting_review'` — agent fixed, admin MUST test before anything moves to Done |
+| **Done** | Admin ONLY | `status IN ('resolved','closed','wont_fix','deferred')` — ONLY the admin moves items here |
 
 **Your two lists on each session:**
 - **List 1 (Untriaged):** `SELECT * FROM get_untriaged_feedback();` — items to analyze
@@ -78,7 +108,11 @@ SELECT * FROM add_feedback_comment(
 -- READ COMMENTS on an item
 SELECT * FROM get_feedback_comments('<uuid>'::uuid);
 
--- CLOSE (admin confirms fix works)
+-- ============================================================
+-- ADMIN-ONLY FUNCTIONS BELOW — AGENTS MUST NEVER CALL THESE
+-- ============================================================
+
+-- CLOSE (ADMIN ONLY — agent must NEVER call this)
 SELECT * FROM close_feedback_item(
   '<uuid>'::uuid,
   'resolved',                              -- p_status ('resolved'|'closed'|'wont_fix')
@@ -95,21 +129,30 @@ SELECT * FROM split_feedback_item(
 ## Status Lifecycle
 
 ```
-new → triaged → in_progress → awaiting_review → resolved → closed
-new → wont_fix
-triaged → deferred
-triaged → split (children go through their own lifecycle)
+AGENT transitions:
+  new → triaged                    (triage_feedback_item)
+  in_progress → awaiting_review    (resolve_with_testing — agent's FINAL action)
+
+ADMIN-ONLY transitions:
+  awaiting_review → resolved       (admin verified fix works)
+  resolved → closed                (admin or user confirmed)
+  any → wont_fix                   (admin declines)
+  triaged → deferred               (admin defers)
+  triaged → split                  (admin splits into sub-tasks)
+
+SYSTEM transitions:
+  triaged → in_progress            (automatic when agent picks up approved item)
 ```
 
 - **new**: Submitted, agent hasn't analyzed
 - **triaged**: Agent analyzed, awaiting admin decision
 - **in_progress**: Admin approved, agent actively fixing
-- **awaiting_review**: Fix done, admin needs to test
-- **resolved**: Admin verified fix works
-- **closed**: User confirmed or auto-closed
-- **wont_fix**: Declined with reason
-- **split**: Parent broken into sub-tasks
-- **deferred**: Pushed to later
+- **awaiting_review**: Fix done, **admin needs to test** — this is the agent's LAST stop
+- **resolved**: **ADMIN ONLY** — admin verified fix works
+- **closed**: **ADMIN ONLY** — user confirmed or auto-closed
+- **wont_fix**: **ADMIN ONLY** — declined with reason
+- **split**: **ADMIN ONLY** — parent broken into sub-tasks
+- **deferred**: **ADMIN ONLY** — pushed to later
 
 ## Step 1: Triage Untriaged Items
 
@@ -188,11 +231,15 @@ SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
 ```
 5. Implement the fix
 
-## Step 3: Resolve with Testing
+## Step 3: Submit for Admin Testing (Agent's FINAL Action)
 
-**CRITICAL: ALWAYS use `resolve_with_testing()` when you finish a fix.** NEVER set `status = 'resolved'` directly via UPDATE — that skips the testing stage and the admin won't see it. Only the admin moves items from `awaiting_review` to `resolved` after they verify the fix works.
+**CRITICAL: `resolve_with_testing()` is the ONLY function you call when you finish a fix.** This sets status to `awaiting_review` — NOT `resolved`. The admin will test your fix and decide whether it passes or fails. You are DONE with the item after this call.
 
-After fixing, push resolution + testing instructions:
+**What happens after you call `resolve_with_testing()`:**
+- The item moves to the **Test Results** pipeline stage
+- The admin sees your testing instructions and clickable URL
+- The admin tests and either approves (→ resolved) or rejects (→ back to in_progress)
+- **You do NOT touch the item again** unless the admin rejects it and sends it back
 
 ```sql
 SELECT * FROM resolve_with_testing(
@@ -203,11 +250,18 @@ SELECT * FROM resolve_with_testing(
 );
 ```
 
-This sets status to `awaiting_review`. The admin sees it in the **Test Results** pipeline stage with your testing instructions and a clickable URL.
+### What You Must NEVER Do After Fixing
 
-**DO NOT** use raw SQL `UPDATE user_feedback SET status = 'resolved'` or `SET status = 'awaiting_review'`. Always use `resolve_with_testing()` — it handles status transition, timestamps, and ensures testing fields are populated.
+- **NEVER** call `close_feedback_item()` — that's admin-only
+- **NEVER** set status to `resolved`, `closed`, or `wont_fix` via any method
+- **NEVER** use raw SQL `UPDATE user_feedback SET status = 'resolved'` or any "done" status
+- **NEVER** skip `resolve_with_testing()` by updating status directly — the admin needs testing instructions
 
-**Testing instructions must be specific enough that the admin can verify in under 60 seconds:**
+Your job ends at `awaiting_review`. Period.
+
+### Testing Instructions Quality
+
+Testing instructions must be specific enough that the admin can verify in under 60 seconds:
 - Include the exact URL/route **where the fix can be verified** — this may differ from the `route` field on the item (which is just where the user was when they submitted, not necessarily where the bug is)
 - List exact steps to reproduce or verify
 - Describe what "fixed" looks like vs what "broken" looked like

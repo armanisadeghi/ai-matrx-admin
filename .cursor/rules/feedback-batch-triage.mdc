@@ -7,6 +7,21 @@ alwaysApply: false
 
 This is a focused triage-only workflow that processes untriaged feedback items in batches of 3. It replaces **Step 1 (Triage)** from the main `feedback-workflow.mdc` rule. For all other steps (working the queue, resolving, etc.), use the main workflow rule.
 
+## CRITICAL: Agent Boundaries
+
+Agents have a strict, limited role in the feedback pipeline:
+
+1. **Triage** — analyze items and push AI assessment (`new` → `triaged`)
+2. **Fix & submit for testing** — implement approved fixes, then call `resolve_with_testing()` (`in_progress` → `awaiting_review`)
+
+**Agents MUST NEVER:**
+- Set status to `resolved`, `closed`, `wont_fix`, or `deferred` — these are **admin-only** statuses
+- Call `close_feedback_item()` — this is an **admin-only** function
+- Use raw SQL UPDATE to set any "done" status
+- Skip `resolve_with_testing()` when finishing a fix
+
+The agent's terminal status is **`awaiting_review`**. Once you call `resolve_with_testing()`, you are DONE. The admin tests it and decides what happens next. Only the admin can move items to "Done".
+
 ## Why Batches of 3
 
 Triaging requires reading user descriptions, viewing screenshots, researching code, and writing analysis. Processing 3 items at a time keeps context manageable and prevents quality degradation from trying to juggle too many items.
@@ -149,4 +164,11 @@ SELECT * FROM get_feedback_comments('<id>'::uuid);
 -- Check work queue priority (for auto-approve numbering)
 SELECT COALESCE(MAX(work_priority), 0) + 1 AS next_priority
 FROM user_feedback WHERE work_priority IS NOT NULL;
+
+-- Submit fix for admin testing (agent's FINAL action on an item)
+-- This sets status to 'awaiting_review' — NOT 'resolved'
+SELECT * FROM resolve_with_testing('<id>'::uuid, 'what was fixed', 'test steps', 'test url');
+
+-- NEVER call close_feedback_item() — that is ADMIN-ONLY
+-- NEVER set status to resolved/closed/wont_fix/deferred — ADMIN-ONLY
 ```

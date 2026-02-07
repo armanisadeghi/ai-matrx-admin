@@ -10,7 +10,7 @@ import {
     AdminDecision,
     TestingResult,
     FEEDBACK_STATUS_COLORS,
-    FEEDBACK_STATUS_LABELS,
+    ADMIN_STATUS_LABELS,
     ADMIN_DECISION_COLORS,
     ADMIN_DECISION_LABELS,
 } from '@/types/feedback.types';
@@ -47,6 +47,8 @@ import {
     Clock,
     Bot,
     UserCircle,
+    Copy,
+    RotateCcw,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -276,12 +278,13 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const handleTestingResult = async (result: TestingResult) => {
         setIsSaving(true);
         try {
-            const newStatus: FeedbackStatus = result === 'pass' ? 'closed' : result === 'fail' ? 'in_progress' : item.status;
+            // pass → resolved (admin verified), fail → in_progress (agent reworks), partial → stays
+            const newStatus: FeedbackStatus = result === 'pass' ? 'resolved' : result === 'fail' ? 'in_progress' : item.status;
             const updateResult = await updateFeedback(item.id, {
                 testing_result: result,
                 ...(newStatus !== item.status ? { status: newStatus } : {}),
-                ...(result === 'pass' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing passed - closing item.` } : {}),
-                ...(result === 'fail' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing failed - reopening for fixes.` } : {}),
+                ...(result === 'pass' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing passed - verified.` } : {}),
+                ...(result === 'fail' ? { admin_notes: `${adminNotes ? adminNotes + '\n' : ''}Testing failed - sent back for fixes.` } : {}),
             });
 
             if (updateResult.success) {
@@ -289,9 +292,9 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 await refreshItem();
                 toast.success(
                     result === 'pass'
-                        ? 'Marked as passed - item closed'
+                        ? 'Marked as passed - verified'
                         : result === 'fail'
-                        ? 'Marked as failed - reopened for fixes'
+                        ? 'Marked as failed - sent back to agent'
                         : 'Testing result saved'
                 );
                 onUpdate(); // Refresh parent table in background
@@ -323,7 +326,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 <DialogTitle className="flex items-center gap-2">
                                     {feedbackTypeLabels[item.feedback_type]}
                                     <Badge className={`${statusColors.bg} ${statusColors.text} border-0 text-xs ml-2`}>
-                                        {FEEDBACK_STATUS_LABELS[item.status]}
+                                        {ADMIN_STATUS_LABELS[item.status]}
                                     </Badge>
                                     {item.admin_decision !== 'pending' && (
                                         <Badge
@@ -335,6 +338,17 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 </DialogTitle>
                                 <DialogDescription className="mt-1">
                                     <span className="flex items-center gap-4 text-xs">
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(item.id);
+                                                toast.success('ID copied to clipboard');
+                                            }}
+                                            className="flex items-center gap-1 font-mono text-muted-foreground hover:text-foreground transition-colors"
+                                            title={`Click to copy: ${item.id}`}
+                                        >
+                                            <Copy className="w-3 h-3" />
+                                            {item.id.slice(0, 8)}
+                                        </button>
                                         <span className="flex items-center gap-1">
                                             <User className="w-3 h-3" />
                                             {item.username || 'Anonymous'}
@@ -591,11 +605,11 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                     <Select value={formStatus} onValueChange={(value) => setFormStatus(value as FeedbackStatus)}>
                                         <SelectTrigger>
                                             <Badge className={`${FEEDBACK_STATUS_COLORS[formStatus]?.bg || ''} ${FEEDBACK_STATUS_COLORS[formStatus]?.text || ''} border-0`}>
-                                                {FEEDBACK_STATUS_LABELS[formStatus] || formStatus}
+                                                {ADMIN_STATUS_LABELS[formStatus] || formStatus}
                                             </Badge>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Object.entries(FEEDBACK_STATUS_LABELS).map(([value, label]) => (
+                                            {Object.entries(ADMIN_STATUS_LABELS).map(([value, label]) => (
                                                 <SelectItem key={value} value={value}>
                                                     {label}
                                                 </SelectItem>
@@ -670,43 +684,83 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 <Separator />
 
                                 {/* Quick Actions */}
-                                <div className="flex flex-wrap gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            setDecision('approved');
-                                            setFormStatus(item.status === 'triaged' ? 'in_progress' : item.status);
-                                        }}
-                                        className="gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
-                                    >
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        Approve
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            setDecision('rejected');
-                                            setFormStatus('wont_fix');
-                                        }}
-                                        className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                                    >
-                                        <XCircle className="w-4 h-4" />
-                                        Reject
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            setDecision('deferred');
-                                            setFormStatus('deferred');
-                                        }}
-                                        className="gap-1.5 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
-                                    >
-                                        <Clock className="w-4 h-4" />
-                                        Defer
-                                    </Button>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">Quick Actions</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {/* Approve — show when pending decision */}
+                                        {(item.admin_decision === 'pending' || !item.admin_decision) && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setDecision('approved');
+                                                    setFormStatus(item.status === 'triaged' ? 'in_progress' : item.status);
+                                                }}
+                                                className="gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+                                            >
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Approve
+                                            </Button>
+                                        )}
+                                        {/* Send to Testing — show when item is resolved/closed/in_progress without proper testing */}
+                                        {(['resolved', 'closed', 'in_progress'].includes(item.status)) && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setFormStatus('awaiting_review');
+                                                }}
+                                                className="gap-1.5 text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                                            >
+                                                <TestTube className="w-4 h-4" />
+                                                Send to Testing
+                                            </Button>
+                                        )}
+                                        {/* Reopen — show when item is in done states */}
+                                        {(['resolved', 'closed', 'wont_fix', 'deferred'].includes(item.status)) && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setDecision('approved');
+                                                    setFormStatus('in_progress');
+                                                }}
+                                                className="gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                                            >
+                                                <RotateCcw className="w-4 h-4" />
+                                                Reopen
+                                            </Button>
+                                        )}
+                                        {/* Reject */}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                setDecision('rejected');
+                                                setFormStatus('wont_fix');
+                                            }}
+                                            className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                        >
+                                            <XCircle className="w-4 h-4" />
+                                            Reject
+                                        </Button>
+                                        {/* Defer */}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                setDecision('deferred');
+                                                setFormStatus('deferred');
+                                            }}
+                                            className="gap-1.5 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
+                                        >
+                                            <Clock className="w-4 h-4" />
+                                            Defer
+                                        </Button>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        Click a quick action to pre-fill, then hit Save Changes to apply.
+                                    </p>
                                 </div>
 
                                 {/* Save */}
@@ -900,8 +954,8 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                             </div>
                                             {item.testing_result && (
                                                 <p className="text-xs text-muted-foreground mt-2">
-                                                    {item.testing_result === 'pass' && 'Item closed successfully.'}
-                                                    {item.testing_result === 'fail' && 'Item reopened for further fixes.'}
+                                                    {item.testing_result === 'pass' && 'Verified — moved to Done.'}
+                                                    {item.testing_result === 'fail' && 'Sent back to agent for fixes.'}
                                                     {item.testing_result === 'partial' && 'Partial pass recorded. Review for follow-up.'}
                                                 </p>
                                             )}

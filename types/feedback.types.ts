@@ -83,11 +83,24 @@ export const FEEDBACK_STATUS_LABELS: Record<FeedbackStatus, string> = {
     new: 'Submitted',
     triaged: 'Under Review',
     in_progress: 'In Progress',
-    awaiting_review: 'Fix Ready - Under Review',
-    resolved: 'Resolved',
+    awaiting_review: 'Fix Ready',
+    resolved: 'Verified',
     closed: 'Closed',
     wont_fix: 'Won\'t Fix',
-    split: 'Split into Sub-tasks',
+    split: 'Split',
+    deferred: 'Deferred',
+};
+
+/** Pipeline-aligned status labels for the admin UI */
+export const ADMIN_STATUS_LABELS: Record<FeedbackStatus, string> = {
+    new: 'New',
+    triaged: 'Triaged',
+    in_progress: 'In Progress',
+    awaiting_review: 'Ready for Testing',
+    resolved: 'Verified',
+    closed: 'Closed',
+    wont_fix: 'Won\'t Fix',
+    split: 'Split',
     deferred: 'Deferred',
 };
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { getAllFeedback, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
-import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS } from '@/types/feedback.types';
+import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import {
     AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
     ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
-    ClipboardCheck, Archive, ChevronDown,
+    ClipboardCheck, Archive, ChevronDown, Copy,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
@@ -23,11 +23,12 @@ import { cn } from '@/lib/utils';
 const statusOptions: { value: FeedbackStatus; label: string; color: string }[] = [
     { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
     { value: 'triaged', label: 'Triaged', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
-    { value: 'awaiting_review', label: 'Awaiting Review', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
     { value: 'in_progress', label: 'In Progress', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
-    { value: 'resolved', label: 'Resolved', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+    { value: 'awaiting_review', label: 'Ready for Testing', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
+    { value: 'resolved', label: 'Verified', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
     { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
     { value: 'wont_fix', label: "Won't Fix", color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+    { value: 'deferred', label: 'Deferred', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400' },
 ];
 
 const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
@@ -98,13 +99,13 @@ const pipelineStages: StageConfig[] = [
     },
     {
         key: 'test_results',
-        label: 'Test Results',
+        label: 'Ready for Testing',
         shortLabel: 'Test',
         owner: 'admin',
         icon: <ClipboardCheck className="w-3.5 h-3.5" />,
-        color: 'text-green-700 dark:text-green-400',
-        activeColor: 'bg-green-600 dark:bg-green-600 text-white',
-        borderColor: 'border-green-300 dark:border-green-700',
+        color: 'text-orange-700 dark:text-orange-400',
+        activeColor: 'bg-orange-600 dark:bg-orange-600 text-white',
+        borderColor: 'border-orange-300 dark:border-orange-700',
         match: (item) => item.status === 'awaiting_review',
     },
     {
@@ -592,13 +593,15 @@ export default function FeedbackTable() {
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-muted/30">
-                                <TableHead className="w-[70px]">
+                                <TableHead className="w-[90px]">
+                                    <span className="font-semibold text-xs">ID</span>
+                                </TableHead>
+                                <TableHead className="w-[50px]">
                                     <button
                                         onClick={() => handleSort('work_priority')}
                                         className="flex items-center gap-1 font-semibold hover:text-foreground"
                                     >
                                         <Hash className="w-3 h-3" />
-                                        Pri
                                         <ArrowUpDown className="w-3 h-3" />
                                     </button>
                                 </TableHead>
@@ -646,7 +649,7 @@ export default function FeedbackTable() {
                         <TableBody>
                             {filteredAndSortedFeedback.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                                         <div className="flex flex-col items-center gap-1">
                                             {activeStage === 'untriaged' && (
                                                 <>
@@ -704,6 +707,20 @@ export default function FeedbackTable() {
                                             )}
                                             onClick={() => handleViewDetails(item)}
                                         >
+                                            <TableCell>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigator.clipboard.writeText(item.id);
+                                                        toast.success('ID copied to clipboard');
+                                                    }}
+                                                    className="flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors group"
+                                                    title={`Click to copy full ID: ${item.id}`}
+                                                >
+                                                    <span>{item.id.slice(0, 8)}</span>
+                                                    <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </button>
+                                            </TableCell>
                                             <TableCell>
                                                 <div className="text-sm font-medium">
                                                     {item.work_priority !== null ? (

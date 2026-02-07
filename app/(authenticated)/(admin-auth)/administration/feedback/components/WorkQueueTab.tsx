@@ -5,7 +5,7 @@ import { getAgentWorkQueue, updateFeedback, setAdminDecision } from '@/actions/f
 import {
     UserFeedback,
     FEEDBACK_STATUS_COLORS,
-    FEEDBACK_STATUS_LABELS,
+    ADMIN_STATUS_LABELS,
     ADMIN_DECISION_COLORS,
     ADMIN_DECISION_LABELS,
 } from '@/types/feedback.types';
@@ -198,7 +198,7 @@ export default function WorkQueueTab() {
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 text-xs">
                                             <Badge className={`${statusColors?.bg || ''} ${statusColors?.text || ''} border-0 text-[10px]`}>
-                                                {FEEDBACK_STATUS_LABELS[item.status]}
+                                                {ADMIN_STATUS_LABELS[item.status]}
                                             </Badge>
                                             {complexity && (
                                                 <Badge className={`${complexity.color} border-0 text-[10px]`}>
