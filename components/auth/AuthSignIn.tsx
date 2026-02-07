@@ -3,14 +3,14 @@
 "use client";
 
 import React from "react";
-import {Button} from "@/components/ui/button";
-import {BasicInput} from "@/components/ui/input";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Label} from "@/components/ui/label";
-import {Separator} from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { BasicInput } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import {Eye, EyeOff} from "lucide-react";
-import {Icon} from "@iconify/react";
+import { Eye, EyeOff } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 export default function AuthSignIn() {
     const [isVisible, setIsVisible] = React.useState(false);
@@ -41,8 +41,8 @@ export default function AuthSignIn() {
                                 type={isVisible ? "text" : "password"}
                                 className="pr-10"
                             />
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={toggleVisibility}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
@@ -78,6 +78,10 @@ export default function AuthSignIn() {
                     <Button variant="outline" className="w-full">
                         <Icon icon="flat-color-icons:google" width={20} className="mr-2" />
                         Continue with Google
+                    </Button>
+                    <Button variant="outline" className="w-full bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200">
+                        <Icon icon="ic:baseline-apple" width={20} className="mr-2" />
+                        Continue with Apple
                     </Button>
                     <Button variant="outline" className="w-full">
                         <Icon className="mr-2" icon="fe:github" width={20} />

@@ -20,6 +20,7 @@ import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import TokenRefreshInitializer from "@/components/auth/TokenRefreshInitializer";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 import { MessagingSideSheet, MessagingInitializer } from "@/features/messaging";
+import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -33,19 +34,19 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    
+
     // Middleware already handles redirecting unauthenticated users to login
     // This is a safety check in case middleware is bypassed somehow
     if (!user) {
         const pathname = headersList.get("x-pathname") || "/dashboard";
         const searchParams = headersList.get("x-search-params") || "";
         const fullPath = searchParams ? `${pathname}${searchParams}` : pathname;
-        
+
         // Never redirect to homepage or auth pages
-        const safeRedirect = (fullPath === '/' || fullPath === '/login' || fullPath === '/sign-up') 
-            ? '/dashboard' 
+        const safeRedirect = (fullPath === '/' || fullPath === '/login' || fullPath === '/sign-up')
+            ? '/dashboard'
             : fullPath;
-        
+
         console.log(`[LAYOUT] Unauthenticated user detected (middleware bypass?), redirecting to login with redirectTo: ${safeRedirect}`);
         return redirect(`/login?redirectTo=${encodeURIComponent(safeRedirect)}`);
     }
@@ -100,6 +101,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     return (
         <Providers initialReduxState={initialReduxState}>
+            <AppleKeyExpiryBanner isAdmin={isAdmin} />
             <SocketInitializer />
             <TokenRefreshInitializer />
             <AnnouncementProvider />

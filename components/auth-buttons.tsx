@@ -37,3 +37,13 @@ export function GithubSignInButton({ children, pendingText = "Connecting...", ..
         </Button>
     );
 }
+
+export function AppleSignInButton({ children, pendingText = "Connecting...", ...props }: Props) {
+    const { pending } = useFormStatus();
+
+    return (
+        <Button type="submit" aria-disabled={pending} {...props}>
+            {pending ? pendingText : children}
+        </Button>
+    );
+}

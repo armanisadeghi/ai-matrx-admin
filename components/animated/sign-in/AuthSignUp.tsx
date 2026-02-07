@@ -1,8 +1,8 @@
 'use client';
 
 import Link from "next/link";
-import {cn} from "@/lib/utils";
-import {IconBrandGithub, IconBrandGoogle} from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { IconBrandGithub, IconBrandGoogle, IconBrandApple } from "@tabler/icons-react";
 import MatrixLogo from "@/public/MatrixLogo";
 
 
@@ -17,7 +17,7 @@ function AuthSignInForm() {
                 <div className="mx-auto w-full max-w-md">
                     <div>
                         <div className="flex">
-                            <MatrixLogo size="lg"/>
+                            <MatrixLogo size="lg" />
                         </div>
                         <h2 className="mt-8 text-2xl font-bold leading-9 tracking-tight text-black dark:text-white">
                             Sign up for an account
@@ -105,22 +105,22 @@ function AuthSignInForm() {
                                     className="absolute inset-0 flex items-center"
                                     aria-hidden="true"
                                 >
-                                    <div className="w-full border-t border-neutral-300 dark:border-neutral-700"/>
+                                    <div className="w-full border-t border-neutral-300 dark:border-neutral-700" />
                                 </div>
                                 <div className="relative flex justify-center text-sm font-medium leading-6">
-                  <span className="bg-gray-50 px-6 text-neutral-400 dark:text-neutral-500 dark:bg-neutral-950">
-                    Or continue with
-                  </span>
+                                    <span className="bg-gray-50 px-6 text-neutral-400 dark:text-neutral-500 dark:bg-neutral-950">
+                                        Or continue with
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="mt-6 w-full flex flex-col items-center justify-center space-y-4"> {/* This was changed so need to make sure it looks ok */}
+                            <div className="mt-6 w-full flex flex-col items-center justify-center space-y-4">
                                 <button
                                     onClick={() => {
                                     }}
                                     className="bg-red-500 relative z-10 hover:bg-red-600 text-white text-sm md:text-sm transition font-medium duration-200 rounded-full px-4 py-1.5 flex items-center justify-center w-full dark:text-white dark:hover:bg-red-700"
                                 >
-                                    <IconBrandGoogle className="h-5 w-5 mr-2"/>   {/* didn't have mr-2 in the original */}
+                                    <IconBrandGoogle className="h-5 w-5 mr-2" />
                                     <span className="text-sm font-semibold leading-6">
                                         Google
                                     </span>
@@ -129,12 +129,23 @@ function AuthSignInForm() {
                                 <button
                                     onClick={() => {
                                     }}
+                                    className="bg-black relative z-10 hover:bg-black/90 text-white text-sm md:text-sm transition font-medium duration-200 rounded-full px-4 py-1.5 flex items-center justify-center w-full dark:text-black dark:bg-white dark:hover:bg-neutral-100 dark:hover:shadow-xl"
+                                >
+                                    <IconBrandApple className="h-5 w-5 mr-2" />
+                                    <span className="text-sm font-semibold leading-6">
+                                        Apple
+                                    </span>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                    }}
                                     className="bg-black relative z-10 hover:bg-black/90  text-white text-sm md:text-sm transition font-medium duration-200  rounded-full px-4 py-1.5  flex items-center justify-center w-full dark:text-black dark:bg-white dark:hover:bg-neutral-100 dark:hover:shadow-xl"
                                 >
-                                    <IconBrandGithub className="h-5 w-5 mr-2"/>  {/* didn't have mr-2 in the original */}
+                                    <IconBrandGithub className="h-5 w-5 mr-2" />
                                     <span className="text-sm font-semibold leading-6">
                                         GitHub
-                  </span>
+                                    </span>
                                 </button>
                             </div>
 

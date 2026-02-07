@@ -1,12 +1,12 @@
 // File: app/(auth-pages)/sign-up/hold-hold-page.tsx
 
-import { signUpAction, signUpWithGoogleAction, signUpWithGithubAction } from "@/actions/auth.actions";
+import { signUpAction, signUpWithGoogleAction, signUpWithAppleAction, signUpWithGithubAction } from "@/actions/auth.actions";
 import { AuthMessageType } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
+import { IconBrandGithub, IconBrandGoogle, IconBrandApple } from "@tabler/icons-react";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
 
@@ -25,7 +25,7 @@ export default async function SignUp({ searchParams }: SignUpProps) {
     const success = awaitedSearchParams.success as string;
 
     let message: AuthMessageType | undefined;
-    
+
     if (success) {
         message = {
             type: "success",
@@ -111,11 +111,11 @@ export default async function SignUp({ searchParams }: SignUpProps) {
                 </div>
 
                 <div>
-                    <input 
+                    <input
                         id="redirectTo"
-                        type="hidden" 
-                        name="redirectTo" 
-                        value={redirectTo} 
+                        type="hidden"
+                        name="redirectTo"
+                        value={redirectTo}
                     />
                     <SubmitButton pendingText="Creating Account..." className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         Sign up
@@ -135,13 +135,13 @@ export default async function SignUp({ searchParams }: SignUpProps) {
                     </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="mt-6 grid grid-cols-3 gap-3">
                     <form action={signUpWithGoogleAction} suppressHydrationWarning={true}>
-                        <input 
+                        <input
                             id="redirectTo"
-                            type="hidden" 
-                            name="redirectTo" 
-                            value={redirectTo} 
+                            type="hidden"
+                            name="redirectTo"
+                            value={redirectTo}
                         />
                         <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200">
                             <IconBrandGoogle className="h-5 w-5 mr-2" />
@@ -149,12 +149,25 @@ export default async function SignUp({ searchParams }: SignUpProps) {
                         </SubmitButton>
                     </form>
 
-                    <form action={signUpWithGithubAction} suppressHydrationWarning={true}>
-                        <input 
+                    <form action={signUpWithAppleAction} suppressHydrationWarning={true}>
+                        <input
                             id="redirectTo"
-                            type="hidden" 
-                            name="redirectTo" 
-                            value={redirectTo} 
+                            type="hidden"
+                            name="redirectTo"
+                            value={redirectTo}
+                        />
+                        <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-black dark:bg-white text-sm font-medium text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors duration-200">
+                            <IconBrandApple className="h-5 w-5 mr-2" />
+                            <span>Apple</span>
+                        </SubmitButton>
+                    </form>
+
+                    <form action={signUpWithGithubAction} suppressHydrationWarning={true}>
+                        <input
+                            id="redirectTo"
+                            type="hidden"
+                            name="redirectTo"
+                            value={redirectTo}
                         />
                         <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200">
                             <IconBrandGithub className="h-5 w-5 mr-2" />

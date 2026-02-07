@@ -1,11 +1,11 @@
-import {supabase} from "@/utils/supabase/client";
-import {createClient} from "@/utils/supabase/server";
+import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server";
 
-export type Provider = 'github' | 'google';
+export type Provider = 'github' | 'google' | 'apple';
 
 export const signInWithOAuth = async (provider: Provider) => {
     try {
-        const {data, error} = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabase.auth.signInWithOAuth({
             provider: provider,
         });
 
@@ -22,7 +22,7 @@ export const signInWithOAuth = async (provider: Provider) => {
 
 export const getSession = async () => {
     try {
-        const {data, error} = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
             throw error;
         }
@@ -44,7 +44,7 @@ export async function getUser() {
 
 export const updateUser = async (email: string, data: any) => {
     try {
-        const {data, error} = await supabase.auth.updateUser({
+        const { data, error } = await supabase.auth.updateUser({
             // ...data,
             email: email
         });
@@ -60,7 +60,7 @@ export const updateUser = async (email: string, data: any) => {
 
 export const linkIdentity = async (provider: Provider, token: string) => {
     try {
-        const {data, error} = await supabase.auth.linkIdentity({
+        const { data, error } = await supabase.auth.linkIdentity({
             provider: provider
         });
         if (error) {
