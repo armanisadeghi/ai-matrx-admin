@@ -53,7 +53,7 @@ export function PublicHeader() {
                     className="flex items-center gap-2 group transition-opacity hover:opacity-80"
                 >
                     <Image 
-                        src="/matrx/apple-touch-icon.png" 
+                        src="/matrx/matrx-icon.svg" 
                         width={24} 
                         height={24} 
                         alt="AI Matrx Logo" 

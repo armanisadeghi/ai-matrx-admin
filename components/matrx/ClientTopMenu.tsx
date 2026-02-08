@@ -10,7 +10,7 @@ const ClientTopMenu: React.FC = () => {
       <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         <div className="flex items-center space-x-4">
           <Link href="/dashboard" className="text-blue-600 text-2xl font-bold flex items-center hover:text-blue-500 transition-colors duration-200">
-            <Image src="/matrx/apple-touch-icon.png" width={32} height={32} alt="AI Matrx Logo" className="mr-2 flex-shrink-0" />
+            <Image src="/matrx/matrx-icon.svg" width={32} height={32} alt="AI Matrx Logo" className="mr-2 flex-shrink-0" />
             AI Matrx
           </Link>
           <nav className="hidden md:flex space-x-4">

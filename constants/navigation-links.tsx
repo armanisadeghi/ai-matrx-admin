@@ -35,24 +35,6 @@ import { IoChatboxOutline } from "react-icons/io5";
 import { FaIndent } from "react-icons/fa6";
 import { IconNewSection } from "@tabler/icons-react";
 
-/** App logo icon derived from favicon.svg, with a square viewBox so it matches h-5 w-5 icons */
-const MatrxLogoIcon = ({ className }: { className?: string }) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 -4 20 20"
-        fill="none"
-        className={className}
-    >
-        <path
-            d="M18 6C18 3.79086 16.2091 2 14 2C11.7909 2 10 3.79086 10 6C10 3.79086 8.20914 2 6 2C3.79086 2 2 3.79086 2 6C2 8.20914 3.79086 10 6 10C8.20914 10 10 8.20914 10 6C10 8.20914 11.7909 10 14 10C16.2091 10 18 8.20914 18 6Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-    </svg>
-);
-
 export interface FaviconConfig {
     color: string; // Primary color for the favicon
     letter?: string; // Letter/symbol to display (1-2 chars)
@@ -78,7 +60,7 @@ export const allNavigationLinks: NavigationLink[] = [
     {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <MatrxLogoIcon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        icon: <img src="/matrx/matrx-icon.svg" alt="AI Matrx" className="h-[22px] w-[22px] flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
         dashboard: true,

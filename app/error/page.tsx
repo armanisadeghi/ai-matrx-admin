@@ -10,7 +10,7 @@ export default function ErrorPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4">
       <div className="max-w-md w-full p-8 bg-textured rounded-lg shadow-lg text-center">
         <div className="flex items-center justify-center mb-6">
-          <Image src="/matrx/apple-touch-icon.png" width={36} height={36} alt="AI Matrx Logo" className="mr-2" />
+          <Image src="/matrx/matrx-icon.svg" width={36} height={36} alt="AI Matrx Logo" className="mr-2" />
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">AI Matrx</h2>
         </div>
         
