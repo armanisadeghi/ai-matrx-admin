@@ -23,6 +23,8 @@ interface EmailComposeSheetProps {
   defaultSubject?: string;
   defaultMessage?: string;
   title?: string;
+  /** When true, sends as the authenticated user (their name in "from", their email as reply-to) */
+  sendAsUser?: boolean;
 }
 
 export function EmailComposeSheet({
@@ -32,6 +34,7 @@ export function EmailComposeSheet({
   defaultSubject = "",
   defaultMessage = "",
   title = "Compose Email",
+  sendAsUser = false,
 }: EmailComposeSheetProps) {
   const [subject, setSubject] = useState(defaultSubject);
   const [message, setMessage] = useState(defaultMessage);
@@ -67,10 +70,11 @@ export function EmailComposeSheet({
         to: recipients.map((r) => r.email),
         subject,
         message,
+        sendAsUser,
       };
 
-      // Include custom from if provided
-      if (customFrom.trim()) {
+      // Include custom from if provided (only when not sending as user)
+      if (!sendAsUser && customFrom.trim()) {
         payload.from = customFrom.trim();
       }
 

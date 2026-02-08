@@ -52,6 +52,7 @@ import {
     RotateCcw,
     UserCheck,
     Users,
+    AlertTriangle,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -119,6 +120,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     );
     const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
     const [formStatus, setFormStatus] = useState<FeedbackStatus>(feedback.status);
+    const [hasOpenIssues, setHasOpenIssues] = useState(feedback.has_open_issues ?? false);
 
     // Comments state
     const [comments, setComments] = useState<FeedbackComment[]>([]);
@@ -150,6 +152,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setWorkPriority(fresh.work_priority !== null ? String(fresh.work_priority) : '');
         setAdminNotes(fresh.admin_notes || '');
         setFormStatus(fresh.status);
+        setHasOpenIssues(fresh.has_open_issues ?? false);
     }, []);
 
     /** Re-fetch the item from the server and update local state */
@@ -217,6 +220,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setWorkPriority(feedback.work_priority !== null ? String(feedback.work_priority) : '');
         setAdminNotes(feedback.admin_notes || '');
         setFormStatus(feedback.status);
+        setHasOpenIssues(feedback.has_open_issues ?? false);
     }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
 
     // Reset UI interaction state only when a completely different item is opened
@@ -287,6 +291,9 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
             }
             if (formStatus !== item.status) {
                 updates.status = formStatus;
+            }
+            if (hasOpenIssues !== (item.has_open_issues ?? false)) {
+                updates.has_open_issues = hasOpenIssues;
             }
 
             if (Object.keys(updates).length > 0) {
@@ -524,6 +531,12 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                             className={`${ADMIN_DECISION_COLORS[item.admin_decision].bg} ${ADMIN_DECISION_COLORS[item.admin_decision].text} border-0 text-xs`}
                                         >
                                             {ADMIN_DECISION_LABELS[item.admin_decision]}
+                                        </Badge>
+                                    )}
+                                    {item.has_open_issues && (
+                                        <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-0 text-xs gap-1">
+                                            <AlertTriangle className="w-3 h-3" />
+                                            Open Issues
                                         </Badge>
                                     )}
                                 </DialogTitle>
@@ -877,6 +890,41 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         placeholder="Internal notes about this feedback..."
                                         className="min-h-[80px]"
                                     />
+                                </div>
+
+                                {/* Open Issues Flag */}
+                                <div
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setHasOpenIssues(!hasOpenIssues)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setHasOpenIssues(!hasOpenIssues); } }}
+                                    className={cn(
+                                        'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                                        hasOpenIssues
+                                            ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15'
+                                            : 'bg-muted/30 border-border hover:bg-muted/50'
+                                    )}
+                                >
+                                    <div className={cn(
+                                        'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0',
+                                        hasOpenIssues
+                                            ? 'bg-amber-500 border-amber-500'
+                                            : 'border-muted-foreground/30'
+                                    )}>
+                                        {hasOpenIssues && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className={cn(
+                                            'text-sm font-medium flex items-center gap-1.5',
+                                            hasOpenIssues ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'
+                                        )}>
+                                            <AlertTriangle className="w-3.5 h-3.5" />
+                                            Has Open Issues
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            Mark this item as having lingering concerns, exposing bigger needs, or being only partially settled.
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <Separator />

@@ -5,7 +5,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import {
     findTargetDirectory,
-    findProjectRoot,
     fileHelpers,
     type DirectoryType
 } from '@/utils/fileSystemUtil';

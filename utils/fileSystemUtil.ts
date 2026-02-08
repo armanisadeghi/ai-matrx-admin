@@ -42,29 +42,17 @@ function ensureExtension(filename: string, ext: string): string {
 
 
 /**
- * Finds the project root by looking for package.json
- * Handles Next.js specific directory structures
+ * Returns the project root directory.
+ * 
+ * Uses process.cwd() which reliably returns the project root in Next.js
+ * (both development and production). The previous __dirname-based traversal
+ * caused Turbopack to generate overly broad file patterns during builds.
+ * 
+ * @deprecated Use process.cwd() directly instead. This function is kept
+ * for backward compatibility but is no longer needed.
  */
-export async function findProjectRoot(startPath: string): Promise<string> {
-    let currentPath = startPath;
-    const root = path.parse(currentPath).root;
-
-    while (currentPath !== root) {
-        try {
-            const packagePath = path.join(currentPath, 'package.json');
-            await fs.access(packagePath);
-
-            // Check if we're in .next directory
-            if (currentPath.endsWith('.next')) {
-                return path.dirname(currentPath);
-            }
-            return currentPath;
-        } catch {
-            currentPath = path.dirname(currentPath);
-        }
-    }
-
-    throw new Error('Could not find project root (no package.json found)');
+export async function findProjectRoot(_startPath?: string): Promise<string> {
+    return process.cwd();
 }
 
 
@@ -73,7 +61,7 @@ export async function findProjectRoot(startPath: string): Promise<string> {
  */
 export async function findTargetDirectory(targetPath: string[]): Promise<string> {
     try {
-        const projectRoot = await findProjectRoot(__dirname);
+        const projectRoot = process.cwd();
         const fullTargetPath = path.join(projectRoot, ...targetPath);
 
         const stats = await fs.stat(fullTargetPath);
@@ -221,7 +209,7 @@ export async function saveFile(
             }
 
             // For web display, we want paths relative to project root and using forward slashes
-            const projectRoot = await findProjectRoot(__dirname);
+            const projectRoot = process.cwd();
             const relativePath = path.relative(projectRoot, filePath);
             const webPath = relativePath.replace(/\\/g, '/');
 
@@ -441,7 +429,7 @@ export const fileHelpers = {
 };
 
 async function resolveDirectoryPath(options: DirectoryOptions): Promise<string> {
-    const projectRoot = await findProjectRoot(__dirname);
+    const projectRoot = process.cwd();
     let fullPath: string;
 
     switch (options.type) {
@@ -481,7 +469,7 @@ async function resolveDirectoryPath(options: DirectoryOptions): Promise<string> 
  * Creates a directory if it doesn't exist and returns its path
  */
 export async function getOrCreatePublicDirectory(subDir?: string): Promise<string> {
-    const projectRoot = await findProjectRoot(__dirname);
+    const projectRoot = process.cwd();
     const publicDir = path.join(projectRoot, DEFAULT_PUBLIC_DIR);
     await fs.mkdir(publicDir, {recursive: true});
 
@@ -498,7 +486,7 @@ export async function getOrCreatePublicDirectory(subDir?: string): Promise<strin
  * Creates a directory if it doesn't exist and returns its path
  */
 export async function getOrCreateDirectory(dirPath: string | string[]): Promise<string> {
-    const projectRoot = await findProjectRoot(__dirname);
+    const projectRoot = process.cwd();
     const fullPath = Array.isArray(dirPath)
                      ? path.join(projectRoot, ...dirPath)
                      : path.join(projectRoot, dirPath);

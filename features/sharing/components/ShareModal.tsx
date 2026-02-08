@@ -138,7 +138,7 @@ export function ShareModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start justify-between gap-2 pr-10">
             <div className="flex-1 min-w-0">
               <DialogTitle>Share {resourceLabel}</DialogTitle>
               <DialogDescription className="truncate">
@@ -201,8 +201,8 @@ export function ShareModal({
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 mt-3 min-h-0">
-            <TabsContent value="users" className="mt-0 space-y-3 h-full overflow-y-auto">
+          <div className="flex-1 mt-3 min-h-0 overflow-y-auto">
+            <TabsContent value="users" className="mt-0 space-y-3">
               {/* Current user permissions */}
               <div>
                 <h3 className="text-sm font-medium mb-2">Current Access</h3>
@@ -226,7 +226,7 @@ export function ShareModal({
               )}
             </TabsContent>
 
-            <TabsContent value="organizations" className="mt-0 space-y-3 h-full overflow-y-auto">
+            <TabsContent value="organizations" className="mt-0 space-y-3">
               {/* Current org permissions */}
               <div>
                 <h3 className="text-sm font-medium mb-2">Current Access</h3>
@@ -249,7 +249,7 @@ export function ShareModal({
               )}
             </TabsContent>
 
-            <TabsContent value="public" className="mt-0 h-full overflow-y-auto">
+            <TabsContent value="public" className="mt-0">
               <PublicAccessTab
                 publicPermission={publicPermission}
                 isOwner={isOwner}

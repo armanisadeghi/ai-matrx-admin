@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { to, subject, message, userIds, from } = body;
+    const { to, subject, message, userIds, from, sendAsUser } = body;
 
     // Validate required fields
     if (!subject || !message) {
@@ -48,9 +48,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate custom from address if provided
+    // Build sender address
+    // When sendAsUser is true, use the authenticated user's name as the display name
+    // and set replyTo to their actual email
     let senderAddress: string | undefined;
-    if (from && from.trim()) {
+    let replyToAddress: string | undefined;
+    const senderFullName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || null;
+    const senderEmail = authUser.email;
+
+    if (sendAsUser) {
+      // Format: "User Name via AI Matrx" <platform-email@domain.com>
+      const defaultFrom = getDefaultFromAddress();
+      const emailMatch = defaultFrom.match(/<([^>]+)>/) || defaultFrom.match(/([^\s<>]+@[^\s<>]+)/);
+      const platformEmail = emailMatch ? emailMatch[1] : defaultFrom;
+      const displayName = senderFullName || senderEmail || 'A user';
+      senderAddress = `${displayName} via AI Matrx <${platformEmail}>`;
+      replyToAddress = senderEmail || undefined;
+    } else if (from && from.trim()) {
+      // Custom from address (legacy admin behavior)
       if (!isValidFromAddress(from)) {
         const allowedDomains = getAllowedEmailDomains();
         return NextResponse.json(
@@ -99,7 +114,30 @@ export async function POST(request: Request) {
     }
 
     // Build HTML email
-    const htmlContent = `
+    const senderDisplayName = senderFullName || senderEmail || 'A member';
+    const htmlContent = sendAsUser
+      ? `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 24px; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">AI Matrx</h1>
+        </div>
+        <div style="background: #ffffff; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+          <div style="background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+            <p style="margin: 0; font-size: 14px; color: #1e40af;">
+              <strong>${senderDisplayName}</strong>${senderEmail ? ` (${senderEmail})` : ''} sent you this message via AI Matrx
+            </p>
+          </div>
+          <div style="white-space: pre-wrap; color: #374151; line-height: 1.6;">${message}</div>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+            This message was sent by ${senderDisplayName} using AI Matrx. 
+            ${senderEmail ? `You can reply directly to ${senderEmail}.` : ''}
+            AI Matrx is not responsible for the content of user-sent messages.
+          </p>
+        </div>
+      </div>
+    `
+      : `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 24px; border-radius: 12px 12px 0 0;">
           <h1 style="color: white; margin: 0; font-size: 24px;">AI Matrx</h1>
@@ -121,7 +159,8 @@ export async function POST(request: Request) {
           to: email,
           subject,
           html: htmlContent,
-          from: senderAddress, // Use custom from if provided, otherwise defaults to EMAIL_FROM
+          from: senderAddress,
+          replyTo: replyToAddress,
         })
       )
     );

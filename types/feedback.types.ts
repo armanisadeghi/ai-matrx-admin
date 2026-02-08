@@ -41,6 +41,8 @@ export interface UserFeedback {
     testing_instructions: string | null;
     testing_url: string | null;
     testing_result: TestingResult | null;
+    // Flags
+    has_open_issues: boolean;
 }
 
 export interface FeedbackComment {
@@ -88,6 +90,7 @@ export interface UpdateFeedbackInput {
     testing_instructions?: string;
     testing_url?: string;
     testing_result?: TestingResult;
+    has_open_issues?: boolean;
 }
 
 /** Human-readable status labels for the user portal */

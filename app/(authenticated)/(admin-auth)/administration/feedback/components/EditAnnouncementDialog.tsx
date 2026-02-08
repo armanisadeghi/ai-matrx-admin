@@ -150,10 +150,8 @@ export default function EditAnnouncementDialog({ announcement, open, onOpenChang
                             <SelectContent>
                                 {announcementTypes.map((type) => (
                                     <SelectItem key={type.value} value={type.value}>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{type.label}</span>
-                                            <span className="text-xs text-gray-500">{type.description}</span>
-                                        </div>
+                                        <span className="font-medium">{type.label}</span>
+                                        <span className="text-xs text-muted-foreground ml-2">{type.description}</span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>

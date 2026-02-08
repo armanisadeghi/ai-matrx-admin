@@ -31,7 +31,6 @@ import { LuWebhook } from "react-icons/lu";
 import { TbRelationManyToMany } from "react-icons/tb";
 import { AiFillAudio } from "react-icons/ai";
 import { SiMagic, SiSocketdotio } from "react-icons/si";
-import { SiCodemagic } from "react-icons/si";
 import { LuNotepadText } from "react-icons/lu";
 import { IoChatboxOutline } from "react-icons/io5";
 import { FaIndent } from "react-icons/fa6";
@@ -104,6 +103,17 @@ export const allNavigationLinks: NavigationLink[] = [
         favicon: { color: "#a855f7", letter: "P" }, // Light Purple
     },
     {
+        label: "Prompt Apps",
+        href: "/prompt-apps",
+        icon: <IconNewSection className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: false,
+        description: "Browse and run interactive apps built from prompts",
+        color: "emerald",
+        favicon: { color: "#10b981", letter: "PA" }, // Emerald
+    },
+    {
         label: "Chat",
         href: "/chat",
         icon: <IoChatboxOutline className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
@@ -170,17 +180,6 @@ export const allNavigationLinks: NavigationLink[] = [
         favicon: { color: "#06b6d4", letter: "D" }, // Cyan
     },
     {
-        label: "Applets",
-        href: "/applets",
-        icon: <IconNewSection className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        section: "primary",
-        profileMenu: true,
-        dashboard: false,
-        description: "Browse a collection of Applets built by the community",
-        color: "emerald",
-        favicon: { color: "#ec4899", letter: "A" }, // Pink
-    },
-    {
         label: "Voices",
         icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         href: "/demo/voice/voice-manager",
@@ -223,15 +222,6 @@ export const allNavigationLinks: NavigationLink[] = [
         description: "Design and automate complex workflows",
         color: "purple",
         favicon: { color: "#8b5cf6", letter: "WF" }, // Purple
-    },
-    {
-        label: "App Builder",
-        href: "/apps/builder",
-        icon: (
-            <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
-        ),
-        section: "primary",
-        favicon: { color: "#ef4444", letter: "AB" }, // Red
     },
 
     // Admin Navigation Links

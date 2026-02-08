@@ -13,6 +13,7 @@ import {
     AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
     ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
     ClipboardCheck, Archive, ChevronDown, Copy, UserCheck, XCircle, MinusCircle, TestTube,
+    AlertTriangle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
@@ -245,6 +246,7 @@ export default function FeedbackTable() {
     const [filterType, setFilterType] = useState<FeedbackType | 'all'>('all');
     const [filterDecision, setFilterDecision] = useState<AdminDecision | 'all'>('all');
     const [filterTestResult, setFilterTestResult] = useState<TestingResult | 'all'>('all');
+    const [filterOpenIssues, setFilterOpenIssues] = useState<'all' | 'yes' | 'no'>('all');
     const [showFilters, setShowFilters] = useState(false);
 
     // Sorting
@@ -364,6 +366,8 @@ export default function FeedbackTable() {
             if (filterType !== 'all' && item.feedback_type !== filterType) return false;
             if (filterDecision !== 'all' && item.admin_decision !== filterDecision) return false;
             if (filterTestResult !== 'all' && (item.testing_result || null) !== filterTestResult) return false;
+            if (filterOpenIssues === 'yes' && !item.has_open_issues) return false;
+            if (filterOpenIssues === 'no' && item.has_open_issues) return false;
 
             // Search
             if (searchTerm) {
@@ -416,13 +420,13 @@ export default function FeedbackTable() {
         });
 
         return filtered;
-    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, sortField, sortDirection]);
+    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, filterOpenIssues, sortField, sortDirection]);
 
     const getStatusOption = (status: FeedbackStatus) => {
         return statusOptions.find(s => s.value === status);
     };
 
-    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || filterTestResult !== 'all' || searchTerm !== '';
+    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || filterTestResult !== 'all' || filterOpenIssues !== 'all' || searchTerm !== '';
 
     // Initial load: show skeleton but still render dialogs below so they don't unmount
     const isInitialLoad = loading && feedback.length === 0;
@@ -612,6 +616,18 @@ export default function FeedbackTable() {
                                 </SelectItem>
                             </SelectContent>
                         </Select>
+                        <Select value={filterOpenIssues} onValueChange={(value) => setFilterOpenIssues(value as 'all' | 'yes' | 'no')}>
+                            <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
+                                <SelectValue placeholder="Open Issues" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Items</SelectItem>
+                                <SelectItem value="yes">
+                                    <span className="flex items-center gap-1.5"><AlertTriangle className="w-3 h-3 text-amber-500" /> Has Open Issues</span>
+                                </SelectItem>
+                                <SelectItem value="no">No Open Issues</SelectItem>
+                            </SelectContent>
+                        </Select>
                         {hasActiveFilters && (
                             <Button
                                 variant="ghost"
@@ -622,6 +638,7 @@ export default function FeedbackTable() {
                                     setFilterType('all');
                                     setFilterDecision('all');
                                     setFilterTestResult('all');
+                                    setFilterOpenIssues('all');
                                     setSearchTerm('');
                                 }}
                             >
@@ -827,6 +844,14 @@ export default function FeedbackTable() {
                                                             {item.testing_result === 'fail' && <XCircle className="w-3 h-3" />}
                                                             {item.testing_result === 'partial' && <MinusCircle className="w-3 h-3" />}
                                                             {item.testing_result === 'pass' ? 'Pass' : item.testing_result === 'fail' ? 'Fail' : 'Partial'}
+                                                        </span>
+                                                    )}
+                                                    {item.has_open_issues && (
+                                                        <span
+                                                            className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                                            title="Has open issues"
+                                                        >
+                                                            <AlertTriangle className="w-3 h-3" />
                                                         </span>
                                                     )}
                                                 </div>

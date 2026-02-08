@@ -42,18 +42,33 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
 
   // Fetch filtered data using the paginated endpoint with search term
   const fetchFilteredData = async () => {
+    // Fetch fields separately since the paginated endpoint doesn't include them
+    const { data: fieldsData, error: fieldsError } = await supabase
+      .from('table_fields')
+      .select('id, field_name, display_name, data_type, field_order, is_required, default_value, validation_rules')
+      .eq('table_id', tableId)
+      .order('field_order');
+
+    if (fieldsError) throw new Error(fieldsError.message || 'Failed to fetch table fields');
+
     const { data, error } = await supabase.rpc('get_user_table_data_paginated_v2', {
       p_table_id: tableId,
-      p_page: 1,
-      p_page_size: 10000, // Large limit to get all search results
+      p_limit: 10000, // Large limit to get all search results
+      p_offset: 0,
       p_sort_field: sortField || null,
       p_sort_direction: sortDirection,
       p_search_term: searchTerm || null,
     });
 
-    if (error) throw error;
+    if (error) throw new Error(error.message || 'Failed to fetch filtered data');
     if (!data?.success) throw new Error(data?.error || 'Failed to fetch filtered data');
-    return data;
+
+    // Return in the same format as get_user_table_complete for compatibility
+    return {
+      success: true,
+      fields: fieldsData || [],
+      data: data.data || [],
+    };
   };
 
   // Get the appropriate data source based on export scope
@@ -244,9 +259,14 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
       }
       
       onClose();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error exporting table:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      const message = err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : 'An unexpected error occurred';
+      setError(message);
     } finally {
       setLoading(false);
     }

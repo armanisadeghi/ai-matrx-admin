@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2 } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
@@ -25,6 +25,52 @@ interface PromptAppEditorProps {
 }
 
 type EditorMode = 'view' | 'edit' | 'run';
+
+function PromptIdCopyBadge({ promptId }: { promptId: string }) {
+  const [copied, setCopied] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const shortId = promptId.slice(0, 8) + '...';
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(promptId);
+      setCopied(true);
+      toast.success('Prompt ID copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-mono text-xs",
+        "bg-muted/60 border border-border/50 text-muted-foreground",
+        "hover:bg-primary/10 hover:border-primary/30 hover:text-primary",
+        "transition-all duration-200 cursor-pointer group max-w-full"
+      )}
+      title="Click to copy prompt ID"
+    >
+      <span className={cn(
+        "transition-all duration-200 truncate",
+        isHovered ? "max-w-[22rem]" : "max-w-[5.5rem]"
+      )}>
+        {isHovered ? promptId : shortId}
+      </span>
+      {copied ? (
+        <Check className="w-3 h-3 text-green-500 shrink-0" />
+      ) : (
+        <Copy className="w-3 h-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+      )}
+    </button>
+  );
+}
 
 export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const router = useRouter();
@@ -261,48 +307,64 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
             </div>
           </div>
 
-          {/* Mode Switcher */}
-          <div className="inline-flex p-1 rounded-lg bg-muted/50 border border-border/50 gap-1">
-            <Button
-              variant={mode === 'view' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setMode('view')}
-              className={cn(
-                "transition-all",
-                mode === 'view' && "shadow-sm"
-              )}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              View
-            </Button>
-            <Button
-              variant={mode === 'edit' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setMode('edit')}
-              disabled={isSaving}
-              className={cn(
-                "transition-all",
-                mode === 'edit' && "shadow-sm"
-              )}
-            >
-              <Code2 className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-            <Button
-              variant={mode === 'run' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                setMode('run');
-                setIsIframeLoading(true);
-              }}
-              className={cn(
-                "transition-all",
-                mode === 'run' && "shadow-sm"
-              )}
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Run
-            </Button>
+          {/* Mode Switcher + Prompt Link */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="inline-flex p-1 rounded-lg bg-muted/50 border border-border/50 gap-1">
+              <Button
+                variant={mode === 'view' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setMode('view')}
+                className={cn(
+                  "transition-all",
+                  mode === 'view' && "shadow-sm"
+                )}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View
+              </Button>
+              <Button
+                variant={mode === 'edit' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setMode('edit')}
+                disabled={isSaving}
+                className={cn(
+                  "transition-all",
+                  mode === 'edit' && "shadow-sm"
+                )}
+              >
+                <Code2 className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                variant={mode === 'run' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => {
+                  setMode('run');
+                  setIsIframeLoading(true);
+                }}
+                className={cn(
+                  "transition-all",
+                  mode === 'run' && "shadow-sm"
+                )}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Run
+              </Button>
+            </div>
+
+            {/* Prompt Builder Link - Always visible */}
+            {app.prompt_id && (
+              <Link
+                href={`/ai/prompts/edit/${app.prompt_id}`}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all group"
+              >
+                <Wand2 className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm font-medium text-primary">
+                  {promptName || 'Loading prompt...'}
+                </span>
+                <ExternalLink className="w-3.5 h-3.5 text-primary/60 group-hover:text-primary transition-colors" />
+              </Link>
+            )}
           </div>
 
           {/* Stats */}
@@ -422,28 +484,15 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                         </a>
                       </div>
                     </div>
-                    {/* Prompt Info */}
+                    {/* Prompt Info (link also shown in header above for quick access) */}
                     {app.prompt_id && (
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Powered by Prompt</label>
                         <div className="flex items-center gap-2">
                           <Wand2 className="w-4 h-4 text-primary shrink-0" />
-                          <Link
-                            href={`/ai/prompts/edit/${app.prompt_id}`}
-                            className="text-sm font-medium text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors"
-                          >
-                            {promptName || 'Loading prompt...'}
-                          </Link>
-                          <Link
-                            href={`/ai/prompts/edit/${app.prompt_id}`}
-                            className="shrink-0"
-                          >
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 cursor-pointer hover:bg-primary/10 transition-colors">
-                              <ExternalLink className="w-3 h-3 mr-1" />
-                              Open in Prompt Builder
-                            </Badge>
-                          </Link>
+                          <span className="text-sm font-medium text-foreground">{promptName || 'Loading prompt...'}</span>
                         </div>
+                        <PromptIdCopyBadge promptId={app.prompt_id} />
                       </div>
                     )}
                     {app.description && (

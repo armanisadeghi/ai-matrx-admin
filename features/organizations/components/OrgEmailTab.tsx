@@ -215,6 +215,7 @@ export function OrgEmailTab({ organizationId, organizationName }: OrgEmailTabPro
                 onClose={() => setComposeOpen(false)}
                 recipients={selectedRecipients}
                 title={`Email ${organizationName} Members`}
+                sendAsUser
             />
         </div>
     );
