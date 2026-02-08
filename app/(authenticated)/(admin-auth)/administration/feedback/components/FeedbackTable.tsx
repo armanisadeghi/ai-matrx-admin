@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { getAllFeedback, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
-import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS } from '@/types/feedback.types';
+import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, TestingResult, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import {
     AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
     ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
-    ClipboardCheck, Archive, ChevronDown, Copy, UserCheck,
+    ClipboardCheck, Archive, ChevronDown, Copy, UserCheck, XCircle, MinusCircle, TestTube,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
@@ -244,6 +244,7 @@ export default function FeedbackTable() {
     const [filterStatus, setFilterStatus] = useState<FeedbackStatus | 'all'>('all');
     const [filterType, setFilterType] = useState<FeedbackType | 'all'>('all');
     const [filterDecision, setFilterDecision] = useState<AdminDecision | 'all'>('all');
+    const [filterTestResult, setFilterTestResult] = useState<TestingResult | 'all'>('all');
     const [showFilters, setShowFilters] = useState(false);
 
     // Sorting
@@ -362,6 +363,7 @@ export default function FeedbackTable() {
             if (filterStatus !== 'all' && item.status !== filterStatus) return false;
             if (filterType !== 'all' && item.feedback_type !== filterType) return false;
             if (filterDecision !== 'all' && item.admin_decision !== filterDecision) return false;
+            if (filterTestResult !== 'all' && (item.testing_result || null) !== filterTestResult) return false;
 
             // Search
             if (searchTerm) {
@@ -414,13 +416,13 @@ export default function FeedbackTable() {
         });
 
         return filtered;
-    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, sortField, sortDirection]);
+    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, sortField, sortDirection]);
 
     const getStatusOption = (status: FeedbackStatus) => {
         return statusOptions.find(s => s.value === status);
     };
 
-    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || searchTerm !== '';
+    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || filterTestResult !== 'all' || searchTerm !== '';
 
     // Initial load: show skeleton but still render dialogs below so they don't unmount
     const isInitialLoad = loading && feedback.length === 0;
@@ -460,6 +462,7 @@ export default function FeedbackTable() {
                                             setFilterStatus('all');
                                             setFilterType('all');
                                             setFilterDecision('all');
+                                            setFilterTestResult('all');
                                             // Smart sort defaults
                                             if (stage.key === 'agent_working') {
                                                 setSortField('work_priority');
@@ -592,6 +595,23 @@ export default function FeedbackTable() {
                                 ))}
                             </SelectContent>
                         </Select>
+                        <Select value={filterTestResult} onValueChange={(value) => setFilterTestResult(value as TestingResult | 'all')}>
+                            <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
+                                <SelectValue placeholder="Test Result" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Test Results</SelectItem>
+                                <SelectItem value="pass">
+                                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-green-500" /> Pass</span>
+                                </SelectItem>
+                                <SelectItem value="fail">
+                                    <span className="flex items-center gap-1.5"><XCircle className="w-3 h-3 text-red-500" /> Fail</span>
+                                </SelectItem>
+                                <SelectItem value="partial">
+                                    <span className="flex items-center gap-1.5"><MinusCircle className="w-3 h-3 text-yellow-500" /> Partial</span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
                         {hasActiveFilters && (
                             <Button
                                 variant="ghost"
@@ -601,6 +621,7 @@ export default function FeedbackTable() {
                                     setFilterStatus('all');
                                     setFilterType('all');
                                     setFilterDecision('all');
+                                    setFilterTestResult('all');
                                     setSearchTerm('');
                                 }}
                             >
@@ -646,7 +667,7 @@ export default function FeedbackTable() {
                                         <ArrowUpDown className="w-3 h-3" />
                                     </button>
                                 </TableHead>
-                                <TableHead className="w-[120px]">
+                                <TableHead className="w-[170px]">
                                     <button
                                         onClick={() => handleSort('status')}
                                         className="flex items-center gap-1 font-semibold hover:text-foreground"
@@ -776,21 +797,39 @@ export default function FeedbackTable() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Select
-                                                    value={item.status}
-                                                    onValueChange={(value) => handleStatusChange(item.id, value as FeedbackStatus)}
-                                                >
-                                                    <SelectTrigger className="h-7 text-xs" onClick={(e) => e.stopPropagation()}>
-                                                        <Badge className={`${statusOption?.color} border-0`}>
-                                                            {statusOption?.label}
-                                                        </Badge>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {statusOptions.map(option => (
-                                                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Select
+                                                        value={item.status}
+                                                        onValueChange={(value) => handleStatusChange(item.id, value as FeedbackStatus)}
+                                                    >
+                                                        <SelectTrigger className="h-7 text-xs" onClick={(e) => e.stopPropagation()}>
+                                                            <Badge className={`${statusOption?.color} border-0`}>
+                                                                {statusOption?.label}
+                                                            </Badge>
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {statusOptions.map(option => (
+                                                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {item.testing_result && item.testing_result !== 'pending' && (
+                                                        <span
+                                                            className={cn(
+                                                                'flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0',
+                                                                item.testing_result === 'pass' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                                                item.testing_result === 'fail' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                                                item.testing_result === 'partial' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                                            )}
+                                                            title={`Testing: ${item.testing_result}`}
+                                                        >
+                                                            {item.testing_result === 'pass' && <CheckCircle2 className="w-3 h-3" />}
+                                                            {item.testing_result === 'fail' && <XCircle className="w-3 h-3" />}
+                                                            {item.testing_result === 'partial' && <MinusCircle className="w-3 h-3" />}
+                                                            {item.testing_result === 'pass' ? 'Pass' : item.testing_result === 'fail' ? 'Fail' : 'Partial'}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-start gap-2">

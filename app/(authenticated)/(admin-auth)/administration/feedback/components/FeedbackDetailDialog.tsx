@@ -209,7 +209,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     }, [item.id]);
 
-    // Sync from prop when a different item is opened or the parent provides fresher data
+    // Sync data from prop when the parent provides fresher data (same or different item)
     useEffect(() => {
         setItem(feedback);
         setDecision(feedback.admin_decision || 'pending');
@@ -217,6 +217,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setWorkPriority(feedback.work_priority !== null ? String(feedback.work_priority) : '');
         setAdminNotes(feedback.admin_notes || '');
         setFormStatus(feedback.status);
+    }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
+
+    // Reset UI interaction state only when a completely different item is opened
+    useEffect(() => {
         setSignedUrls({});
         setComments([]);
         setNewComment('');
@@ -226,7 +230,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setUserReviewMessage('');
         setUserMessages([]);
         setUserReplyText('');
-    }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
+    }, [feedback.id]); // Only reset on different item, NOT on updated_at changes
 
     // Fetch images when dialog opens
     useEffect(() => {
