@@ -7,6 +7,7 @@ import {
     UserFeedback,
     FeedbackStatus,
     FeedbackComment,
+    FeedbackUserMessage,
     AdminDecision,
     TestingResult,
     CreateAnnouncementInput,
@@ -345,6 +346,117 @@ export async function resolveWithTesting(
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'An unexpected error occurred';
         return { success: false, error: message };
+    }
+}
+
+// ============= USER REVIEW MESSAGING ACTIONS =============
+
+/** Admin sends a message to user for review (changes status to user_review) */
+export async function sendUserReviewMessage(
+    feedbackId: string,
+    message: string,
+    senderName?: string
+): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'User not authenticated' };
+
+        const name = senderName || user.email || 'Admin';
+        const { data, error } = await supabase.rpc('send_user_review_message', {
+            p_feedback_id: feedbackId,
+            p_message: message,
+            p_sender_name: name,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const message2 = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: message2 };
+    }
+}
+
+/** Admin replies to a user in an ongoing user review thread */
+export async function adminReplyUserReview(
+    feedbackId: string,
+    message: string,
+    senderName?: string
+): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'User not authenticated' };
+
+        const name = senderName || user.email || 'Admin';
+        const { data, error } = await supabase.rpc('admin_reply_user_review', {
+            p_feedback_id: feedbackId,
+            p_message: message,
+            p_sender_name: name,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: msg };
+    }
+}
+
+/** User replies to admin's review request (changes status back to awaiting_review) */
+export async function replyToUserReview(
+    feedbackId: string,
+    message: string,
+    senderName?: string
+): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage }> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: 'User not authenticated' };
+
+        const name = senderName || user.user_metadata?.username || user.email || 'User';
+        const { data, error } = await supabase.rpc('reply_to_user_review', {
+            p_feedback_id: feedbackId,
+            p_message: message,
+            p_sender_name: name,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: msg };
+    }
+}
+
+/** Get all user review messages for a feedback item */
+export async function getUserMessages(
+    feedbackId: string
+): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage[] }> {
+    try {
+        const supabase = await createClient();
+        const { data, error } = await supabase.rpc('get_user_messages', {
+            p_feedback_id: feedbackId,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true, data: data || [] };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: msg };
+    }
+}
+
+/** Mark a user message as emailed */
+export async function markUserMessageEmailed(
+    messageId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabase = await createClient();
+        const { error } = await supabase.rpc('mark_user_message_emailed', {
+            p_message_id: messageId,
+        });
+        if (error) return { success: false, error: error.message };
+        return { success: true };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return { success: false, error: msg };
     }
 }
 

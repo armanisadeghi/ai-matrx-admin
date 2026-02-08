@@ -23,9 +23,11 @@ interface ExportTableModalProps {
   onClose: () => void;
   sortField?: string | null;
   sortDirection?: 'asc' | 'desc';
+  searchTerm?: string;
 }
 
-export default function ExportTableModal({ tableId, tableName, isOpen, onClose, sortField, sortDirection = 'asc' }: ExportTableModalProps) {
+export default function ExportTableModal({ tableId, tableName, isOpen, onClose, sortField, sortDirection = 'asc', searchTerm }: ExportTableModalProps) {
+  const [exportScope, setExportScope] = useState<'all' | 'search'>(searchTerm ? 'search' : 'all');
   const [exportTab, setExportTab] = useState('download');
   const [downloadFormat, setDownloadFormat] = useState('csv');
   const [copyFormat, setCopyFormat] = useState('markdown');
@@ -34,6 +36,60 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [emailed, setEmailed] = useState(false);
+
+  // Reset scope when searchTerm changes
+  const hasSearch = Boolean(searchTerm?.trim());
+
+  // Fetch filtered data using the paginated endpoint with search term
+  const fetchFilteredData = async () => {
+    const { data, error } = await supabase.rpc('get_user_table_data_paginated_v2', {
+      p_table_id: tableId,
+      p_page: 1,
+      p_page_size: 10000, // Large limit to get all search results
+      p_sort_field: sortField || null,
+      p_sort_direction: sortDirection,
+      p_search_term: searchTerm || null,
+    });
+
+    if (error) throw error;
+    if (!data?.success) throw new Error(data?.error || 'Failed to fetch filtered data');
+    return data;
+  };
+
+  // Get the appropriate data source based on export scope
+  const fetchExportData = async () => {
+    if (exportScope === 'search' && hasSearch) {
+      return await fetchFilteredData();
+    }
+    // Full table export
+    const { data, error } = await supabase.rpc('get_user_table_complete', {
+      p_table_id: tableId,
+      p_sort_field: sortField || null,
+      p_sort_direction: sortDirection,
+    });
+    if (error) throw error;
+    if (!data.success) throw new Error(data.error || 'Failed to export data');
+    return data;
+  };
+
+  // Generate CSV from table data (client-side, for filtered exports)
+  const convertToCsv = (tableData: any) => {
+    if (!tableData?.fields || !tableData?.data) {
+      throw new Error('Invalid table data for CSV conversion');
+    }
+    const fields = tableData.fields;
+    const data = tableData.data;
+
+    const headers = fields.map((f: any) => `"${f.display_name.replace(/"/g, '""')}"`);
+    const rows = data.map((row: any) =>
+      fields.map((f: any) => {
+        const val = row.data?.[f.field_name] ?? '';
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(',')
+    );
+
+    return [headers.join(','), ...rows].join('\n');
+  };
 
   // Convert data to Markdown table format
   const convertToMarkdown = (tableData: any) => {
@@ -107,6 +163,21 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
     }
   };
 
+  // Helper to trigger a file download
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  const filePrefix = `${tableName.replace(/\s+/g, '_')}${exportScope === 'search' ? '_filtered' : ''}`;
+
   // Handle export
   const handleExport = async () => {
     try {
@@ -114,115 +185,43 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
       setError(null);
       
       if (exportTab === 'download') {
-        // Download file based on selected format
         if (downloadFormat === 'csv') {
-          // Call the CSV export function
-          const { data, error } = await supabase.rpc('export_user_table_as_csv', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (error) throw error;
-          if (!data) throw new Error('Failed to export data');
-          
-          // Download the CSV
-          const blob = new Blob([data], { type: 'text/csv' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${tableName.replace(/\s+/g, '_')}_export.csv`;
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(url);
-          document.body.removeChild(a);
+          if (exportScope === 'search' && hasSearch) {
+            // Client-side CSV from filtered data
+            const tableData = await fetchFilteredData();
+            const csv = convertToCsv(tableData);
+            downloadFile(csv, `${filePrefix}_export.csv`, 'text/csv');
+          } else {
+            // Server-side CSV export (original behavior)
+            const { data, error } = await supabase.rpc('export_user_table_as_csv', {
+              p_table_id: tableId,
+              p_sort_field: sortField || null,
+              p_sort_direction: sortDirection,
+            });
+            if (error) throw error;
+            if (!data) throw new Error('Failed to export data');
+            downloadFile(data, `${filePrefix}_export.csv`, 'text/csv');
+          }
         } else if (downloadFormat === 'json') {
-          // Fetch the complete table data
-          const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (error) throw error;
-          if (!data.success) throw new Error(data.error || 'Failed to export data');
-          
-          // Convert to simple JSON format
-          const simpleData = convertToSimpleJson(data);
-          const jsonData = JSON.stringify(simpleData, null, 2);
-          
-          // Download as JSON
-          const blob = new Blob([jsonData], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${tableName.replace(/\s+/g, '_')}_export.json`;
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(url);
-          document.body.removeChild(a);
+          const tableData = await fetchExportData();
+          const simpleData = convertToSimpleJson(tableData);
+          downloadFile(JSON.stringify(simpleData, null, 2), `${filePrefix}_export.json`, 'application/json');
         } else if (downloadFormat === 'markdown') {
-          // Fetch the complete table data for markdown conversion
-          const { data: tableData, error: tableError } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (tableError) throw tableError;
-          if (!tableData.success) throw new Error(tableData.error || 'Failed to export data');
-          
-          // Convert to markdown and download
-          const markdown = convertToMarkdown(tableData);
-          const blob = new Blob([markdown], { type: 'text/markdown' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${tableName.replace(/\s+/g, '_')}.md`;
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(url);
-          document.body.removeChild(a);
+          const tableData = await fetchExportData();
+          downloadFile(convertToMarkdown(tableData), `${filePrefix}.md`, 'text/markdown');
         } else if (downloadFormat === 'fullSchema') {
-          // Export the full internal schema
-          const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (error) throw error;
-          if (!data.success) throw new Error(data.error || 'Failed to export data');
-          
-          // Download as JSON with full schema
-          const jsonData = JSON.stringify(data, null, 2);
-          const blob = new Blob([jsonData], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${tableName.replace(/\s+/g, '_')}_full_schema.json`;
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(url);
-          document.body.removeChild(a);
+          const tableData = await fetchExportData();
+          downloadFile(JSON.stringify(tableData, null, 2), `${filePrefix}_full_schema.json`, 'application/json');
         }
       } else if (exportTab === 'email') {
-        // Email export to user
         const response = await fetch('/api/export/email-table', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tableId,
-            tableName,
-            format: emailFormat,
-          }),
+          body: JSON.stringify({ tableId, tableName, format: emailFormat }),
         });
 
         const data = await response.json();
-        
-        if (!data.success) {
-          throw new Error(data.msg || 'Failed to send email');
-        }
+        if (!data.success) throw new Error(data.msg || 'Failed to send email');
         
         setEmailed(true);
         toast({
@@ -232,49 +231,15 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
         });
         setTimeout(() => setEmailed(false), 2000);
       } else {
-        // Copy to clipboard based on selected format
+        // Copy to clipboard
+        const tableData = await fetchExportData();
         if (copyFormat === 'markdown') {
-          // Fetch the complete table data for markdown conversion
-          const { data: tableData, error: tableError } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (tableError) throw tableError;
-          if (!tableData.success) throw new Error(tableData.error || 'Failed to export data');
-          
-          // Convert to markdown and copy
-          const markdown = convertToMarkdown(tableData);
-          await copyToClipboard(markdown, 'Markdown');
+          await copyToClipboard(convertToMarkdown(tableData), 'Markdown');
         } else if (copyFormat === 'json') {
-          // Fetch data and copy as simplified JSON
-          const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (error) throw error;
-          if (!data.success) throw new Error(data.error || 'Failed to export data');
-          
-          // Convert to simple JSON format
-          const simpleData = convertToSimpleJson(data);
-          const jsonData = JSON.stringify(simpleData, null, 2);
-          await copyToClipboard(jsonData, 'JSON');
+          const simpleData = convertToSimpleJson(tableData);
+          await copyToClipboard(JSON.stringify(simpleData, null, 2), 'JSON');
         } else if (copyFormat === 'fullSchema') {
-          // Copy internal schema as JSON
-          const { data, error } = await supabase.rpc('get_user_table_complete', {
-            p_table_id: tableId,
-            p_sort_field: sortField || null,
-            p_sort_direction: sortDirection,
-          });
-          
-          if (error) throw error;
-          if (!data.success) throw new Error(data.error || 'Failed to export data');
-          
-          const jsonData = JSON.stringify(data, null, 2);
-          await copyToClipboard(jsonData, 'Full Schema JSON');
+          await copyToClipboard(JSON.stringify(tableData, null, 2), 'Full Schema JSON');
         }
       }
       
@@ -298,6 +263,36 @@ export default function ExportTableModal({ tableId, tableName, isOpen, onClose, 
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded-md text-red-500 dark:text-red-400 text-sm border border-red-100 dark:border-red-800">
               {error}
+            </div>
+          )}
+
+          {/* Export scope toggle - only shown when a search is active */}
+          {hasSearch && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Export Scope</Label>
+              <RadioGroup
+                value={exportScope}
+                onValueChange={(v) => setExportScope(v as 'all' | 'search')}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="search" id="scope-search" />
+                  <Label htmlFor="scope-search" className="font-normal text-sm">
+                    Current search results
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="scope-all" />
+                  <Label htmlFor="scope-all" className="font-normal text-sm">
+                    Entire table
+                  </Label>
+                </div>
+              </RadioGroup>
+              {exportScope === 'search' && (
+                <p className="text-xs text-muted-foreground">
+                  Exporting rows matching: &quot;{searchTerm}&quot;
+                </p>
+              )}
             </div>
           )}
           

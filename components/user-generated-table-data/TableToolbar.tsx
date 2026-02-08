@@ -325,6 +325,7 @@ export default function TableToolbar({
         onClose={() => setShowExportModal(false)}
         sortField={sortField}
         sortDirection={sortDirection}
+        searchTerm={searchTerm}
       />
       <TableReferenceOverlay
         isOpen={showReferenceOverlay}

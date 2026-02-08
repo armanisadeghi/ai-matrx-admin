@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, Users, Mail, AlertTriangle } from 'lucide-react';
+import { Settings, Users, Mail, AlertTriangle, Send } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Organization, OrgRole } from '@/features/organizations';
 import { GeneralSettings } from './GeneralSettings';
 import { MemberManagement } from './MemberManagement';
 import { InvitationManager } from './InvitationManager';
 import { DangerZone } from './DangerZone';
+import { OrgEmailTab } from './OrgEmailTab';
 
 interface OrgSettingsProps {
   organization: Organization;
@@ -66,6 +67,13 @@ export function OrgSettings({
             </TabsTrigger>
           )}
 
+          {canManageMembers && (
+            <TabsTrigger value="email" className="gap-1.5 px-3 py-1.5 text-sm">
+              <Send className="h-3.5 w-3.5" />
+              Email
+            </TabsTrigger>
+          )}
+
           {canDelete && (
             <TabsTrigger value="danger" className="gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 data-[state=active]:text-red-600">
               <AlertTriangle className="h-3.5 w-3.5" />
@@ -102,6 +110,16 @@ export function OrgSettings({
               organizationId={organization.id}
               organizationName={organization.name}
               userRole={userRole}
+            />
+          </TabsContent>
+        )}
+
+        {/* Email Tab */}
+        {canManageMembers && (
+          <TabsContent value="email">
+            <OrgEmailTab
+              organizationId={organization.id}
+              organizationName={organization.name}
             />
           </TabsContent>
         )}

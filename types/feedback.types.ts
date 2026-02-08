@@ -1,7 +1,7 @@
 // Types for user feedback and bug reporting system
 
 export type FeedbackType = 'bug' | 'feature' | 'suggestion' | 'other';
-export type FeedbackStatus = 'new' | 'triaged' | 'in_progress' | 'awaiting_review' | 'resolved' | 'closed' | 'wont_fix' | 'split' | 'deferred';
+export type FeedbackStatus = 'new' | 'triaged' | 'in_progress' | 'awaiting_review' | 'user_review' | 'resolved' | 'closed' | 'wont_fix' | 'split' | 'deferred';
 export type FeedbackPriority = 'low' | 'medium' | 'high' | 'critical';
 export type AdminDecision = 'pending' | 'approved' | 'rejected' | 'deferred' | 'split';
 export type AiComplexity = 'simple' | 'moderate' | 'complex';
@@ -52,6 +52,17 @@ export interface FeedbackComment {
     created_at: string;
 }
 
+/** Messages between admin and user (separate from internal comments) */
+export interface FeedbackUserMessage {
+    id: string;
+    feedback_id: string;
+    sender_type: 'admin' | 'user';
+    sender_name: string | null;
+    content: string;
+    created_at: string;
+    email_sent: boolean;
+}
+
 export interface CreateFeedbackInput {
     feedback_type: FeedbackType;
     route: string;
@@ -85,6 +96,7 @@ export const FEEDBACK_STATUS_LABELS: Record<FeedbackStatus, string> = {
     triaged: 'Under Review',
     in_progress: 'In Progress',
     awaiting_review: 'Fix Ready',
+    user_review: 'Your Review Needed',
     resolved: 'Verified',
     closed: 'Closed',
     wont_fix: 'Won\'t Fix',
@@ -98,6 +110,7 @@ export const ADMIN_STATUS_LABELS: Record<FeedbackStatus, string> = {
     triaged: 'Triaged',
     in_progress: 'In Progress',
     awaiting_review: 'Ready for Testing',
+    user_review: 'User Review',
     resolved: 'Verified',
     closed: 'Closed',
     wont_fix: 'Won\'t Fix',
@@ -111,6 +124,7 @@ export const FEEDBACK_STATUS_COLORS: Record<FeedbackStatus, { bg: string; text: 
     triaged: { bg: 'bg-indigo-500/15', text: 'text-indigo-700 dark:text-indigo-400' },
     in_progress: { bg: 'bg-yellow-500/15', text: 'text-yellow-700 dark:text-yellow-400' },
     awaiting_review: { bg: 'bg-orange-500/15', text: 'text-orange-700 dark:text-orange-400' },
+    user_review: { bg: 'bg-cyan-500/15', text: 'text-cyan-700 dark:text-cyan-400' },
     resolved: { bg: 'bg-green-500/15', text: 'text-green-700 dark:text-green-400' },
     closed: { bg: 'bg-muted', text: 'text-muted-foreground' },
     wont_fix: { bg: 'bg-red-500/15', text: 'text-red-700 dark:text-red-400' },

@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment, getFeedbackById } from '@/actions/feedback.actions';
+import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment, getFeedbackById, sendUserReviewMessage, getUserMessages, adminReplyUserReview } from '@/actions/feedback.actions';
 import {
     UserFeedback,
     FeedbackStatus,
     FeedbackType,
     FeedbackComment,
+    FeedbackUserMessage,
     AdminDecision,
     TestingResult,
     FEEDBACK_STATUS_COLORS,
@@ -49,6 +50,8 @@ import {
     UserCircle,
     Copy,
     RotateCcw,
+    UserCheck,
+    Users,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -129,6 +132,16 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [testFeedbackText, setTestFeedbackText] = useState('');
     const [isSendingTestFeedback, setIsSendingTestFeedback] = useState(false);
 
+    // User review state
+    const [showUserReviewCompose, setShowUserReviewCompose] = useState(false);
+    const [userReviewMessage, setUserReviewMessage] = useState('');
+    const [isSendingUserReview, setIsSendingUserReview] = useState(false);
+    const [userMessages, setUserMessages] = useState<FeedbackUserMessage[]>([]);
+    const [isLoadingUserMessages, setIsLoadingUserMessages] = useState(false);
+    const [userReplyText, setUserReplyText] = useState('');
+    const [isSendingUserReply, setIsSendingUserReply] = useState(false);
+    const userMessagesEndRef = useRef<HTMLDivElement>(null);
+
     /** Apply fresh server data to both the live item and all form fields */
     const applyFreshData = useCallback((fresh: UserFeedback) => {
         setItem(fresh);
@@ -182,6 +195,20 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     }, [item.id]);
 
+    const loadUserMessages = useCallback(async () => {
+        setIsLoadingUserMessages(true);
+        try {
+            const result = await getUserMessages(item.id);
+            if (result.success && result.data) {
+                setUserMessages(result.data);
+            }
+        } catch (error) {
+            console.error('Error loading user messages:', error);
+        } finally {
+            setIsLoadingUserMessages(false);
+        }
+    }, [item.id]);
+
     // Sync from prop when a different item is opened or the parent provides fresher data
     useEffect(() => {
         setItem(feedback);
@@ -195,6 +222,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setNewComment('');
         setPendingTestResult(null);
         setTestFeedbackText('');
+        setShowUserReviewCompose(false);
+        setUserReviewMessage('');
+        setUserMessages([]);
+        setUserReplyText('');
     }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
 
     // Fetch images when dialog opens
@@ -211,10 +242,22 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     }, [open, activeTab, loadComments]);
 
+    // Fetch user messages when user-messages tab is selected
+    useEffect(() => {
+        if (open && activeTab === 'user-messages') {
+            loadUserMessages();
+        }
+    }, [open, activeTab, loadUserMessages]);
+
     // Auto-scroll comments
     useEffect(() => {
         commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [comments]);
+
+    // Auto-scroll user messages
+    useEffect(() => {
+        userMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [userMessages]);
 
     const handleSaveDecision = async () => {
         setIsSaving(true);
@@ -365,10 +408,98 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     };
 
+    /** Start user review flow — pre-fill with resolution notes */
+    const handleStartUserReview = () => {
+        setShowUserReviewCompose(true);
+        setUserReviewMessage(item.resolution_notes || '');
+    };
+
+    /** Send the user review message */
+    const handleSendUserReview = async () => {
+        if (!userReviewMessage.trim()) return;
+        setIsSendingUserReview(true);
+        try {
+            const result = await sendUserReviewMessage(item.id, userReviewMessage.trim());
+            if (result.success && result.data) {
+                // Send email notification
+                try {
+                    await fetch('/api/feedback/user-review-notify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            feedback_id: item.id,
+                            message_id: result.data.id,
+                            message_content: userReviewMessage.trim(),
+                            sender_type: 'admin',
+                            sender_name: 'Admin',
+                        }),
+                    });
+                } catch (emailError) {
+                    console.error('Failed to send email notification:', emailError);
+                }
+
+                await refreshItem();
+                toast.success('Sent to user for review — email notification sent');
+                setShowUserReviewCompose(false);
+                setUserReviewMessage('');
+                onUpdate();
+            } else {
+                toast.error(`Failed to send: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Error sending user review:', error);
+            toast.error('Failed to send user review message');
+        } finally {
+            setIsSendingUserReview(false);
+        }
+    };
+
+    /** Admin replies in user messages thread */
+    const handleAdminReplyUserMessage = async () => {
+        if (!userReplyText.trim()) return;
+        setIsSendingUserReply(true);
+        try {
+            const result = await adminReplyUserReview(item.id, userReplyText.trim());
+            if (result.success && result.data) {
+                // Send email notification to user
+                try {
+                    await fetch('/api/feedback/user-review-notify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            feedback_id: item.id,
+                            message_id: result.data.id,
+                            message_content: userReplyText.trim(),
+                            sender_type: 'admin',
+                            sender_name: 'Admin',
+                        }),
+                    });
+                } catch (emailError) {
+                    console.error('Failed to send email notification:', emailError);
+                }
+
+                setUserReplyText('');
+                await loadUserMessages();
+                await refreshItem();
+                toast.success('Reply sent to user');
+                onUpdate();
+            } else {
+                toast.error(`Failed to send: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Error sending admin reply:', error);
+            toast.error('Failed to send reply');
+        } finally {
+            setIsSendingUserReply(false);
+        }
+    };
+
     const statusColors = FEEDBACK_STATUS_COLORS[item.status];
     const hasAiAnalysis = !!(item.ai_solution_proposal || item.ai_assessment || item.ai_complexity);
     const hasTesting = !!(item.testing_instructions || item.testing_url || item.resolution_notes);
     const isResolved = ['resolved', 'awaiting_review', 'closed'].includes(item.status);
+    const isUserReview = item.status === 'user_review';
+    const hasUserReviewHistory = isUserReview || userMessages.length > 0;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -457,6 +588,13 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 Testing
                                 {hasTesting && (
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 ml-1" />
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger value="user-messages" className="gap-1.5 text-xs">
+                                <Users className="w-3.5 h-3.5" />
+                                User Messages
+                                {isUserReview && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 ml-1" />
                                 )}
                             </TabsTrigger>
                         </TabsList>
@@ -967,12 +1105,12 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                             <label className="text-sm font-medium mb-2 block">
                                                 Testing Result
                                             </label>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 flex-wrap">
                                                 <Button
                                                     variant={item.testing_result === 'pass' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('pass')}
-                                                    disabled={isSaving || !!pendingTestResult}
+                                                    disabled={isSaving || !!pendingTestResult || showUserReviewCompose}
                                                     className={cn(
                                                         'gap-1.5',
                                                         item.testing_result === 'pass' && 'bg-green-600 hover:bg-green-700'
@@ -985,7 +1123,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     variant={pendingTestResult === 'fail' || item.testing_result === 'fail' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('fail')}
-                                                    disabled={isSaving || !!pendingTestResult}
+                                                    disabled={isSaving || !!pendingTestResult || showUserReviewCompose}
                                                     className={cn(
                                                         'gap-1.5',
                                                         (pendingTestResult === 'fail' || item.testing_result === 'fail') && 'bg-red-600 hover:bg-red-700'
@@ -998,7 +1136,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     variant={pendingTestResult === 'partial' || item.testing_result === 'partial' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => handleTestingResult('partial')}
-                                                    disabled={isSaving || !!pendingTestResult}
+                                                    disabled={isSaving || !!pendingTestResult || showUserReviewCompose}
                                                     className={cn(
                                                         'gap-1.5',
                                                         (pendingTestResult === 'partial' || item.testing_result === 'partial') && 'bg-yellow-600 hover:bg-yellow-700'
@@ -1006,6 +1144,21 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                 >
                                                     {isSaving && !pendingTestResult ? <Loader2 className="w-4 h-4 animate-spin" /> : <MinusCircle className="w-4 h-4" />}
                                                     Partial
+                                                </Button>
+
+                                                {/* User Review button */}
+                                                <Button
+                                                    variant={showUserReviewCompose ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={handleStartUserReview}
+                                                    disabled={isSaving || !!pendingTestResult || showUserReviewCompose}
+                                                    className={cn(
+                                                        'gap-1.5',
+                                                        showUserReviewCompose && 'bg-cyan-600 hover:bg-cyan-700'
+                                                    )}
+                                                >
+                                                    <UserCheck className="w-4 h-4" />
+                                                    User Review
                                                 </Button>
                                             </div>
 
@@ -1087,6 +1240,58 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {/* User Review compose area */}
+                                            {showUserReviewCompose && (
+                                                <div className="rounded-lg border p-4 space-y-3 bg-cyan-500/5 border-cyan-500/20">
+                                                    <div className="flex items-center gap-2">
+                                                        <UserCheck className="w-4 h-4 text-cyan-500" />
+                                                        <span className="text-sm font-semibold text-cyan-700 dark:text-cyan-400">
+                                                            Send to user for review
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        This message will be sent to <strong>{item.username || 'the user'}</strong> via email.
+                                                        The item will move to the User Review stage until they respond.
+                                                    </p>
+                                                    <Textarea
+                                                        value={userReviewMessage}
+                                                        onChange={(e) => setUserReviewMessage(e.target.value)}
+                                                        placeholder="Describe what the user should test and verify..."
+                                                        className="min-h-[120px] text-sm"
+                                                    />
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Pre-filled with resolution notes. Edit as needed.
+                                                        </p>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setShowUserReviewCompose(false);
+                                                                    setUserReviewMessage('');
+                                                                }}
+                                                                disabled={isSendingUserReview}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={handleSendUserReview}
+                                                                disabled={!userReviewMessage.trim() || isSendingUserReview}
+                                                                className="gap-1.5 bg-cyan-600 hover:bg-cyan-700"
+                                                            >
+                                                                {isSendingUserReview
+                                                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    : <Send className="w-4 h-4" />
+                                                                }
+                                                                Send to User
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </>
                                 ) : (
@@ -1096,6 +1301,97 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         <p className="text-xs mt-1">Testing data will appear after the agent resolves this item</p>
                                     </div>
                                 )}
+                            </TabsContent>
+
+                            {/* SECTION 6: User Messages */}
+                            <TabsContent value="user-messages" className="mt-0 flex flex-col">
+                                {isLoadingUserMessages ? (
+                                    <div className="flex items-center justify-center py-12 text-muted-foreground">
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                        Loading user messages...
+                                    </div>
+                                ) : userMessages.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                                        <Users className="w-8 h-8 mb-2 opacity-30" />
+                                        <p className="text-sm">No user messages yet</p>
+                                        <p className="text-xs mt-1">Send a message to the user from the Testing tab using the User Review button</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 mb-4">
+                                        {userMessages.map((msg) => {
+                                            const isAdmin = msg.sender_type === 'admin';
+                                            return (
+                                                <div key={msg.id} className={cn('flex gap-3', isAdmin ? '' : 'flex-row-reverse')}>
+                                                    <div className={cn(
+                                                        'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+                                                        isAdmin
+                                                            ? 'text-blue-600 dark:text-blue-400 bg-blue-500/10'
+                                                            : 'text-gray-600 dark:text-gray-400 bg-gray-500/10'
+                                                    )}>
+                                                        {isAdmin
+                                                            ? <Shield className="w-3.5 h-3.5" />
+                                                            : <UserCircle className="w-3.5 h-3.5" />
+                                                        }
+                                                    </div>
+                                                    <div className={cn('flex-1 min-w-0', !isAdmin && 'text-right')}>
+                                                        <div className={cn('flex items-center gap-2 mb-0.5', !isAdmin && 'justify-end')}>
+                                                            <span className="text-sm font-medium">
+                                                                {msg.sender_name || (isAdmin ? 'Admin' : 'User')}
+                                                            </span>
+                                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                                                {isAdmin ? 'Admin' : 'User'}
+                                                            </Badge>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                                            </span>
+                                                            {msg.email_sent && (
+                                                                <span className="text-[10px] text-muted-foreground" title="Email sent">
+                                                                    sent
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className={cn(
+                                                            'text-sm whitespace-pre-wrap rounded-lg p-3 inline-block max-w-[85%]',
+                                                            isAdmin
+                                                                ? 'bg-blue-500/5 border border-blue-500/20 text-left'
+                                                                : 'bg-muted/50 border text-left'
+                                                        )}>
+                                                            {msg.content}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        <div ref={userMessagesEndRef} />
+                                    </div>
+                                )}
+
+                                {/* Admin reply input */}
+                                <div className="relative pt-3 border-t mt-auto">
+                                    <Textarea
+                                        value={userReplyText}
+                                        onChange={(e) => setUserReplyText(e.target.value)}
+                                        placeholder="Reply to user... (this will send them an email)"
+                                        className="min-h-[60px] w-full pr-12"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                                handleAdminReplyUserMessage();
+                                            }
+                                        }}
+                                    />
+                                    <Button
+                                        onClick={handleAdminReplyUserMessage}
+                                        disabled={!userReplyText.trim() || isSendingUserReply}
+                                        size="sm"
+                                        className="absolute right-2 bottom-2 h-8 w-8 p-0"
+                                    >
+                                        {isSendingUserReply ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Send className="w-4 h-4" />
+                                        )}
+                                    </Button>
+                                </div>
                             </TabsContent>
                         </div>
                     </div>

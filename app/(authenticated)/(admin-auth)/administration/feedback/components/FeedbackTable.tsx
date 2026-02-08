@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import {
     AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
     ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
-    ClipboardCheck, Archive, ChevronDown, Copy,
+    ClipboardCheck, Archive, ChevronDown, Copy, UserCheck,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
@@ -25,6 +25,7 @@ const statusOptions: { value: FeedbackStatus; label: string; color: string }[] =
     { value: 'triaged', label: 'Triaged', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' },
     { value: 'in_progress', label: 'In Progress', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
     { value: 'awaiting_review', label: 'Ready for Testing', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
+    { value: 'user_review', label: 'User Review', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400' },
     { value: 'resolved', label: 'Verified', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
     { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
     { value: 'wont_fix', label: "Won't Fix", color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
@@ -42,7 +43,7 @@ type SortField = 'created_at' | 'status' | 'feedback_type' | 'username' | 'work_
 type SortDirection = 'asc' | 'desc';
 
 // Mutually exclusive pipeline stages
-type PipelineStage = 'untriaged' | 'your_decision' | 'agent_working' | 'test_results' | 'done' | 'all';
+type PipelineStage = 'untriaged' | 'your_decision' | 'agent_working' | 'test_results' | 'user_review' | 'done' | 'all';
 
 interface StageConfig {
     key: PipelineStage;
@@ -107,6 +108,17 @@ const pipelineStages: StageConfig[] = [
         activeColor: 'bg-orange-600 dark:bg-orange-600 text-white',
         borderColor: 'border-orange-300 dark:border-orange-700',
         match: (item) => item.status === 'awaiting_review',
+    },
+    {
+        key: 'user_review',
+        label: 'User Review',
+        shortLabel: 'User',
+        owner: 'none',
+        icon: <UserCheck className="w-3.5 h-3.5" />,
+        color: 'text-cyan-700 dark:text-cyan-400',
+        activeColor: 'bg-cyan-600 dark:bg-cyan-600 text-white',
+        borderColor: 'border-cyan-300 dark:border-cyan-700',
+        match: (item) => item.status === 'user_review',
     },
     {
         key: 'done',
@@ -315,6 +327,7 @@ export default function FeedbackTable() {
             your_decision: 0,
             agent_working: 0,
             test_results: 0,
+            user_review: 0,
             done: 0,
             all: feedback.length,
         };
@@ -329,7 +342,7 @@ export default function FeedbackTable() {
     useEffect(() => {
         if (!initialStageSet.current && feedback.length > 0) {
             initialStageSet.current = true;
-            const stageOrder: PipelineStage[] = ['untriaged', 'your_decision', 'agent_working', 'test_results', 'done'];
+            const stageOrder: PipelineStage[] = ['untriaged', 'your_decision', 'agent_working', 'test_results', 'user_review', 'done'];
             const firstNonEmpty = stageOrder.find(key => stageCounts[key] > 0);
             if (firstNonEmpty) {
                 setActiveStage(firstNonEmpty);
@@ -696,6 +709,13 @@ export default function FeedbackTable() {
                                                     <ClipboardCheck className="w-6 h-6 opacity-30 mb-1" />
                                                     <span className="text-sm">Nothing to test</span>
                                                     <span className="text-xs">Completed fixes will appear here for testing</span>
+                                                </>
+                                            )}
+                                            {activeStage === 'user_review' && (
+                                                <>
+                                                    <UserCheck className="w-6 h-6 opacity-30 mb-1" />
+                                                    <span className="text-sm">No items pending user review</span>
+                                                    <span className="text-xs">Items sent to users for testing will appear here</span>
                                                 </>
                                             )}
                                             {(activeStage === 'done' || activeStage === 'all') && (

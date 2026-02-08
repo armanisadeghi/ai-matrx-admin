@@ -287,6 +287,103 @@ export const emailTemplates = {
     `,
   }),
 
+  feedbackUserReviewMessage: (
+    username: string,
+    feedbackType: string,
+    description: string,
+    message: string,
+    senderName: string,
+    portalUrl?: string
+  ) => {
+    const truncatedDescription =
+      description.length > 150 ? description.slice(0, 150) + "..." : description;
+
+    return {
+      subject: `Action needed: Your ${feedbackType} report needs your review`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #3b82f6;">Your Review is Needed</h1>
+          <p>Hi ${username},</p>
+          <p>We've been working on your <strong>${feedbackType}</strong> report and need your help to verify the fix.</p>
+
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">Your original report:</p>
+            <p style="margin: 0; color: #1f2937;">${truncatedDescription}</p>
+          </div>
+
+          <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0 0 4px 0; font-weight: 600; color: #1e40af; font-size: 14px;">Message from ${senderName}:</p>
+            <p style="margin: 0; color: #1e3a5f; white-space: pre-wrap;">${message}</p>
+          </div>
+
+          ${
+            portalUrl
+              ? `
+            <div style="margin: 24px 0;">
+              <a href="${portalUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Review & Respond</a>
+            </div>
+          `
+              : ""
+          }
+
+          <p style="color: #666; font-size: 14px;">
+            Please test the fix and let us know if it resolved your issue. You can respond directly in the feedback portal.
+          </p>
+          <p>Best regards,<br>The AI Matrx Team</p>
+        </div>
+      `,
+    };
+  },
+
+  feedbackUserReply: (
+    adminName: string,
+    feedbackType: string,
+    description: string,
+    userReply: string,
+    username: string,
+    portalUrl?: string
+  ) => {
+    const truncatedDescription =
+      description.length > 150 ? description.slice(0, 150) + "..." : description;
+
+    return {
+      subject: `User responded to ${feedbackType} report review`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #f59e0b;">User Response Received</h1>
+          <p>Hi ${adminName},</p>
+          <p><strong>${username}</strong> has responded to your review request on their <strong>${feedbackType}</strong> report.</p>
+
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">Original report:</p>
+            <p style="margin: 0; color: #1f2937;">${truncatedDescription}</p>
+          </div>
+
+          <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0 0 4px 0; font-weight: 600; color: #854d0e; font-size: 14px;">User's response:</p>
+            <p style="margin: 0; color: #713f12; white-space: pre-wrap;">${userReply}</p>
+          </div>
+
+          <p style="color: #666; font-size: 14px;">
+            The item has been moved back to Test Results for your review.
+          </p>
+
+          ${
+            portalUrl
+              ? `
+            <div style="margin: 24px 0;">
+              <a href="${portalUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">View in Admin</a>
+            </div>
+          `
+              : ""
+          }
+
+          <p>Best regards,<br>The AI Matrx Team</p>
+        </div>
+      `,
+    };
+  },
+
   feedbackStatusUpdate: (
     username: string,
     feedbackType: string,

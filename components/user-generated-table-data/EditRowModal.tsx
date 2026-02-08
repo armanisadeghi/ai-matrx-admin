@@ -15,8 +15,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
-import { CalendarIcon, Wand2 } from "lucide-react";
+import { CalendarIcon, Wand2, ClipboardCopy, Download, CheckCircle, MoreHorizontal } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 
 interface TableField {
@@ -216,6 +223,78 @@ export default function EditRowModal({
     }
   };
 
+  // Build a human-readable row object using display names
+  const getRowAsObject = () => {
+    const obj: Record<string, unknown> = {};
+    fields.sort((a, b) => a.field_order - b.field_order).forEach((field) => {
+      obj[field.display_name] = rowData[field.field_name] ?? null;
+    });
+    return obj;
+  };
+
+  const [copiedRow, setCopiedRow] = useState(false);
+
+  const copyRowAsJson = async () => {
+    try {
+      const json = JSON.stringify(getRowAsObject(), null, 2);
+      await navigator.clipboard.writeText(json);
+      setCopiedRow(true);
+      toast({ title: "Copied", description: "Row copied as JSON", variant: "success" });
+      setTimeout(() => setCopiedRow(false), 2000);
+    } catch {
+      toast({ title: "Copy failed", description: "Could not copy to clipboard", variant: "destructive" });
+    }
+  };
+
+  const copyRowAsCsv = async () => {
+    try {
+      const sortedFields = [...fields].sort((a, b) => a.field_order - b.field_order);
+      const headers = sortedFields.map(f => `"${f.display_name.replace(/"/g, '""')}"`).join(',');
+      const values = sortedFields.map(f => {
+        const val = rowData[f.field_name] ?? '';
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(',');
+      await navigator.clipboard.writeText(`${headers}\n${values}`);
+      setCopiedRow(true);
+      toast({ title: "Copied", description: "Row copied as CSV", variant: "success" });
+      setTimeout(() => setCopiedRow(false), 2000);
+    } catch {
+      toast({ title: "Copy failed", description: "Could not copy to clipboard", variant: "destructive" });
+    }
+  };
+
+  const downloadRowAsJson = () => {
+    const json = JSON.stringify(getRowAsObject(), null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `row_${rowId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  const downloadRowAsCsv = () => {
+    const sortedFields = [...fields].sort((a, b) => a.field_order - b.field_order);
+    const headers = sortedFields.map(f => `"${f.display_name.replace(/"/g, '""')}"`).join(',');
+    const values = sortedFields.map(f => {
+      const val = rowData[f.field_name] ?? '';
+      return `"${String(val).replace(/"/g, '""')}"`;
+    }).join(',');
+    const csv = `${headers}\n${values}`;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `row_${rowId}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
   if (!rowId || !fields.length) {
     return null;
   }
@@ -224,7 +303,38 @@ export default function EditRowModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Edit Row</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Edit Row</DialogTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+                  {copiedRow ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <MoreHorizontal className="h-4 w-4" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={copyRowAsJson}>
+                  <ClipboardCopy className="h-4 w-4 mr-2" />
+                  Copy as JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={copyRowAsCsv}>
+                  <ClipboardCopy className="h-4 w-4 mr-2" />
+                  Copy as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadRowAsJson}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download as JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadRowAsCsv}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download as CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
