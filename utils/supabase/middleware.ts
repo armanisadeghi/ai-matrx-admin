@@ -1,18 +1,15 @@
-// color-utils/supabase/middleware.ts
+// utils/supabase/middleware.ts
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  // Create a new headers object with the pathname added
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-pathname', request.nextUrl.pathname);
-  requestHeaders.set('x-search-params', request.nextUrl.search);
+  // Set custom headers on the request for downstream handlers
+  request.headers.set('x-pathname', request.nextUrl.pathname);
+  request.headers.set('x-search-params', request.nextUrl.search);
 
   let supabaseResponse = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
+    request,
   })
 
   const supabase = createServerClient(
@@ -24,17 +21,13 @@ export async function updateSession(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            // CRITICAL FIX: Don't recreate the response object!
-            // Just update cookies on both the request and the existing response.
-            // Creating a new NextResponse here was causing all previously set cookies to be lost.
-            // This was causing users to be logged out after token refresh because
-            // only the last cookie would survive, and other auth cookies would be dropped.
-            cookiesToSet.forEach(({ name, value, options }) => {
-              // Update the request cookies for downstream handlers
-              request.cookies.set(name, value);
-              // Update the response cookies that will be sent to the client
-              supabaseResponse.cookies.set(name, value, options);
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            supabaseResponse = NextResponse.next({
+              request,
             });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
           },
         },
       }
