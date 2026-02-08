@@ -36,6 +36,7 @@
     "@hello-pangea/dnd": "latest",
     "@hookform/resolvers": "latest",
     "@lobehub/icons": "^2.48.0",
+    "@modelcontextprotocol/sdk": "1.25.2",
     "@monaco-editor/react": "^4.7.0",
     "@mynaui/icons-react": "latest",
     "@radix-ui/react-accessible-icon": "latest",
@@ -133,6 +134,7 @@
     "libphonenumber-js": "^1.12.35",
     "lodash": "^4.17.23",
     "lucide-react": "latest",
+    "mcp-handler": "^1.0.7",
     "motion": "^12.29.2",
     "next": "latest",
     "next-redux-wrapper": "latest",
@@ -216,7 +218,8 @@
     "vaul": "latest",
     "wavesurfer.js": "^7.12.1",
     "websocket": "^1.0.35",
-    "xlsx": "latest"
+    "xlsx": "latest",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@iconify/react": "^6.0.2",
