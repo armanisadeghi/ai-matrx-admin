@@ -1,0 +1,339 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+    Container,
+    Plus,
+    Square,
+    Clock,
+    Trash2,
+    RefreshCw,
+    Timer,
+    AlertCircle,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+} from '@/components/ui/table'
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog'
+import { useSandboxInstances } from '@/hooks/sandbox/use-sandbox'
+import type { SandboxStatus, SandboxInstance } from '@/types/sandbox'
+
+const STATUS_BADGE_MAP: Record<SandboxStatus, { variant: 'success' | 'warning' | 'destructive' | 'secondary' | 'info' | 'default'; label: string }> = {
+    creating: { variant: 'info', label: 'Creating' },
+    starting: { variant: 'info', label: 'Starting' },
+    ready: { variant: 'success', label: 'Ready' },
+    running: { variant: 'success', label: 'Running' },
+    shutting_down: { variant: 'warning', label: 'Shutting Down' },
+    stopped: { variant: 'secondary', label: 'Stopped' },
+    failed: { variant: 'destructive', label: 'Failed' },
+    expired: { variant: 'secondary', label: 'Expired' },
+}
+
+function StatusBadge({ status }: { status: SandboxStatus }) {
+    const config = STATUS_BADGE_MAP[status] || { variant: 'default' as const, label: status }
+    return <Badge variant={config.variant}>{config.label}</Badge>
+}
+
+function TimeRemaining({ expiresAt }: { expiresAt: string | null }) {
+    const [remaining, setRemaining] = useState<string>('')
+
+    useEffect(() => {
+        if (!expiresAt) {
+            setRemaining('--')
+            return
+        }
+
+        const update = () => {
+            const diff = new Date(expiresAt).getTime() - Date.now()
+            if (diff <= 0) {
+                setRemaining('Expired')
+                return
+            }
+            const hours = Math.floor(diff / 3600000)
+            const minutes = Math.floor((diff % 3600000) / 60000)
+            setRemaining(hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`)
+        }
+
+        update()
+        const interval = setInterval(update, 30000)
+        return () => clearInterval(interval)
+    }, [expiresAt])
+
+    return (
+        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Timer className="w-3 h-3" />
+            {remaining}
+        </span>
+    )
+}
+
+export default function SandboxListPage() {
+    const router = useRouter()
+    const {
+        instances,
+        loading,
+        error,
+        total,
+        fetchInstances,
+        createInstance,
+        stopInstance,
+        deleteInstance,
+    } = useSandboxInstances()
+
+    const [isRefreshing, setIsRefreshing] = useState(false)
+    const [createOpen, setCreateOpen] = useState(false)
+    const [creating, setCreating] = useState(false)
+    const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(null)
+    const [ttlHours, setTtlHours] = useState(2)
+
+    useEffect(() => {
+        fetchInstances()
+    }, [fetchInstances])
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchInstances()
+        }, 15000)
+        return () => clearInterval(interval)
+    }, [fetchInstances])
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true)
+        await fetchInstances()
+        setIsRefreshing(false)
+    }
+
+    const handleCreate = async () => {
+        setCreating(true)
+        const instance = await createInstance({
+            ttl_seconds: ttlHours * 3600,
+        })
+        setCreating(false)
+        setCreateOpen(false)
+        if (instance) {
+            router.push(`/sandbox/${instance.id}`)
+        }
+    }
+
+    const handleStop = async (instance: SandboxInstance) => {
+        await stopInstance(instance.id)
+    }
+
+    const handleDelete = async () => {
+        if (!deleteTarget) return
+        await deleteInstance(deleteTarget.id)
+        setDeleteTarget(null)
+    }
+
+    const activeCount = instances.filter((i) =>
+        ['creating', 'starting', 'ready', 'running'].includes(i.status)
+    ).length
+
+    return (
+        <div className="min-h-screen bg-textured">
+            <div className="p-4 border-b border-border bg-textured">
+                <div className="flex items-center justify-between max-w-6xl mx-auto">
+                    <div className="flex items-center gap-3">
+                        <Container className="w-6 h-6 text-orange-500" />
+                        <div>
+                            <h1 className="text-lg font-semibold">Sandbox Instances</h1>
+                            <p className="text-sm text-muted-foreground">
+                                {activeCount} active of {total} total
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        </Button>
+                        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                            <DialogTrigger asChild>
+                                <Button>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    New Sandbox
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Create New Sandbox</DialogTitle>
+                                    <DialogDescription>
+                                        Launch an ephemeral sandbox environment. It will automatically
+                                        shut down after the specified duration.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                    <div>
+                                        <label className="text-sm font-medium">Duration</label>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {[1, 2, 4, 8].map((h) => (
+                                                <Button
+                                                    key={h}
+                                                    variant={ttlHours === h ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setTtlHours(h)}
+                                                >
+                                                    {h}h
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleCreate} disabled={creating}>
+                                        {creating ? 'Creating...' : 'Create Sandbox'}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                </div>
+            </div>
+
+            <div className="p-4 max-w-6xl mx-auto">
+                {error && (
+                    <Card className="mb-4 border-destructive">
+                        <CardContent className="flex items-center gap-2 p-4">
+                            <AlertCircle className="w-4 h-4 text-destructive" />
+                            <p className="text-sm text-destructive">{error}</p>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {loading && instances.length === 0 ? (
+                    <Card>
+                        <CardContent className="p-8 text-center text-muted-foreground">
+                            Loading sandbox instances...
+                        </CardContent>
+                    </Card>
+                ) : instances.length === 0 ? (
+                    <Card>
+                        <CardContent className="p-12 text-center">
+                            <Container className="w-12 h-12 mx-auto mb-4 text-muted-foreground/40" />
+                            <h3 className="text-lg font-medium mb-2">No Sandbox Instances</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                Create your first sandbox to get started with an isolated development environment.
+                            </p>
+                            <Button onClick={() => setCreateOpen(true)}>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create Your First Sandbox
+                            </Button>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Sandbox ID</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Created</TableHead>
+                                    <TableHead>Time Remaining</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {instances.map((instance) => (
+                                    <TableRow
+                                        key={instance.id}
+                                        className="cursor-pointer hover:bg-muted/50"
+                                        onClick={() => router.push(`/sandbox/${instance.id}`)}
+                                    >
+                                        <TableCell className="font-mono text-sm">
+                                            {instance.sandbox_id}
+                                        </TableCell>
+                                        <TableCell>
+                                            <StatusBadge status={instance.status} />
+                                        </TableCell>
+                                        <TableCell className="text-sm text-muted-foreground">
+                                            {new Date(instance.created_at).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell>
+                                            {['ready', 'running'].includes(instance.status) ? (
+                                                <TimeRemaining expiresAt={instance.expires_at} />
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground">--</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div
+                                                className="flex items-center justify-end gap-1"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {['ready', 'running'].includes(instance.status) && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleStop(instance)}
+                                                    >
+                                                        <Square className="w-3 h-3 mr-1" />
+                                                        Stop
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setDeleteTarget(instance)}
+                                                    className="text-destructive hover:text-destructive"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </div>
+
+            <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Sandbox</DialogTitle>
+                        <DialogDescription>
+                            This will permanently remove the sandbox record
+                            {deleteTarget && ['ready', 'running'].includes(deleteTarget.status)
+                                ? ' and destroy the running container'
+                                : ''}
+                            . This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    )
+}

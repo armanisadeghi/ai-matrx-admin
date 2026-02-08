@@ -24,6 +24,7 @@ import {
     ClipboardType,
     FolderOpen,
     Mic,
+    Container,
 } from "lucide-react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
@@ -188,6 +189,18 @@ export const allNavigationLinks: NavigationLink[] = [
         description: "Extract and process data from web sources",
         color: "amber",
         favicon: { color: "#6366f1", letter: "W" }, // Indigo
+    },
+
+    {
+        label: "Sandboxes",
+        href: "/sandbox",
+        icon: <Container className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        description: "Manage ephemeral sandbox environments for your projects",
+        color: "orange",
+        favicon: { color: "#f97316", letter: "SB" },
     },
 
     // Deprecated — moving to bottom before removal
@@ -397,6 +410,13 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "Entities",
+    },
+    {
+        label: "Sandbox Admin",
+        href: "/admin/sandbox",
+        icon: <Container className="text-orange-500 dark:text-orange-400 h-5 w-5 flex-shrink-0" />,
+        section: "admin",
+        category: "Automation",
     },
 ];
 
