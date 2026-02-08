@@ -124,14 +124,23 @@ export async function POST(request: NextRequest) {
             orchestratorHeaders['X-API-Key'] = ORCHESTRATOR_API_KEY
         }
 
-        const orchestratorResp = await fetch(`${ORCHESTRATOR_URL}/sandboxes`, {
-            method: 'POST',
-            headers: orchestratorHeaders,
-            body: JSON.stringify({
-                user_id: user.id,
-                config: config || {},
-            }),
-        })
+        let orchestratorResp: Response
+        try {
+            orchestratorResp = await fetch(`${ORCHESTRATOR_URL}/sandboxes`, {
+                method: 'POST',
+                headers: orchestratorHeaders,
+                body: JSON.stringify({
+                    user_id: user.id,
+                    config: config || {},
+                }),
+            })
+        } catch (fetchError) {
+            console.error('Orchestrator connection failed:', fetchError)
+            return NextResponse.json(
+                { error: 'Sandbox orchestrator is not reachable. Ensure the orchestrator service is running.' },
+                { status: 502 }
+            )
+        }
 
         if (!orchestratorResp.ok) {
             const errBody = await orchestratorResp.text()
@@ -143,6 +152,7 @@ export async function POST(request: NextRequest) {
         }
 
         const orchestratorData = await orchestratorResp.json()
+        const effectiveTtl = ttl_seconds || 7200
 
         const { data: instance, error: insertError } = await supabase
             .from('sandbox_instances')
@@ -152,10 +162,11 @@ export async function POST(request: NextRequest) {
                 sandbox_id: orchestratorData.sandbox_id,
                 status: orchestratorData.status,
                 container_id: orchestratorData.container_id,
-                hot_path: orchestratorData.hot_path,
-                cold_path: orchestratorData.cold_path,
+                hot_path: orchestratorData.hot_path || '/home/agent',
+                cold_path: orchestratorData.cold_path || '/data/cold',
                 config: config || {},
-                ttl_seconds: ttl_seconds || 7200,
+                ttl_seconds: effectiveTtl,
+                expires_at: new Date(Date.now() + effectiveTtl * 1000).toISOString(),
             })
             .select()
             .single()

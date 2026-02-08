@@ -57,29 +57,37 @@ export async function POST(
             headers['X-API-Key'] = ORCHESTRATOR_API_KEY
         }
 
-        const resp = await fetch(
-            `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}/exec`,
-            {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    command,
-                    timeout: Math.min(Math.max(timeout || 30, 1), 600),
-                }),
-            }
-        )
+        try {
+            const resp = await fetch(
+                `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}/exec`,
+                {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        command,
+                        timeout: Math.min(Math.max(timeout || 30, 1), 600),
+                    }),
+                }
+            )
 
-        if (!resp.ok) {
-            const errBody = await resp.text()
-            console.error('Orchestrator exec failed:', resp.status, errBody)
+            if (!resp.ok) {
+                const errBody = await resp.text()
+                console.error('Orchestrator exec failed:', resp.status, errBody)
+                return NextResponse.json(
+                    { error: 'Command execution failed', details: errBody },
+                    { status: resp.status >= 500 ? 502 : resp.status }
+                )
+            }
+
+            const result = await resp.json()
+            return NextResponse.json(result)
+        } catch (fetchError) {
+            console.error('Orchestrator connection failed:', fetchError)
             return NextResponse.json(
-                { error: 'Command execution failed', details: errBody },
-                { status: resp.status >= 500 ? 502 : resp.status }
+                { error: 'Sandbox orchestrator is not reachable. Ensure the orchestrator service is running.' },
+                { status: 502 }
             )
         }
-
-        const result = await resp.json()
-        return NextResponse.json(result)
     } catch (error) {
         console.error('Sandbox exec API error:', error)
         return NextResponse.json(

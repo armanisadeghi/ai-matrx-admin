@@ -90,13 +90,16 @@ export async function PUT(
         }
 
         if (action === 'stop') {
-            const resp = await fetch(
-                `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}?graceful=true`,
-                { method: 'DELETE', headers: orchestratorHeaders() }
-            )
-
-            if (!resp.ok && resp.status !== 404) {
-                console.error('Orchestrator stop failed:', resp.status)
+            try {
+                const resp = await fetch(
+                    `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}?graceful=true`,
+                    { method: 'DELETE', headers: orchestratorHeaders() }
+                )
+                if (!resp.ok && resp.status !== 404) {
+                    console.error('Orchestrator stop failed:', resp.status)
+                }
+            } catch (fetchErr) {
+                console.warn('Orchestrator not reachable during stop — updating DB only:', fetchErr instanceof Error ? fetchErr.message : fetchErr)
             }
 
             const { data: updated, error: updateError } = await supabase
@@ -192,13 +195,16 @@ export async function DELETE(
         }
 
         if (['creating', 'starting', 'ready', 'running'].includes(instance.status)) {
-            const resp = await fetch(
-                `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}?graceful=false`,
-                { method: 'DELETE', headers: orchestratorHeaders() }
-            )
-
-            if (!resp.ok && resp.status !== 404) {
-                console.error('Orchestrator destroy failed:', resp.status)
+            try {
+                const resp = await fetch(
+                    `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}?graceful=false`,
+                    { method: 'DELETE', headers: orchestratorHeaders() }
+                )
+                if (!resp.ok && resp.status !== 404) {
+                    console.error('Orchestrator destroy failed:', resp.status)
+                }
+            } catch (fetchErr) {
+                console.warn('Orchestrator not reachable during delete — removing DB record only:', fetchErr instanceof Error ? fetchErr.message : fetchErr)
             }
         }
 
