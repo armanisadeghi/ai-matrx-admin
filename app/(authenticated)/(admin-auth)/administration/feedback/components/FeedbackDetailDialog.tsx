@@ -63,6 +63,7 @@ interface FeedbackDetailDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onUpdate: () => void;
+    initialTab?: string;
 }
 
 const feedbackTypeIcons: Record<FeedbackType, React.ReactNode> = {
@@ -103,11 +104,11 @@ const complexityConfig: Record<string, { label: string; color: string }> = {
     complex: { label: 'Complex', color: 'bg-red-500/15 text-red-700 dark:text-red-400' },
 };
 
-export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onUpdate }: FeedbackDetailDialogProps) {
+export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onUpdate, initialTab }: FeedbackDetailDialogProps) {
     // Live local copy of the feedback item — updated from server responses
     const [item, setItem] = useState<UserFeedback>(feedback);
 
-    const [activeTab, setActiveTab] = useState('submission');
+    const [activeTab, setActiveTab] = useState(initialTab || 'submission');
     const [isSaving, setIsSaving] = useState(false);
     const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
     const [isLoadingImages, setIsLoadingImages] = useState(false);
@@ -225,6 +226,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
 
     // Reset UI interaction state only when a completely different item is opened
     useEffect(() => {
+        setActiveTab(initialTab || 'submission');
         setSignedUrls({});
         setComments([]);
         setNewComment('');
@@ -234,7 +236,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setUserReviewMessage('');
         setUserMessages([]);
         setUserReplyText('');
-    }, [feedback.id]); // Only reset on different item, NOT on updated_at changes
+    }, [feedback.id, initialTab]); // Only reset on different item, NOT on updated_at changes
 
     // Fetch images when dialog opens
     useEffect(() => {
@@ -1222,6 +1224,47 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     {item.testing_result === 'partial' && 'Sent back to agent for remaining fixes.'}
                                                 </p>
                                             )}
+
+                                            {/* Open Issues flag — quick toggle right from testing */}
+                                            <div
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={async () => {
+                                                    const newValue = !hasOpenIssues;
+                                                    setHasOpenIssues(newValue);
+                                                    // Auto-save immediately so you don't have to go to Decision tab
+                                                    try {
+                                                        const result = await updateFeedback(item.id, { has_open_issues: newValue });
+                                                        if (result.success) {
+                                                            setItem(prev => ({ ...prev, has_open_issues: newValue }));
+                                                            onUpdate();
+                                                        }
+                                                    } catch { /* silent — will still be in local state */ }
+                                                }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setHasOpenIssues(!hasOpenIssues); } }}
+                                                className={cn(
+                                                    'flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-colors',
+                                                    hasOpenIssues
+                                                        ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15'
+                                                        : 'bg-muted/30 border-transparent hover:bg-muted/50'
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0',
+                                                    hasOpenIssues
+                                                        ? 'bg-amber-500 border-amber-500'
+                                                        : 'border-muted-foreground/30'
+                                                )}>
+                                                    {hasOpenIssues && <CheckCircle2 className="w-3 h-3 text-white" />}
+                                                </div>
+                                                <span className={cn(
+                                                    'text-xs font-medium flex items-center gap-1',
+                                                    hasOpenIssues ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'
+                                                )}>
+                                                    <AlertTriangle className="w-3 h-3" />
+                                                    Has Open Issues
+                                                </span>
+                                            </div>
 
                                             {/* Feedback textarea — appears after clicking Fail or Partial */}
                                             {pendingTestResult && (

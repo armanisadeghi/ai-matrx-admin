@@ -15,5 +15,4 @@
         "**/node_modules": true,
         "**/temp": true
     },
-    "vercelVSCode.accessToken": "yGXs5l3gxQCm5VMbkpZ85xy7"
 }

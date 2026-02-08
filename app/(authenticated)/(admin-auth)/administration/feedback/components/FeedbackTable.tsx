@@ -142,6 +142,17 @@ function getItemStage(item: UserFeedback): PipelineStage {
     return 'done';
 }
 
+// Maps each pipeline stage to the dialog tab that should open by default
+const stageToDialogTab: Record<PipelineStage, string> = {
+    untriaged: 'submission',
+    your_decision: 'decision',
+    agent_working: 'comments',
+    test_results: 'testing',
+    user_review: 'user-messages',
+    done: 'submission',
+    all: 'submission',
+};
+
 // ---------- Image Preview Modal (unchanged) ----------
 
 function ImagePreviewModal({
@@ -934,6 +945,7 @@ export default function FeedbackTable() {
                     open={detailDialogOpen}
                     onOpenChange={setDetailDialogOpen}
                     onUpdate={loadFeedback}
+                    initialTab={stageToDialogTab[activeStage]}
                 />
             )}
 

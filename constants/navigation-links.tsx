@@ -22,7 +22,6 @@ import {
     BookOpen,
     ListTodo,
     ClipboardType,
-    LayoutDashboard,
     FolderOpen,
     Mic,
 } from "lucide-react";
@@ -35,6 +34,24 @@ import { LuNotepadText } from "react-icons/lu";
 import { IoChatboxOutline } from "react-icons/io5";
 import { FaIndent } from "react-icons/fa6";
 import { IconNewSection } from "@tabler/icons-react";
+
+/** App logo icon derived from favicon.svg, with a square viewBox so it matches h-5 w-5 icons */
+const MatrxLogoIcon = ({ className }: { className?: string }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 -4 20 20"
+        fill="none"
+        className={className}
+    >
+        <path
+            d="M18 6C18 3.79086 16.2091 2 14 2C11.7909 2 10 3.79086 10 6C10 3.79086 8.20914 2 6 2C3.79086 2 2 3.79086 2 6C2 8.20914 3.79086 10 6 10C8.20914 10 10 8.20914 10 6C10 8.20914 11.7909 10 14 10C16.2091 10 18 8.20914 18 6Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </svg>
+);
 
 export interface FaviconConfig {
     color: string; // Primary color for the favicon
@@ -61,35 +78,13 @@ export const allNavigationLinks: NavigationLink[] = [
     {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        icon: <MatrxLogoIcon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
         dashboard: true,
         description: "Your central hub for all activities and insights",
         color: "cyan",
         favicon: { color: "#0ea5e9", letter: "D" }, // Sky blue
-    },
-    {
-        label: "AI Cockpit",
-        href: "/ai/cockpit",
-        icon: <Brain className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        section: "primary",
-        profileMenu: true,
-        dashboard: false,
-        description: "Build Custom AI Agents & Recipes without code!",
-        color: "amber",
-        favicon: { color: "#8b5cf6", letter: "AI" }, // Purple
-    },
-    {
-        label: "AI Recipes",
-        href: "/ai/recipes",
-        icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        section: "primary",
-        profileMenu: true,
-        dashboard: false,
-        description: "Browse and manage your AI recipes and templates",
-        color: "purple",
-        favicon: { color: "#d946ef", letter: "R" }, // Fuchsia
     },
     {
         label: "Prompt Builder",
@@ -211,6 +206,30 @@ export const allNavigationLinks: NavigationLink[] = [
         description: "Extract and process data from web sources",
         color: "amber",
         favicon: { color: "#6366f1", letter: "W" }, // Indigo
+    },
+
+    // Deprecated — moving to bottom before removal
+    {
+        label: "AI Cockpit",
+        href: "/ai/cockpit",
+        icon: <Brain className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: false,
+        description: "Build Custom AI Agents & Recipes without code!",
+        color: "amber",
+        favicon: { color: "#8b5cf6", letter: "AI" }, // Purple
+    },
+    {
+        label: "AI Recipes",
+        href: "/ai/recipes",
+        icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: false,
+        description: "Browse and manage your AI recipes and templates",
+        color: "purple",
+        favicon: { color: "#d946ef", letter: "R" }, // Fuchsia
     },
     {
         label: "Workflows",
