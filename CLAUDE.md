@@ -1,6 +1,6 @@
 # CLAUDE.md — AI Matrx Admin
 
-Large-scale Next.js admin dashboard and no-code AI app builder. Desktop-first, mobile-responsive. Redux for state management, Supabase for database.
+Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, mobile-responsive. Redux for state management, Supabase for database.
 
 ---
 
