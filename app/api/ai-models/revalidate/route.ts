@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
@@ -39,8 +39,8 @@ export async function POST() {
         //     );
         // }
 
-        // Revalidate the AI models cache
-        revalidateTag('ai-models', 'ai-models-cache');
+        // Purge the cached route so the next request fetches fresh data
+        revalidatePath("/api/ai-models");
 
         return NextResponse.json({
             success: true,

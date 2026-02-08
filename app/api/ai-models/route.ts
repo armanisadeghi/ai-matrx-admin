@@ -1,8 +1,9 @@
 import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 import { NextResponse } from "next/server";
 
-// Cache for 12 hours (43200 seconds) - this route can be statically generated
-export const revalidate = 43200;
+// Prevent build-time prerendering - this route requires Supabase at runtime
+// CDN caching is handled via Cache-Control headers (12h cache, 24h stale-while-revalidate)
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {

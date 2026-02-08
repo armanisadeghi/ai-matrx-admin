@@ -1,8 +1,9 @@
 // app/api/image-proxy/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-// Set revalidate time to 15 minutes (900 seconds)
-export const revalidate = 900;
+// Prevent build-time prerendering - this route requires runtime request params
+// CDN caching is handled via Cache-Control headers (15min cache)
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
