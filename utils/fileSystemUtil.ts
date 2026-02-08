@@ -40,6 +40,22 @@ function ensureExtension(filename: string, ext: string): string {
            : `${filename}${normalizedExt}`;
 }
 
+/**
+ * Constructs a filesystem path from segments without using path.join().
+ *
+ * Turbopack statically analyzes path.join() and path.resolve() calls to
+ * determine which files a server module might access at runtime. When the
+ * base is process.cwd() and other segments are dynamic, Turbopack creates
+ * overly broad file patterns (e.g. matching 11,000+ project files), causing
+ * build warnings and potential over-bundling.
+ *
+ * This helper joins segments with '/' and normalizes the result via
+ * path.normalize(), which Turbopack does not statically trace.
+ */
+function buildPath(...segments: string[]): string {
+    return path.normalize(segments.join('/'));
+}
+
 
 /**
  * Returns the project root directory.
@@ -62,7 +78,7 @@ export async function findProjectRoot(_startPath?: string): Promise<string> {
 export async function findTargetDirectory(targetPath: string[]): Promise<string> {
     try {
         const projectRoot = process.cwd();
-        const fullTargetPath = path.join(projectRoot, ...targetPath);
+        const fullTargetPath = buildPath(projectRoot, ...targetPath);
 
         const stats = await fs.stat(fullTargetPath);
         if (stats.isDirectory()) {
@@ -434,13 +450,13 @@ async function resolveDirectoryPath(options: DirectoryOptions): Promise<string> 
 
     switch (options.type) {
         case 'public':
-            fullPath = path.join(projectRoot, 'public', ...options.path);
+            fullPath = buildPath(projectRoot, 'public', ...options.path);
             break;
         case 'app':
-            fullPath = path.join(projectRoot, 'app', ...options.path);
+            fullPath = buildPath(projectRoot, 'app', ...options.path);
             break;
         case 'custom':
-            fullPath = path.join(projectRoot, ...options.path);
+            fullPath = buildPath(projectRoot, ...options.path);
             break;
         default:
             throw new Error('Invalid directory type');
@@ -470,11 +486,11 @@ async function resolveDirectoryPath(options: DirectoryOptions): Promise<string> 
  */
 export async function getOrCreatePublicDirectory(subDir?: string): Promise<string> {
     const projectRoot = process.cwd();
-    const publicDir = path.join(projectRoot, DEFAULT_PUBLIC_DIR);
+    const publicDir = buildPath(projectRoot, DEFAULT_PUBLIC_DIR);
     await fs.mkdir(publicDir, {recursive: true});
 
     if (subDir) {
-        const fullPath = path.join(publicDir, subDir);
+        const fullPath = buildPath(publicDir, subDir);
         await fs.mkdir(fullPath, {recursive: true});
         return fullPath;
     }
@@ -488,8 +504,8 @@ export async function getOrCreatePublicDirectory(subDir?: string): Promise<strin
 export async function getOrCreateDirectory(dirPath: string | string[]): Promise<string> {
     const projectRoot = process.cwd();
     const fullPath = Array.isArray(dirPath)
-                     ? path.join(projectRoot, ...dirPath)
-                     : path.join(projectRoot, dirPath);
+                     ? buildPath(projectRoot, ...dirPath)
+                     : buildPath(projectRoot, dirPath);
 
     const normalizedPath = path.normalize(fullPath);
     await fs.mkdir(normalizedPath, {recursive: true});
