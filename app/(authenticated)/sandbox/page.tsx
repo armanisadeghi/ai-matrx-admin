@@ -100,6 +100,7 @@ export default function SandboxListPage() {
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [createOpen, setCreateOpen] = useState(false)
     const [creating, setCreating] = useState(false)
+    const [createError, setCreateError] = useState<string | null>(null)
     const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(null)
     const [ttlHours, setTtlHours] = useState(2)
 
@@ -114,6 +115,13 @@ export default function SandboxListPage() {
         return () => clearInterval(interval)
     }, [fetchInstances])
 
+    // Auto-dismiss create error after 8 seconds
+    useEffect(() => {
+        if (!createError) return
+        const timer = setTimeout(() => setCreateError(null), 8000)
+        return () => clearTimeout(timer)
+    }, [createError])
+
     const handleRefresh = async () => {
         setIsRefreshing(true)
         await fetchInstances()
@@ -122,6 +130,7 @@ export default function SandboxListPage() {
 
     const handleCreate = async () => {
         setCreating(true)
+        setCreateError(null)
         const instance = await createInstance({
             ttl_seconds: ttlHours * 3600,
         })
@@ -129,6 +138,8 @@ export default function SandboxListPage() {
         setCreateOpen(false)
         if (instance) {
             router.push(`/sandbox/${instance.id}`)
+        } else if (error) {
+            setCreateError(error)
         }
     }
 
@@ -147,8 +158,8 @@ export default function SandboxListPage() {
     ).length
 
     return (
-        <div className="min-h-screen bg-textured">
-            <div className="p-4 border-b border-border bg-textured">
+        <div className="h-page flex flex-col bg-textured overflow-hidden">
+            <div className="shrink-0 p-4 border-b border-border bg-textured">
                 <div className="flex items-center justify-between max-w-6xl mx-auto">
                     <div className="flex items-center gap-3">
                         <Container className="w-6 h-6 text-orange-500" />
@@ -214,12 +225,23 @@ export default function SandboxListPage() {
                 </div>
             </div>
 
-            <div className="p-4 max-w-6xl mx-auto">
-                {error && (
+            <div className="flex-1 overflow-y-auto p-4">
+                <div className="max-w-6xl mx-auto">
+                {createError && (
                     <Card className="mb-4 border-destructive">
-                        <CardContent className="flex items-center gap-2 p-4">
-                            <AlertCircle className="w-4 h-4 text-destructive" />
-                            <p className="text-sm text-destructive">{error}</p>
+                        <CardContent className="flex items-center justify-between p-4">
+                            <div className="flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+                                <p className="text-sm text-destructive">{createError}</p>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCreateError(null)}
+                                className="text-destructive hover:text-destructive shrink-0"
+                            >
+                                Dismiss
+                            </Button>
                         </CardContent>
                     </Card>
                 )}
@@ -310,6 +332,7 @@ export default function SandboxListPage() {
                         </Table>
                     </div>
                 )}
+                </div>
             </div>
 
             <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>

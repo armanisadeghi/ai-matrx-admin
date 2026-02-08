@@ -244,7 +244,7 @@ export default function SandboxDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-textured flex items-center justify-center">
+            <div className="h-page bg-textured flex items-center justify-center">
                 <p className="text-muted-foreground">Loading sandbox...</p>
             </div>
         )
@@ -252,7 +252,7 @@ export default function SandboxDetailPage() {
 
     if (!instance) {
         return (
-            <div className="min-h-screen bg-textured flex items-center justify-center">
+            <div className="h-page bg-textured flex items-center justify-center">
                 <Card className="max-w-md">
                     <CardContent className="p-8 text-center">
                         <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
@@ -272,8 +272,8 @@ export default function SandboxDetailPage() {
     const statusConfig = STATUS_BADGE_MAP[instance.status]
 
     return (
-        <div className="min-h-screen bg-textured">
-            <div className="p-4 border-b border-border bg-textured">
+        <div className="h-page flex flex-col bg-textured overflow-hidden">
+            <div className="shrink-0 p-4 border-b border-border bg-textured">
                 <div className="flex items-center justify-between max-w-6xl mx-auto">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" size="sm" onClick={() => router.push('/sandbox')}>
@@ -314,8 +314,9 @@ export default function SandboxDetailPage() {
                 </div>
             </div>
 
-            <div className="p-4 max-w-6xl mx-auto space-y-4">
-                {error && (
+            <div className="flex-1 overflow-y-auto p-4">
+                <div className="max-w-6xl mx-auto space-y-4">
+                {error && !instance && (
                     <Card className="border-destructive">
                         <CardContent className="flex items-center gap-2 p-4">
                             <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
@@ -384,7 +385,7 @@ export default function SandboxDetailPage() {
                     <CardContent>
                         <div
                             ref={terminalRef}
-                            className="bg-zinc-950 rounded-t-md p-4 h-96 overflow-y-auto font-mono text-sm"
+                            className="bg-zinc-950 rounded-t-md p-4 min-h-48 max-h-[50vh] overflow-y-auto font-mono text-sm"
                         >
                             {terminalHistory.length === 0 && (
                                 <p className="text-zinc-500">
@@ -470,6 +471,7 @@ export default function SandboxDetailPage() {
                         </CardContent>
                     </Card>
                 )}
+                </div>
             </div>
 
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
