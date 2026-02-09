@@ -154,20 +154,25 @@ export async function POST(request: NextRequest) {
         const orchestratorData = await orchestratorResp.json()
         const effectiveTtl = ttl_seconds || 7200
 
+        const sandboxRecord = {
+            user_id: user.id,
+            project_id: project_id || null,
+            sandbox_id: orchestratorData.sandbox_id,
+            status: orchestratorData.status,
+            container_id: orchestratorData.container_id,
+            hot_path: orchestratorData.hot_path || '/home/agent',
+            cold_path: orchestratorData.cold_path || '/data/cold',
+            config: config || {},
+            ttl_seconds: effectiveTtl,
+            expires_at: new Date(Date.now() + effectiveTtl * 1000).toISOString(),
+        }
+
+        // Use upsert to handle orphaned records — if the orchestrator returns a sandbox_id
+        // that already exists in the DB (from a previous failed/expired attempt), update it
+        // instead of failing with a duplicate key error.
         const { data: instance, error: insertError } = await supabase
             .from('sandbox_instances')
-            .insert({
-                user_id: user.id,
-                project_id: project_id || null,
-                sandbox_id: orchestratorData.sandbox_id,
-                status: orchestratorData.status,
-                container_id: orchestratorData.container_id,
-                hot_path: orchestratorData.hot_path || '/home/agent',
-                cold_path: orchestratorData.cold_path || '/data/cold',
-                config: config || {},
-                ttl_seconds: effectiveTtl,
-                expires_at: new Date(Date.now() + effectiveTtl * 1000).toISOString(),
-            })
+            .upsert(sandboxRecord, { onConflict: 'sandbox_id' })
             .select()
             .single()
 

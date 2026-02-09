@@ -11,6 +11,7 @@ import {
     RefreshCw,
     Timer,
     AlertCircle,
+    Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -180,7 +181,7 @@ export default function SandboxListPage() {
                         >
                             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                         </Button>
-                        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                        <Dialog open={createOpen} onOpenChange={(open) => { if (!creating) setCreateOpen(open) }}>
                             <DialogTrigger asChild>
                                 <Button>
                                     <Plus className="w-4 h-4 mr-2" />
@@ -188,38 +189,53 @@ export default function SandboxListPage() {
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Create New Sandbox</DialogTitle>
-                                    <DialogDescription>
-                                        Launch an ephemeral sandbox environment. It will automatically
-                                        shut down after the specified duration.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                    <div>
-                                        <label className="text-sm font-medium">Duration</label>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            {[1, 2, 4, 8].map((h) => (
-                                                <Button
-                                                    key={h}
-                                                    variant={ttlHours === h ? 'default' : 'outline'}
-                                                    size="sm"
-                                                    onClick={() => setTtlHours(h)}
-                                                >
-                                                    {h}h
-                                                </Button>
-                                            ))}
+                                {creating ? (
+                                    <div className="flex flex-col items-center justify-center py-12 gap-4">
+                                        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                                        <div className="text-center">
+                                            <h3 className="font-semibold text-lg">Creating Sandbox</h3>
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                                Spinning up your container. This can take a few seconds...
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                                        Cancel
-                                    </Button>
-                                    <Button onClick={handleCreate} disabled={creating}>
-                                        {creating ? 'Creating...' : 'Create Sandbox'}
-                                    </Button>
-                                </DialogFooter>
+                                ) : (
+                                    <>
+                                        <DialogHeader>
+                                            <DialogTitle>Create New Sandbox</DialogTitle>
+                                            <DialogDescription>
+                                                Launch an ephemeral sandbox environment. It will automatically
+                                                shut down after the specified duration.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4 py-4">
+                                            <div>
+                                                <label className="text-sm font-medium">Duration</label>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    {[1, 2, 4, 8].map((h) => (
+                                                        <Button
+                                                            key={h}
+                                                            variant={ttlHours === h ? 'default' : 'outline'}
+                                                            size="sm"
+                                                            onClick={() => setTtlHours(h)}
+                                                        >
+                                                            {h}h
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                                                Cancel
+                                            </Button>
+                                            <Button onClick={handleCreate}>
+                                                <Plus className="w-4 h-4 mr-2" />
+                                                Create Sandbox
+                                            </Button>
+                                        </DialogFooter>
+                                    </>
+                                )}
                             </DialogContent>
                         </Dialog>
                     </div>
