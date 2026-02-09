@@ -52,12 +52,14 @@ export interface SandboxDetailResponse {
 export interface SandboxExecRequest {
     command: string
     timeout?: number
+    cwd?: string
 }
 
 export interface SandboxExecResponse {
     exit_code: number
     stdout: string
     stderr: string
+    cwd: string
 }
 
 export interface SandboxCreateRequest {
