@@ -30,6 +30,7 @@ export interface SandboxInstance {
     last_heartbeat_at: string | null
     stopped_at: string | null
     stop_reason: SandboxStopReason | null
+    ssh_port: number | null
     created_at: string
     updated_at: string
 }
@@ -70,6 +71,14 @@ export type SandboxAction = 'stop' | 'extend'
 export interface SandboxActionRequest {
     action: SandboxAction
     ttl_seconds?: number
+}
+
+export interface SandboxAccessResponse {
+    private_key: string
+    username: string
+    host: string
+    port: number
+    ssh_command: string
 }
 
 export const ACTIVE_SANDBOX_STATUSES: SandboxStatus[] = [
