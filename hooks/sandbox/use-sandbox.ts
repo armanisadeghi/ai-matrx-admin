@@ -49,7 +49,7 @@ export function useSandboxInstances(projectId?: string) {
     )
 
     const createInstance = useCallback(
-        async (req: SandboxCreateRequest) => {
+        async (req: SandboxCreateRequest): Promise<{ instance: SandboxInstance | null; error: string | null }> => {
             setError(null)
             try {
                 const resp = await fetch('/api/sandbox', {
@@ -70,11 +70,11 @@ export function useSandboxInstances(projectId?: string) {
                 const { instance } = await resp.json()
                 setInstances((prev) => [instance, ...prev])
                 setTotal((prev) => prev + 1)
-                return instance as SandboxInstance
+                return { instance: instance as SandboxInstance, error: null }
             } catch (err) {
                 const msg = err instanceof Error ? err.message : 'Unknown error'
                 setError(msg)
-                return null
+                return { instance: null, error: msg }
             }
         },
         [projectId]

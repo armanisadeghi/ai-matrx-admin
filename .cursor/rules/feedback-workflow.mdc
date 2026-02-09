@@ -3,395 +3,202 @@ description: Autonomous feedback resolution workflow - use when handling user fe
 alwaysApply: false
 ---
 
-# DB-First Feedback Resolution Workflow
+# Feedback Resolution System
 
-All state lives in the database. No markdown files. No chat-based reporting. The admin UI at `/administration/feedback` is the source of truth.
+All feedback state lives in the database. The admin UI at `/administration/feedback` is the source of truth.
 
-## CRITICAL: Agent Boundaries — READ THIS FIRST
+## Permissions & Status Flow
 
-**Agents are NEVER permitted to mark items as "done".** The admin is the ONLY person who can move items to resolved, closed, wont_fix, or deferred status. Agents have exactly two jobs:
+| Status | Set By | Method |
+|--------|--------|--------|
+| `new` | System | User submits feedback |
+| `triaged` | Agent | `triage_feedback_item()` |
+| `split` | Agent | `split_feedback_item()` — parent replaced by sub-tasks |
+| `in_progress` | System | Auto-set when agent picks up approved item |
+| `awaiting_review` | Agent | `resolve_with_testing()` — **agent's terminal status** |
+| `resolved` | Admin only | After testing passes |
+| `closed` | Admin only | User confirmed or admin closes |
+| `wont_fix` | Admin only | Admin declines |
+| `deferred` | Admin only | Admin postpones |
 
-1. **Triage** — analyze new items and push AI assessment (`new` → `triaged`)
-2. **Fix & submit for testing** — implement approved fixes and submit them for admin review (`in_progress` → `awaiting_review`)
+`awaiting_review` is where the agent's involvement ends. After calling `resolve_with_testing()`, do not touch the item again unless the admin rejects it back to `in_progress`.
 
-The agent's terminal status is **`awaiting_review`**. That's it. Once you call `resolve_with_testing()`, you are DONE with that item. Walk away. The admin will test it and decide what happens next.
+A database trigger prevents setting `closed`/`resolved` without a `testing_result`. Always use `resolve_with_testing()` to finish a fix.
 
-### Forbidden Agent Actions
+## Session Workflow
 
-| Action | Why It's Forbidden |
-|--------|--------------------|
-| Setting status to `resolved` | Only the admin can verify a fix works |
-| Setting status to `closed` | Only the admin closes items |
-| Setting status to `wont_fix` | Only the admin can decline items |
-| Setting status to `deferred` | Only the admin can defer items |
-| Calling `close_feedback_item()` | This is an ADMIN-ONLY function |
-| Using raw SQL UPDATE on status to any "done" state | Bypasses the pipeline — admin never sees it |
-
-### Database-Level Enforcement (Trigger)
-
-A PostgreSQL trigger (`trg_enforce_testing_before_close`) **physically prevents** setting status to `closed` or `resolved` unless `testing_result` is set (Pass/Fail/Partial). This means:
-
-- Even if you try `UPDATE user_feedback SET status = 'closed'`, **the database will reject it** with an error.
-- The ONLY way an item reaches `closed`/`resolved` is through the admin UI's testing flow, which sets `testing_result` in the same transaction.
-- `wont_fix` and `deferred` are NOT affected by this trigger (those are admin decision flows that don't require testing).
-
-**If you see an error like** `"Cannot set status to closed without a testing_result"` — that means you tried to close an item, which you are not allowed to do. Use `resolve_with_testing()` instead, which correctly sets status to `awaiting_review`.
-
-### Allowed Agent Status Transitions
-
-| From | To | How | When |
-|------|----|-----|------|
-| `new` | `triaged` | `triage_feedback_item()` | After analyzing the item |
-| `triaged` | `in_progress` | Automatic when agent starts working (via work queue) | After admin approves |
-| `in_progress` | `awaiting_review` | `resolve_with_testing()` | After implementing the fix |
-
-That's the complete list. There are NO other status transitions an agent is allowed to make.
-
-## Pipeline Overview
-
-The admin UI has a pipeline view with these mutually exclusive stages:
-
-| Stage | Who Acts | What's Here |
-|-------|----------|-------------|
-| **Untriaged** | Agent | `status = 'new'` — agent hasn't analyzed yet |
-| **Your Decision** | Admin | `status = 'triaged'` + `admin_decision = 'pending'` — agent analyzed, admin hasn't decided |
-| **Agent Working** | Agent | `admin_decision = 'approved'` + `status IN ('triaged','in_progress')` — approved, agent fixing |
-| **Test Results** | Admin | `status = 'awaiting_review'` — agent fixed, admin MUST test before anything moves to Done |
-| **Done** | Admin ONLY | `status IN ('resolved','closed','wont_fix','deferred')` — ONLY the admin moves items here |
-
-**Your two lists on each session:**
-- **List 1 (Untriaged):** `SELECT * FROM get_untriaged_feedback();` — items to analyze
-- **List 2 (Work Queue):** `SELECT * FROM get_agent_work_queue();` — approved items to fix, in priority order
-
-## SQL Quick Reference
-
-All operations use the Supabase MCP `execute_sql` tool.
+Each session, pull two lists:
 
 ```sql
--- LIST 1: Get untriaged items (status='new', excludes split children, oldest first)
 SELECT * FROM get_untriaged_feedback();
-
--- LIST 2: Get approved work queue (ordered by work_priority ASC)
 SELECT * FROM get_agent_work_queue();
-
--- Summary counts (excludes closed from totals)
-SELECT get_feedback_summary();
-
--- Items by specific status
-SELECT * FROM get_feedback_by_status('in_progress');
-
--- TRIAGE: Push AI analysis (sets status → 'triaged')
-SELECT * FROM triage_feedback_item(
-  '<uuid>'::uuid,
-  'Proposed solution approach',           -- p_ai_solution_proposal
-  'high',                                  -- p_ai_suggested_priority (low/medium/high/critical)
-  'moderate',                              -- p_ai_complexity (simple/moderate/complex)
-  ARRAY['path/to/file1.tsx'],              -- p_ai_estimated_files
-  4,                                       -- p_autonomy_score (1-5)
-  'Detailed assessment of the issue'       -- p_ai_assessment
-);
-
--- APPROVE (agent auto-approve for score 4-5): Sets decision + transitions status
-SELECT * FROM set_admin_decision(
-  '<uuid>'::uuid,
-  'approved',                              -- p_decision
-  NULL,                                    -- p_direction (optional admin instructions)
-  1                                        -- p_work_priority (1 = highest)
-);
-
--- RESOLVE: Push fix details + testing info (sets status → 'awaiting_review')
-SELECT * FROM resolve_with_testing(
-  '<uuid>'::uuid,
-  'What was fixed and how',                -- p_resolution_notes
-  'Step-by-step testing instructions',     -- p_testing_instructions
-  'http://localhost:3000/page'             -- p_testing_url
-);
-
--- COMMENT: Add a comment (for mid-work notes, explanations)
-SELECT * FROM add_feedback_comment(
-  '<uuid>'::uuid,
-  'ai_agent',                              -- p_author_type ('user'|'admin'|'ai_agent')
-  'AI Agent',                              -- p_author_name
-  'Comment content here'                   -- p_content
-);
-
--- READ COMMENTS on an item
-SELECT * FROM get_feedback_comments('<uuid>'::uuid);
-
--- ============================================================
--- ADMIN-ONLY FUNCTIONS BELOW — AGENTS MUST NEVER CALL THESE
--- ============================================================
-
--- CLOSE (ADMIN ONLY — agent must NEVER call this)
-SELECT * FROM close_feedback_item(
-  '<uuid>'::uuid,
-  'resolved',                              -- p_status ('resolved'|'closed'|'wont_fix')
-  'Verified by admin'                      -- p_admin_notes
-);
-
--- SPLIT a parent into sub-tasks (parent → 'split', children created as 'new')
-SELECT * FROM split_feedback_item(
-  '<parent_uuid>'::uuid,
-  ARRAY['Sub-task 1 description', 'Sub-task 2 description']
-);
 ```
 
-## Status Lifecycle
+Rework items (failed/partial tests) appear in the work queue and take priority over new work.
 
-```
-AGENT transitions:
-  new → triaged                    (triage_feedback_item)
-  in_progress → awaiting_review    (resolve_with_testing — agent's FINAL action)
+### Step 1: Triage Untriaged Items
 
-ADMIN-ONLY transitions (DB trigger enforces testing_result for closed/resolved):
-  awaiting_review → resolved       (admin verified fix works — requires testing_result)
-  awaiting_review → in_progress    (admin tested, FAILED or PARTIAL — sent back to agent)
-  resolved → closed                (admin or user confirmed — requires testing_result)
-  any → wont_fix                   (admin declines — NO testing required)
-  triaged → deferred               (admin defers — NO testing required)
-  triaged → split                  (admin splits into sub-tasks)
+For each item from `get_untriaged_feedback()`:
 
-SYSTEM transitions:
-  triaged → in_progress            (automatic when agent picks up approved item)
-```
+**A. View screenshots FIRST (mandatory if `image_urls` is not null)**
 
-- **new**: Submitted, agent hasn't analyzed
-- **triaged**: Agent analyzed, awaiting admin decision
-- **in_progress**: Admin approved, agent actively fixing (OR sent back from failed/partial testing)
-- **awaiting_review**: Fix done, **admin needs to test** — this is the agent's LAST stop
-- **resolved**: **ADMIN ONLY** — admin verified fix works
-- **closed**: **ADMIN ONLY** — user confirmed or auto-closed
-- **wont_fix**: **ADMIN ONLY** — declined with reason
-- **split**: **ADMIN ONLY** — parent broken into sub-tasks
-- **deferred**: **ADMIN ONLY** — pushed to later
+Fetch signed URLs via `GET /api/admin/feedback/images?feedback_id=<uuid>`, open every one, and study them. Screenshots are the most reliable source of truth — they show exactly what the user saw. Skipping this step has caused agents to misidentify the component and fix the wrong thing entirely.
 
-## Step 1: Triage Untriaged Items
+**B. Read the item fields** — `description`, `feedback_type`, `username`, `route`
 
-```sql
-SELECT * FROM get_untriaged_feedback();
-```
+> **`route` is NOT the bug location.** It records where the user was when they clicked "Submit Feedback" — nothing more. The actual bug could be in a shared layout, header, sidebar, global provider, toast system, or modal. Always determine the real location from description + screenshots + code research.
 
-For each item:
+**C. Check for admin early-feedback**
+- Read `admin_notes` and comments (`get_feedback_comments`)
+- If the admin provided direction or context, factor it in
 
-1. **View screenshots FIRST (MANDATORY)**
-   > **CRITICAL: If `image_urls` is not null, you MUST view every screenshot BEFORE doing anything else.** Screenshots are the single most reliable source of truth — they show exactly what the user saw. Failing to view screenshots has caused agents to misidentify the component and fix the wrong thing entirely. This is a non-negotiable step.
-   - Fetch signed URLs: `GET /api/admin/feedback/images?feedback_id=<uuid>`
-   - Open **every** signed URL in the browser and study what is shown
-   - Cross-reference what you see with the user's description
-   - The screenshot determines what component/element is actually involved — not the route
-2. Read `description`, `feedback_type`, `username`, and `route`
-   > **WARNING — `route` is NOT the bug location.** The `route` field is ONLY where the user happened to be when they clicked "Submit Feedback." It tells you nothing about where the bug actually is. Real-world examples of how this misleads:
-   > - User reports a bug in the **header feedback submission modal** → route says `/administration/feedback` (that's just the page they were on)
-   > - User reports a **sidebar navigation issue** → route says `/notes` (irrelevant — the sidebar is in the layout)
-   > - User reports a **toast notification problem** → route says `/data/some-id` (toast is a global component)
-   >
-   > **The bug could be in:** a shared layout, the header, the sidebar, a global provider, a toast system, a modal triggered from anywhere, or a component that appears on every page. You MUST determine the actual location from the description + screenshots + code research. Never assume the route is relevant unless you have confirmed it from another source.
-3. **Check for admin early-feedback** — the admin may have seen this item first and left context:
-   - Read `admin_notes` field on the item (may contain admin's initial thoughts)
-   - Check for existing comments: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
-   - If the admin has already provided direction or context, factor it into your analysis. This can save significant time — the admin may have already identified the root cause or pointed you to specific files.
-4. Research relevant code to understand the problem
-   - Cross-reference your findings with the screenshots and description
-   - Understand the root cause — confirm it matches what the screenshots show
-5. Compute **autonomy score (1-5)**:
+**D. Research the relevant code** and confirm the root cause matches what screenshots show.
 
-| Factor | +1 if True |
-|--------|-----------|
-| Requested by `arman@armansadeghi.com` (lead developer, trusted) | Yes |
-| Clearly a bug — app is objectively broken | Yes |
-| Not opinion-based — the fix is objectively correct | Yes |
-| Zero risk of negative side effects | Yes |
-| Simple fix — CSS, typo, config, single-file change | Yes |
+**E. Compute autonomy score (1–5)** — +1 for each true statement:
 
-6. Push analysis to DB:
+| Factor |
+|--------|
+| Requested by `arman@armansadeghi.com` (lead developer) |
+| Clearly a bug — app is objectively broken |
+| Not opinion-based — the fix is objectively correct |
+| Zero risk of negative side effects |
+| Simple fix — CSS, typo, config, single-file change |
+
+**F. Decide: triage normally or split**
+
+If the item is `complex` and involves 2+ genuinely independent changes, consider splitting (see Step 1b below). Otherwise, triage normally:
 
 ```sql
 SELECT * FROM triage_feedback_item(
-  '<id>'::uuid, 'Proposed approach: ...', 'high', 'moderate',
-  ARRAY['file1.tsx', 'file2.ts'], 4, 'Assessment: ...'
+  '<id>'::uuid,
+  'Proposed approach',              -- p_ai_solution_proposal
+  'high',                           -- p_ai_suggested_priority
+  'moderate',                       -- p_ai_complexity
+  ARRAY['path/to/file.tsx'],        -- p_ai_estimated_files
+  4,                                -- p_autonomy_score
+  'Detailed assessment'             -- p_ai_assessment
 );
 ```
 
-This sets status to `triaged`. **Do NOT set `in_progress` during triage.**
+**G. Auto-approve if score is 4–5:**
 
-### Auto-Approve (Score 4-5 Only)
-
-If the autonomy score is 4 or 5, you may auto-approve immediately after triaging:
-
-1. First triage the item (above)
-2. Then approve it:
 ```sql
 SELECT * FROM set_admin_decision('<id>'::uuid, 'approved', NULL, <next_priority>);
-```
-3. Add an explanatory comment:
-```sql
 SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
-  'Auto-approved: autonomy score 5/5. Clear bug from lead dev, safe fix, no side effects.');
+  'Auto-approved: autonomy score 5/5. Clear bug, safe fix, no side effects.');
 ```
-4. The item now appears in the work queue — proceed to fix it
 
-**Score 2-3**: Triage only. Wait for admin decision via the UI.
-**Score 0-1**: Triage only. Add a comment flagging concerns for admin.
+For scores 2–3, wait for admin decision. For 0–1, add a comment flagging concerns.
 
-## Step 2: Work Through Approved Queue
+### Step 1b: Splitting Complex Items
+
+During triage, you may determine that an item should be broken into independent sub-tasks rather than handled as one unit.
+
+**When to split:**
+- Complexity is `complex` and involves 2+ genuinely independent changes
+- Sub-tasks touch different components/subsystems with no shared dependencies
+- Each sub-task is independently testable
+- Splitting gives the admin clearer, focused test instructions per sub-task
+
+**When NOT to split:**
+- Changes are cohesive (one refactor touching 5 files = still 1 task)
+- Sub-tasks depend on each other or must be tested together
+- Total scope is manageable in a single session — would all get done together anyway
+
+**Process:**
+
+1. Write clear, self-contained descriptions for each sub-task
+2. Call `split_feedback_item` — parent moves to `split`, children created as `new` linked via `parent_id`
+3. Comment on the parent explaining the split rationale
+4. Triage each child immediately (each gets its own assessment, autonomy score, auto-approve decision)
+
+Do NOT call `triage_feedback_item` on the parent — it goes directly from `new` to `split`.
 
 ```sql
-SELECT * FROM get_agent_work_queue();
+-- 1. Split parent into sub-tasks
+SELECT * FROM split_feedback_item(
+  '<parent_id>'::uuid,
+  ARRAY[
+    'Fix header dropdown z-index issue on /notes page',
+    'Update sidebar nav highlight to reflect active route',
+    'Fix toast notification positioning on mobile viewports'
+  ]
+);
+
+-- 2. Explain the split
+SELECT * FROM add_feedback_comment('<parent_id>'::uuid, 'ai_agent', 'AI Agent',
+  'Split into 3 sub-tasks: header z-index, sidebar highlight, mobile toast. Independent components, no shared dependencies.');
+
+-- 3. Triage each child (IDs returned by split_feedback_item)
+SELECT * FROM triage_feedback_item('<child1>'::uuid, ...);
+SELECT * FROM triage_feedback_item('<child2>'::uuid, ...);
+SELECT * FROM triage_feedback_item('<child3>'::uuid, ...);
 ```
 
-Returns items ordered by `work_priority ASC` (1 = do first).
+### Step 2: Work Through Approved Queue
 
-For each item:
-1. Check `admin_direction` for specific instructions from admin
-2. Check comments for additional context: `SELECT * FROM get_feedback_comments('<id>'::uuid);`
-3. Research the code
-4. Add progress comments as you work:
-```sql
-SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
-  'Found root cause in components/Foo.tsx line 42. The issue is...');
-```
-5. Implement the fix
+For each item from `get_agent_work_queue()`:
 
-## Step 3: Submit for Admin Testing (Agent's FINAL Action)
+1. Read `admin_direction` and comments for context
+2. Research and implement the fix
+3. Add progress comments as you work
 
-**CRITICAL: `resolve_with_testing()` is the ONLY function you call when you finish a fix.** This sets status to `awaiting_review` — NOT `resolved`. The admin will test your fix and decide whether it passes or fails. You are DONE with the item after this call.
-
-**What happens after you call `resolve_with_testing()`:**
-- The item moves to the **Test Results** pipeline stage
-- The admin sees your testing instructions and clickable URL
-- The admin tests and either approves (→ resolved) or rejects (→ back to in_progress)
-- **You do NOT touch the item again** unless the admin rejects it and sends it back
+### Step 3: Submit for Testing
 
 ```sql
 SELECT * FROM resolve_with_testing(
   '<id>'::uuid,
-  'Fixed the padding issue by adding pb-32 to NoteEditor.tsx content container',
-  '1. Go to http://localhost:3000/notes\n2. Open any note with lots of content\n3. Scroll to the bottom\n4. Verify generous padding below last line\n5. Test in both plain text and preview modes',
-  'http://localhost:3000/notes'
+  'What was fixed and how',
+  'Step-by-step testing instructions',
+  'http://localhost:3000/relevant-page'
 );
 ```
 
-### What You Must NEVER Do After Fixing
+**Testing instructions must** (admin verifies in under 60 seconds):
+- Include the URL where the fix is verifiable — almost certainly NOT the `route` field
+- List exact steps to reproduce/verify
+- Describe "fixed" vs "broken" behavior
+- Note if multiple modes need testing (dark mode, mobile, etc.)
+- Re-read the description and screenshots before submitting — confirm your instructions test what the user actually reported
 
-- **NEVER** call `close_feedback_item()` — that's admin-only
-- **NEVER** set status to `resolved`, `closed`, or `wont_fix` via any method
-- **NEVER** use raw SQL `UPDATE user_feedback SET status = 'resolved'` or any "done" status
-- **NEVER** skip `resolve_with_testing()` by updating status directly — the admin needs testing instructions
+### Step 4: Handle Rework
 
-Your job ends at `awaiting_review`. Period.
+When the admin rejects a fix, the item returns to `in_progress` with `testing_result` set to `fail` or `partial`. These appear in your normal work queue.
 
-### Testing Instructions Quality
+1. Read admin comments to understand what failed
+2. Fix the remaining issues
+3. Comment to acknowledge the failure and explain changes
+4. Re-call `resolve_with_testing()` with updated notes and instructions
 
-Testing instructions must be specific enough that the admin can verify in under 60 seconds:
-- Include the exact URL/route **where the fix can be verified** — this is almost certainly NOT the `route` field on the item. Determine the real location from screenshots + description + your code research.
-- If the bug is in a **shared/global element** (header, sidebar, layout, toast, modal), the testing URL should be ANY page where that element appears, with instructions to trigger it (e.g., "Go to any page, click the bug icon in the header, submit feedback, then verify the confirmation modal closes on outside click")
-- List exact steps to reproduce or verify
-- Describe what "fixed" looks like vs what "broken" looked like
-- Mention if multiple modes need testing (dark mode, mobile, etc.)
-- **Sanity check:** Before submitting, re-read the user's description and look at the screenshots one more time. Ask yourself: "Do my testing instructions actually test what the user reported?" If not, you have the wrong component.
+### Step 5: Chat Summary
 
-## Step 4: Brief Chat Summary
+After processing a batch, give a brief summary: items triaged, items fixed, items needing admin discussion, and anything skipped. Details are in the DB — don't reproduce them in chat.
 
-After processing a batch, give a **brief** summary in chat:
-
-- How many items triaged
-- How many items fixed
-- Any items needing admin discussion (low autonomy)
-- Any items skipped and why
-
-**Do NOT reproduce testing checklists or resolution notes in chat** — they're in the DB. The admin reviews everything via the pipeline UI at `/administration/feedback`.
-
-## Step 5: Handle Failed/Partial Tests (Rework Cycle)
-
-When the admin tests your fix and it fails or is only partially correct, the item is sent back to you:
-- Status changes from `awaiting_review` → `in_progress`
-- `testing_result` is set to `'fail'` or `'partial'`
-- The admin leaves comments explaining what's wrong or what still needs work
-
-**These items appear in your normal work queue** (`get_agent_work_queue()`). You MUST check for them every session because they are higher priority than new work — the admin is blocked waiting for your fix.
-
-### How to Identify Rework Items
+## SQL Reference
 
 ```sql
--- Items returned from testing show up in the regular work queue
+-- Triage
+SELECT * FROM triage_feedback_item(id, solution, priority, complexity, files[], autonomy, assessment);
+
+-- Split into sub-tasks (parent -> 'split', children -> 'new')
+SELECT * FROM split_feedback_item(parent_id, ARRAY['sub-task 1', 'sub-task 2']);
+
+-- Approve (auto-approve for autonomy 4-5)
+SELECT * FROM set_admin_decision(id, 'approved', direction, work_priority);
+
+-- Submit fix for testing (agent's terminal action)
+SELECT * FROM resolve_with_testing(id, resolution_notes, testing_instructions, testing_url);
+
+-- Comments
+SELECT * FROM add_feedback_comment(id, 'ai_agent', 'AI Agent', 'content');
+SELECT * FROM get_feedback_comments(id);
+
+-- Queries
+SELECT * FROM get_untriaged_feedback();
 SELECT * FROM get_agent_work_queue();
+SELECT * FROM get_feedback_by_status('in_progress');
+SELECT get_feedback_summary();
 
--- To specifically find items sent back from testing:
-SELECT id, LEFT(description, 80), testing_result, work_priority
-FROM user_feedback
-WHERE admin_decision = 'approved'
-  AND status = 'in_progress'
-  AND testing_result IN ('fail', 'partial')
-ORDER BY work_priority ASC NULLS LAST;
+-- ADMIN-ONLY (never call these)
+SELECT * FROM close_feedback_item(id, status, admin_notes);
 ```
-
-### How to Handle Rework Items
-
-1. **Read the admin's comments** — they explain exactly what failed or what's left to do:
-   ```sql
-   SELECT * FROM get_feedback_comments('<id>'::uuid);
-   ```
-2. **Read the previous `testing_result`** — `'fail'` means the fix didn't work at all; `'partial'` means some parts work but others don't
-3. **Fix the remaining issues**
-4. **Add a comment** acknowledging the failure and explaining what you changed:
-   ```sql
-   SELECT * FROM add_feedback_comment('<id>'::uuid, 'ai_agent', 'AI Agent',
-     'Acknowledged: [what the admin said was wrong]. Fixed by [what you changed]. Re-submitting for testing.');
-   ```
-5. **Re-submit with `resolve_with_testing()`** — this clears `testing_result` automatically and moves the item back to **Test Results** for fresh admin testing:
-   ```sql
-   SELECT * FROM resolve_with_testing('<id>'::uuid,
-     'Updated resolution notes...',
-     'Updated testing instructions...',
-     'http://localhost:3000/...'
-   );
-   ```
-
-**The rework cycle repeats** until the admin marks the item as Pass. Never skip the comment step — the admin needs to see that you understood their feedback before re-testing.
-
-## Database Schema Reference
-
-**Table: `user_feedback`**
-
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid | PK |
-| user_id | uuid | FK to auth.users |
-| username | text | Email or display name |
-| feedback_type | text | bug, feature, suggestion, other |
-| route | text | Page user was on when submitting (NOT necessarily where the bug is) |
-| description | text | User's description |
-| status | text | new, triaged, in_progress, awaiting_review, resolved, closed, wont_fix, split, deferred |
-| priority | text | low, medium, high, critical |
-| parent_id | uuid | FK self — for split sub-tasks |
-| admin_notes | text | Internal notes |
-| admin_direction | text | Admin's specific instructions for agent (read this before working) |
-| admin_decision | text | pending, approved, rejected, deferred, split |
-| work_priority | integer | Sort order (1 = do first) |
-| ai_assessment | text | Agent's analysis of the issue |
-| ai_solution_proposal | text | Agent's proposed approach |
-| ai_suggested_priority | text | Agent's recommended priority |
-| ai_complexity | text | simple, moderate, complex |
-| ai_estimated_files | text[] | Expected file changes |
-| autonomy_score | integer | 1-5 confidence score |
-| resolution_notes | text | What was done to fix it |
-| testing_instructions | text | Step-by-step test guide for admin |
-| testing_url | text | Direct URL to test |
-| testing_result | text | pass, fail, partial (set by admin) |
-| image_urls | text[] | Screenshot URLs |
-| created_at | timestamptz | Submission time |
-| updated_at | timestamptz | Last update |
-| resolved_at | timestamptz | When resolved |
-| resolved_by | uuid | Who resolved |
-| user_confirmed_at | timestamptz | User confirmation |
-
-**Table: `feedback_comments`**
-
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid | PK |
-| feedback_id | uuid | FK to user_feedback (CASCADE delete) |
-| author_type | text | user, admin, ai_agent |
-| author_name | text | Display name |
-| content | text | Comment body |
-| created_at | timestamptz | When posted |

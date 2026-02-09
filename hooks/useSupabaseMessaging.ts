@@ -72,13 +72,13 @@ export function useMessages(
       setError(null);
 
       try {
-        // Fetch messages with sender info via RPC
-        const { data, error: fetchError } = await supabase
+        // Fetch the most recent messages (descending to get newest first, then reverse for display)
+        const { data: rawData, error: fetchError } = await supabase
           .from('dm_messages')
           .select('*')
           .eq('conversation_id', conversationId)
           .is('deleted_at', null)
-          .order('created_at', { ascending: true })
+          .order('created_at', { ascending: false })
           .limit(initialPageSize);
 
         if (!mountedRef.current) return;
@@ -87,6 +87,9 @@ export function useMessages(
           setError(fetchError.message);
           return;
         }
+
+        // Reverse to display in chronological order (oldest first)
+        const data = rawData ? [...rawData].reverse() : [];
 
         // Fetch sender info for each unique sender
         const senderIds = [...new Set((data || []).map((m) => m.sender_id))];

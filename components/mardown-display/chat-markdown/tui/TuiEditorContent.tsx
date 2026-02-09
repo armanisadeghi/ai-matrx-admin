@@ -208,6 +208,7 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
     const [convertedContent, setConvertedContent] = useState<string>("");
     const [isThemeReady, setIsThemeReady] = useState(false);
     const hasAppliedInitialTheme = useRef(false);
+    const endKeyCleanupRef = useRef<(() => void) | null>(null);
  
     // Convert incoming content from your format to Toast UI format
     useEffect(() => {
@@ -366,6 +367,12 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
     // Ref callback to apply theme immediately on mount
     // MUST be defined before any conditional returns (Rules of Hooks)
     const handleEditorRef = useCallback((instance: TuiEditorReactComp | null) => {
+        // Clean up previous End/Home key handler
+        if (endKeyCleanupRef.current) {
+            endKeyCleanupRef.current();
+            endKeyCleanupRef.current = null;
+        }
+
         editorRef.current = instance;
         
         // Apply theme immediately when editor mounts
@@ -379,6 +386,46 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
                     setIsThemeReady(true);
                 }, 50);
             }
+        }
+
+        // Fix End/Home key behavior — move to visual line boundary, not document boundary
+        if (instance) {
+            setTimeout(() => {
+                const editorEl = instance.getRootElement();
+                if (!editorEl) return;
+
+                // Target the WYSIWYG contenteditable area (ProseMirror)
+                const contentArea = editorEl.querySelector('[contenteditable="true"]');
+                if (!contentArea) return;
+
+                const handleEndHomeKey = (e: Event) => {
+                    const keyEvent = e as KeyboardEvent;
+                    // Only intercept End/Home without Ctrl/Cmd (those should still go to document start/end)
+                    if (
+                        (keyEvent.key === 'End' || keyEvent.key === 'Home') &&
+                        !keyEvent.ctrlKey &&
+                        !keyEvent.metaKey
+                    ) {
+                        const selection = window.getSelection();
+                        if (!selection || selection.rangeCount === 0) return;
+
+                        keyEvent.preventDefault();
+
+                        const direction = keyEvent.key === 'End' ? 'forward' : 'backward';
+                        const alter = keyEvent.shiftKey ? 'extend' : 'move';
+
+                        // Selection.modify is non-standard but widely supported in all modern browsers
+                        // It correctly handles visual line boundaries in contenteditable elements
+                        (selection as unknown as { modify: (alter: string, direction: string, granularity: string) => void })
+                            .modify(alter, direction, 'lineboundary');
+                    }
+                };
+
+                contentArea.addEventListener('keydown', handleEndHomeKey, true);
+                endKeyCleanupRef.current = () => {
+                    contentArea.removeEventListener('keydown', handleEndHomeKey, true);
+                };
+            }, 100);
         }
     }, [applyTheme]);
 

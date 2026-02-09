@@ -1,7 +1,7 @@
 // features/notes/components/NotesSidebar.tsx
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { 
     FolderOpen, 
     FileText, 
@@ -91,6 +91,9 @@ export function NotesSidebar({
     const [contextMenuTarget, setContextMenuTarget] = useState<string | null>(null);
     const [isInitialRender, setIsInitialRender] = useState(true);
     
+    // Auto-scroll during drag
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
+
     // Dialog states
     const [renameFolderOpen, setRenameFolderOpen] = useState(false);
     const [renameFolderName, setRenameFolderName] = useState('');
@@ -155,6 +158,32 @@ export function NotesSidebar({
         }));
     };
 
+    // Auto-scroll when dragging near edges of the scroll area
+    const handleAutoScroll = useCallback((e: React.DragEvent) => {
+        if (!draggedNote) return;
+
+        const container = scrollAreaRef.current;
+        if (!container) return;
+
+        // Find the Radix ScrollArea viewport element
+        const viewport = container.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+        if (!viewport) return;
+
+        const rect = viewport.getBoundingClientRect();
+        const edgeThreshold = 60; // pixels from edge to start scrolling
+        const maxSpeed = 8; // max pixels per frame at the very edge
+
+        if (e.clientY < rect.top + edgeThreshold && e.clientY >= rect.top) {
+            // Near top edge — scroll up, speed proportional to proximity
+            const proximity = 1 - (e.clientY - rect.top) / edgeThreshold;
+            viewport.scrollTop -= maxSpeed * Math.max(0, proximity);
+        } else if (e.clientY > rect.bottom - edgeThreshold && e.clientY <= rect.bottom) {
+            // Near bottom edge — scroll down, speed proportional to proximity
+            const proximity = 1 - (rect.bottom - e.clientY) / edgeThreshold;
+            viewport.scrollTop += maxSpeed * Math.max(0, proximity);
+        }
+    }, [draggedNote]);
+
     // Drag and Drop handlers
     const handleDragStart = (note: Note) => (e: React.DragEvent) => {
         setDraggedNote(note);
@@ -171,6 +200,8 @@ export function NotesSidebar({
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         setDropTargetFolder(folderName);
+        // Auto-scroll when near edges
+        handleAutoScroll(e);
     };
 
     const handleDragLeave = () => {
@@ -324,7 +355,8 @@ export function NotesSidebar({
             </div>
 
             {/* Folder/File Tree - VS Code Compact Style */}
-            <ScrollArea className="flex-1">
+            <div ref={scrollAreaRef} className="flex-1 overflow-hidden" onDragOver={handleAutoScroll}>
+            <ScrollArea className="h-full">
                 <div className="p-0.5">
                     {folderGroups.length === 0 ? (
                         <div className="text-center text-xs text-muted-foreground py-3">
@@ -458,6 +490,7 @@ export function NotesSidebar({
                     )}
                 </div>
             </ScrollArea>
+            </div>
 
             {/* Context Menu */}
             {contextMenuOpen && contextMenuType === 'folder' && contextMenuTarget && (

@@ -24,6 +24,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
 import { LatestAiModels } from "@/components/animated/ExpandableCards/ExpandableCardDemo";
 import { dashboardLinks } from "@/constants/navigation-links";
+import { SandboxWidget } from "./SandboxWidget";
 
 
 const DashboardPage = () => {
@@ -256,6 +257,9 @@ const DashboardPage = () => {
                                     ))}
                                 </div>
                             </div>
+                            {/* Sandbox summary */}
+                            <SandboxWidget />
+
                             {/* Usage stats */}
                             <div className="mt-6">
                                 <h2 className="text-md font-semibold mb-4">Stats</h2>

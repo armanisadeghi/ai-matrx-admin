@@ -131,15 +131,16 @@ export default function SandboxListPage() {
     const handleCreate = async () => {
         setCreating(true)
         setCreateError(null)
-        const instance = await createInstance({
+        const result = await createInstance({
             ttl_seconds: ttlHours * 3600,
         })
         setCreating(false)
-        setCreateOpen(false)
-        if (instance) {
-            router.push(`/sandbox/${instance.id}`)
-        } else if (error) {
-            setCreateError(error)
+        if (result.instance) {
+            setCreateOpen(false)
+            router.push(`/sandbox/${result.instance.id}`)
+        } else {
+            setCreateOpen(false)
+            setCreateError(result.error || 'Failed to create sandbox')
         }
     }
 
