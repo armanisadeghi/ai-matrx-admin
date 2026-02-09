@@ -11,6 +11,8 @@ import {
     Users,
     Activity,
     Server,
+    ArrowRight,
+    Info,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,6 +33,7 @@ import {
     DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog'
+import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import type { SandboxInstance, SandboxStatus } from '@/types/sandbox'
 
@@ -194,6 +197,18 @@ export default function AdminSandboxPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                <Link href="/administration/sandbox">
+                    <Card className="border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 transition-colors cursor-pointer">
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <Info className="w-4 h-4 text-blue-500 shrink-0" />
+                            <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
+                                SSH access and full management tools are available in the new Sandbox Management dashboard.
+                            </p>
+                            <ArrowRight className="w-4 h-4 text-blue-500 shrink-0" />
+                        </CardContent>
+                    </Card>
+                </Link>
 
                 {error && (
                     <Card className="border-destructive">

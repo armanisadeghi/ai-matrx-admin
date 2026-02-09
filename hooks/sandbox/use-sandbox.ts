@@ -8,6 +8,7 @@ import type {
     SandboxExecRequest,
     SandboxExecResponse,
     SandboxActionRequest,
+    SandboxAccessResponse,
 } from '@/types/sandbox'
 
 export function useSandboxInstances(projectId?: string) {
@@ -185,6 +186,27 @@ export function useSandboxInstances(projectId?: string) {
         []
     )
 
+    const requestAccess = useCallback(
+        async (id: string): Promise<SandboxAccessResponse | null> => {
+            setError(null)
+            try {
+                const resp = await fetch(`/api/sandbox/${id}/access`, { method: 'POST' })
+
+                if (!resp.ok) {
+                    const body = await resp.json()
+                    throw new Error(body.error || 'Failed to request SSH access')
+                }
+
+                return (await resp.json()) as SandboxAccessResponse
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : 'Unknown error'
+                setError(msg)
+                return null
+            }
+        },
+        []
+    )
+
     return {
         instances,
         loading,
@@ -197,5 +219,6 @@ export function useSandboxInstances(projectId?: string) {
         extendInstance,
         deleteInstance,
         execCommand,
+        requestAccess,
     }
 }

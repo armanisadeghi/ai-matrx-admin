@@ -42,7 +42,7 @@ import {
     IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
-import { Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker } from "lucide-react";
+import { Container, Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker } from "lucide-react";
 
 export const adminCategories = [
     {
@@ -55,6 +55,20 @@ export const adminCategories = [
                 description: "Access all experimental, demo, and test routes organized by feature area for easy testing and development",
                 icon: <Beaker />,
                 link: "/administration/experimental-routes",
+                isNew: true,
+            },
+        ],
+    },
+    {
+        name: "Sandbox & DevOps",
+        icon: <Container className="w-6 h-6" />,
+        iconColor: "text-orange-600",
+        features: [
+            {
+                title: "Sandbox Management",
+                description: "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
+                icon: <IconServer />,
+                link: "/administration/sandbox",
                 isNew: true,
             },
         ],

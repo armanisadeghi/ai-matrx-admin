@@ -34,6 +34,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppSelector } from '@/lib/redux/hooks'
 import { selectIsAdmin } from '@/lib/redux/slices/userSlice'
+import { SshAccessPanel } from '@/components/sandbox/ssh-access-panel'
 import type { SandboxInstance, SandboxStatus, SandboxExecResponse } from '@/types/sandbox'
 
 const CWD_MARKER = '__MATRX_CWD__='
@@ -572,6 +573,10 @@ export default function SandboxDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {isActive && (
+                    <SshAccessPanel sandboxId={id} disabled={!isActive} />
+                )}
 
                 {Object.keys(instance.config).length > 0 && (
                     <Card>
