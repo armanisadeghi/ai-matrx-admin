@@ -6,16 +6,17 @@ import {
     Container,
     Plus,
     Square,
-    Clock,
     Trash2,
     RefreshCw,
     Timer,
     AlertCircle,
     Loader2,
+    CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
     Table,
     TableHeader,
@@ -90,6 +91,7 @@ export default function SandboxListPage() {
     const {
         instances,
         loading,
+        refreshing,
         error,
         total,
         fetchInstances,
@@ -98,11 +100,12 @@ export default function SandboxListPage() {
         deleteInstance,
     } = useSandboxInstances()
 
-    const [isRefreshing, setIsRefreshing] = useState(false)
     const [createOpen, setCreateOpen] = useState(false)
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState<string | null>(null)
+    const [createSuccess, setCreateSuccess] = useState(false)
     const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(null)
+    const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set())
     const [ttlHours, setTtlHours] = useState(2)
 
     useEffect(() => {
@@ -124,9 +127,7 @@ export default function SandboxListPage() {
     }, [createError])
 
     const handleRefresh = async () => {
-        setIsRefreshing(true)
         await fetchInstances()
-        setIsRefreshing(false)
     }
 
     const handleCreate = async () => {
@@ -135,18 +136,29 @@ export default function SandboxListPage() {
         const result = await createInstance({
             ttl_seconds: ttlHours * 3600,
         })
-        setCreating(false)
         if (result.instance) {
-            setCreateOpen(false)
-            router.push(`/sandbox/${result.instance.id}`)
+            setCreating(false)
+            setCreateSuccess(true)
+            // Brief success state before redirect
+            setTimeout(() => {
+                setCreateOpen(false)
+                setCreateSuccess(false)
+                router.push(`/sandbox/${result.instance!.id}`)
+            }, 800)
         } else {
-            setCreateOpen(false)
+            setCreating(false)
             setCreateError(result.error || 'Failed to create sandbox')
         }
     }
 
     const handleStop = async (instance: SandboxInstance) => {
+        setStoppingIds((prev) => new Set(prev).add(instance.id))
         await stopInstance(instance.id)
+        setStoppingIds((prev) => {
+            const next = new Set(prev)
+            next.delete(instance.id)
+            return next
+        })
     }
 
     const handleDelete = async () => {
@@ -177,11 +189,11 @@ export default function SandboxListPage() {
                             variant="outline"
                             size="icon"
                             onClick={handleRefresh}
-                            disabled={isRefreshing}
+                            disabled={refreshing}
                         >
-                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                         </Button>
-                        <Dialog open={createOpen} onOpenChange={(open) => { if (!creating) setCreateOpen(open) }}>
+                        <Dialog open={createOpen} onOpenChange={(open) => { if (!creating && !createSuccess) setCreateOpen(open) }}>
                             <DialogTrigger asChild>
                                 <Button>
                                     <Plus className="w-4 h-4 mr-2" />
@@ -189,7 +201,19 @@ export default function SandboxListPage() {
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
-                                {creating ? (
+                                {createSuccess ? (
+                                    <div className="flex flex-col items-center justify-center py-12 gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                            <CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        <div className="text-center">
+                                            <h3 className="font-semibold text-lg">Sandbox Created</h3>
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                                Redirecting to your sandbox...
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : creating ? (
                                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                                         <Loader2 className="w-10 h-10 animate-spin text-primary" />
                                         <div className="text-center">
@@ -209,6 +233,15 @@ export default function SandboxListPage() {
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
+                                            {createError && (
+                                                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                                                    <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-destructive">Creation Failed</p>
+                                                        <p className="text-xs text-destructive/80 mt-0.5">{createError}</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div>
                                                 <label className="text-sm font-medium">Duration</label>
                                                 <div className="flex items-center gap-2 mt-1">
@@ -226,7 +259,7 @@ export default function SandboxListPage() {
                                             </div>
                                         </div>
                                         <DialogFooter>
-                                            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                                            <Button variant="outline" onClick={() => { setCreateOpen(false); setCreateError(null); }}>
                                                 Cancel
                                             </Button>
                                             <Button onClick={handleCreate}>
@@ -244,31 +277,31 @@ export default function SandboxListPage() {
 
             <div className="flex-1 overflow-y-auto p-4">
                 <div className="max-w-6xl mx-auto">
-                {createError && (
-                    <Card className="mb-4 border-destructive">
-                        <CardContent className="flex items-center justify-between p-4">
-                            <div className="flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
-                                <p className="text-sm text-destructive">{createError}</p>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCreateError(null)}
-                                className="text-destructive hover:text-destructive shrink-0"
-                            >
-                                Dismiss
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
-
                 {loading && instances.length === 0 ? (
-                    <Card>
-                        <CardContent className="p-8 text-center text-muted-foreground">
-                            Loading sandbox instances...
-                        </CardContent>
-                    </Card>
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Sandbox ID</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Created</TableHead>
+                                    <TableHead>Time Remaining</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {[1, 2, 3].map((i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-4 w-36" /></TableCell>
+                                        <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                        <TableCell className="text-right"><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 ) : instances.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
@@ -284,7 +317,13 @@ export default function SandboxListPage() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="rounded-md border">
+                    <div className="relative rounded-md border">
+                        {/* Subtle refresh indicator */}
+                        {refreshing && (
+                            <div className="absolute top-2 right-2 z-10">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                            </div>
+                        )}
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -328,8 +367,13 @@ export default function SandboxListPage() {
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => handleStop(instance)}
+                                                        disabled={stoppingIds.has(instance.id)}
                                                     >
-                                                        <Square className="w-3 h-3 mr-1" />
+                                                        {stoppingIds.has(instance.id) ? (
+                                                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                                        ) : (
+                                                            <Square className="w-3 h-3 mr-1" />
+                                                        )}
                                                         Stop
                                                     </Button>
                                                 )}

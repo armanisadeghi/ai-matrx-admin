@@ -47,6 +47,17 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const [feedbackStats, setFeedbackStats] = useState<{ total: number; pending: number; resolved: number } | null>(null);
     const [showNewFeatureHighlight, setShowNewFeatureHighlight] = useState(false);
 
+    // Reset submitted state after dropdown close animation completes
+    useEffect(() => {
+        if (!isOpen && (submitted || feedbackStats)) {
+            const timer = setTimeout(() => {
+                setSubmitted(false);
+                setFeedbackStats(null);
+            }, 150);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, submitted, feedbackStats]);
+
     // Upload hook for programmatic paste uploads only
     const { uploadToPublicUserAssets, isLoading: isUploadHookLoading } = useFileUploadWithStorage('user-public-assets', 'feedback-images');
 
@@ -266,14 +277,12 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                 align="end" 
                 className="w-[400px] p-0"
                 onInteractOutside={(e) => {
-                    // Only prevent closing while actively submitting
+                    // Prevent closing while actively submitting
                     if (isSubmitting) {
                         e.preventDefault();
-                    } else if (submitted) {
-                        // Clicking outside the success confirmation closes it and resets state
-                        setSubmitted(false);
-                        setFeedbackStats(null);
                     }
+                    // When submitted, let the dropdown close naturally.
+                    // State reset happens via useEffect after close animation.
                 }}
             >
                 <Card className="border-0 shadow-none">
@@ -311,7 +320,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                             {/* Link to feedback portal */}
                             <Link
                                 href="/settings/feedback"
-                                onClick={() => { setSubmitted(false); setIsOpen(false); }}
+                                onClick={() => setIsOpen(false)}
                                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                             >
                                 View all your submissions
@@ -323,7 +332,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => { setSubmitted(false); setFeedbackStats(null); setIsOpen(false); }}
+                                    onClick={() => setIsOpen(false)}
                                     className="text-xs text-muted-foreground"
                                 >
                                     Close

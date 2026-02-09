@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type {
     SandboxInstance,
     SandboxListResponse,
@@ -13,12 +13,19 @@ import type {
 export function useSandboxInstances(projectId?: string) {
     const [instances, setInstances] = useState<SandboxInstance[]>([])
     const [loading, setLoading] = useState(false)
+    const [refreshing, setRefreshing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [total, setTotal] = useState(0)
+    const hasFetchedOnce = useRef(false)
 
     const fetchInstances = useCallback(
         async (opts?: { status?: string; limit?: number; offset?: number }) => {
-            setLoading(true)
+            // Only show full loading state on initial fetch
+            if (!hasFetchedOnce.current) {
+                setLoading(true)
+            } else {
+                setRefreshing(true)
+            }
             setError(null)
             try {
                 const params = new URLSearchParams()
@@ -36,6 +43,7 @@ export function useSandboxInstances(projectId?: string) {
                 const data: SandboxListResponse = await resp.json()
                 setInstances(data.instances)
                 setTotal(data.pagination.total)
+                hasFetchedOnce.current = true
                 return data
             } catch (err) {
                 const msg = err instanceof Error ? err.message : 'Unknown error'
@@ -43,6 +51,7 @@ export function useSandboxInstances(projectId?: string) {
                 return null
             } finally {
                 setLoading(false)
+                setRefreshing(false)
             }
         },
         [projectId]
@@ -179,6 +188,7 @@ export function useSandboxInstances(projectId?: string) {
     return {
         instances,
         loading,
+        refreshing,
         error,
         total,
         fetchInstances,

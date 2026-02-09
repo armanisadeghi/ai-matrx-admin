@@ -1110,6 +1110,16 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                             <TabsContent value="testing" className="mt-0 space-y-4">
                                 {hasTesting || isResolved ? (
                                     <>
+                                        {/* Original Description — quick context for the reviewer */}
+                                        <div>
+                                            <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                                Original Issue
+                                            </label>
+                                            <div className="p-3 rounded-lg bg-muted/50 border text-sm whitespace-pre-wrap text-muted-foreground">
+                                                {item.description}
+                                            </div>
+                                        </div>
+
                                         {/* Testing URL */}
                                         {item.testing_url && (
                                             <div>

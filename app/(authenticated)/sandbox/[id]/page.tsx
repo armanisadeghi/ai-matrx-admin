@@ -7,15 +7,18 @@ import {
     Square,
     Clock,
     Trash2,
-    RefreshCw,
     Timer,
     AlertCircle,
     Terminal,
     Send,
-    Play,
     Settings,
     Activity,
     HardDrive,
+    Copy,
+    Check,
+    Shield,
+    ChevronDown,
+    ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,7 +31,31 @@ import {
     DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAppSelector } from '@/lib/redux/hooks'
+import { selectIsAdmin } from '@/lib/redux/slices/userSlice'
 import type { SandboxInstance, SandboxStatus, SandboxExecResponse } from '@/types/sandbox'
+
+const CWD_MARKER = '__MATRX_CWD__='
+
+function escapeForShell(str: string): string {
+    return "'" + str.replace(/'/g, "'\\''") + "'"
+}
+
+function parseExecOutput(stdout: string): { output: string; newCwd: string | null } {
+    const lines = stdout.split('\n')
+    const cwdLineIndex = lines.findLastIndex(line => line.startsWith(CWD_MARKER))
+    if (cwdLineIndex !== -1) {
+        const newCwd = lines[cwdLineIndex].slice(CWD_MARKER.length).trim()
+        const outputLines = [...lines.slice(0, cwdLineIndex), ...lines.slice(cwdLineIndex + 1)]
+        // Remove trailing empty lines from the marker
+        while (outputLines.length > 0 && outputLines[outputLines.length - 1] === '') {
+            outputLines.pop()
+        }
+        return { output: outputLines.join('\n'), newCwd: newCwd || null }
+    }
+    return { output: stdout, newCwd: null }
+}
 
 const STATUS_BADGE_MAP: Record<SandboxStatus, { variant: 'success' | 'warning' | 'destructive' | 'secondary' | 'info' | 'default'; label: string }> = {
     creating: { variant: 'info', label: 'Creating' },
@@ -51,6 +78,7 @@ export default function SandboxDetailPage() {
     const params = useParams()
     const router = useRouter()
     const id = params.id as string
+    const isAdmin = useAppSelector(selectIsAdmin)
 
     const [instance, setInstance] = useState<SandboxInstance | null>(null)
     const [loading, setLoading] = useState(true)
@@ -62,6 +90,9 @@ export default function SandboxDetailPage() {
     const [historyIndex, setHistoryIndex] = useState(-1)
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [timeRemaining, setTimeRemaining] = useState('')
+    const [cwd, setCwd] = useState('/root')
+    const [copied, setCopied] = useState(false)
+    const [adminPanelOpen, setAdminPanelOpen] = useState(false)
 
     const terminalRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -129,11 +160,14 @@ export default function SandboxDetailPage() {
         setTerminalHistory((prev) => [...prev, { type: 'command', text: cmd }])
         setExecuting(true)
 
+        // Wrap command to persist CWD across executions
+        const wrappedCommand = `cd ${escapeForShell(cwd)} && ${cmd}; __mxe=$?; echo "${CWD_MARKER}$(pwd)"; exit $__mxe`
+
         try {
             const resp = await fetch(`/api/sandbox/${id}/exec`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command: cmd, timeout: 60 }),
+                body: JSON.stringify({ command: wrappedCommand, timeout: 60 }),
             })
 
             if (!resp.ok) {
@@ -148,10 +182,19 @@ export default function SandboxDetailPage() {
             const result: SandboxExecResponse = await resp.json()
 
             if (result.stdout) {
-                setTerminalHistory((prev) => [
-                    ...prev,
-                    { type: 'stdout', text: result.stdout, exitCode: result.exit_code },
-                ])
+                const { output, newCwd } = parseExecOutput(result.stdout)
+                if (newCwd) setCwd(newCwd)
+                if (output) {
+                    setTerminalHistory((prev) => [
+                        ...prev,
+                        { type: 'stdout', text: output, exitCode: result.exit_code },
+                    ])
+                } else if (!result.stderr) {
+                    setTerminalHistory((prev) => [
+                        ...prev,
+                        { type: 'info', text: `(exit code: ${result.exit_code})`, exitCode: result.exit_code },
+                    ])
+                }
             }
             if (result.stderr) {
                 setTerminalHistory((prev) => [
@@ -172,9 +215,42 @@ export default function SandboxDetailPage() {
             ])
         } finally {
             setExecuting(false)
-            inputRef.current?.focus()
+            // Focus after React re-render completes (disabled prop changes)
+            requestAnimationFrame(() => {
+                inputRef.current?.focus()
+            })
         }
     }
+
+    const handleCopyTerminal = useCallback(async () => {
+        const text = terminalHistory
+            .map((entry) => {
+                switch (entry.type) {
+                    case 'command': return `$ ${entry.text}`
+                    case 'stdout': return entry.text
+                    case 'stderr': return `[stderr] ${entry.text}`
+                    case 'info': return entry.text
+                    default: return entry.text
+                }
+            })
+            .join('\n')
+
+        try {
+            await navigator.clipboard.writeText(text)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        } catch {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea')
+            textarea.value = text
+            document.body.appendChild(textarea)
+            textarea.select()
+            document.execCommand('copy')
+            document.body.removeChild(textarea)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        }
+    }, [terminalHistory])
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
@@ -244,8 +320,38 @@ export default function SandboxDetailPage() {
 
     if (loading) {
         return (
-            <div className="h-page bg-textured flex items-center justify-center">
-                <p className="text-muted-foreground">Loading sandbox...</p>
+            <div className="h-page flex flex-col bg-textured overflow-hidden">
+                <div className="shrink-0 p-4 border-b border-border bg-textured">
+                    <div className="flex items-center justify-between max-w-6xl mx-auto">
+                        <div className="flex items-center gap-4">
+                            <Skeleton className="h-8 w-8 rounded" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-5 w-48" />
+                                <Skeleton className="h-4 w-32" />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-8 w-16 rounded" />
+                            <Skeleton className="h-8 w-16 rounded" />
+                        </div>
+                    </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4">
+                    <div className="max-w-6xl mx-auto space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {[1, 2, 3].map((i) => (
+                                <Card key={i}>
+                                    <CardHeader className="pb-2"><Skeleton className="h-4 w-32" /></CardHeader>
+                                    <CardContent><Skeleton className="h-8 w-24" /></CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                        <Card>
+                            <CardHeader className="pb-2"><Skeleton className="h-4 w-20" /></CardHeader>
+                            <CardContent><Skeleton className="h-48 w-full rounded-md" /></CardContent>
+                        </Card>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -377,15 +483,38 @@ export default function SandboxDetailPage() {
 
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Terminal className="w-4 h-4" />
-                            Terminal
-                        </CardTitle>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2">
+                                <Terminal className="w-4 h-4" />
+                                Terminal
+                            </CardTitle>
+                            {terminalHistory.length > 0 && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleCopyTerminal}
+                                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1.5"
+                                >
+                                    {copied ? (
+                                        <>
+                                            <Check className="w-3.5 h-3.5 text-green-500" />
+                                            Copied
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="w-3.5 h-3.5" />
+                                            Copy
+                                        </>
+                                    )}
+                                </Button>
+                            )}
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div
                             ref={terminalRef}
                             className="bg-zinc-950 rounded-t-md p-4 min-h-48 max-h-[50vh] overflow-y-auto font-mono text-sm"
+                            onClick={() => inputRef.current?.focus()}
                         >
                             {terminalHistory.length === 0 && (
                                 <p className="text-zinc-500">
@@ -418,7 +547,8 @@ export default function SandboxDetailPage() {
                             )}
                         </div>
                         <div className="flex items-center bg-zinc-900 rounded-b-md border-t border-zinc-800">
-                            <span className="text-green-400 font-mono text-sm pl-4 pr-2">$</span>
+                            <span className="text-blue-400 font-mono text-xs pl-3 pr-1 shrink-0 max-w-[200px] truncate" title={cwd}>{cwd}</span>
+                            <span className="text-green-400 font-mono text-sm pr-1 shrink-0">$</span>
                             <input
                                 ref={inputRef}
                                 type="text"
@@ -428,6 +558,7 @@ export default function SandboxDetailPage() {
                                 disabled={!isActive || executing}
                                 placeholder={isActive ? 'Enter command...' : 'Sandbox not running'}
                                 className="flex-1 bg-transparent text-zinc-200 font-mono text-sm py-3 px-2 outline-none placeholder:text-zinc-600 disabled:opacity-50"
+                                autoFocus
                             />
                             <Button
                                 variant="ghost"
@@ -469,6 +600,74 @@ export default function SandboxDetailPage() {
                                 )}
                             </p>
                         </CardContent>
+                    </Card>
+                )}
+
+                {/* Admin Details Panel */}
+                {isAdmin && (
+                    <Card className="border-amber-500/30 bg-amber-500/5">
+                        <CardHeader className="pb-2">
+                            <button
+                                onClick={() => setAdminPanelOpen(!adminPanelOpen)}
+                                className="flex items-center gap-2 w-full text-left"
+                            >
+                                <Shield className="w-4 h-4 text-amber-500" />
+                                <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400 flex-1">
+                                    Admin Details
+                                </CardTitle>
+                                {adminPanelOpen ? (
+                                    <ChevronDown className="w-4 h-4 text-amber-500" />
+                                ) : (
+                                    <ChevronRight className="w-4 h-4 text-amber-500" />
+                                )}
+                            </button>
+                        </CardHeader>
+                        {adminPanelOpen && (
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">Instance ID</span>
+                                        <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">{instance.id}</code>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">Sandbox ID</span>
+                                        <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">{instance.sandbox_id}</code>
+                                    </div>
+                                    {instance.container_id && (
+                                        <div>
+                                            <span className="text-xs font-medium text-muted-foreground block mb-0.5">Container ID</span>
+                                            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">{instance.container_id}</code>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">User ID</span>
+                                        <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded break-all">{instance.user_id}</code>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">Hot Path</span>
+                                        <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">{instance.hot_path}</code>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">Cold Path</span>
+                                        <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">{instance.cold_path}</code>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">TTL</span>
+                                        <span className="text-xs">{instance.ttl_seconds}s ({Math.floor(instance.ttl_seconds / 3600)}h {Math.floor((instance.ttl_seconds % 3600) / 60)}m)</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">Expires At</span>
+                                        <span className="text-xs font-mono">{instance.expires_at ? new Date(instance.expires_at).toISOString() : '--'}</span>
+                                    </div>
+                                    {Object.keys(instance.config).length > 0 && (
+                                        <div className="md:col-span-2">
+                                            <span className="text-xs font-medium text-muted-foreground block mb-0.5">Config</span>
+                                            <pre className="text-xs font-mono bg-muted rounded p-2 overflow-x-auto">{JSON.stringify(instance.config, null, 2)}</pre>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        )}
                     </Card>
                 )}
                 </div>
