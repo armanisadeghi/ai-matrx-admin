@@ -45,14 +45,11 @@ export function MessagingInitializer() {
   const messagingPreferences = useAppSelector((state) => state.userPreferences.messaging);
   const messagingPreferencesRef = useRef(messagingPreferences);
   
-  // Keep refs updated
-  useEffect(() => {
-    currentConversationIdRef.current = currentConversationId;
-  }, [currentConversationId]);
-  
-  useEffect(() => {
-    messagingPreferencesRef.current = messagingPreferences;
-  }, [messagingPreferences]);
+  // CRITICAL: Update refs synchronously during render (not just in useEffect)
+  // useEffect runs after paint, leaving a window where async event handlers see stale values.
+  // By updating during render, the ref is current by the time any handler reads it.
+  currentConversationIdRef.current = currentConversationId;
+  messagingPreferencesRef.current = messagingPreferences;
 
   // Mark messaging as available
   useEffect(() => {
@@ -324,12 +321,14 @@ export function MessagingInitializer() {
         const updatedConv = await fetchConversationDetails(newMessage.conversation_id);
         
         if (updatedConv) {
-          // If this is the currently active conversation, don't increment unread
-          // The ChatThread handles marking as read automatically
-          if (isActiveConversation) {
+          // Re-check active conversation AFTER the async fetch (ref may have updated since)
+          // This catches cases where the user navigated during the fetch
+          const isStillActive = currentConversationIdRef.current === newMessage.conversation_id;
+          if (isActiveConversation || isStillActive) {
             updatedConv.unread_count = 0;
           }
           
+          // The updateConversation reducer also checks currentConversationId as a safety net
           dispatch(updateConversation(updatedConv));
         }
       }

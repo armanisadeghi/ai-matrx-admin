@@ -212,8 +212,12 @@ function ConversationItem({
   isPending,
   isClicked,
 }: ConversationItemProps) {
-  const { display_name, display_image, last_message, unread_count, updated_at } =
+  const { display_name, display_image, last_message, updated_at } =
     conversation;
+  
+  // If the conversation is currently selected (user is viewing it), it cannot be "unread"
+  // This is the final UI-level safety net against stale unread counts
+  const unread_count = isSelected ? 0 : (conversation.unread_count || 0);
 
   return (
     <button
