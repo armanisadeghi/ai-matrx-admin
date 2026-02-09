@@ -17,8 +17,12 @@
     "analyze:win": "set ANALYZE=true && pnpm build",
     "migrate-content-blocks": "npx tsx scripts/migrate-content-blocks.ts",
     "capture-errors": "NODE_OPTIONS='--max-old-space-size=8192' npx tsx capture_ts_errors.ts",
-    "env:pull": "doppler secrets download --project ai-matrx-admin --config dev --no-file --format env > .env.local && echo '✓ Env updated from Doppler'",
-    "env:push": "doppler secrets upload --project ai-matrx-admin --config dev .env.local && echo '✓ Env pushed to Doppler'"
+    "env:pull": "bash scripts/env-sync.sh pull",
+    "env:push": "bash scripts/env-sync.sh push",
+    "env:diff": "bash scripts/env-sync.sh diff",
+    "env:status": "bash scripts/env-sync.sh status",
+    "env:pull:force": "doppler secrets download --project ai-matrx-admin --config dev --no-file --format env > .env.local && echo '✓ Env force-pulled from Doppler (full replace)'",
+    "env:push:force": "doppler secrets upload --project ai-matrx-admin --config dev .env.local && echo '✓ Env force-pushed to Doppler (full replace)'"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.52",
