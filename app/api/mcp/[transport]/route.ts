@@ -1,6 +1,10 @@
 // MCP Server for external agent access to the feedback system.
-// Agents in other projects connect via .cursor/mcp.json:
-//   { "url": "https://your-app.vercel.app/api/mcp/mcp", "headers": { "Authorization": "Bearer <key>" } }
+//
+// Auth — two methods supported:
+//   1. Bearer header (Cursor, Claude Code, etc.):
+//      { "url": "https://appmatrx.com/api/mcp/mcp", "headers": { "Authorization": "Bearer <key>" } }
+//   2. Query-param token (Claude.ai connectors — no custom header support):
+//      URL: https://appmatrx.com/api/mcp/mcp?token=<key>
 
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
@@ -264,11 +268,15 @@ const handler = createMcpHandler(
 );
 
 // ---------------------------------------------------------------------------
-// Auth wrapper — validates Bearer token against AGENT_API_KEY
+// Auth wrapper — validates token against AGENT_API_KEY
+// Supports two methods (checked in order):
+//   1. Bearer token via Authorization header  (Cursor, Claude Code, etc.)
+//   2. Query-parameter token via ?token=...   (Claude.ai connectors, which
+//      only support authless or OAuth — no custom headers)
 // ---------------------------------------------------------------------------
 
 const verifyToken = async (
-    _req: Request,
+    req: Request,
     bearerToken?: string
 ): Promise<AuthInfo | undefined> => {
     const apiKey = process.env.AGENT_API_KEY;
@@ -278,15 +286,31 @@ const verifyToken = async (
         return undefined;
     }
 
-    if (!bearerToken || bearerToken !== apiKey) {
-        return undefined;
+    // 1. Prefer Bearer token from Authorization header
+    if (bearerToken && bearerToken === apiKey) {
+        return {
+            token: bearerToken,
+            scopes: ['feedback'],
+            clientId: 'agent',
+        };
     }
 
-    return {
-        token: bearerToken,
-        scopes: ['feedback'],
-        clientId: 'agent',
-    };
+    // 2. Fall back to ?token= query parameter (for clients that can't send headers)
+    try {
+        const url = new URL(req.url);
+        const queryToken = url.searchParams.get('token');
+        if (queryToken && queryToken === apiKey) {
+            return {
+                token: queryToken,
+                scopes: ['feedback'],
+                clientId: 'agent-query',
+            };
+        }
+    } catch {
+        // URL parsing failed — fall through to rejection
+    }
+
+    return undefined;
 };
 
 const authHandler = withMcpAuth(handler, verifyToken, {
