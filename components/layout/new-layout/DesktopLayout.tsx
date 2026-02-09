@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Menu } from "lucide-react";
 import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
@@ -15,6 +15,11 @@ import { QuickActionsMenu } from "@/features/quick-actions";
 import FeedbackButton from "@/components/layout/FeedbackButton";
 import { RootState } from "@/lib/redux/store";
 import Image from "next/image";
+
+// Lazy-loaded admin icon — never imported for non-admin users
+const ShieldIcon = lazy(() =>
+    import("lucide-react").then((mod) => ({ default: mod.Shield }))
+);
 
 interface SidebarLink {
     label: string;
@@ -269,6 +274,47 @@ export default function DesktopLayout({
                                     </ul>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {/* Admin Dashboard Quick Link - Lazy loaded, only for admins */}
+                    {isAdmin && (
+                        <div className="flex-shrink-0 mb-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        href="/administration"
+                                        className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
+                                            isLinkActive("/administration")
+                                                ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 shadow-sm"
+                                                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 hover:shadow-sm"
+                                        }`}
+                                    >
+                                        <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
+                                            <Suspense fallback={<div className="w-4 h-4" />}>
+                                                <ShieldIcon className="w-4 h-4" />
+                                            </Suspense>
+                                        </div>
+                                        <span
+                                            className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
+                                                isSidebarCollapsed
+                                                    ? "opacity-0 translate-x-2 pointer-events-none"
+                                                    : "opacity-100 translate-x-0"
+                                            }`}
+                                        >
+                                            Admin
+                                        </span>
+                                    </Link>
+                                </TooltipTrigger>
+                                {isSidebarCollapsed && !isTransitioning && (
+                                    <TooltipContent
+                                        side="right"
+                                        className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                                    >
+                                        Admin Dashboard
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                     )}
 

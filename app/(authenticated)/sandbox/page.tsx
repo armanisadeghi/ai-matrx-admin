@@ -48,6 +48,17 @@ const STATUS_BADGE_MAP: Record<SandboxStatus, { variant: 'success' | 'warning' |
     expired: { variant: 'secondary', label: 'Expired' },
 }
 
+/** Derive the effective status by checking time-based expiry.
+ * The DB status may still say "ready" or "running" after TTL expires. */
+function getEffectiveStatus(instance: SandboxInstance): SandboxStatus {
+    if (['ready', 'running'].includes(instance.status) && instance.expires_at) {
+        if (new Date(instance.expires_at).getTime() <= Date.now()) {
+            return 'expired'
+        }
+    }
+    return instance.status
+}
+
 function StatusBadge({ status }: { status: SandboxStatus }) {
     const config = STATUS_BADGE_MAP[status] || { variant: 'default' as const, label: status }
     return <Badge variant={config.variant}>{config.label}</Badge>
@@ -168,7 +179,7 @@ export default function SandboxListPage() {
     }
 
     const activeCount = instances.filter((i) =>
-        ['creating', 'starting', 'ready', 'running'].includes(i.status)
+        ['creating', 'starting', 'ready', 'running'].includes(getEffectiveStatus(i))
     ).length
 
     return (
@@ -335,7 +346,10 @@ export default function SandboxListPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {instances.map((instance) => (
+                                {instances.map((instance) => {
+                                    const effectiveStatus = getEffectiveStatus(instance)
+                                    const isEffectivelyActive = ['ready', 'running'].includes(effectiveStatus)
+                                    return (
                                     <TableRow
                                         key={instance.id}
                                         className="cursor-pointer hover:bg-muted/50"
@@ -345,13 +359,13 @@ export default function SandboxListPage() {
                                             {instance.sandbox_id}
                                         </TableCell>
                                         <TableCell>
-                                            <StatusBadge status={instance.status} />
+                                            <StatusBadge status={effectiveStatus} />
                                         </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">
                                             {new Date(instance.created_at).toLocaleString()}
                                         </TableCell>
                                         <TableCell>
-                                            {['ready', 'running'].includes(instance.status) ? (
+                                            {isEffectivelyActive ? (
                                                 <TimeRemaining expiresAt={instance.expires_at} />
                                             ) : (
                                                 <span className="text-sm text-muted-foreground">--</span>
@@ -362,7 +376,7 @@ export default function SandboxListPage() {
                                                 className="flex items-center justify-end gap-1"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                {['ready', 'running'].includes(instance.status) && (
+                                                {isEffectivelyActive && (
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -388,7 +402,8 @@ export default function SandboxListPage() {
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     </div>

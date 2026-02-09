@@ -58,6 +58,17 @@ function parseExecOutput(stdout: string): { output: string; newCwd: string | nul
     return { output: stdout, newCwd: null }
 }
 
+/** Derive the effective status by checking time-based expiry.
+ * The DB status may still say "ready" or "running" after TTL expires. */
+function getEffectiveStatus(instance: SandboxInstance): SandboxStatus {
+    if (['ready', 'running'].includes(instance.status) && instance.expires_at) {
+        if (new Date(instance.expires_at).getTime() <= Date.now()) {
+            return 'expired'
+        }
+    }
+    return instance.status
+}
+
 const STATUS_BADGE_MAP: Record<SandboxStatus, { variant: 'success' | 'warning' | 'destructive' | 'secondary' | 'info' | 'default'; label: string }> = {
     creating: { variant: 'info', label: 'Creating' },
     starting: { variant: 'info', label: 'Starting' },
@@ -73,6 +84,7 @@ interface TerminalEntry {
     type: 'command' | 'stdout' | 'stderr' | 'info'
     text: string
     exitCode?: number
+    cwd?: string
 }
 
 export default function SandboxDetailPage() {
@@ -91,7 +103,7 @@ export default function SandboxDetailPage() {
     const [historyIndex, setHistoryIndex] = useState(-1)
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [timeRemaining, setTimeRemaining] = useState('')
-    const [cwd, setCwd] = useState('/root')
+    const [cwd, setCwd] = useState('/')
     const [copied, setCopied] = useState(false)
     const [adminPanelOpen, setAdminPanelOpen] = useState(false)
 
@@ -158,11 +170,12 @@ export default function SandboxDetailPage() {
         setCommandInput('')
         setCommandHistory((prev) => [...prev, cmd])
         setHistoryIndex(-1)
-        setTerminalHistory((prev) => [...prev, { type: 'command', text: cmd }])
+        setTerminalHistory((prev) => [...prev, { type: 'command', text: cmd, cwd }])
         setExecuting(true)
 
         // Wrap command to persist CWD across executions
-        const wrappedCommand = `cd ${escapeForShell(cwd)} && ${cmd}; __mxe=$?; echo "${CWD_MARKER}$(pwd)"; exit $__mxe`
+        // Falls back to / if the stored CWD is inaccessible (e.g. permission denied)
+        const wrappedCommand = `cd ${escapeForShell(cwd)} 2>/dev/null || cd /; ${cmd}; __mxe=$?; echo "${CWD_MARKER}$(pwd)"; exit $__mxe`
 
         try {
             const resp = await fetch(`/api/sandbox/${id}/exec`, {
@@ -182,31 +195,31 @@ export default function SandboxDetailPage() {
 
             const result: SandboxExecResponse = await resp.json()
 
+            // Parse stdout to extract actual output and CWD marker
+            let hasVisibleOutput = false
             if (result.stdout) {
                 const { output, newCwd } = parseExecOutput(result.stdout)
                 if (newCwd) setCwd(newCwd)
                 if (output) {
+                    hasVisibleOutput = true
                     setTerminalHistory((prev) => [
                         ...prev,
                         { type: 'stdout', text: output, exitCode: result.exit_code },
                     ])
-                } else if (!result.stderr) {
-                    setTerminalHistory((prev) => [
-                        ...prev,
-                        { type: 'info', text: `(exit code: ${result.exit_code})`, exitCode: result.exit_code },
-                    ])
                 }
             }
             if (result.stderr) {
+                hasVisibleOutput = true
                 setTerminalHistory((prev) => [
                     ...prev,
                     { type: 'stderr', text: result.stderr },
                 ])
             }
-            if (!result.stdout && !result.stderr) {
+            // Only show exit code for non-zero (failures) when there was no visible output
+            if (result.exit_code !== 0 && !hasVisibleOutput) {
                 setTerminalHistory((prev) => [
                     ...prev,
-                    { type: 'info', text: `(exit code: ${result.exit_code})`, exitCode: result.exit_code },
+                    { type: 'info', text: `(exit code: ${result.exit_code})` },
                 ])
             }
         } catch (err) {
@@ -375,8 +388,9 @@ export default function SandboxDetailPage() {
         )
     }
 
-    const isActive = ['ready', 'running'].includes(instance.status)
-    const statusConfig = STATUS_BADGE_MAP[instance.status]
+    const effectiveStatus = getEffectiveStatus(instance)
+    const isActive = ['ready', 'running'].includes(effectiveStatus)
+    const statusConfig = STATUS_BADGE_MAP[effectiveStatus]
 
     return (
         <div className="h-page flex flex-col bg-textured overflow-hidden">
@@ -528,7 +542,8 @@ export default function SandboxDetailPage() {
                                 <div key={i} className="mb-1">
                                     {entry.type === 'command' && (
                                         <div className="text-green-400">
-                                            <span className="text-zinc-500">$ </span>
+                                            <span className="text-blue-400 text-xs">{entry.cwd || ''}</span>
+                                            <span className="text-zinc-500"> $ </span>
                                             {entry.text}
                                         </div>
                                     )}

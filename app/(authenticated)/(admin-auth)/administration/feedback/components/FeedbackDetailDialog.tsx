@@ -164,6 +164,112 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         }
     }, [item.id, applyFreshData]);
 
+    /** Copy all feedback data to clipboard as structured markdown */
+    const handleCopyAll = useCallback(async () => {
+        const sections: string[] = [];
+
+        sections.push(`# Feedback: ${feedbackTypeLabels[item.feedback_type]}`);
+        sections.push('');
+
+        // Metadata
+        sections.push('## Metadata');
+        sections.push(`- **ID:** ${item.id}`);
+        sections.push(`- **Type:** ${feedbackTypeLabels[item.feedback_type]}`);
+        sections.push(`- **Status:** ${item.status}`);
+        sections.push(`- **Priority:** ${item.priority}`);
+        sections.push(`- **Route:** ${item.route}`);
+        sections.push(`- **User:** ${item.username || 'Anonymous'}`);
+        sections.push(`- **Created:** ${format(new Date(item.created_at), 'PPpp')}`);
+        sections.push(`- **Updated:** ${format(new Date(item.updated_at), 'PPpp')}`);
+        if (item.admin_decision !== 'pending') sections.push(`- **Admin Decision:** ${item.admin_decision}`);
+        if (item.work_priority !== null) sections.push(`- **Work Priority:** #${item.work_priority}`);
+        if (item.has_open_issues) sections.push(`- **Open Issues:** Yes`);
+        if (item.parent_id) sections.push(`- **Parent ID:** ${item.parent_id}`);
+        sections.push('');
+
+        // Description
+        sections.push('## Description');
+        sections.push(item.description);
+        sections.push('');
+
+        // AI Analysis
+        if (item.ai_assessment || item.ai_solution_proposal) {
+            sections.push('## AI Analysis');
+            if (item.ai_assessment) {
+                sections.push('### Assessment');
+                sections.push(item.ai_assessment);
+            }
+            if (item.ai_solution_proposal) {
+                sections.push('### Solution Proposal');
+                sections.push(item.ai_solution_proposal);
+            }
+            if (item.ai_suggested_priority) sections.push(`- **Suggested Priority:** ${item.ai_suggested_priority}`);
+            if (item.ai_complexity) sections.push(`- **Complexity:** ${item.ai_complexity}`);
+            if (item.autonomy_score !== null) sections.push(`- **Autonomy Score:** ${item.autonomy_score}/5`);
+            if (item.ai_estimated_files?.length) {
+                sections.push('### Estimated Files');
+                item.ai_estimated_files.forEach(f => sections.push(`- ${f}`));
+            }
+            sections.push('');
+        }
+
+        // Admin Direction / Notes
+        if (item.admin_direction || item.admin_notes) {
+            sections.push('## Admin Input');
+            if (item.admin_direction) {
+                sections.push('### Direction');
+                sections.push(item.admin_direction);
+            }
+            if (item.admin_notes) {
+                sections.push('### Notes');
+                sections.push(item.admin_notes);
+            }
+            sections.push('');
+        }
+
+        // Testing
+        if (item.testing_instructions || item.testing_url || item.resolution_notes) {
+            sections.push('## Testing');
+            if (item.resolution_notes) {
+                sections.push('### Resolution Notes');
+                sections.push(item.resolution_notes);
+            }
+            if (item.testing_instructions) {
+                sections.push('### Testing Instructions');
+                sections.push(item.testing_instructions);
+            }
+            if (item.testing_url) sections.push(`- **Testing URL:** ${item.testing_url}`);
+            if (item.testing_result) sections.push(`- **Testing Result:** ${item.testing_result}`);
+            sections.push('');
+        }
+
+        // Comments
+        if (comments.length > 0) {
+            sections.push('## Comments');
+            comments.forEach(c => {
+                const time = format(new Date(c.created_at), 'PPpp');
+                sections.push(`### ${c.author_name} (${c.author_type}) — ${time}`);
+                sections.push(c.content);
+                sections.push('');
+            });
+        }
+
+        // Screenshots
+        if (item.image_urls?.length) {
+            sections.push('## Screenshots');
+            item.image_urls.forEach((url, i) => sections.push(`- Screenshot ${i + 1}: ${url}`));
+            sections.push('');
+        }
+
+        const text = sections.join('\n');
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success('Full feedback data copied to clipboard');
+        } catch {
+            toast.error('Failed to copy to clipboard');
+        }
+    }, [item, comments]);
+
     const fetchSignedUrls = useCallback(async (feedbackId: string) => {
         setIsLoadingImages(true);
         try {
@@ -575,6 +681,16 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                     </span>
                                 </DialogDescription>
                             </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCopyAll}
+                                className="flex-shrink-0 gap-1.5 text-xs self-start"
+                                title="Copy all feedback data to clipboard"
+                            >
+                                <Copy className="w-3.5 h-3.5" />
+                                Copy All
+                            </Button>
                         </div>
                     </DialogHeader>
                 </div>
