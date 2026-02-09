@@ -132,6 +132,9 @@ export const messagingSlice = createSlice({
      * Set conversations list
      * Note: totalUnreadCount = number of CONVERSATIONS with unread (for header badge)
      *       unreadCounts = individual unread message counts per conversation
+     * 
+     * IMPORTANT: Forces unread_count=0 for the currently active conversation
+     * to prevent stale database values from re-showing unread badges.
      */
     setConversations: (state, action: PayloadAction<ConversationWithDetails[]>) => {
       state.conversations = action.payload;
@@ -141,7 +144,15 @@ export const messagingSlice = createSlice({
       let conversationsWithUnread = 0;
       
       action.payload.forEach(conv => {
-        const count = conv.unread_count || 0;
+        // Safety net: if this is the currently active conversation, force unread to 0
+        const isActive = state.currentConversationId === conv.id;
+        const count = isActive ? 0 : (conv.unread_count || 0);
+        
+        // Update the conversation object itself so the UI reflects this
+        if (isActive && conv.unread_count > 0) {
+          conv.unread_count = 0;
+        }
+        
         state.unreadCounts[conv.id] = count;
         if (count > 0) {
           conversationsWithUnread++;
@@ -155,10 +166,20 @@ export const messagingSlice = createSlice({
     /**
      * Update a single conversation (e.g., new message received)
      * Updates unread counts and header badge (conversation count, not message sum)
+     * 
+     * IMPORTANT: Forces unread_count=0 for the currently active conversation
+     * to prevent stale database values from re-showing unread badges.
      */
     updateConversation: (state, action: PayloadAction<ConversationWithDetails>) => {
       const newConv = action.payload;
       const index = state.conversations.findIndex(c => c.id === newConv.id);
+      
+      // Safety net: if this is the currently active conversation, force unread to 0
+      // The user is literally viewing it -- it cannot be "unread"
+      const isActiveConversation = state.currentConversationId === newConv.id;
+      if (isActiveConversation) {
+        newConv.unread_count = 0;
+      }
       
       // Track if this affects the header badge (conversations with unread count)
       const oldUnreadCount = index >= 0 
@@ -255,8 +276,9 @@ export const messagingSlice = createSlice({
     incrementUnreadCount: (state, action: PayloadAction<string>) => {
       const conversationId = action.payload;
       
-      // Don't increment if this is the current conversation and sheet is open
-      if (state.isOpen && state.currentConversationId === conversationId) {
+      // Don't increment if this is the current conversation 
+      // (user is viewing it either in the side sheet or full page)
+      if (state.currentConversationId === conversationId) {
         return;
       }
       

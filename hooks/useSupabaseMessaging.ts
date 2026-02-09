@@ -242,6 +242,14 @@ export function useMessages(
             : m
         )
       );
+      
+      // Sending a message is the strongest signal you've read everything
+      // Mark the conversation as read in the database to ensure consistency
+      if (autoMarkAsRead) {
+        messagingService.markConversationAsRead(conversationId, userId).catch(() => {
+          // Non-critical -- swallow errors from mark-as-read
+        });
+      }
     } catch (err) {
       // Update optimistic message to failed status
       setMessages((prev) =>
@@ -255,7 +263,7 @@ export function useMessages(
     } finally {
       setIsSending(false);
     }
-  }, [conversationId, userId, messagingService]);
+  }, [conversationId, userId, messagingService, autoMarkAsRead]);
 
   // Load more messages (pagination)
   const loadMoreMessages = useCallback(async () => {

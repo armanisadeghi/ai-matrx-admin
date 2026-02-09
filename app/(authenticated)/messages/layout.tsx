@@ -12,7 +12,6 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux";
-import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { ConversationList } from "@/features/messaging/components/ConversationList";
 
 export default function MessagesLayout({
