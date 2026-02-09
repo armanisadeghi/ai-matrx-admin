@@ -37,26 +37,7 @@ import { selectIsAdmin } from '@/lib/redux/slices/userSlice'
 import { SshAccessPanel } from '@/components/sandbox/ssh-access-panel'
 import type { SandboxInstance, SandboxStatus, SandboxExecResponse } from '@/types/sandbox'
 
-const CWD_MARKER = '__MATRX_CWD__='
-
-function escapeForShell(str: string): string {
-    return "'" + str.replace(/'/g, "'\\''") + "'"
-}
-
-function parseExecOutput(stdout: string): { output: string; newCwd: string | null } {
-    const lines = stdout.split('\n')
-    const cwdLineIndex = lines.findLastIndex(line => line.startsWith(CWD_MARKER))
-    if (cwdLineIndex !== -1) {
-        const newCwd = lines[cwdLineIndex].slice(CWD_MARKER.length).trim()
-        const outputLines = [...lines.slice(0, cwdLineIndex), ...lines.slice(cwdLineIndex + 1)]
-        // Remove trailing empty lines from the marker
-        while (outputLines.length > 0 && outputLines[outputLines.length - 1] === '') {
-            outputLines.pop()
-        }
-        return { output: outputLines.join('\n'), newCwd: newCwd || null }
-    }
-    return { output: stdout, newCwd: null }
-}
+const DEFAULT_CWD = '/home/agent'
 
 const STATUS_BADGE_MAP: Record<SandboxStatus, { variant: 'success' | 'warning' | 'destructive' | 'secondary' | 'info' | 'default'; label: string }> = {
     creating: { variant: 'info', label: 'Creating' },
@@ -91,7 +72,7 @@ export default function SandboxDetailPage() {
     const [historyIndex, setHistoryIndex] = useState(-1)
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [timeRemaining, setTimeRemaining] = useState('')
-    const [cwd, setCwd] = useState('/root')
+    const [cwd, setCwd] = useState(DEFAULT_CWD)
     const [copied, setCopied] = useState(false)
     const [adminPanelOpen, setAdminPanelOpen] = useState(false)
 
@@ -161,14 +142,11 @@ export default function SandboxDetailPage() {
         setTerminalHistory((prev) => [...prev, { type: 'command', text: cmd }])
         setExecuting(true)
 
-        // Wrap command to persist CWD across executions
-        const wrappedCommand = `cd ${escapeForShell(cwd)} && ${cmd}; __mxe=$?; echo "${CWD_MARKER}$(pwd)"; exit $__mxe`
-
         try {
             const resp = await fetch(`/api/sandbox/${id}/exec`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command: wrappedCommand, timeout: 60 }),
+                body: JSON.stringify({ command: cmd, timeout: 60 }),
             })
 
             if (!resp.ok) {
@@ -182,20 +160,16 @@ export default function SandboxDetailPage() {
 
             const result: SandboxExecResponse = await resp.json()
 
+            // Server tracks CWD — update prompt from response
+            if (result.cwd) {
+                setCwd(result.cwd)
+            }
+
             if (result.stdout) {
-                const { output, newCwd } = parseExecOutput(result.stdout)
-                if (newCwd) setCwd(newCwd)
-                if (output) {
-                    setTerminalHistory((prev) => [
-                        ...prev,
-                        { type: 'stdout', text: output, exitCode: result.exit_code },
-                    ])
-                } else if (!result.stderr) {
-                    setTerminalHistory((prev) => [
-                        ...prev,
-                        { type: 'info', text: `(exit code: ${result.exit_code})`, exitCode: result.exit_code },
-                    ])
-                }
+                setTerminalHistory((prev) => [
+                    ...prev,
+                    { type: 'stdout', text: result.stdout, exitCode: result.exit_code },
+                ])
             }
             if (result.stderr) {
                 setTerminalHistory((prev) => [
@@ -216,7 +190,6 @@ export default function SandboxDetailPage() {
             ])
         } finally {
             setExecuting(false)
-            // Focus after React re-render completes (disabled prop changes)
             requestAnimationFrame(() => {
                 inputRef.current?.focus()
             })
@@ -548,8 +521,10 @@ export default function SandboxDetailPage() {
                             )}
                         </div>
                         <div className="flex items-center bg-zinc-900 rounded-b-md border-t border-zinc-800">
-                            <span className="text-blue-400 font-mono text-xs pl-3 pr-1 shrink-0 max-w-[200px] truncate" title={cwd}>{cwd}</span>
-                            <span className="text-green-400 font-mono text-sm pr-1 shrink-0">$</span>
+                            <span className="text-green-400 font-mono text-xs pl-3 pr-0.5 shrink-0">agent@sandbox</span>
+                            <span className="text-zinc-500 font-mono text-xs">:</span>
+                            <span className="text-blue-400 font-mono text-xs pr-1 shrink-0 max-w-[200px] truncate" title={cwd}>{cwd.startsWith('/home/agent') ? '~' + cwd.slice('/home/agent'.length) : cwd}</span>
+                            <span className="text-zinc-200 font-mono text-sm pr-1 shrink-0">$</span>
                             <input
                                 ref={inputRef}
                                 type="text"

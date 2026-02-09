@@ -39,7 +39,7 @@ export async function POST(
         }
 
         const body = await request.json()
-        const { command, timeout } = body
+        const { command, timeout, cwd } = body
 
         if (!command || typeof command !== 'string' || !command.trim()) {
             return NextResponse.json({ error: 'command is required' }, { status: 400 })
@@ -57,16 +57,21 @@ export async function POST(
             headers['X-API-Key'] = ORCHESTRATOR_API_KEY
         }
 
+        const execPayload: Record<string, unknown> = {
+            command,
+            timeout: Math.min(Math.max(timeout || 30, 1), 600),
+        }
+        if (cwd && typeof cwd === 'string') {
+            execPayload.cwd = cwd
+        }
+
         try {
             const resp = await fetch(
                 `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}/exec`,
                 {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify({
-                        command,
-                        timeout: Math.min(Math.max(timeout || 30, 1), 600),
-                    }),
+                    body: JSON.stringify(execPayload),
                 }
             )
 
