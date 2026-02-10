@@ -20,7 +20,7 @@ export default function AgentDemoPage() {
     });
     
     const [promptId, setPromptId] = useState("a6617ebd-1114-4cc0-84b7-6b0c9ee235c8");
-    const [conversationId, setConversationId] = useState(`conv-${Date.now()}`);
+    const [conversationId, setConversationId] = useState(crypto.randomUUID());
     const [userInput, setUserInput] = useState("Hello! Can you help me with something?");
     const [isLoading, setIsLoading] = useState(false);
     const [streamOutput, setStreamOutput] = useState("");
@@ -119,7 +119,7 @@ export default function AgentDemoPage() {
     };
 
     const handleNewConversation = () => {
-        setConversationId(`conv-${Date.now()}`);
+        setConversationId(crypto.randomUUID());
         setStreamOutput("");
         setTextOutput("");
         setError(null);
