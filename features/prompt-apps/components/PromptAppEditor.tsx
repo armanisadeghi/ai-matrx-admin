@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
@@ -91,8 +91,37 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [editRateLimitPerIp, setEditRateLimitPerIp] = useState(app.rate_limit_per_ip.toString());
   const [editRateLimitWindowHours, setEditRateLimitWindowHours] = useState(app.rate_limit_window_hours.toString());
   const [editRateLimitAuthenticated, setEditRateLimitAuthenticated] = useState(app.rate_limit_authenticated.toString());
+  const [editFaviconUrl, setEditFaviconUrl] = useState(app.favicon_url || '');
+  const [isRegeneratingFavicon, setIsRegeneratingFavicon] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [promptName, setPromptName] = useState<string | null>(null);
+
+  // Regenerate favicon from app name
+  const handleRegenerateFavicon = async () => {
+    setIsRegeneratingFavicon(true);
+    try {
+      const response = await fetch('/api/prompt-apps/generate-favicon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appId: app.id,
+          name: editName || app.name,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setEditFaviconUrl(result.faviconUrl);
+        setApp({ ...app, favicon_url: result.faviconUrl });
+        toast.success('Favicon generated!');
+      } else {
+        toast.error(result.error || 'Failed to generate favicon');
+      }
+    } catch {
+      toast.error('Failed to generate favicon');
+    } finally {
+      setIsRegeneratingFavicon(false);
+    }
+  };
 
   // Fetch the prompt name for display
   useEffect(() => {
@@ -127,6 +156,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           description: editDescription || null,
           component_code: editComponentCode,
           tags: tagsArray,
+          favicon_url: editFaviconUrl || null,
           rate_limit_per_ip: parseInt(editRateLimitPerIp),
           rate_limit_window_hours: parseInt(editRateLimitWindowHours),
           rate_limit_authenticated: parseInt(editRateLimitAuthenticated),
@@ -174,6 +204,27 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     if (error) {
       toast.error('Failed to publish app');
       return;
+    }
+
+    // Auto-generate favicon on publish if none exists
+    if (!app.favicon_url) {
+      try {
+        const response = await fetch('/api/prompt-apps/generate-favicon', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appId: app.id, name: app.name }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          setEditFaviconUrl(result.faviconUrl);
+          setApp({ ...app, status: 'published', favicon_url: result.faviconUrl });
+          toast.success('App published with auto-generated icon!');
+          router.refresh();
+          return;
+        }
+      } catch {
+        // Non-fatal — app was published, favicon is nice-to-have
+      }
     }
 
     toast.success('App published!');
@@ -677,6 +728,51 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       placeholder="ai, productivity, writing"
                       className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="favicon" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <Image className="w-3.5 h-3.5" />
+                      App Icon / Favicon
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      {editFaviconUrl && (
+                        <div className="flex-shrink-0 w-8 h-8 rounded-md border border-border overflow-hidden bg-muted">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={editFaviconUrl}
+                            alt="App favicon"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <Input
+                        id="favicon"
+                        value={editFaviconUrl}
+                        onChange={(e) => setEditFaviconUrl(e.target.value)}
+                        placeholder="Auto-generated or paste custom icon URL"
+                        className="flex-1 transition-all focus:ring-2 focus:ring-primary/20"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRegenerateFavicon}
+                        disabled={isRegeneratingFavicon}
+                        title="Generate icon from app name"
+                        className="flex-shrink-0"
+                      >
+                        {isRegeneratingFavicon ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        )}
+                        <span className="ml-1.5">Generate</span>
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Auto-generated from app name on creation. Click Generate to regenerate, or paste a custom icon URL.
+                    </p>
                   </div>
                 </CardContent>
               </Card>

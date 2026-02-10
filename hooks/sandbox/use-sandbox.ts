@@ -42,7 +42,21 @@ export function useSandboxInstances(projectId?: string) {
                 }
 
                 const data: SandboxListResponse = await resp.json()
-                setInstances(data.instances)
+                
+                // Deduplicate instances by ID to prevent React key conflicts
+                // This handles race conditions between optimistic updates and API refreshes
+                const uniqueInstances = Array.from(
+                    new Map(data.instances.map(inst => [inst.id, inst])).values()
+                )
+                
+                console.log('[useSandboxInstances] fetchInstances:', {
+                    received: data.instances.length,
+                    unique: uniqueInstances.length,
+                    duplicates: data.instances.length - uniqueInstances.length,
+                    ids: uniqueInstances.map(i => i.id)
+                })
+                
+                setInstances(uniqueInstances)
                 setTotal(data.pagination.total)
                 hasFetchedOnce.current = true
                 return data
@@ -62,6 +76,8 @@ export function useSandboxInstances(projectId?: string) {
         async (req: SandboxCreateRequest): Promise<{ instance: SandboxInstance | null; error: string | null }> => {
             setError(null)
             try {
+                console.log('[useSandboxInstances] createInstance: Starting creation request')
+                
                 const resp = await fetch('/api/sandbox', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -78,11 +94,27 @@ export function useSandboxInstances(projectId?: string) {
                 }
 
                 const { instance } = await resp.json()
-                setInstances((prev) => [instance, ...prev])
+                
+                console.log('[useSandboxInstances] createInstance: Success', {
+                    id: instance.id,
+                    sandbox_id: instance.sandbox_id,
+                    status: instance.status
+                })
+                
+                // Optimistically add to state, but deduplicate in case of race condition
+                setInstances((prev) => {
+                    const exists = prev.some(i => i.id === instance.id)
+                    if (exists) {
+                        console.warn('[useSandboxInstances] createInstance: Instance already exists in state, skipping add')
+                        return prev
+                    }
+                    return [instance, ...prev]
+                })
                 setTotal((prev) => prev + 1)
                 return { instance: instance as SandboxInstance, error: null }
             } catch (err) {
                 const msg = err instanceof Error ? err.message : 'Unknown error'
+                console.error('[useSandboxInstances] createInstance: Error', msg)
                 setError(msg)
                 return { instance: null, error: msg }
             }

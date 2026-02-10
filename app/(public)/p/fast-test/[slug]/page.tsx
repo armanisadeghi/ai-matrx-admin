@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { SampleAppTestWrapper } from '@/features/prompt-apps/sample-code/SampleAppTestWrapper';
+import { getPromptAppIconsMetadata } from '@/features/prompt-apps/utils/favicon-metadata';
 import type { Metadata } from 'next';
 
 
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
     const { data: app } = await supabase
         .from('prompt_apps')
-        .select('name, tagline, description, preview_image_url')
+        .select('name, tagline, description, preview_image_url, favicon_url')
         .eq(column, slug)
         .eq('status', 'published')
         .single();
@@ -43,6 +44,7 @@ export async function generateMetadata({
     return {
         title: `${app.name} (TEST) | AI Matrx Apps`,
         description: app.tagline || app.description || `Testing ${app.name}`,
+        icons: getPromptAppIconsMetadata(app.favicon_url),
         openGraph: {
             title: `${app.name} (TEST)`,
             description: app.tagline || app.description || `Testing ${app.name}`,

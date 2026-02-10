@@ -115,6 +115,7 @@ export default function SandboxListPage() {
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState<string | null>(null)
     const [createSuccess, setCreateSuccess] = useState(false)
+    const [createdInstanceId, setCreatedInstanceId] = useState<string | null>(null)
     const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(null)
     const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set())
     const [ttlHours, setTtlHours] = useState(2)
@@ -123,12 +124,19 @@ export default function SandboxListPage() {
         fetchInstances()
     }, [fetchInstances])
 
+    // Auto-refresh instances, but pause during creation to prevent modal/background desync
     useEffect(() => {
+        if (creating || createSuccess) {
+            console.log('[SandboxListPage] Auto-refresh paused during creation')
+            return
+        }
+        
         const interval = setInterval(() => {
+            console.log('[SandboxListPage] Auto-refresh triggered')
             fetchInstances()
         }, 15000)
         return () => clearInterval(interval)
-    }, [fetchInstances])
+    }, [fetchInstances, creating, createSuccess])
 
     // Auto-dismiss create error after 8 seconds
     useEffect(() => {
@@ -142,21 +150,35 @@ export default function SandboxListPage() {
     }
 
     const handleCreate = async () => {
+        console.log('[SandboxListPage] handleCreate: Starting creation flow')
         setCreating(true)
         setCreateError(null)
+        setCreatedInstanceId(null)
+        
         const result = await createInstance({
             ttl_seconds: ttlHours * 3600,
         })
+        
         if (result.instance) {
+            console.log('[SandboxListPage] handleCreate: Instance created', {
+                id: result.instance.id,
+                status: result.instance.status
+            })
+            
+            setCreatedInstanceId(result.instance.id)
             setCreating(false)
             setCreateSuccess(true)
+            
             // Brief success state before redirect
             setTimeout(() => {
+                console.log('[SandboxListPage] handleCreate: Redirecting to instance')
                 setCreateOpen(false)
                 setCreateSuccess(false)
+                setCreatedInstanceId(null)
                 router.push(`/sandbox/${result.instance!.id}`)
             }, 800)
         } else {
+            console.error('[SandboxListPage] handleCreate: Creation failed', result.error)
             setCreating(false)
             setCreateError(result.error || 'Failed to create sandbox')
         }
@@ -178,7 +200,22 @@ export default function SandboxListPage() {
         setDeleteTarget(null)
     }
 
-    const activeCount = instances.filter((i) =>
+    // Deduplicate instances before rendering to prevent React key conflicts
+    // This is a safety net in case the hook's deduplication fails
+    const uniqueInstances = Array.from(
+        new Map(instances.map(inst => [inst.id, inst])).values()
+    )
+    
+    if (uniqueInstances.length !== instances.length) {
+        console.error('[SandboxListPage] Duplicate instances detected in render', {
+            total: instances.length,
+            unique: uniqueInstances.length,
+            duplicates: instances.length - uniqueInstances.length,
+            duplicateIds: instances.map(i => i.id).filter((id, idx, arr) => arr.indexOf(id) !== idx)
+        })
+    }
+    
+    const activeCount = uniqueInstances.filter((i) =>
         ['creating', 'starting', 'ready', 'running'].includes(getEffectiveStatus(i))
     ).length
 
@@ -222,6 +259,11 @@ export default function SandboxListPage() {
                                             <p className="text-sm text-muted-foreground mt-1">
                                                 Redirecting to your sandbox...
                                             </p>
+                                            {createdInstanceId && (
+                                                <p className="text-xs text-muted-foreground/60 mt-2 font-mono">
+                                                    {instances.find(i => i.id === createdInstanceId)?.sandbox_id || createdInstanceId}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 ) : creating ? (
@@ -229,9 +271,22 @@ export default function SandboxListPage() {
                                         <Loader2 className="w-10 h-10 animate-spin text-primary" />
                                         <div className="text-center">
                                             <h3 className="font-semibold text-lg">Creating Sandbox</h3>
-                                            <p className="text-sm text-muted-foreground mt-1">
-                                                Spinning up your container. This can take a few seconds...
-                                            </p>
+                                            {createdInstanceId ? (
+                                                <>
+                                                    <p className="text-sm text-muted-foreground mt-1">
+                                                        Status: <Badge variant="info" className="ml-1">
+                                                            {instances.find(i => i.id === createdInstanceId)?.status || 'creating'}
+                                                        </Badge>
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground/60 mt-2 font-mono">
+                                                        {instances.find(i => i.id === createdInstanceId)?.sandbox_id || createdInstanceId}
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground mt-1">
+                                                    Spinning up your container. This can take a few seconds...
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
@@ -288,7 +343,7 @@ export default function SandboxListPage() {
 
             <div className="flex-1 overflow-y-auto p-4">
                 <div className="max-w-6xl mx-auto">
-                {loading && instances.length === 0 ? (
+                {loading && uniqueInstances.length === 0 ? (
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
@@ -313,7 +368,7 @@ export default function SandboxListPage() {
                             </TableBody>
                         </Table>
                     </div>
-                ) : instances.length === 0 ? (
+                ) : uniqueInstances.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
                             <Container className="w-12 h-12 mx-auto mb-4 text-muted-foreground/40" />
@@ -346,7 +401,7 @@ export default function SandboxListPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {instances.map((instance) => {
+                                {uniqueInstances.map((instance) => {
                                     const effectiveStatus = getEffectiveStatus(instance)
                                     const isEffectivelyActive = ['ready', 'running'].includes(effectiveStatus)
                                     return (
