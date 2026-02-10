@@ -1,5 +1,6 @@
 // app/(public)/p/chat/layout.tsx
 import type { Metadata } from 'next';
+import ChatLayoutShell from './ChatLayoutShell';
 
 export const metadata: Metadata = {
     title: 'Chat | AI Matrx',
@@ -11,11 +12,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * Chat Layout
- * 
- * Redux (LiteStoreProvider) is now available from PublicProviders in the parent layout.
- * No additional providers needed here.
+ * Chat Layout - Server Component
+ *
+ * Provides metadata. ChatLayoutShell is a client component
+ * that manages the sidebar and routing state.
  */
 export default function PublicChatLayout({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
+    return <ChatLayoutShell>{children}</ChatLayoutShell>;
 }

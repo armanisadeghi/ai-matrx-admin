@@ -148,15 +148,15 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
             <button
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-muted border border-border hover:bg-accent transition-colors ${
                     disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 }`}
             >
                 <div className="flex items-center gap-2">
                     {selected.icon || <Bot size={18} />}
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{selected.name}</span>
+                    <span className="text-sm font-medium text-foreground">{selected.name}</span>
                 </div>
-                <ChevronDown size={16} className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={16} className={`text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
@@ -165,25 +165,25 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
                     {/* Dropdown */}
-                    <div className="absolute top-full left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg z-50">
+                    <div className="absolute top-full left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-popover rounded-xl border border-border shadow-lg z-50">
                         <div className="p-2">
                             {displayAgents.map((agent) => (
                                 <button
                                     key={agent.id}
                                     onClick={() => handleSelect(agent)}
-                                    className={`w-full flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left ${
+                                    className={`w-full flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left ${
                                         selected.id === agent.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                                     }`}
                                 >
-                                    <div className="flex-shrink-0 mt-0.5 text-gray-600 dark:text-gray-400">
+                                    <div className="flex-shrink-0 mt-0.5 text-muted-foreground">
                                         {agent.icon || <Bot size={18} />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        <div className="text-sm font-medium text-foreground">
                                             {agent.name}
                                         </div>
                                         {agent.description && (
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                                            <div className="text-xs text-muted-foreground dark:text-gray-400 mt-0.5 line-clamp-2">
                                                 {agent.description}
                                             </div>
                                         )}
@@ -236,10 +236,10 @@ export function AgentActionButtons({ agents, selectedAgent, onSelect, disabled }
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
                         selected.id === agent.id
                             ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+                            : 'bg-card border-border text-foreground/80 hover:bg-accent'
                     } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                    <span className={selected.id === agent.id ? 'text-white' : 'text-gray-500 dark:text-gray-400'}>
+                    <span className={selected.id === agent.id ? 'text-white' : 'text-muted-foreground dark:text-gray-400'}>
                         {agent.icon || <Bot size={16} />}
                     </span>
                     <span className="text-sm font-medium">{agent.name}</span>

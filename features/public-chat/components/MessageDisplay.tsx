@@ -57,7 +57,7 @@ function AttachedResourcesDisplay({ resources }: AttachedResourcesDisplayProps) 
                 return (
                     <div
                         key={index}
-                        className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700"
+                        className="relative group rounded-lg overflow-hidden border border-border"
                     >
                         {isImage && resource.data.url ? (
                             <img
@@ -66,9 +66,9 @@ function AttachedResourcesDisplay({ resources }: AttachedResourcesDisplayProps) 
                                 className="h-10 w-10 object-cover"
                             />
                         ) : (
-                            <div className="h-10 w-12 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 py-1">
-                                <Icon className="h-6 w-6 text-zinc-500 mb-1" />
-                                <span className="text-[8px] text-zinc-500 text-center truncate w-full px-1">
+                            <div className="h-10 w-12 flex flex-col items-center justify-center bg-muted py-1">
+                                <Icon className="h-6 w-6 text-muted-foreground mb-1" />
+                                <span className="text-[8px] text-muted-foreground text-center truncate w-full px-1">
                                     {resource.data.filename || resource.type}
                                 </span>
                             </div>

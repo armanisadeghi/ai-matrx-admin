@@ -367,7 +367,7 @@ export function PublicWebpagePicker({ onBack, onSelect, onSwitchTo, initialUrl }
 
                             {/* Content Preview - Editable */}
                             <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                                <div className="flex items-center justify-between px-6 py-2 bg-gray-100 dark:bg-zinc-800 border-b border-border flex-shrink-0">
+                                <div className="flex items-center justify-between px-6 py-2 bg-muted border-b border-border flex-shrink-0">
                                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                         Content (Editable)
                                     </span>
@@ -383,7 +383,7 @@ export function PublicWebpagePicker({ onBack, onSelect, onSwitchTo, initialUrl }
                                 <textarea
                                     value={editedContent}
                                     onChange={(e) => setEditedContent(e.target.value)}
-                                    className="flex-1 px-6 py-4 bg-white dark:bg-zinc-900 text-xs text-gray-900 dark:text-gray-100 font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-600 min-h-0"
+                                    className="flex-1 px-6 py-4 bg-card text-xs text-foreground font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary min-h-0"
                                     placeholder="Edit the scraped content here..."
                                 />
                             </div>

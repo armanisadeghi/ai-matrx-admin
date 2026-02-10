@@ -108,7 +108,7 @@ export function PromptPickerMenu({ onSelect, disabled = false, selectedAgent }: 
             <PopoverTrigger asChild>
                 <button
                     disabled={disabled}
-                    className="py-1 px-2.5 rounded-full flex items-center gap-1.5 border border-zinc-300 dark:border-zinc-700 transition-colors text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    className="py-1 px-2.5 rounded-full flex items-center gap-1.5 border border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     title="Select Agent"
                 >
                     <LuBrain size={16} />
@@ -260,7 +260,7 @@ function AgentButton({ name, description, variableCount, isSelected, onClick }: 
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-start gap-3 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left ${
+            className={`w-full flex items-start gap-3 px-3 py-2.5 hover:bg-accent transition-colors text-left ${
                 isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''
             }`}
         >

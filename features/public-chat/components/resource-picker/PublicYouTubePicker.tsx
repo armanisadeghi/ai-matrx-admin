@@ -203,7 +203,7 @@ export function PublicYouTubePicker({ onBack, onSelect, initialUrl }: PublicYouT
                         </div>
                         
                         {/* Info */}
-                        <div className="p-3 space-y-2 bg-white dark:bg-zinc-900">
+                        <div className="p-3 space-y-2 bg-card">
                             <div>
                                 <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Video ID</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">

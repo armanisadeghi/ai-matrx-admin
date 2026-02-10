@@ -151,7 +151,7 @@ export function PublicVariableInputs({
                                         </PopoverContent>
                                     </Popover>
                                 ) : (
-                                    <div className="flex items-center gap-2 pl-3 pr-3 h-10 bg-background border-b border-border hover:bg-gray-50 hover:dark:bg-zinc-800 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
+                                    <div className="flex items-center gap-2 pl-3 pr-3 h-10 bg-background border-b border-border hover:bg-accent transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 group">
                                         <Label
                                             className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer"
                                             onClick={() => handleExpandedVariableChange(variable.name)}
@@ -188,14 +188,14 @@ export function PublicVariableInputs({
     if (minimal) {
         // Minimal mode: no outer wrapper, direct border on each item
         return (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden" data-variable-inputs>
+            <div className="bg-card rounded-xl border border-border overflow-hidden" data-variable-inputs>
                 {variableInputs}
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden" data-variable-inputs>
+        <div className="bg-card rounded-xl border border-border overflow-hidden" data-variable-inputs>
             {variableInputs}
         </div>
     );

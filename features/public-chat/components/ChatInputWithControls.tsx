@@ -116,14 +116,14 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
 
         return (
             <div
-                className={`relative rounded-3xl bg-zinc-200 dark:bg-zinc-800 transition-all overflow-hidden ${
-                    isFocused ? 'ring-1 ring-zinc-400 dark:ring-zinc-700 ring-opacity-50' : ''
+                className={`relative rounded-2xl bg-muted transition-all overflow-hidden ${
+                    isFocused ? 'ring-1 ring-border/60' : ''
                 } ${className}`}
             >
                 {isExpanded && parseInt(textareaHeight) > 200 && (
                     <button
                         onClick={handleMinimize}
-                        className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
+                        className="absolute top-2 right-2 p-1.5 rounded-full text-muted-foreground hover:bg-accent z-10"
                     >
                         <Minimize2 size={16} />
                     </button>
@@ -132,7 +132,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
                 {!isExpanded && content.length > 0 && (
                     <button
                         onClick={handleMaximize}
-                        className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
+                        className="absolute top-2 right-2 p-1.5 rounded-full text-muted-foreground hover:bg-accent z-10"
                     >
                         <Maximize2 size={16} />
                     </button>
@@ -154,7 +154,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className="w-full p-4 rounded-3xl border-none resize-none outline-none bg-zinc-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder-gray-600 dark:placeholder-gray-400 overflow-auto text-base"
+                    className="w-full p-4 rounded-2xl border-none resize-none outline-none bg-muted text-foreground placeholder-muted-foreground overflow-auto text-base"
                     disabled={disabled}
                 />
             </div>
@@ -208,7 +208,7 @@ function ResourceChips({ resources, onRemove, isUploading }: ResourceChipsProps)
                 return (
                     <div
                         key={index}
-                        className="relative group rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700"
+                        className="relative group rounded-lg overflow-hidden border border-border"
                     >
                         {isImage && resource.data.url ? (
                             <img
@@ -217,9 +217,9 @@ function ResourceChips({ resources, onRemove, isUploading }: ResourceChipsProps)
                                 className="h-16 w-16 object-cover"
                             />
                         ) : (
-                            <div className="h-16 w-16 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 p-1">
-                                <Icon className="h-5 w-5 text-zinc-500 mb-1" />
-                                <span className="text-[8px] text-zinc-500 text-center truncate w-full px-1">
+                            <div className="h-16 w-16 flex flex-col items-center justify-center bg-muted p-1">
+                                <Icon className="h-5 w-5 text-muted-foreground mb-1" />
+                                <span className="text-[8px] text-muted-foreground text-center truncate w-full px-1">
                                     {resource.data.filename || resource.type}
                                 </span>
                             </div>
@@ -234,8 +234,8 @@ function ResourceChips({ resources, onRemove, isUploading }: ResourceChipsProps)
                 );
             })}
             {isUploading && (
-                <div className="h-16 w-16 flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800">
-                    <Loader2 className="h-6 w-6 text-zinc-500 animate-spin" />
+                <div className="h-16 w-16 flex items-center justify-center rounded-lg border border-border bg-muted">
+                    <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
                 </div>
             )}
         </div>
@@ -272,19 +272,19 @@ function InputBottomControls({
     const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
 
     return (
-        <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5 rounded-full">
+        <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 rounded-b-2xl">
             {/* Left side controls */}
             <div className="absolute bottom-2 left-4 flex items-center space-x-2">
                 {/* Resource Picker Popover */}
                 <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
                     <PopoverTrigger asChild>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className={`h-7 w-7 p-0 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                                hasResources 
-                                    ? 'text-primary bg-primary/10' 
-                                    : 'text-gray-500 dark:text-gray-400'
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-7 w-7 p-0 rounded-full hover:bg-accent ${
+                                hasResources
+                                    ? 'text-primary bg-primary/10'
+                                    : 'text-muted-foreground'
                             }`}
                             disabled={disabled || isUploading}
                             title="Add resources"
@@ -292,9 +292,9 @@ function InputBottomControls({
                             <Plus className="w-5 h-5" />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                        className="w-80 p-0 border-gray-300 dark:border-gray-700" 
-                        align="start" 
+                    <PopoverContent
+                        className="w-80 p-0 border-border"
+                        align="start"
                         side="top"
                         sideOffset={8}
                     >
@@ -330,7 +330,7 @@ function InputBottomControls({
                     tooltip="Listen for Speech Input"
                 />
                 <button
-                    className={`p-2 rounded-full text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 bg-zinc-300 dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700 transition-colors ${
+                    className={`p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors ${
                         disabled ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     onClick={onSendMessage}
@@ -470,7 +470,7 @@ export function ChatInputWithControls({
 
     return (
         <div className="relative">
-            <div className="relative rounded-3xl border border-zinc-300 dark:border-zinc-700">
+            <div className="relative rounded-3xl border border-border">
                 {/* Resource chips display */}
                 {(resources.length > 0 || isUploading) && (
                     <div className="pt-2">

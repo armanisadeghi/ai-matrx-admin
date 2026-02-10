@@ -270,7 +270,7 @@ export function PublicResourcePickerMenu({
                                 variant="ghost"
                                 size="sm"
                                 disabled={!isEnabled}
-                                className="group w-full justify-start h-6 text-xs px-2 py-0 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-none"
+                                className="group w-full justify-start h-6 text-xs px-2 py-0 hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed rounded-none"
                                 onClick={() => setActiveView(resource.id as ResourceType)}
                                 title={disableReason}
                             >
