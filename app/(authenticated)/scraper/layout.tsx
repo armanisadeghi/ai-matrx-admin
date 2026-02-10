@@ -1,4 +1,10 @@
 import React from "react";
+import { createRouteMetadata } from "@/utils/route-metadata";
+
+export const metadata = createRouteMetadata("/scraper", {
+    title: "Webscraper",
+    description: "Extract and process data from web sources",
+});
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (

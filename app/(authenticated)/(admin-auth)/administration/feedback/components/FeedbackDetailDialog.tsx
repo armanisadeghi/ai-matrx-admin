@@ -685,7 +685,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 variant="outline"
                                 size="sm"
                                 onClick={handleCopyAll}
-                                className="flex-shrink-0 gap-1.5 text-xs self-start"
+                                className="flex-shrink-0 gap-1.5 text-xs self-start mr-6"
                                 title="Copy all feedback data to clipboard"
                             >
                                 <Copy className="w-3.5 h-3.5" />

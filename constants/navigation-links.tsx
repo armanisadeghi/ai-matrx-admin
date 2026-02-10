@@ -203,6 +203,29 @@ export const allNavigationLinks: NavigationLink[] = [
         favicon: { color: "#f97316", letter: "SB" },
     },
 
+    {
+        label: "Messages",
+        href: "/messages",
+        icon: <IoChatboxOutline className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: false,
+        description: "Direct messages and conversations",
+        color: "rose",
+        favicon: { color: "#ec4899", letter: "M" }, // Pink
+    },
+    {
+        label: "Settings",
+        href: "/settings",
+        icon: <ClipboardCheck className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: false,
+        description: "Manage your account and preferences",
+        color: "slate",
+        favicon: { color: "#64748b", letter: "S" }, // Slate
+    },
+
     // Deprecated — moving to bottom before removal
     {
         label: "AI Cockpit",
@@ -253,6 +276,7 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <Puzzle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "primary",
+        favicon: { color: "#8b5cf6", letter: "OC" }, // Violet
     },
     {
         label: "Old Dashboard",
@@ -417,6 +441,7 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <Container className="text-orange-500 dark:text-orange-400 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "Automation",
+        favicon: { color: "#f97316", letter: "SA" }, // Orange
     },
 ];
 

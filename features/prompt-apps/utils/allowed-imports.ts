@@ -321,13 +321,21 @@ export function buildComponentScope(allowedImports: string[]): Record<string, an
  * @param scope - The current scope object (will be mutated to add fallbacks)
  */
 export function patchScopeForMissingIdentifiers(code: string, scope: Record<string, any>): void {
+  // Strip string literals before scanning so we don't match capitalized words
+  // inside strings (e.g., "State Regulatory Research" would falsely match
+  // "State", "Regulatory", "Research" as potential component identifiers)
+  const codeForScanning = code
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')     // double-quoted strings
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''")     // single-quoted strings
+    .replace(/`(?:[^`\\]|\\.)*`/gs, '``');   // template literals
+
   // Extract all PascalCase identifiers from the code that might be component references
   // Matches: standalone identifiers like MyIcon, React.createElement(MyIcon, ...), <MyIcon />
   const identifierRegex = /\b([A-Z][a-zA-Z0-9]*)\b/g;
   const foundIdentifiers = new Set<string>();
   
   let match;
-  while ((match = identifierRegex.exec(code)) !== null) {
+  while ((match = identifierRegex.exec(codeForScanning)) !== null) {
     foundIdentifiers.add(match[1]);
   }
   
