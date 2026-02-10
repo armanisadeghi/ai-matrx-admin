@@ -4,7 +4,6 @@ import React, { useState, useCallback } from "react";
 import { Bot, Loader2, Send, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useBackendApi } from "@/hooks/useBackendApi";
 
@@ -96,24 +95,17 @@ export default function AgentDemoPage() {
     };
 
     return (
-        <div className="min-h-screen bg-textured p-8">
-            <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-                        <Bot className="w-8 h-8" />
-                        Agent Execution
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Execute AI agents with streaming responses
-                    </p>
-                </div>
-
-                {/* Input Section */}
-                <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg p-6 mb-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+        <div className="h-screen bg-textured flex flex-col overflow-hidden">
+            {/* Compact Header + Input Bar */}
+            <div className="flex-shrink-0 border-b border-border bg-white dark:bg-zinc-900 px-4 py-2.5 space-y-2">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <Bot className="w-5 h-5 text-primary" />
+                        <h1 className="text-sm font-semibold text-foreground">Agent Execution</h1>
+                    </div>
+                    <div className="flex-1 grid grid-cols-[1fr_1fr_2fr] gap-2 items-end">
                         <div>
-                            <Label htmlFor="promptId" className="text-xs text-gray-500 mb-1">Prompt ID</Label>
+                            <Label htmlFor="promptId" className="text-[10px] text-muted-foreground leading-none mb-0.5 block">Prompt ID</Label>
                             <Input
                                 id="promptId"
                                 type="text"
@@ -121,19 +113,19 @@ export default function AgentDemoPage() {
                                 value={promptId}
                                 onChange={(e) => setPromptId(e.target.value)}
                                 disabled={isLoading}
-                                className="text-base font-mono"
+                                className="h-8 text-sm font-mono"
                             />
                         </div>
                         <div>
-                            <Label htmlFor="conversationId" className="text-xs text-gray-500 mb-1">Conversation ID</Label>
-                            <div className="flex gap-2">
+                            <Label htmlFor="conversationId" className="text-[10px] text-muted-foreground leading-none mb-0.5 block">Conversation ID</Label>
+                            <div className="flex gap-1">
                                 <Input
                                     id="conversationId"
                                     type="text"
                                     value={conversationId}
                                     onChange={(e) => setConversationId(e.target.value)}
                                     disabled={isLoading}
-                                    className="text-base font-mono"
+                                    className="h-8 text-sm font-mono"
                                 />
                                 <Button
                                     type="button"
@@ -142,92 +134,100 @@ export default function AgentDemoPage() {
                                     onClick={handleNewConversation}
                                     disabled={isLoading}
                                     title="New Conversation"
+                                    className="h-8 w-8 flex-shrink-0"
                                 >
-                                    <Zap className="w-4 h-4" />
+                                    <Zap className="w-3.5 h-3.5" />
                                 </Button>
                             </div>
                         </div>
-                    </div>
-
-                    <div>
-                        <Label htmlFor="userInput" className="text-xs text-gray-500 mb-1">User Input</Label>
-                        <Textarea
-                            id="userInput"
-                            placeholder="Your message to the agent..."
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            disabled={isLoading}
-                            rows={3}
-                            className="text-base resize-none"
-                        />
-                    </div>
-
-                    <Button 
-                        onClick={handleExecute} 
-                        disabled={!promptId.trim() || !userInput.trim() || isLoading}
-                        className="w-full"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Executing...
-                            </>
-                        ) : (
-                            <>
-                                <Send className="w-4 h-4 mr-2" />
-                                Execute Agent
-                            </>
-                        )}
-                    </Button>
-                </div>
-
-                {/* Response Section */}
-                {(textOutput || streamOutput || error) && (
-                    <div className="grid grid-cols-2 gap-6">
-                        {/* Text Output */}
-                        <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg overflow-hidden">
-                            <div className="border-b border-border px-6 py-3">
-                                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Text Output</h3>
+                        <div className="flex gap-2 items-end">
+                            <div className="flex-1">
+                                <Label htmlFor="userInput" className="text-[10px] text-muted-foreground leading-none mb-0.5 block">User Input</Label>
+                                <Input
+                                    id="userInput"
+                                    placeholder="Your message to the agent..."
+                                    value={userInput}
+                                    onChange={(e) => setUserInput(e.target.value)}
+                                    disabled={isLoading}
+                                    className="h-8 text-sm"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey && promptId.trim() && userInput.trim() && !isLoading) {
+                                            e.preventDefault();
+                                            handleExecute();
+                                        }
+                                    }}
+                                />
                             </div>
-                            <div className="p-6">
+                            <Button
+                                onClick={handleExecute}
+                                disabled={!promptId.trim() || !userInput.trim() || isLoading}
+                                className="h-8 px-4 flex-shrink-0"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <Send className="w-3.5 h-3.5" />
+                                )}
+                                <span className="ml-1.5 text-xs">{isLoading ? 'Running...' : 'Execute'}</span>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Response Section - fills remaining space */}
+            <div className="flex-1 min-h-0 p-3">
+                {(textOutput || streamOutput || error) ? (
+                    <div className="grid grid-cols-2 gap-3 h-full">
+                        {/* Text Output */}
+                        <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg overflow-hidden flex flex-col">
+                            <div className="border-b border-border px-3 py-1.5 flex-shrink-0">
+                                <h3 className="text-xs font-semibold text-foreground">Text Output</h3>
+                            </div>
+                            <div className="flex-1 min-h-0 p-3 overflow-y-auto">
                                 {error ? (
-                                    <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
-                                        <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                                    <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md">
+                                        <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
                                     </div>
                                 ) : textOutput ? (
-                                    <div className="prose dark:prose-invert max-w-none">
-                                        <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800 p-4 rounded border border-gray-200 dark:border-zinc-700 max-h-[600px] overflow-y-auto">
-                                            {textOutput}
-                                        </pre>
-                                    </div>
+                                    <pre className="whitespace-pre-wrap text-xs text-foreground/80 bg-muted p-3 rounded border border-border overflow-y-auto">
+                                        {textOutput}
+                                    </pre>
                                 ) : isLoading ? (
                                     <div className="flex items-center justify-center py-12">
-                                        <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                                        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-center py-12">No output yet</p>
+                                    <p className="text-muted-foreground text-xs text-center py-12">No output yet</p>
                                 )}
                             </div>
                         </div>
 
                         {/* Stream Events */}
-                        <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg overflow-hidden">
-                            <div className="border-b border-border px-6 py-3">
-                                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Stream Events</h3>
+                        <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg overflow-hidden flex flex-col">
+                            <div className="border-b border-border px-3 py-1.5 flex-shrink-0">
+                                <h3 className="text-xs font-semibold text-foreground">Stream Events</h3>
                             </div>
-                            <div className="p-6">
+                            <div className="flex-1 min-h-0 p-3 overflow-y-auto">
                                 {streamOutput ? (
-                                    <pre className="text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800 p-4 rounded border border-gray-200 dark:border-zinc-700 max-h-[600px] overflow-y-auto whitespace-pre-wrap">
+                                    <pre className="text-[11px] font-mono text-foreground/80 bg-muted p-3 rounded border border-border whitespace-pre-wrap">
                                         {streamOutput}
                                     </pre>
                                 ) : isLoading ? (
                                     <div className="flex items-center justify-center py-12">
-                                        <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                                        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-center py-12">No events yet</p>
+                                    <p className="text-muted-foreground text-xs text-center py-12">No events yet</p>
                                 )}
                             </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                        <div className="text-center">
+                            <Bot className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                            <p className="text-sm">Execute an agent to see results</p>
                         </div>
                     </div>
                 )}

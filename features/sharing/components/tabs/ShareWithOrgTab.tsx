@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Building2 } from 'lucide-react';
+import { Loader2, Building2, Check } from 'lucide-react';
 import { PermissionLevel, ResourceType } from '@/utils/permissions';
 import { useUserOrganizations } from '@/features/organizations';
 import { PermissionLevelDescription } from '../PermissionBadge';
@@ -20,6 +20,8 @@ interface ShareWithOrgTabProps {
   onShare: (orgId: string, level: PermissionLevel) => Promise<any>;
   onSuccess: () => void;
   resourceType: ResourceType;
+  /** IDs of organizations that already have access (to disable in dropdown) */
+  sharedOrgIds?: string[];
 }
 
 /**
@@ -29,6 +31,7 @@ export function ShareWithOrgTab({
   onShare,
   onSuccess,
   resourceType,
+  sharedOrgIds = [],
 }: ShareWithOrgTabProps) {
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('viewer');
@@ -131,19 +134,33 @@ export function ShareWithOrgTab({
               <SelectValue placeholder="Select an organization" />
             </SelectTrigger>
             <SelectContent>
-              {shareableOrgs.map((org) => (
-                <SelectItem key={org.id} value={org.id}>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-3 h-3" />
-                    <span>{org.name}</span>
-                    {org.memberCount && (
-                      <span className="text-xs text-muted-foreground">
-                        ({org.memberCount} members)
+              {shareableOrgs.map((org) => {
+                const alreadyShared = sharedOrgIds.includes(org.id);
+                return (
+                  <SelectItem
+                    key={org.id}
+                    value={org.id}
+                    disabled={alreadyShared}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-3 h-3" />
+                      <span className={alreadyShared ? 'text-muted-foreground' : ''}>
+                        {org.name}
                       </span>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
+                      {alreadyShared ? (
+                        <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                          <Check className="w-3 h-3" />
+                          Shared
+                        </span>
+                      ) : org.memberCount ? (
+                        <span className="text-xs text-muted-foreground">
+                          ({org.memberCount} members)
+                        </span>
+                      ) : null}
+                    </div>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>

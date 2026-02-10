@@ -245,6 +245,9 @@ export function ShareModal({
                   onShare={shareWithOrg}
                   onSuccess={refresh}
                   resourceType={resourceType}
+                  sharedOrgIds={orgPermissions
+                    .map((p) => p.grantedToOrganizationId)
+                    .filter((id): id is string => !!id)}
                 />
               )}
             </TabsContent>

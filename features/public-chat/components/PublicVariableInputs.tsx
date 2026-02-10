@@ -20,6 +20,12 @@ interface PublicVariableInputsProps {
     compact?: boolean;
     /** Hide the outer wrapper (for embedding in custom layouts) */
     minimal?: boolean;
+    /** Called when Enter is pressed on the last variable (if submitOnEnter) */
+    onSubmit?: () => void;
+    /** Whether Enter on the last variable should trigger submit */
+    submitOnEnter?: boolean;
+    /** Ref to the text input/textarea to focus after the last variable (if not submitting) */
+    textInputRef?: React.RefObject<HTMLTextAreaElement | HTMLInputElement | null>;
 }
 
 // ============================================================================
@@ -43,6 +49,9 @@ export function PublicVariableInputs({
     disabled = false,
     compact = false,
     minimal = false,
+    onSubmit,
+    submitOnEnter = false,
+    textInputRef,
 }: PublicVariableInputsProps) {
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
@@ -56,6 +65,30 @@ export function PublicVariableInputs({
     const handleExpandedVariableChange = useCallback((variable: string | null) => {
         setExpandedVariable(variable);
     }, []);
+
+    // Handle Enter key on collapsed variable inputs: cycle to next, then submit or focus text input
+    const handleVariableKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const isLast = index === variableDefaults.length - 1;
+
+            if (!isLast) {
+                const container = (e.currentTarget as HTMLElement).closest('[data-variable-inputs]');
+                const nextInput = container?.querySelector<HTMLInputElement>(`[data-variable-index="${index + 1}"]`);
+                if (nextInput) {
+                    nextInput.focus();
+                    return;
+                }
+            }
+
+            // Last variable: submit if submitOnEnter, else focus text input
+            if (submitOnEnter && onSubmit) {
+                onSubmit();
+            } else if (textInputRef?.current) {
+                textInputRef.current.focus();
+            }
+        }
+    }, [variableDefaults.length, submitOnEnter, onSubmit, textInputRef]);
 
     if (variableDefaults.length === 0) {
         return null;
@@ -129,8 +162,10 @@ export function PublicVariableInputs({
                                             type="text"
                                             value={value.includes('\n') ? value.replace(/\n/g, ' ↵ ') : value}
                                             onChange={(e) => handleVariableChange(variable.name, e.target.value)}
+                                            onKeyDown={(e) => handleVariableKeyDown(e, index)}
                                             placeholder={variable.helpText || 'Enter value...'}
                                             className="flex-1 text-base md:text-xs bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
+                                            data-variable-index={index}
                                             disabled={disabled}
                                         />
                                         <button
@@ -153,14 +188,14 @@ export function PublicVariableInputs({
     if (minimal) {
         // Minimal mode: no outer wrapper, direct border on each item
         return (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden" data-variable-inputs>
                 {variableInputs}
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-border overflow-hidden" data-variable-inputs>
             {variableInputs}
         </div>
     );

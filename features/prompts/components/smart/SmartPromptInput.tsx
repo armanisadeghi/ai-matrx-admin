@@ -280,6 +280,30 @@ export function SmartPromptInput({
     }));
   }, [runId, chatInput, isSendDisabled, dispatch]);
 
+  // Handle Enter key on collapsed variable inputs: cycle to next, then submit or focus textarea
+  const handleVariableKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const isLast = index === variableDefaults.length - 1;
+
+      if (!isLast) {
+        const container = (e.currentTarget as HTMLElement).closest('[data-variable-inputs]');
+        const nextInput = container?.querySelector<HTMLInputElement>(`[data-variable-index="${index + 1}"]`);
+        if (nextInput) {
+          nextInput.focus();
+          return;
+        }
+      }
+
+      // Last variable: submit if submitOnEnter, else focus textarea
+      if (submitOnEnter && !isSendDisabled) {
+        handleSendMessage();
+      } else {
+        textareaRef.current?.focus();
+      }
+    }
+  }, [variableDefaults.length, submitOnEnter, isSendDisabled, handleSendMessage]);
+
   // Handle keyboard events in the textarea
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && submitOnEnter) {
@@ -352,7 +376,7 @@ export function SmartPromptInput({
 
       {/* Variable Inputs - Only shown when showVariables is true */}
       {showVariablesFromRedux && variableDefaults.length > 0 && (
-        <div className="border-b border-border">
+        <div className="border-b border-border" data-variable-inputs>
           <div className="p-0">
             <div className="space-y-0">
               {variableDefaults.map((variable, index) => {
@@ -422,8 +446,10 @@ export function SmartPromptInput({
                           type="text"
                           value={value.includes('\n') ? value.replace(/\n/g, " ↵ ") : value}
                           onChange={(e) => handleVariableValueChange(variable.name, e.target.value)}
+                          onKeyDown={(e) => handleVariableKeyDown(e, index)}
                           placeholder={variable.helpText || "Enter value..."}
                           className="flex-1 text-base md:text-xs bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
+                          data-variable-index={index}
                           tabIndex={index + 1}
                         />
                         <button

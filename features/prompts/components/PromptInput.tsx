@@ -201,6 +201,31 @@ export function PromptInput({
     // Determine if the send button should be disabled
     const isSendDisabled = isTestingPrompt || (!isLastMessageUser && !chatInput.trim());
 
+    // Handle Enter key on collapsed variable inputs: cycle to next, then submit or focus textarea
+    const handleVariableKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const isLast = index === variableDefaults.length - 1;
+
+            if (!isLast) {
+                // Focus the next collapsed variable input
+                const container = (e.currentTarget as HTMLElement).closest('[data-variable-inputs]');
+                const nextInput = container?.querySelector<HTMLInputElement>(`[data-variable-index="${index + 1}"]`);
+                if (nextInput) {
+                    nextInput.focus();
+                    return;
+                }
+            }
+
+            // Last variable: submit if submitOnEnter, else focus textarea
+            if (submitOnEnter && !isSendDisabled) {
+                onSendMessage();
+            } else {
+                textareaRef.current?.focus();
+            }
+        }
+    };
+
     // Handle keyboard events in the textarea
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey && submitOnEnter) {
@@ -225,7 +250,7 @@ export function PromptInput({
         <div className="bg-white dark:bg-zinc-900 rounded-lg border border-border overflow-hidden">
             {/* Variable Inputs - Only shown when showVariables is true */}
             {showVariables && variableDefaults.length > 0 && (
-                <div className="border-b border-border">
+                <div className="border-b border-border" data-variable-inputs>
                     <div className="p-0">
                         <div className="space-y-0">
                             {variableDefaults.map((variable, index) => {
@@ -296,8 +321,10 @@ export function PromptInput({
                                                         ? (variable.defaultValue || "").replace(/\n/g, " ↵ ")
                                                         : (variable.defaultValue || "")}
                                                     onChange={(e) => onVariableValueChange(variable.name, e.target.value)}
+                                                    onKeyDown={(e) => handleVariableKeyDown(e, index)}
                                                     placeholder={variable.helpText || "Enter value..."}
                                                     className="flex-1 text-base md:text-xs bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
+                                                    data-variable-index={index}
                                                     tabIndex={index + 1}
                                                 />
                                                 <button
