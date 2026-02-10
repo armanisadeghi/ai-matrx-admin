@@ -4,7 +4,7 @@
 //   1. Bearer header (Cursor, Claude Code, etc.):
 //      { "url": "https://appmatrx.com/api/mcp/mcp", "headers": { "Authorization": "Bearer <key>" } }
 //   2. Query-param token (Claude.ai connectors — no custom header support):
-//      URL: https://appmatrx.com/api/mcp/mcp?token=<key>
+//      URL: https://appmatrx.com/api/mcp/mcp?token=<key> 
 
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
