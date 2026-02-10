@@ -25,12 +25,19 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '50')
         const offset = parseInt(searchParams.get('offset') || '0')
 
+        // Exclude soft-deleted instances by default
+        const includeDeleted = searchParams.get('include_deleted') === 'true'
+        
         let query = supabase
             .from('sandbox_instances')
             .select('*', { count: 'exact' })
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1)
+
+        if (!includeDeleted) {
+            query = query.is('deleted_at', null)
+        }
 
         if (projectId) {
             query = query.eq('project_id', projectId)

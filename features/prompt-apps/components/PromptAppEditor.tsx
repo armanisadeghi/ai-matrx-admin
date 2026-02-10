@@ -9,9 +9,19 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/lib/toast-service';
 import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
 import type { PromptApp } from '../types';
@@ -78,6 +88,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [app, setApp] = useState(initialApp);
   const [mode, setMode] = useState<EditorMode>('view');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showAIEditor, setShowAIEditor] = useState(false);
   
@@ -95,6 +106,9 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [isRegeneratingFavicon, setIsRegeneratingFavicon] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [promptName, setPromptName] = useState<string | null>(null);
+  const [promptUpdatedAt, setPromptUpdatedAt] = useState<string | null>(null);
+  const [isPromptStale, setIsPromptStale] = useState(false);
+  const [isSyncingFromPrompt, setIsSyncingFromPrompt] = useState(false);
 
   // Regenerate favicon from app name
   const handleRegenerateFavicon = async () => {
@@ -123,24 +137,98 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     }
   };
 
-  // Fetch the prompt name for display
+  // Sync variable schema from the latest prompt data
+  const handleSyncFromPrompt = async () => {
+    if (!app.prompt_id) return;
+    setIsSyncingFromPrompt(true);
+    try {
+      // Fetch the latest prompt data
+      const { data: prompt, error: promptError } = await supabase
+        .from('prompts')
+        .select('variable_defaults, updated_at, name')
+        .eq('id', app.prompt_id)
+        .single();
+
+      if (promptError || !prompt) {
+        toast.error('Failed to fetch latest prompt data');
+        return;
+      }
+
+      // Build updated variable schema from prompt's variable_defaults
+      let updatedSchema = app.variable_schema;
+      if (prompt.variable_defaults && Array.isArray(prompt.variable_defaults)) {
+        updatedSchema = prompt.variable_defaults.map((v: { name: string; defaultValue?: string }) => ({
+          name: v.name,
+          type: 'string',
+          label: v.name.split('_').map((w: string) =>
+            w.charAt(0).toUpperCase() + w.slice(1)
+          ).join(' '),
+          default: v.defaultValue || '',
+          required: false,
+        }));
+      }
+
+      const now = new Date().toISOString();
+
+      // Update the app in the database
+      const { error: updateError } = await supabase
+        .from('prompt_apps')
+        .update({
+          variable_schema: updatedSchema,
+          updated_at: now,
+        })
+        .eq('id', app.id);
+
+      if (updateError) {
+        toast.error('Failed to sync: ' + updateError.message);
+        return;
+      }
+
+      // Update local state
+      setApp(prev => ({
+        ...prev,
+        variable_schema: updatedSchema,
+        updated_at: now,
+      }));
+      setIsPromptStale(false);
+      setPromptUpdatedAt(prompt.updated_at);
+      if (prompt.name) setPromptName(prompt.name);
+
+      toast.success('App synced with latest prompt changes');
+    } catch (err) {
+      toast.error('Failed to sync from prompt');
+      console.error('Sync from prompt error:', err);
+    } finally {
+      setIsSyncingFromPrompt(false);
+    }
+  };
+
+  // Fetch the prompt name and check if prompt has been updated since app was last saved
   useEffect(() => {
     if (!app.prompt_id) return;
     
-    const fetchPromptName = async () => {
+    const fetchPromptInfo = async () => {
       const { data, error } = await supabase
         .from('prompts')
-        .select('name')
+        .select('name, updated_at')
         .eq('id', app.prompt_id)
         .single();
       
       if (!error && data) {
         setPromptName(data.name);
+        setPromptUpdatedAt(data.updated_at);
+        
+        // Check if the prompt was updated after the app was last updated
+        if (data.updated_at && app.updated_at) {
+          const promptTime = new Date(data.updated_at).getTime();
+          const appTime = new Date(app.updated_at).getTime();
+          setIsPromptStale(promptTime > appTime);
+        }
       }
     };
     
-    fetchPromptName();
-  }, [app.prompt_id]);
+    fetchPromptInfo();
+  }, [app.prompt_id, app.updated_at]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -248,25 +336,30 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     router.refresh();
   };
 
-  const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${app.name}"? This cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
     setIsDeleting(true);
-    const { error } = await supabase
-      .from('prompt_apps')
-      .delete()
-      .eq('id', app.id);
+    setDeleteDialogOpen(false);
 
-    if (error) {
+    try {
+      const response = await fetch(`/api/prompt-apps/${app.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete app');
+      }
+
+      toast.success('App deleted');
+      router.push('/prompt-apps');
+    } catch (error) {
+      console.error('Error deleting app:', error);
       toast.error('Failed to delete app');
       setIsDeleting(false);
-      return;
     }
-
-    toast.success('App deleted');
-    router.push('/prompt-apps');
   };
 
   const handleCancelEdit = () => {
@@ -350,7 +443,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       Publish
                     </Button>
                   )}
-                  <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} size="icon" className="shrink-0">
+                  <Button variant="destructive" onClick={handleDeleteClick} disabled={isDeleting} size="icon" className="shrink-0">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </>
@@ -417,6 +510,37 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               </Link>
             )}
           </div>
+
+          {/* Prompt Updated Banner */}
+          {isPromptStale && app.prompt_id && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-amber-300/60 bg-amber-50/80 dark:border-amber-600/40 dark:bg-amber-950/30">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  The linked prompt has been updated since this app was last saved.
+                  {promptUpdatedAt && (
+                    <span className="text-amber-600/80 dark:text-amber-400/80 ml-1">
+                      (Prompt updated {new Date(promptUpdatedAt).toLocaleDateString()})
+                    </span>
+                  )}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSyncFromPrompt}
+                disabled={isSyncingFromPrompt}
+                className="shrink-0 border-amber-400 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-900/40"
+              >
+                {isSyncingFromPrompt ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
+                Sync Variables
+              </Button>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -894,6 +1018,30 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         title="AI Code Editor"
         allowPromptSelection={true}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              Delete App
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{app.name}&quot;? This action cannot be undone
+              and will permanently remove the app and all its execution history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete App
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -13,7 +13,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/lib/redux/store';
-import type { ConversationWithDetails } from '../types';
+import type { ConversationWithDetails, Message } from '../types';
 
 // ============================================
 // State Interface
@@ -217,6 +217,54 @@ export const messagingSlice = createSlice({
         return new Date(bTime).getTime() - new Date(aTime).getTime();
       });
     },
+
+    /**
+     * Optimistically update a conversation's last_message from a real-time event.
+     * This avoids the need to refetch the entire conversation from the database,
+     * which can suffer from replication lag or race conditions.
+     * 
+     * Also increments unread_count if the message is from another user
+     * and the conversation is not currently active.
+     */
+    updateConversationLastMessage: (state, action: PayloadAction<{
+      conversationId: string;
+      message: Message;
+      isFromCurrentUser: boolean;
+    }>) => {
+      const { conversationId, message, isFromCurrentUser } = action.payload;
+      const index = state.conversations.findIndex(c => c.id === conversationId);
+      
+      if (index < 0) return; // Conversation not in list — full fetch needed
+      
+      const conv = state.conversations[index];
+      const isActiveConversation = state.currentConversationId === conversationId;
+      
+      // Update last_message
+      conv.last_message = {
+        ...message,
+        status: 'sent' as const,
+      };
+      conv.updated_at = message.created_at;
+      
+      // Update unread count (only for messages from other users, not active conversation)
+      if (!isFromCurrentUser && !isActiveConversation) {
+        const oldUnread = conv.unread_count || 0;
+        conv.unread_count = oldUnread + 1;
+        state.unreadCounts[conversationId] = oldUnread + 1;
+        
+        // If this is the first unread message, increment the total unread conversations count
+        if (oldUnread === 0) {
+          state.totalUnreadCount += 1;
+        }
+      }
+      
+      // Re-sort conversations (most recent first)
+      state.conversations.sort((a, b) => {
+        const aTime = a.last_message?.created_at || a.updated_at;
+        const bTime = b.last_message?.created_at || b.updated_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
+    },
     
     /**
      * Remove a conversation from the list
@@ -386,6 +434,7 @@ export const {
   clearCurrentConversation,
   setConversations,
   updateConversation,
+  updateConversationLastMessage,
   removeConversation,
   updateUnreadCount,
   incrementUnreadCount,

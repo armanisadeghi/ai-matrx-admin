@@ -33,6 +33,7 @@ export async function GET(
             .select('*')
             .eq('id', id)
             .eq('user_id', user.id)
+            .is('deleted_at', null)
             .single()
 
         if (error) {
@@ -208,13 +209,19 @@ export async function DELETE(
             }
         }
 
+        // Soft delete: set deleted_at timestamp instead of hard deleting
         const { error: deleteError } = await supabase
             .from('sandbox_instances')
-            .delete()
+            .update({
+                deleted_at: new Date().toISOString(),
+                status: 'stopped',
+                stopped_at: instance.status !== 'stopped' ? new Date().toISOString() : undefined,
+                stop_reason: 'user_deleted',
+            })
             .eq('id', id)
 
         if (deleteError) {
-            console.error('Error deleting sandbox instance:', deleteError)
+            console.error('Error soft-deleting sandbox instance:', deleteError)
             return NextResponse.json(
                 { error: 'Failed to delete sandbox instance', details: deleteError.message },
                 { status: 500 }

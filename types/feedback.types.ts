@@ -7,6 +7,17 @@ export type AdminDecision = 'pending' | 'approved' | 'rejected' | 'deferred' | '
 export type AiComplexity = 'simple' | 'moderate' | 'complex';
 export type TestingResult = 'pending' | 'pass' | 'fail' | 'partial';
 
+export interface FeedbackCategory {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    color: string;
+    sort_order: number;
+    is_active: boolean;
+    created_at: string;
+}
+
 export interface UserFeedback {
     id: string;
     user_id: string;
@@ -28,6 +39,8 @@ export interface UserFeedback {
     user_confirmed_at: string | null;
     // Parent-child for split issues
     parent_id: string | null;
+    // Category
+    category_id: string | null;
     // AI triage fields
     ai_solution_proposal: string | null;
     ai_suggested_priority: string | null;
@@ -91,7 +104,23 @@ export interface UpdateFeedbackInput {
     testing_url?: string;
     testing_result?: TestingResult;
     has_open_issues?: boolean;
+    category_id?: string | null;
 }
+
+/** Category color mappings (Tailwind classes) matching the color field in feedback_categories */
+export const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+    blue: { bg: 'bg-blue-500/15', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-300 dark:border-blue-700' },
+    purple: { bg: 'bg-purple-500/15', text: 'text-purple-700 dark:text-purple-400', border: 'border-purple-300 dark:border-purple-700' },
+    green: { bg: 'bg-green-500/15', text: 'text-green-700 dark:text-green-400', border: 'border-green-300 dark:border-green-700' },
+    cyan: { bg: 'bg-cyan-500/15', text: 'text-cyan-700 dark:text-cyan-400', border: 'border-cyan-300 dark:border-cyan-700' },
+    yellow: { bg: 'bg-yellow-500/15', text: 'text-yellow-700 dark:text-yellow-400', border: 'border-yellow-300 dark:border-yellow-700' },
+    red: { bg: 'bg-red-500/15', text: 'text-red-700 dark:text-red-400', border: 'border-red-300 dark:border-red-700' },
+    orange: { bg: 'bg-orange-500/15', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-300 dark:border-orange-700' },
+    pink: { bg: 'bg-pink-500/15', text: 'text-pink-700 dark:text-pink-400', border: 'border-pink-300 dark:border-pink-700' },
+    indigo: { bg: 'bg-indigo-500/15', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-300 dark:border-indigo-700' },
+    violet: { bg: 'bg-violet-500/15', text: 'text-violet-700 dark:text-violet-400', border: 'border-violet-300 dark:border-violet-700' },
+    gray: { bg: 'bg-gray-500/15', text: 'text-gray-700 dark:text-gray-400', border: 'border-gray-300 dark:border-gray-700' },
+};
 
 /** Human-readable status labels for the user portal */
 export const FEEDBACK_STATUS_LABELS: Record<FeedbackStatus, string> = {

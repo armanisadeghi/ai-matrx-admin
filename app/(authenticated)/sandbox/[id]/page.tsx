@@ -673,9 +673,10 @@ export default function SandboxDetailPage() {
                     <DialogHeader>
                         <DialogTitle>Delete Sandbox</DialogTitle>
                         <DialogDescription>
-                            This will permanently remove this sandbox instance
-                            {isActive ? ' and destroy the running container' : ''}.
-                            This action cannot be undone.
+                            This is a destructive action.
+                            {isActive ? ' The running container will be destroyed and ' : ' '}
+                            The sandbox will be removed from your list. Deleted sandboxes are retained temporarily for recovery but will be permanently purged after 7 days.
+                            If you just want to stop the container, use the Stop button instead.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -683,7 +684,7 @@ export default function SandboxDetailPage() {
                             Cancel
                         </Button>
                         <Button variant="destructive" onClick={handleDelete}>
-                            Delete
+                            Delete Sandbox
                         </Button>
                     </DialogFooter>
                 </DialogContent>

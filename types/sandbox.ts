@@ -33,6 +33,7 @@ export interface SandboxInstance {
     ssh_port: number | null
     created_at: string
     updated_at: string
+    deleted_at: string | null
 }
 
 export interface SandboxListResponse {

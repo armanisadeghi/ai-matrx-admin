@@ -6,6 +6,7 @@ import {
   setMessagingAvailable,
   setConversations,
   updateConversation,
+  updateConversationLastMessage,
   markConversationAsRead,
   setLoading,
 } from "../redux/messagingSlice";
@@ -316,21 +317,29 @@ export function MessagingInitializer() {
           }
         }
         
-        // Fetch full conversation to update Redux
-        // This ensures we have proper ordering and all details
-        const updatedConv = await fetchConversationDetails(newMessage.conversation_id);
+        // STEP 1: Optimistic update — instantly update the conversation's last_message
+        // and re-sort the list. No network call needed. This fixes the "stale sidebar" bug.
+        dispatch(updateConversationLastMessage({
+          conversationId: newMessage.conversation_id,
+          message: newMessage,
+          isFromCurrentUser: !isFromOtherUser,
+        }));
         
-        if (updatedConv) {
-          // Re-check active conversation AFTER the async fetch (ref may have updated since)
-          // This catches cases where the user navigated during the fetch
-          const isStillActive = currentConversationIdRef.current === newMessage.conversation_id;
-          if (isActiveConversation || isStillActive) {
-            updatedConv.unread_count = 0;
-          }
+        // STEP 2: Background full refresh — fetch accurate data from DB after a short
+        // delay to let replication catch up. This ensures unread counts and other details
+        // are correct. The delay avoids read-replica lag issues.
+        setTimeout(async () => {
+          const updatedConv = await fetchConversationDetails(newMessage.conversation_id);
           
-          // The updateConversation reducer also checks currentConversationId as a safety net
-          dispatch(updateConversation(updatedConv));
-        }
+          if (updatedConv) {
+            const isStillActive = currentConversationIdRef.current === newMessage.conversation_id;
+            if (isActiveConversation || isStillActive) {
+              updatedConv.unread_count = 0;
+            }
+            
+            dispatch(updateConversation(updatedConv));
+          }
+        }, 500);
       }
     );
 
