@@ -142,7 +142,7 @@ export async function signInWithGoogleAction(formData: FormData) {
   console.log("SignInWithGoogleAction - RedirectTo:", redirectTo); // Debug log
 
   const callbackUrl = new URL("/auth/callback", origin);
-  callbackUrl.searchParams.set("\n Sign In Action: redirectTo", encodeURIComponent(redirectTo));
+  callbackUrl.searchParams.set("redirectTo", encodeURIComponent(redirectTo));
 
   console.log("Callback URL:", callbackUrl.toString()); // Debug log
 
@@ -283,7 +283,7 @@ export async function signUpWithGoogleAction(formData: FormData) {
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
   const callbackUrl = new URL("/auth/callback", origin);
-  callbackUrl.searchParams.set("\n Sign In Action: redirectTo", encodeURIComponent(redirectTo));
+  callbackUrl.searchParams.set("redirectTo", encodeURIComponent(redirectTo));
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

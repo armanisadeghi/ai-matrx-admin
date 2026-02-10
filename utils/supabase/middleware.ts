@@ -1,89 +1,85 @@
 // utils/supabase/middleware.ts
+// Official Supabase SSR pattern for Next.js 16 proxy
+// https://supabase.com/docs/guides/auth/server-side/nextjs
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  // Set custom headers on the request for downstream handlers
-  request.headers.set('x-pathname', request.nextUrl.pathname);
-  request.headers.set('x-search-params', request.nextUrl.search);
-
   let supabaseResponse = NextResponse.next({
     request,
   })
 
+  // With Fluid compute, don't put this client in a global environment
+  // variable. Always create a new one on each request.
   const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-            supabaseResponse = NextResponse.next({
-              request,
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set(name, value, options)
-            );
-          },
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
         },
-      }
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
   )
 
-  // This is the critical part! getUser() will check the JWT validity and
-  // automatically refresh the token if needed, updating the cookies
-  const { data, error } = await supabase.auth.getUser()
-  
-  // Log authentication status for debugging
-  const timestamp = new Date().toISOString();
-  const isStaticAsset = request.nextUrl.pathname.includes('.');
-  const isPublicRoute = request.nextUrl.pathname.startsWith('/login') || 
-                        request.nextUrl.pathname.startsWith('/auth') || 
-                        request.nextUrl.pathname.startsWith('/_next');
-  
-  // Only log meaningful auth checks (skip static assets and public routes for cleaner logs)
-  if (!isStaticAsset && !isPublicRoute) {
-    console.log(`[${timestamp}] Auth Check - Path: ${request.nextUrl.pathname}, User: ${data.user ? 'authenticated' : 'not authenticated'}${error ? `, Error: ${error.message}` : ''}`);
-  }
+  // Do not run code between createServerClient and
+  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
 
-  const pathname = request.nextUrl.pathname;
-  
-  // Define public pages that don't require authentication
-  const isHomepage = pathname === '/';
-  const isAuthPage = pathname === '/login' || pathname === '/sign-up';
-  const isPublicPage = isHomepage || isAuthPage;
+  // IMPORTANT: getClaims() validates the JWT locally (no network call).
+  // This is the official recommended approach for proxy/middleware.
+  const { data } = await supabase.auth.getClaims()
+
+  const user = data?.claims
 
   // Handle authenticated users trying to access login/signup pages
-  // Redirect them to dashboard - no point showing login if already logged in
-  if (data.user && isAuthPage) {
-    console.log(`[${timestamp}] ↪ Authenticated user on ${pathname} → redirecting to /dashboard`);
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (
+    user &&
+    (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/sign-up')
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
   }
-
-  // Note: Homepage is allowed for both authenticated and unauthenticated users
-  // The homepage component will show different UI based on auth status client-side
 
   // Handle unauthenticated users trying to access protected routes
   if (
-      !data.user &&
-      !isPublicPage && // Allow access to public pages (/, /login, /sign-up)
-      !pathname.startsWith('/auth') && // Allow auth callbacks
-      !pathname.startsWith('/_next') && // Allow Next.js internals
-      !isStaticAsset // Allow static assets
+    !user &&
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/sign-up') &&
+    request.nextUrl.pathname !== '/' &&
+    !request.nextUrl.pathname.startsWith('/auth')
   ) {
-    // Get the full requested URL path and search params
-    const fullPath = pathname + request.nextUrl.search
-    
-    // Redirect to login with the intended destination
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirectTo', fullPath)
-    console.log(`[${timestamp}] → Redirecting to /login with redirectTo: ${fullPath}`);
-    
-    return NextResponse.redirect(loginUrl)
+    const url = request.nextUrl.clone()
+    const fullPath = request.nextUrl.pathname + request.nextUrl.search
+    url.pathname = '/login'
+    url.searchParams.set('redirectTo', fullPath)
+    return NextResponse.redirect(url)
   }
+
+  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
+  // creating a new response object with NextResponse.next() make sure to:
+  // 1. Pass the request in it, like so:
+  //    const myNewResponse = NextResponse.next({ request })
+  // 2. Copy over the cookies, like so:
+  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+  // 3. Change the myNewResponse object to fit your needs, but avoid changing
+  //    the cookies!
+  // 4. Finally:
+  //    return myNewResponse
+  // If this is not done, you may be causing the browser and server to go out
+  // of sync and terminate the user's session prematurely!
 
   return supabaseResponse
 }

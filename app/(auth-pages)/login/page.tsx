@@ -65,6 +65,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
                     <Link
                         className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"
                         href={`/sign-up${searchParamsString ? `?${searchParamsString}` : ''}`}
+                        tabIndex={-1}
                     >
                         Sign up Here
                     </Link>
@@ -102,6 +103,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
                             <Link
                                 className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"
                                 href={`/forgot-password${searchParamsString ? `?${searchParamsString}` : ''}`}
+                                tabIndex={-1}
                             >
                                 Forgot your password?
                             </Link>
@@ -142,14 +144,14 @@ export default async function SignIn({ searchParams }: SignInProps) {
                     </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
+                <div className="mt-6 grid grid-cols-3 gap-2">
                     <form action={googleLoginWithRedirect}>
                         <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton
-                            pendingText="Connecting..."
-                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
+                            pendingText="Loading..."
+                            className="w-full inline-flex justify-center py-2 px-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
                         >
-                            <IconBrandGoogle className="h-5 w-5 mr-2" />
+                            <IconBrandGoogle className="h-5 w-5 mr-1" />
                             <span>Google</span>
                         </SubmitButton>
                     </form>
@@ -157,10 +159,10 @@ export default async function SignIn({ searchParams }: SignInProps) {
                     <form action={appleLoginWithRedirect}>
                         <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton
-                            pendingText="Connecting..."
-                            className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-black dark:bg-white text-sm font-medium text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors duration-200"
+                            pendingText="Loading..."
+                            className="w-full inline-flex justify-center py-2 px-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
                         >
-                            <IconBrandApple className="h-5 w-5 mr-2" />
+                            <IconBrandApple className="h-5 w-5 mr-1" />
                             <span>Apple</span>
                         </SubmitButton>
                     </form>
@@ -168,10 +170,10 @@ export default async function SignIn({ searchParams }: SignInProps) {
                     <form action={githubLoginWithRedirect}>
                         <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton
-                            pendingText="Connecting..."
-                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
+                            pendingText="Loading..."
+                            className="w-full inline-flex justify-center py-2 px-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
                         >
-                            <IconBrandGithub className="h-5 w-5 mr-2" />
+                            <IconBrandGithub className="h-5 w-5 mr-1" />
                             <span>GitHub</span>
                         </SubmitButton>
                     </form>

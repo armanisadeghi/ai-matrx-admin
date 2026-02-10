@@ -17,7 +17,6 @@ import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
-import TokenRefreshInitializer from "@/components/auth/TokenRefreshInitializer";
 import { CanvasSideSheet } from "@/features/canvas/core/CanvasSideSheet";
 import { MessagingSideSheet, MessagingInitializer } from "@/features/messaging";
 import AppleKeyExpiryBanner from "@/components/admin/AppleKeyExpiryBanner";
@@ -31,28 +30,21 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     const viewport = headersList.get("viewport-width") || "1024";
     const isMobile = Number(viewport) < 768;
 
+    // getUser() validates the session server-side (network call to Supabase Auth)
+    // This is appropriate in a layout since it runs once per page load, not per navigation
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Middleware already handles redirecting unauthenticated users to login
-    // This is a safety check in case middleware is bypassed somehow
+    // Proxy already handles redirecting unauthenticated users to login
+    // This is a safety check in case proxy is bypassed somehow
     if (!user) {
-        const pathname = headersList.get("x-pathname") || "/dashboard";
-        const searchParams = headersList.get("x-search-params") || "";
-        const fullPath = searchParams ? `${pathname}${searchParams}` : pathname;
-
-        // Never redirect to homepage or auth pages
-        const safeRedirect = (fullPath === '/' || fullPath === '/login' || fullPath === '/sign-up')
-            ? '/dashboard'
-            : fullPath;
-
-        console.log(`[LAYOUT] Unauthenticated user detected (middleware bypass?), redirecting to login with redirectTo: ${safeRedirect}`);
-        return redirect(`/login?redirectTo=${encodeURIComponent(safeRedirect)}`);
+        return redirect('/login');
     }
 
-    const session = await supabase.auth.getSession();
-    const accessToken = session.data.session?.access_token;
+    // Get the access token from the session for API calls
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
 
     // Fetch admin status and preferences in a single efficient query
     const sessionData = await getUserSessionData(supabase, user.id);
@@ -103,7 +95,6 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         <Providers initialReduxState={initialReduxState}>
             <AppleKeyExpiryBanner isAdmin={isAdmin} />
             <SocketInitializer />
-            <TokenRefreshInitializer />
             <AnnouncementProvider />
             <ResponsiveLayout {...layoutProps}>
                 <NavigationLoader />

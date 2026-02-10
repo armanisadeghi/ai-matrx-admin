@@ -40,16 +40,18 @@ export function usePublicAuthSync() {
             try {
                 const supabase = createClient();
                 
-                // Get session (includes access token) - not just user
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                // Use getUser() for secure server-validated auth check
+                // getSession() only reads from local storage and can be spoofed
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
                 
-                if (sessionError) {
-                    console.error('Session error:', sessionError);
+                if (userError) {
+                    console.error('Auth error:', userError);
                 }
                 
-                if (session?.user) {
+                if (user) {
                     // AUTHENTICATED USER PATH
-                    const user = session.user;
+                    // Get the session for the access token (safe here since we already validated with getUser)
+                    const { data: { session } } = await supabase.auth.getSession();
                     
                     // Check admin status
                     let isAdmin = false;
@@ -96,8 +98,8 @@ export function usePublicAuthSync() {
                             name: i.identity_data?.name || null,
                         })) || [],
                         isAdmin,
-                        accessToken: session.access_token,
-                        tokenExpiresAt: session.expires_at || null,
+                        accessToken: session?.access_token || null,
+                        tokenExpiresAt: session?.expires_at || null,
                     }));
                 } else {
                     // GUEST USER PATH - get fingerprint for API authentication

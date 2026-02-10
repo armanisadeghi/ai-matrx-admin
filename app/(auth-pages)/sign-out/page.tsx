@@ -44,12 +44,12 @@ export default async function SignOut({
                     You're about to sign out of your account. You can always sign back in anytime.
                 </p>
                 <form action={signOutAction} className="space-y-4">
-                    <SubmitButton className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                    <SubmitButton pendingText="Signing Out..." className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                         Sign Out
                     </SubmitButton>
                 </form>
                 <div className="text-center">
-                    <Link href="/dashboard" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500">
+                    <Link href="/dashboard" className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" tabIndex={-1}>
                         Cancel and return to dashboard
                     </Link>
                 </div>
