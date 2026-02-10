@@ -114,15 +114,7 @@ export type Database = {
           subject?: string
           successful_count?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "admin_email_logs_sent_by_fkey"
-            columns: ["sent_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       admins: {
         Row: {
@@ -137,15 +129,7 @@ export type Database = {
           created_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "admins_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       agent_conversations: {
         Row: {
@@ -201,13 +185,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "agent_conversations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_conversations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -292,13 +269,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ai_model"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -595,15 +565,7 @@ export type Database = {
           user_id?: string
           variable_values?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ai_runs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       ai_settings: {
         Row: {
@@ -799,13 +761,6 @@ export type Database = {
             referencedRelation: "ai_runs_summary"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "ai_tasks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       ai_training_data: {
@@ -866,15 +821,7 @@ export type Database = {
           user_id?: string | null
           user_query?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ai_training_data_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       applet: {
         Row: {
@@ -1117,13 +1064,6 @@ export type Database = {
             referencedRelation: "audio_label"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "audio_recording_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       audio_recording_users: {
@@ -1360,13 +1300,6 @@ export type Database = {
             referencedRelation: "data_broker"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "broker_value_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       broker_values: {
@@ -1448,13 +1381,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "broker_values_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "broker_values_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -1474,13 +1400,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "broker_values_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "broker_values_workspace_id_fkey"
@@ -1554,13 +1473,6 @@ export type Database = {
             referencedRelation: "canvas_comments"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "canvas_comment_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       canvas_comments: {
@@ -1633,13 +1545,6 @@ export type Database = {
             referencedRelation: "canvas_comments"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "canvas_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       canvas_items: {
@@ -1703,15 +1608,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "canvas_items_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       canvas_likes: {
         Row: {
@@ -1739,13 +1636,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "shared_canvas_items"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "canvas_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1803,13 +1693,6 @@ export type Database = {
             referencedRelation: "shared_canvas_items"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "canvas_scores_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       canvas_views: {
@@ -1856,13 +1739,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "shared_canvas_items"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "canvas_views_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2006,13 +1882,6 @@ export type Database = {
             referencedRelation: "recipe_complete"
             referencedColumns: ["recipe_id"]
           },
-          {
-            foreignKeyName: "compiled_recipe_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       component_groups: {
@@ -2061,15 +1930,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "component_groups_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       contact_submissions: {
         Row: {
@@ -2114,22 +1975,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "contact_submissions_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "contact_submissions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       container_fields: {
         Row: {
@@ -2267,15 +2113,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "content_template_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       conversation: {
         Row: {
@@ -2314,15 +2152,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "conversation_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       custom_app_configs: {
         Row: {
@@ -2391,15 +2221,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "custom_app_configs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       custom_applet_configs: {
         Row: {
@@ -2511,12 +2333,358 @@ export type Database = {
             referencedRelation: "subcategory"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      cx_conversation: {
+        Row: {
+          ai_model_id: string | null
+          config: Json
+          created_at: string
+          deleted_at: string | null
+          forked_at_position: number | null
+          forked_from_id: string | null
+          id: string
+          message_count: number
+          metadata: Json
+          status: string
+          system_instruction: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_model_id?: string | null
+          config?: Json
+          created_at?: string
+          deleted_at?: string | null
+          forked_at_position?: number | null
+          forked_from_id?: string | null
+          id?: string
+          message_count?: number
+          metadata?: Json
+          status?: string
+          system_instruction?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_model_id?: string | null
+          config?: Json
+          created_at?: string
+          deleted_at?: string | null
+          forked_at_position?: number | null
+          forked_from_id?: string | null
+          id?: string
+          message_count?: number
+          metadata?: Json
+          status?: string
+          system_instruction?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "custom_applet_configs_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "cx_conversation_ai_model_id_fkey"
+            columns: ["ai_model_id"]
             isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
+            referencedRelation: "ai_model"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_conversation_forked_from_id_fkey"
+            columns: ["forked_from_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_media: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          deleted_at: string | null
+          file_size_bytes: number | null
+          file_uri: string | null
+          id: string
+          kind: string
+          metadata: Json
+          mime_type: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          file_size_bytes?: number | null
+          file_uri?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+          mime_type?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          file_size_bytes?: number | null
+          file_uri?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          mime_type?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_media_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_message: {
+        Row: {
+          content: Json
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          metadata: Json
+          position: number
+          role: string
+          status: string
+        }
+        Insert: {
+          content?: Json
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          position: number
+          role: string
+          status?: string
+        }
+        Update: {
+          content?: Json
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          metadata?: Json
+          position?: number
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_message_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_request: {
+        Row: {
+          ai_model_id: string
+          api_class: string | null
+          api_duration_ms: number | null
+          cached_tokens: number | null
+          conversation_id: string
+          cost: number | null
+          created_at: string
+          deleted_at: string | null
+          finish_reason: string | null
+          id: string
+          input_tokens: number | null
+          iteration: number
+          metadata: Json
+          output_tokens: number | null
+          response_id: string | null
+          tool_calls_count: number | null
+          tool_calls_details: Json | null
+          tool_duration_ms: number | null
+          total_duration_ms: number | null
+          total_tokens: number | null
+          user_request_id: string
+        }
+        Insert: {
+          ai_model_id: string
+          api_class?: string | null
+          api_duration_ms?: number | null
+          cached_tokens?: number | null
+          conversation_id: string
+          cost?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          finish_reason?: string | null
+          id?: string
+          input_tokens?: number | null
+          iteration?: number
+          metadata?: Json
+          output_tokens?: number | null
+          response_id?: string | null
+          tool_calls_count?: number | null
+          tool_calls_details?: Json | null
+          tool_duration_ms?: number | null
+          total_duration_ms?: number | null
+          total_tokens?: number | null
+          user_request_id: string
+        }
+        Update: {
+          ai_model_id?: string
+          api_class?: string | null
+          api_duration_ms?: number | null
+          cached_tokens?: number | null
+          conversation_id?: string
+          cost?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          finish_reason?: string | null
+          id?: string
+          input_tokens?: number | null
+          iteration?: number
+          metadata?: Json
+          output_tokens?: number | null
+          response_id?: string | null
+          tool_calls_count?: number | null
+          tool_calls_details?: Json | null
+          tool_duration_ms?: number | null
+          total_duration_ms?: number | null
+          total_tokens?: number | null
+          user_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_request_ai_model_id_fkey"
+            columns: ["ai_model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_model"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_request_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_request_user_request_id_fkey"
+            columns: ["user_request_id"]
+            isOneToOne: false
+            referencedRelation: "cx_user_request"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_user_request: {
+        Row: {
+          ai_model_id: string | null
+          api_class: string | null
+          api_duration_ms: number | null
+          completed_at: string | null
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          error: string | null
+          finish_reason: string | null
+          id: string
+          iterations: number
+          metadata: Json
+          result_end_position: number | null
+          result_start_position: number | null
+          status: string
+          tool_duration_ms: number | null
+          total_cached_tokens: number
+          total_cost: number | null
+          total_duration_ms: number | null
+          total_input_tokens: number
+          total_output_tokens: number
+          total_tokens: number
+          total_tool_calls: number
+          trigger_message_position: number | null
+          user_id: string
+        }
+        Insert: {
+          ai_model_id?: string | null
+          api_class?: string | null
+          api_duration_ms?: number | null
+          completed_at?: string | null
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          error?: string | null
+          finish_reason?: string | null
+          id?: string
+          iterations?: number
+          metadata?: Json
+          result_end_position?: number | null
+          result_start_position?: number | null
+          status?: string
+          tool_duration_ms?: number | null
+          total_cached_tokens?: number
+          total_cost?: number | null
+          total_duration_ms?: number | null
+          total_input_tokens?: number
+          total_output_tokens?: number
+          total_tokens?: number
+          total_tool_calls?: number
+          trigger_message_position?: number | null
+          user_id: string
+        }
+        Update: {
+          ai_model_id?: string | null
+          api_class?: string | null
+          api_duration_ms?: number | null
+          completed_at?: string | null
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          error?: string | null
+          finish_reason?: string | null
+          id?: string
+          iterations?: number
+          metadata?: Json
+          result_end_position?: number | null
+          result_start_position?: number | null
+          status?: string
+          tool_duration_ms?: number | null
+          total_cached_tokens?: number
+          total_cost?: number | null
+          total_duration_ms?: number | null
+          total_input_tokens?: number
+          total_output_tokens?: number
+          total_tokens?: number
+          total_tool_calls?: number
+          trigger_message_position?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_user_request_ai_model_id_fkey"
+            columns: ["ai_model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_model"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_user_request_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2596,13 +2764,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "data_output_component"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "data_broker_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2792,13 +2953,6 @@ export type Database = {
             referencedRelation: "dm_conversations"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "dm_conversation_participants_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       dm_conversations: {
@@ -2829,15 +2983,7 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "dm_conversations_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       dm_messages: {
         Row: {
@@ -2906,13 +3052,6 @@ export type Database = {
             referencedRelation: "dm_messages"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "dm_messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       emails: {
@@ -2966,6 +3105,39 @@ export type Database = {
           id?: string
           name?: string
           output_type?: Database["public"]["Enums"]["data_type"] | null
+        }
+        Relationships: []
+      }
+      feedback_categories: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -3106,15 +3278,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "field_components_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       file_structure: {
         Row: {
@@ -3210,15 +3374,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "flashcard_data_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       flashcard_history: {
         Row: {
@@ -3258,13 +3414,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "flashcard_data"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "flashcard_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3379,15 +3528,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "flashcard_sets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       full_spectrum_positions: {
         Row: {
@@ -3551,15 +3692,7 @@ export type Database = {
           updated_at?: string | null
           user_agent?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "guest_executions_converted_to_user_id_fkey"
-            columns: ["converted_to_user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       heatmap_saves: {
         Row: {
@@ -3867,15 +4000,7 @@ export type Database = {
           topic_name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "math_problems_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       mcp_registry: {
         Row: {
@@ -3981,13 +4106,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "conversation"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "message_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4110,15 +4228,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "microservice_project_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       node_category: {
         Row: {
@@ -4198,13 +4308,6 @@ export type Database = {
             referencedRelation: "notes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "note_versions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       notes: {
@@ -4250,15 +4353,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "notes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       organization_invitations: {
         Row: {
@@ -4299,13 +4394,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "organization_invitations_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "organization_invitations_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -4341,25 +4429,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "organization_members_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "organization_members_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4403,15 +4477,7 @@ export type Database = {
           updated_at?: string | null
           website?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "organizations_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       permissions: {
         Row: {
@@ -4454,20 +4520,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "permissions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "permissions_granted_to_user_id_fkey"
-            columns: ["granted_to_user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4533,13 +4585,6 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "project_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       projects: {
@@ -4567,15 +4612,7 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "projects_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       prompt_actions: {
         Row: {
@@ -4660,13 +4697,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "prompts"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prompt_actions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4765,13 +4795,6 @@ export type Database = {
             referencedRelation: "prompt_app_executions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prompt_app_errors_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       prompt_app_executions: {
@@ -4850,13 +4873,6 @@ export type Database = {
             referencedRelation: "prompt_apps"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prompt_app_executions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       prompt_app_rate_limits: {
@@ -4922,13 +4938,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "prompt_apps"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prompt_app_rate_limits_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5052,13 +5061,6 @@ export type Database = {
             referencedRelation: "prompts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "prompt_apps_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       prompt_builtins: {
@@ -5108,13 +5110,6 @@ export type Database = {
           variable_defaults?: Json | null
         }
         Relationships: [
-          {
-            foreignKeyName: "prompt_builtins_created_by_user_id_fkey"
-            columns: ["created_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "prompt_builtins_source_prompt_id_fkey"
             columns: ["source_prompt_id"]
@@ -5207,13 +5202,6 @@ export type Database = {
             referencedColumns: ["category_id"]
           },
           {
-            foreignKeyName: "prompt_shortcuts_created_by_fkey"
-            columns: ["created_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "prompt_shortcuts_prompt_fkey"
             columns: ["prompt_builtin_id"]
             isOneToOne: false
@@ -5282,15 +5270,7 @@ export type Database = {
           use_count?: number | null
           variable_defaults?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "prompt_templates_created_by_user_id_fkey"
-            columns: ["created_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       prompts: {
         Row: {
@@ -5329,15 +5309,7 @@ export type Database = {
           user_id?: string | null
           variable_defaults?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "pompts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       quiz_sessions: {
         Row: {
@@ -5379,15 +5351,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       recipe: {
         Row: {
@@ -5429,15 +5393,7 @@ export type Database = {
           user_id?: string | null
           version?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "recipe_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       recipe_broker: {
         Row: {
@@ -5917,13 +5873,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registered_node_results_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "registered_node_results_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
@@ -5938,6 +5887,7 @@ export type Database = {
           config: Json | null
           container_id: string | null
           created_at: string
+          deleted_at: string | null
           expires_at: string | null
           hot_path: string | null
           id: string
@@ -5956,6 +5906,7 @@ export type Database = {
           config?: Json | null
           container_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           hot_path?: string | null
           id?: string
@@ -5974,6 +5925,7 @@ export type Database = {
           config?: Json | null
           container_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           hot_path?: string | null
           id?: string
@@ -5994,13 +5946,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sandbox_instances_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6098,15 +6043,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "scrape_cache_policy_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       scrape_configuration: {
         Row: {
@@ -6152,13 +6089,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scrape_path_pattern"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "scrape_configuration_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6272,13 +6202,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scrape_path_pattern_cache_policy"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "scrape_cycle_tracker_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6568,13 +6491,6 @@ export type Database = {
             referencedRelation: "scrape_domain"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "scrape_job_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       scrape_override: {
@@ -6617,15 +6533,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "scrape_override_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       scrape_override_value: {
         Row: {
@@ -6665,13 +6573,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scrape_override"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "scrape_override_value_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6788,13 +6689,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scrape_task_response"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "scrape_parsed_page_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6936,13 +6830,6 @@ export type Database = {
             referencedRelation: "scrape_path_pattern"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "scrape_path_pattern_override_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       scrape_quick_failure_log: {
@@ -6992,13 +6879,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scrape_domain"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "scrape_quick_failure_log_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -7097,13 +6977,6 @@ export type Database = {
             referencedRelation: "scrape_job"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "scrape_task_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       scrape_task_response: {
@@ -7165,13 +7038,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scrape_task"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "scrape_task_response_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -7295,25 +7161,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "shared_canvas_items_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "shared_canvas_items_forked_from_fkey"
             columns: ["forked_from"]
             isOneToOne: false
             referencedRelation: "shared_canvas_items"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "shared_canvas_items_high_score_user_fkey"
-            columns: ["high_score_user"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "shared_canvas_items_original_id_fkey"
@@ -7581,15 +7433,7 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "system_announcements_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       system_function: {
         Row: {
@@ -7704,13 +7548,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "system_prompts"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "system_prompt_executions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8004,13 +7841,6 @@ export type Database = {
             referencedRelation: "user_tables"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "table_data_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       table_fields: {
@@ -8070,13 +7900,6 @@ export type Database = {
             referencedRelation: "user_tables"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "table_fields_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       task_assignments: {
@@ -8103,25 +7926,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "task_assignments_assigned_by_fkey"
-            columns: ["assigned_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "task_assignments_task_id_fkey"
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "task_assignments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8164,13 +7973,6 @@ export type Database = {
             referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "task_attachments_uploaded_by_fkey"
-            columns: ["uploaded_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       task_comments: {
@@ -8205,13 +8007,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "task_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8262,20 +8057,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "tasks_assignee_id_fkey"
-            columns: ["assignee_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "tasks_created_by_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "tasks_parent_task_id_fkey"
             columns: ["parent_task_id"]
@@ -8398,15 +8179,7 @@ export type Database = {
           user_id?: string
           video_file_path?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "transcripts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       transformer: {
         Row: {
@@ -8451,15 +8224,7 @@ export type Database = {
           unlocked_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_achievements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_bookmarks: {
         Row: {
@@ -8487,13 +8252,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "shared_canvas_items"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_bookmarks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8546,15 +8304,7 @@ export type Database = {
           user_id?: string
           weekly_digest?: boolean | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_email_preferences_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_feedback: {
         Row: {
@@ -8567,6 +8317,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -8599,6 +8350,7 @@ export type Database = {
           ai_solution_proposal?: string | null
           ai_suggested_priority?: string | null
           autonomy_score?: number | null
+          category_id?: string | null
           created_at?: string
           description: string
           feedback_type: string
@@ -8631,6 +8383,7 @@ export type Database = {
           ai_solution_proposal?: string | null
           ai_suggested_priority?: string | null
           autonomy_score?: number | null
+          category_id?: string | null
           created_at?: string
           description?: string
           feedback_type?: string
@@ -8655,25 +8408,18 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "user_feedback_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_feedback_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "user_feedback"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_feedback_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_feedback_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8717,15 +8463,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_files_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_follows: {
         Row: {
@@ -8746,22 +8484,7 @@ export type Database = {
           following_id?: string
           id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_follows_follower_id_fkey"
-            columns: ["follower_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "user_follows_following_id_fkey"
-            columns: ["following_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_list_items: {
         Row: {
@@ -8816,13 +8539,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_lists"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_list_items_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8881,15 +8597,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_preferences_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_stats: {
         Row: {
@@ -8955,15 +8663,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_stats_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_tables: {
         Row: {
@@ -9002,15 +8702,7 @@ export type Database = {
           user_id?: string
           version?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_tables_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       wc_claim: {
         Row: {
@@ -9246,15 +8938,7 @@ export type Database = {
           version?: number | null
           viewport?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "workflows_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       workflow_data: {
         Row: {
@@ -9335,15 +9019,7 @@ export type Database = {
           viewport?: Json | null
           workflow_type?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "workflow_data_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       workflow_edge: {
         Row: {
@@ -9505,13 +9181,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "workflow_node_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "workflow_node_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
@@ -9610,13 +9279,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "workflow_node_data_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "workflow_node_data_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
@@ -9663,13 +9325,6 @@ export type Database = {
           workflow_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "workflow_relay_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "workflow_relay_workflow_id_fkey"
             columns: ["workflow_id"]
@@ -9734,13 +9389,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "workflow_user_input_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "workflow_user_input_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
@@ -9784,13 +9432,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "workspaces_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "workspaces_organization_id_fkey"
             columns: ["organization_id"]
@@ -9855,15 +9496,7 @@ export type Database = {
           total_tokens?: number | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ai_runs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       ai_tasks_analytics: {
         Row: {
@@ -9877,15 +9510,7 @@ export type Database = {
           total_tokens: number | null
           user_id: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ai_tasks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       category_items_view: {
         Row: {
@@ -9941,15 +9566,7 @@ export type Database = {
           unique_anonymous_users: number | null
           unique_authenticated_users: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "prompt_apps_user_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       prompt_builtins_with_source_view: {
         Row: {
@@ -9996,15 +9613,7 @@ export type Database = {
           user_id: string | null
           version: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "recipe_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "top_creators"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       shortcuts_by_placement_view: {
         Row: {
@@ -10090,17 +9699,6 @@ export type Database = {
             referencedColumns: ["category_id"]
           },
         ]
-      }
-      top_creators: {
-        Row: {
-          level: number | null
-          total_created: number | null
-          total_likes_received: number | null
-          total_views_received: number | null
-          user_id: string | null
-          username: string | null
-        }
-        Relationships: []
       }
       view_registered_function: {
         Row: {
@@ -10862,6 +10460,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -10891,6 +10490,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cleanup_deleted_sandboxes: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
       cleanup_old_guest_records: { Args: never; Returns: number }
       cleanup_recipe_message_order: {
         Args: { recipe_id_param: string }
@@ -10908,6 +10511,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -11877,6 +11481,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12114,6 +11719,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12243,6 +11849,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12422,6 +12029,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12554,6 +12162,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12728,7 +12337,6 @@ export type Database = {
         Args: { p_applet_id: string; p_group_id: string }
         Returns: boolean
       }
-      refresh_top_creators: { Args: never; Returns: undefined }
       remove_column_from_user_table: {
         Args: { p_field_id: string; p_table_id: string }
         Returns: Json
@@ -12782,6 +12390,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12828,6 +12437,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12923,6 +12533,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -12975,6 +12586,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string
@@ -13040,6 +12652,7 @@ export type Database = {
           ai_solution_proposal: string | null
           ai_suggested_priority: string | null
           autonomy_score: number | null
+          category_id: string | null
           created_at: string
           description: string
           feedback_type: string

@@ -14,6 +14,45 @@ Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, m
 
 ---
 
+## Tech Stack & Architecture
+
+Always use the latest stable release of every package — no deprecated APIs. All output is production-grade.
+
+**Web:** Next.js 16.1 (App Router) + React 19.2 + TypeScript 5.9 + Tailwind CSS 4.1 (CSS-first config, `@theme` directives)
+**Mobile:** Expo 54 (React Native 0.81) + React 19.1 + TypeScript 5.9 — iOS 26+ (Liquid Glass) | Android 16+ (Material 3 Expressive)
+**Backend:** Supabase (PostgreSQL + Auth + Storage + Realtime) — Next.js API routes are the single source of truth for all business logic
+**Realtime:** Supabase Broadcast for ephemeral messaging/presence; Postgres Changes only when RLS authorization is needed
+**Video/Audio:** LiveKit (requires `npx expo prebuild`, not Expo Go compatible)
+**Payments:** Stripe
+**Infrastructure:** Vercel (web), App Store / Play Store (mobile), Turbopack (default bundler), pnpm 10.28
+
+**Python microservices** only when TypeScript hits a capability wall (heavy PDF/OCR, bulk statistical analysis, local NLP at scale, advanced image/video processing). Deploy as isolated services behind Next.js API routes.
+
+**Core principles:**
+- Dynamic rendering by default — opt into caching with `'use cache'`, invalidate with `cacheTag()` / `revalidateTag()`
+- Server Components by default; Client Components only for interactivity
+- React Compiler enabled (`reactCompiler: true`) — no manual `useMemo`/`useCallback`/`React.memo`
+- `proxy.ts` replaces `middleware.ts` — auth checks, route guards, redirects only
+- Supabase-generated types as source of truth — end-to-end type safety, strict mode, no `any`
+- Every async operation has structured error handling — never swallow errors
+
+**Supabase clients:**
+- Client-side: `import { supabase } from "@/utils/supabase/client"`
+- Server-side: `import { createClient } from '@/utils/supabase/server'`
+
+---
+
+## Agent Feedback API
+
+MCP server and REST endpoint for cross-project issue tracking. Agents submit bugs, features, and suggestions.
+
+- **MCP:** `app/api/mcp/[transport]/route.ts` — 10 tools (submit, triage, comment, resolve, etc.)
+- **REST:** `app/api/agent/feedback/route.ts` — POST with `{ action, ...params }`, same auth
+- **Auth:** Bearer token against `AGENT_API_KEY` env var (`lib/services/agent-auth.ts`)
+- **Service layer:** `lib/services/agent-feedback.service.ts` — uses `createAdminClient()` to bypass RLS
+
+---
+
 ## Redux Architecture
 
 - **Store:** `@/lib/redux/store.ts`
@@ -25,14 +64,16 @@ Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, m
 
 ---
 
-## App Builder System
+## Prompt Apps System
 
-- **Hierarchy:** App → Applets → Containers (Field Groups) → Fields
-- Containers store **compiled field snapshots** (not references)
-- Changes to container fields only affect that container's copy
-- Recompilation required when updating fields/containers upstream
-- Unified save pattern handles both creation and updates, replaces temp IDs
-- **Key paths:** `@/lib/redux/app-builder/`, `features/applet/builder/builder.types.ts`
+- **Concept:** Transform prompts into public, shareable AI-powered mini-apps with custom UIs
+- **Execution modes:** Real-time streaming (authenticated via Redux + Socket.IO) and polling (public, no Redux)
+- **Component pipeline:** AI-generated JSX/TSX → Babel transform → `new Function()` with scoped imports
+- **Security:** Import allowlisting, variable validation, RLS (owner CRUD, public SELECT on published)
+- **Rate limiting:** Fingerprint + IP tracking, configurable per app, DB triggers enforce limits
+- **Public URL:** `/p/[slug]` — minimal bundle, no Redux, server-side metadata for SEO
+- **Key paths:** `features/prompt-apps/`, `app/(authenticated)/prompt-apps/`, `app/(public)/p/[slug]/`
+- **DB tables:** `prompt_apps`, `prompt_app_executions`, `prompt_app_errors`, `prompt_app_rate_limits`
 
 ---
 
@@ -84,13 +125,6 @@ Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, m
 - **Gradients:** `--gradient-1/2/3`
 - Full variable definitions in `app/globals.css`
 - CSS migration guide: `.cursor/rules/css-updates.mdc`
-
----
-
-## Supabase Clients
-
-- **Client-side:** `import { supabase } from "@/utils/supabase/client"`
-- **Server-side:** `import { createClient } from '@/utils/supabase/server'`
 
 ---
 
