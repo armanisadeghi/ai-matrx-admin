@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Upload, Loader2, FileText, X, CheckCircle, AlertCircle, Server, Clock, Hash } from "lucide-react";
+import { Upload, Loader2, FileText, X, CheckCircle, AlertCircle, Clock, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useBackendApi } from "@/hooks/useBackendApi";
+import { useApiTestConfig, ApiTestConfigPanel } from "@/components/api-test-config";
+import { TEST_ADMIN_TOKEN } from "../sample-prompt";
 
 interface PdfExtractResponse {
     filename?: string;
@@ -12,7 +13,10 @@ interface PdfExtractResponse {
 }
 
 export default function PdfExtractDemoPage() {
-    const api = useBackendApi();
+    const apiConfig = useApiTestConfig({
+        defaultServerType: 'local',
+        defaultAuthToken: TEST_ADMIN_TOKEN,
+    });
     
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [extractedData, setExtractedData] = useState<PdfExtractResponse | null>(null);
@@ -48,9 +52,26 @@ export default function PdfExtractDemoPage() {
             const formData = new FormData();
             formData.append('file', selectedFile);
 
-            const response = await api.upload('/api/pdf/extract-text', formData);
+            const response = await fetch(`${apiConfig.baseUrl}/api/pdf/extract-text`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiConfig.authToken}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                let errorMsg = `HTTP ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.error || errorData.detail || errorData.message || errorMsg;
+                } catch {
+                    // Use default error
+                }
+                throw new Error(errorMsg);
+            }
+
             const data = await response.json();
-            
             setExtractedData(data);
             setRequestTime(performance.now() - startTime);
         } catch (err) {
@@ -66,37 +87,36 @@ export default function PdfExtractDemoPage() {
     const wordCount = textContent.trim() ? textContent.trim().split(/\s+/).length : 0;
 
     return (
-        <div className="h-full flex flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-950">
-            {/* Compact Header */}
-            <div className="flex-shrink-0 border-b border-border bg-white dark:bg-zinc-900 px-4 py-2">
+        <div className="h-full flex flex-col overflow-hidden bg-background">
+            {/* Fixed header section */}
+            <div className="flex-shrink-0 p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-gray-500" />
+                    <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-primary" />
                         <div>
-                            <h1 className="text-sm font-semibold text-gray-900 dark:text-gray-100">PDF Extract API</h1>
-                            <p className="text-xs text-gray-500">POST /api/pdf/extract-text</p>
+                            <h1 className="text-lg font-bold">PDF Extract API</h1>
+                            <p className="text-xs text-muted-foreground">POST /api/pdf/extract-text</p>
                         </div>
                     </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         {requestTime && (
                             <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 <span>{requestTime.toFixed(0)}ms</span>
                             </div>
                         )}
-                        <div className="flex items-center gap-1">
-                            <Server className="w-3 h-3" />
-                            <span>{api.backendUrl.includes('localhost') ? 'localhost:8000' : 'production'}</span>
-                        </div>
                     </div>
                 </div>
+
+                {/* API Configuration */}
+                <ApiTestConfigPanel config={apiConfig} />
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
-                <div className="p-4 space-y-3">
+            {/* Scrollable content area */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-3">
+                <div className="space-y-3">
                     {/* Input */}
-                    <div className="bg-white dark:bg-zinc-900 border border-border rounded p-3">
+                    <div className="bg-card border border-border rounded p-3">
                         <div className="flex gap-2 items-end">
                             <input
                                 ref={fileInputRef}
@@ -108,10 +128,10 @@ export default function PdfExtractDemoPage() {
                             />
                             <div className="flex-1">
                                 {selectedFile ? (
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded border border-border">
-                                        <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded border border-border">
+                                        <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                                         <span className="text-sm truncate flex-1">{selectedFile.name}</span>
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-xs text-muted-foreground">
                                             {(selectedFile.size / 1024).toFixed(1)} KB
                                         </span>
                                         <Button
@@ -161,40 +181,40 @@ export default function PdfExtractDemoPage() {
 
                     {/* Error */}
                     {error && (
-                        <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded text-sm">
-                            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-red-700 dark:text-red-300">{error}</span>
+                        <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded text-sm">
+                            <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                            <span className="text-destructive">{error}</span>
                         </div>
                     )}
 
                     {/* Stats */}
                     {extractedData && (
                         <div className="grid grid-cols-4 gap-2">
-                            <div className="bg-white dark:bg-zinc-900 border border-border rounded p-2">
+                            <div className="bg-card border border-border rounded p-2">
                                 <div className="flex items-center gap-1 mb-1">
                                     <CheckCircle className="w-3 h-3 text-green-600" />
-                                    <span className="text-xs text-gray-500">Status</span>
+                                    <span className="text-xs text-muted-foreground">Status</span>
                                 </div>
                                 <p className="text-sm font-medium text-green-600">Success</p>
                             </div>
-                            <div className="bg-white dark:bg-zinc-900 border border-border rounded p-2">
+                            <div className="bg-card border border-border rounded p-2">
                                 <div className="flex items-center gap-1 mb-1">
-                                    <FileText className="w-3 h-3 text-gray-500" />
-                                    <span className="text-xs text-gray-500">File</span>
+                                    <FileText className="w-3 h-3 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground">File</span>
                                 </div>
                                 <p className="text-sm font-medium truncate">{extractedData.filename}</p>
                             </div>
-                            <div className="bg-white dark:bg-zinc-900 border border-border rounded p-2">
+                            <div className="bg-card border border-border rounded p-2">
                                 <div className="flex items-center gap-1 mb-1">
-                                    <Hash className="w-3 h-3 text-gray-500" />
-                                    <span className="text-xs text-gray-500">Characters</span>
+                                    <Hash className="w-3 h-3 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground">Characters</span>
                                 </div>
                                 <p className="text-sm font-medium">{charCount.toLocaleString()}</p>
                             </div>
-                            <div className="bg-white dark:bg-zinc-900 border border-border rounded p-2">
+                            <div className="bg-card border border-border rounded p-2">
                                 <div className="flex items-center gap-1 mb-1">
-                                    <Hash className="w-3 h-3 text-gray-500" />
-                                    <span className="text-xs text-gray-500">Words</span>
+                                    <Hash className="w-3 h-3 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground">Words</span>
                                 </div>
                                 <p className="text-sm font-medium">{wordCount.toLocaleString()}</p>
                             </div>
@@ -203,12 +223,12 @@ export default function PdfExtractDemoPage() {
 
                     {/* Extracted Text */}
                     {extractedData && textContent && (
-                        <div className="bg-white dark:bg-zinc-900 border border-border rounded overflow-hidden">
+                        <div className="bg-card border border-border rounded overflow-hidden">
                             <div className="border-b border-border px-3 py-2">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Extracted Text</span>
+                                <span className="text-xs font-medium">Extracted Text</span>
                             </div>
                             <div className="p-3">
-                                <pre className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                                <pre className="text-xs font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed">
 {textContent}
                                 </pre>
                             </div>
@@ -217,9 +237,9 @@ export default function PdfExtractDemoPage() {
 
                     {/* Loading */}
                     {isLoading && (
-                        <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-zinc-900 border border-border rounded">
-                            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mb-2" />
-                            <p className="text-sm text-gray-500">Processing document...</p>
+                        <div className="flex flex-col items-center justify-center py-12 bg-card border border-border rounded">
+                            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin mb-2" />
+                            <p className="text-sm text-muted-foreground">Processing document...</p>
                         </div>
                     )}
                 </div>

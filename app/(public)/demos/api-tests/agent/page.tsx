@@ -5,7 +5,8 @@ import { Bot, Loader2, Send, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useBackendApi } from "@/hooks/useBackendApi";
+import { useApiTestConfig, ApiTestConfigPanel } from "@/components/api-test-config";
+import { TEST_ADMIN_TOKEN } from "../sample-prompt";
 
 interface AgentStreamEvent {
     event: string;
@@ -13,7 +14,10 @@ interface AgentStreamEvent {
 }
 
 export default function AgentDemoPage() {
-    const api = useBackendApi();
+    const apiConfig = useApiTestConfig({
+        defaultServerType: 'local',
+        defaultAuthToken: TEST_ADMIN_TOKEN,
+    });
     
     const [promptId, setPromptId] = useState("a6617ebd-1114-4cc0-84b7-6b0c9ee235c8");
     const [conversationId, setConversationId] = useState(`conv-${Date.now()}`);
@@ -39,7 +43,34 @@ export default function AgentDemoPage() {
                 debug: true,
             };
 
-            const response = await api.post('/api/agent/execute', requestBody);
+            const response = await fetch(`${apiConfig.baseUrl}/api/agent/execute`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiConfig.authToken}`,
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                let errorMsg = `HTTP ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    if (typeof errorData.error === 'object' && errorData.error !== null) {
+                        errorMsg = errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
+                    } else {
+                        errorMsg = errorData.error || errorData.detail || errorData.message || errorMsg;
+                    }
+                } catch {
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) errorMsg = errorText;
+                    } catch {
+                        // Use default error
+                    }
+                }
+                throw new Error(errorMsg);
+            }
 
             if (!response.body) {
                 throw new Error('No response body');
@@ -95,15 +126,20 @@ export default function AgentDemoPage() {
     };
 
     return (
-        <div className="h-screen bg-textured flex flex-col overflow-hidden">
-            {/* Compact Header + Input Bar */}
-            <div className="flex-shrink-0 border-b border-border bg-white dark:bg-zinc-900 px-4 py-2.5 space-y-2">
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <Bot className="w-5 h-5 text-primary" />
-                        <h1 className="text-sm font-semibold text-foreground">Agent Execution</h1>
-                    </div>
-                    <div className="flex-1 grid grid-cols-[1fr_1fr_2fr] gap-2 items-end">
+        <div className="h-full flex flex-col overflow-hidden bg-background">
+            {/* Fixed header section */}
+            <div className="flex-shrink-0 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                    <Bot className="w-5 h-5 text-primary" />
+                    <h1 className="text-lg font-bold">Agent Execution</h1>
+                </div>
+
+                {/* API Configuration */}
+                <ApiTestConfigPanel config={apiConfig} />
+
+                {/* Agent-specific inputs */}
+                <div className="flex items-center gap-2 pt-1">
+                    <div className="grid grid-cols-[1fr_1fr_2fr] gap-2 flex-1 items-end">
                         <div>
                             <Label htmlFor="promptId" className="text-[10px] text-muted-foreground leading-none mb-0.5 block">Prompt ID</Label>
                             <Input
@@ -180,14 +216,14 @@ export default function AgentDemoPage() {
                 {(textOutput || streamOutput || error) ? (
                     <div className="grid grid-cols-2 gap-3 h-full">
                         {/* Text Output */}
-                        <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg overflow-hidden flex flex-col">
+                        <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col">
                             <div className="border-b border-border px-3 py-1.5 flex-shrink-0">
                                 <h3 className="text-xs font-semibold text-foreground">Text Output</h3>
                             </div>
                             <div className="flex-1 min-h-0 p-3 overflow-y-auto">
                                 {error ? (
-                                    <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md">
-                                        <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
+                                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                                        <p className="text-xs text-destructive">{error}</p>
                                     </div>
                                 ) : textOutput ? (
                                     <pre className="whitespace-pre-wrap text-xs text-foreground/80 bg-muted p-3 rounded border border-border overflow-y-auto">
@@ -204,7 +240,7 @@ export default function AgentDemoPage() {
                         </div>
 
                         {/* Stream Events */}
-                        <div className="bg-white dark:bg-zinc-900 border border-border rounded-lg overflow-hidden flex flex-col">
+                        <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col">
                             <div className="border-b border-border px-3 py-1.5 flex-shrink-0">
                                 <h3 className="text-xs font-semibold text-foreground">Stream Events</h3>
                             </div>
