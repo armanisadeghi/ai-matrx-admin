@@ -178,8 +178,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                 {!isStreamActive && !isOverlay && (
                     <div className="flex items-center space-x-0">
                         <button
-                            className={`p-1.5 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                                isLiked ? "text-green-500 dark:text-green-400" : "text-gray-600 dark:text-gray-400"
+                            className={`p-1.5 hover:bg-accent ${
+                                isLiked ? "text-green-500 dark:text-green-400" : "text-muted-foreground"
                             }`}
                             onClick={handleLike}
                             aria-label="Like message"
@@ -187,8 +187,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             <ThumbsUp size={16} />
                         </button>
                         <button
-                            className={`p-1.5 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                                isDisliked ? "text-red-500 dark:text-red-400" : "text-gray-600 dark:text-gray-400"
+                            className={`p-1.5 hover:bg-accent ${
+                                isDisliked ? "text-red-500 dark:text-red-400" : "text-muted-foreground"
                             }`}
                             onClick={handleDislike}
                             aria-label="Dislike message"
@@ -196,8 +196,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             <ThumbsDown size={16} />
                         </button>
                         <button
-                            className={`p-1.5 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                                isCopied ? "text-blue-500 dark:text-blue-400" : "text-gray-600 dark:text-gray-400"
+                            className={`p-1.5 hover:bg-accent ${
+                                isCopied ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground"
                             }`}
                             onClick={handleCopy}
                             aria-label="Copy message"
@@ -205,8 +205,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             <Copy size={16} />
                         </button>
                         <button
-                            className={`p-1.5 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                                isPlaying || isPaused ? "text-purple-500 dark:text-purple-400" : "text-gray-600 dark:text-gray-400"
+                            className={`p-1.5 hover:bg-accent ${
+                                isPlaying || isPaused ? "text-purple-500 dark:text-purple-400" : "text-muted-foreground"
                             }`}
                             onClick={handleSpeakToggle}
                             disabled={!audioControls || !isAudioReady}
@@ -215,20 +215,20 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             {isPlaying ? <Pause size={16} /> : <Volume2 size={16} />}
                         </button>
                         <button
-                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                            className="p-1.5 text-muted-foreground hover:bg-accent"
                             aria-label="Retry message"
                         >
                             <RefreshCw size={16} />
                         </button>
                         <button
-                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded"
+                            className="p-1.5 text-muted-foreground hover:bg-accent rounded"
                             aria-label="Edit message"
                             onClick={handleEditClick}
                         >
                             <Edit size={16} />
                         </button>
                         <button
-                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                            className="p-1.5 text-muted-foreground hover:bg-accent"
                             aria-label="Share message"
                         >
                             <Share2 size={16} />
@@ -236,7 +236,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                         
                         <button
                             ref={moreOptionsButtonRef}
-                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                            className="p-1.5 text-muted-foreground hover:bg-accent"
                             aria-label="More options"
                             onClick={toggleOptionsMenu}
                         >

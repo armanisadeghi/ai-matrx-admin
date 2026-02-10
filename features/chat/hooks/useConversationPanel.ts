@@ -1,11 +1,10 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths, startOfDay, endOfDay } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks, subMonths, startOfDay, endOfDay } from "date-fns";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import formatRelativeTime from "@/features/chat/components/utils/formatRelativeTime";
-import { useConversationRouting } from "@/hooks/ai/chat/useConversationRouting";
 
 export type ConversationModified = {
     id?: string;
@@ -25,18 +24,23 @@ export function useConversationPanel() {
     const selectors = createChatSelectors();
     const dispatch = useAppDispatch();
     const chatActions = getChatActionsWithThunks();
-    const { navigateToConversation } = useConversationRouting({});
 
     // UI State
     const [expanded, setExpanded] = useState(true);
     const [contentSearch, setContentSearch] = useState("");
     const [labelSearch, setLabelSearch] = useState("");
-    const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-    
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(1000);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    // Rename state
+    const [renamingConversationId, setRenamingConversationId] = useState<string | null>(null);
+    const [renameValue, setRenameValue] = useState("");
+
+    // Delete confirmation state
+    const [deletingConversationId, setDeletingConversationId] = useState<string | null>(null);
 
     // Context Menu State
     const [showContextMenu, setShowContextMenu] = useState(false);
@@ -44,7 +48,13 @@ export function useConversationPanel() {
     const [contextMenuConversationId, setContextMenuConversationId] = useState<string | null>(null);
     const contextMenuRef = useRef<HTMLDivElement>(null);
 
-        // Get conversations from Redux
+    // Derive selected conversation from URL path
+    const selectedConversation = useMemo(() => {
+        const match = pathname.match(/\/chat\/([^/?]+)/);
+        return match ? match[1] : null;
+    }, [pathname]);
+
+    // Get conversations from Redux
     const conversationsArray = useAppSelector(selectors.conversationsArray);
     
     // Get current date for calculations
@@ -173,31 +183,14 @@ export function useConversationPanel() {
     // Handle conversation selection with routing
     const handleSelectConversation = useCallback(
         (convoId: string) => {
-            console.log('Navigating to conversation:', convoId);
-            console.log('Route will be:', `/chat/${convoId}`);
-            console.log('Current pathname:', pathname);
-            setSelectedConversation(convoId);
-            
-            // Try using window.location as a fallback to test if router.push is the issue
-            const targetRoute = `/chat/${convoId}`;
-            console.log('Attempting router.push to:', targetRoute);
-            
-            try {
-                router.push(targetRoute);
-                console.log('router.push completed');
-            } catch (error) {
-                console.error('router.push failed:', error);
-                // Fallback to window.location
-                window.location.href = targetRoute;
-            }
+            router.push(`/chat/${convoId}`);
         },
-        [router, pathname]
+        [router]
     );
 
     // Handle conversation preview without routing
     const handlePreviewConversation = useCallback(
         (convoId: string) => {
-            setSelectedConversation(convoId);
             handleCoordinatedFetch(convoId);
         },
         [handleCoordinatedFetch]
@@ -211,15 +204,54 @@ export function useConversationPanel() {
         setShowContextMenu(true);
     }, []);
 
-    // Handle context menu actions
-    const handleEdit = useCallback((id: string) => {
-        // Implement edit logic here
+    // Start renaming a conversation
+    const handleStartRename = useCallback((convoId: string, currentLabel: string) => {
+        setRenamingConversationId(convoId);
+        setRenameValue(currentLabel || "");
         setShowContextMenu(false);
     }, []);
 
-    const handleDelete = useCallback((id: string) => {
-        // Implement delete logic here
+    // Confirm rename
+    const handleConfirmRename = useCallback(() => {
+        if (!renamingConversationId || !renameValue.trim()) {
+            setRenamingConversationId(null);
+            setRenameValue("");
+            return;
+        }
+        dispatch(chatActions.directUpdateConversationLabel({
+            matrxRecordId: `id:${renamingConversationId}`,
+            label: renameValue.trim(),
+        }));
+        setRenamingConversationId(null);
+        setRenameValue("");
+    }, [dispatch, chatActions, renamingConversationId, renameValue]);
+
+    // Cancel rename
+    const handleCancelRename = useCallback(() => {
+        setRenamingConversationId(null);
+        setRenameValue("");
+    }, []);
+
+    // Request delete confirmation
+    const handleRequestDelete = useCallback((convoId: string) => {
+        setDeletingConversationId(convoId);
         setShowContextMenu(false);
+    }, []);
+
+    // Confirm delete
+    const handleConfirmDelete = useCallback(() => {
+        if (!deletingConversationId) return;
+        dispatch(chatActions.deleteConversation({ matrxRecordId: `id:${deletingConversationId}` }));
+        // Navigate away if deleting the active conversation
+        if (selectedConversation === deletingConversationId) {
+            router.push("/chat");
+        }
+        setDeletingConversationId(null);
+    }, [dispatch, chatActions, deletingConversationId, selectedConversation, router]);
+
+    // Cancel delete
+    const handleCancelDelete = useCallback(() => {
+        setDeletingConversationId(null);
     }, []);
 
     // Close context menu when clicking outside
@@ -237,7 +269,7 @@ export function useConversationPanel() {
 
     // Create new chat
     const handleCreateNewChat = useCallback(() => {
-        router.push("/chat/new");
+        router.push("/chat");
     }, [router]);
 
     // Load more conversations (pagination)
@@ -273,6 +305,12 @@ export function useConversationPanel() {
         contextMenuPosition,
         contextMenuConversationId,
         contextMenuRef,
+        // Rename state
+        renamingConversationId,
+        renameValue,
+        setRenameValue,
+        // Delete state
+        deletingConversationId,
         // Data
         conversationsArray,
         groupedConversations: orderedGroupedConversations,
@@ -281,8 +319,12 @@ export function useConversationPanel() {
         handlePreviewConversation,
         handleContextMenu,
         handleCoordinatedFetch,
-        handleEdit,
-        handleDelete,
+        handleStartRename,
+        handleConfirmRename,
+        handleCancelRename,
+        handleRequestDelete,
+        handleConfirmDelete,
+        handleCancelDelete,
         handleCreateNewChat,
         formatRelativeTime,
         // Pagination

@@ -12,11 +12,11 @@ interface ChatHeaderProps {
 const ChatHeader: React.FC<ChatHeaderProps> = ({ baseRoute = "/chat", title = "AI Matrx" }) => {
     return (
         <header
-            className="py-2 px-3 flex items-center justify-between bg-zinc-100 dark:bg-zinc-850 z-11"
+            className="py-2 px-3 flex items-center justify-between bg-card border-b border-border z-11"
         >
             <div className="flex items-center space-x-2">
                 <Link href={baseRoute}>
-                    <span className="font-medium text-gray-800 dark:text-gray-200">{title}</span>
+                    <span className="font-medium text-foreground">{title}</span>
                 </Link>
             </div>
 

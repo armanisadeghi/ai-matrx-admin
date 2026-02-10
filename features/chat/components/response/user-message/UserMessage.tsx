@@ -128,7 +128,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
             onMouseEnter={() => canCollapse && setIsHovered(true)}
             onMouseLeave={() => canCollapse && setIsHovered(false)}
         >
-            <div className="max-w-[90%] min-w-0 relative w-full shadow-sm hover:shadow-md rounded-2xl border border-neutral-200 dark:border-neutral-700 transition-shadow duration-200 overflow-x-hidden">
+            <div className="max-w-[90%] min-w-0 relative w-full shadow-sm hover:shadow-md rounded-2xl border border-border transition-shadow duration-200 overflow-x-hidden">
                 <MessageHeader
                     formattedDateTime={formattedDateTime}
                     isCollapsed={isCollapsed}
@@ -144,7 +144,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                 />
 
                 <div
-                    className={`rounded-b-2xl rounded-t-none text-sm bg-zinc-200 dark:bg-zinc-800 px-4 py-2 text-gray-900 dark:text-gray-100 relative w-full min-w-0 transition-all duration-200 overflow-x-hidden
+                    className={`rounded-b-2xl rounded-t-none text-sm bg-muted px-4 py-2 text-foreground relative w-full min-w-0 transition-all duration-200 overflow-x-hidden
                                 ${isCollapsed ? "pb-2" : ""}
                                 `}
                 >

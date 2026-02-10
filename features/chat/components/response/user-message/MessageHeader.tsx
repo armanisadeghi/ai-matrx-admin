@@ -62,8 +62,8 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
       className={`
         flex items-center justify-between 
         px-3 py-0.5 rounded-t-xl
-        bg-zinc-300 dark:bg-zinc-700
-        text-xs text-gray-700 dark:text-gray-300
+        bg-accent
+        text-xs text-muted-foreground
         transition-all duration-200
         ${isHovered || isEditing ? 'opacity-100' : 'opacity-80'}
         ${canCollapse ? 'cursor-pointer' : 'cursor-default'}
@@ -86,7 +86,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
       <div className="flex items-center space-x-1" onClick={e => e.stopPropagation()}>
         <button 
           onClick={onScrollToBottom}
-          className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
+          className="p-1.5 rounded-full hover:bg-accent-foreground/10 transition-colors duration-150 relative group"
           aria-label="Scroll to bottom"
           disabled={isEditing}
         >
@@ -95,14 +95,14 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           ) : (
             <ArrowDown size={16} className={isEditing ? "opacity-40" : ""} />
           )}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             Scroll to bottom
           </span>
         </button>
         
         <button 
           onClick={onSavePrompt}
-          className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
+          className="p-1.5 rounded-full hover:bg-accent-foreground/10 transition-colors duration-150 relative group"
           aria-label="Save as prompt"
           disabled={isEditing}
         >
@@ -111,14 +111,14 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           ) : (
             <Save size={16} className={isEditing ? "opacity-40" : ""} />
           )}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             Save as prompt
           </span>
         </button>
         
         <button 
           onClick={onCopy}
-          className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
+          className="p-1.5 rounded-full hover:bg-accent-foreground/10 transition-colors duration-150 relative group"
           aria-label="Copy to clipboard"
           disabled={isEditing}
         >
@@ -127,18 +127,18 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           ) : (
             <Copy size={16} className={isEditing ? "opacity-40" : ""} />
           )}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             Copy to clipboard
           </span>
         </button>
         
         <button 
           onClick={isEditing ? handleCancel : handleEdit}
-          className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
+          className="p-1.5 rounded-full hover:bg-accent-foreground/10 transition-colors duration-150 relative group"
           aria-label={isEditing ? "Cancel edit" : "Edit message"}
         >
           {isEditing ? <X size={16} /> : <Edit2 size={16} />}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             {isEditing ? "Cancel edit" : "Edit message"}
           </span>
         </button>

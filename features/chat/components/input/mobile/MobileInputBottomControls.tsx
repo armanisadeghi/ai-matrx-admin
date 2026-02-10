@@ -46,7 +46,7 @@ const MobileInputBottomControls = (props: InputBottomControlsProps) => {
 
     return (
         <>
-            <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5 rounded-full">
+            <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 rounded-b-2xl">
                 {/* Left side controls - only show 3 most important controls */}
                 <div className="absolute bottom-2 left-4 flex items-center space-x-2">
                     <ToggleButton
@@ -96,7 +96,7 @@ const MobileInputBottomControls = (props: InputBottomControlsProps) => {
                             isMobile={true}
                         />
                         <button
-                            className={`p-2 ml-3 rounded-full text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 bg-zinc-300 dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700 ${
+                            className={`p-2 ml-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors ${
                                 props.isDisabled ? "opacity-50 cursor-not-allowed" : ""
                             }`}
                             onClick={props.onSendMessage}

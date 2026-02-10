@@ -47,7 +47,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
             <div className={`flex items-center ${isMobile ? 'pr-10 -pt-2 space-x-3' : 'space-x-3'}`}>
                 {/* New Chat Button */}
                 <Link href={`${baseRoute}`}>
-                    <button className={`rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800 ${
+                    <button className={`rounded-full text-foreground hover:bg-accent ${
                         isMobile ? 'p-3' : 'p-1.5'
                     }`}>
                         <IoCreateOutline size={24} />
@@ -56,7 +56,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
                 
                 {/* Search Button - Opens the Search Overlay */}
                 <button 
-                    className={`rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800 ${
+                    className={`rounded-full text-foreground hover:bg-accent ${
                         isMobile ? 'p-3' : 'p-1.5'
                     }`}
                     onClick={handleOpenSearch}
@@ -71,7 +71,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
                 </div>
                 
                 {/* Profile */}
-                <button className={`rounded-full bg-zinc-200 dark:bg-zinc-800 ${
+                <button className={`rounded-full bg-accent ${
                     isMobile ? 'p-3' : 'p-1.5'
                 }`}>
                     {profilePhoto ? (
@@ -84,7 +84,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
                         />
                     ) : (
                         <div className="h-5 w-5 flex items-center justify-center">
-                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{displayName.charAt(0).toUpperCase()}</span>
+                            <span className="text-xs font-medium text-foreground">{displayName.charAt(0).toUpperCase()}</span>
                         </div>
                     )}
                 </button>
