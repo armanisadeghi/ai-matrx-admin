@@ -619,14 +619,13 @@ export async function isResourceOwner(
       return false;
     }
 
-    // Get the resource to check owner
-    // Table name is plural of resource type
     const tableName = getTableName(resourceType);
+    const pkColumn = getPrimaryKeyColumn(resourceType);
     
     const { data, error } = await supabase
       .from(tableName)
       .select('user_id')
-      .eq('id', resourceId)
+      .eq(pkColumn, resourceId)
       .single();
 
     if (error || !data) {
@@ -682,8 +681,8 @@ function transformPermissionFromDb(dbRecord: any): PermissionWithDetails {
  * @returns Table name
  */
 function getTableName(resourceType: ResourceType): string {
-  // Most tables are just plural of resource type
-  const tableMap: Partial<Record<ResourceType, string>> = {
+  // Legacy types use singular -> plural mapping
+  const legacyMap: Partial<Record<ResourceType, string>> = {
     prompt: 'prompts',
     workflow: 'workflows',
     note: 'notes',
@@ -697,7 +696,24 @@ function getTableName(resourceType: ResourceType): string {
     scrape_domain: 'scrape_domains',
   };
 
-  return tableMap[resourceType] || `${resourceType}s`;
+  // New types use exact table name as resource type
+  if (legacyMap[resourceType]) {
+    return legacyMap[resourceType]!;
+  }
+
+  // For new convention types, the resource type IS the table name
+  return resourceType;
+}
+
+/**
+ * Get the primary key column name for a resource type.
+ * Most tables use 'id', but some exceptions exist.
+ */
+function getPrimaryKeyColumn(resourceType: ResourceType): string {
+  const pkMap: Partial<Record<ResourceType, string>> = {
+    flashcard_sets: 'set_id',
+  };
+  return pkMap[resourceType] || 'id';
 }
 
 /**

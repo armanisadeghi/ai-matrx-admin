@@ -51,6 +51,41 @@ get_config_value() {
     fi
 }
 
+# Validate that a config has all required values before making Doppler calls.
+# Call this once per config at the start of any operation.
+validate_config_values() {
+    local config_name="$1"
+    local has_errors=0
+    local label=""
+    if [[ "$config_name" != "default" ]]; then
+        label=" [config: ${config_name}]"
+    fi
+
+    local dp dc ef
+    dp=$(get_config_value "$config_name" "DOPPLER_PROJECT")
+    dc=$(get_config_value "$config_name" "DOPPLER_CONFIG")
+    ef=$(get_config_value "$config_name" "ENV_FILE")
+
+    if [[ -z "$dp" ]]; then
+        echo -e "${RED}Error: DOPPLER_PROJECT is not set${label}${NC}"
+        has_errors=1
+    fi
+    if [[ -z "$dc" ]]; then
+        echo -e "${RED}Error: DOPPLER_CONFIG is not set${label}${NC}"
+        has_errors=1
+    fi
+    if [[ -z "$ef" ]]; then
+        echo -e "${RED}Error: ENV_FILE is not set${label}${NC}"
+        has_errors=1
+    fi
+
+    if [[ $has_errors -eq 1 ]]; then
+        echo -e "${DIM}Check your .matrx-tools.conf and ensure all required values are set.${NC}"
+        return 1
+    fi
+    return 0
+}
+
 # ─── Local Override Keys ────────────────────────────────────────────────────
 # Machine-specific keys that should NOT be synced between environments.
 # On push: stored as placeholders in Doppler
@@ -60,7 +95,7 @@ LOCAL_OVERRIDE_PLACEHOLDER="__REPLACE_ME__"
 
 get_local_keys_list() {
     local config_name="$1"
-    get_config_value "$config_name" "ENV_LOCAL_KEYS" "" | tr ',' '\n' | sed 's/^ *//;s/ *$//' | grep -v '^$'
+    get_config_value "$config_name" "ENV_LOCAL_KEYS" "" | tr ',' '\n' | sed 's/^ *//;s/ *$//' | (grep -v '^$' || true)
 }
 
 is_local_key() {
@@ -80,7 +115,7 @@ count_local_keys() {
         get_local_keys_list "$config_name" > "$list_file"
     fi
     local count
-    count=$(grep -c '.' "$list_file" 2>/dev/null || echo "0")
+    count=$(grep -c '.' "$list_file" 2>/dev/null) || count=0
     echo "$count"
 }
 
@@ -130,6 +165,7 @@ cmd_status() {
     configs=$(get_configs)
     while IFS= read -r config_name; do
         [[ -z "$config_name" ]] && continue
+        validate_config_values "$config_name" || continue
         run_status "$config_name"
     done <<< "$configs"
     echo -e "  Run ${CYAN}env:diff${NC} / ${CYAN}make env-diff${NC} for details"
@@ -226,6 +262,7 @@ cmd_diff() {
     configs=$(get_configs)
     while IFS= read -r config_name; do
         [[ -z "$config_name" ]] && continue
+        validate_config_values "$config_name" || continue
         run_diff "$config_name"
     done <<< "$configs"
 }
@@ -398,6 +435,7 @@ cmd_push() {
     configs=$(get_configs)
     while IFS= read -r config_name; do
         [[ -z "$config_name" ]] && continue
+        validate_config_values "$config_name" || continue
         if [[ "$force" == "--force" ]]; then run_push_force "$config_name"
         else run_push_merge "$config_name"; fi
     done <<< "$configs"
@@ -645,6 +683,7 @@ cmd_pull() {
     configs=$(get_configs)
     while IFS= read -r config_name; do
         [[ -z "$config_name" ]] && continue
+        validate_config_values "$config_name" || continue
         if [[ "$force" == "--force" ]]; then run_pull_force "$config_name"
         else run_pull_merge "$config_name"; fi
     done <<< "$configs"

@@ -203,6 +203,12 @@ export interface CxConversationSummary {
     updated_at: string;
 }
 
+/** A shared conversation summary for the sidebar "Shared with Me" section */
+export interface SharedCxConversationSummary extends CxConversationSummary {
+    permission_level: 'viewer' | 'editor' | 'admin';
+    owner_email: string | null;
+}
+
 /** A full conversation with all its messages, used when loading a chat */
 export interface CxConversationWithMessages {
     conversation: CxConversation;

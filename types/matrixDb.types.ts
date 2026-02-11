@@ -12254,6 +12254,10 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_resource_owner: {
+        Args: { p_resource_id: string; p_resource_type: string }
+        Returns: boolean
+      }
       list_table_columns: { Args: { ref: Json }; Returns: Json }
       list_table_rows: {
         Args: {
@@ -14260,3 +14264,5 @@ export const Constants = {
     },
   },
 } as const
+A new version of Supabase CLI is available: v2.75.0 (currently installed v2.72.8)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

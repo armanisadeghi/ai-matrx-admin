@@ -2,7 +2,9 @@
 
 > **Purpose:** Classify every public table so we can systematically roll out the centralized permissions/RLS system without breaking anything.
 >
-> **Instructions for Arman:** Review the Status and Sharing Eligible columns. Update any misclassifications. Tables marked `?` need your input. Once confirmed, this becomes the source of truth for the RLS rollout.
+> **Last updated:** 2026-02-10 — Post-migration. All planned tables have been migrated.
+>
+> **Instructions for Arman:** Review the Status and Sharing Eligible columns. Update any misclassifications. Tables marked `?` need your input.
 
 ---
 
@@ -34,15 +36,15 @@
 
 ---
 
-## CX System (New Core -- AI Interaction Tracking)
+## CX System (New Core -- AI Interaction Tracking) -- MIGRATED
 
 | Table | Status | has user_id | has id | has is_public | RLS State | Sharing Eligible | Notes |
 |-------|--------|-------------|--------|---------------|-----------|-----------------|-------|
-| cx_conversation | new-core | yes | yes | no | on+adhoc | yes | Parent table. Currently `user_id = auth.uid()` only |
-| cx_message | new-core | no | yes | no | on+adhoc | parent-lookup | Child of cx_conversation via conversation_id |
-| cx_request | new-core | no | yes | no | on+adhoc | parent-lookup | Child of cx_conversation via conversation_id |
-| cx_user_request | new-core | yes | yes | no | on+adhoc | parent-lookup | Child of cx_conversation via conversation_id |
-| cx_media | new-core | yes | yes | no | on+adhoc | parent-lookup | Child of cx_conversation via conversation_id |
+| cx_conversation | new-core | yes | yes | no | on+centralized | yes | 4 policies: owner + has_permission. Parent table. |
+| cx_message | new-core | no | yes | no | on+centralized | parent-lookup | 4 policies: inherits from cx_conversation |
+| cx_request | new-core | no | yes | no | on+centralized | parent-lookup | 4 policies: inherits from cx_conversation |
+| cx_user_request | new-core | yes | yes | no | on+centralized | parent-lookup | 4 policies: owner + parent conversation permission |
+| cx_media | new-core | yes | yes | no | on+centralized | parent-lookup | 4 policies: owner + parent conversation permission |
 
 ---
 
@@ -59,55 +61,55 @@
 
 ---
 
-## Active Tables -- Need Centralized Permissions
+## Active Tables -- MIGRATED to Centralized Permissions
 
 | Table | Status | has user_id | has id | has is_public | RLS State | Sharing Eligible | Notes |
 |-------|--------|-------------|--------|---------------|-----------|-----------------|-------|
-| canvas_items | active | yes | yes | yes | on+adhoc | yes | 5 ad-hoc policies. Has is_public for public sharing |
-| transcripts | active | yes | yes | no | on+adhoc | yes | 4 ad-hoc policies |
-| html_extractions | active | yes | yes | no | on+adhoc | yes | 3 ad-hoc policies |
-| quiz_sessions | active | yes | yes | no | on+adhoc | owner-only | 4 ad-hoc policies. Sharing quiz sessions seems unlikely? |
-| sandbox_instances | active | yes | yes | no | on+adhoc | owner-only | 4 ad-hoc policies. Private sandbox environments |
-| user_files | active | yes | yes | no | on+adhoc | yes | 4 ad-hoc policies. Sharing files could be useful |
-| user_tables | active | yes | yes | yes | on+adhoc | yes | 3 ad-hoc policies + public read. Custom data tables |
-| table_data | active | yes | yes | yes | on+adhoc | parent-lookup | Child of user_tables. 3 ad-hoc policies |
-| table_fields | active | yes | yes | yes | on+adhoc | parent-lookup | Child of user_tables. 3 ad-hoc policies |
-| user_lists | active | yes | yes | yes | on+adhoc | yes | 4 ad-hoc policies |
-| user_list_items | active | yes | yes | yes | on+adhoc | parent-lookup | Child of user_lists. 4 ad-hoc policies |
-| prompt_actions | active | yes | yes | yes | on+adhoc | yes | 4 ad-hoc policies |
-| audio_recording | active | yes | yes | yes | on+adhoc | yes | 2 ad-hoc policies (ALL + public read) |
+| canvas_items | active | yes | yes | yes | on+centralized | yes | 4 policies: owner + is_public + has_permission |
+| transcripts | active | yes | yes | no | on+centralized | yes | 4 policies: owner + has_permission |
+| html_extractions | active | yes | bigint | no | on+adhoc | owner-only | 4 policies: owner-only (bigint PK incompatible with uuid permissions) |
+| quiz_sessions | active | yes | yes | no | on+centralized | yes | 4 policies: owner + has_permission |
+| sandbox_instances | active | yes | yes | no | on+centralized | yes | 4 policies: owner + has_permission |
+| user_files | active | yes | yes | no | on+centralized | yes | 4 policies: owner + has_permission |
+| user_tables | active | yes | yes | yes | on+centralized | yes | 4 policies: owner + is_public + has_permission |
+| table_data | active | yes | yes | yes | on+centralized | parent-lookup | 4 policies: inherits from user_tables |
+| table_fields | active | yes | yes | yes | on+centralized | parent-lookup | 4 policies: inherits from user_tables |
+| user_lists | active | yes | yes | yes | on+centralized | yes | 4 policies: owner + is_public + has_permission |
+| user_list_items | active | yes | yes | yes | on+centralized | parent-lookup | 4 policies: inherits from user_lists |
+| prompt_actions | active | yes | yes | yes | on+centralized | yes | 4 policies: owner + is_public + has_permission |
+| audio_recording | active | yes | yes | yes | on+adhoc | yes | 2 ad-hoc policies (ALL + public read) -- NOT YET MIGRATED |
 
 ---
 
-## Flashcard System -- Legacy Sharing Pattern
+## Flashcard System -- MIGRATED (shared_with replaced by has_permission)
 
-These use a `shared_with uuid[]` column instead of the centralized permissions table. Migration is more complex.
+`shared_with uuid[]` columns still exist on flashcard_data and flashcard_sets but are no longer used by policies. They can be dropped in a future cleanup migration.
 
 | Table | Status | has user_id | has id | has is_public | RLS State | Sharing Eligible | Notes |
 |-------|--------|-------------|--------|---------------|-----------|-----------------|-------|
-| flashcard_data | active | yes | yes | no (has `public` bool) | on+adhoc | yes | 5 policies using shared_with array. Has `public` column (not `is_public`) |
-| flashcard_sets | active | yes | no (has `set_id`) | no (has `public` bool) | on+adhoc | yes | 5 policies using shared_with array. PK is `set_id` not `id` |
-| flashcard_history | active | yes | yes | no | on+adhoc | parent-lookup | Child of flashcard_data. 2 policies |
-| flashcard_images | active | no | yes | no | on+adhoc | parent-lookup | Child of flashcard_data. 1 policy |
-| flashcard_set_relations | active | no | no | no | on+adhoc | parent-lookup | Join table. 1 policy. No id or user_id column |
+| flashcard_data | active | yes | yes | no (has `public` bool) | on+centralized | yes | 4 policies: owner + public + has_permission. shared_with ignored. |
+| flashcard_sets | active | yes | no (has `set_id`) | no (has `public` bool) | on+centralized | yes | 4 policies: owner + public + has_permission(set_id). PK is `set_id`. |
+| flashcard_history | active | yes | yes | no | on+adhoc | owner-only | 4 policies: owner-only (personal study data) |
+| flashcard_images | active | no | yes | no | on+centralized | parent-lookup | 4 policies: inherits from flashcard_data |
+| flashcard_set_relations | active | no | no | no | on+centralized | parent-lookup | 3 policies: inherits from both parents |
 
 ---
 
-## Child / Supporting Tables
+## Child / Supporting Tables -- MOSTLY MIGRATED
 
 | Table | Status | has user_id | has id | has is_public | RLS State | Sharing Eligible | Notes |
 |-------|--------|-------------|--------|---------------|-----------|-----------------|-------|
-| note_versions | active | yes | yes | no | on+adhoc | parent-lookup | Child of notes. 3 ad-hoc policies |
-| canvas_comments | active | yes | yes | no | on+adhoc | parent-lookup | Child of canvas_items. 4 policies |
-| canvas_likes | active | yes | yes | no | on+adhoc | parent-lookup | Child of canvas_items. 3 policies |
-| canvas_scores | active | yes | yes | no | on+adhoc | parent-lookup | Child of canvas_items. 2 policies |
-| canvas_views | active | yes | yes | no | on+adhoc | parent-lookup | Child of canvas_items. 1 policy |
-| canvas_comment_likes | active | yes | yes | no | on+none | parent-lookup | RLS on but 0 policies! |
-| shared_canvas_items | active | no | yes | no | on+adhoc | custom | 5 policies using visibility column |
-| prompt_app_errors | active | no | yes | no | on+adhoc | parent-lookup | Child of prompt_apps. 3 policies |
-| prompt_app_executions | active | yes | yes | no | on+adhoc | parent-lookup | Child of prompt_apps. 2 policies |
-| prompt_app_rate_limits | active | yes | yes | no | on+adhoc | parent-lookup | Child of prompt_apps. 3 policies |
-| task_comments | active | yes | yes | no | on+adhoc | parent-lookup | Child of tasks. 4 policies |
+| note_versions | active | yes | yes | no | on+centralized | parent-lookup | 3 policies: inherits from notes via has_permission |
+| canvas_comments | active | yes | yes | no | on+centralized | parent-lookup | 4 policies: inherits from canvas_items |
+| canvas_likes | active | yes | yes | no | on+centralized | parent-lookup | 3 policies: inherits from canvas_items |
+| canvas_scores | active | yes | yes | no | on+centralized | parent-lookup | 2 policies: inherits from canvas_items |
+| canvas_views | active | yes | yes | no | on+centralized | parent-lookup | 2 policies: inherits from canvas_items |
+| canvas_comment_likes | active | yes | yes | no | on+centralized | parent-lookup | 3 policies: inherits from canvas_items (was 0 policies!) |
+| shared_canvas_items | active | no | yes | no | on+adhoc | custom | 5 policies using visibility column -- NOT MIGRATED (public gallery, different model) |
+| prompt_app_errors | active | no | yes | no | on+adhoc | parent-lookup | Child of prompt_apps. 3 policies -- NOT MIGRATED |
+| prompt_app_executions | active | yes | yes | no | on+adhoc | parent-lookup | Child of prompt_apps. 2 policies -- NOT MIGRATED |
+| prompt_app_rate_limits | active | yes | yes | no | on+adhoc | parent-lookup | Child of prompt_apps. 3 policies -- NOT MIGRATED |
+| task_comments | active | yes | yes | no | on+adhoc | parent-lookup | Child of tasks. 4 policies -- NOT MIGRATED |
 
 ---
 
@@ -115,7 +117,7 @@ These use a `shared_with uuid[]` column instead of the centralized permissions t
 
 | Table | Status | has user_id | has id | has is_public | RLS State | Sharing Eligible | Notes |
 |-------|--------|-------------|--------|---------------|-----------|-----------------|-------|
-| user_preferences | active | yes | no | no | off | owner-only | NO RLS! Needs enabling. No `id` column (PK is user_id) |
+| user_preferences | active | yes | no | no | on+adhoc | owner-only | 4 policies: owner-only. RLS now ENABLED (was off). |
 | user_bookmarks | active | yes | yes | no | on+adhoc | owner-only | 3 policies |
 | user_email_preferences | active | yes | yes | no | on+adhoc | owner-only | 3 policies |
 | user_feedback | active | yes | yes | no | on+adhoc | owner-only | 4 policies |

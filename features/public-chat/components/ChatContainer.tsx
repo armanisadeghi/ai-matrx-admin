@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { useChatContext } from '../context/ChatContext';
 import { useAgentChat } from '../hooks/useAgentChat';
@@ -14,7 +15,8 @@ import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
 import { processDbMessagesForDisplay } from '../utils/cx-content-converter';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Share2 } from 'lucide-react';
+import { ShareModal } from '@/features/sharing';
 
 // ============================================================================
 // TYPES
@@ -35,10 +37,14 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
     const latestAssistantRef = useRef<HTMLDivElement>(null);
     const prevAssistantCountRef = useRef(0);
     const dbConversationIdRef = useRef<string | null>(null);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
+
+    const user = useSelector(selectUser);
+    const isAuthenticated = !!user?.id;
 
     // Read server preference from Redux (set via AdminMenu in header)
     const useLocalhost = useSelector(selectIsUsingLocalhost);
@@ -325,8 +331,37 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     // This guarantees the input is ALWAYS visible at the bottom of the container,
     // regardless of viewport height, keyboard state, or message count.
     // ========================================================================
+    // Determine the conversation ID for the share modal
+    const shareConversationId = dbConversationIdRef.current || existingRequestId;
+    const conversationTitle = state.messages[0]?.content?.slice(0, 60) || 'Chat';
+
     return (
         <div className={`h-full flex flex-col ${className}`}>
+            {/* Conversation header bar — share action */}
+            {isAuthenticated && shareConversationId && (
+                <div className="flex-shrink-0 flex items-center justify-end px-3 py-1">
+                    <button
+                        onClick={() => setIsShareOpen(true)}
+                        className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors"
+                        title="Share conversation"
+                    >
+                        <Share2 className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            )}
+
+            {/* Share modal */}
+            {isShareOpen && shareConversationId && (
+                <ShareModal
+                    isOpen={isShareOpen}
+                    onClose={() => setIsShareOpen(false)}
+                    resourceType="cx_conversation"
+                    resourceId={shareConversationId}
+                    resourceName={conversationTitle}
+                    isOwner={true}
+                />
+            )}
+
             {/* Messages — scrollable, takes all remaining space */}
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
                 <div className="w-full max-w-[800px] mx-auto px-4 md:px-3 py-4 pb-4">

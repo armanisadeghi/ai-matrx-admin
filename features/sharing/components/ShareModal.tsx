@@ -61,14 +61,26 @@ export function ShareModal({
   // Generate the share URL
   const getShareUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    // Common resource URL patterns
     const resourcePaths: Record<string, string> = {
+      // Legacy types
       canvas: `/canvas/${resourceId}`,
-      prompt: `/prompts/${resourceId}`,
+      prompt: `/ai/prompts/edit/${resourceId}`,
       collection: `/collections/${resourceId}`,
       workflow: `/workflows/${resourceId}`,
       note: `/notes/${resourceId}`,
       task: `/tasks/${resourceId}`,
+      // New types
+      cx_conversation: `/chat/${resourceId}`,
+      canvas_items: `/canvas/${resourceId}`,
+      user_tables: `/tables/${resourceId}`,
+      user_lists: `/lists/${resourceId}`,
+      transcripts: `/transcripts/${resourceId}`,
+      quiz_sessions: `/quizzes/${resourceId}`,
+      sandbox_instances: `/sandbox/${resourceId}`,
+      user_files: `/files/${resourceId}`,
+      prompt_actions: `/ai/prompts/actions/${resourceId}`,
+      flashcard_data: `/flashcards/${resourceId}`,
+      flashcard_sets: `/flashcards/sets/${resourceId}`,
     };
     const path = resourcePaths[resourceType] || `/${resourceType}/${resourceId}`;
     return `${baseUrl}${path}`;

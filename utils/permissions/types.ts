@@ -11,10 +11,13 @@
 // ============================================================================
 
 /**
- * All shareable resource types in the application
- * Add new types here as features are rolled out
+ * All shareable resource types in the application.
+ * 
+ * Convention: new resource types use the exact table name (e.g., 'cx_conversation').
+ * Legacy types use singular form (e.g., 'prompt' -> 'prompts' table).
  */
 export type ResourceType =
+  // Legacy types (singular form, mapped to plural table names)
   | 'prompt'
   | 'workflow'
   | 'note'
@@ -25,7 +28,19 @@ export type ResourceType =
   | 'broker_value'
   | 'message'
   | 'organization'
-  | 'scrape_domain';
+  | 'scrape_domain'
+  // New types (exact table names)
+  | 'cx_conversation'
+  | 'canvas_items'
+  | 'user_tables'
+  | 'user_lists'
+  | 'transcripts'
+  | 'quiz_sessions'
+  | 'sandbox_instances'
+  | 'user_files'
+  | 'prompt_actions'
+  | 'flashcard_data'
+  | 'flashcard_sets';
 
 /**
  * Permission levels in hierarchical order: viewer < editor < admin
@@ -259,6 +274,7 @@ export function getPermissionLevelLabel(level: PermissionLevel): string {
  */
 export function getResourceTypeLabel(type: ResourceType): string {
   const labels: Record<ResourceType, string> = {
+    // Legacy types
     prompt: 'Prompt',
     workflow: 'Workflow',
     note: 'Note',
@@ -270,6 +286,18 @@ export function getResourceTypeLabel(type: ResourceType): string {
     message: 'Message',
     organization: 'Organization',
     scrape_domain: 'Scrape Domain',
+    // New types
+    cx_conversation: 'Conversation',
+    canvas_items: 'Canvas',
+    user_tables: 'Table',
+    user_lists: 'List',
+    transcripts: 'Transcript',
+    quiz_sessions: 'Quiz',
+    sandbox_instances: 'Sandbox',
+    user_files: 'File',
+    prompt_actions: 'Action',
+    flashcard_data: 'Flashcard',
+    flashcard_sets: 'Flashcard Set',
   };
   return labels[type] || type;
 }

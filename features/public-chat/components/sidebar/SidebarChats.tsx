@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
     MoreHorizontal, Pencil, Trash2, Check, X,
-    Search, MessageSquare,
+    Search, MessageSquare, Share2, Users,
+    ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@/lib/redux/slices/userSlice';
@@ -14,8 +15,9 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { ShareModal } from '@/features/sharing';
 import { useChatPersistence } from '../../hooks/useChatPersistence';
-import type { CxConversationSummary } from '../../types/cx-tables';
+import type { CxConversationSummary, SharedCxConversationSummary } from '../../types/cx-tables';
 
 // ============================================================================
 // TYPES
@@ -165,6 +167,8 @@ function ConversationItem({
     onConfirmDelete: () => void;
     onCancelDelete: () => void;
 }) {
+    const [isShareOpen, setIsShareOpen] = useState(false);
+
     if (isDeleting) {
         return <DeleteConfirm
             label={item.title || 'Untitled Chat'}
@@ -183,41 +187,210 @@ function ConversationItem({
     }
 
     return (
+        <>
+            <div className={`relative group rounded-md transition-all duration-150 ${
+                isActive ? 'bg-accent/70 dark:bg-accent/50' : 'hover:bg-accent/40 dark:hover:bg-accent/20'
+            }`}>
+                <div className="flex items-center">
+                    <button onClick={onSelect} className="flex-1 min-w-0 px-2.5 py-1 text-left">
+                        <div className={`text-[11px] truncate leading-relaxed ${
+                            isActive ? 'text-foreground font-medium' : 'text-foreground/70'
+                        }`}>
+                            {item.title || 'Untitled Chat'}
+                        </div>
+                    </button>
+                    <div className="flex-shrink-0 pr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="p-0.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <MoreHorizontal className="h-3 w-3" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-32" sideOffset={4}>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}
+                                    className="text-[11px] py-1.5">
+                                    <Share2 className="h-3 w-3 mr-2" />Share
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartRename(); }}
+                                    className="text-[11px] py-1.5">
+                                    <Pencil className="h-3 w-3 mr-2" />Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRequestDelete(); }}
+                                    className="text-destructive focus:text-destructive text-[11px] py-1.5">
+                                    <Trash2 className="h-3 w-3 mr-2" />Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+            </div>
+
+            {isShareOpen && (
+                <ShareModal
+                    isOpen={isShareOpen}
+                    onClose={() => setIsShareOpen(false)}
+                    resourceType="cx_conversation"
+                    resourceId={item.id}
+                    resourceName={item.title || 'Untitled Chat'}
+                    isOwner={true}
+                />
+            )}
+        </>
+    );
+}
+
+// ============================================================================
+// SIDEBAR CHATS
+// ============================================================================
+
+// ============================================================================
+// SHARED CONVERSATION ITEM (read-only, no rename/delete)
+// ============================================================================
+
+function SharedConversationItem({
+    item, isActive, onSelect,
+}: {
+    item: SharedCxConversationSummary;
+    isActive: boolean;
+    onSelect: () => void;
+}) {
+    const levelLabel = item.permission_level === 'admin' ? 'Full access'
+        : item.permission_level === 'editor' ? 'Can edit' : 'View only';
+
+    return (
         <div className={`relative group rounded-md transition-all duration-150 ${
             isActive ? 'bg-accent/70 dark:bg-accent/50' : 'hover:bg-accent/40 dark:hover:bg-accent/20'
         }`}>
-            <div className="flex items-center">
-                <button onClick={onSelect} className="flex-1 min-w-0 px-2.5 py-1 text-left">
-                    <div className={`text-[11px] truncate leading-relaxed ${
-                        isActive ? 'text-foreground font-medium' : 'text-foreground/70'
-                    }`}>
-                        {item.title || 'Untitled Chat'}
-                    </div>
-                </button>
-                <div className="flex-shrink-0 pr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className="p-0.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <MoreHorizontal className="h-3 w-3" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-32" sideOffset={4}>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartRename(); }}
-                                className="text-[11px] py-1.5">
-                                <Pencil className="h-3 w-3 mr-2" />Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRequestDelete(); }}
-                                className="text-destructive focus:text-destructive text-[11px] py-1.5">
-                                <Trash2 className="h-3 w-3 mr-2" />Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+            <button onClick={onSelect} className="w-full px-2.5 py-1 text-left">
+                <div className={`text-[11px] truncate leading-relaxed ${
+                    isActive ? 'text-foreground font-medium' : 'text-foreground/70'
+                }`}>
+                    {item.title || 'Untitled Chat'}
                 </div>
-            </div>
+                <div className="text-[9px] text-muted-foreground/60 truncate">
+                    {item.owner_email ? item.owner_email.split('@')[0] : 'Unknown'} · {levelLabel}
+                </div>
+            </button>
+        </div>
+    );
+}
+
+// ============================================================================
+// SHARED CHATS SECTION (lazy-loaded on expand)
+// ============================================================================
+
+function SharedChatsSection({
+    activeRequestId,
+    onSelectChat,
+    onCloseSidebar,
+    searchQuery,
+}: {
+    activeRequestId?: string | null;
+    onSelectChat: (requestId: string) => void;
+    onCloseSidebar?: () => void;
+    searchQuery: string;
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [sharedChats, setSharedChats] = useState<SharedCxConversationSummary[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasFetched, setHasFetched] = useState(false);
+
+    // Only fetch when the section is opened for the first time
+    useEffect(() => {
+        if (!isOpen || hasFetched) return;
+
+        let cancelled = false;
+        setIsLoading(true);
+
+        (async () => {
+            try {
+                const response = await fetch('/api/cx-chat/shared');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!cancelled) {
+                        setSharedChats(data.conversations || []);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load shared conversations:', err);
+            } finally {
+                if (!cancelled) {
+                    setIsLoading(false);
+                    setHasFetched(true);
+                }
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [isOpen, hasFetched]);
+
+    // Filter by search
+    const filtered = useMemo(() => {
+        if (!searchQuery.trim()) return sharedChats;
+        const q = searchQuery.toLowerCase();
+        return sharedChats.filter(c =>
+            c.title?.toLowerCase().includes(q) ||
+            c.owner_email?.toLowerCase().includes(q)
+        );
+    }, [sharedChats, searchQuery]);
+
+    return (
+        <div className="px-1 py-1 border-t border-border/50 mt-1">
+            <button
+                onClick={() => setIsOpen(prev => !prev)}
+                className="flex items-center gap-1.5 w-full px-2 py-1 text-left hover:bg-accent/30 rounded-md transition-colors"
+            >
+                {isOpen
+                    ? <ChevronDown className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
+                    : <ChevronRight className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
+                }
+                <Users className="h-3 w-3 text-secondary flex-shrink-0" />
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider select-none">
+                    Shared with Me
+                </span>
+                {hasFetched && sharedChats.length > 0 && (
+                    <span className="text-[9px] px-1 py-0.5 rounded-full bg-secondary/10 text-secondary font-medium">
+                        {sharedChats.length}
+                    </span>
+                )}
+            </button>
+
+            {isOpen && (
+                <div className="mt-0.5">
+                    {isLoading && (
+                        <div className="flex items-center justify-center py-4">
+                            <div className="w-3.5 h-3.5 border-2 border-muted-foreground/30 border-t-secondary rounded-full animate-spin" />
+                        </div>
+                    )}
+
+                    {!isLoading && filtered.length === 0 && hasFetched && (
+                        <div className="flex flex-col items-center justify-center py-4 px-2 text-center">
+                            <Users className="h-4 w-4 text-muted-foreground/30 mb-1" />
+                            <p className="text-[10px] text-muted-foreground">
+                                {searchQuery ? 'No shared chats match your search' : 'No chats shared with you'}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="space-y-0.5">
+                        {filtered.map((item) => (
+                            <SharedConversationItem
+                                key={item.id}
+                                item={item}
+                                isActive={activeRequestId === item.id}
+                                onSelect={() => {
+                                    onSelectChat(item.id);
+                                    onCloseSidebar?.();
+                                }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -381,6 +554,14 @@ export function SidebarChats({
                     </div>
                 </div>
             ))}
+
+            {/* Shared with Me — lazy-loaded on expand */}
+            <SharedChatsSection
+                activeRequestId={activeRequestId}
+                onSelectChat={onSelectChat}
+                onCloseSidebar={onCloseSidebar}
+                searchQuery={searchQuery}
+            />
         </div>
     );
 }
