@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { setUser, setFingerprintId } from '@/lib/redux/slices/userSlice';
+import { loadPreferencesFromDatabase } from '@/lib/redux/slices/userPreferencesSlice';
 import { createClient } from '@/utils/supabase/client';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
 
@@ -101,6 +102,8 @@ export function usePublicAuthSync() {
                         accessToken: session?.access_token || null,
                         tokenExpiresAt: session?.expires_at || null,
                     }));
+                    // Hydrate user preferences so components (e.g. FeedbackButton view count) work on public routes
+                    dispatch(loadPreferencesFromDatabase());
                 } else {
                     // GUEST USER PATH - get fingerprint for API authentication
                     try {

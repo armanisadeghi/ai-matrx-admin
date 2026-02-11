@@ -37,12 +37,21 @@ export function useUserPrompts() {
 
             try {
                 const supabase = createClient();
-                
-                // Check if user is authenticated
-                const { data: { user } } = await supabase.auth.getUser();
-                
+                let user: { id: string } | null = null;
+
+                try {
+                    const { data } = await supabase.auth.getUser();
+                    user = data?.user ?? null;
+                } catch (authErr) {
+                    // No session (e.g. public page) — treat as no user, don't surface error
+                    if (isMounted) {
+                        setPrompts([]);
+                        setIsLoading(false);
+                    }
+                    return;
+                }
+
                 if (!user) {
-                    // No user, no prompts to fetch
                     if (isMounted) {
                         setPrompts([]);
                         setIsLoading(false);

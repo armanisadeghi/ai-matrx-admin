@@ -115,7 +115,7 @@ function AgentPickerContent({
                                 <span className="text-muted-foreground flex-shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
                                     {agent.icon || <Bot className="h-3.5 w-3.5" />}
                                 </span>
-                                <span className="truncate flex-1">{agent.name}</span>
+                                <span className="truncate flex-1 min-w-0" title={agent.name}>{agent.name}</span>
                                 {selectedAgent?.promptId === agent.promptId && (
                                     <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                                 )}
@@ -141,7 +141,7 @@ function AgentPickerContent({
                                 }`}
                             >
                                 <Bot className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                                <span className="truncate flex-1">{agent.name}</span>
+                                <span className="truncate flex-1 min-w-0" title={agent.name}>{agent.name}</span>
                                 {agent.variableDefaults && agent.variableDefaults.length > 0 && (
                                     <Sparkles className="h-2.5 w-2.5 text-amber-500 flex-shrink-0" />
                                 )}
@@ -183,18 +183,18 @@ export function SidebarAgentHeader({ selectedAgent, onAgentSelect, floating, com
                 <DropdownMenuTrigger asChild>
                     <button
                         className="fixed top-[2.875rem] left-10 z-50 flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 ease-in-out"
-                        title="Switch agent"
+                        title={displayName ? `Switch agent: ${displayName}` : 'Switch agent'}
                     >
                         <span className="flex-shrink-0 [&_svg]:h-3 [&_svg]:w-3">
                             {currentIcon || <Bot className="h-3 w-3" />}
                         </span>
-                        <span className="text-[11px] font-medium max-w-[100px] truncate">
+                        <span className="text-[11px] font-medium max-w-[140px] truncate" title={displayName}>
                             {displayName}
                         </span>
                         <ChevronDown className="h-2.5 w-2.5 flex-shrink-0" />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[240px] p-0" sideOffset={4}>
+                <DropdownMenuContent align="start" className="min-w-[280px] w-[320px] max-w-[min(90vw,380px)] p-0" sideOffset={4}>
                     <AgentPickerContent selectedAgent={selectedAgent} onSelect={handleSelect} />
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -210,13 +210,13 @@ export function SidebarAgentHeader({ selectedAgent, onAgentSelect, floating, com
                         <span className="flex-shrink-0 text-muted-foreground group-hover:text-foreground transition-colors [&_svg]:h-3.5 [&_svg]:w-3.5">
                             {currentIcon || <Bot className="h-3.5 w-3.5" />}
                         </span>
-                        <span className="text-xs font-medium text-foreground truncate max-w-[140px]">
+                        <span className="text-xs font-medium text-foreground truncate max-w-[180px]" title={displayName}>
                             {displayName}
                         </span>
                         <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[240px] p-0" sideOffset={4}>
+                <DropdownMenuContent align="start" className="min-w-[280px] w-[320px] max-w-[min(90vw,380px)] p-0" sideOffset={4}>
                     <AgentPickerContent selectedAgent={selectedAgent} onSelect={handleSelect} />
                 </DropdownMenuContent>
             </DropdownMenu>

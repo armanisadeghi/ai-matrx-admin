@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Sparkles } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { useChatContext } from '../context/ChatContext';
@@ -15,6 +14,7 @@ import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
 import { processDbMessagesForDisplay } from '../utils/cx-content-converter';
+import { MessageCircle } from 'lucide-react';
 
 // ============================================================================
 // TYPES
@@ -245,7 +245,7 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     if (isLoadingConversation) {
         return (
             <div className={`h-full flex flex-col items-center justify-center ${className}`}>
-                <Sparkles className="h-8 w-8 text-primary animate-pulse mb-3" />
+                <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
                 <p className="text-sm text-muted-foreground">Loading conversation...</p>
             </div>
         );
@@ -259,9 +259,6 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
             <div className={`h-full flex flex-col items-center justify-center px-3 md:px-8 ${className}`}>
                 {/* Welcome Header */}
                 <div className="text-center mb-6 md:mb-8">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                        <Sparkles className="h-6 w-6 md:h-7 md:w-7 text-primary" />
-                    </div>
                     <h1 className="text-2xl md:text-3xl font-semibold mb-1.5 text-foreground">
                         {hasVariables ? state.currentAgent?.name || 'What can I help with?' : 'What can I help with?'}
                     </h1>

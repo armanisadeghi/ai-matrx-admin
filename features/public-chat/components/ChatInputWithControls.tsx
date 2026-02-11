@@ -274,7 +274,7 @@ function InputBottomControls({
     return (
         <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 rounded-b-2xl">
             {/* Left side controls */}
-            <div className="absolute bottom-2 left-4 flex items-center space-x-2">
+            <div className="absolute bottom-2 left-2 flex items-center space-x-2">
                 {/* Resource Picker Popover */}
                 <Popover open={isResourcePickerOpen} onOpenChange={setIsResourcePickerOpen}>
                     <PopoverTrigger asChild>

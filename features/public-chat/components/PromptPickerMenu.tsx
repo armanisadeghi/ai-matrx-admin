@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Search, Loader2, Sparkles } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Search, Loader2, Sparkles, ChevronDown } from 'lucide-react';
 import { LuBrain } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
@@ -24,11 +24,11 @@ interface PromptPickerMenuProps {
 // ============================================================================
 
 /**
- * Truncate agent name to 12 characters + ".."
+ * Truncate agent name for trigger button (compact); full name shown via title on hover.
  */
-function truncateAgentName(name: string): string {
-    if (name.length <= 12) return name;
-    return name.substring(0, 12) + '..';
+function truncateAgentName(name: string, maxLen = 20): string {
+    if (name.length <= maxLen) return name;
+    return name.substring(0, maxLen) + '…';
 }
 
 /**
@@ -108,14 +108,15 @@ export function PromptPickerMenu({ onSelect, disabled = false, selectedAgent }: 
             <PopoverTrigger asChild>
                 <button
                     disabled={disabled}
-                    className="py-1 px-2.5 rounded-full flex items-center gap-1.5 border border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    title="Select Agent"
+                    className="p-1 rounded-xl flex items-center gap-1 border-2 border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm min-w-0 max-w-[200px]"
+                    title={selectedAgent?.name ? `Select agent: ${selectedAgent.name}` : 'Select Agent'}
                 >
-                    <LuBrain size={16} />
-                    <span className="text-xs font-medium">{displayName}</span>
+                    <LuBrain size={14} className="flex-shrink-0" />
+                    <span className="text-[11px] font-medium truncate" title={selectedAgent?.name}>{displayName}</span>
+                    <ChevronDown size={14} className="flex-shrink-0" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[320px] p-0" align="start" side="top" sideOffset={8}>
+            <PopoverContent className="min-w-[280px] w-[360px] max-w-[min(90vw,400px)] p-0" align="start" side="top" sideOffset={8}>
                 <div className="flex flex-col max-h-[500px]">
                     {/* Header with Search */}
                     <div className="p-2 border-b border-border">
@@ -268,7 +269,7 @@ function AgentButton({ name, description, variableCount, isSelected, onClick }: 
                 <LuBrain size={18} className="text-gray-600 dark:text-gray-400" />
             </div>
             <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" title={name}>
                     {name}
                 </div>
                 {description && (
