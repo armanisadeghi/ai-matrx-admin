@@ -26,7 +26,11 @@
     "tools:update": "curl -sL https://raw.githubusercontent.com/armanisadeghi/matrx-dev-tools/main/install.sh | bash",
     "ship": "tsx scripts/matrx/ship.ts",
     "ship:minor": "tsx scripts/matrx/ship.ts --minor",
-    "ship:major": "tsx scripts/matrx/ship.ts --major"
+    "ship:major": "tsx scripts/matrx/ship.ts --major",
+    "ship:update": "tsx scripts/matrx/ship.ts update",
+    "ship:init": "tsx scripts/matrx/ship.ts init",
+    "ship:setup": "tsx scripts/matrx/ship.ts setup",
+    "ship:history": "tsx scripts/matrx/ship.ts history"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.52",
