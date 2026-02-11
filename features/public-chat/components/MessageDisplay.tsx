@@ -17,6 +17,7 @@ import { ResourcesContainer } from '@/features/prompts/components/resource-displ
 const FullScreenMarkdownEditor = lazy(() => import('@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor'));
 const PublicMessageOptionsMenu = lazy(() => import('./PublicMessageOptionsMenu'));
 const HtmlPreviewModal = lazy(() => import('./HtmlPreviewModal'));
+const ToolCallVisualization = lazy(() => import('@/features/chat/components/response/assistant-message/stream/ToolCallVisualization'));
 
 // ============================================================================
 // ATTACHED RESOURCES DISPLAY (for PublicResource[] from message.resources)
@@ -293,8 +294,22 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
         );
     }
 
+    // Check if this is a DB-loaded message with tool updates (no active stream)
+    const hasDbToolUpdates = !streamEvents && message.toolUpdates && message.toolUpdates.length > 0;
+
     return (
         <div>
+            {/* Tool call visualization for DB-loaded messages */}
+            {hasDbToolUpdates && (
+                <Suspense fallback={null}>
+                    <ToolCallVisualization
+                        toolUpdates={message.toolUpdates!}
+                        hasContent={!!message.content}
+                        className="mb-2"
+                    />
+                </Suspense>
+            )}
+
             {/* Markdown content - matching PromptAssistantMessage */}
             {streamEvents && streamEvents.length > 0 ? (
                 <MarkdownStream
@@ -447,6 +462,10 @@ export function MessageList({
     const lastAssistantIndex = messages.reduce((acc, msg, idx) => 
         msg.role === 'assistant' ? idx : acc, -1);
 
+    // Detect the boundary between condensed and active messages
+    const firstActiveIndex = messages.findIndex(m => !m.isCondensed);
+    const hasCondensedMessages = firstActiveIndex > 0;
+
     return (
         <div className={`${spacingClasses} ${className}`}>
             {messages.map((message, index) => {
@@ -454,28 +473,44 @@ export function MessageList({
                 const isLastAssistant = isLastMessage && message.role === 'assistant';
                 const isLatestAssistant = index === lastAssistantIndex;
 
+                // Show separator between condensed and active messages
+                const showCondensedSeparator = hasCondensedMessages && index === firstActiveIndex;
+
                 return (
-                    <div 
+                    <div
                         key={message.id}
                         // Latest assistant message gets min-height so it can scroll to top
                         // but user can't scroll past the content itself
                         className={isLatestAssistant ? 'min-h-[calc(100dvh-var(--header-height))]' : ''}
                     >
+                        {/* Condensed/Active boundary separator */}
+                        {showCondensedSeparator && (
+                            <div className="flex items-center gap-3 py-2 mb-4">
+                                <div className="flex-1 h-px bg-border" />
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Older messages</span>
+                                <div className="flex-1 h-px bg-border" />
+                            </div>
+                        )}
+
                         {/* Scroll anchor: placed right before the latest assistant message */}
                         {/* h-4 creates breathing room below the header when scrolled to top */}
                         {isLatestAssistant && latestAssistantRef && (
                             <div ref={latestAssistantRef} className="h-2" />
                         )}
-                        {message.role === 'user' ? (
-                            <UserMessage message={message} />
-                        ) : (
-                            <AssistantMessage
-                                message={message}
-                                streamEvents={isLastAssistant ? streamEvents : undefined}
-                                isStreaming={isLastAssistant && isStreaming}
-                                onContentChange={onMessageContentChange}
-                            />
-                        )}
+
+                        {/* Condensed message wrapper — dimmed opacity */}
+                        <div className={message.isCondensed ? 'opacity-60' : ''}>
+                            {message.role === 'user' ? (
+                                <UserMessage message={message} />
+                            ) : (
+                                <AssistantMessage
+                                    message={message}
+                                    streamEvents={isLastAssistant ? streamEvents : undefined}
+                                    isStreaming={isLastAssistant && isStreaming}
+                                    onContentChange={onMessageContentChange}
+                                />
+                            )}
+                        </div>
                     </div>
                 );
             })}

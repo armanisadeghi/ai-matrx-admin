@@ -14,6 +14,7 @@ import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
+import { processDbMessagesForDisplay } from '../utils/cx-content-converter';
 
 // ============================================================================
 // TYPES
@@ -80,17 +81,18 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
 
             dbConversationIdRef.current = existingRequestId;
 
-            // Load messages into context
-            // cx_message.content is a jsonb array of content parts
-            for (const msg of data.messages) {
-                const textContent = Array.isArray(msg.content)
-                    ? msg.content.map((part: { text?: string }) => part.text || '').join('')
-                    : typeof msg.content === 'string' ? msg.content : '';
+            // Convert cx_message content blocks to display-ready format.
+            // Handles: text, thinking, media, tool_call, tool_result blocks.
+            // Merges tool-role messages into the preceding assistant message.
+            const processedMessages = processDbMessagesForDisplay(data.messages);
 
+            for (const msg of processedMessages) {
                 addMessage({
-                    role: msg.role as 'user' | 'assistant' | 'system',
-                    content: textContent,
+                    role: msg.role,
+                    content: msg.content,
                     status: 'complete',
+                    toolUpdates: msg.toolUpdates.length > 0 ? msg.toolUpdates : undefined,
+                    isCondensed: msg.isCondensed || undefined,
                 });
             }
 

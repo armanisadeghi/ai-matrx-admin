@@ -20,6 +20,10 @@ export interface ChatMessage {
     /** Content items sent to API (for reference) */
     contentItems?: ContentItem[];
     variables?: Record<string, any>;
+    /** Tool call/result history for DB-loaded messages (displayed via ToolCallVisualization) */
+    toolUpdates?: any[];
+    /** Whether this is a condensed message (out of context window but still visible) */
+    isCondensed?: boolean;
 }
 
 export interface ChatSettings {

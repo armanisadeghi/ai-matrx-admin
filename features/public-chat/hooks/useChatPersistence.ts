@@ -5,7 +5,7 @@ import type {
     CxConversationSummary,
     CxConversationWithMessages,
     CxMessageInsert,
-    CxMessageContent,
+    CxContentBlock,
 } from '../types/cx-tables';
 import type { ChatMessage } from '../context/ChatContext';
 
@@ -51,7 +51,7 @@ export function useChatPersistence() {
         try {
             const cxMessages: CxMessageInsert[] = messages.map((msg, index) => {
                 // Store text content as a jsonb content array
-                const content: CxMessageContent[] = [{
+                const content: CxContentBlock[] = [{
                     type: 'text' as const,
                     text: msg.content,
                 }];
