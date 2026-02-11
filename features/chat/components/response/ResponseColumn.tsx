@@ -24,8 +24,8 @@ import {
     selectResponseToolUpdatesByListenerId,
 } from "@/lib/redux/socket-io";
 
-const INFO = true;
-const DEBUG = true;
+const INFO = false;
+const DEBUG = false;
 const VERBOSE = false;
 
 const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }) => {
@@ -164,16 +164,16 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     };
 
     useEffect(() => {
-        console.log("===> [RESPONSE LAYOUT MANAGER] Errors response:", JSON.stringify(errorsResponse, null, 2));
+        if (DEBUG) console.log("===> [RESPONSE LAYOUT MANAGER] Errors response:", JSON.stringify(errorsResponse, null, 2));
     }, [errorsResponse]);
 
     useEffect(() => {
-        console.log("===> [RESPONSE LAYOUT MANAGER] Info response:", JSON.stringify(infoResponse, null, 2));
+        if (DEBUG) console.log("===> [RESPONSE LAYOUT MANAGER] Info response:", JSON.stringify(infoResponse, null, 2));
     }, [infoResponse]);
 
     return (
-        <div className="w-full min-w-0 pt-0 pb-24 relative overflow-x-hidden" ref={containerRef}>
-            <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden min-w-0">
+        <div className="w-full min-w-0 pt-2 pb-24 relative overflow-x-hidden" ref={containerRef}>
+            <div className="max-w-3xl mx-auto px-3 md:px-4 space-y-4 overflow-x-hidden min-w-0">
                 {messagesToDisplay.map((message) => (
                     <MessageItem
                         key={message.id}

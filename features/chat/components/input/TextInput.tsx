@@ -130,15 +130,14 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
 
         return (
             <div
-                className={`relative rounded-3xl bg-zinc-200 dark:bg-zinc-800 transition-all overflow-hidden ${
-                    isFocused ? "ring-1 ring-zinc-400 dark:ring-zinc-700 ring-opacity-50" : ""
+                className={`relative rounded-2xl bg-muted transition-all overflow-hidden ${
+                    isFocused ? "ring-1 ring-border/60" : ""
                 } ${className}`}
             >
-                {/* Minimize/Maximize buttons are only shown when not processing an image */}
                 {!isPasteProcessing && isExpanded && parseInt(textareaHeight) > 200 && (
                     <button
                         onClick={handleMinimize}
-                        className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
+                        className="absolute top-2 right-2 p-1.5 rounded-full text-muted-foreground hover:bg-accent z-10"
                     >
                         <Minimize2 size={16} />
                     </button>
@@ -147,7 +146,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
                 {!isPasteProcessing && !isExpanded && content.length > 0 && (
                     <button
                         onClick={handleMaximize}
-                        className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
+                        className="absolute top-2 right-2 p-1.5 rounded-full text-muted-foreground hover:bg-accent z-10"
                     >
                         <Maximize2 size={16} />
                     </button>
@@ -198,7 +197,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className="w-full p-4 rounded-3xl border-none resize-none outline-none bg-zinc-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder-gray-600 dark:placeholder-gray-400 overflow-auto"
+                    className="w-full p-4 rounded-2xl border-none resize-none outline-none bg-muted text-foreground placeholder-muted-foreground overflow-auto"
                     disabled={disabled}
                 />
             </div>

@@ -1,26 +1,24 @@
 // app/(public)/p/chat/page.tsx
 'use client';
 
-import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 import ChatContainer from '@/features/public-chat/components/ChatContainer';
 import { ChatProvider } from '@/features/public-chat/context/ChatContext';
+import { useLayoutAgent } from './ChatLayoutShell';
 
 /**
  * Public Chat Page
  * 
  * Redux (LiteStoreProvider) available from PublicProviders in the public layout.
  * Lightweight store - no entities/socket/sagas.
+ * 
+ * Uses `useLayoutAgent()` to read the selected agent from ChatLayoutShell
+ * so that sidebar agent selection and "New Chat" properly initialize.
  */
 export default function PublicChatPage() {
-    const defaultAgent = {
-        promptId: DEFAULT_AGENTS[0].promptId,
-        name: DEFAULT_AGENTS[0].name,
-        description: DEFAULT_AGENTS[0].description,
-        variableDefaults: DEFAULT_AGENTS[0].variableDefaults,
-    };
+    const agent = useLayoutAgent();
 
     return (
-        <ChatProvider initialAgent={defaultAgent}>
+        <ChatProvider initialAgent={agent}>
             <div className="h-full w-full bg-textured">
                 <ChatContainer className="h-full" />
             </div>

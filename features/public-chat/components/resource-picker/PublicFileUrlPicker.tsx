@@ -237,10 +237,10 @@ export function PublicFileUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl }
                 {/* File Info */}
                 {fileInfo && (
                     <div className="border border-border rounded-lg overflow-hidden">
-                        <div className="p-4 bg-gray-50 dark:bg-zinc-800 flex items-center justify-center">
+                        <div className="p-4 bg-muted flex items-center justify-center">
                             <File className="w-12 h-12 text-orange-500" />
                         </div>
-                        <div className="p-3 space-y-2 bg-white dark:bg-zinc-900">
+                        <div className="p-3 space-y-2 bg-card">
                             <div>
                                 <span className="text-[10px] text-gray-500 dark:text-gray-400 block">Filename</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">

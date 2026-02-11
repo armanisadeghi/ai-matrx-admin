@@ -72,3 +72,6 @@ public/cache/
 enhanced-directory-structure.json
 directory-structure.json
 .history/
+
+# Matrx Ship config (contains API key)
+.matrx-ship.json

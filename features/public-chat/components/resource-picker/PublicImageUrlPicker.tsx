@@ -227,7 +227,7 @@ export function PublicImageUrlPicker({ onBack, onSelect, onSwitchTo, initialUrl 
                                 }}
                             />
                         </div>
-                        <div className="p-2 space-y-1 bg-white dark:bg-zinc-900">
+                        <div className="p-2 space-y-1 bg-card">
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] text-gray-500 dark:text-gray-400">Type:</span>
                                 <span className="text-xs font-medium text-gray-900 dark:text-gray-100">

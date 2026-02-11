@@ -962,22 +962,23 @@
         max-height: 100dvh;
     }
 
-    /* Keyboard-safe bottom spacing utilities */
-    /* Use these for fixed bottom elements to ensure they stay visible when keyboard appears */
+    /* Safe-area spacing utilities */
+    /* Uses max() to guarantee a minimum padding even when safe-area-inset is 0 */
+    /* (env() resolves to 0 on non-notched devices and when viewport-fit=cover is absent) */
     .pb-safe {
-        padding-bottom: env(safe-area-inset-bottom, 1rem);
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
     }
     
     .mb-safe {
-        margin-bottom: env(safe-area-inset-bottom, 1rem);
+        margin-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
     }
     
     .pt-safe {
-        padding-top: env(safe-area-inset-top, 1rem);
+        padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
     }
     
     .mt-safe {
-        margin-top: env(safe-area-inset-top, 1rem);
+        margin-top: max(0.75rem, env(safe-area-inset-top, 0px));
     }
     
     /* Page height utilities - automatically accounts for header height */

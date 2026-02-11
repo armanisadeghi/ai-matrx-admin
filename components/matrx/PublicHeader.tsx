@@ -26,6 +26,14 @@ const PublicHeaderAuth = dynamic(
     }
 );
 
+const PublicHeaderFeedback = dynamic(
+    () => import('./PublicHeaderFeedback').then(mod => ({ default: mod.PublicHeaderFeedback })),
+    { 
+        ssr: false,
+        loading: () => null
+    }
+);
+
 const PublicHeaderThemeToggle = dynamic(
     () => import('./PublicHeaderThemeToggle').then(mod => ({ default: mod.PublicHeaderThemeToggle })),
     { 
@@ -83,6 +91,9 @@ export function PublicHeader() {
                             Discover
                         </Button>
                     </Link>
+
+                    {/* Feedback Button - Dynamically loaded (ssr: false), only for authenticated users */}
+                    <PublicHeaderFeedback />
 
                     {/* Theme Toggle - Dynamically loaded (ssr: false) */}
                     <PublicHeaderThemeToggle />

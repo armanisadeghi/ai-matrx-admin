@@ -23,7 +23,10 @@
     "env:status": "bash scripts/matrx/env-sync.sh status",
     "env:pull:force": "bash scripts/matrx/env-sync.sh pull --force",
     "env:push:force": "bash scripts/matrx/env-sync.sh push --force",
-    "tools:update": "curl -sL https://raw.githubusercontent.com/armanisadeghi/matrx-dev-tools/main/install.sh | bash"
+    "tools:update": "curl -sL https://raw.githubusercontent.com/armanisadeghi/matrx-dev-tools/main/install.sh | bash",
+    "ship": "tsx scripts/matrx/ship.ts",
+    "ship:minor": "tsx scripts/matrx/ship.ts --minor",
+    "ship:major": "tsx scripts/matrx/ship.ts --major"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.52",
