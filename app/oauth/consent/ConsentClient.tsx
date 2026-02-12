@@ -17,7 +17,6 @@ import {
     Loader2,
     CheckCircle,
     XCircle,
-    ArrowRight,
     ShieldAlert,
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -110,6 +109,23 @@ function getDomain(uri: string): string {
         return new URL(uri).hostname;
     } catch {
         return uri;
+    }
+}
+
+/** First-party domains that should never show the "unverified" warning */
+const TRUSTED_DOMAINS = ['aimatrx.com', 'www.aimatrx.com'];
+
+function isTrustedClient(client: OAuthClient): boolean {
+    // Has a logo → registered & verified
+    if (client.logo_uri) return true;
+    // Check if the client URI belongs to a first-party domain
+    try {
+        const hostname = new URL(client.uri).hostname;
+        return TRUSTED_DOMAINS.some(
+            (d) => hostname === d || hostname.endsWith(`.${d}`),
+        );
+    } catch {
+        return false;
     }
 }
 
@@ -344,7 +360,7 @@ export default function ConsentClient() {
         <div className="min-h-dvh w-full flex items-center justify-center bg-background p-4">
             <div className="w-full max-w-md">
                 {/* AI Matrx branding */}
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-4">
                     <Logo size="lg" variant="horizontal" linkEnabled={false} />
                 </div>
 
@@ -375,7 +391,7 @@ export default function ConsentClient() {
                 </div>
 
                 {/* Footer */}
-                <p className="mt-4 text-center text-xs text-muted-foreground">
+                <p className="mt-3 text-center text-[11px] text-muted-foreground">
                     AI Matrx keeps your data secure.{' '}
                     <a
                         href="/privacy-policy"
@@ -500,10 +516,12 @@ function ConsentForm({
         | string
         | undefined;
 
+    const trusted = isTrustedClient(details.client);
+
     return (
-        <div className="p-6 sm:p-8">
+        <div className="p-5 sm:p-8">
             {/* Requesting app header */}
-            <div className="text-center space-y-3 mb-6">
+            <div className="text-center space-y-2 mb-4">
                 {details.client.logo_uri ? (
                     <img
                         src={details.client.logo_uri}
@@ -525,20 +543,20 @@ function ConsentForm({
                 </div>
             </div>
 
-            {/* Unverified / dynamic client warning */}
-            {!details.client.logo_uri && (
-                <div className="flex items-start gap-2.5 mb-5 rounded-lg bg-warning/10 border border-warning/30 px-3.5 py-2.5">
+            {/* Unverified / dynamic client warning — hidden for first-party apps */}
+            {!trusted && (
+                <div className="flex items-start gap-2.5 mb-4 rounded-lg bg-warning/10 border border-warning/30 px-3 py-2">
                     <ShieldAlert className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                     <p className="text-xs text-warning leading-relaxed">
-                        This application has not been verified by AI Matrx. Only authorize it if you
-                        trust <span className="font-semibold">{clientDomain}</span>.
+                        This application has not been verified by AI Matrx. Only authorize it if
+                        you trust <span className="font-semibold">{clientDomain}</span>.
                     </p>
                 </div>
             )}
 
             {/* Signed-in user identity */}
-            <div className="flex items-center gap-3 rounded-lg bg-muted/50 border border-border px-3.5 py-3 mb-5">
-                <Avatar className="h-9 w-9">
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 border border-border px-3 py-2.5 mb-1.5">
+                <Avatar className="h-8 w-8">
                     {userAvatar && <AvatarImage src={userAvatar} alt={userName ?? userEmail} />}
                     <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
                         {getInitials(userEmail)}
@@ -557,7 +575,7 @@ function ConsentForm({
             </div>
 
             {/* Not you? link */}
-            <div className="text-right -mt-3 mb-4">
+            <div className="text-right mb-3">
                 <a
                     href={`/login?redirectTo=${encodeURIComponent(`/oauth/consent?authorization_id=${details.authorization_id}`)}`}
                     className="text-xs text-primary hover:underline underline-offset-2"
@@ -567,14 +585,14 @@ function ConsentForm({
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-border mb-5" />
+            <div className="h-px bg-border mb-3" />
 
             {/* Scopes / permissions */}
-            <div className="mb-6">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            <div className="mb-4">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                     This will allow {details.client.name} to:
                 </h2>
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                     {scopes.map((scope) => {
                         const info = SCOPE_DISPLAY[scope];
                         if (!info) return null;
@@ -582,16 +600,16 @@ function ConsentForm({
                         return (
                             <li
                                 key={scope}
-                                className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 px-3.5 py-3"
+                                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2.5"
                             >
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                                    <IconComp className="h-4 w-4 text-primary" />
+                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                                    <IconComp className="h-3.5 w-3.5 text-primary" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-foreground">
+                                    <p className="text-sm font-medium text-foreground leading-tight">
                                         {info.label}
                                     </p>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                    <p className="text-xs text-muted-foreground">
                                         {info.description}
                                     </p>
                                 </div>
@@ -601,19 +619,8 @@ function ConsentForm({
                 </ul>
             </div>
 
-            {/* Redirect URI */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-5">
-                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">
-                    Redirecting to{' '}
-                    <span className="font-medium text-foreground/70">
-                        {clientDomain}
-                    </span>
-                </span>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex flex-col-reverse sm:flex-row gap-3">
+            {/* Action buttons — always side by side */}
+            <div className="flex gap-3">
                 <Button
                     variant="outline"
                     className="flex-1"
@@ -652,15 +659,14 @@ function ConsentForm({
             </div>
 
             {/* Privacy note */}
-            <p className="mt-4 text-center text-xs text-muted-foreground leading-relaxed">
-                You can revoke access at any time from your{' '}
+            <p className="mt-3 text-center text-[11px] text-muted-foreground">
+                Revoke access anytime from{' '}
                 <a
                     href="/settings"
                     className="underline underline-offset-2 hover:text-foreground transition-colors"
                 >
                     AI Matrx settings
                 </a>
-                .
             </p>
         </div>
     );
