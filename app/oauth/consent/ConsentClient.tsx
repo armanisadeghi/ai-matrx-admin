@@ -120,11 +120,15 @@ export default function ConsentClient() {
     const authorizationId = searchParams.get('authorization_id');
 
     // -----------------------------------------------------------------------
-    // Initialize — fetch authorization details, then check user session
+    // Initialize — check user session, then fetch authorization details
     // -----------------------------------------------------------------------
     useEffect(() => {
         async function initialize() {
+            console.log('[OAuth Consent] Starting initialization...');
+            console.log('[OAuth Consent] authorization_id:', authorizationId);
+
             if (!authorizationId || typeof authorizationId !== 'string') {
+                console.log('[OAuth Consent] ERROR: Missing or invalid authorization_id');
                 setPageState({
                     kind: 'error',
                     title: 'Invalid request',
@@ -137,11 +141,33 @@ export default function ConsentClient() {
 
             const supabase = createClient();
 
-            // Step 1: Get authorization details FIRST (order matters)
+            // Step 1: Check if user is authenticated (required before fetching details)
+            console.log('[OAuth Consent] Step 1: Checking user authentication...');
+            const {
+                data: { user },
+                error: userError,
+            } = await supabase.auth.getUser();
+
+            console.log('[OAuth Consent] User:', user?.email ?? 'NOT LOGGED IN');
+            console.log('[OAuth Consent] User error:', userError?.message ?? 'none');
+
+            if (userError || !user) {
+                const currentUrl = window.location.pathname + window.location.search;
+                console.log('[OAuth Consent] Redirecting to login with redirectTo:', currentUrl);
+                router.push(`/login?redirectTo=${encodeURIComponent(currentUrl)}`);
+                return;
+            }
+
+            // Step 2: Get authorization details (requires authenticated session)
+            console.log('[OAuth Consent] Step 2: Fetching authorization details...');
             const { data: authData, error: authError } =
                 await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
 
+            console.log('[OAuth Consent] Auth data:', JSON.stringify(authData, null, 2));
+            console.log('[OAuth Consent] Auth error:', authError ? JSON.stringify({ message: authError.message, status: authError.status, code: (authError as unknown as Record<string, unknown>).code }, null, 2) : 'none');
+
             if (authError || !authData) {
+                console.log('[OAuth Consent] ERROR: getAuthorizationDetails failed');
                 setPageState({
                     kind: 'error',
                     title: 'Request expired or invalid',
@@ -152,9 +178,9 @@ export default function ConsentClient() {
                 return;
             }
 
-            // Step 2: Check for immediate redirect (already consented)
-            // When the user has already given consent, the response includes redirect_url
+            // Step 3: Check for immediate redirect (already consented)
             if (authData.redirect_url) {
+                console.log('[OAuth Consent] Step 3: Already consented, redirecting to:', authData.redirect_url);
                 setPageState({
                     kind: 'redirecting',
                     message: 'You have already authorized this application. Redirecting...',
@@ -163,20 +189,10 @@ export default function ConsentClient() {
                 return;
             }
 
-            // Step 3: Check if user is authenticated
-            const {
-                data: { user },
-                error: userError,
-            } = await supabase.auth.getUser();
-
-            if (userError || !user) {
-                // Redirect to login, preserving the full consent URL
-                const currentUrl = window.location.pathname + window.location.search;
-                router.push(`/login?redirectTo=${encodeURIComponent(currentUrl)}`);
-                return;
-            }
-
             // Step 4: Show consent screen
+            console.log('[OAuth Consent] Step 4: Showing consent screen');
+            console.log('[OAuth Consent] Client:', authData.client?.name);
+            console.log('[OAuth Consent] Scopes:', authData.scope);
             setPageState({
                 kind: 'consent',
                 details: authData,
