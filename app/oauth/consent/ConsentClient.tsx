@@ -50,9 +50,15 @@ interface ScopeDisplayInfo {
     icon: typeof ShieldCheck;
 }
 
+interface ErrorDetail {
+    code?: string;
+    status?: number;
+    origin?: string;
+}
+
 type PageState =
     | { kind: 'loading' }
-    | { kind: 'error'; title: string; message: string; retryable: boolean }
+    | { kind: 'error'; title: string; message: string; retryable: boolean; detail?: ErrorDetail }
     | { kind: 'redirecting'; message: string }
     | { kind: 'consent'; details: OAuthAuthorizationDetails; user: SupabaseUser };
 
@@ -105,6 +111,64 @@ function getDomain(uri: string): string {
     } catch {
         return uri;
     }
+}
+
+/** Map Supabase Auth error responses to user-friendly error states */
+function mapAuthError(
+    error: { message?: string; status?: number; code?: string; [key: string]: unknown },
+    context: string,
+): { title: string; message: string; retryable: boolean; detail: ErrorDetail } {
+    const code = (error.code as string) ?? '';
+    const msg = (error.message as string) ?? '';
+    const status = (error.status as number) ?? 0;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    const detail: ErrorDetail = { code: code || msg, status, origin };
+
+    // Origin mismatch — the page domain doesn't match the Supabase Site URL
+    if (msg.includes('unauthorized request origin') || code === 'validation_failed') {
+        return {
+            title: 'Origin not authorized',
+            message:
+                `This page is being served from "${origin}" but the OAuth server ` +
+                'expects a different domain. This is a configuration issue — please ' +
+                'contact the AI Matrx team.',
+            retryable: false,
+            detail,
+        };
+    }
+
+    // Expired or already-used authorization
+    if (msg.includes('expired') || msg.includes('not found') || status === 404) {
+        return {
+            title: 'Request expired',
+            message:
+                'This authorization request has expired or was already used. ' +
+                'Please return to the application and try again.',
+            retryable: false,
+            detail,
+        };
+    }
+
+    // Rate limited
+    if (status === 429) {
+        return {
+            title: 'Too many requests',
+            message: 'Please wait a moment and try again.',
+            retryable: true,
+            detail,
+        };
+    }
+
+    // Generic fallback
+    return {
+        title: `Authorization error (${status || 'unknown'})`,
+        message:
+            `${context}: ${msg || 'An unexpected error occurred'}. ` +
+            'Please return to the application and try again.',
+        retryable: status >= 500,
+        detail,
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -160,21 +224,29 @@ export default function ConsentClient() {
 
             // Step 2: Get authorization details (requires authenticated session)
             console.log('[OAuth Consent] Step 2: Fetching authorization details...');
+            console.log('[OAuth Consent] Current origin:', window.location.origin);
             const { data: authData, error: authError } =
                 await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
 
-            console.log('[OAuth Consent] Auth data:', JSON.stringify(authData, null, 2));
-            console.log('[OAuth Consent] Auth error:', authError ? JSON.stringify({ message: authError.message, status: authError.status, code: (authError as unknown as Record<string, unknown>).code }, null, 2) : 'none');
+            if (authError) {
+                const errObj = authError as unknown as Record<string, unknown>;
+                console.error('[OAuth Consent] getAuthorizationDetails FAILED:', {
+                    message: authError.message,
+                    status: authError.status,
+                    code: errObj.code,
+                    origin: window.location.origin,
+                    authorization_id: authorizationId,
+                });
+            } else {
+                console.log('[OAuth Consent] Auth data received:', authData ? 'yes' : 'null');
+            }
 
             if (authError || !authData) {
-                console.log('[OAuth Consent] ERROR: getAuthorizationDetails failed');
-                setPageState({
-                    kind: 'error',
-                    title: 'Request expired or invalid',
-                    message:
-                        'This authorization request has expired or is no longer valid. Please return to the application and try again.',
-                    retryable: false,
-                });
+                const mapped = mapAuthError(
+                    authError as unknown as Record<string, unknown>,
+                    'Failed to load authorization details',
+                );
+                setPageState({ kind: 'error', ...mapped });
                 return;
             }
 
@@ -215,14 +287,17 @@ export default function ConsentClient() {
             const { data, error } = await supabase.auth.oauth.approveAuthorization(authorizationId);
 
             if (error || !data) {
-                setActionLoading(null);
-                setPageState({
-                    kind: 'error',
-                    title: 'Authorization failed',
-                    message:
-                        'Something went wrong while authorizing this application. Please try again.',
-                    retryable: true,
+                console.error('[OAuth Consent] approveAuthorization FAILED:', {
+                    message: error?.message,
+                    status: error?.status,
+                    code: (error as unknown as Record<string, unknown>)?.code,
                 });
+                setActionLoading(null);
+                const mapped = mapAuthError(
+                    (error ?? { message: 'No data returned' }) as unknown as Record<string, unknown>,
+                    'Failed to approve authorization',
+                );
+                setPageState({ kind: 'error', ...mapped, retryable: true });
                 return;
             }
 
@@ -231,7 +306,8 @@ export default function ConsentClient() {
                 message: 'Authorization granted. Redirecting...',
             });
             window.location.href = data.redirect_url;
-        } catch {
+        } catch (err) {
+            console.error('[OAuth Consent] approveAuthorization threw:', err);
             setActionLoading(null);
             setPageState({
                 kind: 'error',
@@ -239,6 +315,7 @@ export default function ConsentClient() {
                 message:
                     'Unable to reach the server. Please check your connection and try again.',
                 retryable: true,
+                detail: { code: String(err) },
             });
         }
     }
@@ -252,14 +329,17 @@ export default function ConsentClient() {
             const { data, error } = await supabase.auth.oauth.denyAuthorization(authorizationId);
 
             if (error || !data) {
-                setActionLoading(null);
-                setPageState({
-                    kind: 'error',
-                    title: 'Something went wrong',
-                    message:
-                        'Unable to deny this authorization request. Please try again.',
-                    retryable: true,
+                console.error('[OAuth Consent] denyAuthorization FAILED:', {
+                    message: error?.message,
+                    status: error?.status,
+                    code: (error as unknown as Record<string, unknown>)?.code,
                 });
+                setActionLoading(null);
+                const mapped = mapAuthError(
+                    (error ?? { message: 'No data returned' }) as unknown as Record<string, unknown>,
+                    'Failed to deny authorization',
+                );
+                setPageState({ kind: 'error', ...mapped, retryable: true });
                 return;
             }
 
@@ -268,7 +348,8 @@ export default function ConsentClient() {
                 message: 'Authorization denied. Redirecting...',
             });
             window.location.href = data.redirect_url;
-        } catch {
+        } catch (err) {
+            console.error('[OAuth Consent] denyAuthorization threw:', err);
             setActionLoading(null);
             setPageState({
                 kind: 'error',
@@ -276,6 +357,7 @@ export default function ConsentClient() {
                 message:
                     'Unable to reach the server. Please check your connection and try again.',
                 retryable: true,
+                detail: { code: String(err) },
             });
         }
     }
@@ -304,6 +386,7 @@ export default function ConsentClient() {
                             title={pageState.title}
                             message={pageState.message}
                             retryable={pageState.retryable}
+                            detail={pageState.detail}
                             onRetry={handleRetry}
                         />
                     )}
@@ -369,11 +452,13 @@ function ErrorState({
     title,
     message,
     retryable,
+    detail,
     onRetry,
 }: {
     title: string;
     message: string;
     retryable: boolean;
+    detail?: ErrorDetail;
     onRetry: () => void;
 }) {
     return (
@@ -385,6 +470,18 @@ function ErrorState({
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
                 <p className="text-sm text-gray-500 dark:text-neutral-400">{message}</p>
             </div>
+            {detail && (
+                <div className="text-left rounded-lg bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 px-3 py-2.5 mt-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-neutral-500 mb-1.5">
+                        Debug Info
+                    </p>
+                    <div className="space-y-0.5 text-xs font-mono text-gray-500 dark:text-neutral-400">
+                        {detail.code && <p>Error: {detail.code}</p>}
+                        {detail.status ? <p>Status: {detail.status}</p> : null}
+                        {detail.origin && <p>Origin: {detail.origin}</p>}
+                    </div>
+                </div>
+            )}
             {retryable && (
                 <Button onClick={onRetry} variant="outline" className="mt-2">
                     Try again
