@@ -59,7 +59,8 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/sign-up') &&
     request.nextUrl.pathname !== '/' &&
-    !request.nextUrl.pathname.startsWith('/auth')
+    !request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/oauth') // OAuth consent handles its own auth flow
   ) {
     const url = request.nextUrl.clone()
     const fullPath = request.nextUrl.pathname + request.nextUrl.search

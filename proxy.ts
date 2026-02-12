@@ -24,7 +24,8 @@ export const config = {
      * - Public pages: demos, matrx, flash-cards, dash-test, app_redirect, app_callback
      * - Auth-related pages: forgot-password, error, reset-password
      * - Info pages: contact, about, privacy-policy, google-settings, google-auth-demo
+     * - Developer pages: developers
      */
-    '/((?!api|_next/static|_next/image|public|auth|p|demos|matrx|flash-cards|dash-test|app_redirect|app_callback|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)',
+    '/((?!api|_next/static|_next/image|public|auth|p|demos|matrx|flash-cards|dash-test|app_redirect|app_callback|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|developers|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)',
   ],
 }
