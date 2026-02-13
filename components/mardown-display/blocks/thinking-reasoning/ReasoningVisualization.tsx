@@ -57,12 +57,12 @@ const ReasoningVisualization: React.FC<ReasoningVisualizationProps> = ({
       
       <div
         ref={containerRef}
-        className="relative w-full mb-1 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 shadow-sm overflow-hidden"
+        className="relative w-full mb-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 shadow-sm overflow-hidden"
       >
         {/* Header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between px-3 py-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors duration-150 relative overflow-hidden"
+          className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors duration-150 relative overflow-hidden"
         >
           {/* Shimmer effect while streaming */}
           {isStreaming && (
@@ -103,7 +103,7 @@ const ReasoningVisualization: React.FC<ReasoningVisualizationProps> = ({
 
       {/* Content */}
       {isExpanded && (
-        <div className="px-3 pt-2 pb-0">
+        <div className="px-3 py-2">
           <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
             {cleanedContent}
           </p>

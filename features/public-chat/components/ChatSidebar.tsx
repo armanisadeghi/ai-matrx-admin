@@ -120,11 +120,7 @@ export function ChatSidebar({
             {/* ── Desktop: Fixed toggle button — hidden on mobile ── */}
             <button
                 onClick={toggleSidebar}
-                className={`hidden md:flex fixed top-[2.875rem] left-2 z-50 p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out ${
-                    isOpen
-                        ? 'bg-transparent hover:bg-accent/60'
-                        : 'bg-card border border-border hover:bg-accent'
-                } ${className}`}
+                className="hidden md:flex fixed top-[2.875rem] left-2 z-50 h-8 items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-300 ease-in-out"
                 title={isOpen ? 'Close sidebar' : 'Open chat history'}
             >
                 <PanelLeft
@@ -135,7 +131,7 @@ export function ChatSidebar({
             </button>
 
             {/* ── Desktop: Floating agent selector — visible only when sidebar is closed ── */}
-            <div className={`hidden md:block transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <div className={`hidden md:block transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none visibility-hidden' : 'opacity-100 visibility-visible'}`}>
                 <SidebarAgentHeader
                     selectedAgent={selectedAgent}
                     onAgentSelect={onAgentSelect}

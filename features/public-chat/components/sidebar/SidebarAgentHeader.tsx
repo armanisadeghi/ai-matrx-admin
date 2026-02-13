@@ -182,12 +182,9 @@ export function SidebarAgentHeader({ selectedAgent, onAgentSelect, floating, com
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <button
-                        className="fixed top-[2.875rem] left-10 z-50 flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 ease-in-out"
+                        className="fixed top-[3rem] left-14 z-50 flex items-center gap-2 h-8 text-muted-foreground hover:text-foreground transition-colors"
                         title={displayName ? `Switch agent: ${displayName}` : 'Switch agent'}
                     >
-                        <span className="flex-shrink-0 [&_svg]:h-3 [&_svg]:w-3">
-                            {currentIcon || <Bot className="h-3 w-3" />}
-                        </span>
                         <span className="text-[11px] font-medium max-w-[140px] truncate" title={displayName}>
                             {displayName}
                         </span>
@@ -206,10 +203,7 @@ export function SidebarAgentHeader({ selectedAgent, onAgentSelect, floating, com
         <div className={compact ? 'flex items-center' : 'flex items-center pl-11 pr-2 py-2 border-b border-border'}>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1.5 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors min-w-0 group">
-                        <span className="flex-shrink-0 text-muted-foreground group-hover:text-foreground transition-colors [&_svg]:h-3.5 [&_svg]:w-3.5">
-                            {currentIcon || <Bot className="h-3.5 w-3.5" />}
-                        </span>
+                    <button className="flex items-center gap-3 h-8 rounded-md hover:bg-accent/50 transition-colors min-w-0 group">
                         <span className="text-xs font-medium text-foreground truncate max-w-[180px]" title={displayName}>
                             {displayName}
                         </span>

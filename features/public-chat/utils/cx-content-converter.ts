@@ -115,7 +115,7 @@ export function convertCxContentToDisplay(
                         ? thinkingBlock.summary.join('\n')
                         : 'Thinking...');
                 // Wrap in XML tags — content-splitter-v2 recognizes <thinking> and <think>
-                parts.push(`<thinking>\n${thinkingText}\n</thinking>`);
+                parts.push(`<reasoning>\n${thinkingText}\n</reasoning>`);
                 break;
             }
 
