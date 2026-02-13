@@ -16,6 +16,7 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { ShareModal } from '@/features/sharing';
+import { supabase } from '@/utils/supabase/client';
 import { useChatPersistence } from '../../hooks/useChatPersistence';
 import type { CxConversationSummary, SharedCxConversationSummary } from '../../types/cx-tables';
 
@@ -416,6 +417,7 @@ export function SidebarChats({
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const { loadHistory, renameConversation, deleteConversation } = useChatPersistence();
+    const realtimeSubscriptionRef = useRef<any>(null);
 
     // Load history on mount
     const fetchHistory = useCallback(async () => {
@@ -426,7 +428,56 @@ export function SidebarChats({
     }, [loadHistory]);
 
     useEffect(() => {
+        // Initial load
         fetchHistory();
+
+        // Subscribe to real-time changes on cx_conversations table
+        // Listen for INSERT (new conversations) and UPDATE (title/status changes)
+        const subscription = supabase
+            .channel('cx_conversations_realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // Listen to INSERT, UPDATE, DELETE
+                    schema: 'public',
+                    table: 'cx_conversations',
+                },
+                (payload) => {
+                    // Only refresh if it's a change to the current user's conversations
+                    // The RLS policy ensures they only see their own, but we still check
+                    if (payload.eventType === 'INSERT') {
+                        // New conversation created — reload to get it
+                        fetchHistory();
+                    } else if (payload.eventType === 'UPDATE') {
+                        // Title or status changed — update the item in the list
+                        setHistory((prev) =>
+                            prev.map((item) =>
+                                item.id === payload.new.id
+                                    ? {
+                                        ...item,
+                                        title: payload.new.title || item.title,
+                                        status: payload.new.status || item.status,
+                                        updated_at: payload.new.updated_at || item.updated_at,
+                                    }
+                                    : item
+                            )
+                        );
+                    } else if (payload.eventType === 'DELETE') {
+                        // Conversation deleted — remove it from the list
+                        setHistory((prev) => prev.filter((item) => item.id !== payload.old.id));
+                    }
+                }
+            )
+            .subscribe();
+
+        realtimeSubscriptionRef.current = subscription;
+
+        // Cleanup: unsubscribe when component unmounts
+        return () => {
+            if (realtimeSubscriptionRef.current) {
+                supabase.removeChannel(realtimeSubscriptionRef.current);
+            }
+        };
     }, [fetchHistory]);
 
     // Filter by search

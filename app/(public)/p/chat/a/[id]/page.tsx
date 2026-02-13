@@ -1,17 +1,20 @@
-// app/(public)/p/chat/page.tsx
+// app/(public)/p/chat/a/[id]/page.tsx
 'use client';
 
 import ChatContainer from '@/features/public-chat/components/ChatContainer';
 import { ChatProvider } from '@/features/public-chat/context/ChatContext';
-import { useLayoutAgent } from './ChatLayoutShell';
+import { useLayoutAgent } from '../../ChatLayoutShell';
 
 /**
- * Public Chat Page — new conversation
+ * Agent-Direct Route — opens an empty chat with a specific agent pre-selected.
  *
- * Reads agent from layout context (single source of truth).
- * ChatProvider receives initialAgent so inner context starts in sync.
+ * Route: /p/chat/a/[id]
+ *
+ * The agent is resolved by ChatLayoutShell from the URL on initial load.
+ * This page just reads the layout context — no sync effects needed.
+ * All agent state is managed by the layout shell.
  */
-export default function PublicChatPage() {
+export default function AgentPage() {
     const { selectedAgent } = useLayoutAgent();
 
     return (

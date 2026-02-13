@@ -17,6 +17,7 @@ import type { PublicResource } from '../types/content';
 import { processDbMessagesForDisplay } from '../utils/cx-content-converter';
 import { MessageCircle, Share2 } from 'lucide-react';
 import { ShareModal } from '@/features/sharing';
+import { useLayoutAgent } from '@/app/(public)/p/chat/ChatLayoutShell';
 
 // ============================================================================
 // TYPES
@@ -34,6 +35,8 @@ interface ChatContainerProps {
 
 export function ChatContainer({ className = '', existingRequestId }: ChatContainerProps) {
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage } = useChatContext();
+    // Layout-level agent change handler — THE single way to change agents
+    const { onAgentChange } = useLayoutAgent();
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
@@ -114,9 +117,12 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
         setUseLocalhost(useLocalhost);
     }, [useLocalhost, setUseLocalhost]);
 
-    // Set default agent on mount
+    // Initialize agent and variables on mount.
+    // Agent comes from initialAgent prop → ChatContext, which is set by the
+    // layout context (single source of truth). If somehow null, fall back to default.
     useEffect(() => {
-        if (!state.currentAgent) {
+        const agent = state.currentAgent;
+        if (!agent) {
             const defaultAgent = DEFAULT_AGENTS[0];
             setAgent({
                 promptId: defaultAgent.promptId,
@@ -124,19 +130,20 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                 description: defaultAgent.description,
                 variableDefaults: defaultAgent.variableDefaults,
             });
-            
-            // Initialize variables with default values
+        }
+
+        // Initialize variables with default values from current agent
+        const varDefs = (agent || DEFAULT_AGENTS[0]).variableDefaults;
+        if (varDefs && varDefs.length > 0) {
             const initialValues: Record<string, string> = {};
-            if (defaultAgent.variableDefaults) {
-                defaultAgent.variableDefaults.forEach(variable => {
-                    if (variable.defaultValue) {
-                        initialValues[variable.name] = variable.defaultValue;
-                    }
-                });
-            }
+            varDefs.forEach(variable => {
+                if (variable.defaultValue) {
+                    initialValues[variable.name] = variable.defaultValue;
+                }
+            });
             setVariableValues(initialValues);
         }
-    }, [state.currentAgent, setAgent]);
+    }, []); // Only on mount — agent is set via initialAgent prop on remount
 
     // Pre-warm agent
     useEffect(() => {
@@ -158,28 +165,19 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
         prevAssistantCountRef.current = assistantCount;
     }, [messages]);
 
+    // Agent selection — delegates to layout context (single source of truth).
+    // This triggers a ChatProvider remount via chatKey bump in ChatLayoutShell,
+    // so the new agent flows through initialAgent → ChatContext automatically.
     const handleAgentSelect = useCallback(
         (agent: typeof DEFAULT_AGENTS[0]) => {
-            setAgent({
+            onAgentChange({
                 promptId: agent.promptId,
                 name: agent.name,
                 description: agent.description,
                 variableDefaults: agent.variableDefaults,
             });
-            
-            // Initialize variables with default values
-            const initialValues: Record<string, string> = {};
-            if (agent.variableDefaults) {
-                agent.variableDefaults.forEach(variable => {
-                    if (variable.defaultValue) {
-                        initialValues[variable.name] = variable.defaultValue;
-                    }
-                });
-            }
-            setVariableValues(initialValues);
-            setStreamEvents([]);
         },
-        [setAgent]
+        [onAgentChange]
     );
 
     const handleVariableChange = useCallback((name: string, value: string) => {
