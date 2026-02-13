@@ -49,6 +49,7 @@ import canvasReducer from "../../features/canvas/redux/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import messagingReducer from "../../features/messaging/redux/messagingSlice";
+import smsReducer from "../../features/sms/redux/smsSlice";
 
 
 // Prompt system
@@ -167,6 +168,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         // Messaging system
         messaging: messagingReducer,
+
+        // SMS integration
+        sms: smsReducer,
     });
 };
 

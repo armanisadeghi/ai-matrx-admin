@@ -223,6 +223,7 @@
     "three": "latest",
     "ts-node": "latest",
     "tui-color-picker": "^2.2.8",
+    "twilio": "^5.12.1",
     "unsplash-js": "latest",
     "use-long-press": "latest",
     "usehooks-ts": "^3.1.1",
