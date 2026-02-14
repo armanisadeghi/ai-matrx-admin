@@ -274,28 +274,7 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
-    // Show loading dots only when we have NO content AND no tool events streaming in.
-    // Tool updates arrive before text chunks, so if streamEvents contain tool_update
-    // events we should render the full component tree (MarkdownStream → ToolCallVisualization)
-    // instead of the "Thinking..." placeholder.
-    const hasToolEvents = streamEvents?.some(e => e.event === 'tool_update') ?? false;
-    const showLoading = (message.status === 'pending' || (message.status === 'streaming' && !message.content)) && !hasToolEvents;
-
-    // DEBUG: Track stream event flow — remove after debugging
-    if (streamEvents && streamEvents.length > 0) {
-        const eventTypes = streamEvents.reduce<Record<string, number>>((acc, e) => {
-            acc[e.event] = (acc[e.event] || 0) + 1;
-            return acc;
-        }, {});
-        console.log('[AssistantMessage] streamEvents:', {
-            total: streamEvents.length,
-            eventTypes,
-            hasToolEvents,
-            showLoading,
-            messageStatus: message.status,
-            hasContent: !!message.content,
-        });
-    }
+    const showLoading = message.status === 'pending' || (message.status === 'streaming' && !message.content);
 
     const handleCopy = async () => {
         try {
@@ -530,18 +509,6 @@ export function MessageList({
     // Detect the boundary between condensed and active messages
     const firstActiveIndex = messages.findIndex(m => !m.isCondensed);
     const hasCondensedMessages = firstActiveIndex > 0;
-
-    // DEBUG: Log message roles and stream events routing — remove after debugging
-    if (streamEvents && streamEvents.length > 0) {
-        console.log('[MessageList] Routing streamEvents:', {
-            messageCount: messages.length,
-            roles: messages.map(m => m.role),
-            lastMessage: messages.length > 0 ? { role: messages[messages.length - 1].role, id: messages[messages.length - 1].id } : null,
-            lastAssistantIndex,
-            streamEventsCount: streamEvents.length,
-            hasStreamEvents: !!streamEvents,
-        });
-    }
 
     return (
         <div className={`${spacingClasses} ${className}`}>

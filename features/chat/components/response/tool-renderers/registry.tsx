@@ -11,6 +11,7 @@ import { SeoMetaTitlesInline } from "./seo-meta-titles";
 import { SeoMetaDescriptionsInline } from "./seo-meta-descriptions";
 import { WebResearchInline, WebResearchOverlay } from "./web-research";
 import { CoreWebSearchInline, CoreWebSearchOverlay } from "./core-web-search";
+import { DeepResearchInline, DeepResearchOverlay } from "./deep-research";
 import BraveSearchDisplay from "@/features/workflows/results/registered-components/BraveSearchDisplay";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -152,6 +153,45 @@ export const toolRendererRegistry: ToolRegistry = {
         inline: CoreWebSearchInline,
         overlay: CoreWebSearchOverlay,
         keepExpandedOnStream: true, // Keep search results visible
+    },
+    
+    // Deep Research - search + read full web pages
+    "core_web_search_and_read": {
+        displayName: "Deep Research",
+        resultsLabel: "Research Results",
+        inline: DeepResearchInline,
+        overlay: DeepResearchOverlay,
+        keepExpandedOnStream: true,
+        getHeaderSubtitle: (toolUpdates) => {
+            const input = toolUpdates.find((u) => u.type === "mcp_input");
+            const query = input?.mcp_input?.arguments?.query;
+            return typeof query === "string" ? query : null;
+        },
+        getHeaderExtras: (toolUpdates) => {
+            const output = toolUpdates.find((u) => u.type === "mcp_output");
+            if (!output?.mcp_output?.result) return null;
+            const raw = typeof output.mcp_output.result === "string"
+                ? output.mcp_output.result
+                : JSON.stringify(output.mcp_output.result);
+            const readCount = (raw.match(/<read_result>/g) || []).length;
+            if (readCount === 0) return null;
+            return (
+                <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+                    <span className="flex items-center gap-1">
+                        {readCount} {readCount === 1 ? "page" : "pages"} read
+                    </span>
+                </div>
+            );
+        },
+    },
+    
+    // Web Page Reader - read specific web pages (same format as deep research)
+    "core_web_read_web_pages": {
+        displayName: "Web Page Reader",
+        resultsLabel: "Pages Read",
+        inline: DeepResearchInline,
+        overlay: DeepResearchOverlay,
+        keepExpandedOnStream: true,
     },
 };
 

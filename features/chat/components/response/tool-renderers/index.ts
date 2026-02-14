@@ -21,3 +21,4 @@ export * from "./seo-meta-titles";
 export * from "./seo-meta-descriptions";
 export * from "./web-research";
 export * from "./core-web-search";
+export * from "./deep-research";

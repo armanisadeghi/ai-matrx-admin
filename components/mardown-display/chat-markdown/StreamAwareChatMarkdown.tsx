@@ -202,21 +202,6 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
   // Determine if we're using events or legacy mode
   const isEventMode = events && events.length > 0;
 
-  // DEBUG: Track tool updates flow — remove after debugging
-  if (isEventMode && toolUpdatesInternal.length > 0) {
-    console.log('[StreamAwareChatMarkdown] Passing toolUpdates to EnhancedChatMarkdown:', {
-      count: toolUpdatesInternal.length,
-      types: toolUpdatesInternal.map(t => t.type),
-      ids: toolUpdatesInternal.map(t => t.id),
-    });
-  }
-  if (isEventMode && toolUpdatesInternal.length === 0 && events.some(e => e.event === 'tool_update')) {
-    console.warn('[StreamAwareChatMarkdown] Events contain tool_update but toolUpdatesInternal is empty!', {
-      totalEvents: events.length,
-      toolUpdateEvents: events.filter(e => e.event === 'tool_update').length,
-    });
-  }
-
   return (
     <EnhancedChatMarkdownInternal
       {...restProps}

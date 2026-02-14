@@ -59,15 +59,9 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
     const { sendMessage, warmAgent, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
         onStreamEvent: (event) => {
-            // DEBUG: Log tool_update events reaching ChatContainer — remove after debugging
-            if (event.event === 'tool_update') {
-                console.log('[ChatContainer] tool_update received, adding to streamEvents');
-            }
             setStreamEvents((prev) => [...prev, event]);
         },
         onComplete: () => {
-            // DEBUG: Log streamEvents state at completion — remove after debugging
-            console.log('[ChatContainer] onComplete — streamEvents will be cleared in 100ms');
             setTimeout(() => setStreamEvents([]), 100);
             // Persist to database (fire and forget)
             if (dbConvIdRef.current) {
