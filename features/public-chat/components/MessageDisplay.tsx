@@ -274,7 +274,12 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
-    const showLoading = message.status === 'pending' || (message.status === 'streaming' && !message.content);
+    // Show loading dots only when we have NO content AND no tool events streaming in.
+    // Tool updates arrive before text chunks, so if streamEvents contain tool_update
+    // events we should render the full component tree (MarkdownStream → ToolCallVisualization)
+    // instead of the "Thinking..." placeholder.
+    const hasToolEvents = streamEvents?.some(e => e.event === 'tool_update') ?? false;
+    const showLoading = (message.status === 'pending' || (message.status === 'streaming' && !message.content)) && !hasToolEvents;
 
     const handleCopy = async () => {
         try {

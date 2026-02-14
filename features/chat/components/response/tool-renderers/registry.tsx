@@ -142,7 +142,7 @@ export function getToolName(toolUpdates: ToolCallObject[]): string | null {
  */
 export function shouldKeepExpandedOnStream(toolName: string | null): boolean {
     if (!toolName || !toolRendererRegistry[toolName]) {
-        return false; // Default: auto-collapse
+        return true; // Default: keep expanded so generic results remain visible
     }
     return toolRendererRegistry[toolName].keepExpandedOnStream ?? false;
 }

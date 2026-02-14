@@ -42,7 +42,7 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
     if (visibleUpdates.length === 0) return null;
     
     return (
-        <>
+        <div className="space-y-5">
             {visibleUpdates.map((update, index) => {
                 // Handle news API results
                 if (update.type === "mcp_output" && update.mcp_output) {
@@ -147,14 +147,14 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                                 ))}
                             </div>
                             
-                            {/* Show more button if there are additional articles */}
-                            {hasMore && onOpenOverlay && (
+                            {/* View all button — always show when overlay is available */}
+                            {onOpenOverlay && (
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onOpenOverlay(`tool-group-${toolGroupId}`);
                                     }}
-                                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 animate-in fade-in slide-in-from-bottom"
+                                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
                                     style={{ 
                                         animationDelay: `${displayArticles.length * 80}ms`,
                                         animationDuration: '300ms',
@@ -162,7 +162,7 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                                     }}
                                 >
                                     <Newspaper className="w-4 h-4" />
-                                    <span>View all {articles.length} articles</span>
+                                    <span>{hasMore ? `View all ${articles.length} articles` : `View ${articles.length} ${articles.length === 1 ? 'article' : 'articles'}`}</span>
                                 </button>
                             )}
                         </div>
@@ -172,7 +172,7 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                 // Don't render anything for other update types - keep it clean
                 return null;
             })}
-        </>
+        </div>
     );
 };
 

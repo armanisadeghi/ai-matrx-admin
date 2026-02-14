@@ -210,7 +210,7 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
                         e.stopPropagation();
                         onOpenOverlay(`tool-group-${toolGroupId}`);
                     }}
-                    className="w-full text-left rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all duration-200 group animate-in fade-in slide-in-from-bottom duration-300 overflow-hidden"
+                    className="w-full text-left rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all duration-200 group animate-in fade-in slide-in-from-bottom duration-300 overflow-hidden cursor-pointer"
                 >
                     {/* Preview text snippet if available */}
                     {previewText && (

@@ -43,7 +43,7 @@ export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
     if (visibleUpdates.length === 0) return null;
     
     return (
-        <>
+        <div className="space-y-5">
             {visibleUpdates.map((update, index) => {
                 // Handle SEO descriptions output
                 if (update.type === "mcp_output" && update.mcp_output) {
@@ -63,6 +63,12 @@ export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
                     
                     return (
                         <div key={`seo-descriptions-${index}`} className="space-y-2">
+                            {/* Header */}
+                            <div className="flex items-center gap-2 text-sm font-medium text-foreground/90">
+                                <FileText className="w-4 h-4 text-primary" />
+                                <span>{analysis.length} Meta Description{analysis.length !== 1 ? 's' : ''} Analyzed</span>
+                            </div>
+                            
                             {/* Summary Stats */}
                             <div className="flex items-center gap-3 text-xs">
                                 <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
@@ -139,14 +145,14 @@ export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
                                 ))}
                             </div>
                             
-                            {/* View all button if there are more results */}
-                            {hasMore && onOpenOverlay && (
+                            {/* View all button — always show when overlay is available */}
+                            {onOpenOverlay && (
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onOpenOverlay(`tool-group-${toolGroupId}`);
                                     }}
-                                    className="w-full py-2 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 animate-in fade-in slide-in-from-bottom"
+                                    className="w-full py-2 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
                                     style={{ 
                                         animationDelay: `${displayItems.length * 50}ms`,
                                         animationDuration: '200ms',
@@ -154,7 +160,7 @@ export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
                                     }}
                                 >
                                     <FileText className="w-4 h-4" />
-                                    <span>View all {analysis.length} descriptions</span>
+                                    <span>{hasMore ? `View all ${analysis.length} descriptions` : `View ${analysis.length} ${analysis.length === 1 ? 'description' : 'descriptions'}`}</span>
                                 </button>
                             )}
                         </div>
@@ -163,7 +169,7 @@ export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
                 
                 return null;
             })}
-        </>
+        </div>
     );
 };
 

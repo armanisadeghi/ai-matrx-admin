@@ -155,7 +155,7 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                         e.stopPropagation();
                         onOpenOverlay(`tool-group-${toolGroupId}`);
                     }}
-                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 animate-in fade-in slide-in-from-bottom"
+                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
                     style={{ 
                         animationDelay: `${Math.min(findings.length, 5) * 60}ms`,
                         animationDuration: '300ms',

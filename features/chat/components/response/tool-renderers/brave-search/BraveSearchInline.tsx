@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Globe } from "lucide-react";
+import { Globe, Search } from "lucide-react";
 import { GiArchiveResearch } from "react-icons/gi";
 import { ToolRendererProps } from "../types";
 
 /**
  * Compact inline renderer for Brave Search results
- * Shows up to 5 unique sites with favicons and a "+X more" button
+ * Shows up to 5 unique sites with favicons, a "+X more" pill, and a "View all" button
  */
 export const BraveSearchInline: React.FC<ToolRendererProps> = ({ 
     toolUpdates, 
@@ -22,15 +22,31 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
         ? toolUpdates.slice(0, currentIndex + 1) 
         : toolUpdates;
     
+    // Check if tool is complete (has output or error)
+    const isComplete = visibleUpdates.some(u => u.type === "mcp_output" || u.type === "mcp_error");
+    
+    // Count total web results across all step_data updates
+    const totalResultCount = useMemo(() => {
+        let count = 0;
+        for (const update of visibleUpdates) {
+            if (update.type === "step_data" && update.step_data?.type === "brave_default_page") {
+                const content = update.step_data.content as Record<string, unknown>;
+                const webResults = (content?.web as Record<string, unknown>)?.results;
+                if (Array.isArray(webResults)) count += webResults.length;
+            }
+        }
+        return count;
+    }, [visibleUpdates]);
+    
     if (visibleUpdates.length === 0) return null;
     
     return (
-        <>
+        <div className="space-y-2">
             {visibleUpdates.map((update, index) => {
                 // Render brave search results with message
                 if (update.type === "step_data" && update.step_data?.type === "brave_default_page") {
-                    const content = update.step_data.content as any;
-                    const webResults = content?.web?.results || [];
+                    const content = update.step_data.content as Record<string, unknown>;
+                    const webResults = ((content?.web as Record<string, unknown>)?.results || []) as Array<Record<string, unknown>>;
                     
                     // Filter out duplicates and get up to 5 unique sites for this batch
                     const uniqueSitesForThisBatch: Array<{
@@ -43,18 +59,19 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
                         if (uniqueSitesForThisBatch.length >= 5) break;
                         
                         try {
-                            const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
+                            const metaUrl = result.meta_url as Record<string, unknown> | undefined;
+                            const hostname = (metaUrl?.hostname as string) || new URL(result.url as string).hostname;
                             
                             // Only add if we haven't shown this hostname yet
                             if (!shownHostnames.has(hostname)) {
                                 shownHostnames.add(hostname);
                                 uniqueSitesForThisBatch.push({
                                     hostname,
-                                    favicon: result.meta_url?.favicon,
-                                    url: result.url
+                                    favicon: metaUrl?.favicon as string | undefined,
+                                    url: result.url as string
                                 });
                             }
-                        } catch (e) {
+                        } catch {
                             // Skip invalid URLs
                         }
                     }
@@ -108,7 +125,6 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    // Set the initial tab to this specific update
                                                     onOpenOverlay(`tool-group-${toolGroupId}`);
                                                 }}
                                                 className="flex items-center gap-1.5 px-2 py-0 rounded-md bg-blue-50 dark:bg-blue-900/20 animate-in fade-in slide-in-from-bottom hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
@@ -143,7 +159,22 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
                 // Return null for other update types we don't render
                 return null;
             })}
-        </>
+            
+            {/* View all results button — always show when overlay is available and we have data */}
+            {isComplete && onOpenOverlay && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenOverlay(`tool-group-${toolGroupId}`);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
+                    style={{ animationDuration: '300ms', animationFillMode: 'backwards' }}
+                >
+                    <Search className="w-4 h-4" />
+                    <span>View {totalResultCount > 0 ? `all ${totalResultCount} search results` : 'search results'}</span>
+                </button>
+            )}
+        </div>
     );
 };
 
