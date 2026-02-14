@@ -269,6 +269,19 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                         if (line.trim()) {
                             try {
                                 const agentEvent = JSON.parse(line) as AgentStreamEvent;
+
+                                // DEBUG: Log every event from server — remove after debugging
+                                if (agentEvent.event === 'tool_update') {
+                                    const d = agentEvent.data as Record<string, unknown>;
+                                    console.log('[useAgentChat] tool_update from server:', {
+                                        id: d.id,
+                                        type: d.type,
+                                        hasInput: !!d.mcp_input,
+                                        hasOutput: !!d.mcp_output,
+                                        hasError: !!d.mcp_error,
+                                    });
+                                }
+
                                 const streamEvent = convertAgentEventToStreamEvent(agentEvent);
 
                                 if (streamEvent) {

@@ -9,6 +9,8 @@ export {
     shouldKeepExpandedOnStream,
     getToolDisplayName,
     getResultsLabel,
+    getHeaderSubtitle,
+    getHeaderExtras,
     registerToolRenderer
 } from "./registry";
 export { GenericRenderer } from "./GenericRenderer";

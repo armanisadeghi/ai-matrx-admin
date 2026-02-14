@@ -29,8 +29,13 @@ features/chat/components/response/tool-renderers/
 
 The system wraps every overlay renderer in a `ToolGroupTab` that provides:
 - A blue gradient header bar with tool name, subtitle, result count
-- A toggle icon to switch between Results and Input views
-- **Overlay renderers must NOT render their own header**
+- A toggle icon to switch between Results, Input, and Raw views
+- Support for custom header subtitle and extras via registry functions
+- **CRITICAL: Overlay renderers must NEVER render their own header or summary banner**
+
+If your tool needs to show summary stats (e.g., "3 Passed, 2 Need Attention") or other
+contextual info in the header, use `getHeaderExtras` in the registry entry — NOT a custom
+header inside the overlay component. See "Registry Header Customization" below.
 
 ## Data Shape
 
@@ -102,12 +107,13 @@ The inline component renders in the chat stream inside a collapsible accordion. 
 The overlay component renders inside the full-screen modal. Rules:
 - Always add `"use client";` directive
 - Implement `ToolRendererProps` from `../types`
-- **Do NOT render a header** — the system provides a blue gradient header automatically
+- **CRITICAL: Do NOT render any header, title banner, or summary section** — the system provides a blue gradient header automatically via `ToolGroupTab`. If you need summary stats or extra info in the header, use `getHeaderExtras` in the registry (see Step 6).
 - Extract data with `useMemo` keyed on `[toolUpdates]`
 - Go full-featured: filters, sorting, searching, copy-all, view toggles
 - Always provide dark mode variants (`dark:` classes)
 - Handle empty states with an icon + message
 - Wrap content in `<div className="p-4 space-y-4">` or similar
+- Start directly with actionable content (filters, info boxes, result lists) — no decorative headers
 
 ### 5. Create barrel export
 
@@ -137,6 +143,52 @@ import { {Tool}Inline, {Tool}Overlay } from "./{tool-name}";
 },
 ```
 
+#### Registry Header Customization
+
+The universal blue gradient header auto-detects a subtitle from input args (query, url, etc.)
+and result counts. If your tool needs a **custom subtitle** or **extra content** in the header,
+use these optional registry fields instead of rendering a header in the overlay component:
+
+```tsx
+"{exact_mcp_input_name}": {
+    displayName: "Human Readable Name",
+    resultsLabel: "Short Results Label",
+    inline: {Tool}Inline,
+    overlay: {Tool}Overlay,
+    keepExpandedOnStream: true,
+
+    // Override the auto-detected subtitle text (return null to fall back to default)
+    getHeaderSubtitle: (toolUpdates) => {
+        const output = toolUpdates.find(u => u.type === "mcp_output");
+        // Return a custom string, or null for default behavior
+        return "Custom subtitle text";
+    },
+
+    // Render extra content below the title/subtitle in the blue header
+    // Great for summary stats, badges, pass/fail counts, etc.
+    getHeaderExtras: (toolUpdates) => {
+        const output = toolUpdates.find(u => u.type === "mcp_output");
+        if (!output?.mcp_output) return null;
+        // Return JSX — rendered inside the blue gradient header
+        return (
+            <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+                <span>3 Passed</span>
+                <span>2 Need Attention</span>
+            </div>
+        );
+    },
+},
+```
+
+**When to use `getHeaderExtras`:**
+- Tool results have summary stats (pass/fail counts, totals)
+- You want badges or status indicators in the header
+- Any contextual info that should appear in the header area
+
+**When NOT to use it:**
+- Simple tools where the default subtitle (query text, result count) is sufficient
+- The tool's data is self-explanatory from the results list
+
 ### 7. Add to barrel exports
 
 **File:** `features/chat/components/response/tool-renderers/index.ts`
@@ -147,7 +199,8 @@ Add: `export * from "./{tool-name}";`
 
 - [ ] Inline renders in the chat stream with preview items
 - [ ] "View all" button opens the correct modal tab
-- [ ] Overlay shows full results without a duplicate header
+- [ ] Overlay shows full results without a duplicate header (NO gradient banners, NO title sections)
+- [ ] If using `getHeaderExtras`, verify extras appear in the blue header
 - [ ] Input toggle in blue header works
 - [ ] Dark mode looks correct
 - [ ] Empty states handled

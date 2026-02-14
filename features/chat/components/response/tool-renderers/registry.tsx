@@ -12,6 +12,68 @@ import { SeoMetaDescriptionsInline } from "./seo-meta-descriptions";
 import { WebResearchInline, WebResearchOverlay } from "./web-research";
 import { CoreWebSearchInline, CoreWebSearchOverlay } from "./core-web-search";
 import BraveSearchDisplay from "@/features/workflows/results/registered-components/BraveSearchDisplay";
+import { CheckCircle, AlertTriangle } from "lucide-react";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEO header extras helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function seoMetaTagsHeaderExtras(toolUpdates: ToolCallObject[]): React.ReactNode {
+    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
+    if (!outputUpdate?.mcp_output) return null;
+    const rawResult = outputUpdate.mcp_output.result;
+    if (!rawResult || typeof rawResult !== "object") return null;
+    const result = rawResult as { batch_analysis?: Array<{ overall_ok: boolean }>; count?: number };
+    if (!result.batch_analysis) return null;
+    const total = result.count ?? result.batch_analysis.length;
+    const passed = result.batch_analysis.filter((a) => a.overall_ok).length;
+    const failed = total - passed;
+    return (
+        <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" />{passed} Passed</span>
+            {failed > 0 && <span className="flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{failed} Need Attention</span>}
+            <span className="ml-auto text-white/60">Total: {total}</span>
+        </div>
+    );
+}
+
+function seoTitlesHeaderExtras(toolUpdates: ToolCallObject[]): React.ReactNode {
+    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
+    if (!outputUpdate?.mcp_output) return null;
+    const rawResult = outputUpdate.mcp_output.result;
+    if (!rawResult || typeof rawResult !== "object") return null;
+    const result = rawResult as { title_analysis?: Array<{ title_ok: boolean }>; count?: number };
+    if (!result.title_analysis) return null;
+    const total = result.count ?? result.title_analysis.length;
+    const passed = result.title_analysis.filter((a) => a.title_ok).length;
+    const failed = total - passed;
+    return (
+        <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" />{passed} Passed</span>
+            {failed > 0 && <span className="flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{failed} Need Attention</span>}
+            <span className="ml-auto text-white/60">Total: {total}</span>
+        </div>
+    );
+}
+
+function seoDescriptionsHeaderExtras(toolUpdates: ToolCallObject[]): React.ReactNode {
+    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
+    if (!outputUpdate?.mcp_output) return null;
+    const rawResult = outputUpdate.mcp_output.result;
+    if (!rawResult || typeof rawResult !== "object") return null;
+    const result = rawResult as { description_analysis?: Array<{ description_ok: boolean }>; count?: number };
+    if (!result.description_analysis) return null;
+    const total = result.count ?? result.description_analysis.length;
+    const passed = result.description_analysis.filter((a) => a.description_ok).length;
+    const failed = total - passed;
+    return (
+        <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" />{passed} Passed</span>
+            {failed > 0 && <span className="flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{failed} Need Attention</span>}
+            <span className="ml-auto text-white/60">Total: {total}</span>
+        </div>
+    );
+}
 
 /**
  * Main registry of tool renderers
@@ -52,7 +114,8 @@ export const toolRendererRegistry: ToolRegistry = {
         resultsLabel: "Meta Tags Results",
         inline: SeoMetaTagsInline,
         overlay: SeoMetaTagsOverlay,
-        keepExpandedOnStream: true, // Keep results visible for review
+        keepExpandedOnStream: true,
+        getHeaderExtras: seoMetaTagsHeaderExtras,
     },
     
     // SEO Meta Titles Checker - title-only analysis
@@ -60,7 +123,8 @@ export const toolRendererRegistry: ToolRegistry = {
         displayName: "SEO Title Checker",
         resultsLabel: "Title Results",
         inline: SeoMetaTitlesInline,
-        keepExpandedOnStream: true, // Keep titles visible for review
+        keepExpandedOnStream: true,
+        getHeaderExtras: seoTitlesHeaderExtras,
     },
     
     // SEO Meta Descriptions Checker - description-only analysis
@@ -68,7 +132,8 @@ export const toolRendererRegistry: ToolRegistry = {
         displayName: "SEO Description Checker",
         resultsLabel: "Description Results",
         inline: SeoMetaDescriptionsInline,
-        keepExpandedOnStream: true, // Keep descriptions visible for review
+        keepExpandedOnStream: true,
+        getHeaderExtras: seoDescriptionsHeaderExtras,
     },
     
     // Web Research v1 - AI-powered multi-page research with summaries
@@ -184,6 +249,30 @@ export function getResultsLabel(toolName: string | null): string {
     // Fallback: use displayName + " Results"
     const displayName = getToolDisplayName(toolName);
     return `${displayName} Results`;
+}
+
+/**
+ * Get custom header subtitle for a tool's overlay header.
+ * Returns null if no custom subtitle is defined (falls back to default behavior).
+ * @param toolName - Name of the tool from mcp_input.name
+ * @param toolUpdates - Array of all tool updates for this tool call
+ * @returns Custom subtitle string, or null for default
+ */
+export function getHeaderSubtitle(toolName: string | null, toolUpdates: ToolCallObject[]): string | null {
+    if (!toolName || !toolRendererRegistry[toolName]?.getHeaderSubtitle) return null;
+    return toolRendererRegistry[toolName].getHeaderSubtitle!(toolUpdates);
+}
+
+/**
+ * Get custom header extras (ReactNode) for a tool's overlay header.
+ * Returns null if no custom extras are defined.
+ * @param toolName - Name of the tool from mcp_input.name
+ * @param toolUpdates - Array of all tool updates for this tool call
+ * @returns ReactNode to render in header, or null
+ */
+export function getHeaderExtras(toolName: string | null, toolUpdates: ToolCallObject[]): React.ReactNode {
+    if (!toolName || !toolRendererRegistry[toolName]?.getHeaderExtras) return null;
+    return toolRendererRegistry[toolName].getHeaderExtras!(toolUpdates);
 }
 
 /**

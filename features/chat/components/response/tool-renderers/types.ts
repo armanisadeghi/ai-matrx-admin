@@ -1,3 +1,4 @@
+import React from "react";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 
 /**
@@ -64,6 +65,24 @@ export interface ToolRenderer {
      * Default: false (will auto-collapse)
      */
     keepExpandedOnStream?: boolean;
+    
+    /**
+     * Optional function to provide a custom subtitle for the universal overlay header.
+     * Overrides the default auto-detected subtitle (query, URL, result count).
+     * Return null to fall back to default behavior.
+     * @param toolUpdates - Array of all tool updates for this tool call
+     * @returns Custom subtitle string, or null for default
+     */
+    getHeaderSubtitle?: (toolUpdates: ToolCallObject[]) => string | null;
+    
+    /**
+     * Optional function to render extra content in the universal overlay header.
+     * Renders below the title/subtitle in the blue gradient header bar.
+     * Use this for summary stats, badges, or other contextual info.
+     * @param toolUpdates - Array of all tool updates for this tool call
+     * @returns ReactNode to render in header, or null for no extras
+     */
+    getHeaderExtras?: (toolUpdates: ToolCallObject[]) => React.ReactNode;
 }
 
 /**

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
-import { getOverlayRenderer, hasCustomRenderer, getResultsLabel, getToolDisplayName } from "@/features/chat/components/response/tool-renderers";
+import { getOverlayRenderer, hasCustomRenderer, getResultsLabel, getToolDisplayName, getHeaderSubtitle, getHeaderExtras } from "@/features/chat/components/response/tool-renderers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, MessageSquare, Settings2, Wrench, FileCode2, Copy, Check } from "lucide-react";
@@ -295,6 +295,12 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
         return null;
     }, [outputUpdate]);
 
+    // Custom header subtitle from registry (overrides default auto-detection)
+    const customSubtitle = useMemo(() => getHeaderSubtitle(toolName, group), [toolName, group]);
+
+    // Custom header extras (ReactNode rendered below title/subtitle)
+    const headerExtras = useMemo(() => getHeaderExtras(toolName, group), [toolName, group]);
+
     // Header title and subtitle based on active view
     const headerTitle = activeView === "input"
         ? `${toolDisplayName} — Input`
@@ -306,7 +312,7 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
         ? (toolName || toolDisplayName)
         : activeView === "raw"
             ? (toolName || toolDisplayName)
-            : (subtitle || resultCount || toolDisplayName);
+            : (customSubtitle || subtitle || resultCount || toolDisplayName);
 
     const renderResults = () => {
         if (hasCustom && (outputUpdate || stepDataUpdates.length > 0)) {
@@ -354,11 +360,14 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
         { view: "raw", icon: <FileCode2 className="w-3.5 h-3.5" />, label: "Raw", available: hasOutput },
     ];
 
+    // Only show header extras in results view
+    const showExtras = activeView === "results" && headerExtras;
+
     return (
         <div className="flex flex-col h-full">
             {/* Blue gradient header with view selector icons */}
             <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-700 px-5 py-3 min-h-[3.75rem]">
-                <div className="flex items-center justify-between h-full">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 min-w-0">
                         <Wrench className="w-5 h-5 text-white/80 flex-shrink-0" />
                         <div className="min-w-0">
@@ -390,6 +399,11 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
                         ))}
                     </div>
                 </div>
+                {showExtras && (
+                    <div className="mt-1">
+                        {headerExtras}
+                    </div>
+                )}
             </div>
 
             {/* Content area */}
