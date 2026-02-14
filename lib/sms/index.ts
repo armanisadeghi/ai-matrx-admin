@@ -45,6 +45,9 @@ export {
 // Validation
 export { validateTwilioSignature, validateTwilioWebhook } from './validate';
 
+// Phone Utilities
+export { normalizePhoneNumber, isValidE164, formatPhoneNumber, extractDigits } from './phoneUtils';
+
 // Notification Service
 export {
   sendDmNotificationSms,

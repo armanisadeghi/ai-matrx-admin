@@ -120,6 +120,10 @@
     "name": "slack"
   },
   {
+    "path": "/tests/sms",
+    "name": "sms"
+  },
+  {
     "path": "/tests/socket-tests",
     "name": "socket-tests"
   },

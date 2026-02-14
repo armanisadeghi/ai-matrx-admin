@@ -35,9 +35,9 @@ TWILIO_SKIP_VALIDATION=true   # Remove in production!
 4. Use case: Select "Notify my users" or "Chat with users"
 5. **Sender Pool**: Add your phone number(s) to the sender pool
 6. **Integration**:
-   - Incoming Messages webhook URL: `https://yourdomain.com/api/webhooks/twilio/sms`
+   - Incoming Messages webhook URL: `https://aimatrx.com/api/webhooks/twilio/sms`
    - Method: `POST`
-   - Status Callback URL: `https://yourdomain.com/api/webhooks/twilio/status`
+   - Status Callback URL: `https://aimatrx.com/api/webhooks/twilio/status`
    - Method: `POST`
 7. **Compliance**: Enable **Advanced Opt-Out** (auto-handles STOP/START keywords)
 8. Enable **Smart Encoding** (converts Unicode to GSM to save segments)
@@ -165,15 +165,15 @@ supabase db push
 
 After deploying, verify that your webhook URLs are accessible:
 
-1. **Inbound SMS**: `https://yourdomain.com/api/webhooks/twilio/sms`
-2. **Status Callbacks**: `https://yourdomain.com/api/webhooks/twilio/status`
+1. **Inbound SMS**: `https://aimatrx.com/api/webhooks/twilio/sms`
+2. **Status Callbacks**: `https://aimatrx.com/api/webhooks/twilio/status`
 
 Test with curl:
 ```bash
-curl https://yourdomain.com/api/webhooks/twilio/sms
+curl https://aimatrx.com/api/webhooks/twilio/sms
 # Should return JSON with endpoint info
 
-curl https://yourdomain.com/api/webhooks/twilio/status
+curl https://aimatrx.com/api/webhooks/twilio/status
 # Should return JSON with endpoint info
 ```
 

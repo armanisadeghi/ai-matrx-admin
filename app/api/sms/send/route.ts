@@ -11,6 +11,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/adminClient';
 import { sendAndLogSms } from '@/lib/sms/send';
 import { findOrCreateConversation } from '@/lib/sms/receive';
+import { normalizePhoneNumber, isValidE164 } from '@/lib/sms/phoneUtils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,11 +26,25 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { to, message, conversationId, mediaUrl } = body;
+    let { to, message, body: messageBody, conversationId, mediaUrl } = body;
 
-    if (!to || !message) {
+    // Support both 'message' and 'body' field names
+    const messageText = message || messageBody;
+
+    if (!to || !messageText) {
       return NextResponse.json(
-        { success: false, msg: 'Missing required fields: to, message' },
+        { success: false, msg: 'Missing required fields: to, message (or body)' },
+        { status: 400 }
+      );
+    }
+
+    // Normalize phone number to E.164 format
+    to = normalizePhoneNumber(to);
+
+    // Validate E.164 format
+    if (!isValidE164(to)) {
+      return NextResponse.json(
+        { success: false, msg: 'Invalid phone number format. Use 10 digits (2125551234) or +1 format (+12125551234)' },
         { status: 400 }
       );
     }
@@ -75,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     const result = await sendAndLogSms({
       to,
-      body: message,
+      body: messageText,
       from: fromNumber || undefined,
       mediaUrl,
       conversationId: convId,

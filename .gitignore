@@ -75,3 +75,6 @@ directory-structure.json
 
 # Matrx Ship config (contains API key)
 .matrx-ship.json
+
+# Arman's secrets directory
+.arman/secrets

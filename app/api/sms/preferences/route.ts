@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/adminClient';
+import { normalizePhoneNumber } from '@/lib/sms/phoneUtils';
 
 /**
  * GET /api/sms/preferences
@@ -113,6 +114,11 @@ export async function PUT(request: NextRequest) {
       if (body[field] !== undefined) {
         updateData[field] = body[field];
       }
+    }
+
+    // Normalize phone number if provided
+    if (updateData.phone_number && typeof updateData.phone_number === 'string') {
+      updateData.phone_number = normalizePhoneNumber(updateData.phone_number);
     }
 
     // Upsert preferences

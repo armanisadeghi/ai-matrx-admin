@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/adminClient';
 import { sendVerification, checkVerification } from '@/lib/sms/verify';
+import { normalizePhoneNumber, isValidE164 } from '@/lib/sms/phoneUtils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, phoneNumber, code } = body;
+    let { action, phoneNumber, code } = body;
 
     if (!action || !phoneNumber) {
       return NextResponse.json(
@@ -33,13 +34,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Basic E.164 format validation
-    if (!/^\+[1-9]\d{1,14}$/.test(phoneNumber)) {
+    // Normalize phone number to E.164 format
+    phoneNumber = normalizePhoneNumber(phoneNumber);
+
+    // Validate E.164 format
+    if (!isValidE164(phoneNumber)) {
       return NextResponse.json(
-        { success: false, msg: 'Phone number must be in E.164 format (e.g., +12125551234)' },
+        { success: false, msg: 'Invalid phone number format. Use 10 digits (2125551234) or +1 format (+12125551234)' },
         { status: 400 }
       );
     }
+
+    // Normalize action names (support both 'start'/'send' and 'verify'/'check')
+    if (action === 'start') action = 'send';
+    if (action === 'verify') action = 'check';
 
     switch (action) {
       case 'send': {
