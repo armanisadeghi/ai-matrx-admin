@@ -298,8 +298,28 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 }
             }
 
-            // Mark as complete
-            updateMessage(assistantMessageId, { status: 'complete' });
+            // Extract tool updates from the stream and persist them on the
+            // assistant message so they survive after stream events are cleared.
+            const toolUpdates = streamEventsRef.current
+                .filter((e) => e.event === 'tool_update' && e.data)
+                .map((e) => {
+                    const d = e.data as Record<string, unknown>;
+                    return {
+                        id: d.id || `tool-${Math.random().toString(36).slice(2, 8)}`,
+                        type: d.type,
+                        mcp_input: d.mcp_input,
+                        mcp_output: d.mcp_output,
+                        mcp_error: d.mcp_error,
+                        step_data: d.step_data,
+                        user_visible_message: d.user_visible_message,
+                    };
+                });
+
+            // Mark as complete, attaching any tool updates from the stream
+            updateMessage(assistantMessageId, {
+                status: 'complete',
+                ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
+            });
             options.onComplete?.();
             return true;
 
