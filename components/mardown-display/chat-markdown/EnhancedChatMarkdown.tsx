@@ -222,15 +222,58 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         }
     }, [blockError]);
 
+    // Post-process blocks: consolidate consecutive reasoning blocks when NOT streaming.
+    // During streaming, each reasoning block renders individually (real-time feedback).
+    // Once complete, consecutive reasoning blocks merge into a single unified display.
+    // Reasoning blocks separated by other content (text, tool calls, etc.) stay separate.
+    const processedBlocks = useMemo(() => {
+        // During streaming, return blocks as-is for real-time display
+        if (isStreamActive) return blocks;
+        
+        const result: ContentBlock[] = [];
+        let i = 0;
+        
+        while (i < blocks.length) {
+            if (blocks[i].type === "reasoning") {
+                // Collect consecutive reasoning blocks
+                const reasoningGroup: string[] = [];
+                while (i < blocks.length && blocks[i].type === "reasoning") {
+                    reasoningGroup.push(blocks[i].content);
+                    i++;
+                }
+                
+                if (reasoningGroup.length > 1) {
+                    // Multiple consecutive reasoning blocks — consolidate
+                    result.push({
+                        type: "consolidated_reasoning",
+                        content: reasoningGroup.join("\n---\n"), // Join for fallback
+                        metadata: { reasoningTexts: reasoningGroup },
+                    });
+                } else {
+                    // Single reasoning block — keep as-is
+                    result.push({
+                        type: "reasoning",
+                        content: reasoningGroup[0],
+                    });
+                }
+            } else {
+                result.push(blocks[i]);
+                i++;
+            }
+        }
+        
+        return result;
+    }, [blocks, isStreamActive]);
+
     // Find the index of the last reasoning block for animation purposes
     const lastReasoningBlockIndex = useMemo(() => {
-        for (let i = blocks.length - 1; i >= 0; i--) {
-            if (blocks[i].type === "reasoning") {
+        for (let i = processedBlocks.length - 1; i >= 0; i--) {
+            if (processedBlocks[i].type === "reasoning") {
                 return i;
             }
         }
         return -1;
-    }, [blocks]);
+    }, [processedBlocks]);
 
     // Note: Table parsing removed - StreamingTableRenderer handles it directly from block content
 
@@ -414,7 +457,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
                 )}
                 
                 <div className={containerStyles}>
-                    {blocks.map((block, index) => renderBlock(block, index))}
+                    {processedBlocks.map((block, index) => renderBlock(block, index))}
                 </div>
 
                 {!hideCopyButton && (

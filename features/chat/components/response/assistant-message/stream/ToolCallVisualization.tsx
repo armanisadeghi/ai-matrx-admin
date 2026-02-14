@@ -112,7 +112,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
     const renderAllUpdates = () => {
         if (visibleUpdates === 0) return null;
         
-        // Callback to open overlay with specific tab
+        // Callback to open overlay with specific tab (now uses tool group ID)
         const handleOpenOverlay = (initialTab?: string) => {
             setInitialOverlayTab(initialTab);
             setIsOverlayOpen(true);
@@ -121,15 +121,6 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
         // Calculate how many updates to show from each group
         const visibleToolUpdates = toolUpdates.slice(0, visibleUpdates);
         
-        // Build a map of global index offsets for each group
-        // This tells each group where its first item sits in the full toolUpdates array
-        const groupOffsets: number[] = [];
-        let offset = 0;
-        for (const group of toolGroups) {
-            groupOffsets.push(offset);
-            offset += group.length;
-        }
-        
         return (
             <div className="space-y-4">
                 {toolGroups.map((group, groupIndex) => {
@@ -137,6 +128,9 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                     const groupInputUpdate = group.find((u) => u.type === "mcp_input");
                     const groupToolName = groupInputUpdate?.mcp_input?.name || null;
                     const groupDisplayName = getToolDisplayName(groupToolName);
+                    
+                    // Get the tool group ID (used for tab targeting in the overlay)
+                    const groupId = group[0]?.id || "default";
                     
                     // Get the appropriate renderer for this tool
                     const InlineRenderer = getInlineRenderer(groupToolName);
@@ -165,7 +159,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                                 toolUpdates={group}
                                 currentIndex={currentIndex}
                                 onOpenOverlay={handleOpenOverlay}
-                                globalIndexOffset={groupOffsets[groupIndex]}
+                                toolGroupId={groupId}
                             />
                         </div>
                     );

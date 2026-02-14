@@ -159,6 +159,9 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!urlConversationId) {
             loadedConversationRef.current = null;
+            // Reset loading state when navigating away from a conversation
+            // (e.g. "New Chat" while a load was in progress)
+            setIsLoadingConversation(false);
             return;
         }
 
@@ -234,6 +237,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         setAgent(agent);
         startNewConversation();
         loadedConversationRef.current = null;
+        setIsLoadingConversation(false);
         setFocusKey(k => k + 1);
         router.push(`/p/chat/a/${agent.promptId}`);
     }, [router, setAgent, startNewConversation, selectedAgent.promptId, activeConversationId]);
@@ -247,6 +251,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     const handleNewChat = useCallback(() => {
         startNewConversation();
         loadedConversationRef.current = null;
+        setIsLoadingConversation(false);
         router.push(`/p/chat/a/${selectedAgent.promptId}`);
     }, [router, selectedAgent.promptId, startNewConversation]);
 

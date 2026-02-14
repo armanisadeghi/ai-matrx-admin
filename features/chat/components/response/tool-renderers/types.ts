@@ -17,16 +17,16 @@ export interface ToolRendererProps {
     
     /**
      * Callback to open the overlay modal
-     * @param initialTab - Optional tab ID to open initially
+     * @param initialTab - Optional tab ID to open initially (format: "tool-group-{id}")
      */
     onOpenOverlay?: (initialTab?: string) => void;
     
     /**
-     * The starting index of this group's first update within the full toolUpdates array.
-     * Used to compute correct global tab IDs (e.g., `tool-update-${globalIndexOffset + localIndex}`).
-     * Defaults to 0 for single-tool scenarios.
+     * The unique ID for this tool's group in the overlay.
+     * Used to build the tab ID: `tool-group-${toolGroupId}`.
+     * Passed down from ToolCallVisualization based on the tool call's `id` field.
      */
-    globalIndexOffset?: number;
+    toolGroupId?: string;
 }
 
 /**
@@ -64,14 +64,6 @@ export interface ToolRenderer {
      * Default: false (will auto-collapse)
      */
     keepExpandedOnStream?: boolean;
-    
-    /**
-     * Update types to show as individual tabs in the overlay.
-     * By default, only "mcp_input", "mcp_output", "mcp_error", and "step_data" get tabs.
-     * Set to "all" to include every update type (including user_visible_message).
-     * Or provide an array of specific types to include.
-     */
-    overlayTabTypes?: "all" | ToolCallObject["type"][];
 }
 
 /**

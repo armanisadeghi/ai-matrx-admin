@@ -31,6 +31,7 @@ export interface ContentBlock {
         | "table"
         | "thinking"
         | "reasoning"
+        | "consolidated_reasoning"
         | "image"
         | "video"
         | "tasks"

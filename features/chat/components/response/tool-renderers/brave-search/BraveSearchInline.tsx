@@ -13,7 +13,7 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
     toolUpdates, 
     currentIndex,
     onOpenOverlay,
-    globalIndexOffset = 0 
+    toolGroupId = "default" 
 }) => {
     // Track shown hostnames across all updates to avoid duplicates
     const shownHostnames = useMemo(() => new Set<string>(), []);
@@ -109,7 +109,7 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     // Set the initial tab to this specific update
-                                                    onOpenOverlay(`tool-update-${globalIndexOffset + index}`);
+                                                    onOpenOverlay(`tool-group-${toolGroupId}`);
                                                 }}
                                                 className="flex items-center gap-1.5 px-2 py-0 rounded-md bg-blue-50 dark:bg-blue-900/20 animate-in fade-in slide-in-from-bottom hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
                                                 style={{ animationDelay: `${uniqueSitesForThisBatch.length * 100}ms` }}

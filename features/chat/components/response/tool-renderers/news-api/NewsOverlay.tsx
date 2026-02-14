@@ -86,17 +86,6 @@ export const NewsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
     
     return (
         <div className="w-full h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4">
-            {/* Header */}
-            <div className="mb-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6">
-                <div className="flex items-center gap-3 mb-2">
-                    <Newspaper className="w-6 h-6 text-white" />
-                    <h1 className="text-2xl font-bold text-white">News Articles</h1>
-                </div>
-                <p className="text-white/90">
-                    {newsData.totalResults} articles found
-                </p>
-            </div>
-            
             {/* Filters and Sorting */}
             <div className="mb-4 flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-800">
                 {/* Source Filter */}

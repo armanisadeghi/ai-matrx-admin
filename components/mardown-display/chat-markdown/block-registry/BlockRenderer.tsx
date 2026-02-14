@@ -193,6 +193,15 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 />
             );
 
+        case "consolidated_reasoning":
+            return (
+                <BlockComponents.ConsolidatedReasoningVisualization
+                    key={index}
+                    reasoningTexts={block.metadata?.reasoningTexts || [block.content]}
+                    showReasoning={true}
+                />
+            );
+
         case "code":
             // Special handling for diff blocks - use StreamingDiffBlock if content looks like a diff
             if (block.language === 'diff' && looksLikeDiff(block.content)) {

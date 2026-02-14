@@ -158,24 +158,7 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
     
     return (
         <div className="p-6 space-y-6">
-            {/* Research Context */}
-            {intro && (
-                <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-start gap-3">
-                        <FileSearch className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">
-                                Research Query
-                            </h3>
-                            <p className="text-sm text-blue-800 dark:text-blue-300">
-                                {intro}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-            
-            {/* Header with Stats and View Toggle */}
+            {/* Stats and View Toggle */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <Globe className="w-4 h-4" />

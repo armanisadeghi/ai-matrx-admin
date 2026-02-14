@@ -1,65 +1,141 @@
 # Tool Renderers System
 
-A registry-based system for creating custom displays for MCP tool results. This makes it easy to add beautiful, tool-specific visualizations one at a time without touching core orchestration code.
+A registry-based system for creating custom displays for MCP tool results. Each tool gets beautiful, tool-specific visualizations in both the chat stream (inline) and a full-screen modal (overlay), without touching core orchestration code.
 
-## Architecture
+---
 
-Each tool can provide two types of renderers:
+## Architecture Overview
 
-1. **Inline Renderer** (Required) - Compact display shown directly in the chat stream
-2. **Overlay Renderer** (Optional) - Enhanced display shown in the full-screen modal
+```
+User sends message
+  → Agent calls MCP tools
+    → Socket emits ToolCallObject[] updates (input, messages, output)
+      → ToolCallVisualization groups by tool ID, picks inline renderers
+        → Inline renderers show compact preview in chat
+          → "View all" button opens ToolUpdatesOverlay modal
+            → One tab per tool, each with a blue gradient header
+              → Results view (default) or Input view (toggle)
+```
 
-If no overlay renderer is provided, the system falls back to the inline renderer. If neither exists, a generic fallback displays user messages or minimal status.
+### Key Files
 
-## Quick Start
+| File | Purpose |
+|------|---------|
+| `types.ts` | `ToolRendererProps`, `ToolRenderer`, `ToolRegistry` interfaces |
+| `registry.tsx` | Tool registry + helper functions (`getResultsLabel`, `getToolDisplayName`, etc.) |
+| `index.ts` | Barrel exports for the entire system |
+| `GenericRenderer.tsx` | Fallback renderer for unregistered tools |
+| `ToolUpdatesOverlay.tsx` | Full-screen modal — groups tools into tabs, renders blue header + toggle |
+| `ToolCallVisualization.tsx` | Chat-stream container — groups updates, renders inline components |
 
-### Adding a New Tool Renderer
+### Data Flow
 
-Let's say you want to add a custom display for a tool called `weather_api`:
+1. **`ToolCallVisualization`** receives the full `toolUpdates: ToolCallObject[]` array
+2. Groups updates by `update.id` (each tool call has a unique ID)
+3. For each group, looks up the inline renderer via `getInlineRenderer(toolName)`
+4. Passes the **group** (subset) to the inline renderer, plus `toolGroupId` and `onOpenOverlay`
+5. When the user clicks "View all", `ToolUpdatesOverlay` opens with one tab per tool group
+6. Each tab renders a **blue gradient header** (tool name, subtitle, toggle icon) + the overlay content
 
-#### 1. Create the Directory Structure
+---
+
+## ToolCallObject Shape
+
+Every tool update is a `ToolCallObject` from `@/lib/redux/socket-io/socket.types`:
+
+```typescript
+interface ToolCallObject {
+    id?: string;  // Unique ID for the tool call (groups related updates)
+    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_visible_message";
+    mcp_input?: {
+        name: string;        // Tool name (e.g., "api_news_fetch_headlines")
+        arguments: Record<string, any>;  // Tool parameters
+    };
+    mcp_output?: Record<string, unknown>;  // Tool result data
+    mcp_error?: string;                     // Error message if tool failed
+    step_data?: { type: string; [key: string]: any };  // Streaming intermediate data
+    user_visible_message?: string;          // Status messages (e.g., "Browsing https://...")
+}
+```
+
+A typical tool call produces updates in this order:
+
+| # | Type | Description |
+|---|------|-------------|
+| 1 | `mcp_input` | Tool name + arguments (always first) |
+| 2–N | `user_visible_message` | Optional status messages during execution |
+| 2–N | `step_data` | Optional intermediate data (e.g., partial search results) |
+| N+1 | `mcp_output` | Final result data (always last on success) |
+| N+1 | `mcp_error` | Error message (instead of output, on failure) |
+
+---
+
+## Creating a Custom Tool Renderer
+
+### Step 1: Create the Directory
 
 ```
 features/chat/components/response/tool-renderers/
-└── weather-api/
-    ├── WeatherInline.tsx
-    ├── WeatherOverlay.tsx (optional)
-    └── index.ts
+└── my-tool/
+    ├── MyToolInline.tsx      # Required: compact chat-stream display
+    ├── MyToolOverlay.tsx      # Optional: enhanced modal display
+    └── index.ts               # Barrel exports
 ```
 
-#### 2. Create the Inline Component
+### Step 2: Create the Inline Renderer
+
+The inline renderer shows in the chat stream. Keep it compact — show a preview with a "View all" button.
 
 ```tsx
-// weather-api/WeatherInline.tsx
+// my-tool/MyToolInline.tsx
 "use client";
 
 import React from "react";
 import { ToolRendererProps } from "../types";
 
-export const WeatherInline: React.FC<ToolRendererProps> = ({ 
-    toolUpdates, 
+export const MyToolInline: React.FC<ToolRendererProps> = ({
+    toolUpdates,
     currentIndex,
-    onOpenOverlay 
+    onOpenOverlay,
+    toolGroupId = "default",
 }) => {
-    // Extract weather data from tool updates
-    const outputUpdate = toolUpdates.find(u => u.type === "mcp_output");
-    const weatherData = outputUpdate?.mcp_output?.result;
-    
-    if (!weatherData) return null;
-    
+    // Slice to only show updates that have been revealed (for animation)
+    const visibleUpdates = currentIndex !== undefined
+        ? toolUpdates.slice(0, currentIndex + 1)
+        : toolUpdates;
+
+    // Extract your output data
+    const outputUpdate = visibleUpdates.find(u => u.type === "mcp_output");
+    const result = outputUpdate?.mcp_output?.result as YourResultType | undefined;
+
+    if (!result) return null;
+
+    // Show a compact preview
+    const previewItems = result.items.slice(0, 6);
+    const hasMore = result.items.length > previewItems.length;
+
     return (
-        <div className="space-y-2">
-            <div className="text-xs text-slate-600 dark:text-slate-400">
-                Weather: {weatherData.temp}°F, {weatherData.condition}
+        <div className="space-y-3">
+            {/* Compact preview grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {previewItems.map((item, index) => (
+                    <div key={index} className="bg-white dark:bg-slate-800 rounded-lg border p-3">
+                        <h3 className="text-sm font-semibold">{item.title}</h3>
+                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                    </div>
+                ))}
             </div>
-            
-            {/* Optional: Button to open detailed view */}
-            {onOpenOverlay && (
-                <button 
-                    onClick={() => onOpenOverlay()}
-                    className="text-xs text-blue-600 hover:text-blue-800"
+
+            {/* "View all" button — opens the overlay to this tool's tab */}
+            {hasMore && onOpenOverlay && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenOverlay(`tool-group-${toolGroupId}`);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800"
                 >
-                    View detailed forecast
+                    View all {result.items.length} results
                 </button>
             )}
         </div>
@@ -67,265 +143,325 @@ export const WeatherInline: React.FC<ToolRendererProps> = ({
 };
 ```
 
-#### 3. Create the Overlay Component (Optional)
+**Key points:**
+- Always destructure `toolGroupId` with a default of `"default"`
+- Call `onOpenOverlay(\`tool-group-${toolGroupId}\`)` to open the modal to this tool's tab
+- Use `e.stopPropagation()` on click handlers (the parent is a collapsible accordion)
+- Use `currentIndex` for progressive reveal animation
+
+### Step 3: Create the Overlay Renderer (Optional)
+
+The overlay renderer shows in the full-screen modal. Go full-featured here — filters, sorting, detailed views.
+
+**Important:** The overlay renderer does NOT need to render its own header. The `ToolGroupTab` wrapper automatically provides:
+- A blue gradient header bar with the tool's `resultsLabel`
+- A subtitle extracted from the tool's input arguments (query, url, etc.)
+- A toggle icon to switch between Results and Input views
+
+Your overlay component receives the **group** of `ToolCallObject[]` for this specific tool only.
 
 ```tsx
-// weather-api/WeatherOverlay.tsx
+// my-tool/MyToolOverlay.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { ToolRendererProps } from "../types";
 
-export const WeatherOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
-    const outputUpdate = toolUpdates.find(u => u.type === "mcp_output");
-    const weatherData = outputUpdate?.mcp_output?.result;
-    
-    // Full detailed weather display with charts, hourly forecast, etc.
+export const MyToolOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
+    const [filter, setFilter] = useState("all");
+
+    // Extract result data
+    const result = useMemo(() => {
+        const outputUpdate = toolUpdates.find(u => u.type === "mcp_output");
+        if (!outputUpdate?.mcp_output) return null;
+        return outputUpdate.mcp_output.result as YourResultType;
+    }, [toolUpdates]);
+
+    if (!result) {
+        return (
+            <div className="p-4 text-center text-muted-foreground">
+                No data available
+            </div>
+        );
+    }
+
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold">7-Day Forecast</h1>
-            {/* Your enhanced display here */}
+        <div className="p-4 space-y-4">
+            {/* Filters, sorting controls */}
+            <div className="flex items-center gap-2">
+                {/* Your filter UI */}
+            </div>
+
+            {/* Full results list */}
+            <div className="space-y-4">
+                {result.items.map((item, index) => (
+                    <div key={index} className="p-4 rounded-lg border bg-white dark:bg-slate-800/50">
+                        <h3 className="text-base font-semibold">{item.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-2">{item.description}</p>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
 ```
 
-#### 4. Create the Barrel Export
+**Key points:**
+- Do NOT add a header bar — the system provides one automatically
+- The component receives `toolUpdates` scoped to THIS tool's group only
+- Use `useMemo` for data extraction since it may re-render on toggle
+- Provide filter/sort/search features for better UX
+
+### Step 4: Create the Barrel Export
 
 ```tsx
-// weather-api/index.ts
-export { WeatherInline } from "./WeatherInline";
-export { WeatherOverlay } from "./WeatherOverlay";
+// my-tool/index.ts
+export { MyToolInline } from "./MyToolInline";
+export { MyToolOverlay } from "./MyToolOverlay";
 ```
 
-#### 5. Register the Tool
+### Step 5: Register the Tool
+
+Add your tool to `registry.tsx`:
 
 ```tsx
-// registry.tsx
-import { WeatherInline, WeatherOverlay } from "./weather-api";
+import { MyToolInline, MyToolOverlay } from "./my-tool";
 
 export const toolRendererRegistry: ToolRegistry = {
     // ... existing tools
-    
-    "weather_api": {
-        inline: WeatherInline,
-        overlay: WeatherOverlay, // Optional
+
+    "my_tool_name": {
+        displayName: "My Tool",           // Shown in chat header and overlay
+        resultsLabel: "My Tool Results",   // Tab label in the overlay modal
+        inline: MyToolInline,              // Required
+        overlay: MyToolOverlay,            // Optional (falls back to inline, then GenericRenderer)
+        keepExpandedOnStream: true,        // Optional: keep visible when AI starts typing
     },
 };
 ```
 
-#### 6. Export from Index (if needed)
+**Registry fields:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `displayName` | Yes | Human-readable name (shown in chat header, auto-generated tab labels) |
+| `resultsLabel` | No | Custom tab label in overlay (defaults to `${displayName} Results`) |
+| `inline` | Yes | Compact chat-stream component |
+| `overlay` | No | Full-featured modal component (falls back to inline → GenericRenderer) |
+| `keepExpandedOnStream` | No | If `true`, tool results stay visible when AI response text starts streaming (default: `false`, auto-collapses) |
+
+### Step 6: Add to Barrel Exports
+
+In `index.ts`:
 
 ```tsx
-// index.ts
-export * from "./weather-api";
+export * from "./my-tool";
 ```
 
-That's it! Your tool now has a custom display. 🎉
+---
 
-## Component Props
+## The Overlay Modal System
+
+### How Tabs Work
+
+The `ToolUpdatesOverlay` modal creates **one tab per tool call**:
+
+- Tab ID: `tool-group-{toolCallId}`
+- Tab label: from `resultsLabel` in registry, or `${displayName} Results`, or auto-generated from snake_case
+- Default view: Results (custom overlay renderer, or generic output view)
+- Toggle: Settings icon in the blue header bar switches to Input view
+
+### The Blue Gradient Header
+
+Every tool tab gets a consistent blue gradient header bar that shows:
+
+1. **Tool icon** (Wrench icon)
+2. **Title** — `resultsLabel` when showing results, `{displayName} — Input` when toggled
+3. **Subtitle** — Auto-extracted from the tool's input arguments (`query`, `q`, `search`, `url`, `urls`)
+4. **Result count** — Auto-extracted from output (`articles.length`, `totalResults`, etc.)
+5. **Toggle button** — Small pill with Settings icon, toggles between Results and Input views
+
+Custom overlay renderers do NOT need to provide their own header. However, tools like `NewsOverlay` that have their own enhanced header (with filter/sort controls) can keep it — it renders inside the content area below the blue bar.
+
+### Fallback Rendering
+
+For tools without a custom overlay renderer, the system provides:
+
+- **OutputView** — Detects text content (`result`, `text`, `content` fields) and renders it as prose, or falls back to formatted JSON
+- **ErrorView** — Red-themed error card with the error message
+- **InputView** — Parameter display with formatted values and raw JSON reference
+
+---
+
+## Props Reference
 
 ### ToolRendererProps
 
 ```typescript
 interface ToolRendererProps {
-    /**
-     * Array of all tool updates for this tool call
-     * Includes mcp_input, step_data, mcp_output, etc.
-     */
-    toolUpdates: ToolCallObject[];
-    
-    /**
-     * Current index in the tool updates array being rendered
-     * Useful for progressive rendering
-     */
-    currentIndex?: number;
-    
-    /**
-     * Callback to open the overlay modal
-     * @param initialTab - Optional tab ID to open initially
-     */
-    onOpenOverlay?: (initialTab?: string) => void;
+    toolUpdates: ToolCallObject[];  // Updates for this tool group only
+    currentIndex?: number;          // For progressive reveal animation (inline only)
+    onOpenOverlay?: (initialTab?: string) => void;  // Opens the modal (inline only)
+    toolGroupId?: string;           // This tool's group ID for tab targeting (inline only)
 }
 ```
 
-### Accessing Tool Data
+### Accessing Data in Your Components
 
 ```tsx
 // Get tool input arguments
 const inputUpdate = toolUpdates.find(u => u.type === "mcp_input");
+const toolName = inputUpdate?.mcp_input?.name;
 const args = inputUpdate?.mcp_input?.arguments;
 
-// Get tool output
+// Get tool output (the main result)
 const outputUpdate = toolUpdates.find(u => u.type === "mcp_output");
 const result = outputUpdate?.mcp_output?.result;
 
-// Get step data (for streaming updates)
+// Get streaming step data (intermediate results)
 const stepUpdates = toolUpdates.filter(u => u.type === "step_data");
 
-// Get user visible messages
+// Get status messages (e.g., "Browsing https://...")
 const messages = toolUpdates
-    .filter(u => u.user_visible_message)
+    .filter(u => u.type === "user_visible_message")
     .map(u => u.user_visible_message);
+
+// Check if tool execution is complete
+const isComplete = toolUpdates.some(u => u.type === "mcp_output" || u.type === "mcp_error");
+const hasError = toolUpdates.some(u => u.type === "mcp_error");
 ```
+
+---
 
 ## Design Guidelines
 
 ### Inline Renderers
 
-- **Keep it compact** - Show only the most important information
-- **Use progressive disclosure** - Show 3-6 items, then "+X more" button
-- **Be responsive** - Use grid layouts that collapse on mobile
-- **Handle loading states** - Show skeleton/spinner while data arrives
-- **Graceful degradation** - Handle missing images/data elegantly
+- **Compact** — Show only the most important data (3-6 items max)
+- **Progressive disclosure** — Preview items + "View all X results" button
+- **Responsive** — Grid layouts that collapse on mobile (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`)
+- **Animated** — Use `animate-in fade-in` with staggered `animationDelay` for smooth reveal
+- **Loading-aware** — Use `currentIndex` to show updates as they arrive
+- **Click handling** — Always `e.stopPropagation()` (parent is an accordion toggle)
 
 ### Overlay Renderers
 
-- **Go full-featured** - Charts, filters, sorting, detailed views
-- **Organize with tabs/sections** - Group related information
-- **Enable interactions** - Filtering, sorting, searching
-- **Provide context** - Headers, descriptions, metadata
-- **Export options** - Copy, save, share functionality (if relevant)
+- **Full-featured** — Filters, sorting, searching, detailed views
+- **No header needed** — The system provides the blue gradient header bar
+- **Scrollable** — Content area is `overflow-auto`, just render your content
+- **Dark mode** — Always provide `dark:` variants for all colors
+- **Export options** — Copy, save functionality where relevant
+- **Empty states** — Handle no-data gracefully with icon + message
 
-## Examples
-
-### Current Implementations
-
-1. **Brave Search** (`brave_search`)
-   - Inline: Compact 5-site view with favicons
-   - Overlay: Full tabbed interface (Overview, Web Results, Videos, By Domain, Saved Sources)
-
-2. **News API** (`news_api`)
-   - Inline: Responsive grid of 6 article cards with images
-   - Overlay: Full scrollable list with filtering by source and sorting
-
-3. **Generic Fallback**
-   - Inline: User visible messages only
-   - Overlay: Same as inline or JSON dump for debugging
-
-## Best Practices
-
-### 1. Progressive Rendering
-
-Use the `currentIndex` prop to show updates as they arrive:
+### Styling Patterns
 
 ```tsx
-const visibleUpdates = currentIndex !== undefined 
-    ? toolUpdates.slice(0, currentIndex + 1) 
-    : toolUpdates;
+// Standard "View all" button (use in inline renderers)
+<button
+    onClick={(e) => {
+        e.stopPropagation();
+        onOpenOverlay(`tool-group-${toolGroupId}`);
+    }}
+    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800"
+>
+    View all {count} results
+</button>
+
+// Card pattern for overlay items
+<div className="p-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+
+// Source badge
+<Badge variant="default" className="text-xs">{source}</Badge>
+
+// External link
+<a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+    Read full article <ExternalLink className="w-3 h-3" />
+</a>
 ```
 
-### 2. Error Handling
+---
 
-Always handle missing or malformed data:
+## Existing Implementations (Reference)
 
-```tsx
-if (!data || !data.results || data.results.length === 0) {
-    return (
-        <div className="text-xs text-slate-500">
-            No results available
-        </div>
-    );
-}
-```
+### 1. News Headlines (`api_news_fetch_headlines`)
 
-### 3. Loading States
+**Best example for a full custom implementation.**
 
-For streaming tools, show progress:
+| Component | Path |
+|-----------|------|
+| Inline | `news-api/NewsInline.tsx` |
+| Overlay | `news-api/NewsOverlay.tsx` |
 
-```tsx
-const isComplete = toolUpdates.some(u => u.type === "mcp_output");
+- **Inline:** 3x2 grid of article cards with images, source badges, dates, and "View all X articles" button
+- **Overlay:** Full article list with source filtering buttons, newest/oldest sorting, images, full descriptions
+- **Data shape:** `mcp_output.result` is `{ status, totalResults, articles: [{ source, title, description, url, urlToImage, publishedAt, content }] }`
 
-if (!isComplete) {
-    return <Spinner />;
-}
-```
+### 2. Web Research (`web_search_v1`)
 
-### 4. Dark Mode
+| Component | Path |
+|-----------|------|
+| Inline | `web-research/WebResearchInline.tsx` |
+| Overlay | `web-research/WebResearchOverlay.tsx` |
 
-Always provide dark mode styles:
+- **Inline:** Research progress (sources browsed), top 5 findings with previews, "View complete research report" button
+- **Overlay:** Cards view + Full Text view toggle, copy-all functionality, parsed findings with title/URL/preview
+- **Data shape:** `mcp_output.result` is a text string with structured `Title:/Url:/Content Preview:` sections
 
-```tsx
-<div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
-```
+### 3. Core Web Search (`core_web_search`)
 
-### 5. Accessibility
+| Component | Path |
+|-----------|------|
+| Inline | `core-web-search/CoreWebSearchInline.tsx` |
+| Overlay | `core-web-search/CoreWebSearchOverlay.tsx` |
 
-- Use semantic HTML
-- Provide alt text for images
-- Use ARIA labels where appropriate
-- Ensure keyboard navigation works
+- Multi-query parallel search results
+- **Data shape:** `mcp_output.result` contains multiple query results with URLs and snippets
 
-## Tool Identification
+### 4. SEO Tools (`seo_check_meta_tags_batch`, `seo_check_meta_titles`, `seo_check_meta_descriptions`)
 
-Tools are identified by the `mcp_input.name` field:
+- Analysis displays with pass/fail indicators, pixel width measurements, character counts
+- **Data shape:** Arrays of analysis results with `_ok` boolean fields
 
-```json
-{
-    "type": "mcp_input",
-    "mcp_input": {
-        "name": "weather_api",  // This is the tool identifier
-        "arguments": { ... }
-    }
-}
-```
+### 5. Brave Search (`web_search`)
+
+- Uses `step_data` for streaming partial results
+- Adapts legacy `BraveSearchDisplay` component
+
+---
 
 ## Debugging
 
-### Check if Tool is Registered
+### Tool Name Mismatch
+
+The registry key must exactly match `mcp_input.name`. Check:
 
 ```tsx
 import { hasCustomRenderer } from "./registry";
-
 console.log(hasCustomRenderer("my_tool")); // true/false
 ```
 
-### View Raw Tool Data
+### Viewing Raw Data
 
-If your custom renderer isn't showing, check the raw data in the generic fallback (it shows JSON).
+Open the modal → click the Settings toggle icon in the blue header → see the Input view with raw JSON.
 
 ### Common Issues
 
-1. **Tool name mismatch** - Ensure registry key matches `mcp_input.name`
-2. **Missing data** - Check that the expected fields exist in the tool output
-3. **Import errors** - Ensure barrel exports are set up correctly
-4. **Styling issues** - Check Tailwind classes and dark mode variants
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Generic renderer shown instead of custom | Registry key doesn't match `mcp_input.name` | Check exact spelling in registry |
+| "View all" opens wrong tab | `toolGroupId` not destructured or wrong format | Ensure `onOpenOverlay(\`tool-group-${toolGroupId}\`)` |
+| Overlay shows wrong tool's data | Overlay renderer searching full array | Overlay receives the group only — use `toolUpdates.find(...)` directly |
+| No output data | Tool still running | Check `isComplete` before rendering |
+| Images broken | Missing `onError` handler | Add fallback: `onError={(e) => e.currentTarget.style.display = "none"}` |
 
-## Migration from Old System
+---
 
-The old system used `step_data.type` for matching. The new system uses `mcp_input.name`:
+## Adding a New Tool — Checklist
 
-**Old:**
-```tsx
-if (update.step_data?.type === "brave_default_page") {
-    // hardcoded rendering
-}
-```
-
-**New:**
-```tsx
-// In registry.tsx
-"brave_search": {
-    inline: BraveSearchInline,
-    overlay: BraveSearchOverlay,
-}
-```
-
-## Future Enhancements
-
-Potential additions to this system:
-
-- Renderer configuration options (themes, sizes, etc.)
-- Shared utility components for common patterns
-- Tool-specific hooks for data processing
-- Automatic documentation generation
-- Type-safe tool data interfaces
-- Testing utilities for renderers
-
-## Need Help?
-
-- Check existing implementations: `brave-search/` and `news-api/`
-- Review the `types.ts` file for complete type definitions
-- Look at `GenericRenderer.tsx` for the simplest example
-- Ensure your tool's `mcp_input.name` matches your registry key
-
+- [ ] Create directory: `features/chat/components/response/tool-renderers/{tool-name}/`
+- [ ] Create `{ToolName}Inline.tsx` implementing `ToolRendererProps`
+- [ ] (Optional) Create `{ToolName}Overlay.tsx` implementing `ToolRendererProps`
+- [ ] Create `index.ts` with barrel exports
+- [ ] Register in `registry.tsx` with `displayName`, `resultsLabel`, `inline`, and optionally `overlay`
+- [ ] Add export line in `features/chat/components/response/tool-renderers/index.ts`
+- [ ] Verify: inline renders in chat, "View all" opens correct modal tab, toggle works

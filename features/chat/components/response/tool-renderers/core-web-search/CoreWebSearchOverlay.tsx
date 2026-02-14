@@ -120,21 +120,16 @@ export const CoreWebSearchOverlay: React.FC<ToolRendererProps> = ({
     
     return (
         <div className="p-6 space-y-6">
-            {/* Header with Stats */}
+            {/* Action Bar */}
             <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                        Multi-Query Search Results
-                    </h2>
-                    <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
-                        <div className="flex items-center gap-2">
-                            <Search className="w-4 h-4" />
-                            <span>{searchResults.length} Searches</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Globe className="w-4 h-4" />
-                            <span>{totalResults} Results</span>
-                        </div>
+                <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-2">
+                        <Search className="w-4 h-4" />
+                        <span>{searchResults.length} Searches</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        <span>{totalResults} Results</span>
                     </div>
                 </div>
                 

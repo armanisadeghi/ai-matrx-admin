@@ -187,30 +187,6 @@ export function getResultsLabel(toolName: string | null): string {
 }
 
 /**
- * Get which update types should be shown as tabs in the overlay for a given tool.
- * Default: only mcp_input, mcp_output, mcp_error, and step_data.
- * @param toolName - Name of the tool from mcp_input.name
- * @returns Set of allowed update types
- */
-export function getOverlayTabTypes(toolName: string | null): Set<string> {
-    const defaultTypes = new Set(["mcp_input", "mcp_output", "mcp_error", "step_data"]);
-    
-    if (!toolName || !toolRendererRegistry[toolName]) {
-        return defaultTypes;
-    }
-    
-    const config = toolRendererRegistry[toolName].overlayTabTypes;
-    if (config === "all") {
-        return new Set(["mcp_input", "mcp_output", "mcp_error", "step_data", "user_visible_message"]);
-    }
-    if (Array.isArray(config)) {
-        return new Set(config);
-    }
-    
-    return defaultTypes;
-}
-
-/**
  * Register a new tool renderer
  * @param toolName - Name of the tool (matches mcp_input.name)
  * @param renderer - Renderer configuration with inline and optional overlay
