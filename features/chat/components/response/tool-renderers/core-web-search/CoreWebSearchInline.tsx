@@ -20,7 +20,8 @@ interface SearchResult {
 export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({ 
     toolUpdates,
     currentIndex,
-    onOpenOverlay 
+    onOpenOverlay,
+    globalIndexOffset = 0 
 }) => {
     const visibleUpdates = currentIndex !== undefined 
         ? toolUpdates.slice(0, currentIndex + 1) 
@@ -66,7 +67,11 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
     };
     
     const searchResults: SearchResult[] = outputUpdates
-        .map(u => parseResults(u.mcp_output?.result as string))
+        .map(u => {
+            const raw = u.mcp_output?.result;
+            const text = typeof raw === 'string' ? raw : raw != null ? JSON.stringify(raw) : '';
+            return parseResults(text);
+        })
         .filter((r): r is SearchResult => r !== null);
     
     const getDomain = (url: string) => {
@@ -185,7 +190,7 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
                     onClick={(e) => {
                         e.stopPropagation();
                         const outputIndex = toolUpdates.findIndex(u => u.type === "mcp_output");
-                        onOpenOverlay(outputIndex >= 0 ? `tool-update-${outputIndex}` : undefined);
+                        onOpenOverlay(outputIndex >= 0 ? `tool-update-${globalIndexOffset + outputIndex}` : undefined);
                     }}
                     className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 animate-in fade-in slide-in-from-bottom"
                     style={{ 

@@ -20,6 +20,13 @@ export interface ToolRendererProps {
      * @param initialTab - Optional tab ID to open initially
      */
     onOpenOverlay?: (initialTab?: string) => void;
+    
+    /**
+     * The starting index of this group's first update within the full toolUpdates array.
+     * Used to compute correct global tab IDs (e.g., `tool-update-${globalIndexOffset + localIndex}`).
+     * Defaults to 0 for single-tool scenarios.
+     */
+    globalIndexOffset?: number;
 }
 
 /**
@@ -32,6 +39,13 @@ export interface ToolRenderer {
      * Example: "SEO Meta Tags Checker" instead of "seo_check_meta_tags_batch"
      */
     displayName: string;
+    
+    /**
+     * Custom label for the results/output tab in the overlay modal.
+     * Example: "News Results", "Search Results"
+     * If not provided, defaults to `${displayName} Results`
+     */
+    resultsLabel?: string;
     
     /**
      * Component for inline display (shown directly in the chat stream)
@@ -50,6 +64,14 @@ export interface ToolRenderer {
      * Default: false (will auto-collapse)
      */
     keepExpandedOnStream?: boolean;
+    
+    /**
+     * Update types to show as individual tabs in the overlay.
+     * By default, only "mcp_input", "mcp_output", "mcp_error", and "step_data" get tabs.
+     * Set to "all" to include every update type (including user_visible_message).
+     * Or provide an array of specific types to include.
+     */
+    overlayTabTypes?: "all" | ToolCallObject["type"][];
 }
 
 /**

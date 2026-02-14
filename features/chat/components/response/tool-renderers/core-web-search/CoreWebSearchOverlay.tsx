@@ -57,7 +57,11 @@ export const CoreWebSearchOverlay: React.FC<ToolRendererProps> = ({
     };
     
     const searchResults: SearchResult[] = outputUpdates
-        .map(u => parseResults(u.mcp_output?.result as string))
+        .map(u => {
+            const raw = u.mcp_output?.result;
+            const text = typeof raw === 'string' ? raw : raw != null ? JSON.stringify(raw) : '';
+            return parseResults(text);
+        })
         .filter((r): r is SearchResult => r !== null);
     
     const totalResults = searchResults.reduce((acc, r) => acc + r.results.length, 0);

@@ -40,8 +40,10 @@ export const NewsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
         const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
         if (!outputUpdate?.mcp_output) return null;
         
-        const result = outputUpdate.mcp_output.result as NewsApiResult;
-        if (!result || !result.articles) return null;
+        const rawResult = outputUpdate.mcp_output.result;
+        if (!rawResult || typeof rawResult !== 'object') return null;
+        const result = rawResult as NewsApiResult;
+        if (!result.articles) return null;
         
         return result;
     }, [toolUpdates]);

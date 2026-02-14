@@ -429,9 +429,9 @@ export function ChatInputWithControls({
         disabled: !enableResourcePicker || disabled,
     });
 
-    useEffect(() => {
-        textInputRef.current?.focus();
-    }, []);
+    // Focus is primarily managed by ChatContainer (which knows about variables
+    // and coordinates focus on agent change). This effect is intentionally empty —
+    // ChatContainer's retry-based focus handles both initial load and agent changes.
 
     const handleContentChange = useCallback((newContent: string) => {
         setContent(newContent);

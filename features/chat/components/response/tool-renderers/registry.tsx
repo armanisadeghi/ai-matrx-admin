@@ -21,6 +21,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // Web Search (Brave) - uses existing overlay component
     "web_search": {
         displayName: "Web Search",
+        resultsLabel: "Search Results",
         inline: BraveSearchInline,
         overlay: (props) => {
             // Adapt BraveSearchDisplay to work with ToolRendererProps
@@ -39,6 +40,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // News API - custom inline and overlay components
     "api_news_fetch_headlines": {
         displayName: "News Headlines",
+        resultsLabel: "News Results",
         inline: NewsInline,
         overlay: NewsOverlay,
         keepExpandedOnStream: true, // Keep news visible when response streams
@@ -47,6 +49,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // SEO Meta Tags Checker - batch analysis display
     "seo_check_meta_tags_batch": {
         displayName: "SEO Meta Tags",
+        resultsLabel: "Meta Tags Results",
         inline: SeoMetaTagsInline,
         overlay: SeoMetaTagsOverlay,
         keepExpandedOnStream: true, // Keep results visible for review
@@ -55,6 +58,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // SEO Meta Titles Checker - title-only analysis
     "seo_check_meta_titles": {
         displayName: "SEO Title Checker",
+        resultsLabel: "Title Results",
         inline: SeoMetaTitlesInline,
         keepExpandedOnStream: true, // Keep titles visible for review
     },
@@ -62,6 +66,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // SEO Meta Descriptions Checker - description-only analysis
     "seo_check_meta_descriptions": {
         displayName: "SEO Description Checker",
+        resultsLabel: "Description Results",
         inline: SeoMetaDescriptionsInline,
         keepExpandedOnStream: true, // Keep descriptions visible for review
     },
@@ -69,6 +74,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // Web Research v1 - AI-powered multi-page research with summaries
     "web_search_v1": {
         displayName: "Web Research",
+        resultsLabel: "Research Results",
         inline: WebResearchInline,
         overlay: WebResearchOverlay,
         keepExpandedOnStream: true, // Keep research visible
@@ -77,6 +83,7 @@ export const toolRendererRegistry: ToolRegistry = {
     // Core Web Search - Multi-query parallel web search
     "core_web_search": {
         displayName: "Multi-Query Search",
+        resultsLabel: "Search Results",
         inline: CoreWebSearchInline,
         overlay: CoreWebSearchOverlay,
         keepExpandedOnStream: true, // Keep search results visible
@@ -157,6 +164,50 @@ export function getToolDisplayName(toolName: string | null): string {
         .split('_')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+}
+
+/**
+ * Get the results tab label for a tool's output in the overlay.
+ * Uses custom resultsLabel from registry, falls back to "${displayName} Results",
+ * and finally falls back to auto-generated title case from the tool name + " Results".
+ * @param toolName - Name of the tool from mcp_input.name
+ * @returns Formatted results label
+ */
+export function getResultsLabel(toolName: string | null): string {
+    if (!toolName) return "Results";
+    
+    const renderer = toolRendererRegistry[toolName];
+    if (renderer?.resultsLabel) {
+        return renderer.resultsLabel;
+    }
+    
+    // Fallback: use displayName + " Results"
+    const displayName = getToolDisplayName(toolName);
+    return `${displayName} Results`;
+}
+
+/**
+ * Get which update types should be shown as tabs in the overlay for a given tool.
+ * Default: only mcp_input, mcp_output, mcp_error, and step_data.
+ * @param toolName - Name of the tool from mcp_input.name
+ * @returns Set of allowed update types
+ */
+export function getOverlayTabTypes(toolName: string | null): Set<string> {
+    const defaultTypes = new Set(["mcp_input", "mcp_output", "mcp_error", "step_data"]);
+    
+    if (!toolName || !toolRendererRegistry[toolName]) {
+        return defaultTypes;
+    }
+    
+    const config = toolRendererRegistry[toolName].overlayTabTypes;
+    if (config === "all") {
+        return new Set(["mcp_input", "mcp_output", "mcp_error", "step_data", "user_visible_message"]);
+    }
+    if (Array.isArray(config)) {
+        return new Set(config);
+    }
+    
+    return defaultTypes;
 }
 
 /**

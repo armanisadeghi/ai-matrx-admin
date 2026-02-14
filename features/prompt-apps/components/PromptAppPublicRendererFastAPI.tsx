@@ -60,6 +60,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     }, [fingerprintId]);
     
     // OPTIMIZATION: Pre-warm the agent on mount (cache the prompt for faster execution)
+    // Skips localhost targets to avoid browser-level ERR_CONNECTION_REFUSED console noise.
     useEffect(() => {
         const promptId = app.prompt_id;
         if (!promptId) return;
@@ -70,6 +71,10 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 const BACKEND_URL = (isAdmin && useLocalhost) 
                     ? 'http://localhost:8000' 
                     : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
+
+                // Never eagerly warm to localhost — the browser will log
+                // ERR_CONNECTION_REFUSED which cannot be suppressed from JS.
+                if (BACKEND_URL.includes('localhost')) return;
                 
                 const warmRequest: AgentWarmRequest = {
                     prompt_id: promptId,
@@ -81,10 +86,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(warmRequest),
                 });
-                
-                console.log('Agent pre-warmed:', promptId);
-            } catch (err) {
-                console.warn('Failed to pre-warm agent (non-critical):', err);
+            } catch {
+                // Silently ignore — warming is non-critical
             }
         };
         

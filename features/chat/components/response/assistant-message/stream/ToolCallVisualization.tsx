@@ -121,6 +121,15 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
         // Calculate how many updates to show from each group
         const visibleToolUpdates = toolUpdates.slice(0, visibleUpdates);
         
+        // Build a map of global index offsets for each group
+        // This tells each group where its first item sits in the full toolUpdates array
+        const groupOffsets: number[] = [];
+        let offset = 0;
+        for (const group of toolGroups) {
+            groupOffsets.push(offset);
+            offset += group.length;
+        }
+        
         return (
             <div className="space-y-4">
                 {toolGroups.map((group, groupIndex) => {
@@ -156,6 +165,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                                 toolUpdates={group}
                                 currentIndex={currentIndex}
                                 onOpenOverlay={handleOpenOverlay}
+                                globalIndexOffset={groupOffsets[groupIndex]}
                             />
                         </div>
                     );

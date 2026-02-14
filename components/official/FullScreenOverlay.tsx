@@ -76,6 +76,13 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     const [activeTab, setActiveTab] = React.useState<string>(initialTab || (tabs.length > 0 ? tabs[0].id : ""));
     const [isMobile, setIsMobile] = useState(false);
 
+    // Sync activeTab when initialTab changes (e.g., reopening overlay with a different tab)
+    useEffect(() => {
+        if (isOpen && initialTab) {
+            setActiveTab(initialTab);
+        }
+    }, [isOpen, initialTab]);
+
     // Detect mobile screen size
     useEffect(() => {
         const checkMobile = () => {
@@ -124,21 +131,21 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
             >
                 <DialogHeader className={cn(
                     "flex flex-col border-b px-4 flex-shrink-0",
-                    isMobile ? "py-3 space-y-2" : "py-1"
+                    isMobile ? "pt-3 pb-2 space-y-2" : "pt-2.5 pb-1"
                 )}>
                     <div className="flex flex-row justify-between items-center">
-                        <DialogTitle className={isMobile ? "text-lg" : ""}>{title}</DialogTitle>
+                        <DialogTitle className={isMobile ? "text-lg" : "text-sm"}>{title}</DialogTitle>
                         {description && <DialogDescription className="sr-only">{description}</DialogDescription>}
                     </div>
                     
                     {/* Tabs - below title on mobile, inline on desktop */}
                     <Tabs value={activeTab} onValueChange={handleTabChange} className={cn(
-                        "overflow-x-auto overflow-y-hidden scrollbar-none",
+                        "overflow-x-auto overflow-y-hidden scrollbar-none min-w-0 max-w-full",
                         isMobile ? "w-full" : "mx-auto"
                     )}>
                         <TabsList className={cn(
-                            "rounded-3xl space-x-0.5",
-                            isMobile ? "w-full flex justify-start" : ""
+                            "rounded-3xl space-x-0.5 w-max",
+                            isMobile ? "flex justify-start" : ""
                         )}>
                             {tabs.map((tab, index) => {
                                 // Determine tab position styling

@@ -11,7 +11,8 @@ import { ToolRendererProps } from "../types";
 export const WebResearchInline: React.FC<ToolRendererProps> = ({ 
     toolUpdates,
     currentIndex,
-    onOpenOverlay 
+    onOpenOverlay,
+    globalIndexOffset = 0 
 }) => {
     const visibleUpdates = currentIndex !== undefined 
         ? toolUpdates.slice(0, currentIndex + 1) 
@@ -27,7 +28,11 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
     // Check if research is complete and extract summary
     const outputUpdate = visibleUpdates.find(u => u.type === "mcp_output");
     const isComplete = !!outputUpdate;
-    const researchSummary = outputUpdate?.mcp_output?.result as string | undefined;
+    const rawResult = outputUpdate?.mcp_output?.result;
+    // Safely coerce to string — result may be an object/array from DB
+    const researchSummary = typeof rawResult === 'string'
+        ? rawResult
+        : rawResult != null ? JSON.stringify(rawResult) : undefined;
     
     // Extract domain names for compact display
     const getDomain = (url: string) => {
@@ -149,7 +154,7 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                     onClick={(e) => {
                         e.stopPropagation();
                         const outputIndex = toolUpdates.findIndex(u => u.type === "mcp_output");
-                        onOpenOverlay(outputIndex >= 0 ? `tool-update-${outputIndex}` : undefined);
+                        onOpenOverlay(outputIndex >= 0 ? `tool-update-${globalIndexOffset + outputIndex}` : undefined);
                     }}
                     className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 animate-in fade-in slide-in-from-bottom"
                     style={{ 

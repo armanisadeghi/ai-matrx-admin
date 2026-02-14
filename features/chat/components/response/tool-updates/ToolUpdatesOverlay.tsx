@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
-import { getToolName, getOverlayRenderer, hasCustomRenderer } from "@/features/chat/components/response/tool-renderers";
+import { getToolName, getOverlayRenderer, hasCustomRenderer, getToolDisplayName, getResultsLabel, getOverlayTabTypes } from "@/features/chat/components/response/tool-renderers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, MessageSquare } from "lucide-react";
@@ -277,44 +277,107 @@ const renderToolUpdateContent = (
     );
 };
 
+/**
+ * Determines which tool group (by tool ID) an update at a given index belongs to,
+ * and returns the tool name for that group.
+ */
+function getToolNameForUpdate(update: ToolCallObject, toolUpdates: ToolCallObject[]): string | null {
+    const updateId = update.id || 'default';
+    // Find the mcp_input for this tool group
+    const groupInput = toolUpdates.find(u => (u.id || 'default') === updateId && u.type === "mcp_input");
+    return groupInput?.mcp_input?.name || null;
+}
+
+/**
+ * Generates a smart tab label for a tool update.
+ * - mcp_input: "Input: {displayName}" (e.g., "Input: News Headlines")
+ * - mcp_output: "{resultsLabel}" (e.g., "News Results", "Research Results")
+ * - mcp_error: "Error: {displayName}"
+ * - step_data: uses step type or "Step: {displayName}"
+ * - For unregistered tools, auto-generates from snake_case tool name
+ */
+function getTabLabel(update: ToolCallObject, toolName: string | null): string {
+    const displayName = getToolDisplayName(toolName);
+    
+    switch (update.type) {
+        case "mcp_input":
+            return `Input: ${update.mcp_input?.name || displayName}`;
+        case "mcp_output":
+            return getResultsLabel(toolName);
+        case "mcp_error":
+            return `Error: ${displayName}`;
+        case "step_data":
+            return update.step_data?.type || `Step: ${displayName}`;
+        case "user_visible_message":
+            return `Message: ${displayName}`;
+        default:
+            return `Update: ${displayName}`;
+    }
+}
+
 export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
     isOpen,
     onClose,
     toolUpdates,
     initialTab,
 }) => {
-    // Generate tabs dynamically from toolUpdates
-    const tabs: TabDefinition[] = useMemo(() => {
-        return toolUpdates.map((update, index) => {
-            // Create a descriptive label based on the type
-            let label = "";
-            switch (update.type) {
-                case "mcp_input":
-                    label = `Input: ${update.mcp_input?.name || "Unknown"}`;
-                    break;
-                case "mcp_output":
-                    label = `Output ${index + 1}`;
-                    break;
-                case "mcp_error":
-                    label = `Error ${index + 1}`;
-                    break;
-                case "step_data":
-                    label = update.step_data?.type || `Step ${index + 1}`;
-                    break;
-                case "user_visible_message":
-                    label = `Message ${index + 1}`;
-                    break;
-                default:
-                    label = `Update ${index + 1}`;
+    // Generate tabs dynamically from toolUpdates, filtering out unnecessary types
+    const { tabs, resolvedInitialTab } = useMemo(() => {
+        // Build a set of allowed types per tool group
+        const allowedTypesCache = new Map<string, Set<string>>();
+        
+        const getAllowedTypes = (toolName: string | null): Set<string> => {
+            const key = toolName || '__default__';
+            if (!allowedTypesCache.has(key)) {
+                allowedTypesCache.set(key, getOverlayTabTypes(toolName));
             }
-
-            return {
-                id: `tool-update-${index}`,
+            return allowedTypesCache.get(key)!;
+        };
+        
+        const filteredTabs: TabDefinition[] = [];
+        let matchedInitialTab: string | undefined = undefined;
+        
+        for (let index = 0; index < toolUpdates.length; index++) {
+            const update = toolUpdates[index];
+            const toolName = getToolNameForUpdate(update, toolUpdates);
+            const allowedTypes = getAllowedTypes(toolName);
+            
+            // Skip update types that shouldn't have their own tab
+            if (!allowedTypes.has(update.type)) {
+                continue;
+            }
+            
+            const tabId = `tool-update-${index}`;
+            const label = getTabLabel(update, toolName);
+            
+            filteredTabs.push({
+                id: tabId,
                 label,
                 content: renderToolUpdateContent(update, index, toolUpdates),
-            };
-        });
-    }, [toolUpdates]);
+            });
+            
+            // Track if the requested initialTab exists in our filtered set
+            if (initialTab === tabId) {
+                matchedInitialTab = tabId;
+            }
+        }
+        
+        // If the requested initialTab was filtered out, find the nearest valid tab
+        // (e.g., if initialTab pointed to a message tab, find the output tab for that tool)
+        if (initialTab && !matchedInitialTab && filteredTabs.length > 0) {
+            // Try to find a tab with a higher index (next valid tab after the requested one)
+            const requestedIndex = parseInt(initialTab.replace('tool-update-', ''), 10);
+            if (!isNaN(requestedIndex)) {
+                const nextTab = filteredTabs.find(t => {
+                    const idx = parseInt(t.id.replace('tool-update-', ''), 10);
+                    return idx >= requestedIndex;
+                });
+                matchedInitialTab = nextTab?.id || filteredTabs[filteredTabs.length - 1]?.id;
+            }
+        }
+        
+        return { tabs: filteredTabs, resolvedInitialTab: matchedInitialTab || initialTab };
+    }, [toolUpdates, initialTab]);
 
     return (
         <FullScreenOverlay
@@ -323,7 +386,7 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
             title="Tool Updates"
             description="View MCP tool calls and step data"
             tabs={tabs}
-            initialTab={initialTab}
+            initialTab={resolvedInitialTab}
             width="95vw"
             height="95vh"
         />

@@ -46,14 +46,25 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     const { state, addMessage, updateMessage, setStreaming, setExecuting, setError } = useChatContext();
     const abortControllerRef = useRef<AbortController | null>(null);
     const streamEventsRef = useRef<StreamEvent[]>([]);
+    // Track executing state in a ref so the cleanup effect always reads the
+    // current value (not a stale closure capture).
+    const isExecutingRef = useRef(false);
     
     // Centralized auth - handles both authenticated users and guests
     const { getHeaders, waitForAuth, isAdmin } = useApiAuth();
 
-    // Cleanup on unmount
+    // Keep executing ref in sync
+    useEffect(() => {
+        isExecutingRef.current = state.isExecuting;
+    }, [state.isExecuting]);
+
+    // Cleanup on unmount — only abort if NOT actively executing a request.
+    // During same-layout route transitions (e.g. /p/chat → /p/chat/c/[id]),
+    // ChatContainer remounts but the ChatContext (and the in-flight request)
+    // should survive. Aborting here would kill the request mid-stream.
     useEffect(() => {
         return () => {
-            if (abortControllerRef.current) {
+            if (abortControllerRef.current && !isExecutingRef.current) {
                 abortControllerRef.current.abort();
             }
         };
@@ -87,11 +98,19 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         return process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
     }, [isAdmin, state.useLocalhost]);
 
-    // Warm up agent (pre-cache prompt) - no auth required
+    // Warm up agent (pre-cache prompt) - no auth required for production backend.
+    // When targeting localhost (admin override), skip the eager warm entirely to
+    // avoid browser-level ERR_CONNECTION_REFUSED console noise. The warm will be
+    // attempted lazily when the admin actually sends a message.
     const warmAgent = useCallback(async (promptId: string) => {
         try {
             const BACKEND_URL = getBackendUrl();
-            
+
+            // Never eagerly warm to localhost — the browser will log
+            // ERR_CONNECTION_REFUSED which cannot be suppressed from JS.
+            // Localhost warm happens implicitly on first sendMessage instead.
+            if (BACKEND_URL.includes('localhost')) return;
+
             const warmRequest: AgentWarmRequest = {
                 prompt_id: promptId,
                 is_builtin: false,
@@ -102,10 +121,8 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(warmRequest),
             });
-
-            console.log('Agent pre-warmed:', promptId);
-        } catch (err) {
-            console.warn('Failed to pre-warm agent (non-critical):', err);
+        } catch {
+            // Silently ignore — warming is non-critical
         }
     }, [getBackendUrl]);
 
@@ -156,6 +173,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         // Create abort controller
         abortControllerRef.current = new AbortController();
 
+        // Set executing immediately in the ref (not just via dispatch) so the
+        // unmount cleanup sees the current value even before React re-renders.
+        isExecutingRef.current = true;
         setExecuting(true);
         setStreaming(true);
 
@@ -336,6 +356,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             }
             return false;
         } finally {
+            isExecutingRef.current = false;
             setExecuting(false);
             setStreaming(false);
             abortControllerRef.current = null;

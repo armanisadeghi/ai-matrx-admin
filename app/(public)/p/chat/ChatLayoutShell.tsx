@@ -10,6 +10,9 @@ import { useAgentsContext } from '@/features/public-chat/context/AgentsContext';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
 import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
 
+// Basic UUID v4 pattern for validating URL-derived IDs
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // ============================================================================
 // RESOLVE AGENT HELPER
 // ============================================================================
@@ -59,6 +62,8 @@ interface LayoutAgentContextValue {
     onAgentChange: (agent: AgentConfig) => void;
     activeConversationId: string | null;
     isLoadingConversation: boolean;
+    /** Increments on every agent change — used by ChatContainer to trigger focus */
+    focusKey: number;
 }
 
 const LayoutAgentContext = createContext<LayoutAgentContextValue | null>(null);
@@ -71,6 +76,7 @@ export function useLayoutAgent(): LayoutAgentContextValue {
             onAgentChange: () => {},
             activeConversationId: null,
             isLoadingConversation: false,
+            focusKey: 0,
         };
     }
     return ctx;
@@ -94,12 +100,15 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     const { userPrompts } = useAgentsContext();
 
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+    const [focusKey, setFocusKey] = useState(0);
     const loadedConversationRef = useRef<string | null>(null);
 
     // ── Derive URL state ──────────────────────────────────────────────────
     const urlConversationId = useMemo(() => {
         const match = pathname.match(/\/p\/chat\/c\/([^/?]+)/);
-        return match ? match[1] : null;
+        if (!match) return null;
+        // Only accept valid UUIDs — prevents DB errors from malformed URLs
+        return UUID_RE.test(match[1]) ? match[1] : null;
     }, [pathname]);
 
     const urlAgentId = useMemo(() => {
@@ -225,6 +234,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         setAgent(agent);
         startNewConversation();
         loadedConversationRef.current = null;
+        setFocusKey(k => k + 1);
         router.push(`/p/chat/a/${agent.promptId}`);
     }, [router, setAgent, startNewConversation, selectedAgent.promptId, activeConversationId]);
 
@@ -246,7 +256,8 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         onAgentChange: handleAgentChange,
         activeConversationId,
         isLoadingConversation,
-    }), [selectedAgent, handleAgentChange, activeConversationId, isLoadingConversation]);
+        focusKey,
+    }), [selectedAgent, handleAgentChange, activeConversationId, isLoadingConversation, focusKey]);
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>

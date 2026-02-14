@@ -169,17 +169,19 @@ function AgentPickerContent({
 // ============================================================================
 
 export function SidebarAgentHeader({ selectedAgent, onAgentSelect, floating, compact }: SidebarAgentHeaderProps) {
+    const [open, setOpen] = useState(false);
     const displayName = selectedAgent?.name || 'General Chat';
     const currentIcon = DEFAULT_AGENTS.find(a => a.promptId === selectedAgent?.promptId)?.icon;
 
     const handleSelect = (agent: AgentConfig) => {
         onAgentSelect?.(agent);
+        setOpen(false);
     };
 
     // Floating mode — fixed-position pill visible when sidebar is closed
     if (floating) {
         return (
-            <DropdownMenu>
+            <DropdownMenu open={open} onOpenChange={setOpen}>
                 <DropdownMenuTrigger asChild>
                     <button
                         className="fixed top-[3rem] left-14 z-50 flex items-center gap-2 h-8 text-muted-foreground hover:text-foreground transition-colors"
@@ -201,7 +203,7 @@ export function SidebarAgentHeader({ selectedAgent, onAgentSelect, floating, com
     // Inline mode — inside sidebar header (default) or mobile sub-header (compact)
     return (
         <div className={compact ? 'flex items-center' : 'flex items-center pl-11 pr-2 py-2 border-b border-border'}>
-            <DropdownMenu>
+            <DropdownMenu open={open} onOpenChange={setOpen}>
                 <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-3 h-8 rounded-md hover:bg-accent/50 transition-colors min-w-0 group">
                         <span className="text-xs font-medium text-foreground truncate max-w-[180px]" title={displayName}>

@@ -36,7 +36,9 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const dispatch = useAppDispatch();
     const pathname = usePathname();
     const username = useAppSelector(state => state.user.userMetadata.preferredUsername || state.user.userMetadata.fullName || state.user.email || 'Anonymous');
+    const userId = useAppSelector(state => state.user.id);
     const feedbackFeatureViewCount = useAppSelector(state => state.userPreferences.system.feedbackFeatureViewCount);
+    const preferencesLoadedFromDb = useAppSelector(state => state.userPreferences._meta.loadedPreferences !== null);
     const [isOpen, setIsOpen] = useState(false);
     const [feedbackType, setFeedbackType] = useState<FeedbackType>('bug');
     const [description, setDescription] = useState('');
@@ -62,7 +64,24 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const { uploadToPublicUserAssets, isLoading: isUploadHookLoading } = useFileUploadWithStorage('user-public-assets', 'feedback-images');
 
     // Show new feature highlight for first 5 views
+    // GUARD: Only evaluate once we have a confirmed user AND their preferences loaded from DB.
+    // Without this, public routes start with default preferences (count=0) before the real
+    // value loads, causing the badge to incorrectly show and increment on every page load.
     useEffect(() => {
+        console.log(
+            `[FeedbackButton] New Feature Badge Check:\n` +
+            `  userId: ${userId ? `"${userId}"` : 'null (no user)'}\n` +
+            `  preferencesLoadedFromDb: ${preferencesLoadedFromDb}\n` +
+            `  feedbackFeatureViewCount: ${feedbackFeatureViewCount}\n` +
+            `  threshold: < 5\n` +
+            `  shouldShow: ${!!userId && preferencesLoadedFromDb && feedbackFeatureViewCount < 5}`
+        );
+
+        // Don't show until we have a user and their real preferences from DB
+        if (!userId || !preferencesLoadedFromDb) {
+            return;
+        }
+
         if (feedbackFeatureViewCount < 5) {
             setShowNewFeatureHighlight(true);
             // Increment view count after 3 seconds
@@ -82,8 +101,11 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                 }));
             }, 3000);
             return () => clearTimeout(timer);
+        } else {
+            // Preferences loaded and count is >= 5, ensure highlight is hidden
+            setShowNewFeatureHighlight(false);
         }
-    }, [feedbackFeatureViewCount, dispatch]);
+    }, [userId, preferencesLoadedFromDb, feedbackFeatureViewCount, dispatch]);
 
     // Upload a pasted image via the storage hook
     const uploadPastedImage = useCallback(async (file: File) => {

@@ -7,6 +7,9 @@ import {
     loadFullConversation,
 } from '@/features/public-chat/services/cx-chat';
 
+// Basic UUID v4 pattern
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * GET /api/cx-chat/request?id=xxx
  *
@@ -20,6 +23,13 @@ export async function GET(request: Request) {
         if (!conversationId) {
             return NextResponse.json(
                 { success: false, error: 'Missing conversation ID' },
+                { status: 400 },
+            );
+        }
+
+        if (!UUID_RE.test(conversationId)) {
+            return NextResponse.json(
+                { success: false, error: 'Invalid conversation ID format' },
                 { status: 400 },
             );
         }

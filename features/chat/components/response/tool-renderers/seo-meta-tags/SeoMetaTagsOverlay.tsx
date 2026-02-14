@@ -41,8 +41,10 @@ export const SeoMetaTagsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates })
         const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
         if (!outputUpdate?.mcp_output) return null;
         
-        const result = outputUpdate.mcp_output.result as SeoMetaTagsResult;
-        if (!result || !result.batch_analysis) return null;
+        const rawResult = outputUpdate.mcp_output.result;
+        if (!rawResult || typeof rawResult !== 'object') return null;
+        const result = rawResult as SeoMetaTagsResult;
+        if (!result.batch_analysis) return null;
         
         return result;
     }, [toolUpdates]);

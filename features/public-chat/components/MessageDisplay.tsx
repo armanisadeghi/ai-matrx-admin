@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useMemo, lazy, Suspense } from 'react';
-import { Copy, Check, ChevronDown, MessageSquare, AlertCircle, Edit, MoreHorizontal, FileText, Image as ImageIcon, Music, Youtube, Globe, Paperclip } from 'lucide-react';
+import { Copy, Check, ChevronDown, MessageSquare, AlertCircle, Edit, MoreHorizontal, FileText, Image as ImageIcon, Music, Youtube, Globe, Paperclip, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
@@ -9,6 +9,50 @@ import type { PublicResource, PublicResourceType } from '../types/content';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
+
+// ============================================================================
+// MESSAGE ERROR BOUNDARY
+// Confines rendering errors to individual messages so the sidebar, header,
+// and other messages remain usable.
+// ============================================================================
+
+interface MessageErrorBoundaryProps {
+    children: React.ReactNode;
+    messageId?: string;
+}
+
+interface MessageErrorBoundaryState {
+    hasError: boolean;
+}
+
+class MessageErrorBoundary extends React.Component<MessageErrorBoundaryProps, MessageErrorBoundaryState> {
+    constructor(props: MessageErrorBoundaryProps) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(): MessageErrorBoundaryState {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: Error, info: React.ErrorInfo) {
+        console.error('[MessageErrorBoundary] Render error in message', this.props.messageId, error, info);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                    <TriangleAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                        This message could not be displayed. The data may be in an unexpected format.
+                    </p>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 // ============================================================================
 // LAZY LOADED COMPONENTS (Heavy dependencies - only load when needed)
@@ -503,12 +547,14 @@ export function MessageList({
                             {message.role === 'user' ? (
                                 <UserMessage message={message} />
                             ) : (
-                                <AssistantMessage
-                                    message={message}
-                                    streamEvents={isLastAssistant ? streamEvents : undefined}
-                                    isStreaming={isLastAssistant && isStreaming}
-                                    onContentChange={onMessageContentChange}
-                                />
+                                <MessageErrorBoundary messageId={message.id}>
+                                    <AssistantMessage
+                                        message={message}
+                                        streamEvents={isLastAssistant ? streamEvents : undefined}
+                                        isStreaming={isLastAssistant && isStreaming}
+                                        onContentChange={onMessageContentChange}
+                                    />
+                                </MessageErrorBoundary>
                             )}
                         </div>
                     </div>

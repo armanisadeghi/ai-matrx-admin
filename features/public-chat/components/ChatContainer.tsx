@@ -35,7 +35,7 @@ interface ChatContainerProps {
 export function ChatContainer({ className = '' }: ChatContainerProps) {
     const router = useRouter();
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
-    const { onAgentChange, isLoadingConversation } = useLayoutAgent();
+    const { onAgentChange, isLoadingConversation, focusKey } = useLayoutAgent();
     const { sidebarEvents } = useAgentsContext();
 
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
@@ -107,6 +107,53 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
             setVariableValues({});
         }
     }, [state.currentAgent?.promptId]);
+
+    // Focus the first available input whenever the agent changes, on initial load,
+    // or when a conversation finishes loading.
+    // When the agent has variables → focus the first variable input.
+    // When the agent has no variables → focus the main textarea.
+    // Uses retries because agent change triggers router.push() which re-mounts components,
+    // meaning the DOM elements may not exist yet when this effect first fires.
+    useEffect(() => {
+        // Don't attempt focus while a conversation is loading (loading spinner shown)
+        if (isLoadingConversation) return;
+
+        let cancelled = false;
+        let attempts = 0;
+        const maxAttempts = 8;
+
+        function tryFocus() {
+            if (cancelled) return;
+            attempts++;
+
+            const varDefs = state.currentAgent?.variableDefaults;
+            if (varDefs && varDefs.length > 0) {
+                const container = document.querySelector('[data-variable-inputs]');
+                const firstInput = container?.querySelector<HTMLInputElement>('[data-variable-index="0"]');
+                if (firstInput) {
+                    firstInput.focus();
+                    return;
+                }
+            }
+            // No variables or conversation mode — focus the textarea
+            if (textInputRef.current) {
+                textInputRef.current.focus();
+                return;
+            }
+
+            // Element not in DOM yet — retry with increasing delay
+            if (attempts < maxAttempts) {
+                setTimeout(tryFocus, attempts * 50);
+            }
+        }
+
+        // Start after a short delay to let React flush the render
+        const timer = setTimeout(tryFocus, 50);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [state.currentAgent?.promptId, focusKey, isLoadingConversation]);
 
     // Pre-warm agent
     useEffect(() => {

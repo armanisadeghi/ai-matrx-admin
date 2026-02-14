@@ -20,7 +20,11 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
         : toolUpdates;
     
     const outputUpdate = visibleUpdates.find(u => u.type === "mcp_output");
-    const researchSummary = outputUpdate?.mcp_output?.result as string | undefined;
+    const rawResult = outputUpdate?.mcp_output?.result;
+    // Safely coerce to string — result may be an object/array from DB
+    const researchSummary = typeof rawResult === 'string'
+        ? rawResult
+        : rawResult != null ? JSON.stringify(rawResult) : undefined;
     
     if (!researchSummary) {
         return (

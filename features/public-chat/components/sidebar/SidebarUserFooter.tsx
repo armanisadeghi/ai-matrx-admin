@@ -26,14 +26,14 @@ export function SidebarUserFooter() {
             <div className="flex-shrink-0 border-t border-border px-2.5 py-2.5">
                 <div className="flex flex-col gap-1.5">
                     <Link
-                        href="/auth/login"
+                        href="/sign-up"
                         className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
                     >
                         <UserPlus className="h-3.5 w-3.5" />
                         Sign Up
                     </Link>
                     <Link
-                        href="/auth/login"
+                        href="/login"
                         className="flex items-center justify-center gap-1.5 px-3 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
                     >
                         <LogIn className="h-3 w-3" />

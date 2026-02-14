@@ -8,6 +8,8 @@ export {
     getToolName,
     shouldKeepExpandedOnStream,
     getToolDisplayName,
+    getResultsLabel,
+    getOverlayTabTypes,
     registerToolRenderer
 } from "./registry";
 export { GenericRenderer } from "./GenericRenderer";

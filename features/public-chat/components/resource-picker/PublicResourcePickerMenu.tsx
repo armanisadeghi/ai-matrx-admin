@@ -239,8 +239,7 @@ export function PublicResourcePickerMenu({
                             variant="outline"
                             className="text-xs"
                             onClick={() => {
-                                // TODO: Implement sign-in flow
-                                window.location.href = '/auth/sign-in';
+                                window.location.href = '/login';
                             }}
                         >
                             Sign In
