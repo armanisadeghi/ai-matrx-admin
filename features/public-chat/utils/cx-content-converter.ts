@@ -192,13 +192,19 @@ export function convertCxContentToDisplay(
                 } else {
                     // Wrap in { status, result } to match the streaming mcp_output shape
                     // that the tool renderers expect.
-                    const resultObj = toRecord(trContent);
+                    // Preserve the original content type — it can be a string, object,
+                    // array, or any other JSON value. Don't force it into a Record;
+                    // downstream renderers (GenericRenderer, custom renderers) already
+                    // handle both string and object results.
+                    const resultValue = (typeof trContent === 'object' && trContent !== null)
+                        ? trContent
+                        : trContent ?? null;
                     toolUpdates.push({
                         id: trId,
                         type: 'mcp_output',
                         mcp_output: {
                             status: 'success',
-                            result: resultObj,
+                            result: resultValue,
                         },
                     });
                 }

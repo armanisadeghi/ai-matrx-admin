@@ -6,7 +6,7 @@ import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import { getOverlayRenderer, hasCustomRenderer, getResultsLabel, getToolDisplayName } from "@/features/chat/components/response/tool-renderers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, MessageSquare, Settings2, Wrench } from "lucide-react";
+import { AlertCircle, MessageSquare, Settings2, Wrench, FileCode2, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ToolUpdatesOverlayProps {
@@ -121,6 +121,99 @@ const OutputView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
     );
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Copy-to-clipboard button (inline icon that shows a checkmark after copying)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CopyButton: React.FC<{ text: string; className?: string }> = ({ text, className }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // Fallback for older browsers
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    return (
+        <button
+            onClick={handleCopy}
+            className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                copied
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground",
+                className
+            )}
+            title={copied ? "Copied!" : "Copy to clipboard"}
+        >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copied ? "Copied" : "Copy"}</span>
+        </button>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Raw result view — shows raw content with scrolling + copy
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RawResultView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
+    if (!update.mcp_output) {
+        return (
+            <div className="p-8 text-center text-muted-foreground">
+                <p className="text-sm">No output data available</p>
+            </div>
+        );
+    }
+
+    const output = update.mcp_output as Record<string, unknown>;
+    // Get the actual result value — could be string, object, array, etc.
+    const resultValue = output.result ?? output;
+    const isString = typeof resultValue === "string";
+    const displayText = isString ? resultValue : JSON.stringify(resultValue, null, 2);
+
+    return (
+        <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 flex-shrink-0">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <FileCode2 className="w-3.5 h-3.5" />
+                    <span>{isString ? "Text content" : "JSON object"}</span>
+                    {!isString && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            {typeof resultValue === "object" && resultValue !== null
+                                ? (Array.isArray(resultValue) ? `${resultValue.length} items` : `${Object.keys(resultValue as Record<string, unknown>).length} keys`)
+                                : typeof resultValue}
+                        </Badge>
+                    )}
+                </div>
+                <CopyButton text={displayText} />
+            </div>
+            <div className="flex-1 overflow-auto">
+                {isString ? (
+                    <div className="p-4 text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed">
+                        {resultValue}
+                    </div>
+                ) : (
+                    <pre className="p-4 text-xs text-foreground font-mono leading-relaxed">
+                        {displayText}
+                    </pre>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const ErrorView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
     if (!update.mcp_error) return null;
 
@@ -161,8 +254,10 @@ interface ToolGroupTabProps {
     toolDisplayName: string;
 }
 
+type ToolGroupView = "results" | "input" | "raw";
+
 const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDisplayName }) => {
-    const [showInput, setShowInput] = useState(false);
+    const [activeView, setActiveView] = useState<ToolGroupView>("results");
 
     const toolName = useMemo(() => {
         const inputUpdate = group.find(u => u.type === "mcp_input");
@@ -175,6 +270,7 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
     const stepDataUpdates = group.filter(u => u.type === "step_data");
     const hasCustom = hasCustomRenderer(toolName);
     const hasInput = !!inputUpdate;
+    const hasOutput = !!outputUpdate;
 
     // Extract a subtitle from the input arguments (query, url, etc.)
     const subtitle = useMemo(() => {
@@ -199,6 +295,19 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
         return null;
     }, [outputUpdate]);
 
+    // Header title and subtitle based on active view
+    const headerTitle = activeView === "input"
+        ? `${toolDisplayName} — Input`
+        : activeView === "raw"
+            ? `${toolDisplayName} — Raw`
+            : toolLabel;
+
+    const headerSubtitle = activeView === "input"
+        ? (toolName || toolDisplayName)
+        : activeView === "raw"
+            ? (toolName || toolDisplayName)
+            : (subtitle || resultCount || toolDisplayName);
+
     const renderResults = () => {
         if (hasCustom && (outputUpdate || stepDataUpdates.length > 0)) {
             const OverlayRenderer = getOverlayRenderer(toolName);
@@ -222,50 +331,70 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
         );
     };
 
+    const renderContent = () => {
+        switch (activeView) {
+            case "input":
+                return inputUpdate ? <InputView update={inputUpdate} /> : null;
+            case "raw":
+                return outputUpdate ? <RawResultView update={outputUpdate} /> : (
+                    <div className="p-8 text-center text-muted-foreground">
+                        <p className="text-sm">No raw output available</p>
+                    </div>
+                );
+            case "results":
+            default:
+                return renderResults();
+        }
+    };
+
+    // View button definitions
+    const viewButtons: { view: ToolGroupView; icon: React.ReactNode; label: string; available: boolean }[] = [
+        { view: "results", icon: <Wrench className="w-3.5 h-3.5" />, label: "Results", available: true },
+        { view: "input", icon: <Settings2 className="w-3.5 h-3.5" />, label: "Input", available: hasInput },
+        { view: "raw", icon: <FileCode2 className="w-3.5 h-3.5" />, label: "Raw", available: hasOutput },
+    ];
+
     return (
         <div className="flex flex-col h-full">
-            {/* Blue gradient header with toggle icon — fixed min-h prevents layout shift on toggle */}
+            {/* Blue gradient header with view selector icons */}
             <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-700 px-5 py-3 min-h-[3.75rem]">
                 <div className="flex items-center justify-between h-full">
                     <div className="flex items-center gap-3 min-w-0">
                         <Wrench className="w-5 h-5 text-white/80 flex-shrink-0" />
                         <div className="min-w-0">
                             <h2 className="text-base font-bold text-white truncate">
-                                {showInput ? `${toolDisplayName} — Input` : toolLabel}
+                                {headerTitle}
                             </h2>
                             <p className="text-xs text-white/70 truncate mt-0.5">
-                                {showInput
-                                    ? (toolName || toolDisplayName)
-                                    : (subtitle || resultCount || toolDisplayName)}
+                                {headerSubtitle}
                             </p>
                         </div>
                     </div>
-                    {/* Toggle icon — only visible when there is input data */}
-                    {hasInput && (
-                        <button
-                            onClick={() => setShowInput(prev => !prev)}
-                            className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all flex-shrink-0",
-                                showInput
-                                    ? "bg-white/25 text-white"
-                                    : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
-                            )}
-                            title={showInput ? "Show results" : "Show input parameters"}
-                        >
-                            <Settings2 className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">{showInput ? "Results" : "Input"}</span>
-                        </button>
-                    )}
+                    {/* View selector — icon buttons */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                        {viewButtons.filter(b => b.available).map(({ view, icon, label }) => (
+                            <button
+                                key={view}
+                                onClick={() => setActiveView(view)}
+                                className={cn(
+                                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all",
+                                    activeView === view
+                                        ? "bg-white/25 text-white"
+                                        : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                                )}
+                                title={label}
+                            >
+                                {icon}
+                                <span className="hidden sm:inline">{label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             {/* Content area */}
             <div className="flex-1 overflow-auto">
-                {showInput && inputUpdate ? (
-                    <InputView update={inputUpdate} />
-                ) : (
-                    renderResults()
-                )}
+                {renderContent()}
             </div>
         </div>
     );
