@@ -25,7 +25,7 @@ interface SendMessageParams {
 }
 
 /**
- * Agent Execute Request with content array support
+ * Agent Execute Request with content array support 
  */
 interface AgentExecuteRequestWithContent {
     prompt_id: string;
