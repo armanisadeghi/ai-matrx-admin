@@ -17,8 +17,6 @@ import type {
     CxTextContent,
     CxThinkingContent,
     CxMediaContent,
-    CxToolCallContent,
-    CxToolResultContent,
 } from '../types/cx-tables';
 
 // ============================================================================
@@ -58,14 +56,24 @@ export interface ProcessedChatMessage {
 // Helpers
 // ============================================================================
 
-/** Safely parse a JSON string, returning the parsed value or the raw string as an object */
-function tryParseJSON(jsonString: string): Record<string, unknown> {
-    try {
-        const parsed = JSON.parse(jsonString);
-        return typeof parsed === 'object' && parsed !== null ? parsed : { value: parsed };
-    } catch {
-        return { raw: jsonString };
+/** Safely coerce a value into a Record<string, unknown>.
+ *  - If it's already an object, return it directly (DB often stores jsonb objects, not strings).
+ *  - If it's a JSON string, parse it.
+ *  - Otherwise wrap the raw value.
+ */
+function toRecord(value: unknown): Record<string, unknown> {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        return value as Record<string, unknown>;
     }
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            return typeof parsed === 'object' && parsed !== null ? parsed : { value: parsed };
+        } catch {
+            return { raw: value };
+        }
+    }
+    return { value };
 }
 
 // ============================================================================
@@ -145,31 +153,53 @@ export function convertCxContentToDisplay(
             }
 
             case 'tool_call': {
-                const toolCallBlock = block as CxToolCallContent;
+                // DB stores tool_call blocks with varying field names:
+                //   Typed interface: { tool_call_id, name, arguments (string) }
+                //   Actual DB data:  { id, name, arguments (object) }
+                // Handle both shapes.
+                const raw = block as Record<string, unknown>;
+                const tcId = (raw.tool_call_id ?? raw.id ?? '') as string;
+                const tcName = (raw.name ?? '') as string;
+                const tcArgs = raw.arguments;
+
                 toolUpdates.push({
-                    id: toolCallBlock.tool_call_id,
+                    id: tcId,
                     type: 'mcp_input',
                     mcp_input: {
-                        name: toolCallBlock.name,
-                        arguments: tryParseJSON(toolCallBlock.arguments),
+                        name: tcName,
+                        arguments: toRecord(tcArgs),
                     },
                 });
                 break;
             }
 
             case 'tool_result': {
-                const toolResultBlock = block as CxToolResultContent;
-                if (toolResultBlock.is_error) {
+                // DB stores tool_result blocks with varying field names:
+                //   Typed interface: { tool_call_id, name, content (string), is_error }
+                //   Actual DB data:  { tool_use_id, name, content (object), is_error? }
+                // Handle both shapes.
+                const raw = block as Record<string, unknown>;
+                const trId = (raw.tool_call_id ?? raw.tool_use_id ?? '') as string;
+                const isError = Boolean(raw.is_error);
+                const trContent = raw.content;
+
+                if (isError) {
                     toolUpdates.push({
-                        id: toolResultBlock.tool_call_id,
+                        id: trId,
                         type: 'mcp_error',
-                        mcp_error: toolResultBlock.content,
+                        mcp_error: typeof trContent === 'string' ? trContent : JSON.stringify(trContent),
                     });
                 } else {
+                    // Wrap in { status, result } to match the streaming mcp_output shape
+                    // that the tool renderers expect.
+                    const resultObj = toRecord(trContent);
                     toolUpdates.push({
-                        id: toolResultBlock.tool_call_id,
+                        id: trId,
                         type: 'mcp_output',
-                        mcp_output: tryParseJSON(toolResultBlock.content),
+                        mcp_output: {
+                            status: 'success',
+                            result: resultObj,
+                        },
                     });
                 }
                 break;
