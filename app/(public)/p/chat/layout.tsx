@@ -1,5 +1,7 @@
 // app/(public)/p/chat/layout.tsx
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import { AgentsProvider } from '@/features/public-chat/context/AgentsContext';
 import ChatLayoutShell from './ChatLayoutShell';
 
 export const metadata: Metadata = {
@@ -11,12 +13,12 @@ export const metadata: Metadata = {
     },
 };
 
-/**
- * Chat Layout - Server Component
- *
- * Provides metadata. ChatLayoutShell is a client component
- * that manages the sidebar and routing state.
- */
 export default function PublicChatLayout({ children }: { children: React.ReactNode }) {
-    return <ChatLayoutShell>{children}</ChatLayoutShell>;
+    return (
+        <AgentsProvider>
+            <Suspense fallback={<div className="h-full w-full bg-textured" />}>
+                <ChatLayoutShell>{children}</ChatLayoutShell>
+            </Suspense>
+        </AgentsProvider>
+    );
 }

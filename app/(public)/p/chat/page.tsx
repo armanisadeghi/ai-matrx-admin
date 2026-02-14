@@ -2,23 +2,15 @@
 'use client';
 
 import ChatContainer from '@/features/public-chat/components/ChatContainer';
-import { ChatProvider } from '@/features/public-chat/context/ChatContext';
-import { useLayoutAgent } from './ChatLayoutShell';
 
 /**
- * Public Chat Page — new conversation
- *
- * Reads agent from layout context (single source of truth).
- * ChatProvider receives initialAgent so inner context starts in sync.
+ * Public Chat Page — new conversation.
+ * ChatProvider is at the layout level. This is a thin shell.
  */
 export default function PublicChatPage() {
-    const { selectedAgent } = useLayoutAgent();
-
     return (
-        <ChatProvider initialAgent={selectedAgent}>
-            <div className="h-full w-full bg-textured">
-                <ChatContainer className="h-full" />
-            </div>
-        </ChatProvider>
+        <div className="h-full w-full bg-textured">
+            <ChatContainer className="h-full" />
+        </div>
     );
 }

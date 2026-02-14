@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { useChatContext } from '../context/ChatContext';
+import { useAgentsContext } from '../context/AgentsContext';
 import { useAgentChat } from '../hooks/useAgentChat';
 import { useChatPersistence } from '../hooks/useChatPersistence';
 import { ChatInputWithControls } from './ChatInputWithControls';
@@ -14,7 +16,6 @@ import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
-import { processDbMessagesForDisplay } from '../utils/cx-content-converter';
 import { MessageCircle, Share2 } from 'lucide-react';
 import { ShareModal } from '@/features/sharing';
 import { useLayoutAgent } from '@/app/(public)/p/chat/ChatLayoutShell';
@@ -25,48 +26,49 @@ import { useLayoutAgent } from '@/app/(public)/p/chat/ChatLayoutShell';
 
 interface ChatContainerProps {
     className?: string;
-    /** If provided, load an existing conversation from the database */
-    existingRequestId?: string;
 }
 
 // ============================================================================
 // CHAT CONTAINER
 // ============================================================================
 
-export function ChatContainer({ className = '', existingRequestId }: ChatContainerProps) {
-    const { state, setAgent, addMessage, setUseLocalhost, updateMessage } = useChatContext();
-    // Layout-level agent change handler — THE single way to change agents
-    const { onAgentChange } = useLayoutAgent();
+export function ChatContainer({ className = '' }: ChatContainerProps) {
+    const router = useRouter();
+    const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
+    const { onAgentChange, isLoadingConversation } = useLayoutAgent();
+    const { sidebarEvents } = useAgentsContext();
+
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
-    const [isLoadingConversation, setIsLoadingConversation] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const latestAssistantRef = useRef<HTMLDivElement>(null);
     const prevAssistantCountRef = useRef(0);
-    const dbConversationIdRef = useRef<string | null>(null);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
+    // Ref for accessing dbConversationId in callbacks (avoids stale closure)
+    const dbConvIdRef = useRef<string | null>(state.dbConversationId);
 
     const user = useSelector(selectUser);
     const isAuthenticated = !!user?.id;
-
-    // Read server preference from Redux (set via AdminMenu in header)
     const useLocalhost = useSelector(selectIsUsingLocalhost);
+    const { createConversation, saveMessages } = useChatPersistence();
 
-    // Database persistence
-    const { createConversation, saveMessages, loadConversation } = useChatPersistence();
+    // Keep ref in sync with state
+    useEffect(() => {
+        dbConvIdRef.current = state.dbConversationId;
+    }, [state.dbConversationId]);
 
     const { sendMessage, warmAgent, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
         onStreamEvent: (event) => {
             setStreamEvents((prev) => [...prev, event]);
         },
         onComplete: () => {
-            // Reset stream events after completion (content is now in message)
             setTimeout(() => setStreamEvents([]), 100);
-
             // Persist to database (fire and forget)
-            if (dbConversationIdRef.current) {
+            if (dbConvIdRef.current) {
                 const currentMessages = state.messages;
-                saveMessages(dbConversationIdRef.current, currentMessages).catch(console.error);
+                saveMessages(dbConvIdRef.current, currentMessages).catch(console.error);
+                // Notify sidebar that this conversation was updated
+                sidebarEvents.emit('conversation-updated', { id: dbConvIdRef.current });
             }
         },
         onError: (error) => {
@@ -74,52 +76,12 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
         },
     });
 
-    // Load existing conversation if conversationId is provided
-    useEffect(() => {
-        if (!existingRequestId) return;
-
-        let cancelled = false;
-        setIsLoadingConversation(true);
-
-        (async () => {
-            const data = await loadConversation(existingRequestId);
-            if (cancelled || !data) {
-                setIsLoadingConversation(false);
-                return;
-            }
-
-            dbConversationIdRef.current = existingRequestId;
-
-            // Convert cx_message content blocks to display-ready format.
-            // Handles: text, thinking, media, tool_call, tool_result blocks.
-            // Merges tool-role messages into the preceding assistant message.
-            const processedMessages = processDbMessagesForDisplay(data.messages);
-
-            for (const msg of processedMessages) {
-                addMessage({
-                    role: msg.role,
-                    content: msg.content,
-                    status: 'complete',
-                    toolUpdates: msg.toolUpdates.length > 0 ? msg.toolUpdates : undefined,
-                    isCondensed: msg.isCondensed || undefined,
-                });
-            }
-
-            setIsLoadingConversation(false);
-        })();
-
-        return () => { cancelled = true; };
-    }, [existingRequestId]);
-
     // Sync Redux server preference to chat context
-    // AdminMenu in header controls this via Redux
     useEffect(() => {
         setUseLocalhost(useLocalhost);
     }, [useLocalhost, setUseLocalhost]);
 
-    // Initialize agent and variables on mount.
-    // Agent comes from initialAgent prop → ChatContext, which is set by the
-    // layout context (single source of truth). If somehow null, fall back to default.
+    // Initialize variables from current agent on mount or agent change
     useEffect(() => {
         const agent = state.currentAgent;
         if (!agent) {
@@ -132,7 +94,6 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
             });
         }
 
-        // Initialize variables with default values from current agent
         const varDefs = (agent || DEFAULT_AGENTS[0]).variableDefaults;
         if (varDefs && varDefs.length > 0) {
             const initialValues: Record<string, string> = {};
@@ -142,8 +103,10 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                 }
             });
             setVariableValues(initialValues);
+        } else {
+            setVariableValues({});
         }
-    }, []); // Only on mount — agent is set via initialAgent prop on remount
+    }, [state.currentAgent?.promptId]);
 
     // Pre-warm agent
     useEffect(() => {
@@ -153,21 +116,15 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     }, [state.currentAgent?.promptId, warmAgent]);
 
     // One-time scroll when a NEW assistant message appears
-    // Positions the assistant message at the top of the viewport
     useEffect(() => {
         const assistantCount = messages.filter(m => m.role === 'assistant').length;
-        
-        // Only scroll when a NEW assistant message is added (count increased)
         if (assistantCount > prevAssistantCountRef.current && latestAssistantRef.current) {
             latestAssistantRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
-        
         prevAssistantCountRef.current = assistantCount;
     }, [messages]);
 
-    // Agent selection — delegates to layout context (single source of truth).
-    // This triggers a ChatProvider remount via chatKey bump in ChatLayoutShell,
-    // so the new agent flows through initialAgent → ChatContext automatically.
+    // Agent selection — delegates to layout context
     const handleAgentSelect = useCallback(
         (agent: typeof DEFAULT_AGENTS[0]) => {
             onAgentChange({
@@ -189,52 +146,54 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
             setStreamEvents([]);
 
             // Create database conversation on first message
-            if (!dbConversationIdRef.current && !existingRequestId) {
+            if (!dbConvIdRef.current) {
                 const title = (content?.trim().slice(0, 80) || state.currentAgent?.name || 'New Chat');
-                const conversationId = await createConversation({ title });
-                if (conversationId) {
-                    dbConversationIdRef.current = conversationId;
+                const dbConvId = await createConversation({ title });
+                if (dbConvId) {
+                    dbConvIdRef.current = dbConvId;
+                    setDbConversationId(dbConvId);
+                    // Update URL to show conversation ID with agent context
+                    const agentParam = state.currentAgent?.promptId
+                        ? `?agent=${state.currentAgent.promptId}`
+                        : '';
+                    router.replace(`/p/chat/c/${dbConvId}${agentParam}`);
+                    // Notify sidebar immediately
+                    sidebarEvents.emit('conversation-created', { id: dbConvId, title });
                 }
             }
-            
+
             // Format message content with variables for display
             let displayContent = '';
-            
-            // Add variables if they exist (show all variables, including defaults)
+
             if (state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0) {
                 const variableLines: string[] = [];
                 state.currentAgent.variableDefaults.forEach(varDef => {
-                    // Use the value from variableValues, or fall back to defaultValue
                     const value = variableValues[varDef.name] || varDef.defaultValue || '';
                     if (value) {
                         const formattedName = formatText(varDef.name);
                         variableLines.push(`${formattedName}: ${value}`);
                     }
                 });
-                
+
                 if (variableLines.length > 0) {
                     displayContent = variableLines.join('\n');
-                    
-                    // Add user input below variables if it exists
                     if (content.trim()) {
                         displayContent += '\n\n' + content;
                     }
                 } else {
-                    // No variables with values, just use content
                     displayContent = content;
                 }
             } else {
-                // No variables, just use content
                 displayContent = content;
             }
-            
+
             return sendMessage({
                 content: displayContent,
                 variables: variableValues,
                 resources,
             });
         },
-        [sendMessage, variableValues, state.currentAgent]
+        [sendMessage, variableValues, state.currentAgent, createConversation, setDbConversationId, router, sidebarEvents]
     );
 
     const handleMessageContentChange = useCallback((messageId: string, newContent: string) => {
@@ -245,7 +204,7 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     const hasVariables = state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0;
     const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
 
-    // Loading state for existing conversations
+    // Loading state for existing conversations (driven by layout)
     if (isLoadingConversation) {
         return (
             <div className={`h-full flex flex-col items-center justify-center ${className}`}>
@@ -256,12 +215,11 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     }
 
     // ========================================================================
-    // WELCOME SCREEN — centered input, no bottom bar
+    // WELCOME SCREEN
     // ========================================================================
     if (isWelcomeScreen) {
         return (
             <div className={`h-full flex flex-col items-center justify-center px-3 md:px-8 ${className}`}>
-                {/* Welcome Header */}
                 <div className="text-center mb-6 md:mb-8">
                     <h1 className="text-2xl md:text-3xl font-semibold mb-1.5 text-foreground">
                         {hasVariables ? state.currentAgent?.name || 'What can I help with?' : 'What can I help with?'}
@@ -273,9 +231,7 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                     </p>
                 </div>
 
-                {/* Main Input Area */}
                 <div className="w-full max-w-3xl">
-                    {/* Variables (if agent has them) */}
                     {hasVariables && (
                         <div className="mb-6">
                             <PublicVariableInputs
@@ -291,7 +247,6 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                         </div>
                     )}
 
-                    {/* Chat Input */}
                     <div className="rounded-2xl border border-border">
                         <ChatInputWithControls
                             onSubmit={handleSubmit}
@@ -309,7 +264,6 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                         />
                     </div>
 
-                    {/* Agent Action Buttons */}
                     <div className="mt-6">
                         <AgentActionButtons
                             agents={DEFAULT_AGENTS}
@@ -324,18 +278,13 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
     }
 
     // ========================================================================
-    // CONVERSATION MODE — messages + bottom-pinned input
-    // Layout: flex column with messages (flex-1 scrollable) + input (flex-shrink-0)
-    // This guarantees the input is ALWAYS visible at the bottom of the container,
-    // regardless of viewport height, keyboard state, or message count.
+    // CONVERSATION MODE
     // ========================================================================
-    // Determine the conversation ID for the share modal
-    const shareConversationId = dbConversationIdRef.current || existingRequestId;
+    const shareConversationId = state.dbConversationId;
     const conversationTitle = state.messages[0]?.content?.slice(0, 60) || 'Chat';
 
     return (
         <div className={`h-full flex flex-col ${className}`}>
-            {/* Conversation header bar — share action */}
             {isAuthenticated && shareConversationId && (
                 <div className="flex-shrink-0 flex items-center justify-end px-3 py-1">
                     <button
@@ -348,7 +297,6 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                 </div>
             )}
 
-            {/* Share modal */}
             {isShareOpen && shareConversationId && (
                 <ShareModal
                     isOpen={isShareOpen}
@@ -360,7 +308,6 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                 />
             )}
 
-            {/* Messages — scrollable, takes all remaining space */}
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
                 <div className="w-full max-w-[800px] mx-auto px-4 md:px-3 py-4 pb-4">
                     <MessageList
@@ -373,15 +320,11 @@ export function ChatContainer({ className = '', existingRequestId }: ChatContain
                 </div>
             </div>
 
-            {/* Input — pinned to bottom, never hidden */}
-            {/* Uses flex-shrink-0 so it can NEVER be pushed off screen */}
-            {/* Bottom padding: max(12px, safe-area) ensures padding on ALL devices */}
             <div
                 className="flex-shrink-0 pt-2 px-2 md:px-4 bg-background/95 backdrop-blur-sm"
                 style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
             >
                 <div className="w-full max-w-[800px] mx-auto">
-                    {/* Input */}
                     <div className="rounded-2xl border border-border bg-background">
                         <ChatInputWithControls
                             onSubmit={handleSubmit}

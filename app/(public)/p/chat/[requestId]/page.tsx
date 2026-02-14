@@ -1,31 +1,15 @@
 // app/(public)/p/chat/[requestId]/page.tsx
-'use client';
-
-import { useParams } from 'next/navigation';
-import ChatContainer from '@/features/public-chat/components/ChatContainer';
-import { ChatProvider } from '@/features/public-chat/context/ChatContext';
-import { useLayoutAgent } from '../ChatLayoutShell';
+import { redirect } from 'next/navigation';
 
 /**
- * Legacy Chat Page — loads a conversation by request ID.
- *
- * Route: /p/chat/[requestId]
- * DEPRECATED: Use /p/chat/c/[id] instead.
+ * Legacy Chat Route — redirects to the canonical /p/chat/c/[id] route.
  * Kept for backward compatibility with shared links.
  */
-export default function ExistingChatPage() {
-    const params = useParams();
-    const requestId = params.requestId as string;
-    const { selectedAgent } = useLayoutAgent();
-
-    return (
-        <ChatProvider initialAgent={selectedAgent}>
-            <div className="h-full w-full bg-textured">
-                <ChatContainer
-                    className="h-full"
-                    existingRequestId={requestId}
-                />
-            </div>
-        </ChatProvider>
-    );
+export default async function LegacyChatPage({
+    params,
+}: {
+    params: Promise<{ requestId: string }>;
+}) {
+    const { requestId } = await params;
+    redirect(`/p/chat/c/${requestId}`);
 }

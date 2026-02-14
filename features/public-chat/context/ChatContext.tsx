@@ -44,6 +44,8 @@ export interface AgentConfig {
 
 export interface ChatState {
     conversationId: string;
+    /** Database conversation ID — set when a cx_conversation row is created */
+    dbConversationId: string | null;
     messages: ChatMessage[];
     isStreaming: boolean;
     isExecuting: boolean;
@@ -51,9 +53,7 @@ export interface ChatState {
     currentAgent: AgentConfig | null;
     settings: ChatSettings;
     modelOverride?: string;
-    // Note: Auth (token, isAdmin, fingerprint) is now centralized in Redux via useApiAuth hook
-    // useLocalhost is also in Redux via adminPreferencesSlice
-    useLocalhost: boolean; // Kept for backward compat, reads from Redux
+    useLocalhost: boolean;
 }
 
 // ============================================================================
@@ -72,7 +72,9 @@ type ChatAction =
     | { type: 'CLEAR_MESSAGES' }
     | { type: 'START_NEW_CONVERSATION' }
     | { type: 'APPEND_TO_LAST_MESSAGE'; payload: string }
-    | { type: 'SET_USE_LOCALHOST'; payload: boolean };
+    | { type: 'SET_USE_LOCALHOST'; payload: boolean }
+    | { type: 'SET_DB_CONVERSATION_ID'; payload: string | null }
+    | { type: 'SET_MESSAGES'; payload: ChatMessage[] };
 
 // ============================================================================
 // INITIAL STATE
@@ -89,6 +91,7 @@ const defaultSettings: ChatSettings = {
 
 const createInitialState = (): ChatState => ({
     conversationId: uuidv4(),
+    dbConversationId: null,
     messages: [],
     isStreaming: false,
     isExecuting: false,
@@ -96,7 +99,7 @@ const createInitialState = (): ChatState => ({
     currentAgent: null,
     settings: defaultSettings,
     modelOverride: undefined,
-    useLocalhost: false, // Synced from Redux
+    useLocalhost: false,
 });
 
 // ============================================================================
@@ -106,20 +109,13 @@ const createInitialState = (): ChatState => ({
 function chatReducer(state: ChatState, action: ChatAction): ChatState {
     switch (action.type) {
         case 'SET_USE_LOCALHOST':
-            // Synced from Redux adminPreferencesSlice
             return { ...state, useLocalhost: action.payload };
 
         case 'SET_AGENT':
-            return {
-                ...state,
-                currentAgent: action.payload,
-            };
+            return { ...state, currentAgent: action.payload };
 
         case 'ADD_MESSAGE':
-            return {
-                ...state,
-                messages: [...state.messages, action.payload],
-            };
+            return { ...state, messages: [...state.messages, action.payload] };
 
         case 'UPDATE_MESSAGE':
             return {
@@ -153,10 +149,7 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
             return { ...state, error: action.payload };
 
         case 'UPDATE_SETTINGS':
-            return {
-                ...state,
-                settings: { ...state.settings, ...action.payload },
-            };
+            return { ...state, settings: { ...state.settings, ...action.payload } };
 
         case 'SET_MODEL_OVERRIDE':
             return { ...state, modelOverride: action.payload };
@@ -168,9 +161,16 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
             return {
                 ...state,
                 conversationId: uuidv4(),
+                dbConversationId: null,
                 messages: [],
                 error: null,
             };
+
+        case 'SET_DB_CONVERSATION_ID':
+            return { ...state, dbConversationId: action.payload };
+
+        case 'SET_MESSAGES':
+            return { ...state, messages: action.payload };
 
         default:
             return state;
@@ -184,7 +184,6 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
 interface ChatContextValue {
     state: ChatState;
     dispatch: React.Dispatch<ChatAction>;
-    // Convenience actions
     setAgent: (agent: AgentConfig) => void;
     addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
     updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
@@ -197,6 +196,8 @@ interface ChatContextValue {
     clearMessages: () => void;
     startNewConversation: () => void;
     setUseLocalhost: (useLocalhost: boolean) => void;
+    setDbConversationId: (id: string | null) => void;
+    setMessages: (messages: ChatMessage[]) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -272,6 +273,14 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         dispatch({ type: 'START_NEW_CONVERSATION' });
     }, []);
 
+    const setDbConversationId = useCallback((id: string | null) => {
+        dispatch({ type: 'SET_DB_CONVERSATION_ID', payload: id });
+    }, []);
+
+    const setMessages = useCallback((messages: ChatMessage[]) => {
+        dispatch({ type: 'SET_MESSAGES', payload: messages });
+    }, []);
+
     const value: ChatContextValue = {
         state,
         dispatch,
@@ -287,6 +296,8 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         clearMessages,
         startNewConversation,
         setUseLocalhost,
+        setDbConversationId,
+        setMessages,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
@@ -323,6 +334,8 @@ export function useChatActions() {
         clearMessages,
         startNewConversation,
         setUseLocalhost,
+        setDbConversationId,
+        setMessages,
     } = useChatContext();
 
     return {
@@ -338,5 +351,7 @@ export function useChatActions() {
         clearMessages,
         startNewConversation,
         setUseLocalhost,
+        setDbConversationId,
+        setMessages,
     };
 }

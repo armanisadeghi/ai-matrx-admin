@@ -5,7 +5,7 @@ import { ChevronRight, Bot, Lock, Search, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { useUserPrompts } from '../../hooks/useUserPrompts';
+import { useAgentsContext } from '../../context/AgentsContext';
 import { DEFAULT_AGENTS } from '../AgentSelector';
 import type { AgentConfig } from '../../context/ChatContext';
 
@@ -216,7 +216,7 @@ function AgentSubsection({
 export function SidebarAgents({ selectedAgent, onAgentSelect, searchQuery = '' }: SidebarAgentsProps) {
     const user = useSelector(selectUser);
     const isAuthenticated = !!user?.id;
-    const { prompts: userPrompts, isLoading } = useUserPrompts();
+    const { userPrompts, userPromptsLoading: isLoading } = useAgentsContext();
 
     // Filter system agents by global search
     const filteredSystemAgents = useMemo(() => {

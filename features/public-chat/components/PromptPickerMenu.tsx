@@ -5,7 +5,7 @@ import { Search, Loader2, Sparkles, ChevronDown } from 'lucide-react';
 import { LuBrain } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import { useUserPrompts } from '../hooks/useUserPrompts';
+import { useAgentsContext } from '../context/AgentsContext';
 import { DEFAULT_AGENTS } from './AgentSelector';
 import type { AgentConfig } from '../context/ChatContext';
 
@@ -44,7 +44,7 @@ function truncateAgentName(name: string, maxLen = 20): string {
 export function PromptPickerMenu({ onSelect, disabled = false, selectedAgent }: PromptPickerMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const { prompts, isLoading, error } = useUserPrompts();
+    const { userPrompts: prompts, userPromptsLoading: isLoading, userPromptsError: error } = useAgentsContext();
 
     // Filter system agents based on search query
     const filteredSystemAgents = useMemo(() => {

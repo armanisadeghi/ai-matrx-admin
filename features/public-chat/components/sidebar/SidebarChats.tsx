@@ -18,6 +18,7 @@ import {
 import { ShareModal } from '@/features/sharing';
 import { supabase } from '@/utils/supabase/client';
 import { useChatPersistence } from '../../hooks/useChatPersistence';
+import { useAgentsContext } from '../../context/AgentsContext';
 import type { CxConversationSummary, SharedCxConversationSummary } from '../../types/cx-tables';
 
 // ============================================================================
@@ -417,6 +418,7 @@ export function SidebarChats({
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const { loadHistory, renameConversation, deleteConversation } = useChatPersistence();
+    const { sidebarEvents } = useAgentsContext();
     const realtimeSubscriptionRef = useRef<any>(null);
 
     // Load history on mount
@@ -479,6 +481,38 @@ export function SidebarChats({
             }
         };
     }, [fetchHistory]);
+
+    // Subscribe to sidebar events for immediate UI updates
+    useEffect(() => {
+        const unsubCreated = sidebarEvents.on('conversation-created', (data) => {
+            setHistory(prev => {
+                if (prev.some(h => h.id === data.id)) return prev;
+                return [{
+                    id: data.id,
+                    title: data.title,
+                    status: 'active' as const,
+                    message_count: 0,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                }, ...prev];
+            });
+        });
+
+        const unsubUpdated = sidebarEvents.on('conversation-updated', (data) => {
+            setHistory(prev => {
+                const index = prev.findIndex(h => h.id === data.id);
+                if (index <= 0) return prev;
+                const item = prev[index];
+                return [
+                    { ...item, updated_at: new Date().toISOString() },
+                    ...prev.slice(0, index),
+                    ...prev.slice(index + 1),
+                ];
+            });
+        });
+
+        return () => { unsubCreated(); unsubUpdated(); };
+    }, [sidebarEvents]);
 
     // Filter by search
     const filtered = useMemo(() => {

@@ -9,7 +9,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useUserPrompts } from '../../hooks/useUserPrompts';
+import { useAgentsContext } from '../../context/AgentsContext';
 import { DEFAULT_AGENTS } from '../AgentSelector';
 import type { AgentConfig } from '../../context/ChatContext';
 
@@ -40,7 +40,7 @@ function AgentPickerContent({
     const [searchQuery, setSearchQuery] = useState('');
     const user = useSelector(selectUser);
     const isAuthenticated = !!user?.id;
-    const { prompts: userPrompts } = useUserPrompts();
+    const { userPrompts } = useAgentsContext();
 
     // System agents filtered
     const filteredSystem = useMemo(() => {

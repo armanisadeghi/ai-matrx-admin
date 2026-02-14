@@ -1,164 +1,256 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatSidebar } from '@/features/public-chat/components/ChatSidebar';
 import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
+import { useAgentsContext } from '@/features/public-chat/context/AgentsContext';
+import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
+import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
 
 // ============================================================================
-// LAYOUT AGENT CONTEXT — single source of truth for agent state
+// RESOLVE AGENT HELPER
+// ============================================================================
+
+function resolveAgentFromId(
+    agentId: string | null,
+    userPrompts: { id: string; name: string; description: string | null; variable_defaults: any[] | null }[] = [],
+): AgentConfig | null {
+    if (!agentId) return null;
+
+    const systemAgent = DEFAULT_AGENTS.find(a => a.promptId === agentId);
+    if (systemAgent) {
+        return {
+            promptId: systemAgent.promptId,
+            name: systemAgent.name,
+            description: systemAgent.description,
+            variableDefaults: systemAgent.variableDefaults,
+        };
+    }
+
+    const userAgent = userPrompts.find(p => p.id === agentId);
+    if (userAgent) {
+        return {
+            promptId: userAgent.id,
+            name: userAgent.name || 'Untitled',
+            description: userAgent.description || undefined,
+            variableDefaults: userAgent.variable_defaults || undefined,
+        };
+    }
+
+    return null;
+}
+
+const DEFAULT_AGENT_CONFIG: AgentConfig = {
+    promptId: DEFAULT_AGENTS[0].promptId,
+    name: DEFAULT_AGENTS[0].name,
+    description: DEFAULT_AGENTS[0].description,
+    variableDefaults: DEFAULT_AGENTS[0].variableDefaults,
+};
+
+// ============================================================================
+// LAYOUT AGENT CONTEXT
 // ============================================================================
 
 interface LayoutAgentContextValue {
-    /** Current agent selection */
     selectedAgent: AgentConfig;
-    /**
-     * Change agent — from ANY component (sidebar, header, input, action buttons).
-     * This is the ONLY way to change agents. It handles:
-     * - Updating layout state (sidebar, header, floating selector)
-     * - Navigating to the correct URL
-     * - Forcing ChatProvider remount so inner context picks up new agent
-     */
     onAgentChange: (agent: AgentConfig) => void;
-    /** Active conversation ID (derived from URL), or null for new chat */
     activeConversationId: string | null;
+    isLoadingConversation: boolean;
 }
 
 const LayoutAgentContext = createContext<LayoutAgentContextValue | null>(null);
 
-/** Hook for pages and components to read/change the agent */
 export function useLayoutAgent(): LayoutAgentContextValue {
     const ctx = useContext(LayoutAgentContext);
     if (!ctx) {
-        // Fallback — shouldn't happen in practice
         return {
-            selectedAgent: {
-                promptId: DEFAULT_AGENTS[0].promptId,
-                name: DEFAULT_AGENTS[0].name,
-                description: DEFAULT_AGENTS[0].description,
-                variableDefaults: DEFAULT_AGENTS[0].variableDefaults,
-            },
+            selectedAgent: DEFAULT_AGENT_CONFIG,
             onAgentChange: () => {},
             activeConversationId: null,
+            isLoadingConversation: false,
         };
     }
     return ctx;
 }
 
 // ============================================================================
-// CHAT LAYOUT SHELL
+// INNER SHELL — lives inside ChatProvider, manages URL-driven state
 // ============================================================================
 
-/**
- * ChatLayoutShell — Client component that is the SINGLE SOURCE OF TRUTH
- * for agent selection across the entire /p/chat route tree.
- *
- * Every agent picker (sidebar list, header dropdown, floating dropdown,
- * input-area prompt picker, welcome-screen action buttons) calls
- * `onAgentChange` from context. No component manages its own agent state.
- *
- * State flow:
- *   User selects agent → onAgentChange() → updates selectedAgent state
- *   → bumps chatKey (remounts ChatProvider with new initialAgent)
- *   → all UI reads from context and stays in sync
- */
-export default function ChatLayoutShell({ children }: { children: React.ReactNode }) {
+function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
 
-    // Key that increments to force ChatProvider remount
-    const [chatKey, setChatKey] = useState(0);
+    const {
+        state, setAgent, startNewConversation,
+        setDbConversationId, setMessages,
+    } = useChatContext();
 
-    // Derive active conversation ID from URL
-    // /p/chat/c/[id] → conversation mode
-    // /p/chat/[requestId] → legacy conversation mode
-    // /p/chat or /p/chat/a/[id] → new chat mode (no existing conversation)
-    const activeConversationId = useMemo(() => {
-        const convMatch = pathname.match(/\/p\/chat\/c\/([^/?]+)/);
-        if (convMatch) return convMatch[1];
+    const { loadConversation } = useChatPersistence();
+    const { userPrompts } = useAgentsContext();
 
-        const agentMatch = pathname.match(/\/p\/chat\/a\/([^/?]+)/);
-        if (agentMatch) return null; // Agent route = new chat, no conversation
+    const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+    const loadedConversationRef = useRef<string | null>(null);
 
-        const legacyMatch = pathname.match(/\/p\/chat\/([^/?]+)/);
-        if (legacyMatch) return legacyMatch[1];
-
-        return null;
+    // ── Derive URL state ──────────────────────────────────────────────────
+    const urlConversationId = useMemo(() => {
+        const match = pathname.match(/\/p\/chat\/c\/([^/?]+)/);
+        return match ? match[1] : null;
     }, [pathname]);
 
-    // Agent selection state — THE single source of truth
-    const [selectedAgent, setSelectedAgent] = useState<AgentConfig>(() => {
-        // If on an agent route, initialize from URL
+    const urlAgentId = useMemo(() => {
         const agentMatch = pathname.match(/\/p\/chat\/a\/([^/?]+)/);
-        if (agentMatch) {
-            const found = DEFAULT_AGENTS.find(a => a.promptId === agentMatch[1]);
-            if (found) return {
-                promptId: found.promptId,
-                name: found.name,
-                description: found.description,
-                variableDefaults: found.variableDefaults,
-            };
-        }
-        return {
-            promptId: DEFAULT_AGENTS[0].promptId,
-            name: DEFAULT_AGENTS[0].name,
-            description: DEFAULT_AGENTS[0].description,
-            variableDefaults: DEFAULT_AGENTS[0].variableDefaults,
-        };
+        if (agentMatch) return agentMatch[1];
+        return searchParams.get('agent');
+    }, [pathname, searchParams]);
+
+    const activeConversationId = urlConversationId;
+
+    // ── Agent selection state ─────────────────────────────────────────────
+    const [selectedAgent, setSelectedAgent] = useState<AgentConfig>(() => {
+        return resolveAgentFromId(urlAgentId) || DEFAULT_AGENT_CONFIG;
     });
 
-    // ────────────────────────────────────────────────────────────────────────
-    // UNIFIED AGENT CHANGE HANDLER
-    // Called from: sidebar agent list, header dropdown, floating dropdown,
-    //             input prompt picker, welcome-screen action buttons
-    // ────────────────────────────────────────────────────────────────────────
-    const handleAgentChange = useCallback((agent: AgentConfig) => {
-        setSelectedAgent(agent);
+    // Sync agent to chat context when it changes
+    useEffect(() => {
+        setAgent(selectedAgent);
+    }, [selectedAgent, setAgent]);
 
-        // If we're inside an existing conversation, stay there but update agent.
-        // The ChatProvider remount (via chatKey bump) will pick up the new agent.
-        if (activeConversationId) {
-            setChatKey(prev => prev + 1);
-        } else {
-            // On /p/chat or /p/chat/a/xxx — just bump the key to remount
-            // with new agent. No navigation needed since we're already on
-            // a "new chat" route.
-            setChatKey(prev => prev + 1);
+    // Resolve agent from user prompts when they load (for custom agent URLs)
+    useEffect(() => {
+        if (!urlAgentId || userPrompts.length === 0) return;
+        if (selectedAgent.promptId === urlAgentId) return;
+
+        const resolved = resolveAgentFromId(urlAgentId, userPrompts);
+        if (resolved) {
+            setSelectedAgent(resolved);
         }
-    }, [activeConversationId]);
+    }, [urlAgentId, userPrompts, selectedAgent.promptId]);
 
-    // ────────────────────────────────────────────────────────────────────────
-    // SIDEBAR HANDLERS
-    // ────────────────────────────────────────────────────────────────────────
-    const handleSelectChat = useCallback((requestId: string) => {
-        router.push(`/p/chat/c/${requestId}`);
+    // Handle back/forward navigation changing the agent route
+    useEffect(() => {
+        if (!urlAgentId) return;
+        if (urlAgentId === selectedAgent.promptId) return;
+
+        const resolved = resolveAgentFromId(urlAgentId, userPrompts);
+        if (resolved) {
+            setSelectedAgent(resolved);
+            // If navigating to a new agent route (not a conversation), reset chat
+            if (!urlConversationId && state.messages.length > 0) {
+                startNewConversation();
+            }
+        }
+    }, [urlAgentId, urlConversationId]);
+
+    // ── Conversation loading from URL ─────────────────────────────────────
+    useEffect(() => {
+        if (!urlConversationId) {
+            loadedConversationRef.current = null;
+            return;
+        }
+
+        // This is the conversation we just created (streaming in progress) — skip fetch
+        if (state.dbConversationId === urlConversationId) {
+            loadedConversationRef.current = urlConversationId;
+            return;
+        }
+
+        // Already loaded this conversation — skip
+        if (loadedConversationRef.current === urlConversationId) {
+            return;
+        }
+
+        let cancelled = false;
+        setIsLoadingConversation(true);
+
+        (async () => {
+            const data = await loadConversation(urlConversationId);
+            if (cancelled) return;
+
+            if (!data) {
+                setIsLoadingConversation(false);
+                return;
+            }
+
+            loadedConversationRef.current = urlConversationId;
+
+            // Convert DB messages to display format
+            const processedMessages = processDbMessagesForDisplay(data.messages);
+            const chatMessages = processedMessages.map(msg => ({
+                id: msg.id || crypto.randomUUID(),
+                role: msg.role,
+                content: msg.content,
+                timestamp: msg.timestamp || new Date(),
+                status: msg.status,
+                toolUpdates: msg.toolUpdates?.length > 0 ? msg.toolUpdates : undefined,
+                isCondensed: msg.isCondensed || undefined,
+            }));
+
+            // Reset state and load messages
+            startNewConversation();
+            setDbConversationId(urlConversationId);
+            setMessages(chatMessages);
+
+            // Resolve agent from ?agent= param if present
+            const agentParam = searchParams.get('agent');
+            if (agentParam) {
+                const resolved = resolveAgentFromId(agentParam, userPrompts);
+                if (resolved) setSelectedAgent(resolved);
+            }
+
+            setIsLoadingConversation(false);
+        })();
+
+        return () => { cancelled = true; };
+    }, [urlConversationId, state.dbConversationId]);
+
+    // ── When we're on the base /p/chat route (no agent, no conversation), reset if needed
+    useEffect(() => {
+        if (pathname === '/p/chat' && state.messages.length > 0 && !state.isStreaming) {
+            startNewConversation();
+            loadedConversationRef.current = null;
+        }
+    }, [pathname]);
+
+    // ── Handler: Agent change (from sidebar, header, welcome buttons) ─────
+    const handleAgentChange = useCallback((agent: AgentConfig) => {
+        if (agent.promptId === selectedAgent.promptId && !activeConversationId) {
+            return; // Same agent, already on new chat
+        }
+        setSelectedAgent(agent);
+        setAgent(agent);
+        startNewConversation();
+        loadedConversationRef.current = null;
+        router.push(`/p/chat/a/${agent.promptId}`);
+    }, [router, setAgent, startNewConversation, selectedAgent.promptId, activeConversationId]);
+
+    // ── Handler: Select existing chat from sidebar ────────────────────────
+    const handleSelectChat = useCallback((id: string) => {
+        router.push(`/p/chat/c/${id}`);
     }, [router]);
 
+    // ── Handler: New chat — preserves current agent ───────────────────────
     const handleNewChat = useCallback(() => {
-        // Preserve the current agent — start fresh conversation with same agent
-        if (!activeConversationId) {
-            // Already on /p/chat — bump key to force remount
-            setChatKey(prev => prev + 1);
-        } else {
-            // Navigate away from conversation back to base chat
-            router.push('/p/chat');
-        }
-    }, [activeConversationId, router]);
+        startNewConversation();
+        loadedConversationRef.current = null;
+        router.push(`/p/chat/a/${selectedAgent.promptId}`);
+    }, [router, selectedAgent.promptId, startNewConversation]);
 
-    // ────────────────────────────────────────────────────────────────────────
-    // CONTEXT VALUE — shared with all descendants
-    // ────────────────────────────────────────────────────────────────────────
+    // ── Context value ─────────────────────────────────────────────────────
     const contextValue = useMemo<LayoutAgentContextValue>(() => ({
         selectedAgent,
         onAgentChange: handleAgentChange,
         activeConversationId,
-    }), [selectedAgent, handleAgentChange, activeConversationId]);
+        isLoadingConversation,
+    }), [selectedAgent, handleAgentChange, activeConversationId, isLoadingConversation]);
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>
             <div className="h-full w-full flex flex-col">
-                {/* Sidebar — reads selectedAgent + onAgentChange from context */}
                 <ChatSidebar
                     activeRequestId={activeConversationId}
                     onSelectChat={handleSelectChat}
@@ -166,11 +258,43 @@ export default function ChatLayoutShell({ children }: { children: React.ReactNod
                     onAgentSelect={handleAgentChange}
                     selectedAgent={selectedAgent}
                 />
-                {/* Main content — key forces full ChatProvider remount */}
-                <div className="flex-1 min-h-0 relative" key={chatKey}>
+                <div className="flex-1 min-h-0 relative">
                     {children}
                 </div>
             </div>
         </LayoutAgentContext.Provider>
+    );
+}
+
+// ============================================================================
+// OUTER SHELL — wraps children with ChatProvider (single instance for all routes)
+// ============================================================================
+
+export default function ChatLayoutShell({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // Resolve initial agent from URL at mount time.
+    // This runs once — subsequent agent changes are handled by ChatLayoutInner.
+    const [initialAgent] = useState<AgentConfig>(() => {
+        // Check /p/chat/a/[id]
+        const agentMatch = pathname.match(/\/p\/chat\/a\/([^/?]+)/);
+        if (agentMatch) {
+            const resolved = resolveAgentFromId(agentMatch[1]);
+            if (resolved) return resolved;
+        }
+        // Check ?agent= param (for /p/chat/c/[id]?agent=xxx)
+        const agentParam = searchParams.get('agent');
+        if (agentParam) {
+            const resolved = resolveAgentFromId(agentParam);
+            if (resolved) return resolved;
+        }
+        return DEFAULT_AGENT_CONFIG;
+    });
+
+    return (
+        <ChatProvider initialAgent={initialAgent}>
+            <ChatLayoutInner>{children}</ChatLayoutInner>
+        </ChatProvider>
     );
 }
