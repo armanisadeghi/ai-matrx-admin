@@ -78,3 +78,7 @@ directory-structure.json
 
 # Arman's secrets directory
 .arman/secrets
+
+# SMS documentation with sensitive Twilio IDs
+features/sms/A2P_ISSUE.md
+features/sms/API_FIXES.md

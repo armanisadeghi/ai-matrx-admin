@@ -58,8 +58,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       msg: 'Conversations fetched',
-      data: data || [],
-      total: count || 0,
+      data: {
+        conversations: data || [],
+        total: count || 0,
+      },
     });
   } catch (err) {
     console.error('Error in conversations GET:', err);

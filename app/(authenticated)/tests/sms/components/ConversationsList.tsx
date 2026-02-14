@@ -49,7 +49,8 @@ export default function ConversationsList() {
       const data = await response.json();
 
       if (response.ok) {
-        setConversations(data.data?.conversations || data.conversations || []);
+        const conversations = data.data?.conversations || data.conversations || data.data || [];
+        setConversations(Array.isArray(conversations) ? conversations : []);
       } else {
         setError(data.msg || data.error || 'Failed to fetch conversations');
       }
@@ -68,7 +69,8 @@ export default function ConversationsList() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessages(data.data?.messages || data.messages || []);
+        const messages = data.data?.messages || data.messages || data.data || [];
+        setMessages(Array.isArray(messages) ? messages : []);
       } else {
         setError(data.msg || data.error || 'Failed to fetch messages');
       }

@@ -21,12 +21,14 @@ import { removeNullSettings } from '@/features/prompts/utils/settings-filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { UsageStatsModal } from '@/components/chat/UsageStatsModal';
+import { supabase } from '@/utils/supabase/client';
 
 interface Prompt {
   id: string;
   name: string;
+  description: string | null;
   messages: PromptMessage[];
-  variable_defaults?: any[];
+  variable_defaults?: unknown[];
   settings?: PromptSettings;
 }
 
@@ -108,16 +110,34 @@ export default function ChatTestPage() {
     const loadData = async () => {
       try {
         setLoadingData(true);
-        const [modelsRes, promptsRes, toolsRes] = await Promise.all([
+
+        // Load models and tools from API routes
+        const [modelsRes, toolsRes] = await Promise.all([
           fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
-          fetch('/api/admin/prompt-builtins/user-prompts').then(r => r.json()).catch(() => ({ prompts: [] })),
           fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
         ]);
 
         const loadedModels = modelsRes?.models || [];
         setModels(loadedModels);
-        setPrompts(promptsRes?.prompts || []);
         setAvailableTools(toolsRes?.tools || []);
+
+        // Load prompts directly via Supabase client (works for authenticated users)
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: userPrompts, error } = await supabase
+              .from('prompts')
+              .select('id, name, messages, settings, variable_defaults, description')
+              .eq('user_id', user.id)
+              .order('updated_at', { ascending: false });
+
+            if (!error && userPrompts) {
+              setPrompts(userPrompts as Prompt[]);
+            }
+          }
+        } catch (e) {
+          console.error('Error loading prompts:', e);
+        }
 
         // Set default model
         if (loadedModels.length > 0 && !selectedModelId) {
@@ -151,42 +171,49 @@ export default function ChatTestPage() {
     }
   };
 
-  // Handle prompt selection - fetch full prompt data
-  const handlePromptSelect = async (promptId: string) => {
+  // Handle prompt selection - apply full prompt data from already-loaded prompts
+  const handlePromptSelect = (promptId: string) => {
     if (!promptId) {
       setSelectedPromptId('');
       return;
     }
 
     setSelectedPromptId(promptId);
-    
-    try {
-      // Fetch full prompt data including messages and settings
-      const response = await fetch(`/api/prompts/${promptId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch prompt: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const prompt = data.prompt;
-      
-      if (prompt) {
-        // Load prompt messages
-        if (prompt.messages && Array.isArray(prompt.messages)) {
-          setMessages(prompt.messages);
+
+    const prompt = prompts.find(p => p.id === promptId);
+    if (!prompt) return;
+
+    // Apply prompt messages
+    if (prompt.messages && Array.isArray(prompt.messages)) {
+      setMessages(prompt.messages);
+    }
+
+    // Apply prompt settings - completely replace current config with prompt settings
+    if (prompt.settings) {
+      const { model_id, stream, ...restSettings } = prompt.settings;
+
+      // Set the model from prompt settings
+      if (model_id) {
+        const matchedModel = models.find(m => m.id === model_id);
+        if (matchedModel) {
+          setSelectedModelId(model_id);
+          // Start with model defaults, then overlay prompt settings
+          const defaults = getModelDefaults(matchedModel);
+          setModelConfig({ ...defaults, ...restSettings });
+        } else {
+          // Model not found in loaded models - still apply settings, keep current model
+          console.warn(`Model ${model_id} from prompt not found in available models`);
+          setModelConfig(prev => ({ ...prev, ...restSettings }));
         }
-        // Load prompt settings
-        if (prompt.settings) {
-          const { model_id, ...config } = prompt.settings;
-          if (model_id) {
-            setSelectedModelId(model_id);
-          }
-          setModelConfig(prev => ({ ...prev, ...config }));
-        }
+      } else {
+        // No model_id in settings - just apply the rest
+        setModelConfig(prev => ({ ...prev, ...restSettings }));
       }
-    } catch (error) {
-      console.error('Error loading prompt:', error);
-      setErrorMessage(`Failed to load prompt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+
+      // Sync stream toggle with prompt settings
+      if (typeof stream === 'boolean') {
+        setStreamEnabled(stream);
+      }
     }
   };
 

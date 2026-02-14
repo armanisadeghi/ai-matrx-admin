@@ -66,8 +66,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       msg: 'Messages fetched',
-      data: data || [],
-      total: count || 0,
+      data: {
+        messages: data || [],
+        total: count || 0,
+      },
     });
   } catch (err) {
     console.error('Error in messages GET:', err);

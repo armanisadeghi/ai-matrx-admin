@@ -38,7 +38,8 @@ export default function WebhookLogs() {
       const data = await response.json();
 
       if (response.ok) {
-        setLogs(data.data?.logs || data.logs || []);
+        const logs = data.data?.logs || data.logs || data.data || [];
+        setLogs(Array.isArray(logs) ? logs : []);
       } else {
         setError(data.msg || data.error || 'Failed to fetch webhook logs');
       }

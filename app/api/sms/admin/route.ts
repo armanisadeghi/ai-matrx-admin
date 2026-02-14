@@ -211,15 +211,19 @@ export async function POST(request: NextRequest) {
 
         const [
           { count: totalMessages },
+          { count: totalConversations },
           { count: inboundCount },
           { count: outboundCount },
+          { count: deliveredCount },
           { count: failedCount },
           { count: activeConversations },
         ] = await Promise.all([
           adminSupabase.from('sms_messages').select('id', { count: 'exact', head: true }).gte('created_at', since),
+          adminSupabase.from('sms_conversations').select('id', { count: 'exact', head: true }),
           adminSupabase.from('sms_messages').select('id', { count: 'exact', head: true }).eq('direction', 'inbound').gte('created_at', since),
           adminSupabase.from('sms_messages').select('id', { count: 'exact', head: true }).eq('direction', 'outbound').gte('created_at', since),
-          adminSupabase.from('sms_messages').select('id', { count: 'exact', head: true }).eq('status', 'failed').gte('created_at', since),
+          adminSupabase.from('sms_messages').select('id', { count: 'exact', head: true }).eq('status', 'delivered').gte('created_at', since),
+          adminSupabase.from('sms_messages').select('id', { count: 'exact', head: true }).in('status', ['failed', 'undelivered']).gte('created_at', since),
           adminSupabase.from('sms_conversations').select('id', { count: 'exact', head: true }).eq('status', 'active'),
         ]);
 
@@ -227,12 +231,45 @@ export async function POST(request: NextRequest) {
           success: true,
           msg: `SMS analytics for last ${days} days`,
           data: {
-            period_days: days,
-            total_messages: totalMessages || 0,
-            inbound_messages: inboundCount || 0,
-            outbound_messages: outboundCount || 0,
-            failed_messages: failedCount || 0,
-            active_conversations: activeConversations || 0,
+            analytics: {
+              totalMessages: totalMessages || 0,
+              totalConversations: totalConversations || 0,
+              inboundMessages: inboundCount || 0,
+              outboundMessages: outboundCount || 0,
+              deliveredMessages: deliveredCount || 0,
+              failedMessages: failedCount || 0,
+              activeConversations: activeConversations || 0,
+              averageResponseTime: 'N/A',
+              messagesByType: {},
+              recentActivity: [],
+            },
+          },
+        });
+      }
+
+      // ---- Webhook logs ----
+      case 'webhook_logs': {
+        const { limit = 50, offset = 0 } = body;
+
+        const { data, count, error } = await adminSupabase
+          .from('sms_webhook_logs')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .range(offset, offset + Math.min(limit, 100) - 1);
+
+        if (error) {
+          return NextResponse.json(
+            { success: false, msg: 'Failed to fetch webhook logs', error: error.message },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          msg: 'Webhook logs fetched',
+          data: {
+            logs: data || [],
+            total: count || 0,
           },
         });
       }

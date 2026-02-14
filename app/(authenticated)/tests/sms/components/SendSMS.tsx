@@ -147,6 +147,15 @@ export default function SendSMS() {
               )}
               <AlertDescription>
                 <div className="font-medium">{result.message}</div>
+                {result.success && (
+                  <div className="mt-2 text-sm">
+                    <p>✅ Message sent to Twilio successfully!</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Check the Webhook Logs tab to see delivery status.
+                      If status shows "undelivered" with error 30034, your A2P campaign needs approval.
+                    </p>
+                  </div>
+                )}
                 {result.data && (
                   <pre className="mt-2 text-xs bg-muted/50 p-2 rounded overflow-x-auto">
                     {JSON.stringify(result.data, null, 2)}

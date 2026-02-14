@@ -41,7 +41,8 @@ export default function Analytics() {
       const data = await response.json();
 
       if (response.ok) {
-        setAnalytics(data.data?.analytics || data.analytics);
+        const analyticsData = data.data?.analytics || data.analytics || data.data;
+        setAnalytics(analyticsData || null);
       } else {
         setError(data.msg || data.error || 'Failed to fetch analytics');
       }
