@@ -46,6 +46,11 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const textInputRef = useRef<HTMLTextAreaElement>(null);
     // Ref for accessing dbConversationId in callbacks (avoids stale closure)
     const dbConvIdRef = useRef<string | null>(state.dbConversationId);
+    // Deferred URL update — stored during handleSubmit, applied in onComplete.
+    // router.replace during an active stream would remount ChatContainer (page
+    // component changes from /p/chat to /p/chat/c/[id]), destroying streamEvents
+    // and the onStreamEvent callback, which kills real-time tool visualization.
+    const pendingUrlRef = useRef<string | null>(null);
 
     const user = useSelector(selectUser);
     const isAuthenticated = !!user?.id;
@@ -70,9 +75,22 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 // Notify sidebar that this conversation was updated
                 sidebarEvents.emit('conversation-updated', { id: dbConvIdRef.current });
             }
+            // Apply deferred URL update now that the stream is complete.
+            // Doing this during the stream would remount ChatContainer and
+            // destroy streamEvents / tool call visualizations.
+            if (pendingUrlRef.current) {
+                router.replace(pendingUrlRef.current);
+                pendingUrlRef.current = null;
+            }
         },
         onError: (error) => {
             console.error('Chat error:', error);
+            // Apply deferred URL even on error — the conversation was already
+            // created in the DB before the stream started.
+            if (pendingUrlRef.current) {
+                router.replace(pendingUrlRef.current);
+                pendingUrlRef.current = null;
+            }
         },
     });
 
@@ -199,11 +217,14 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 if (dbConvId) {
                     dbConvIdRef.current = dbConvId;
                     setDbConversationId(dbConvId);
-                    // Update URL to show conversation ID with agent context
+                    // Defer URL update until stream completes — doing router.replace
+                    // now would remount ChatContainer (page changes from /p/chat to
+                    // /p/chat/c/[id]), destroying streamEvents and killing real-time
+                    // tool call visualization.
                     const agentParam = state.currentAgent?.promptId
                         ? `?agent=${state.currentAgent.promptId}`
                         : '';
-                    router.replace(`/p/chat/c/${dbConvId}${agentParam}`);
+                    pendingUrlRef.current = `/p/chat/c/${dbConvId}${agentParam}`;
                     // Notify sidebar immediately
                     sidebarEvents.emit('conversation-created', { id: dbConvId, title });
                 }
@@ -240,7 +261,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 resources,
             });
         },
-        [sendMessage, variableValues, state.currentAgent, createConversation, setDbConversationId, router, sidebarEvents]
+        [sendMessage, variableValues, state.currentAgent, createConversation, setDbConversationId, sidebarEvents]
     );
 
     const handleMessageContentChange = useCallback((messageId: string, newContent: string) => {
