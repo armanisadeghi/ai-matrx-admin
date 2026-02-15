@@ -9,8 +9,9 @@ import {
     Check,
     CheckCircle,
     Loader2,
-    ExternalLink,
     Link2,
+    BookOpenCheck,
+    ScanSearch,
 } from "lucide-react";
 import { ToolRendererProps } from "../types";
 
@@ -38,16 +39,14 @@ interface ParsedResearch {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Parser
+// Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 function parseResearchOutput(raw: string): ParsedResearch {
     const query =
         raw.match(/(?:results|searching) for ['"](.+?)['"]/i)?.[1] ?? "";
 
-    // Parse <read_result> blocks
-    const readResultRegex =
-        /<read_result>([\s\S]*?)<\/read_result>/g;
+    const readResultRegex = /<read_result>([\s\S]*?)<\/read_result>/g;
     const readResults: ReadResult[] = [];
     let match: RegExpExecArray | null;
 
@@ -56,8 +55,6 @@ function parseResearchOutput(raw: string): ParsedResearch {
         const url = block.match(/Url:\s*(.+)/)?.[1]?.trim() ?? "";
         const readAt = block.match(/Read At:\s*(.+)/)?.[1]?.trim() ?? "";
         const title = block.match(/Title:\s*(.+)/)?.[1]?.trim() ?? "";
-
-        // Text comes after "Text:" or "Text: \n" and runs until end of block
         const textMatch = block.match(/Text:\s*\n?([\s\S]*)/);
         const text = textMatch?.[1]?.trim() ?? "";
 
@@ -66,14 +63,12 @@ function parseResearchOutput(raw: string): ParsedResearch {
         }
     }
 
-    // Parse unread results section
     const unreadResults: UnreadResult[] = [];
     const unreadSection = raw.match(
         /Here are other search results[\s\S]*?:\n([\s\S]*)$/
     );
     if (unreadSection) {
         const lines = unreadSection[1].trim();
-        // Pattern: "1. Title (URL) – Snippet" or with " - " separator
         const unreadRegex =
             /\d+\.\s+(.+?)\s+\((https?:\/\/[^\s)]+)\)\s+[–-]+\s+([\s\S]*?)(?=\n\d+\.|$)/g;
         let uMatch: RegExpExecArray | null;
@@ -97,8 +92,121 @@ function getDomain(url: string): string {
     }
 }
 
+function getFaviconUrl(url: string): string {
+    try {
+        const hostname = new URL(url).hostname;
+        return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+    } catch {
+        return "";
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Component
+// Live browsing card (shown while research is in progress)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function BrowsingCard({
+    url,
+    index,
+    isLast,
+    isComplete,
+}: {
+    url: string;
+    index: number;
+    isLast: boolean;
+    isComplete: boolean;
+}) {
+    const domain = getDomain(url);
+    const favicon = getFaviconUrl(url);
+    const isActivelyReading = isLast && !isComplete;
+
+    return (
+        <div
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all animate-in fade-in slide-in-from-left ${
+                isActivelyReading
+                    ? "bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 border-violet-300 dark:border-violet-700 shadow-sm"
+                    : "bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700"
+            }`}
+            style={{
+                animationDelay: `${index * 80}ms`,
+                animationDuration: "300ms",
+                animationFillMode: "backwards",
+            }}
+        >
+            {/* Favicon */}
+            <div className="flex-shrink-0 w-5 h-5 relative">
+                {favicon ? (
+                    <img
+                        src={favicon}
+                        alt=""
+                        className="w-5 h-5 rounded"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                                "none";
+                            const sibling = (e.target as HTMLImageElement)
+                                .nextElementSibling;
+                            if (sibling) sibling.classList.remove("hidden");
+                        }}
+                    />
+                ) : null}
+                <Globe
+                    className={`w-5 h-5 text-slate-400 dark:text-slate-500 ${favicon ? "hidden" : ""}`}
+                />
+            </div>
+
+            {/* Domain */}
+            <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate max-w-[240px] hover:text-violet-600 dark:hover:text-violet-400"
+                title={url}
+            >
+                {domain}
+            </a>
+
+            {/* Status indicator */}
+            <div className="ml-auto flex-shrink-0">
+                {isActivelyReading ? (
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                            Reading
+                        </span>
+                        <div className="flex gap-0.5">
+                            <span
+                                className="w-1 h-1 rounded-full bg-violet-500 dark:bg-violet-400"
+                                style={{
+                                    animation:
+                                        "pulseWave 1.4s infinite ease-in-out",
+                                }}
+                            />
+                            <span
+                                className="w-1 h-1 rounded-full bg-violet-500 dark:bg-violet-400"
+                                style={{
+                                    animation:
+                                        "pulseWave 1.4s infinite ease-in-out 0.2s",
+                                }}
+                            />
+                            <span
+                                className="w-1 h-1 rounded-full bg-violet-500 dark:bg-violet-400"
+                                style={{
+                                    animation:
+                                        "pulseWave 1.4s infinite ease-in-out 0.4s",
+                                }}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <BookOpenCheck className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const DeepResearchInline: React.FC<ToolRendererProps> = ({
@@ -134,13 +242,21 @@ export const DeepResearchInline: React.FC<ToolRendererProps> = ({
     const readResults = parsed?.readResults ?? [];
     const unreadResults = parsed?.unreadResults ?? [];
     const displayResults = readResults.slice(0, 4);
-    const hasMore = readResults.length > 4 || unreadResults.length > 0;
 
-    // Extract browsing status from user_visible_message updates
-    const browsingMessages = visibleUpdates.filter(
+    // Extract browsing URLs from user_visible_message updates
+    const browsingUrls = visibleUpdates
+        .filter(
+            (u) =>
+                u.type === "user_visible_message" &&
+                u.user_visible_message?.startsWith("Browsing ")
+        )
+        .map((u) => u.user_visible_message?.replace("Browsing ", "") || "");
+
+    // Check for summarizing step (step_data may have a loose shape at runtime)
+    const isSummarizing = visibleUpdates.some(
         (u) =>
-            u.type === "user_visible_message" &&
-            u.user_visible_message?.startsWith("Browsing ")
+            u.type === "step_data" &&
+            (u.step_data as unknown as Record<string, unknown> | undefined)?.status === "summarizing"
     );
 
     const handleCopy = async (text: string, index: number) => {
@@ -167,20 +283,43 @@ export const DeepResearchInline: React.FC<ToolRendererProps> = ({
                                 ` + ${unreadResults.length} more found`}
                         </span>
                     </>
+                ) : isSummarizing ? (
+                    <>
+                        <ScanSearch className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
+                        <span className="font-medium">
+                            Analyzing {browsingUrls.length} sources...
+                        </span>
+                    </>
                 ) : (
                     <>
                         <Loader2 className="w-4 h-4 animate-spin text-violet-600 dark:text-violet-400" />
                         <span className="font-medium">
-                            Researching
-                            {browsingMessages.length > 0
-                                ? ` (${browsingMessages.length} pages)...`
-                                : "..."}
+                            Deep reading{" "}
+                            {browsingUrls.length > 0
+                                ? `${browsingUrls.length} ${browsingUrls.length === 1 ? "page" : "pages"}`
+                                : ""}
+                            ...
                         </span>
                     </>
                 )}
             </div>
 
-            {/* Read Result Cards */}
+            {/* Live Browsing Progress — show each URL as it arrives */}
+            {!isComplete && browsingUrls.length > 0 && (
+                <div className="space-y-1.5">
+                    {browsingUrls.map((url, index) => (
+                        <BrowsingCard
+                            key={url + index}
+                            url={url}
+                            index={index}
+                            isLast={index === browsingUrls.length - 1}
+                            isComplete={isComplete}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {/* Read Result Cards — show after complete */}
             {isComplete && displayResults.length > 0 && (
                 <div className="space-y-2">
                     {displayResults.map((result, index) => (
@@ -195,7 +334,26 @@ export const DeepResearchInline: React.FC<ToolRendererProps> = ({
                         >
                             {/* Header row: domain + timestamp + copy */}
                             <div className="flex items-center gap-2 mb-1.5">
-                                <Globe className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400 flex-shrink-0" />
+                                <div className="flex-shrink-0 w-4 h-4 relative">
+                                    <img
+                                        src={getFaviconUrl(result.url)}
+                                        alt=""
+                                        className="w-4 h-4 rounded"
+                                        onError={(e) => {
+                                            (
+                                                e.target as HTMLImageElement
+                                            ).style.display = "none";
+                                            const sibling = (
+                                                e.target as HTMLImageElement
+                                            ).nextElementSibling;
+                                            if (sibling)
+                                                sibling.classList.remove(
+                                                    "hidden"
+                                                );
+                                        }}
+                                    />
+                                    <Globe className="w-4 h-4 text-violet-500 dark:text-violet-400 hidden" />
+                                </div>
                                 <a
                                     href={result.url}
                                     target="_blank"

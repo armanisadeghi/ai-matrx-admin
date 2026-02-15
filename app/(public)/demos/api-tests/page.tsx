@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { get_prompt_sample, TEST_ADMIN_TOKEN } from './sample-prompt';
+import { Loader2, Settings } from 'lucide-react';
+import { get_prompt_sample } from './sample-prompt';
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
+import Link from 'next/link';
 
 interface ApiResponse {
   success: boolean;
@@ -17,7 +18,7 @@ interface ApiResponse {
 export default function ApiTestsPage() {
   const apiConfig = useApiTestConfig({
     defaultServerType: 'local',
-    defaultAuthToken: TEST_ADMIN_TOKEN,
+    requireToken: true,
   });
   const [loading, setLoading] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, ApiResponse>>({});
@@ -238,8 +239,14 @@ export default function ApiTestsPage() {
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-background">
       <div className="flex-1 overflow-y-auto p-3 pb-48">
         <div className="w-full space-y-2">
-        <div>
+        <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold">FastAPI Test Page</h1>
+          <Link href="/demos/api-tests/setup">
+            <Button size="sm" variant="outline" className="h-7 text-xs">
+              <Settings className="h-3 w-3 mr-1" />
+              Token Setup
+            </Button>
+          </Link>
         </div>
 
         {/* API Configuration */}

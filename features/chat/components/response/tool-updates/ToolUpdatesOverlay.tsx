@@ -6,7 +6,7 @@ import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import { getOverlayRenderer, hasCustomRenderer, getResultsLabel, getToolDisplayName } from "@/features/chat/components/response/tool-renderers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, MessageSquare, Settings2, Wrench, FileCode2, Copy, Check } from "lucide-react";
+import { AlertCircle, MessageSquare, Settings2, Wrench, FileCode2, Copy, Check, WrapText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ToolUpdatesOverlayProps {
@@ -21,60 +21,99 @@ interface ToolUpdatesOverlayProps {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const InputView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
+    const [wordWrap, setWordWrap] = useState(false);
+
     if (!update.mcp_input) return null;
     const args = update.mcp_input.arguments;
     const argEntries = Object.entries(args);
+    const fullInputJson = JSON.stringify(update.mcp_input, null, 2);
 
     return (
-        <div className="p-4 space-y-4">
-            {update.user_visible_message && (
-                <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <MessageSquare className="w-4 h-4 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                    <p className="text-sm text-blue-900 dark:text-blue-100">{update.user_visible_message}</p>
+        <div className="flex flex-col h-full">
+            {/* Toolbar */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 flex-shrink-0">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Settings2 className="w-3.5 h-3.5" />
+                    <span>Tool input</span>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {argEntries.length} {argEntries.length === 1 ? "param" : "params"}
+                    </Badge>
                 </div>
-            )}
+                <div className="flex items-center gap-1.5">
+                    <button
+                        onClick={() => setWordWrap(w => !w)}
+                        className={cn(
+                            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                            wordWrap
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                        )}
+                        title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
+                    >
+                        <WrapText className="w-3.5 h-3.5" />
+                        <span>Wrap</span>
+                    </button>
+                    <CopyButton text={fullInputJson} />
+                </div>
+            </div>
 
-            <Card>
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-muted-foreground">Parameters</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    {argEntries.length > 0 ? (
-                        argEntries.map(([key, value]) => (
-                            <div key={key} className="border-l-4 border-blue-400 dark:border-blue-600 pl-4 py-2">
-                                <div className="font-semibold text-sm text-foreground mb-1 font-mono">{key}</div>
-                                <div className="text-sm text-muted-foreground">
-                                    {typeof value === "string" ? (
-                                        <div className="bg-muted p-3 rounded">{value}</div>
-                                    ) : typeof value === "number" || typeof value === "boolean" ? (
-                                        <div className="bg-muted p-3 rounded font-mono">{String(value)}</div>
-                                    ) : (
-                                        <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-40">
-                                            {JSON.stringify(value, null, 2)}
-                                        </pre>
-                                    )}
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-4 space-y-4">
+                {update.user_visible_message && (
+                    <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <MessageSquare className="w-4 h-4 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                        <p className="text-sm text-blue-900 dark:text-blue-100">{update.user_visible_message}</p>
+                    </div>
+                )}
+
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-muted-foreground">Parameters</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {argEntries.length > 0 ? (
+                            argEntries.map(([key, value]) => (
+                                <div key={key} className="border-l-4 border-blue-400 dark:border-blue-600 pl-4 py-2">
+                                    <div className="font-semibold text-sm text-foreground mb-1 font-mono">{key}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {typeof value === "string" ? (
+                                            <div className={cn("bg-muted p-3 rounded", wordWrap ? "whitespace-pre-wrap break-words" : "overflow-auto")}>{value}</div>
+                                        ) : typeof value === "number" || typeof value === "boolean" ? (
+                                            <div className="bg-muted p-3 rounded font-mono">{String(value)}</div>
+                                        ) : (
+                                            <pre className={cn(
+                                                "text-xs bg-muted p-3 rounded max-h-40",
+                                                wordWrap ? "whitespace-pre-wrap break-words overflow-y-auto" : "overflow-auto"
+                                            )}>
+                                                {JSON.stringify(value, null, 2)}
+                                            </pre>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-sm text-muted-foreground italic">No parameters</p>
-                    )}
-                </CardContent>
-            </Card>
+                            ))
+                        ) : (
+                            <p className="text-sm text-muted-foreground italic">No parameters</p>
+                        )}
+                    </CardContent>
+                </Card>
 
-            <Card>
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-xs text-muted-foreground flex items-center gap-2">
-                        <span>Raw Object</span>
-                        <Badge variant="outline" className="text-xs">Reference</Badge>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <pre className="text-xs bg-muted p-4 rounded overflow-auto max-h-60">
-                        {JSON.stringify(update.mcp_input, null, 2)}
-                    </pre>
-                </CardContent>
-            </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs text-muted-foreground flex items-center gap-2">
+                            <span>Raw Object</span>
+                            <Badge variant="outline" className="text-xs">Reference</Badge>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <pre className={cn(
+                            "text-xs bg-muted p-4 rounded max-h-60",
+                            wordWrap ? "whitespace-pre-wrap break-words overflow-y-auto" : "overflow-auto"
+                        )}>
+                            {fullInputJson}
+                        </pre>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 };
@@ -165,50 +204,57 @@ const CopyButton: React.FC<{ text: string; className?: string }> = ({ text, clas
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Raw result view — shows raw content with scrolling + copy
+// Raw data view — shows ALL tool call objects for this group as a JSON array
+// This is the complete, unprocessed data exactly as it arrived from the server.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const RawResultView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
-    if (!update.mcp_output) {
+const RawDataView: React.FC<{ group: ToolCallObject[] }> = ({ group }) => {
+    const [wordWrap, setWordWrap] = useState(false);
+
+    if (group.length === 0) {
         return (
             <div className="p-8 text-center text-muted-foreground">
-                <p className="text-sm">No output data available</p>
+                <p className="text-sm">No raw data available</p>
             </div>
         );
     }
 
-    const output = update.mcp_output as Record<string, unknown>;
-    // Get the actual result value — could be string, object, array, etc.
-    const resultValue = output.result ?? output;
-    const isString = typeof resultValue === "string";
-    const displayText = isString ? resultValue : JSON.stringify(resultValue, null, 2);
+    const displayText = JSON.stringify(group, null, 2);
 
     return (
         <div className="flex flex-col h-full">
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 flex-shrink-0">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <FileCode2 className="w-3.5 h-3.5" />
-                    <span>{isString ? "Text content" : "JSON object"}</span>
-                    {!isString && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            {typeof resultValue === "object" && resultValue !== null
-                                ? (Array.isArray(resultValue) ? `${resultValue.length} items` : `${Object.keys(resultValue as Record<string, unknown>).length} keys`)
-                                : typeof resultValue}
-                        </Badge>
-                    )}
+                    <span>Complete raw data</span>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {group.length} {group.length === 1 ? "update" : "updates"}
+                    </Badge>
                 </div>
-                <CopyButton text={displayText} />
+                <div className="flex items-center gap-1.5">
+                    <button
+                        onClick={() => setWordWrap(w => !w)}
+                        className={cn(
+                            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                            wordWrap
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                        )}
+                        title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
+                    >
+                        <WrapText className="w-3.5 h-3.5" />
+                        <span>Wrap</span>
+                    </button>
+                    <CopyButton text={displayText} />
+                </div>
             </div>
             <div className="flex-1 overflow-auto">
-                {isString ? (
-                    <div className="p-4 text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed">
-                        {resultValue}
-                    </div>
-                ) : (
-                    <pre className="p-4 text-xs text-foreground font-mono leading-relaxed">
-                        {displayText}
-                    </pre>
-                )}
+                <pre className={cn(
+                    "p-4 text-xs text-foreground font-mono leading-relaxed",
+                    wordWrap ? "whitespace-pre-wrap break-words" : ""
+                )}>
+                    {displayText}
+                </pre>
             </div>
         </div>
     );
@@ -336,22 +382,18 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
             case "input":
                 return inputUpdate ? <InputView update={inputUpdate} /> : null;
             case "raw":
-                return outputUpdate ? <RawResultView update={outputUpdate} /> : (
-                    <div className="p-8 text-center text-muted-foreground">
-                        <p className="text-sm">No raw output available</p>
-                    </div>
-                );
+                return <RawDataView group={group} />;
             case "results":
             default:
                 return renderResults();
         }
     };
 
-    // View button definitions
+    // View button definitions — Raw is always available since there's always data
     const viewButtons: { view: ToolGroupView; icon: React.ReactNode; label: string; available: boolean }[] = [
         { view: "results", icon: <Wrench className="w-3.5 h-3.5" />, label: "Results", available: true },
         { view: "input", icon: <Settings2 className="w-3.5 h-3.5" />, label: "Input", available: hasInput },
-        { view: "raw", icon: <FileCode2 className="w-3.5 h-3.5" />, label: "Raw", available: hasOutput },
+        { view: "raw", icon: <FileCode2 className="w-3.5 h-3.5" />, label: "Raw", available: true },
     ];
 
     return (

@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Trash2, X, Play, Settings2, FileText, FileJson, BarChart3 } from 'lucide-react';
-import { TEST_ADMIN_TOKEN } from '../sample-prompt';
+// Removed hardcoded TEST_ADMIN_TOKEN - now using cookie-based storage
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
@@ -41,7 +41,8 @@ interface Tool {
 export default function ChatTestPage() {
   const apiConfig = useApiTestConfig({
     defaultServerType: 'local',
-    defaultAuthToken: TEST_ADMIN_TOKEN,
+    autoCheckLocalhost: true,
+    requireToken: true,
   });
 
   // Data loading states
