@@ -130,11 +130,17 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     // or when a conversation finishes loading.
     // When the agent has variables → focus the first variable input.
     // When the agent has no variables → focus the main textarea.
+    // Skip on mobile — auto-focusing opens the keyboard and hides half the screen.
     // Uses retries because agent change triggers router.push() which re-mounts components,
     // meaning the DOM elements may not exist yet when this effect first fires.
     useEffect(() => {
         // Don't attempt focus while a conversation is loading (loading spinner shown)
         if (isLoadingConversation) return;
+
+        // Skip auto-focus on mobile/touch devices — opening the keyboard
+        // on page load hides ~50% of the viewport and is disorienting.
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
+        if (isMobile) return;
 
         let cancelled = false;
         let attempts = 0;

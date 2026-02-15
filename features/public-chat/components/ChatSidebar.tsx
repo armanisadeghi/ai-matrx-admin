@@ -143,17 +143,17 @@ export function ChatSidebar({
                 />
             </div>
 
-            {/* ── Mobile overlay backdrop (z-[70] to sit above mobile full-screen chat overlay) ── */}
+            {/* ── Mobile overlay backdrop ── */}
             <div
-                className={`fixed inset-0 z-[70] bg-black/40 md:hidden transition-opacity duration-300 ${
+                className={`fixed inset-0 z-40 bg-black/40 md:hidden transition-opacity duration-300 ${
                     isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
                 onClick={closeSidebar}
             />
 
-            {/* ── Mobile drawer (z-[70] to sit above mobile full-screen chat overlay) ── */}
+            {/* ── Mobile drawer ── */}
             <div
-                className={`fixed left-0 top-0 bottom-0 w-[272px] z-[70] bg-card border-r border-border shadow-xl md:hidden transition-transform duration-300 ease-in-out ${
+                className={`fixed left-0 top-0 bottom-0 w-[272px] z-40 bg-card border-r border-border shadow-xl md:hidden transition-transform duration-300 ease-in-out ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
                 onClick={(e) => e.stopPropagation()}

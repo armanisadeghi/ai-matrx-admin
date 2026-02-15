@@ -268,9 +268,10 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>
-            {/* Mobile: fixed full-screen overlay covering PublicHeader for single-header experience */}
-            {/* Desktop: normal flow element within parent layout */}
-            <div className="fixed inset-0 z-[60] flex flex-col bg-background md:relative md:inset-auto md:z-auto md:bg-transparent md:h-full md:w-full">
+            {/* Hide the public-layout header on mobile — ChatMobileHeader replaces it */}
+            <style>{`@media(max-width:767px){[data-public-header]{display:none!important}}`}</style>
+
+            <div className="h-full w-full flex flex-col">
                 {/* Mobile-only consolidated header */}
                 <ChatMobileHeader
                     onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
