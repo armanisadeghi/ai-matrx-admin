@@ -35,7 +35,7 @@ interface ChatContainerProps {
 export function ChatContainer({ className = '' }: ChatContainerProps) {
     const router = useRouter();
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
-    const { onAgentChange, isLoadingConversation, focusKey } = useLayoutAgent();
+    const { onAgentChange, isLoadingConversation, focusKey, openAgentPicker } = useLayoutAgent();
     const { sidebarEvents } = useAgentsContext();
 
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
@@ -338,7 +338,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                     : 'What do you want to know?'
                             }
                             conversationId={conversationId}
-                            onAgentSelect={handleAgentSelect}
+                            onOpenAgentPicker={openAgentPicker}
                             hasVariables={hasVariables}
                             selectedAgent={state.currentAgent}
                             textInputRef={textInputRef}
@@ -422,7 +422,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             onSubmit={handleSubmit}
                             disabled={isExecuting}
                             conversationId={conversationId}
-                            onAgentSelect={handleAgentSelect}
+                            onOpenAgentPicker={openAgentPicker}
                             hasVariables={hasVariables}
                             selectedAgent={state.currentAgent}
                             textInputRef={textInputRef}

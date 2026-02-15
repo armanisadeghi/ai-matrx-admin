@@ -4,6 +4,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatSidebar } from '@/features/public-chat/components/ChatSidebar';
 import { ChatMobileHeader } from '@/features/public-chat/components/ChatMobileHeader';
+import { AgentPickerSheet } from '@/features/public-chat/components/AgentPickerSheet';
 import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
@@ -65,6 +66,8 @@ interface LayoutAgentContextValue {
     isLoadingConversation: boolean;
     /** Increments on every agent change — used by ChatContainer to trigger focus */
     focusKey: number;
+    /** Opens the unified agent picker (bottom sheet on mobile, dialog on desktop) */
+    openAgentPicker: () => void;
 }
 
 const LayoutAgentContext = createContext<LayoutAgentContextValue | null>(null);
@@ -78,6 +81,7 @@ export function useLayoutAgent(): LayoutAgentContextValue {
             activeConversationId: null,
             isLoadingConversation: false,
             focusKey: 0,
+            openAgentPicker: () => {},
         };
     }
     return ctx;
@@ -103,6 +107,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
     const [focusKey, setFocusKey] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isAgentPickerOpen, setIsAgentPickerOpen] = useState(false);
     const loadedConversationRef = useRef<string | null>(null);
 
     // ── Derive URL state ──────────────────────────────────────────────────
@@ -258,18 +263,29 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     }, [router, selectedAgent.promptId, startNewConversation]);
 
     // ── Context value ─────────────────────────────────────────────────────
+    const openAgentPicker = useCallback(() => setIsAgentPickerOpen(true), []);
+
     const contextValue = useMemo<LayoutAgentContextValue>(() => ({
         selectedAgent,
         onAgentChange: handleAgentChange,
         activeConversationId,
         isLoadingConversation,
         focusKey,
-    }), [selectedAgent, handleAgentChange, activeConversationId, isLoadingConversation, focusKey]);
+        openAgentPicker,
+    }), [selectedAgent, handleAgentChange, activeConversationId, isLoadingConversation, focusKey, openAgentPicker]);
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>
             {/* Hide the public-layout header on mobile — ChatMobileHeader replaces it */}
             <style>{`@media(max-width:767px){[data-public-header]{display:none!important}}`}</style>
+
+            {/* Unified agent picker — rendered once, opened from any trigger */}
+            <AgentPickerSheet
+                open={isAgentPickerOpen}
+                onOpenChange={setIsAgentPickerOpen}
+                selectedAgent={selectedAgent}
+                onSelect={handleAgentChange}
+            />
 
             <div className="h-full w-full flex flex-col">
                 {/* Mobile-only consolidated header */}
@@ -277,13 +293,14 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                     onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
                     onNewChat={handleNewChat}
                     selectedAgent={selectedAgent}
-                    onAgentSelect={handleAgentChange}
+                    onOpenAgentPicker={openAgentPicker}
                 />
                 <ChatSidebar
                     activeRequestId={activeConversationId}
                     onSelectChat={handleSelectChat}
                     onNewChat={handleNewChat}
                     onAgentSelect={handleAgentChange}
+                    onOpenAgentPicker={openAgentPicker}
                     selectedAgent={selectedAgent}
                     isOpen={isSidebarOpen}
                     onOpenChange={setIsSidebarOpen}

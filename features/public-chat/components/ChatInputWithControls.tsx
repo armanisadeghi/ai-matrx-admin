@@ -9,6 +9,7 @@ import {
     Maximize2,
     Mic,
     Plus,
+    ChevronDown,
     Paperclip,
     Image as ImageIcon,
     FileText,
@@ -18,6 +19,7 @@ import {
     Globe,
 } from 'lucide-react';
 import { FaMicrophoneLines } from 'react-icons/fa6';
+import { LuBrain } from 'react-icons/lu';
 import { useChatContext } from '../context/ChatContext';
 import ToggleButton from '@/components/matrx/toggles/ToggleButton';
 import { usePublicFileUpload, PublicUploadResult } from '@/hooks/usePublicFileUpload';
@@ -25,7 +27,7 @@ import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { PublicResourcePickerMenu } from './resource-picker/PublicResourcePickerMenu';
-import { PromptPickerMenu } from './PromptPickerMenu';
+
 import type { PublicResource, PublicResourceType } from '../types/content';
 import type { AgentConfig } from '../context/ChatContext';
 
@@ -253,18 +255,18 @@ interface InputBottomControlsProps {
     onResourceSelected: (resource: PublicResource) => void;
     isUploading?: boolean;
     isAuthenticated?: boolean;
-    onAgentSelect?: (agent: AgentConfig) => void;
+    onOpenAgentPicker?: () => void;
     selectedAgent?: AgentConfig | null;
 }
 
-function InputBottomControls({ 
-    disabled, 
-    onSendMessage, 
-    hasResources, 
+function InputBottomControls({
+    disabled,
+    onSendMessage,
+    hasResources,
     onResourceSelected,
     isUploading,
     isAuthenticated = false,
-    onAgentSelect,
+    onOpenAgentPicker,
     selectedAgent,
 }: InputBottomControlsProps) {
     const { state, updateSettings } = useChatContext();
@@ -309,12 +311,21 @@ function InputBottomControls({
                     </PopoverContent>
                 </Popover>
 
-                {onAgentSelect && (
-                    <PromptPickerMenu
-                        onSelect={onAgentSelect}
+                {onOpenAgentPicker && (
+                    <button
+                        onClick={onOpenAgentPicker}
                         disabled={disabled}
-                        selectedAgent={selectedAgent}
-                    />
+                        className="p-1 rounded-xl flex items-center gap-1 border-2 border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm min-w-0 max-w-[200px]"
+                        title={selectedAgent?.name ? `Switch agent: ${selectedAgent.name}` : 'Select Agent'}
+                    >
+                        <LuBrain size={14} className="flex-shrink-0" />
+                        <span className="text-[11px] font-medium truncate" title={selectedAgent?.name}>
+                            {selectedAgent?.name
+                                ? (selectedAgent.name.length > 20 ? selectedAgent.name.substring(0, 20) + '\u2026' : selectedAgent.name)
+                                : 'Select Agent'}
+                        </span>
+                        <ChevronDown size={14} className="flex-shrink-0" />
+                    </button>
                 )}
             </div>
 
@@ -354,7 +365,8 @@ interface ChatInputWithControlsProps {
     conversationId?: string;
     enableResourcePicker?: boolean;
     isAuthenticated?: boolean;
-    onAgentSelect?: (agent: AgentConfig) => void;
+    /** Opens the unified agent picker sheet */
+    onOpenAgentPicker?: () => void;
     /** Whether the current agent has variables (allows submission without content) */
     hasVariables?: boolean;
     /** Currently selected agent */
@@ -369,7 +381,7 @@ export function ChatInputWithControls({
     placeholder,
     enableResourcePicker = true,
     isAuthenticated = false,
-    onAgentSelect,
+    onOpenAgentPicker,
     hasVariables = false,
     selectedAgent,
     textInputRef: externalTextInputRef,
@@ -509,7 +521,7 @@ export function ChatInputWithControls({
                     onResourceSelected={handleResourceSelected}
                     isUploading={isUploading}
                     isAuthenticated={isAuthenticated}
-                    onAgentSelect={onAgentSelect}
+                    onOpenAgentPicker={onOpenAgentPicker}
                     selectedAgent={selectedAgent}
                 />
             </div>

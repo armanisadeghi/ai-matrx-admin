@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import {
     PanelLeft,
     SquarePen,
+    ChevronDown,
     Menu,
     Compass,
     Sun,
@@ -23,7 +24,6 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { selectUser } from '@/lib/redux/slices/userSlice';
-import { SidebarAgentHeader } from './sidebar/SidebarAgentHeader';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -34,20 +34,20 @@ interface ChatMobileHeaderProps {
     onToggleSidebar: () => void;
     onNewChat: () => void;
     selectedAgent?: AgentConfig | null;
-    onAgentSelect?: (agent: AgentConfig) => void;
+    onOpenAgentPicker: () => void;
 }
 
 // ============================================================================
 // CHAT MOBILE HEADER
 // Consolidated header for mobile: replaces PublicHeader + ChatSidebar sub-header
-// Layout: [drawer] [new chat] [agent selector] --- [hamburger menu]
+// Layout: [drawer] [new chat] [agent name ▼] --- [hamburger menu]
 // ============================================================================
 
 export function ChatMobileHeader({
     onToggleSidebar,
     onNewChat,
     selectedAgent,
-    onAgentSelect,
+    onOpenAgentPicker,
 }: ChatMobileHeaderProps) {
     const router = useRouter();
     const { theme, setTheme } = useTheme();
@@ -58,6 +58,8 @@ export function ChatMobileHeader({
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const agentName = selectedAgent?.name || 'General Chat';
 
     return (
         <header className="flex md:hidden items-center h-10 px-1.5 border-b border-border/50 bg-background/95 backdrop-blur-sm flex-shrink-0">
@@ -77,13 +79,16 @@ export function ChatMobileHeader({
                 >
                     <SquarePen className="h-[18px] w-[18px]" />
                 </button>
-                <div className="min-w-0 flex-1">
-                    <SidebarAgentHeader
-                        selectedAgent={selectedAgent}
-                        onAgentSelect={onAgentSelect}
-                        compact
-                    />
-                </div>
+                {/* Agent name — taps to open unified picker */}
+                <button
+                    onClick={onOpenAgentPicker}
+                    className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
+                >
+                    <span className="text-xs font-medium text-foreground truncate max-w-[160px]">
+                        {agentName}
+                    </span>
+                    <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                </button>
             </div>
 
             {/* Right: hamburger menu with all other options */}

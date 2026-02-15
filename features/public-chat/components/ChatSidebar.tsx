@@ -14,6 +14,8 @@ export interface ChatSidebarProps {
     onSelectChat: (requestId: string) => void;
     onNewChat: () => void;
     onAgentSelect?: (agent: AgentConfig) => void;
+    /** Opens the unified agent picker (bottom sheet / dialog) */
+    onOpenAgentPicker?: () => void;
     selectedAgent?: AgentConfig | null;
     /** Controlled open state (lifted from parent for mobile header coordination) */
     isOpen: boolean;
@@ -59,6 +61,7 @@ export function ChatSidebar({
     onSelectChat,
     onNewChat,
     onAgentSelect,
+    onOpenAgentPicker,
     selectedAgent,
     isOpen,
     onOpenChange,
@@ -82,10 +85,10 @@ export function ChatSidebar({
     // Shared sidebar content rendered inside both mobile and desktop panels
     const sidebarContent = (
         <div className="h-full flex flex-col">
-            {/* Section 0: Agent Header — fixed at top */}
+            {/* Section 0: Agent Header — opens unified picker */}
             <SidebarAgentHeader
                 selectedAgent={selectedAgent}
-                onAgentSelect={onAgentSelect}
+                onAgentSelect={onOpenAgentPicker ? () => onOpenAgentPicker() : onAgentSelect}
             />
 
             {/* Section 1: Actions — fixed at top */}
@@ -97,7 +100,7 @@ export function ChatSidebar({
 
             {/* Scrollable middle: Agents + Chats together */}
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
-                {/* Section 2: Agents */}
+                {/* Section 2: Agents — direct selection (already shows full list) */}
                 <SidebarAgents
                     selectedAgent={selectedAgent}
                     onAgentSelect={onAgentSelect}
@@ -138,7 +141,7 @@ export function ChatSidebar({
             <div className={`hidden md:block transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none visibility-hidden' : 'opacity-100 visibility-visible'}`}>
                 <SidebarAgentHeader
                     selectedAgent={selectedAgent}
-                    onAgentSelect={onAgentSelect}
+                    onAgentSelect={onOpenAgentPicker ? () => onOpenAgentPicker() : onAgentSelect}
                     floating
                 />
             </div>
