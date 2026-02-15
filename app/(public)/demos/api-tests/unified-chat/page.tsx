@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchablePromptSelect } from '@/features/prompt-apps/components/SearchablePromptSelect';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, X, Play, Settings2, FileText, FileJson, BarChart3 } from 'lucide-react';
+import { Loader2, Plus, Trash2, X, Play, FileText, FileJson, BarChart3, FlaskConical, Copy, Check, PanelRightClose, PanelRightOpen, Key } from 'lucide-react';
 // Removed hardcoded TEST_ADMIN_TOKEN - now using cookie-based storage
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
@@ -20,8 +21,38 @@ import { SettingsJsonEditor } from '@/features/prompts/components/configuration/
 import { removeNullSettings } from '@/features/prompts/utils/settings-filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
 import { UsageStatsModal } from '@/components/chat/UsageStatsModal';
 import { supabase } from '@/utils/supabase/client';
+
+const StreamAnalyzer = lazy(() => import('./StreamAnalyzer'));
+
+function TabCopyButton({ content, label = 'Copy', disabled }: { content: string; label?: string; disabled?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    if (!content || disabled) return;
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      toast.success('Copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="h-7 text-xs px-2 gap-1"
+      onClick={handleCopy}
+      disabled={disabled || !content}
+    >
+      {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+      {copied ? 'Copied' : label}
+    </Button>
+  );
+}
 
 interface Prompt {
   id: string;
@@ -77,6 +108,13 @@ export default function ChatTestPage() {
     endTime: number | null;
   }>({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: null, endTime: null });
 
+  // Stream Analyzer state (raw JSON objects for event classification)
+  const rawEventsRef = useRef<Array<Record<string, unknown>>>([]);
+  const [rawEventsVersion, setRawEventsVersion] = useState(0);
+  const [analyzerStartTime, setAnalyzerStartTime] = useState<number | null>(null);
+  const [analyzerTabActive, setAnalyzerTabActive] = useState(false);
+  const analyzerFlushRef = useRef<ReturnType<typeof setInterval>>(null);
+
   // Settings panel state
   const [showSettings, setShowSettings] = useState(true);
   const [showJsonEditor, setShowJsonEditor] = useState(false);
@@ -91,7 +129,7 @@ export default function ChatTestPage() {
       // Ctrl/Cmd + Enter to run test
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        if (!isRunning && selectedModelId && messages.length > 0) {
+        if (!isRunning && selectedModelId && messages.length > 0 && apiConfig.hasToken) {
           runTest();
         }
       }
@@ -104,7 +142,7 @@ export default function ChatTestPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRunning, selectedModelId, messages]);
+  }, [isRunning, selectedModelId, messages.length, apiConfig.hasToken]);
 
   // Load all data on mount
   useEffect(() => {
@@ -159,9 +197,10 @@ export default function ChatTestPage() {
   // Get model controls
   const { normalizedControls } = useModelControls(models, selectedModelId);
 
-  // Handle model change
+  // Handle model change - when a prompt is selected, do NOT overwrite config (prompt config is source of truth)
   const handleModelChange = (newModelId: string) => {
     setSelectedModelId(newModelId);
+    if (selectedPromptId) return; // Prompt config stays as-is; only model ID changes for API
     const newModel = models.find(m => m.id === newModelId);
     if (newModel) {
       const defaults = getModelDefaults(newModel);
@@ -189,26 +228,21 @@ export default function ChatTestPage() {
       setMessages(prompt.messages);
     }
 
-    // Apply prompt settings - completely replace current config with prompt settings
+    // Apply prompt settings - use ONLY prompt config (no model defaults overlay)
     if (prompt.settings) {
       const { model_id, stream, ...restSettings } = prompt.settings;
 
-      // Set the model from prompt settings
+      // Config is exactly what the prompt provides - never merge with model defaults
+      setModelConfig(restSettings);
+
+      // Set the model from prompt settings (for API call)
       if (model_id) {
         const matchedModel = models.find(m => m.id === model_id);
         if (matchedModel) {
           setSelectedModelId(model_id);
-          // Start with model defaults, then overlay prompt settings
-          const defaults = getModelDefaults(matchedModel);
-          setModelConfig({ ...defaults, ...restSettings });
         } else {
-          // Model not found in loaded models - still apply settings, keep current model
           console.warn(`Model ${model_id} from prompt not found in available models`);
-          setModelConfig(prev => ({ ...prev, ...restSettings }));
         }
-      } else {
-        // No model_id in settings - just apply the rest
-        setModelConfig(prev => ({ ...prev, ...restSettings }));
       }
 
       // Sync stream toggle with prompt settings
@@ -239,13 +273,29 @@ export default function ChatTestPage() {
   const runTest = async () => {
     if (isRunning) return;
 
+    // Auth token is required for this page - show specific message before making request
+    if (!apiConfig.hasToken) {
+      setErrorMessage('Auth token is required. Please configure an auth token in the API config panel above.');
+      return;
+    }
+
     setIsRunning(true);
     setStreamOutput('');
     setStreamText('');
     setStreamEvents([]);
     setErrorMessage('');
     setUsageStatsData(null);
-    setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: Date.now(), endTime: null });
+    rawEventsRef.current = [];
+    setRawEventsVersion(0);
+    const startNow = Date.now();
+    setAnalyzerStartTime(startNow);
+    setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: startNow, endTime: null });
+
+    // Start a throttled flush for the analyzer (every 250ms during streaming)
+    if (analyzerFlushRef.current) clearInterval(analyzerFlushRef.current);
+    analyzerFlushRef.current = setInterval(() => {
+      setRawEventsVersion(rawEventsRef.current.length);
+    }, 250);
 
     try {
       const url = `${apiConfig.baseUrl}/api/chat/unified`;
@@ -271,7 +321,14 @@ export default function ChatTestPage() {
       });
 
       if (!response.ok) {
-        // Try to parse error response
+        // 401: auth required - show specific message for this page
+        if (response.status === 401) {
+          const msg = !apiConfig.authToken?.trim()
+            ? 'Auth token is required. Please configure an auth token in the API config panel above.'
+            : 'Unauthorized. Your auth token may be invalid or expired. Please check your token in the API config panel.';
+          throw new Error(msg);
+        }
+        // Try to parse error response for other status codes
         let errorMsg = `HTTP ${response.status}`;
         try {
           const errorData = await response.json();
@@ -331,6 +388,9 @@ export default function ChatTestPage() {
                 // Accumulate the event for StreamAwareChatMarkdown
                 setStreamEvents(prev => [...prev, json as StreamEvent]);
 
+                // Accumulate raw event for StreamAnalyzer
+                rawEventsRef.current.push(json as Record<string, unknown>);
+
                 // Extract text chunks (keep for backward compatibility with debug view)
                 if (json.event === 'chunk' && typeof json.data === 'string') {
                   setStreamText(prev => prev + json.data);
@@ -369,6 +429,7 @@ export default function ChatTestPage() {
           const json = JSON.parse(buffer);
           setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
           setStreamEvents(prev => [...prev, json as StreamEvent]);
+          rawEventsRef.current.push(json as Record<string, unknown>);
           if (json.event === 'chunk' && typeof json.data === 'string') {
             setStreamText(prev => prev + json.data);
           }
@@ -387,6 +448,12 @@ export default function ChatTestPage() {
       setErrorMessage(errorMsg);
       setStreamOutput(prev => prev + `\n\n❌ Error: ${errorMsg}`);
     } finally {
+      // Stop analyzer flush interval and do a final flush
+      if (analyzerFlushRef.current) {
+        clearInterval(analyzerFlushRef.current);
+        analyzerFlushRef.current = null;
+      }
+      setRawEventsVersion(rawEventsRef.current.length);
       setIsRunning(false);
     }
   };
@@ -398,76 +465,62 @@ export default function ChatTestPage() {
     setStreamEvents([]);
     setErrorMessage('');
     setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: null, endTime: null });
+    rawEventsRef.current = [];
+    setRawEventsVersion(0);
+    setAnalyzerStartTime(null);
   };
 
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-background">
-      {/* Fixed header section */}
-      <div className="flex-shrink-0 p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold">Chat API Test</h1>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            <Settings2 className="h-4 w-4 mr-1" />
-            {showSettings ? 'Hide' : 'Show'} Settings
-          </Button>
-        </div>
-
-        {/* API Configuration */}
-        <ApiTestConfigPanel config={apiConfig} />
+      {/* Fixed header: title + API config + actions in one row */}
+      <div className="flex-shrink-0 px-3 py-1">
+        <ApiTestConfigPanel
+          config={apiConfig}
+          title={<h1 className="text-lg font-bold">Chat API Test</h1>}
+          actions={
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="h-6 w-6 p-0"
+                  aria-label={showSettings ? 'Hide settings' : 'Show settings'}
+                >
+                  {showSettings ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{showSettings ? 'Hide settings' : 'Show settings'}</TooltipContent>
+            </Tooltip>
+          }
+        />
       </div>
 
       {/* Scrollable content area */}
-      <div className="flex-1 min-h-0 p-3">
-        <div className="grid grid-cols-12 gap-3 h-full">
+      <div className="flex-1 min-h-0 px-3 py-1">
+        <div className="grid grid-cols-12 gap-2 h-full">
           {/* Left: Configuration Panel */}
           {showSettings && (
-            <Card className="col-span-3 p-3 h-full overflow-y-auto space-y-3">
-              <div className="space-y-2">
-                {/* Prompt Selection */}
+            <Card className="col-span-3 h-full flex flex-col overflow-hidden">
+              {/* Sticky top: Prompt + Model */}
+              <div className="flex-shrink-0 p-3 space-y-2 border-b">
                 <div className="flex items-center gap-2">
-                  <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Load Prompt</Label>
-                  <Select value={selectedPromptId} onValueChange={handlePromptSelect}>
-                    <SelectTrigger className="h-7 text-xs">
-                      <SelectValue placeholder={prompts.length > 0 ? "Select a prompt..." : "No prompts available"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {prompts.length > 0 ? (
-                        prompts.map(prompt => (
-                          <SelectItem key={prompt.id} value={prompt.id} className="text-xs">
-                            {prompt.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="_none" disabled className="text-xs text-muted-foreground">
-                          No prompts found
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {selectedPromptId && (
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => handlePromptSelect('')}
-                      className="h-7 text-xs px-2 flex-shrink-0"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
+                  <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Prompt</Label>
+                  <div className="flex-1 min-w-0">
+                    <SearchablePromptSelect
+                      prompts={prompts}
+                      value={selectedPromptId}
+                      onChange={(id) => handlePromptSelect(id)}
+                      placeholder={prompts.length > 0 ? 'Select a prompt...' : 'No prompts available'}
+                      compact
+                    />
+                  </div>
                 </div>
-
-                {/* Model Selection */}
                 <div className="flex items-center gap-2">
                   <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Model</Label>
                   <Select value={selectedModelId} onValueChange={handleModelChange}>
-                    <SelectTrigger className="h-7 text-xs">
+                    <SelectTrigger className="h-7 text-xs flex-1">
                       <SelectValue placeholder="Select model..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -479,9 +532,12 @@ export default function ChatTestPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
+              {/* Scrollable middle */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
                 {/* Stream & Debug Mode Toggles */}
-                <div className="space-y-2 border-t pt-2">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Checkbox 
                       id="stream-mode" 
@@ -610,14 +666,24 @@ export default function ChatTestPage() {
                   </div>
                 </div>
 
-                {/* Run Button */}
+              </div>
+
+              {/* Sticky bottom: Run + Edit Config buttons side by side */}
+              <div className="flex-shrink-0 p-3 border-t flex flex-col gap-2">
+                {!apiConfig.hasToken && (
+                  <p className="text-xs text-warning-foreground flex items-center gap-1.5">
+                    <Key className="h-3.5 w-3.5 flex-shrink-0" />
+                    Auth token required — configure in the API config panel above to run the test
+                  </p>
+                )}
+                <div className="flex gap-2">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         onClick={runTest}
-                        disabled={isRunning || !selectedModelId || messages.length === 0}
-                        className="w-full"
+                        disabled={isRunning || !selectedModelId || messages.length === 0 || !apiConfig.hasToken}
+                        className="flex-1"
                         size="sm"
                       >
                         {isRunning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -626,21 +692,22 @@ export default function ChatTestPage() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Ctrl/Cmd + Enter
+                      {!apiConfig.hasToken
+                        ? 'Auth token required — configure in the panel above'
+                        : 'Ctrl/Cmd + Enter'}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-
-                {/* JSON Editor Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowJsonEditor(true)}
-                  className="w-full mt-2"
+                  className="flex-1"
                 >
                   <FileJson className="mr-2 h-4 w-4" />
-                  Edit Config as JSON
+                  Edit Config
                 </Button>
+                </div>
               </div>
             </Card>
           )}
@@ -706,14 +773,26 @@ export default function ChatTestPage() {
               </div>
             </div>
 
-            <Tabs defaultValue="rendered" className="flex-1 flex flex-col overflow-hidden">
-              <TabsList className="grid w-full grid-cols-3 h-8">
+            <Tabs
+              defaultValue="rendered"
+              className="flex-1 flex flex-col overflow-hidden"
+              onValueChange={(val) => setAnalyzerTabActive(val === 'analyzer')}
+            >
+              <TabsList className="grid w-full grid-cols-4 h-8">
                 <TabsTrigger value="rendered" className="text-xs">Rendered</TabsTrigger>
-                <TabsTrigger value="json" className="text-xs">JSON Stream</TabsTrigger>
                 <TabsTrigger value="request" className="text-xs">Request Body</TabsTrigger>
+                <TabsTrigger value="analyzer" className="text-xs gap-1">
+                  <FlaskConical className="h-3 w-3" />
+                  Stream Analyzer
+                </TabsTrigger>
+                <TabsTrigger value="json" className="text-xs">JSON Stream</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="rendered" className="flex-1 overflow-y-auto mt-2 p-3 bg-textured rounded border">
+              <TabsContent value="rendered" className="flex-1 flex flex-col overflow-hidden mt-2 p-3 bg-textured rounded border">
+                <div className="flex justify-end mb-2 flex-shrink-0">
+                  <TabCopyButton content={streamText} label="Copy Rendered" disabled={!streamText} />
+                </div>
+                <div className="flex-1 overflow-y-auto min-h-0">
                 {errorMessage && (
                   <div className="mb-3 p-3 bg-destructive/10 border border-destructive/20 rounded text-xs text-destructive">
                     <div className="font-semibold mb-1">❌ Error</div>
@@ -732,15 +811,50 @@ export default function ChatTestPage() {
                 ) : !errorMessage ? (
                   <div className="text-xs text-muted-foreground">No response yet...</div>
                 ) : null}
+                </div>
               </TabsContent>
 
-              <TabsContent value="json" className="flex-1 overflow-y-auto mt-2 p-3 bg-muted rounded border">
+              <TabsContent value="analyzer" className="flex-1 overflow-hidden mt-2 p-3 bg-muted/20 rounded border">
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
+                    Loading analyzer...
+                  </div>
+                }>
+                  <StreamAnalyzer
+                    rawEvents={rawEventsRef.current}
+                    isStreaming={isRunning}
+                    streamStartTime={analyzerStartTime}
+                    isActive={analyzerTabActive}
+                    eventVersion={rawEventsVersion}
+                  />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="json" className="flex-1 flex flex-col overflow-hidden mt-2 p-3 bg-muted rounded border">
+                <div className="flex justify-end mb-2 flex-shrink-0">
+                  <TabCopyButton content={streamOutput} label="Copy JSON" disabled={!streamOutput} />
+                </div>
+                <div className="flex-1 overflow-y-auto min-h-0">
                 <pre className="text-xs font-mono whitespace-pre-wrap">
                   {streamOutput || 'No JSON data yet...'}
                 </pre>
+                </div>
               </TabsContent>
 
-              <TabsContent value="request" className="flex-1 overflow-y-auto mt-2 p-3 bg-muted rounded border">
+              <TabsContent value="request" className="flex-1 flex flex-col overflow-hidden mt-2 p-3 bg-muted rounded border">
+                <div className="flex justify-end mb-2 flex-shrink-0">
+                  <TabCopyButton
+                    content={JSON.stringify({
+                      messages: messages,
+                      ai_model_id: selectedModelId,
+                      ...modelConfig,
+                      stream: streamEnabled,
+                      debug: debugMode,
+                    }, null, 2)}
+                    label="Copy Request"
+                  />
+                </div>
+                <div className="flex-1 overflow-y-auto min-h-0">
                 <pre className="text-xs font-mono whitespace-pre-wrap">
                   {JSON.stringify({
                     messages: messages,
@@ -750,6 +864,7 @@ export default function ChatTestPage() {
                     debug: debugMode,
                   }, null, 2)}
                 </pre>
+                </div>
               </TabsContent>
             </Tabs>
           </Card>

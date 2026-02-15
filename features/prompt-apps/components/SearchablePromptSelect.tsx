@@ -22,6 +22,8 @@ interface SearchablePromptSelectProps {
   value?: string;
   onChange: (promptId: string, prompt: Prompt) => void;
   placeholder?: string;
+  /** Use smaller font sizes for compact layouts (e.g. demo/test pages) */
+  compact?: boolean;
 }
 
 export function SearchablePromptSelect({
@@ -29,6 +31,7 @@ export function SearchablePromptSelect({
   value,
   onChange,
   placeholder = 'Select a prompt...',
+  compact = false,
 }: SearchablePromptSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -60,39 +63,38 @@ export function SearchablePromptSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-auto min-h-[2.5rem] text-left"
+          className={cn(
+            'w-full justify-between h-auto text-left',
+            compact ? 'min-h-7 text-xs' : 'min-h-[2.5rem]'
+          )}
         >
           <div className="flex-1 min-w-0">
             {selectedPrompt ? (
-              <div className="space-y-0.5">
-                <div className="font-medium">{selectedPrompt.name}</div>
-                {selectedPrompt.description && (
-                  <div className="text-xs text-muted-foreground line-clamp-1">
-                    {selectedPrompt.description}
-                  </div>
-                )}
-              </div>
+              <div className={compact ? 'text-xs font-medium' : 'font-medium'}>{selectedPrompt.name}</div>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
           </div>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className={cn('ml-2 shrink-0 opacity-50', compact ? 'h-3 w-3' : 'h-4 w-4')} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        <div className={cn('flex items-center border-b px-3', compact && 'px-2')}>
+          <Search className={cn('mr-2 shrink-0 opacity-50', compact ? 'h-3 w-3' : 'h-4 w-4')} />
           <Input
             placeholder="Search prompts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            style={{ fontSize: '16px' }}
+            className={cn(
+              'border-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+              compact ? 'h-8 text-xs' : 'h-10'
+            )}
+            style={compact ? undefined : { fontSize: '16px' }}
           />
         </div>
         <div className="max-h-[300px] overflow-y-auto p-1">
           {filteredPrompts.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
+            <div className={cn('py-6 text-center text-muted-foreground', compact ? 'text-xs' : 'text-sm')}>
               No prompts found
             </div>
           ) : (
@@ -101,20 +103,24 @@ export function SearchablePromptSelect({
                 key={prompt.id}
                 onClick={() => handleSelect(prompt)}
                 className={cn(
-                  'relative flex w-full cursor-pointer select-none items-start rounded-sm px-2 py-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
+                  'relative flex w-full cursor-pointer select-none items-start rounded-sm px-2 py-2 outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
+                  compact ? 'text-xs py-1.5' : 'text-sm py-2',
                   value === prompt.id && 'bg-accent/50'
                 )}
               >
                 <div className="flex-1 min-w-0 text-left">
                   <div className="font-medium">{prompt.name}</div>
                   {prompt.description && (
-                    <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                    <div className={cn(
+                      'text-muted-foreground line-clamp-2 mt-0.5',
+                      compact ? 'text-[10px]' : 'text-xs'
+                    )}>
                       {prompt.description}
                     </div>
                   )}
                 </div>
                 {value === prompt.id && (
-                  <Check className="ml-2 h-4 w-4 shrink-0 text-primary" />
+                  <Check className={cn('ml-2 shrink-0 text-primary', compact ? 'h-3 w-3' : 'h-4 w-4')} />
                 )}
               </button>
             ))
