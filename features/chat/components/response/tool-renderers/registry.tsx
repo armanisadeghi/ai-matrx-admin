@@ -14,6 +14,12 @@ import { CoreWebSearchInline, CoreWebSearchOverlay } from "./core-web-search";
 import { DeepResearchInline, DeepResearchOverlay } from "./deep-research";
 import BraveSearchDisplay from "@/features/workflows/results/registered-components/BraveSearchDisplay";
 import { CheckCircle, AlertTriangle } from "lucide-react";
+import {
+    DynamicInlineRenderer,
+    DynamicOverlayRenderer,
+    getCachedRenderer,
+    isKnownNoDynamic,
+} from "./dynamic";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEO header extras helpers
@@ -226,39 +232,109 @@ export const toolRendererRegistry: ToolRegistry = {
 };
 
 /**
- * Check if a custom renderer is registered for a given tool name
+ * Check if a custom renderer is registered for a given tool name.
+ * Checks both the static registry and the dynamic component cache.
  */
 export function hasCustomRenderer(toolName: string | null): boolean {
     if (!toolName) return false;
-    return toolName in toolRendererRegistry;
+    if (toolName in toolRendererRegistry) return true;
+    // Check dynamic cache
+    if (getCachedRenderer(toolName)) return true;
+    return false;
 }
 
 /**
- * Get the inline renderer for a tool
- * @param toolName - Name of the tool from mcp_input.name
- * @returns Inline renderer component or GenericRenderer fallback
+ * Check if a tool might have a dynamic renderer (not yet loaded).
+ * Returns true if the tool is NOT in the static registry and NOT known
+ * to have no dynamic component.
+ */
+export function mightHaveDynamicRenderer(toolName: string | null): boolean {
+    if (!toolName) return false;
+    if (toolName in toolRendererRegistry) return false;
+    if (isKnownNoDynamic(toolName)) return false;
+    return true;
+}
+
+/**
+ * Get the inline renderer for a tool.
+ *
+ * Resolution order:
+ * 1. Static registry (core tools with bundled code)
+ * 2. Dynamic cache (database-stored components, already compiled)
+ * 3. DynamicInlineRenderer wrapper (will fetch + compile on mount)
+ * 4. GenericRenderer (final fallback)
  */
 export function getInlineRenderer(toolName: string | null): React.ComponentType<ToolRendererProps> {
-    if (!toolName || !toolRendererRegistry[toolName]) {
-        return GenericRenderer;
+    if (!toolName) return GenericRenderer;
+
+    // 1. Static registry
+    if (toolRendererRegistry[toolName]) {
+        return toolRendererRegistry[toolName].inline;
     }
-    return toolRendererRegistry[toolName].inline;
+
+    // 2. Check if dynamic component exists in cache
+    const dynamicCached = getCachedRenderer(toolName);
+    if (dynamicCached) {
+        // Wrap the compiled component in a closure that adds toolName prop
+        const cachedToolName = toolName;
+        return (props: ToolRendererProps) => (
+            <DynamicInlineRenderer toolName={cachedToolName} {...props} />
+        );
+    }
+
+    // 3. If tool might have a dynamic renderer (not known negative), use the
+    //    DynamicInlineRenderer which will attempt to fetch on mount
+    if (!isKnownNoDynamic(toolName)) {
+        const dynamicToolName = toolName;
+        return (props: ToolRendererProps) => (
+            <DynamicInlineRenderer toolName={dynamicToolName} {...props} />
+        );
+    }
+
+    // 4. Final fallback
+    return GenericRenderer;
 }
 
 /**
- * Get the overlay renderer for a tool
- * Falls back to inline renderer if no overlay specified, then to GenericRenderer
- * @param toolName - Name of the tool from mcp_input.name
- * @returns Overlay renderer component
+ * Get the overlay renderer for a tool.
+ *
+ * Resolution order mirrors getInlineRenderer but checks for overlay-specific
+ * components. Falls back through inline → GenericRenderer.
  */
 export function getOverlayRenderer(toolName: string | null): React.ComponentType<ToolRendererProps> {
-    if (!toolName || !toolRendererRegistry[toolName]) {
-        return GenericRenderer;
+    if (!toolName) return GenericRenderer;
+
+    // 1. Static registry
+    if (toolRendererRegistry[toolName]) {
+        const renderer = toolRendererRegistry[toolName];
+        return renderer.overlay || renderer.inline || GenericRenderer;
     }
-    
-    const renderer = toolRendererRegistry[toolName];
-    // Prefer overlay renderer, fall back to inline, then generic
-    return renderer.overlay || renderer.inline || GenericRenderer;
+
+    // 2. Dynamic cache
+    const dynamicCached = getCachedRenderer(toolName);
+    if (dynamicCached) {
+        if (dynamicCached.OverlayComponent) {
+            const cachedToolName = toolName;
+            return (props: ToolRendererProps) => (
+                <DynamicOverlayRenderer toolName={cachedToolName} {...props} />
+            );
+        }
+        // Has dynamic inline but no overlay — use dynamic inline
+        const cachedToolName = toolName;
+        return (props: ToolRendererProps) => (
+            <DynamicInlineRenderer toolName={cachedToolName} {...props} />
+        );
+    }
+
+    // 3. Might have dynamic
+    if (!isKnownNoDynamic(toolName)) {
+        const dynamicToolName = toolName;
+        return (props: ToolRendererProps) => (
+            <DynamicOverlayRenderer toolName={dynamicToolName} {...props} />
+        );
+    }
+
+    return GenericRenderer;
 }
 
 /**
@@ -271,78 +347,122 @@ export function getToolName(toolUpdates: ToolCallObject[]): string | null {
 }
 
 /**
- * Check if a tool should keep expanded when content starts streaming
- * @param toolName - Name of the tool from mcp_input.name
- * @returns true if tool should stay expanded, false if it should auto-collapse
+ * Check if a tool should keep expanded when content starts streaming.
+ * Checks static registry first, then dynamic cache.
  */
 export function shouldKeepExpandedOnStream(toolName: string | null): boolean {
-    if (!toolName || !toolRendererRegistry[toolName]) {
-        return true; // Default: keep expanded so generic results remain visible
+    if (!toolName) return true;
+
+    // Static registry
+    if (toolRendererRegistry[toolName]) {
+        return toolRendererRegistry[toolName].keepExpandedOnStream ?? false;
     }
-    return toolRendererRegistry[toolName].keepExpandedOnStream ?? false;
+
+    // Dynamic cache
+    const dynamic = getCachedRenderer(toolName);
+    if (dynamic) return dynamic.keepExpandedOnStream;
+
+    return true; // Default: keep expanded so generic results remain visible
 }
 
 /**
- * Get the display name for a tool
- * @param toolName - Name of the tool from mcp_input.name
- * @returns Pretty display name or formatted fallback
+ * Get the display name for a tool.
+ * Checks static registry, then dynamic cache, then auto-formats.
  */
 export function getToolDisplayName(toolName: string | null): string {
     if (!toolName) return "Tool";
-    
+
+    // Static registry
     if (toolRendererRegistry[toolName]?.displayName) {
         return toolRendererRegistry[toolName].displayName;
     }
-    
+
+    // Dynamic cache
+    const dynamic = getCachedRenderer(toolName);
+    if (dynamic) return dynamic.displayName;
+
     // Fallback: Convert snake_case to Title Case
     return toolName
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
 }
 
 /**
  * Get the results tab label for a tool's output in the overlay.
- * Uses custom resultsLabel from registry, falls back to "${displayName} Results",
- * and finally falls back to auto-generated title case from the tool name + " Results".
- * @param toolName - Name of the tool from mcp_input.name
- * @returns Formatted results label
+ * Checks static registry, then dynamic cache, then auto-generates.
  */
 export function getResultsLabel(toolName: string | null): string {
     if (!toolName) return "Results";
-    
+
+    // Static registry
     const renderer = toolRendererRegistry[toolName];
     if (renderer?.resultsLabel) {
         return renderer.resultsLabel;
     }
-    
-    // Fallback: use displayName + " Results"
+
+    // Dynamic cache
+    const dynamic = getCachedRenderer(toolName);
+    if (dynamic?.resultsLabel) return dynamic.resultsLabel;
+
     const displayName = getToolDisplayName(toolName);
     return `${displayName} Results`;
 }
 
 /**
  * Get custom header subtitle for a tool's overlay header.
- * Returns null if no custom subtitle is defined (falls back to default behavior).
- * @param toolName - Name of the tool from mcp_input.name
- * @param toolUpdates - Array of all tool updates for this tool call
- * @returns Custom subtitle string, or null for default
+ * Checks static registry first, then dynamic cache.
  */
-export function getHeaderSubtitle(toolName: string | null, toolUpdates: ToolCallObject[]): string | null {
-    if (!toolName || !toolRendererRegistry[toolName]?.getHeaderSubtitle) return null;
-    return toolRendererRegistry[toolName].getHeaderSubtitle!(toolUpdates);
+export function getHeaderSubtitle(
+    toolName: string | null,
+    toolUpdates: ToolCallObject[]
+): string | null {
+    if (!toolName) return null;
+
+    // Static registry
+    if (toolRendererRegistry[toolName]?.getHeaderSubtitle) {
+        return toolRendererRegistry[toolName].getHeaderSubtitle!(toolUpdates);
+    }
+
+    // Dynamic cache
+    const dynamic = getCachedRenderer(toolName);
+    if (dynamic?.getHeaderSubtitle) {
+        try {
+            return dynamic.getHeaderSubtitle(toolUpdates);
+        } catch {
+            return null;
+        }
+    }
+
+    return null;
 }
 
 /**
  * Get custom header extras (ReactNode) for a tool's overlay header.
- * Returns null if no custom extras are defined.
- * @param toolName - Name of the tool from mcp_input.name
- * @param toolUpdates - Array of all tool updates for this tool call
- * @returns ReactNode to render in header, or null
+ * Checks static registry first, then dynamic cache.
  */
-export function getHeaderExtras(toolName: string | null, toolUpdates: ToolCallObject[]): React.ReactNode {
-    if (!toolName || !toolRendererRegistry[toolName]?.getHeaderExtras) return null;
-    return toolRendererRegistry[toolName].getHeaderExtras!(toolUpdates);
+export function getHeaderExtras(
+    toolName: string | null,
+    toolUpdates: ToolCallObject[]
+): React.ReactNode {
+    if (!toolName) return null;
+
+    // Static registry
+    if (toolRendererRegistry[toolName]?.getHeaderExtras) {
+        return toolRendererRegistry[toolName].getHeaderExtras!(toolUpdates);
+    }
+
+    // Dynamic cache
+    const dynamic = getCachedRenderer(toolName);
+    if (dynamic?.getHeaderExtras) {
+        try {
+            return dynamic.getHeaderExtras(toolUpdates);
+        } catch {
+            return null;
+        }
+    }
+
+    return null;
 }
 
 /**

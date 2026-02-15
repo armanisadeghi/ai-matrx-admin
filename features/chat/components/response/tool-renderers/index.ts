@@ -1,8 +1,9 @@
 // Barrel exports for tool renderers
 export * from "./types";
-export { 
+export {
     toolRendererRegistry,
     hasCustomRenderer,
+    mightHaveDynamicRenderer,
     getInlineRenderer,
     getOverlayRenderer,
     getToolName,
@@ -22,3 +23,6 @@ export * from "./seo-meta-descriptions";
 export * from "./web-research";
 export * from "./core-web-search";
 export * from "./deep-research";
+
+// Dynamic tool renderer system
+export { prefetchRenderer } from "./dynamic";

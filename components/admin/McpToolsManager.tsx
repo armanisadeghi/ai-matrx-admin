@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-    Plus, 
-    Search, 
-    Filter, 
-    Edit, 
-    Trash2, 
-    Save, 
-    X, 
+import {
+    Plus,
+    Search,
+    Filter,
+    Edit,
+    Trash2,
+    Save,
+    X,
     ChevronDown,
     ChevronUp,
     Settings,
-    Eye, 
+    Eye,
     EyeOff,
     Code,
     Tag,
@@ -20,7 +20,9 @@ import {
     Calendar,
     Hash,
     ToggleLeft,
-    ToggleRight
+    ToggleRight,
+    Paintbrush,
+    Bug,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTools } from "@/hooks/useTools";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { formatText } from "@/utils/text/text-case-converter";
+import { ToolUiComponentEditor } from "./ToolUiComponentEditor";
+import { ToolUiIncidentViewer } from "./ToolUiIncidentViewer";
 
 interface Tool {
     id: string;
@@ -87,6 +91,8 @@ export function McpToolsManager() {
         toolId: null,
         toolName: null,
     });
+    const [uiEditorTool, setUiEditorTool] = useState<{ name: string; id: string } | null>(null);
+    const [showIncidents, setShowIncidents] = useState(false);
 
     // Update tools when database tools change
     useEffect(() => {
@@ -306,6 +312,14 @@ export function McpToolsManager() {
                             <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => setShowIncidents(true)}
+                            >
+                                <Bug className="h-4 w-4 mr-2" />
+                                Incidents
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={refetch}
                             >
                                 <Settings className="h-4 w-4 mr-2" />
@@ -372,6 +386,7 @@ export function McpToolsManager() {
                         onEdit={() => handleEditTool(tool)}
                         onDelete={() => handleDeleteTool(tool.id, tool.name)}
                         onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
+                        onEditUiComponent={() => setUiEditorTool({ name: tool.name, id: tool.id })}
                     />
                 ))}
 
@@ -414,8 +429,8 @@ export function McpToolsManager() {
             </Dialog>
 
             {/* Delete Confirmation Dialog */}
-            <AlertDialog 
-                open={deleteConfirmation.isOpen} 
+            <AlertDialog
+                open={deleteConfirmation.isOpen}
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null });
@@ -426,7 +441,7 @@ export function McpToolsManager() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Tool</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete <strong>"{deleteConfirmation.toolName}"</strong>?{' '}
+                            Are you sure you want to delete <strong>&quot;{deleteConfirmation.toolName}&quot;</strong>?{' '}
                             This action cannot be undone and will permanently remove the tool from the system.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -441,6 +456,44 @@ export function McpToolsManager() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* UI Component Editor Dialog */}
+            <Dialog open={!!uiEditorTool} onOpenChange={() => setUiEditorTool(null)}>
+                <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
+                        <DialogTitle className="flex items-center gap-2">
+                            <Paintbrush className="h-5 w-5" />
+                            UI Component: {uiEditorTool?.name}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto">
+                        {uiEditorTool && (
+                            <ToolUiComponentEditor
+                                toolName={uiEditorTool.name}
+                                toolId={uiEditorTool.id}
+                                onSaved={() => {
+                                    toast({ title: "Saved", description: "UI component saved. Changes will take effect on next tool use." });
+                                }}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Incidents Viewer Dialog */}
+            <Dialog open={showIncidents} onOpenChange={setShowIncidents}>
+                <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
+                        <DialogTitle className="flex items-center gap-2">
+                            <Bug className="h-5 w-5" />
+                            Dynamic Component Incidents
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto">
+                        <ToolUiIncidentViewer />
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
@@ -453,9 +506,10 @@ interface ToolCardProps {
     onEdit: () => void;
     onDelete: () => void;
     onToggleActive: (isActive: boolean) => void;
+    onEditUiComponent: () => void;
 }
 
-function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onToggleActive }: ToolCardProps) {
+function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onToggleActive, onEditUiComponent }: ToolCardProps) {
     const icon = mapIcon(tool.icon, tool.category, 20);
     
     return (
@@ -515,6 +569,14 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                             onClick={onToggleExpanded}
                         >
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onEditUiComponent}
+                            title="Edit UI Component"
+                        >
+                            <Paintbrush className="h-4 w-4" />
                         </Button>
                         <Button
                             variant="ghost"

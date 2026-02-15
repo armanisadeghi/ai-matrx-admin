@@ -5,7 +5,7 @@ import { CheckCircle, Loader2, Sparkles, ChevronDown, ChevronUp, Maximize2 } fro
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import { cn } from "@/lib/utils";
 import { ToolUpdatesOverlay } from "@/features/chat/components/response/tool-updates";
-import { getToolName, getInlineRenderer, shouldKeepExpandedOnStream, getToolDisplayName } from "@/features/chat/components/response/tool-renderers";
+import { getToolName, getInlineRenderer, shouldKeepExpandedOnStream, getToolDisplayName, prefetchRenderer } from "@/features/chat/components/response/tool-renderers";
 
 interface ToolCallVisualizationProps {
     toolUpdates: ToolCallObject[];
@@ -80,6 +80,15 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
         }
         return getToolDisplayName(toolName);
     }, [toolName, toolGroups.length]);
+
+    // Prefetch dynamic renderers as soon as tool names are known
+    useEffect(() => {
+        toolGroups.forEach((group) => {
+            const inputUpdate = group.find((u) => u.type === "mcp_input");
+            const name = inputUpdate?.mcp_input?.name;
+            if (name) prefetchRenderer(name);
+        });
+    }, [toolGroups]);
 
     // Auto-collapse when content starts streaming (unless any tool wants to stay expanded)
     useEffect(() => {
