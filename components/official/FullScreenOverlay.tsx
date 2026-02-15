@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -75,6 +75,8 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
 }) => {
     const [activeTab, setActiveTab] = React.useState<string>(initialTab || (tabs.length > 0 ? tabs[0].id : ""));
     const [isMobile, setIsMobile] = useState(false);
+    const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     // Sync activeTab when initialTab changes (e.g., reopening overlay with a different tab)
     useEffect(() => {
@@ -93,6 +95,61 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    // Track visual viewport height for keyboard handling on mobile
+    // On real devices, the visual viewport shrinks when the keyboard opens.
+    // Using visualViewport.height instead of dvh/vh ensures the overlay
+    // never extends behind the keyboard or beyond reachable screen area.
+    useEffect(() => {
+        if (!isMobile || typeof window === 'undefined') return;
+
+        const updateHeight = () => {
+            if (window.visualViewport) {
+                setViewportHeight(window.visualViewport.height);
+            }
+        };
+
+        // Initial measurement
+        updateHeight();
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateHeight);
+            window.visualViewport.addEventListener('scroll', updateHeight);
+        }
+        // Fallback for browsers without visualViewport
+        window.addEventListener('resize', updateHeight);
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', updateHeight);
+                window.visualViewport.removeEventListener('scroll', updateHeight);
+            }
+            window.removeEventListener('resize', updateHeight);
+        };
+    }, [isMobile]);
+
+    // When keyboard opens, scroll the focused input into view within the overlay
+    useEffect(() => {
+        if (!isMobile || !isOpen) return;
+
+        const handleFocusIn = (e: FocusEvent) => {
+            const target = e.target as HTMLElement;
+            if (
+                target instanceof HTMLInputElement ||
+                target instanceof HTMLTextAreaElement ||
+                target instanceof HTMLSelectElement ||
+                target.isContentEditable
+            ) {
+                // Allow the keyboard to fully appear before scrolling
+                setTimeout(() => {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        };
+
+        document.addEventListener('focusin', handleFocusIn);
+        return () => document.removeEventListener('focusin', handleFocusIn);
+    }, [isMobile, isOpen]);
 
     const handleTabChange = (newTab: string) => {
         setActiveTab(newTab);
@@ -120,21 +177,34 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     const leftSidePanelWidth = leftSidePanel && !isMobile ? leftSidePanelRatio * 100 : 0;
     const contentWidth = 100 - rightSidePanelWidth - leftSidePanelWidth;
 
+    // On mobile, use visualViewport height (pixel-accurate even with keyboard)
+    // to guarantee the overlay fits within reachable screen area.
+    // Position is handled by Tailwind classes (!top-0 !left-0 !translate-x/y-0)
+    // to properly override the base DialogContent centering transform.
+    const mobileStyle = isMobile
+        ? {
+              height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+              maxHeight: viewportHeight ? `${viewportHeight}px` : '100dvh',
+          }
+        : undefined;
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent 
                 className={cn(
                     "flex flex-col p-0 gap-0 bg-textured border-2 border-solid border-border",
-                    isMobile ? "w-full h-dvh max-w-full max-h-dvh rounded-none" : "rounded-3xl"
+                    isMobile
+                        ? "!fixed !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 w-full max-w-full rounded-none border-0"
+                        : "rounded-3xl"
                 )}
-                style={!isMobile ? { width, maxWidth: width, height, maxHeight: height } : undefined}
+                style={isMobile ? mobileStyle : { width, maxWidth: width, height, maxHeight: height }}
             >
                 <DialogHeader className={cn(
-                    "flex flex-col border-b px-4 flex-shrink-0",
-                    isMobile ? "pt-3 pb-2 space-y-2" : "pt-2.5 pb-1"
+                    "flex flex-col border-b flex-shrink-0",
+                    isMobile ? "px-2 pt-2 pb-1.5 space-y-1.5 pt-safe" : "px-4 pt-2.5 pb-1"
                 )}>
                     <div className="flex flex-row justify-between items-center">
-                        <DialogTitle className={isMobile ? "text-lg" : "text-sm"}>{title}</DialogTitle>
+                        <DialogTitle className={isMobile ? "text-base font-semibold" : "text-sm"}>{title}</DialogTitle>
                         {description && <DialogDescription className="sr-only">{description}</DialogDescription>}
                     </div>
                     
@@ -151,13 +221,10 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                                 // Determine tab position styling
                                 let positionClass = "rounded-none";
                                 if (tabs.length === 1) {
-                                    // If only one tab, it gets both rounded corners
                                     positionClass = "rounded-l-full rounded-r-full";
                                 } else if (index === 0) {
-                                    // First tab always gets left rounded corners
                                     positionClass = "rounded-l-full rounded-r-none";
                                 } else if (index === tabs.length - 1) {
-                                    // Last tab always gets right rounded corners
                                     positionClass = "rounded-l-none rounded-r-full";
                                 }
                                 
@@ -167,7 +234,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                                         className={cn(
                                             positionClass,
                                             "border-border hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700",
-                                            isMobile ? "px-6 py-3 text-base min-h-[44px]" : "text-xs px-2 py-0.5"
+                                            isMobile ? "px-4 py-2 text-sm min-h-[44px]" : "text-xs px-2 py-0.5"
                                         )}
                                         value={tab.id}
                                     >
@@ -180,15 +247,22 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                 </DialogHeader>
                 
                 {sharedHeader && (
-                    <div className={cn("border-b px-4 py-2 flex-shrink-0", sharedHeaderClassName)}>
+                    <div className={cn(
+                        "border-b py-2 flex-shrink-0",
+                        isMobile ? "px-2" : "px-4",
+                        sharedHeaderClassName
+                    )}>
                         {sharedHeader}
                     </div>
                 )}
                 
-                <div className={cn(
-                    "flex flex-1 overflow-hidden",
-                    isMobile ? "flex-col" : "flex-row"
-                )}>
+                <div
+                    ref={contentRef}
+                    className={cn(
+                        "flex flex-1 overflow-hidden min-h-0",
+                        isMobile ? "flex-col" : "flex-row"
+                    )}
+                >
                     {leftSidePanel && !isMobile && (
                         <div 
                             className={cn("border-r overflow-auto", leftSidePanelClassName)}
@@ -199,17 +273,17 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                     )}
                     
                     <div 
-                        className="flex flex-col overflow-hidden" 
+                        className="flex flex-col overflow-hidden min-h-0" 
                         style={!isMobile ? { width: `${contentWidth}%` } : { width: '100%' }}
                     >
-                        <Tabs value={activeTab} className="flex-grow flex flex-col overflow-hidden">
+                        <Tabs value={activeTab} className="flex-grow flex flex-col overflow-hidden min-h-0">
                             {tabs.map((tab) => (
                                 <TabsContent 
                                     key={`content-${tab.id}`} 
                                     value={tab.id} 
                                     className={cn(
-                                        "flex-grow mt-0 border-none overflow-auto outline-none ring-0",
-                                        isMobile && "pb-safe"
+                                        "flex-grow mt-0 border-none overflow-auto outline-none ring-0 min-h-0",
+                                        isMobile ? "px-2" : ""
                                     )}
                                 >
                                     {tab.content}
@@ -230,8 +304,8 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                 
                 {(showSaveButton || showCancelButton || additionalButtons || footerContent) && (
                     <DialogFooter className={cn(
-                        "border-t flex justify-end flex-shrink-0 p-1 pr-3",
-                        isMobile ? "pb-safe gap-2 flex-col sm:flex-row" : ""
+                        "border-t flex justify-end flex-shrink-0",
+                        isMobile ? "p-2 pb-safe gap-2 flex-col sm:flex-row" : "p-1 pr-3"
                     )}>
                         {additionalButtons}
                         {footerContent}
