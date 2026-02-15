@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatSidebar } from '@/features/public-chat/components/ChatSidebar';
+import { ChatMobileHeader } from '@/features/public-chat/components/ChatMobileHeader';
 import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
@@ -101,6 +102,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
     const [focusKey, setFocusKey] = useState(0);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const loadedConversationRef = useRef<string | null>(null);
 
     // ── Derive URL state ──────────────────────────────────────────────────
@@ -266,13 +268,24 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>
-            <div className="h-full w-full flex flex-col">
+            {/* Mobile: fixed full-screen overlay covering PublicHeader for single-header experience */}
+            {/* Desktop: normal flow element within parent layout */}
+            <div className="fixed inset-0 z-[60] flex flex-col bg-background md:relative md:inset-auto md:z-auto md:bg-transparent md:h-full md:w-full">
+                {/* Mobile-only consolidated header */}
+                <ChatMobileHeader
+                    onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+                    onNewChat={handleNewChat}
+                    selectedAgent={selectedAgent}
+                    onAgentSelect={handleAgentChange}
+                />
                 <ChatSidebar
                     activeRequestId={activeConversationId}
                     onSelectChat={handleSelectChat}
                     onNewChat={handleNewChat}
                     onAgentSelect={handleAgentChange}
                     selectedAgent={selectedAgent}
+                    isOpen={isSidebarOpen}
+                    onOpenChange={setIsSidebarOpen}
                 />
                 <div className="flex-1 min-h-0 relative">
                     {children}

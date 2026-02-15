@@ -15,6 +15,9 @@ export interface ChatSidebarProps {
     onNewChat: () => void;
     onAgentSelect?: (agent: AgentConfig) => void;
     selectedAgent?: AgentConfig | null;
+    /** Controlled open state (lifted from parent for mobile header coordination) */
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
     className?: string;
 }
 
@@ -57,18 +60,19 @@ export function ChatSidebar({
     onNewChat,
     onAgentSelect,
     selectedAgent,
+    isOpen,
+    onOpenChange,
     className = '',
 }: ChatSidebarProps) {
-    const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     const toggleSidebar = useCallback(() => {
-        setIsOpen(prev => !prev);
-    }, []);
+        onOpenChange(!isOpen);
+    }, [isOpen, onOpenChange]);
 
     const closeSidebar = useCallback(() => {
-        setIsOpen(false);
-    }, []);
+        onOpenChange(false);
+    }, [onOpenChange]);
 
     const handleNewChat = useCallback(() => {
         onNewChat();
@@ -139,33 +143,17 @@ export function ChatSidebar({
                 />
             </div>
 
-            {/* ── Mobile: Sub-header bar with toggle + agent selector ── */}
-            <div className="flex md:hidden items-center gap-1 px-2 py-1.5 border-b border-border bg-card/80 backdrop-blur-sm">
-                <button
-                    onClick={toggleSidebar}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
-                    title="Open sidebar"
-                >
-                    <PanelLeft className="h-4 w-4" />
-                </button>
-                <SidebarAgentHeader
-                    selectedAgent={selectedAgent}
-                    onAgentSelect={onAgentSelect}
-                    compact
-                />
-            </div>
-
-            {/* ── Mobile overlay backdrop ── */}
+            {/* ── Mobile overlay backdrop (z-[70] to sit above mobile full-screen chat overlay) ── */}
             <div
-                className={`fixed inset-0 z-40 bg-black/40 md:hidden transition-opacity duration-300 ${
+                className={`fixed inset-0 z-[70] bg-black/40 md:hidden transition-opacity duration-300 ${
                     isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
                 onClick={closeSidebar}
             />
 
-            {/* ── Mobile drawer ── */}
+            {/* ── Mobile drawer (z-[70] to sit above mobile full-screen chat overlay) ── */}
             <div
-                className={`fixed left-0 top-0 bottom-0 w-[272px] z-40 bg-card border-r border-border shadow-xl md:hidden transition-transform duration-300 ease-in-out ${
+                className={`fixed left-0 top-0 bottom-0 w-[272px] z-[70] bg-card border-r border-border shadow-xl md:hidden transition-transform duration-300 ease-in-out ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
                 onClick={(e) => e.stopPropagation()}
