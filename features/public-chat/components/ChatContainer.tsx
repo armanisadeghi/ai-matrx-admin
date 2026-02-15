@@ -294,64 +294,76 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     if (isWelcomeScreen) {
         const agentName = hasVariables ? state.currentAgent?.name : null;
         const agentDescription = hasVariables ? state.currentAgent?.description : null;
+        const varCount = state.currentAgent?.variableDefaults?.length || 0;
+        // Hide description when >3 variables to save vertical space
+        const showDescription = agentDescription && varCount <= 3;
 
         return (
-            <div className={`h-full flex flex-col items-center justify-center px-3 md:px-8 ${className}`}>
-                <div className="w-full max-w-3xl">
-                    <div className="text-center mb-6 md:mb-8">
-                        <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
-                            {agentName || 'What can I help with?'}
-                        </h1>
-                        {agentDescription ? (
-                            <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                                {agentDescription}
-                            </p>
-                        ) : (
-                            <p className="mt-1 text-sm text-muted-foreground/70">
-                                AI with Matrx superpowers
-                            </p>
-                        )}
-                    </div>
+            <div className={`h-full flex flex-col ${className}`}>
+                {/* Scrollable content — centers when it fits, scrolls when it doesn't */}
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                    <div className={`min-h-full flex flex-col items-center px-3 md:px-8 ${
+                        varCount > 2 ? 'justify-start pt-8 md:pt-16 md:justify-center' : 'justify-center'
+                    }`}>
+                        <div className="w-full max-w-3xl">
+                            <div className={`text-center ${varCount > 2 ? 'mb-3 md:mb-6' : 'mb-6 md:mb-8'}`}>
+                                <h1 className={`font-semibold text-foreground ${
+                                    varCount > 2 ? 'text-xl md:text-3xl' : 'text-2xl md:text-3xl'
+                                }`}>
+                                    {agentName || 'What can I help with?'}
+                                </h1>
+                                {showDescription ? (
+                                    <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                                        {agentDescription}
+                                    </p>
+                                ) : !hasVariables ? (
+                                    <p className="mt-1 text-sm text-muted-foreground/70">
+                                        AI with Matrx superpowers
+                                    </p>
+                                ) : null}
+                            </div>
 
-                    {hasVariables && (
-                        <div className="mb-6">
-                            <PublicVariableInputs
-                                variableDefaults={state.currentAgent!.variableDefaults!}
-                                values={variableValues}
-                                onChange={handleVariableChange}
-                                disabled={isExecuting}
-                                minimal
-                                textInputRef={textInputRef}
-                                submitOnEnter={true}
-                                onSubmit={handleSubmit}
-                            />
+                            {hasVariables && (
+                                <div className={varCount > 2 ? 'mb-3 md:mb-6' : 'mb-6'}>
+                                    <PublicVariableInputs
+                                        variableDefaults={state.currentAgent!.variableDefaults!}
+                                        values={variableValues}
+                                        onChange={handleVariableChange}
+                                        disabled={isExecuting}
+                                        minimal
+                                        textInputRef={textInputRef}
+                                        submitOnEnter={true}
+                                        onSubmit={handleSubmit}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="rounded-2xl border border-border">
+                                <ChatInputWithControls
+                                    onSubmit={handleSubmit}
+                                    disabled={isExecuting}
+                                    placeholder={
+                                        hasVariables
+                                            ? 'Enter your message (or just press Enter to use variables only)'
+                                            : 'What do you want to know?'
+                                    }
+                                    conversationId={conversationId}
+                                    onOpenAgentPicker={openAgentPicker}
+                                    hasVariables={hasVariables}
+                                    selectedAgent={state.currentAgent}
+                                    textInputRef={textInputRef}
+                                />
+                            </div>
+
+                            <div className={varCount > 2 ? 'mt-3 md:mt-6 pb-4' : 'mt-6 pb-4'}>
+                                <AgentActionButtons
+                                    agents={DEFAULT_AGENTS}
+                                    selectedAgent={currentAgentOption}
+                                    onSelect={handleAgentSelect}
+                                    disabled={isExecuting}
+                                />
+                            </div>
                         </div>
-                    )}
-
-                    <div className="rounded-2xl border border-border">
-                        <ChatInputWithControls
-                            onSubmit={handleSubmit}
-                            disabled={isExecuting}
-                            placeholder={
-                                hasVariables
-                                    ? 'Enter your message (or just press Enter to use variables only)'
-                                    : 'What do you want to know?'
-                            }
-                            conversationId={conversationId}
-                            onOpenAgentPicker={openAgentPicker}
-                            hasVariables={hasVariables}
-                            selectedAgent={state.currentAgent}
-                            textInputRef={textInputRef}
-                        />
-                    </div>
-
-                    <div className="mt-6">
-                        <AgentActionButtons
-                            agents={DEFAULT_AGENTS}
-                            selectedAgent={currentAgentOption}
-                            onSelect={handleAgentSelect}
-                            disabled={isExecuting}
-                        />
                     </div>
                 </div>
             </div>
