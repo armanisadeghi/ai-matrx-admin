@@ -23,6 +23,7 @@ import {
     ToggleRight,
     Paintbrush,
     Bug,
+    Wand2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import { mapIcon } from "@/utils/icons/icon-mapper";
 import { formatText } from "@/utils/text/text-case-converter";
 import { ToolUiComponentEditor } from "./ToolUiComponentEditor";
 import { ToolUiIncidentViewer } from "./ToolUiIncidentViewer";
+import { ToolUiComponentGenerator } from "./ToolUiComponentGenerator";
 
 interface Tool {
     id: string;
@@ -93,6 +95,7 @@ export function McpToolsManager() {
     });
     const [uiEditorTool, setUiEditorTool] = useState<{ name: string; id: string } | null>(null);
     const [showIncidents, setShowIncidents] = useState(false);
+    const [showGenerator, setShowGenerator] = useState(false);
 
     // Update tools when database tools change
     useEffect(() => {
@@ -312,6 +315,14 @@ export function McpToolsManager() {
                             <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => setShowGenerator(true)}
+                            >
+                                <Wand2 className="h-4 w-4 mr-2" />
+                                Generate UI
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => setShowIncidents(true)}
                             >
                                 <Bug className="h-4 w-4 mr-2" />
@@ -491,6 +502,31 @@ export function McpToolsManager() {
                     </DialogHeader>
                     <div className="flex-1 overflow-y-auto">
                         <ToolUiIncidentViewer />
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* AI Component Generator Dialog */}
+            <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
+                <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
+                        <DialogTitle className="flex items-center gap-2">
+                            <Wand2 className="h-5 w-5" />
+                            AI Component Generator
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto">
+                        <ToolUiComponentGenerator
+                            tools={tools.map(t => ({
+                                id: t.id,
+                                name: t.name,
+                                description: t.description,
+                                category: t.category,
+                            }))}
+                            onComplete={() => {
+                                toast({ title: "Component generated", description: "The new UI component has been saved and will be active on next tool use." });
+                            }}
+                        />
                     </div>
                 </DialogContent>
             </Dialog>
