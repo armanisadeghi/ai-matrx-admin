@@ -20,6 +20,7 @@ import {
 import { ToolRendererProps } from "../types";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import BasicMarkdownContent from "@/components/mardown-display/chat-markdown/BasicMarkdownContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -301,7 +302,7 @@ function CollapsibleText({
 
     if (text.length <= maxChars) {
         return (
-            <p className="text-sm text-foreground/80 leading-relaxed">
+            <p className="text-xs text-foreground/80 leading-relaxed">
                 {text}
             </p>
         );
@@ -333,6 +334,7 @@ function CollapsibleText({
 }
 
 function SourceCard({ source }: { source: UnreadSource }) {
+    const isMobile = useIsMobile();
     const favicon = getFaviconUrl(source.url);
     const domain = getDomain(source.url);
     const copyText = `${source.title}\n${source.url}\n\n${source.description}\n\n${source.contentPreview}`;
@@ -402,7 +404,7 @@ function SourceCard({ source }: { source: UnreadSource }) {
                     </p>
                     <CollapsibleText
                         text={source.contentPreview}
-                        maxChars={300}
+                        maxChars={isMobile ? 300 : 2000}
                     />
                 </div>
             )}

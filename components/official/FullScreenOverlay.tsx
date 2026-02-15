@@ -124,7 +124,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent 
                 className={cn(
-                    "flex flex-col p-0 gap-0 border-2 border-solid border-slate-500",
+                    "flex flex-col p-0 gap-0 bg-textured border-2 border-solid border-border",
                     isMobile ? "w-full h-dvh max-w-full max-h-dvh rounded-none" : "rounded-3xl"
                 )}
                 style={!isMobile ? { width, maxWidth: width, height, maxHeight: height } : undefined}
