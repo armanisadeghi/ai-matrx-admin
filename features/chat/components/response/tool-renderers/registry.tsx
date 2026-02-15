@@ -143,7 +143,29 @@ export const toolRendererRegistry: ToolRegistry = {
         resultsLabel: "Research Results",
         inline: WebResearchInline,
         overlay: WebResearchOverlay,
-        keepExpandedOnStream: true, // Keep research visible
+        keepExpandedOnStream: true,
+        getHeaderSubtitle: (toolUpdates) => {
+            const input = toolUpdates.find((u) => u.type === "mcp_input");
+            const args = input?.mcp_input?.arguments;
+            const queries = Array.isArray(args?.queries) ? args.queries : [];
+            if (queries.length > 0) {
+                return queries.length === 1 ? String(queries[0]) : `${queries.length} queries`;
+            }
+            return typeof args?.query === "string" ? String(args.query) : null;
+        },
+        getHeaderExtras: (toolUpdates) => {
+            const browsingCount = toolUpdates.filter(
+                (u) => u.type === "user_visible_message" && u.user_visible_message?.startsWith("Browsing ")
+            ).length;
+            if (browsingCount === 0) return null;
+            return (
+                <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+                    <span className="flex items-center gap-1">
+                        {browsingCount} {browsingCount === 1 ? "page" : "pages"} read
+                    </span>
+                </div>
+            );
+        },
     },
     
     // Core Web Search - Multi-query parallel web search
