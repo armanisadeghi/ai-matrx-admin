@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
 import type { PublicResource, PublicResourceType } from '../types/content';
-import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import { StreamEvent, ToolUpdateData } from '@/components/mardown-display/chat-markdown/types';
+import type { ToolCallObject } from '@/lib/redux/socket-io/socket.types';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
 
@@ -62,6 +63,133 @@ const FullScreenMarkdownEditor = lazy(() => import('@/components/mardown-display
 const PublicMessageOptionsMenu = lazy(() => import('./PublicMessageOptionsMenu'));
 const HtmlPreviewModal = lazy(() => import('./HtmlPreviewModal'));
 const ToolCallVisualization = lazy(() => import('@/features/chat/components/response/assistant-message/stream/ToolCallVisualization'));
+
+// ============================================================================
+// INTERLEAVED STREAM BLOCKS
+// Builds an ordered sequence of text and tool blocks from stream events so
+// that content renders in the exact order it arrives from the API.
+// ============================================================================
+
+interface TextBlock {
+    type: 'text';
+    content: string;
+}
+
+interface ToolBlock {
+    type: 'tool';
+    toolId: string;
+    updates: ToolCallObject[];
+}
+
+type ContentBlock = TextBlock | ToolBlock;
+
+/**
+ * Converts a flat array of StreamEvents into ordered content blocks.
+ *
+ * - Consecutive `chunk` events are merged into a single TextBlock.
+ * - Each unique tool ID (from `tool_update` events) gets its own ToolBlock,
+ *   positioned where the first update for that ID appeared.
+ * - Subsequent updates for the same ID are appended to the existing ToolBlock
+ *   (in-place), preserving the original position in the sequence.
+ */
+function buildStreamBlocks(events: StreamEvent[]): ContentBlock[] {
+    const blocks: ContentBlock[] = [];
+    const toolBlockIndices = new Map<string, number>();
+
+    for (const event of events) {
+        if (event.event === 'chunk') {
+            const text = event.data as string;
+            const lastBlock = blocks[blocks.length - 1];
+            if (lastBlock && lastBlock.type === 'text') {
+                lastBlock.content += text;
+            } else {
+                blocks.push({ type: 'text', content: text });
+            }
+        } else if (event.event === 'tool_update') {
+            const toolData = event.data as ToolUpdateData;
+            const toolId = toolData.id || `tool-anon-${blocks.length}`;
+
+            const update: ToolCallObject = {
+                id: toolId,
+                type: toolData.type as ToolCallObject['type'],
+                mcp_input: toolData.mcp_input as ToolCallObject['mcp_input'],
+                mcp_output: toolData.mcp_output as ToolCallObject['mcp_output'],
+                mcp_error: toolData.mcp_error,
+                step_data: toolData.step_data as ToolCallObject['step_data'],
+                user_visible_message: toolData.user_visible_message,
+            };
+
+            if (toolBlockIndices.has(toolId)) {
+                // Append to the existing ToolBlock (same position in sequence)
+                const idx = toolBlockIndices.get(toolId)!;
+                (blocks[idx] as ToolBlock).updates.push(update);
+            } else {
+                // First time seeing this tool ID — create a new ToolBlock
+                toolBlockIndices.set(toolId, blocks.length);
+                blocks.push({ type: 'tool', toolId, updates: [update] });
+            }
+        }
+        // status_update, data, end, info, broker — skip for block building
+    }
+
+    return blocks;
+}
+
+// ============================================================================
+// STREAMING CONTENT BLOCKS
+// Renders interleaved text + tool blocks in arrival order during a stream.
+// ============================================================================
+
+interface StreamingContentBlocksProps {
+    streamEvents: StreamEvent[];
+    isStreaming: boolean;
+}
+
+function StreamingContentBlocks({ streamEvents, isStreaming }: StreamingContentBlocksProps) {
+    const blocks = useMemo(() => buildStreamBlocks(streamEvents), [streamEvents]);
+
+    return (
+        <>
+            {blocks.map((block, index) => {
+                const isLastBlock = index === blocks.length - 1;
+
+                if (block.type === 'text') {
+                    return (
+                        <MarkdownStream
+                            key={`stream-text-${index}`}
+                            content={block.content}
+                            type="message"
+                            role="assistant"
+                            isStreamActive={isLastBlock && isStreaming}
+                            hideCopyButton={true}
+                            allowFullScreenEditor={false}
+                            className="text-xs bg-transparent"
+                        />
+                    );
+                }
+
+                if (block.type === 'tool') {
+                    // Determine whether visible text content exists after this tool
+                    const hasContentAfter = blocks
+                        .slice(index + 1)
+                        .some((b) => b.type === 'text' && b.content.trim());
+
+                    return (
+                        <Suspense key={`stream-tool-${block.toolId}`} fallback={null}>
+                            <ToolCallVisualization
+                                toolUpdates={block.updates}
+                                hasContent={hasContentAfter}
+                                className="mb-2"
+                            />
+                        </Suspense>
+                    );
+                }
+
+                return null;
+            })}
+        </>
+    );
+}
 
 // ============================================================================
 // ATTACHED RESOURCES DISPLAY (for PublicResource[] from message.resources)
@@ -274,7 +402,11 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
-    const showLoading = message.status === 'pending' || (message.status === 'streaming' && !message.content);
+    // Show loading only when there's truly nothing to display yet.
+    // Once stream events start arriving (even before text chunks), we should
+    // render those instead of the loading indicator.
+    const hasAnyStreamContent = streamEvents && streamEvents.length > 0;
+    const showLoading = message.status === 'pending' || (message.status === 'streaming' && !message.content && !hasAnyStreamContent);
 
     const handleCopy = async () => {
         try {
@@ -340,6 +472,7 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
 
     // Check if this is a DB-loaded message with tool updates (no active stream)
     const hasDbToolUpdates = !streamEvents && message.toolUpdates && message.toolUpdates.length > 0;
+    const hasStreamEvents = streamEvents && streamEvents.length > 0;
 
     return (
         <div>
@@ -354,16 +487,11 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
                 </Suspense>
             )}
 
-            {/* Markdown content - matching PromptAssistantMessage */}
-            {streamEvents && streamEvents.length > 0 ? (
-                <MarkdownStream
-                    events={streamEvents}
-                    type="message"
-                    role="assistant"
-                    isStreamActive={isStreaming}
-                    hideCopyButton={true}
-                    allowFullScreenEditor={false}
-                    className="text-xs bg-transparent"
+            {/* Streaming: render interleaved text + tool blocks in arrival order */}
+            {hasStreamEvents ? (
+                <StreamingContentBlocks
+                    streamEvents={streamEvents}
+                    isStreaming={isStreaming}
                 />
             ) : (
                 <MarkdownStream

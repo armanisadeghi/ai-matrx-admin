@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Globe,
     FileSearch,
@@ -181,7 +181,9 @@ function extractAnalysisPreview(analysis: string, maxChars = 400): string {
 const PAGE_PHASES = [
     "Scraping page content...",
     "Reading page content...",
+    "Extracting key information...",
     "Sending to research agent...",
+    "Analyzing content...",
     "Summarizing findings...",
 ] as const;
 
@@ -194,13 +196,19 @@ function BrowsingCard({
     url,
     index,
     isComplete,
+    onPhasesComplete,
 }: {
     url: string;
     index: number;
     isComplete: boolean;
+    onPhasesComplete?: () => void;
 }) {
     const domain = getDomain(url);
     const favicon = getFaviconUrl(url);
+
+    // Stable ref for the completion callback — avoids resetting timers on parent re-renders
+    const onCompleteRef = useRef(onPhasesComplete);
+    onCompleteRef.current = onPhasesComplete;
 
     // Each card gets its own random phase durations, stable across re-renders
     const [phaseDurations] = useState(() =>
@@ -227,11 +235,12 @@ function BrowsingCard({
             );
         }
 
-        // After all phases complete, mark card as done
+        // After all phases complete, mark card as done and notify parent
         cumulativeDelay += phaseDurations[phaseDurations.length - 1];
         timeouts.push(
             setTimeout(() => {
                 setPhasesComplete(true);
+                onCompleteRef.current?.();
             }, cumulativeDelay)
         );
 
@@ -478,7 +487,25 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
         ? extractAnalysisPreview(parsed.aiAnalysis)
         : "";
 
-    // Timer-based fallback for waiting indicator (max card duration = 4 phases × 7s + buffer)
+    // Track card completion for immediate WaitingIndicator transition
+    const completedCardsRef = useRef(new Set<string>());
+    const [allCardsFinished, setAllCardsFinished] = useState(false);
+
+    // Reset when new URLs arrive (more cards to wait for)
+    useEffect(() => {
+        if (browsingUrls.length > completedCardsRef.current.size) {
+            setAllCardsFinished(false);
+        }
+    }, [browsingUrls.length]);
+
+    const handleCardComplete = (url: string) => {
+        completedCardsRef.current.add(url);
+        if (completedCardsRef.current.size >= browsingUrls.length) {
+            setAllCardsFinished(true);
+        }
+    };
+
+    // Timer-based fallback for waiting indicator (max card duration = 6 phases × 7s + buffer)
     const [showWaitingFallback, setShowWaitingFallback] = useState(false);
 
     useEffect(() => {
@@ -487,20 +514,19 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
             return;
         }
 
-        // Reset when new URLs arrive, then start countdown from worst-case card duration
         setShowWaitingFallback(false);
         const timer = setTimeout(() => {
             setShowWaitingFallback(true);
-        }, PAGE_PHASES.length * 7000 + 2000); // 30s: 4 phases × 7s max + 2s buffer
+        }, PAGE_PHASES.length * 7000 + 2000);
 
         return () => clearTimeout(timer);
     }, [isComplete, browsingUrls.length]);
 
-    // Show waiting indicator when summarizing or after all cards have had time to complete
+    // Show waiting indicator: immediately when all cards finish, on server summarizing signal, or timeout fallback
     const showWaitingIndicator =
         !isComplete &&
         browsingUrls.length > 0 &&
-        (showWaitingFallback || isSummarizing);
+        (allCardsFinished || showWaitingFallback || isSummarizing);
 
     return (
         <div className="space-y-3">
@@ -571,6 +597,7 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                             url={url}
                             index={index}
                             isComplete={isComplete}
+                            onPhasesComplete={() => handleCardComplete(url)}
                         />
                     ))}
                 </div>
