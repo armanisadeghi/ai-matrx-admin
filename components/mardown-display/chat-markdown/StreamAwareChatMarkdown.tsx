@@ -126,6 +126,9 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         case 'tool_update':
           // Collect tool updates for visualization
           const toolData = event.data as ToolUpdateData;
+
+          console.log('toolData', JSON.stringify(toolData, null, 2));
+
           toolUpdatesRef.current.push({
             id: toolData.id || `tool-${toolUpdatesRef.current.length}`,
             type: toolData.type,

@@ -14,9 +14,8 @@ import {
     ChevronDown,
     ChevronUp,
     BookOpenCheck,
-    ClipboardList,
     Link2,
-    Sparkles,
+    MessagesSquare,
 } from "lucide-react";
 import { ToolRendererProps } from "../types";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
@@ -42,12 +41,17 @@ interface ParsedWebResearch {
     browsingUrls: string[];
 }
 
+interface AnalysisSection {
+    title: string;
+    content: string;
+    level: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Parser — extracts ALL data from the tool updates
+// Parser
 // ─────────────────────────────────────────────────────────────────────────────
 
 function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
-    // 1. Queries and instructions from mcp_input
     const inputUpdate = updates.find((u) => u.type === "mcp_input");
     const args = inputUpdate?.mcp_input?.arguments ?? {};
     const queries: string[] = Array.isArray(args.queries)
@@ -60,7 +64,6 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
             ? (args.instructions as string)
             : "";
 
-    // 2. All browsed URLs
     const browsingUrls = updates
         .filter(
             (u) =>
@@ -69,7 +72,6 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
         )
         .map((u) => u.user_visible_message?.replace("Browsing ", "") || "");
 
-    // 3. Full AI analysis from step_data (web_result_summary)
     const summaryUpdate = updates.find(
         (u) =>
             u.type === "step_data" &&
@@ -83,7 +85,6 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
             ? (summaryContent.text as string)
             : "";
 
-    // 4. mcp_output.result — fallback for analysis + unread sources
     const outputUpdate = updates.find((u) => u.type === "mcp_output");
     const rawResult = outputUpdate?.mcp_output?.result;
     const outputText =
@@ -108,13 +109,11 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
             .trim();
     }
 
-    // Clean up leading/trailing --- separators
     aiAnalysis = aiAnalysis
         .replace(/^---\s*\n?/, "")
         .replace(/\n?---\s*$/, "")
         .trim();
 
-    // 5. Parse unread sources
     const unreadSources: UnreadSource[] = [];
     const unreadSection = outputText.match(
         /---\nHere are other search results[^\n]*:\n([\s\S]*)$/
@@ -122,7 +121,6 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
     if (unreadSection) {
         const block = unreadSection[1].trim();
         const cleanBlock = block.replace(/---\nNext steps:[\s\S]*$/, "").trim();
-
         const entries = cleanBlock.split(/\n(?=Title:)/);
         for (const entry of entries) {
             if (!entry.trim()) continue;
@@ -133,7 +131,9 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
             const descMatch = entry.match(
                 /Description:\s*([\s\S]*?)(?=\nContent Preview:|$)/m
             );
-            const previewMatch = entry.match(/Content Preview:\s*([\s\S]*?)$/m);
+            const previewMatch = entry.match(
+                /Content Preview:\s*([\s\S]*?)$/m
+            );
 
             if (titleMatch && urlMatch) {
                 unreadSources.push({
@@ -148,6 +148,51 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
     }
 
     return { queries, instructions, aiAnalysis, unreadSources, browsingUrls };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section parser — splits AI analysis into discrete sections by headers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function parseAnalysisSections(analysis: string): AnalysisSection[] {
+    if (!analysis) return [];
+
+    const lines = analysis.split("\n");
+    const sections: AnalysisSection[] = [];
+    let currentTitle = "";
+    let currentContent: string[] = [];
+    let currentLevel = 0;
+
+    const flushSection = () => {
+        const content = currentContent.join("\n").trim();
+        if (currentTitle || content) {
+            sections.push({
+                title: currentTitle,
+                content,
+                level: currentLevel,
+            });
+        }
+        currentContent = [];
+    };
+
+    for (const line of lines) {
+        const headerMatch = line.match(/^(#{1,4})\s+(.+)$/);
+        if (headerMatch) {
+            flushSection();
+            currentLevel = headerMatch[1].length;
+            currentTitle = headerMatch[2].trim();
+        } else {
+            currentContent.push(line);
+        }
+    }
+    flushSection();
+
+    // If no sections were found (no headers), return a single section
+    if (sections.length === 0 && analysis.trim()) {
+        return [{ title: "", content: analysis, level: 0 }];
+    }
+
+    return sections;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -171,11 +216,80 @@ function getFaviconUrl(url: string): string {
     }
 }
 
+function buildStatLine(
+    queryCount: number,
+    browsingUrlCount: number,
+    unreadSourceCount: number
+): string {
+    const parts: string[] = [];
+    if (queryCount > 0) {
+        parts.push(
+            `${queryCount} ${queryCount === 1 ? "Query" : "Queries"}`
+        );
+    }
+    if (browsingUrlCount > 0) {
+        parts.push(
+            `${browsingUrlCount} Deep ${browsingUrlCount === 1 ? "Read" : "Reads"}`
+        );
+    } else if (queryCount > 0) {
+        const estimate = queryCount * 3;
+        parts.push(`~${estimate} Deep Reads`);
+    }
+    if (unreadSourceCount > 0) {
+        parts.push(
+            `${unreadSourceCount} Additional ${unreadSourceCount === 1 ? "Source" : "Sources"}`
+        );
+    }
+    return parts.join(" \u00B7 ");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Small copy button
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CopyButton({
+    text,
+    label = "Copy",
+    size = "sm",
+}: {
+    text: string;
+    label?: string;
+    size?: "sm" | "xs";
+}) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy:", err);
+        }
+    };
+
+    const iconSize = size === "xs" ? "w-3 h-3" : "w-3.5 h-3.5";
+
+    return (
+        <button
+            onClick={handleCopy}
+            className="flex-shrink-0 p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            title={label}
+        >
+            {copied ? (
+                <Check className={`${iconSize} text-primary`} />
+            ) : (
+                <Copy className={iconSize} />
+            )}
+        </button>
+    );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Collapsible text block for long content */
 function CollapsibleText({
     text,
     maxChars = 400,
@@ -187,7 +301,7 @@ function CollapsibleText({
 
     if (text.length <= maxChars) {
         return (
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-sm text-foreground/80 leading-relaxed">
                 {text}
             </p>
         );
@@ -195,12 +309,12 @@ function CollapsibleText({
 
     return (
         <div>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-sm text-foreground/80 leading-relaxed">
                 {expanded ? text : text.slice(0, maxChars) + "..."}
             </p>
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="mt-1.5 flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                className="mt-1.5 flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
             >
                 {expanded ? (
                     <>
@@ -218,33 +332,13 @@ function CollapsibleText({
     );
 }
 
-/** Source card for an unread source with full data */
-function SourceCard({
-    source,
-    index,
-}: {
-    source: UnreadSource;
-    index: number;
-}) {
-    const [copySuccess, setCopySuccess] = useState(false);
+function SourceCard({ source }: { source: UnreadSource }) {
     const favicon = getFaviconUrl(source.url);
     const domain = getDomain(source.url);
-
-    const handleCopy = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const text = `${source.title}\n${source.url}\n\n${source.description}\n\n${source.contentPreview}`;
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopySuccess(true);
-            setTimeout(() => setCopySuccess(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy:", err);
-        }
-    };
+    const copyText = `${source.title}\n${source.url}\n\n${source.description}\n\n${source.contentPreview}`;
 
     return (
-        <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-green-300 dark:hover:border-green-700 transition-colors">
-            {/* Header */}
+        <div className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
             <div className="flex items-start gap-3 mb-3">
                 <div className="flex-shrink-0 w-6 h-6 mt-0.5 relative">
                     {favicon ? (
@@ -263,11 +357,11 @@ function SourceCard({
                         />
                     ) : null}
                     <Globe
-                        className={`w-6 h-6 text-slate-400 ${favicon ? "hidden" : ""}`}
+                        className={`w-6 h-6 text-muted-foreground ${favicon ? "hidden" : ""}`}
                     />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">
+                    <h3 className="text-sm font-semibold text-foreground leading-tight">
                         {source.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
@@ -275,64 +369,77 @@ function SourceCard({
                             href={source.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 hover:underline group"
+                            className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline group"
                         >
                             <span>{domain}</span>
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </a>
                         {source.date && (
-                            <span className="text-xs text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                 {source.date}
                             </span>
                         )}
                     </div>
                 </div>
-                <button
-                    onClick={handleCopy}
-                    className="flex-shrink-0 p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400"
-                    title="Copy source"
-                >
-                    {copySuccess ? (
-                        <Check className="w-4 h-4 text-green-500" />
-                    ) : (
-                        <Copy className="w-4 h-4" />
-                    )}
-                </button>
+                <CopyButton text={copyText} label="Copy source" />
             </div>
 
-            {/* Description */}
             {source.description && (
                 <div className="mb-2">
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-500 mb-1 uppercase tracking-wider">
+                    <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         Description
                     </p>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <p className="text-sm text-foreground/80 leading-relaxed">
                         {source.description}
                     </p>
                 </div>
             )}
 
-            {/* Content Preview */}
             {source.contentPreview && (
-                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-500 mb-1 uppercase tracking-wider">
+                <div className="mt-2 pt-2 border-t border-border">
+                    <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         Content Preview
                     </p>
-                    <CollapsibleText text={source.contentPreview} maxChars={300} />
+                    <CollapsibleText
+                        text={source.contentPreview}
+                        maxChars={300}
+                    />
                 </div>
             )}
 
-            {/* Visit Link */}
-            <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+            <div className="mt-3 pt-2 border-t border-border">
                 <a
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80"
                 >
                     Read full article
                     <ExternalLink className="w-3 h-3" />
                 </a>
+            </div>
+        </div>
+    );
+}
+
+/** Renders a single analysis section as a card */
+function AnalysisSectionCard({ section }: { section: AnalysisSection }) {
+    const fullText = section.title
+        ? `## ${section.title}\n\n${section.content}`
+        : section.content;
+
+    return (
+        <div className="p-4 rounded-lg border border-border bg-card">
+            <div className="flex items-start justify-between gap-2 mb-3">
+                {section.title && (
+                    <h3 className="text-sm font-bold text-foreground leading-tight">
+                        {section.title}
+                    </h3>
+                )}
+                <CopyButton text={fullText} label="Copy section" size="xs" />
+            </div>
+            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground prose-li:text-foreground/80">
+                <BasicMarkdownContent content={section.content} />
             </div>
         </div>
     );
@@ -364,7 +471,7 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
         parsed.browsingUrls.length === 0
     ) {
         return (
-            <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-center h-64 text-muted-foreground">
                 <div className="text-center">
                     <FileSearch className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p className="text-sm">No research data available</p>
@@ -373,11 +480,14 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
         );
     }
 
+    // Parse analysis into sections
+    const analysisSections = parseAnalysisSections(parsed.aiAnalysis);
+    const hasSections = analysisSections.length > 1;
+
     // Build full text export
     const generateFullText = () => {
         let text = "";
 
-        // Search queries
         if (parsed.queries.length > 0) {
             text += `SEARCH QUERIES\n${"=".repeat(80)}\n`;
             parsed.queries.forEach((q, i) => {
@@ -386,12 +496,10 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             text += "\n";
         }
 
-        // Instructions
         if (parsed.instructions) {
-            text += `SEARCH INSTRUCTIONS\n${"=".repeat(80)}\n${parsed.instructions}\n\n`;
+            text += `AGENT TO AGENT INSTRUCTIONS\n${"=".repeat(80)}\n${parsed.instructions}\n\n`;
         }
 
-        // Pages read
         if (parsed.browsingUrls.length > 0) {
             text += `PAGES READ (${parsed.browsingUrls.length})\n${"=".repeat(80)}\n`;
             parsed.browsingUrls.forEach((url, i) => {
@@ -400,12 +508,10 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             text += "\n";
         }
 
-        // AI Analysis
         if (parsed.aiAnalysis) {
             text += `AI RESEARCH ANALYSIS\n${"=".repeat(80)}\n${parsed.aiAnalysis}\n\n`;
         }
 
-        // Additional Sources
         if (parsed.unreadSources.length > 0) {
             text += `\nADDITIONAL SOURCES (${parsed.unreadSources.length})\n${"=".repeat(80)}\n\n`;
             parsed.unreadSources.forEach((source, i) => {
@@ -438,20 +544,32 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
         }
     };
 
+    const queryCopyText = parsed.queries
+        .map((q, i) => `${i + 1}. ${q}`)
+        .join("\n");
+    const urlsCopyText = parsed.browsingUrls
+        .map((u, i) => `${i + 1}. ${u}`)
+        .join("\n");
+
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-background">
             {/* Search Queries */}
             {parsed.queries.length > 0 && (
                 <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         <Search className="w-3.5 h-3.5" />
                         Search Queries
+                        <CopyButton
+                            text={queryCopyText}
+                            label="Copy queries"
+                            size="xs"
+                        />
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {parsed.queries.map((q, i) => (
                             <span
                                 key={i}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-foreground"
                             >
                                 <Search className="w-3 h-3 flex-shrink-0" />
                                 {q}
@@ -461,15 +579,20 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                 </div>
             )}
 
-            {/* Agent Instructions */}
+            {/* Agent to Agent Instructions */}
             {parsed.instructions && (
                 <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        <ClipboardList className="w-3.5 h-3.5" />
-                        Agent Instructions
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <MessagesSquare className="w-3.5 h-3.5" />
+                        Agent to Agent Instructions
+                        <CopyButton
+                            text={parsed.instructions}
+                            label="Copy instructions"
+                            size="xs"
+                        />
                     </div>
-                    <div className="p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-800/50">
-                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    <div className="p-3 rounded-lg bg-muted border border-border">
+                        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
                             {parsed.instructions}
                         </p>
                     </div>
@@ -479,9 +602,14 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             {/* Pages Read */}
             {parsed.browsingUrls.length > 0 && (
                 <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         <BookOpenCheck className="w-3.5 h-3.5" />
                         Pages Read ({parsed.browsingUrls.length})
+                        <CopyButton
+                            text={urlsCopyText}
+                            label="Copy URLs"
+                            size="xs"
+                        />
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {parsed.browsingUrls.map((url, i) => {
@@ -492,7 +620,7 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                                     href={url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-green-300 dark:hover:border-green-700 transition-colors text-xs text-slate-700 dark:text-slate-300 hover:text-green-600 dark:hover:text-green-400 group"
+                                    className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors text-xs text-foreground hover:text-primary group"
                                 >
                                     <div className="w-4 h-4 flex-shrink-0 relative">
                                         {favicon ? (
@@ -501,16 +629,21 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                                                 alt=""
                                                 className="w-4 h-4 rounded"
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display =
-                                                        "none";
-                                                    const sibling = (e.target as HTMLImageElement)
-                                                        .nextElementSibling;
-                                                    if (sibling) sibling.classList.remove("hidden");
+                                                    (
+                                                        e.target as HTMLImageElement
+                                                    ).style.display = "none";
+                                                    const sibling = (
+                                                        e.target as HTMLImageElement
+                                                    ).nextElementSibling;
+                                                    if (sibling)
+                                                        sibling.classList.remove(
+                                                            "hidden"
+                                                        );
                                                 }}
                                             />
                                         ) : null}
                                         <Globe
-                                            className={`w-4 h-4 text-slate-400 ${favicon ? "hidden" : ""}`}
+                                            className={`w-4 h-4 text-muted-foreground ${favicon ? "hidden" : ""}`}
                                         />
                                     </div>
                                     <span className="truncate max-w-[180px]">
@@ -525,21 +658,12 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             )}
 
             {/* Stats and View Toggle */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                        <Globe className="w-4 h-4" />
-                        <span className="font-medium">
-                            {parsed.browsingUrls.length} read
-                        </span>
-                    </div>
-                    {parsed.unreadSources.length > 0 && (
-                        <div className="flex items-center gap-1.5">
-                            <Link2 className="w-4 h-4" />
-                            <span className="font-medium">
-                                {parsed.unreadSources.length} additional
-                            </span>
-                        </div>
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div className="text-sm text-muted-foreground font-medium">
+                    {buildStatLine(
+                        parsed.queries.length,
+                        parsed.browsingUrls.length,
+                        parsed.unreadSources.length
                     )}
                 </div>
 
@@ -548,19 +672,19 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                         onClick={() => setViewMode("analysis")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             viewMode === "analysis"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:bg-muted"
                         }`}
                     >
-                        <Sparkles className="w-4 h-4" />
+                        <FileSearch className="w-4 h-4" />
                         <span>Analysis</span>
                     </button>
                     <button
                         onClick={() => setViewMode("sources")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             viewMode === "sources"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:bg-muted"
                         }`}
                     >
                         <LayoutGrid className="w-4 h-4" />
@@ -570,8 +694,8 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                         onClick={() => setViewMode("fulltext")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             viewMode === "fulltext"
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:bg-muted"
                         }`}
                     >
                         <FileText className="w-4 h-4" />
@@ -581,91 +705,119 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             </div>
 
             {/* ─────────────────────────────────────────────────────────────── */}
-            {/* Analysis View — Rich markdown rendering of the AI analysis     */}
+            {/* Analysis View                                                  */}
             {/* ─────────────────────────────────────────────────────────────── */}
             {viewMode === "analysis" && (
-                <div className="space-y-6">
-                    {/* AI Research Analysis */}
+                <div className="space-y-4">
+                    {/* Full analysis copy button */}
                     {parsed.aiAnalysis && (
-                        <div className="p-5 rounded-xl border border-green-200 dark:border-green-800/60 bg-gradient-to-br from-white to-green-50/30 dark:from-slate-800/50 dark:to-green-950/10">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
-                                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    AI Research Analysis
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <FileSearch className="w-5 h-5 text-primary" />
+                                <h2 className="text-base font-bold text-foreground">
+                                    Research Analysis
                                 </h2>
-                                <CopyButton text={parsed.aiAnalysis} />
                             </div>
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-green-800 dark:prose-headings:text-green-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-li:text-slate-700 dark:prose-li:text-slate-300">
+                            <CopyButton
+                                text={parsed.aiAnalysis}
+                                label="Copy full analysis"
+                            />
+                        </div>
+                    )}
+
+                    {/* Section-level cards if headers found, otherwise single block */}
+                    {hasSections ? (
+                        <div className="space-y-3">
+                            {analysisSections.map((section, index) => (
+                                <AnalysisSectionCard
+                                    key={index}
+                                    section={section}
+                                />
+                            ))}
+                        </div>
+                    ) : parsed.aiAnalysis ? (
+                        <div className="p-5 rounded-xl border border-border bg-card">
+                            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground prose-li:text-foreground/80">
                                 <BasicMarkdownContent
                                     content={parsed.aiAnalysis}
                                 />
                             </div>
                         </div>
-                    )}
+                    ) : null}
 
-                    {/* Additional Sources Summary within Analysis view */}
+                    {/* Additional Sources within Analysis view */}
                     {parsed.unreadSources.length > 0 && (
                         <div>
-                            <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-foreground">
                                 <Link2 className="w-4 h-4" />
-                                {parsed.unreadSources.length} Additional Sources Found
+                                {parsed.unreadSources.length} Additional Sources
+                                Found
                             </div>
                             <div className="space-y-2">
-                                {parsed.unreadSources.slice(0, 6).map(
-                                    (source, index) => (
+                                {parsed.unreadSources
+                                    .slice(0, 6)
+                                    .map((source, index) => (
                                         <a
                                             key={index}
                                             href={source.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 hover:border-green-300 dark:hover:border-green-700 transition-colors group"
+                                            className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors group"
                                         >
                                             <div className="flex-shrink-0 w-5 h-5 mt-0.5 relative">
                                                 <img
-                                                    src={getFaviconUrl(source.url)}
+                                                    src={getFaviconUrl(
+                                                        source.url
+                                                    )}
                                                     alt=""
                                                     className="w-5 h-5 rounded"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).style.display =
+                                                        (
+                                                            e.target as HTMLImageElement
+                                                        ).style.display =
                                                             "none";
-                                                        const sibling = (e.target as HTMLImageElement)
-                                                            .nextElementSibling;
+                                                        const sibling = (
+                                                            e.target as HTMLImageElement
+                                                        ).nextElementSibling;
                                                         if (sibling)
-                                                            sibling.classList.remove("hidden");
+                                                            sibling.classList.remove(
+                                                                "hidden"
+                                                            );
                                                     }}
                                                 />
-                                                <Globe className="w-5 h-5 text-slate-400 hidden" />
+                                                <Globe className="w-5 h-5 text-muted-foreground hidden" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm font-medium text-slate-800 dark:text-slate-200 group-hover:text-green-600 dark:group-hover:text-green-400 leading-tight">
+                                                <div className="text-sm font-medium text-foreground group-hover:text-primary leading-tight">
                                                     {source.title}
                                                 </div>
                                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                                    <span className="text-xs text-green-600 dark:text-green-400">
+                                                    <span className="text-xs text-primary">
                                                         {getDomain(source.url)}
                                                     </span>
                                                     {source.date && (
-                                                        <span className="text-xs text-slate-400">
-                                                            &middot; {source.date}
+                                                        <span className="text-xs text-muted-foreground">
+                                                            &middot;{" "}
+                                                            {source.date}
                                                         </span>
                                                     )}
-                                                    <ExternalLink className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                                 {source.description && (
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                                         {source.description}
                                                     </p>
                                                 )}
                                             </div>
                                         </a>
-                                    )
-                                )}
+                                    ))}
                                 {parsed.unreadSources.length > 6 && (
                                     <button
                                         onClick={() => setViewMode("sources")}
-                                        className="w-full py-2 text-center text-xs font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                                        className="w-full py-2 text-center text-xs font-medium text-primary hover:text-primary/80"
                                     >
-                                        View all {parsed.unreadSources.length} sources &rarr;
+                                        View all {parsed.unreadSources.length}{" "}
+                                        sources &rarr;
                                     </button>
                                 )}
                             </div>
@@ -675,33 +827,30 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             )}
 
             {/* ─────────────────────────────────────────────────────────────── */}
-            {/* Sources View — All sources with full details                   */}
+            {/* Sources View                                                   */}
             {/* ─────────────────────────────────────────────────────────────── */}
             {viewMode === "sources" && (
                 <div className="space-y-4">
                     {parsed.unreadSources.length === 0 ? (
-                        <div className="flex items-center justify-center h-32 text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center justify-center h-32 text-muted-foreground">
                             <div className="text-center">
                                 <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-50" />
                                 <p className="text-sm">
-                                    No additional source cards — all data is in the analysis
+                                    No additional source cards — all data is in
+                                    the analysis
                                 </p>
                             </div>
                         </div>
                     ) : (
                         parsed.unreadSources.map((source, index) => (
-                            <SourceCard
-                                key={index}
-                                source={source}
-                                index={index}
-                            />
+                            <SourceCard key={index} source={source} />
                         ))
                     )}
                 </div>
             )}
 
             {/* ─────────────────────────────────────────────────────────────── */}
-            {/* Full Text View — Complete raw document for copying              */}
+            {/* Full Text View                                                 */}
             {/* ─────────────────────────────────────────────────────────────── */}
             {viewMode === "fulltext" && (
                 <div className="space-y-4">
@@ -710,8 +859,8 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                             onClick={handleCopyAll}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                 copySuccess
-                                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                    ? "bg-success/15 text-success"
+                                    : "bg-muted text-foreground hover:bg-muted/80"
                             }`}
                         >
                             {copySuccess ? (
@@ -728,8 +877,8 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
                         </button>
                     </div>
 
-                    <div className="p-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
-                        <pre className="whitespace-pre-wrap font-mono text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <div className="p-6 rounded-lg border border-border bg-card">
+                        <pre className="whitespace-pre-wrap font-mono text-xs text-foreground/80 leading-relaxed">
                             {fullText}
                         </pre>
                     </div>
@@ -737,46 +886,15 @@ export const WebResearchOverlay: React.FC<ToolRendererProps> = ({
             )}
 
             {/* Footer */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <p className="text-xs text-slate-500 dark:text-slate-500 text-center">
-                    {parsed.browsingUrls.length} pages read &middot;{" "}
-                    {parsed.unreadSources.length} additional sources &middot;{" "}
-                    {parsed.queries.length} search queries
+            <div className="pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground text-center">
+                    {buildStatLine(
+                        parsed.queries.length,
+                        parsed.browsingUrls.length,
+                        parsed.unreadSources.length
+                    )}
                 </p>
             </div>
         </div>
     );
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Small inline copy button
-// ─────────────────────────────────────────────────────────────────────────────
-
-function CopyButton({ text }: { text: string }) {
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy:", err);
-        }
-    };
-
-    return (
-        <button
-            onClick={handleCopy}
-            className="ml-auto flex-shrink-0 p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400"
-            title="Copy analysis"
-        >
-            {copied ? (
-                <Check className="w-4 h-4 text-green-500" />
-            ) : (
-                <Copy className="w-4 h-4" />
-            )}
-        </button>
-    );
-}

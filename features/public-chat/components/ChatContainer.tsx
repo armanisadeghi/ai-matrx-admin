@@ -286,20 +286,27 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     // WELCOME SCREEN
     // ========================================================================
     if (isWelcomeScreen) {
+        const agentName = hasVariables ? state.currentAgent?.name : null;
+        const agentDescription = hasVariables ? state.currentAgent?.description : null;
+
         return (
             <div className={`h-full flex flex-col items-center justify-center px-3 md:px-8 ${className}`}>
-                <div className="text-center mb-6 md:mb-8">
-                    <h1 className="text-2xl md:text-3xl font-semibold mb-1.5 text-foreground">
-                        {hasVariables ? state.currentAgent?.name || 'What can I help with?' : 'What can I help with?'}
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        {hasVariables && state.currentAgent?.description
-                            ? state.currentAgent.description
-                            : 'AI with Matrx superpowers'}
-                    </p>
-                </div>
-
                 <div className="w-full max-w-3xl">
+                    <div className="text-center mb-6 md:mb-8">
+                        <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
+                            {agentName || 'What can I help with?'}
+                        </h1>
+                        {agentDescription ? (
+                            <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                                {agentDescription}
+                            </p>
+                        ) : (
+                            <p className="mt-1 text-sm text-muted-foreground/70">
+                                AI with Matrx superpowers
+                            </p>
+                        )}
+                    </div>
+
                     {hasVariables && (
                         <div className="mb-6">
                             <PublicVariableInputs

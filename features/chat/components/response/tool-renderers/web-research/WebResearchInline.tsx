@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     Globe,
     FileSearch,
@@ -10,8 +10,8 @@ import {
     BookOpenCheck,
     ScanSearch,
     ExternalLink,
-    ChevronRight,
     Link2,
+    Brain,
 } from "lucide-react";
 import { ToolRendererProps } from "../types";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
@@ -40,7 +40,6 @@ interface ParsedWebResearch {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
-    // 1. Extract queries and instructions from mcp_input
     const inputUpdate = updates.find((u) => u.type === "mcp_input");
     const args = inputUpdate?.mcp_input?.arguments ?? {};
     const queries: string[] = Array.isArray(args.queries)
@@ -53,8 +52,6 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
             ? (args.instructions as string)
             : "";
 
-    // 2. Extract the full AI analysis from step_data (web_result_summary)
-    //    This is the most valuable content — the synthesized research report
     const summaryUpdate = updates.find(
         (u) =>
             u.type === "step_data" &&
@@ -68,7 +65,6 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
             ? (summaryContent.text as string)
             : "";
 
-    // 3. Extract from mcp_output.result — may duplicate step_data analysis + has unread sources
     const outputUpdate = updates.find((u) => u.type === "mcp_output");
     const rawResult = outputUpdate?.mcp_output?.result;
     const outputText =
@@ -78,12 +74,8 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
               ? JSON.stringify(rawResult)
               : "";
 
-    // The mcp_output starts with "Top results for ..." then the same analysis,
-    // then a trailing section of unread sources
-    // Use the step_data version as primary (it's identical), fall back to mcp_output
     let aiAnalysis = stepDataAnalysis;
     if (!aiAnalysis && outputText) {
-        // Extract everything before the "Here are other search results" section
         const unreadMarker = outputText.indexOf(
             "\n---\nHere are other search results"
         );
@@ -92,29 +84,23 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
         } else {
             aiAnalysis = outputText;
         }
-        // Strip the "Top results for ..." preamble line
         aiAnalysis = aiAnalysis
             .replace(/^Top results for[^\n]*\n/, "")
             .trim();
     }
 
-    // Clean up leading/trailing --- separators
     aiAnalysis = aiAnalysis
         .replace(/^---\s*\n?/, "")
         .replace(/\n?---\s*$/, "")
         .trim();
 
-    // 4. Parse unread sources from mcp_output.result
     const unreadSources: UnreadSource[] = [];
     const unreadSection = outputText.match(
         /---\nHere are other search results[^\n]*:\n([\s\S]*)$/
     );
     if (unreadSection) {
         const block = unreadSection[1].trim();
-        // Remove any trailing "---\nNext steps:..." block
         const cleanBlock = block.replace(/---\nNext steps:[\s\S]*$/, "").trim();
-
-        // Parse each source entry — they have Title:, Url:, Description:, Content Preview:
         const entries = cleanBlock.split(/\n(?=Title:)/);
         for (const entry of entries) {
             if (!entry.trim()) continue;
@@ -122,8 +108,12 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
                 /Title:\s*(.+?)(?:\s*\(([^)]+)\))?\s*$/m
             );
             const urlMatch = entry.match(/Url:\s*(.+)/m);
-            const descMatch = entry.match(/Description:\s*([\s\S]*?)(?=\nContent Preview:|$)/m);
-            const previewMatch = entry.match(/Content Preview:\s*([\s\S]*?)$/m);
+            const descMatch = entry.match(
+                /Description:\s*([\s\S]*?)(?=\nContent Preview:|$)/m
+            );
+            const previewMatch = entry.match(
+                /Content Preview:\s*([\s\S]*?)$/m
+            );
 
             if (titleMatch && urlMatch) {
                 unreadSources.push({
@@ -161,16 +151,19 @@ function getFaviconUrl(url: string): string {
     }
 }
 
-/** Extract a short preview from the AI analysis for inline display */
 function extractAnalysisPreview(analysis: string, maxChars = 400): string {
     if (!analysis) return "";
-    // Skip markdown headers and separators, get to the meat
     const lines = analysis.split("\n");
     const contentLines: string[] = [];
     let chars = 0;
     for (const line of lines) {
         const trimmed = line.trim();
-        if (!trimmed || trimmed === "---" || trimmed.startsWith("Summarized Content from")) continue;
+        if (
+            !trimmed ||
+            trimmed === "---" ||
+            trimmed.startsWith("Summarized Content from")
+        )
+            continue;
         contentLines.push(trimmed);
         chars += trimmed.length;
         if (chars >= maxChars) break;
@@ -182,32 +175,78 @@ function extractAnalysisPreview(analysis: string, maxChars = 400): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Browsing card sub-component
+// Per-page loading phases
 // ─────────────────────────────────────────────────────────────────────────────
+
+const PAGE_PHASES = [
+    "Scraping page content...",
+    "Reading page content...",
+    "Sending to research agent...",
+    "Summarizing findings...",
+] as const;
+
+/** Random duration between 3–7 seconds for natural, staggered phase timing */
+function getRandomDuration(): number {
+    return Math.floor(Math.random() * 4001) + 3000;
+}
 
 function BrowsingCard({
     url,
     index,
-    isLast,
     isComplete,
 }: {
     url: string;
     index: number;
-    isLast: boolean;
     isComplete: boolean;
 }) {
     const domain = getDomain(url);
     const favicon = getFaviconUrl(url);
-    const isActivelyReading = isLast && !isComplete;
+
+    // Each card gets its own random phase durations, stable across re-renders
+    const [phaseDurations] = useState(() =>
+        PAGE_PHASES.map(() => getRandomDuration())
+    );
+
+    const [phase, setPhase] = useState(0);
+    const [phasesComplete, setPhasesComplete] = useState(false);
+
+    useEffect(() => {
+        if (isComplete || phasesComplete) return;
+
+        const timeouts: ReturnType<typeof setTimeout>[] = [];
+        let cumulativeDelay = 0;
+
+        // Schedule each phase transition with its own random duration
+        for (let i = 1; i < phaseDurations.length; i++) {
+            cumulativeDelay += phaseDurations[i - 1];
+            const phaseIndex = i;
+            timeouts.push(
+                setTimeout(() => {
+                    setPhase(phaseIndex);
+                }, cumulativeDelay)
+            );
+        }
+
+        // After all phases complete, mark card as done
+        cumulativeDelay += phaseDurations[phaseDurations.length - 1];
+        timeouts.push(
+            setTimeout(() => {
+                setPhasesComplete(true);
+            }, cumulativeDelay)
+        );
+
+        return () => timeouts.forEach((t) => clearTimeout(t));
+    }, [isComplete, phasesComplete, phaseDurations]);
+
+    const showAsDone = isComplete || phasesComplete;
+    const isActivelyProcessing = !showAsDone;
 
     return (
         <div
             className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all animate-in fade-in slide-in-from-left ${
-                isActivelyReading
-                    ? "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border-emerald-300 dark:border-emerald-700 shadow-sm"
-                    : isComplete
-                      ? "bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700"
-                      : "bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700"
+                isActivelyProcessing
+                    ? "bg-primary/5 border-primary/30 shadow-sm"
+                    : "bg-muted/30 border-border"
             }`}
             style={{
                 animationDelay: `${index * 80}ms`,
@@ -222,40 +261,168 @@ function BrowsingCard({
                         alt=""
                         className="w-5 h-5 rounded"
                         onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                            const sibling = (e.target as HTMLImageElement).nextElementSibling;
+                            (e.target as HTMLImageElement).style.display =
+                                "none";
+                            const sibling = (
+                                e.target as HTMLImageElement
+                            ).nextElementSibling;
                             if (sibling) sibling.classList.remove("hidden");
                         }}
                     />
                 ) : null}
-                <Globe className={`w-5 h-5 text-slate-400 dark:text-slate-500 ${favicon ? "hidden" : ""}`} />
+                <Globe
+                    className={`w-5 h-5 text-muted-foreground ${favicon ? "hidden" : ""}`}
+                />
             </div>
             <a
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate max-w-[240px] hover:text-blue-600 dark:hover:text-blue-400"
+                className="text-xs font-medium text-foreground truncate max-w-[200px] hover:text-primary"
                 title={url}
             >
                 {domain}
             </a>
             <div className="ml-auto flex-shrink-0">
-                {isActivelyReading ? (
+                {isActivelyProcessing ? (
                     <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Reading</span>
+                        <span className="text-xs text-foreground font-medium animate-in fade-in" key={phase}>
+                            {PAGE_PHASES[phase]}
+                        </span>
                         <div className="flex gap-0.5">
-                            <span className="w-1 h-1 rounded-full bg-emerald-500 dark:bg-emerald-400" style={{ animation: "pulseWave 1.4s infinite ease-in-out" }} />
-                            <span className="w-1 h-1 rounded-full bg-emerald-500 dark:bg-emerald-400" style={{ animation: "pulseWave 1.4s infinite ease-in-out 0.2s" }} />
-                            <span className="w-1 h-1 rounded-full bg-emerald-500 dark:bg-emerald-400" style={{ animation: "pulseWave 1.4s infinite ease-in-out 0.4s" }} />
+                            <span
+                                className="w-1 h-1 rounded-full bg-primary"
+                                style={{
+                                    animation:
+                                        "pulseWave 1.4s infinite ease-in-out",
+                                }}
+                            />
+                            <span
+                                className="w-1 h-1 rounded-full bg-primary"
+                                style={{
+                                    animation:
+                                        "pulseWave 1.4s infinite ease-in-out 0.2s",
+                                }}
+                            />
+                            <span
+                                className="w-1 h-1 rounded-full bg-primary"
+                                style={{
+                                    animation:
+                                        "pulseWave 1.4s infinite ease-in-out 0.4s",
+                                }}
+                            />
                         </div>
                     </div>
                 ) : (
-                    <BookOpenCheck className="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
+                    <BookOpenCheck className="w-3.5 h-3.5 text-primary" />
                 )}
             </div>
         </div>
     );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bottom waiting indicator — shows after all pages have timed out
+// ─────────────────────────────────────────────────────────────────────────────
+
+const WAITING_MESSAGES = [
+    "Full agent analysis in progress...",
+    "Comparing information from diverse sources...",
+    "Preparing list of additional resources...",
+    "Ensuring alignment with instructions...",
+    "Considering source authority...",
+    "Putting it all together...",
+    "Reasoning...",
+] as const;
+
+function WaitingIndicator() {
+    // Each message gets its own random duration for natural timing
+    const [messageDurations] = useState(() =>
+        WAITING_MESSAGES.map(() => getRandomDuration())
+    );
+    const [messageIndex, setMessageIndex] = useState(0);
+
+    useEffect(() => {
+        if (messageIndex >= WAITING_MESSAGES.length - 1) return;
+
+        const timeout = setTimeout(() => {
+            setMessageIndex((prev) => prev + 1);
+        }, messageDurations[messageIndex]);
+
+        return () => clearTimeout(timeout);
+    }, [messageIndex, messageDurations]);
+
+    const isReasoning = messageIndex >= WAITING_MESSAGES.length - 1;
+
+    return (
+        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border bg-muted/20 animate-in fade-in slide-in-from-bottom">
+            <Brain className="w-4 h-4 text-primary flex-shrink-0" />
+            <span
+                className="text-xs font-medium text-muted-foreground animate-in fade-in"
+                key={messageIndex}
+            >
+                {WAITING_MESSAGES[messageIndex]}
+            </span>
+            {isReasoning && (
+                <div className="flex gap-0.5 ml-1">
+                    <span
+                        className="w-1 h-1 rounded-full bg-primary"
+                        style={{
+                            animation: "pulseWave 1.4s infinite ease-in-out",
+                        }}
+                    />
+                    <span
+                        className="w-1 h-1 rounded-full bg-primary"
+                        style={{
+                            animation:
+                                "pulseWave 1.4s infinite ease-in-out 0.2s",
+                        }}
+                    />
+                    <span
+                        className="w-1 h-1 rounded-full bg-primary"
+                        style={{
+                            animation:
+                                "pulseWave 1.4s infinite ease-in-out 0.4s",
+                        }}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stat line helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildStatLine(
+    queryCount: number,
+    browsingUrlCount: number,
+    unreadSourceCount: number
+): string {
+    const parts: string[] = [];
+    if (queryCount > 0) {
+        parts.push(
+            `${queryCount} ${queryCount === 1 ? "Query" : "Queries"}`
+        );
+    }
+    // Deep reads: use actual count if streaming data available, else estimate
+    if (browsingUrlCount > 0) {
+        parts.push(
+            `${browsingUrlCount} Deep ${browsingUrlCount === 1 ? "Read" : "Reads"}`
+        );
+    } else if (queryCount > 0) {
+        // Fallback: ~3 per query
+        const estimate = queryCount * 3;
+        parts.push(`~${estimate} Deep Reads`);
+    }
+    if (unreadSourceCount > 0) {
+        parts.push(
+            `${unreadSourceCount} Additional ${unreadSourceCount === 1 ? "Source" : "Sources"}`
+        );
+    }
+    return parts.join(" \u00B7 ");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -284,6 +451,15 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
         )
         .map((u) => u.user_visible_message?.replace("Browsing ", "") || "");
 
+    // Extract queries (always available, even from DB)
+    const inputUpdate = visibleUpdates.find((u) => u.type === "mcp_input");
+    const inputArgs = inputUpdate?.mcp_input?.arguments ?? {};
+    const queries: string[] = Array.isArray(inputArgs.queries)
+        ? (inputArgs.queries as string[])
+        : typeof inputArgs.query === "string"
+          ? [inputArgs.query as string]
+          : [];
+
     // Check completion
     const outputUpdate = visibleUpdates.find((u) => u.type === "mcp_output");
     const isComplete = !!outputUpdate;
@@ -302,69 +478,82 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
         ? extractAnalysisPreview(parsed.aiAnalysis)
         : "";
 
+    // Timer-based fallback for waiting indicator (max card duration = 4 phases × 7s + buffer)
+    const [showWaitingFallback, setShowWaitingFallback] = useState(false);
+
+    useEffect(() => {
+        if (isComplete || browsingUrls.length === 0) {
+            setShowWaitingFallback(false);
+            return;
+        }
+
+        // Reset when new URLs arrive, then start countdown from worst-case card duration
+        setShowWaitingFallback(false);
+        const timer = setTimeout(() => {
+            setShowWaitingFallback(true);
+        }, PAGE_PHASES.length * 7000 + 2000); // 30s: 4 phases × 7s max + 2s buffer
+
+        return () => clearTimeout(timer);
+    }, [isComplete, browsingUrls.length]);
+
+    // Show waiting indicator when summarizing or after all cards have had time to complete
+    const showWaitingIndicator =
+        !isComplete &&
+        browsingUrls.length > 0 &&
+        (showWaitingFallback || isSummarizing);
+
     return (
         <div className="space-y-3">
-            {/* Search Queries — show what was searched */}
-            {!isComplete && (
-                (() => {
-                    const inputUpdate = visibleUpdates.find(
-                        (u) => u.type === "mcp_input"
-                    );
-                    const args = inputUpdate?.mcp_input?.arguments ?? {};
-                    const queries: string[] = Array.isArray(args.queries)
-                        ? (args.queries as string[])
-                        : typeof args.query === "string"
-                          ? [args.query as string]
-                          : [];
-                    if (queries.length === 0) return null;
-                    return (
-                        <div className="flex flex-wrap gap-1.5">
-                            {queries.map((q, i) => (
-                                <div
-                                    key={i}
-                                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 animate-in fade-in slide-in-from-left"
-                                    style={{
-                                        animationDelay: `${i * 40}ms`,
-                                        animationDuration: "200ms",
-                                        animationFillMode: "backwards",
-                                    }}
+            {/* Search Queries — show during streaming */}
+            {!isComplete &&
+                queries.length > 0 &&
+                (() => (
+                    <div className="flex flex-wrap gap-1.5">
+                        {queries.map((q, i) => (
+                            <div
+                                key={i}
+                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-left"
+                                style={{
+                                    animationDelay: `${i * 40}ms`,
+                                    animationDuration: "200ms",
+                                    animationFillMode: "backwards",
+                                }}
+                            >
+                                <Search className="w-3 h-3 text-primary flex-shrink-0" />
+                                <span
+                                    className="text-xs text-foreground truncate max-w-[280px]"
+                                    title={q}
                                 >
-                                    <Search className="w-3 h-3 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                                    <span
-                                        className="text-xs text-emerald-700 dark:text-emerald-300 truncate max-w-[280px]"
-                                        title={q}
-                                    >
-                                        {q}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    );
-                })()
-            )}
+                                    {q}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ))()}
 
             {/* Status Bar */}
-            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {isComplete ? (
                     <>
-                        <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <CheckCircle className="w-4 h-4 text-primary" />
                         <span className="font-medium">
-                            Researched {browsingUrls.length}{" "}
-                            {browsingUrls.length === 1 ? "source" : "sources"}
-                            {parsed && parsed.unreadSources.length > 0 &&
-                                ` + ${parsed.unreadSources.length} more found`}
+                            {buildStatLine(
+                                queries.length,
+                                browsingUrls.length,
+                                parsed?.unreadSources.length ?? 0
+                            )}
                         </span>
                     </>
                 ) : isSummarizing ? (
                     <>
-                        <ScanSearch className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
+                        <ScanSearch className="w-4 h-4 text-primary animate-pulse" />
                         <span className="font-medium">
                             Analyzing {browsingUrls.length} sources...
                         </span>
                     </>
                 ) : (
                     <>
-                        <Loader2 className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
                         <span className="font-medium">
                             Deep reading {browsingUrls.length}{" "}
                             {browsingUrls.length === 1 ? "page" : "pages"}...
@@ -378,29 +567,36 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                 <div className="space-y-1.5">
                     {browsingUrls.map((url, index) => (
                         <BrowsingCard
-                            key={url + index}
+                            key={url}
                             url={url}
                             index={index}
-                            isLast={index === browsingUrls.length - 1}
                             isComplete={isComplete}
                         />
                     ))}
                 </div>
             )}
 
-            {/* AI Analysis Preview — the most valuable content */}
+            {/* Bottom Waiting Indicator — below pages, after all timed out */}
+            {showWaitingIndicator && (
+                <WaitingIndicator />
+            )}
+
+            {/* AI Analysis Preview */}
             {isComplete && analysisPreview && (
                 <div
-                    className="p-3 rounded-lg bg-gradient-to-r from-green-50/70 to-emerald-50/70 dark:from-green-950/15 dark:to-emerald-950/15 border border-green-200 dark:border-green-800/60 animate-in fade-in slide-in-from-bottom"
-                    style={{ animationDuration: "300ms", animationFillMode: "backwards" }}
+                    className="p-3 rounded-lg bg-primary/5 border border-primary/15 animate-in fade-in slide-in-from-bottom"
+                    style={{
+                        animationDuration: "300ms",
+                        animationFillMode: "backwards",
+                    }}
                 >
                     <div className="flex items-center gap-1.5 mb-2">
-                        <FileSearch className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                        <span className="text-xs font-semibold text-green-700 dark:text-green-300">
-                            AI Research Analysis
+                        <FileSearch className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-xs font-semibold text-foreground">
+                            Research Analysis
                         </span>
                     </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-4">
+                    <p className="text-xs text-foreground/80 leading-relaxed line-clamp-4">
                         {analysisPreview}
                     </p>
                 </div>
@@ -416,7 +612,7 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 hover:border-green-300 dark:hover:border-green-700 transition-colors group animate-in fade-in slide-in-from-bottom"
+                            className="flex items-start gap-2.5 p-2.5 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors group animate-in fade-in slide-in-from-bottom"
                             style={{
                                 animationDelay: `${(index + 1) * 70}ms`,
                                 animationDuration: "300ms",
@@ -429,28 +625,35 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                                     alt=""
                                     className="w-5 h-5 rounded"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = "none";
-                                        const sibling = (e.target as HTMLImageElement).nextElementSibling;
-                                        if (sibling) sibling.classList.remove("hidden");
+                                        (
+                                            e.target as HTMLImageElement
+                                        ).style.display = "none";
+                                        const sibling = (
+                                            e.target as HTMLImageElement
+                                        ).nextElementSibling;
+                                        if (sibling)
+                                            sibling.classList.remove("hidden");
                                     }}
                                 />
-                                <Globe className="w-5 h-5 text-slate-400 hidden" />
+                                <Globe className="w-5 h-5 text-muted-foreground hidden" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-xs font-medium text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-green-600 dark:group-hover:text-green-400">
+                                <div className="text-xs font-medium text-foreground line-clamp-1 group-hover:text-primary">
                                     {source.title}
                                 </div>
-                                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-0.5">
-                                    <span className="truncate">{getDomain(source.url)}</span>
+                                <div className="flex items-center gap-1 text-xs text-primary mt-0.5">
+                                    <span className="truncate">
+                                        {getDomain(source.url)}
+                                    </span>
                                     {source.date && (
-                                        <span className="text-slate-400 dark:text-slate-500 flex-shrink-0">
+                                        <span className="text-muted-foreground flex-shrink-0">
                                             &middot; {source.date}
                                         </span>
                                     )}
                                     <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                                 {source.description && (
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                                         {source.description}
                                     </p>
                                 )}
@@ -458,9 +661,11 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                         </a>
                     ))}
                     {parsed.unreadSources.length > 3 && (
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500 px-1">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-1">
                             <Link2 className="w-3.5 h-3.5" />
-                            <span>+{parsed.unreadSources.length - 3} more sources</span>
+                            <span>
+                                +{parsed.unreadSources.length - 3} more sources
+                            </span>
                         </div>
                     )}
                 </div>
@@ -473,7 +678,7 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                         e.stopPropagation();
                         onOpenOverlay(`tool-group-${toolGroupId}`);
                     }}
-                    className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 text-sm font-medium hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
+                    className="w-full py-2.5 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer animate-in fade-in slide-in-from-bottom"
                     style={{
                         animationDelay: "300ms",
                         animationDuration: "300ms",
@@ -484,7 +689,11 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
                     <span>
                         View complete research report
                         {parsed &&
-                            ` (${browsingUrls.length} read${parsed.unreadSources.length > 0 ? `, ${parsed.unreadSources.length} more` : ""})`}
+                            ` (${buildStatLine(
+                                queries.length,
+                                browsingUrls.length,
+                                parsed.unreadSources.length
+                            )})`}
                     </span>
                 </button>
             )}

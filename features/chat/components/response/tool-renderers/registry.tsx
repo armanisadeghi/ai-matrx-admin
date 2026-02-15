@@ -154,15 +154,23 @@ export const toolRendererRegistry: ToolRegistry = {
             return typeof args?.query === "string" ? String(args.query) : null;
         },
         getHeaderExtras: (toolUpdates) => {
+            const input = toolUpdates.find((u) => u.type === "mcp_input");
+            const args = input?.mcp_input?.arguments;
+            const queryCount = Array.isArray(args?.queries) ? args.queries.length : (typeof args?.query === "string" ? 1 : 0);
             const browsingCount = toolUpdates.filter(
                 (u) => u.type === "user_visible_message" && u.user_visible_message?.startsWith("Browsing ")
             ).length;
-            if (browsingCount === 0) return null;
+            if (queryCount === 0 && browsingCount === 0) return null;
+            const parts: string[] = [];
+            if (queryCount > 0) parts.push(`${queryCount} ${queryCount === 1 ? "query" : "queries"}`);
+            if (browsingCount > 0) {
+                parts.push(`${browsingCount} deep ${browsingCount === 1 ? "read" : "reads"}`);
+            } else if (queryCount > 0) {
+                parts.push(`~${queryCount * 3} deep reads`);
+            }
             return (
                 <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
-                    <span className="flex items-center gap-1">
-                        {browsingCount} {browsingCount === 1 ? "page" : "pages"} read
-                    </span>
+                    <span className="flex items-center gap-1">{parts.join(" \u00B7 ")}</span>
                 </div>
             );
         },
