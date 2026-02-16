@@ -227,13 +227,14 @@ export function AgentActionButtons({ agents, selectedAgent, onSelect, disabled }
     const selected = selectedAgent || displayAgents[0];
 
     return (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
             {displayAgents.map((agent) => (
                 <button
                     key={agent.id}
                     onClick={() => !disabled && onSelect(agent)}
                     disabled={disabled}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
+                    title={agent.name}
+                    className={`flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl border transition-all ${
                         selected.id === agent.id
                             ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20'
                             : 'bg-card border-border text-foreground/80 hover:bg-accent'
@@ -242,7 +243,7 @@ export function AgentActionButtons({ agents, selectedAgent, onSelect, disabled }
                     <span className={selected.id === agent.id ? 'text-white' : 'text-muted-foreground dark:text-gray-400'}>
                         {agent.icon || <Bot size={16} />}
                     </span>
-                    <span className="text-sm font-medium">{agent.name}</span>
+                    <span className="text-sm font-medium hidden md:inline">{agent.name}</span>
                 </button>
             ))}
         </div>

@@ -352,7 +352,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 onSubmit={handleSubmit}
                                 seamless
                             />
-                            <div className="rounded-b-2xl border border-t-0 border-border bg-background">
+                            <div className="rounded-b-2xl bg-background">
                                 <ChatInputWithControls
                                     onSubmit={handleSubmit}
                                     disabled={isExecuting}
@@ -362,6 +362,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                     hasVariables={hasVariables}
                                     selectedAgent={state.currentAgent}
                                     textInputRef={textInputRef}
+                                    seamless
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
@@ -374,10 +375,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 <button
                                     type="button"
                                     onClick={() => router.replace(toggleUrl)}
-                                    className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
+                                    className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex-shrink-0"
                                     title="Switch to classic variable view"
                                 >
-                                    <List className="w-3.5 h-3.5" />
+                                    <List className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
@@ -454,10 +455,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                     <button
                                         type="button"
                                         onClick={() => router.replace(toggleUrl)}
-                                        className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
+                                        className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex-shrink-0"
                                         title="Switch to guided variable view"
                                     >
-                                        <Layers className="w-3.5 h-3.5" />
+                                        <Layers className="w-4 h-4" />
                                     </button>
                                 )}
                             </div>
@@ -554,8 +555,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             />
                         </div>
                     )}
-                    <div className={`border border-border bg-background ${
-                        hasVariables && useGuidedVars ? 'rounded-b-2xl border-t-0' : 'rounded-2xl'
+                    <div className={`bg-background ${
+                        hasVariables && useGuidedVars ? 'rounded-b-2xl' : 'rounded-2xl'
                     }`}>
                         <ChatInputWithControls
                             onSubmit={handleSubmit}
@@ -565,6 +566,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             hasVariables={hasVariables}
                             selectedAgent={state.currentAgent}
                             textInputRef={textInputRef}
+                            seamless={hasVariables && useGuidedVars}
                         />
                     </div>
                 </div>

@@ -19,7 +19,7 @@ import {
     Globe,
 } from 'lucide-react';
 import { FaMicrophoneLines } from 'react-icons/fa6';
-import { LuBrain } from 'react-icons/lu';
+
 import { useChatContext } from '../context/ChatContext';
 import ToggleButton from '@/components/matrx/toggles/ToggleButton';
 import { usePublicFileUpload, PublicUploadResult } from '@/hooks/usePublicFileUpload';
@@ -257,6 +257,7 @@ interface InputBottomControlsProps {
     isAuthenticated?: boolean;
     onOpenAgentPicker?: () => void;
     selectedAgent?: AgentConfig | null;
+    seamless?: boolean;
 }
 
 function InputBottomControls({
@@ -268,13 +269,14 @@ function InputBottomControls({
     isAuthenticated = false,
     onOpenAgentPicker,
     selectedAgent,
+    seamless = false,
 }: InputBottomControlsProps) {
     const { state, updateSettings } = useChatContext();
     const { settings } = state;
     const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
 
     return (
-        <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 rounded-b-2xl">
+        <div className={`absolute bottom-0 left-0 right-0 h-[50px] bg-muted z-5 ${seamless ? 'rounded-b-none' : 'rounded-b-2xl'}`}>
             {/* Left side controls */}
             <div className="absolute bottom-2 left-2 flex items-center space-x-2">
                 {/* Resource Picker Popover */}
@@ -318,7 +320,6 @@ function InputBottomControls({
                         className="p-1 rounded-xl flex items-center gap-1 border-2 border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm min-w-0 max-w-[200px]"
                         title={selectedAgent?.name ? `Switch agent: ${selectedAgent.name}` : 'Select Agent'}
                     >
-                        <LuBrain size={14} className="flex-shrink-0" />
                         <span className="text-[11px] font-medium truncate" title={selectedAgent?.name}>
                             {selectedAgent?.name
                                 ? (selectedAgent.name.length > 20 ? selectedAgent.name.substring(0, 20) + '\u2026' : selectedAgent.name)
@@ -373,6 +374,8 @@ interface ChatInputWithControlsProps {
     selectedAgent?: AgentConfig | null;
     /** Ref to the text input for external tab navigation */
     textInputRef?: React.RefObject<HTMLTextAreaElement | null>;
+    /** When true, removes top border-radius for seamless join with component above */
+    seamless?: boolean;
 }
 
 export function ChatInputWithControls({
@@ -385,6 +388,7 @@ export function ChatInputWithControls({
     hasVariables = false,
     selectedAgent,
     textInputRef: externalTextInputRef,
+    seamless = false,
 }: ChatInputWithControlsProps) {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -486,12 +490,12 @@ export function ChatInputWithControls({
 
     return (
         <div className="relative">
-            <div className="relative rounded-3xl border border-border">
+            <div className={`relative border border-border ${seamless ? 'rounded-b-3xl rounded-t-none border-t-0' : 'rounded-3xl'}`}>
                 {/* Resource chips display */}
                 {(resources.length > 0 || isUploading) && (
                     <div className="pt-2">
-                        <ResourceChips 
-                            resources={resources} 
+                        <ResourceChips
+                            resources={resources}
                             onRemove={handleRemoveResource}
                             isUploading={isUploading}
                         />
@@ -523,6 +527,7 @@ export function ChatInputWithControls({
                     isAuthenticated={isAuthenticated}
                     onOpenAgentPicker={onOpenAgentPicker}
                     selectedAgent={selectedAgent}
+                    seamless={seamless}
                 />
             </div>
         </div>
