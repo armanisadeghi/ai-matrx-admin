@@ -317,12 +317,12 @@ function InputBottomControls({
                     <button
                         onClick={onOpenAgentPicker}
                         disabled={disabled}
-                        className="p-1 rounded-xl flex items-center gap-1 border-2 border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm min-w-0 max-w-[200px]"
+                        className="p-1.5 px-2 rounded-xl flex items-center gap-1.5 border-2 border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm min-w-0 max-w-[250px]"
                         title={selectedAgent?.name ? `Switch agent: ${selectedAgent.name}` : 'Select Agent'}
                     >
                         <span className="text-[11px] font-medium truncate" title={selectedAgent?.name}>
                             {selectedAgent?.name
-                                ? (selectedAgent.name.length > 20 ? selectedAgent.name.substring(0, 20) + '\u2026' : selectedAgent.name)
+                                ? (selectedAgent.name.length > 30 ? selectedAgent.name.substring(0, 30) + '\u2026' : selectedAgent.name)
                                 : 'Select Agent'}
                         </span>
                         <ChevronDown size={14} className="flex-shrink-0" />
@@ -490,7 +490,7 @@ export function ChatInputWithControls({
 
     return (
         <div className="relative">
-            <div className={`relative border border-border ${seamless ? 'rounded-b-3xl rounded-t-none border-t-0' : 'rounded-3xl'}`}>
+            <div className={`relative border border-border bg-muted overflow-hidden ${seamless ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'}`}>
                 {/* Resource chips display */}
                 {(resources.length > 0 || isUploading) && (
                     <div className="pt-2">

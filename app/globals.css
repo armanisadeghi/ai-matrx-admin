@@ -314,8 +314,7 @@
         --header-height: 2.5rem;
         
         /* Base Background - Zinc-100 with texture (rgb 244 244 245) */
-        /* -- red for testing */
-        --background: oklch(0.577 0.245 27.325);
+        --background: 240 5% 96%;
 
         --background-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
         --card-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.04' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");

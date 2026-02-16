@@ -32,6 +32,8 @@ function truncateAgentName(name: string, maxLen = 20): string {
 }
 
 /**
+ * @deprecated This component is deprecated. Use AgentPickerSheet instead.
+ * 
  * PromptPickerMenu - Combined menu for system agents and user prompts
  * 
  * Features:
@@ -40,6 +42,11 @@ function truncateAgentName(name: string, maxLen = 20): string {
  * - Search functionality
  * - Shows selected agent name (truncated)
  * - Brain icon for all agents
+ * 
+ * MIGRATION: Replace with AgentPickerSheet which provides:
+ * - Unified mobile (drawer) and desktop (dialog) experience
+ * - Better responsive design
+ * - Consistent with other agent selection UI
  */
 export function PromptPickerMenu({ onSelect, disabled = false, selectedAgent }: PromptPickerMenuProps) {
     const [isOpen, setIsOpen] = useState(false);

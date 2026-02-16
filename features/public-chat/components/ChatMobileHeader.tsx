@@ -83,8 +83,9 @@ export function ChatMobileHeader({
                 <button
                     onClick={onOpenAgentPicker}
                     className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"
+                    title={`Switch agent: ${agentName}`}
                 >
-                    <span className="text-xs font-medium text-foreground truncate max-w-[160px]">
+                    <span className="text-xs font-medium text-foreground truncate max-w-[200px]">
                         {agentName}
                     </span>
                     <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />

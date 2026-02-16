@@ -46,7 +46,7 @@ function InlineCustomInput({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full text-base md:text-sm bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/50 py-1"
+                className="w-full text-base md:text-sm bg-textured border-none outline-none text-foreground placeholder:text-muted-foreground/50 py-1 px-2 rounded"
             />
         </div>
     );
@@ -115,7 +115,7 @@ function GuidedSelect({
                             className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                                 isActive
                                     ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
-                                    : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
+                                    : 'bg-textured border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                             }`}
                         >
                             <span className="flex items-center gap-2">
@@ -134,7 +134,7 @@ function GuidedSelect({
                         className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                             showOther
                                 ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
-                                : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
+                                : 'bg-textured border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                         }`}
                     >
                         Other...
@@ -220,7 +220,7 @@ function GuidedCheckbox({
                             className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                                 isActive
                                     ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
-                                    : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
+                                    : 'bg-textured border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                             }`}
                         >
                             <span className="flex items-center gap-2">
@@ -245,7 +245,7 @@ function GuidedCheckbox({
                         className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                             showOther
                                 ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
-                                : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
+                                : 'bg-textured border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                         }`}
                     >
                         <span className="flex items-center gap-2">
@@ -327,7 +327,7 @@ function GuidedToggle({
                             className={`px-4 py-3 rounded-lg text-sm font-medium text-center transition-all border cursor-pointer ${
                                 isActive
                                     ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
-                                    : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
+                                    : 'bg-textured border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                             }`}
                         >
                             {label}
@@ -363,7 +363,7 @@ function GuidedNumber({
 
     return (
         <div>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-3">
                 <Button
                     type="button"
                     variant="outline"
@@ -374,16 +374,18 @@ function GuidedNumber({
                 >
                     <Minus className="w-5 h-5" />
                 </Button>
-                <Input
-                    type="text"
-                    value={value}
-                    onChange={(e) => {
-                        const v = e.target.value;
-                        if (v === '' || v === '-' || !isNaN(parseFloat(v))) onChange(v);
-                    }}
-                    className="w-24 text-center text-2xl font-semibold h-12"
-                    placeholder="0"
-                />
+                <div className="flex items-center justify-center min-w-[120px]">
+                    <Input
+                        type="text"
+                        value={value}
+                        onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === '' || v === '-' || !isNaN(parseFloat(v))) onChange(v);
+                        }}
+                        className="w-full text-center text-2xl font-semibold h-12"
+                        placeholder="0"
+                    />
+                </div>
                 <Button
                     type="button"
                     variant="outline"
@@ -419,7 +421,7 @@ function GuidedTextarea({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={`Type your ${variableName.toLowerCase()}...`}
-            className="min-h-[100px] text-base md:text-sm resize-none"
+            className="min-h-[100px] text-base md:text-sm resize-none bg-textured"
             autoFocus
         />
     );
@@ -635,7 +637,7 @@ export function GuidedVariableInputs({
     // --- Expanded state ---
     return (
         <div
-            className={`bg-card border border-border overflow-hidden ${outerRadius} ${seamless ? 'border-b-0' : ''}`}
+            className={`bg-muted border border-border overflow-hidden ${outerRadius} ${seamless ? 'border-b-0' : ''}`}
             onKeyDown={handleKeyDown}
         >
             {/* Header: dots + collapse/skip */}

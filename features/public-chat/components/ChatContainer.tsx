@@ -356,7 +356,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 <ChatInputWithControls
                                     onSubmit={handleSubmit}
                                     disabled={isExecuting}
-                                    placeholder="Enter your message (or just press Enter to use variables only)"
+                                    placeholder="Additional instructions (optional)…"
                                     conversationId={conversationId}
                                     onOpenAgentPicker={openAgentPicker}
                                     hasVariables={hasVariables}
@@ -427,13 +427,13 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 </div>
                             )}
 
-                            <div className="rounded-2xl border border-border">
+                            <div>
                                 <ChatInputWithControls
                                     onSubmit={handleSubmit}
                                     disabled={isExecuting}
                                     placeholder={
                                         hasVariables
-                                            ? 'Enter your message (or just press Enter to use variables only)'
+                                            ? 'Additional instructions (optional)…'
                                             : 'What do you want to know?'
                                     }
                                     conversationId={conversationId}
