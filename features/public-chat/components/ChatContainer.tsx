@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
@@ -12,6 +12,7 @@ import { useChatPersistence } from '../hooks/useChatPersistence';
 import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
+import { GuidedVariableInputs } from './GuidedVariableInputs';
 import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
@@ -34,9 +35,13 @@ interface ChatContainerProps {
 
 export function ChatContainer({ className = '' }: ChatContainerProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
     const { onAgentChange, isLoadingConversation, focusKey, openAgentPicker } = useLayoutAgent();
     const { sidebarEvents } = useAgentsContext();
+
+    // ?vars=guided → one-at-a-time guided flow; default (classic) → stacked rows
+    const useGuidedVars = searchParams.get('vars') === 'guided';
 
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
@@ -325,16 +330,28 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
                             {hasVariables && (
                                 <div className={varCount > 2 ? 'mb-3 md:mb-6' : 'mb-6'}>
-                                    <PublicVariableInputs
-                                        variableDefaults={state.currentAgent!.variableDefaults!}
-                                        values={variableValues}
-                                        onChange={handleVariableChange}
-                                        disabled={isExecuting}
-                                        minimal
-                                        textInputRef={textInputRef}
-                                        submitOnEnter={true}
-                                        onSubmit={handleSubmit}
-                                    />
+                                    {useGuidedVars ? (
+                                        <GuidedVariableInputs
+                                            variableDefaults={state.currentAgent!.variableDefaults!}
+                                            values={variableValues}
+                                            onChange={handleVariableChange}
+                                            disabled={isExecuting}
+                                            textInputRef={textInputRef}
+                                            submitOnEnter={true}
+                                            onSubmit={handleSubmit}
+                                        />
+                                    ) : (
+                                        <PublicVariableInputs
+                                            variableDefaults={state.currentAgent!.variableDefaults!}
+                                            values={variableValues}
+                                            onChange={handleVariableChange}
+                                            disabled={isExecuting}
+                                            minimal
+                                            textInputRef={textInputRef}
+                                            submitOnEnter={true}
+                                            onSubmit={handleSubmit}
+                                        />
+                                    )}
                                 </div>
                             )}
 
@@ -428,7 +445,32 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 className="flex-shrink-0 px-2 md:px-4 md:pt-2 bg-transparent md:bg-background/95 md:backdrop-blur-sm"
                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
             >
-                <div className="w-full max-w-[800px] mx-auto">
+                <div className="w-full max-w-[800px] mx-auto space-y-2">
+                    {/* Variables above input — mid-conversation */}
+                    {hasVariables && (
+                        useGuidedVars ? (
+                            <GuidedVariableInputs
+                                variableDefaults={state.currentAgent!.variableDefaults!}
+                                values={variableValues}
+                                onChange={handleVariableChange}
+                                disabled={isExecuting}
+                                textInputRef={textInputRef}
+                                submitOnEnter={true}
+                                onSubmit={handleSubmit}
+                            />
+                        ) : (
+                            <PublicVariableInputs
+                                variableDefaults={state.currentAgent!.variableDefaults!}
+                                values={variableValues}
+                                onChange={handleVariableChange}
+                                disabled={isExecuting}
+                                minimal
+                                textInputRef={textInputRef}
+                                submitOnEnter={true}
+                                onSubmit={handleSubmit}
+                            />
+                        )
+                    )}
                     <div className="rounded-2xl border border-border bg-background">
                         <ChatInputWithControls
                             onSubmit={handleSubmit}
