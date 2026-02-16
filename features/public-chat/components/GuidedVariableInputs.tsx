@@ -1,16 +1,13 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, SkipForward, Check } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import React, { useState, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 import { formatText } from '@/utils/text/text-case-converter';
-import type { PromptVariable, VariableCustomComponent } from '@/features/prompts/types/core';
+import type { PromptVariable } from '@/features/prompts/types/core';
 
 // ============================================================================
 // TYPES
@@ -24,12 +21,42 @@ interface GuidedVariableInputsProps {
     onSubmit?: (content: string, resources?: any[]) => Promise<boolean>;
     submitOnEnter?: boolean;
     textInputRef?: React.RefObject<HTMLTextAreaElement | HTMLInputElement | null>;
+    /** When true, renders with flat bottom (no bottom border-radius) for seamless join with chat input */
+    seamless?: boolean;
+}
+
+// ============================================================================
+// CUSTOM TEXT INPUT — shown at bottom of non-textarea components
+// Lets the user always type a freeform answer as an alternative
+// ============================================================================
+
+function InlineCustomInput({
+    value,
+    onChange,
+    placeholder = 'Or type your own answer...',
+}: {
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+}) {
+    return (
+        <div className="mt-2 pt-2 border-t border-border/40">
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="w-full text-base md:text-sm bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/50 py-1"
+            />
+        </div>
+    );
 }
 
 // ============================================================================
 // GUIDED SUB-COMPONENTS
-// These are purpose-built for the one-at-a-time guided flow.
-// They maximize width, feel lightweight, and auto-advance where sensible.
+// Purpose-built for the one-at-a-time guided flow.
+// Maximize width, feel lightweight, auto-advance where sensible.
+// All non-textarea components include an InlineCustomInput.
 // ============================================================================
 
 /** Button-style single select — tapping an option selects it and auto-advances */
@@ -49,11 +76,12 @@ function GuidedSelect({
     const isOther = value.startsWith('Other: ');
     const [otherText, setOtherText] = useState(isOther ? value.slice(7) : '');
     const [showOther, setShowOther] = useState(isOther);
+    // Track whether value was set via custom input (don't auto-advance)
+    const isCustom = !options.includes(value) && !isOther && value !== '';
 
     const handleSelect = (option: string) => {
         onChange(option);
         setShowOther(false);
-        // Auto-advance after a brief visual confirmation
         setTimeout(onAutoAdvance, 200);
     };
 
@@ -62,17 +90,29 @@ function GuidedSelect({
         onChange(`Other: ${otherText}`);
     };
 
+    // Custom input directly sets the value (overriding any selection)
+    const handleCustomChange = (v: string) => {
+        if (v === '') {
+            onChange('');
+        } else {
+            onChange(v);
+        }
+        setShowOther(false);
+    };
+
     return (
         <div className="space-y-1.5">
             <div className="grid gap-1.5">
                 {options.map((option) => {
                     const isActive = value === option;
                     return (
-                        <button
+                        <div
                             key={option}
-                            type="button"
+                            role="button"
+                            tabIndex={0}
                             onClick={() => handleSelect(option)}
-                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border ${
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(option); } }}
+                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                                 isActive
                                     ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
                                     : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
@@ -82,21 +122,23 @@ function GuidedSelect({
                                 {isActive && <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
                                 <span className={isActive ? 'font-medium' : ''}>{option || '(empty)'}</span>
                             </span>
-                        </button>
+                        </div>
                     );
                 })}
                 {allowOther && (
-                    <button
-                        type="button"
+                    <div
+                        role="button"
+                        tabIndex={0}
                         onClick={handleOtherClick}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border ${
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOtherClick(); } }}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                             showOther
                                 ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
                                 : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                         }`}
                     >
                         Other...
-                    </button>
+                    </div>
                 )}
             </div>
             {showOther && (
@@ -111,14 +153,17 @@ function GuidedSelect({
                     autoFocus
                 />
             )}
+            {!showOther && (
+                <InlineCustomInput
+                    value={isCustom ? value : ''}
+                    onChange={handleCustomChange}
+                />
+            )}
         </div>
     );
 }
 
-/** Button-style radio — same as GuidedSelect but semantically for radio types */
-const GuidedRadio = GuidedSelect;
-
-/** Multi-select with tappable pill buttons */
+/** Multi-select with tappable items — uses <div role="button"> to avoid nested button with Checkbox */
 function GuidedCheckbox({
     value,
     onChange,
@@ -154,44 +199,66 @@ function GuidedCheckbox({
         }
     };
 
+    // Custom text input directly sets the full value (overrides selection)
+    const handleCustomChange = (v: string) => {
+        if (v === '') return;
+        onChange(v);
+    };
+
     return (
         <div className="space-y-1.5">
             <div className="grid gap-1.5">
                 {options.map((option) => {
                     const isActive = selected.includes(option);
                     return (
-                        <button
+                        <div
                             key={option}
-                            type="button"
+                            role="button"
+                            tabIndex={0}
                             onClick={() => toggle(option)}
-                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border ${
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(option); } }}
+                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                                 isActive
                                     ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
                                     : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                             }`}
                         >
                             <span className="flex items-center gap-2">
-                                <Checkbox checked={isActive} className="pointer-events-none" />
+                                <span className={`flex items-center justify-center w-4 h-4 rounded-sm border flex-shrink-0 ${
+                                    isActive
+                                        ? 'bg-primary border-primary text-primary-foreground'
+                                        : 'border-primary'
+                                }`}>
+                                    {isActive && <Check className="w-3 h-3" />}
+                                </span>
                                 <span className={isActive ? 'font-medium' : ''}>{option || '(empty)'}</span>
                             </span>
-                        </button>
+                        </div>
                     );
                 })}
                 {allowOther && (
-                    <button
-                        type="button"
+                    <div
+                        role="button"
+                        tabIndex={0}
                         onClick={handleOtherToggle}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border ${
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOtherToggle(); } }}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border cursor-pointer ${
                             showOther
                                 ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
                                 : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
                         }`}
                     >
                         <span className="flex items-center gap-2">
-                            <Checkbox checked={showOther} className="pointer-events-none" />
+                            <span className={`flex items-center justify-center w-4 h-4 rounded-sm border flex-shrink-0 ${
+                                showOther
+                                    ? 'bg-primary border-primary text-primary-foreground'
+                                    : 'border-primary'
+                            }`}>
+                                {showOther && <Check className="w-3 h-3" />}
+                            </span>
                             <span>Other...</span>
                         </span>
-                    </button>
+                    </div>
                 )}
             </div>
             {showOther && (
@@ -209,8 +276,14 @@ function GuidedCheckbox({
             )}
             {selected.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                    {selected.length} selected — tap Next when done
+                    {selected.length} selected
                 </p>
+            )}
+            {!showOther && (
+                <InlineCustomInput
+                    value=""
+                    onChange={handleCustomChange}
+                />
             )}
         </div>
     );
@@ -235,25 +308,37 @@ function GuidedToggle({
         setTimeout(onAutoAdvance, 200);
     };
 
+    const handleCustomChange = (v: string) => {
+        onChange(v || offLabel);
+    };
+
     return (
-        <div className="grid grid-cols-2 gap-2">
-            {[offLabel, onLabel].map((label) => {
-                const isActive = value === label;
-                return (
-                    <button
-                        key={label}
-                        type="button"
-                        onClick={() => handleSelect(label)}
-                        className={`px-4 py-3 rounded-lg text-sm font-medium transition-all border ${
-                            isActive
-                                ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
-                                : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
-                        }`}
-                    >
-                        {label}
-                    </button>
-                );
-            })}
+        <div>
+            <div className="grid grid-cols-2 gap-2">
+                {[offLabel, onLabel].map((label) => {
+                    const isActive = value === label;
+                    return (
+                        <div
+                            key={label}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleSelect(label)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(label); } }}
+                            className={`px-4 py-3 rounded-lg text-sm font-medium text-center transition-all border cursor-pointer ${
+                                isActive
+                                    ? 'bg-primary/10 border-primary text-foreground ring-1 ring-primary/30'
+                                    : 'bg-background border-border hover:bg-accent hover:border-foreground/20 text-foreground'
+                            }`}
+                        >
+                            {label}
+                        </div>
+                    );
+                })}
+            </div>
+            <InlineCustomInput
+                value={value !== offLabel && value !== onLabel ? value : ''}
+                onChange={handleCustomChange}
+            />
         </div>
     );
 }
@@ -277,42 +362,49 @@ function GuidedNumber({
     const canInc = max === undefined || num < max;
 
     return (
-        <div className="flex items-center justify-center gap-4">
-            <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => canDec && onChange((num - step).toString())}
-                disabled={!canDec}
-                className="h-12 w-12 p-0 rounded-full"
-            >
-                <Minus className="w-5 h-5" />
-            </Button>
-            <Input
-                type="text"
-                value={value}
-                onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === '' || v === '-' || !isNaN(parseFloat(v))) onChange(v);
-                }}
-                className="w-24 text-center text-2xl font-semibold h-12 text-base"
-                placeholder="0"
+        <div>
+            <div className="flex items-center justify-center gap-4">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    onClick={() => canDec && onChange((num - step).toString())}
+                    disabled={!canDec}
+                    className="h-12 w-12 p-0 rounded-full"
+                >
+                    <Minus className="w-5 h-5" />
+                </Button>
+                <Input
+                    type="text"
+                    value={value}
+                    onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === '' || v === '-' || !isNaN(parseFloat(v))) onChange(v);
+                    }}
+                    className="w-24 text-center text-2xl font-semibold h-12"
+                    placeholder="0"
+                />
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    onClick={() => canInc && onChange((num + step).toString())}
+                    disabled={!canInc}
+                    className="h-12 w-12 p-0 rounded-full"
+                >
+                    <Plus className="w-5 h-5" />
+                </Button>
+            </div>
+            <InlineCustomInput
+                value=""
+                onChange={(v) => onChange(v)}
+                placeholder="Or type a number..."
             />
-            <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => canInc && onChange((num + step).toString())}
-                disabled={!canInc}
-                className="h-12 w-12 p-0 rounded-full"
-            >
-                <Plus className="w-5 h-5" />
-            </Button>
         </div>
     );
 }
 
-/** Textarea — simple, full width */
+/** Textarea — simple, full width. No InlineCustomInput needed (already is text). */
 function GuidedTextarea({
     value,
     onChange,
@@ -335,7 +427,6 @@ function GuidedTextarea({
 
 // ============================================================================
 // GUIDED VARIABLE INPUT RENDERER
-// Routes to the correct guided sub-component
 // ============================================================================
 
 function GuidedVariableContent({
@@ -418,6 +509,7 @@ export function GuidedVariableInputs({
     onSubmit,
     submitOnEnter = false,
     textInputRef,
+    seamless = false,
 }: GuidedVariableInputsProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -430,7 +522,6 @@ export function GuidedVariableInputs({
     const formattedName = formatText(variable.name);
     const helpText = variable.helpText;
 
-    // Count how many have been filled in
     const answeredCount = variableDefaults.filter((v) => {
         const val = values[v.name] ?? v.defaultValue ?? '';
         return val.trim() !== '';
@@ -464,11 +555,9 @@ export function GuidedVariableInputs({
         [onChange, variable.name]
     );
 
-    // Keyboard navigation
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                // Only auto-advance on Enter for textarea-type inputs
                 const cc = variable.customComponent;
                 if (!cc || cc.type === 'textarea') {
                     e.preventDefault();
@@ -485,21 +574,28 @@ export function GuidedVariableInputs({
         [variable, activeIndex, total, goNext, submitOnEnter, onSubmit, textInputRef]
     );
 
-    // --- Progress dots ---
+    // Border radius: seamless mode removes bottom rounding to merge with chat input
+    const outerRadius = seamless ? 'rounded-t-xl rounded-b-none' : 'rounded-xl';
+    const collapsedRadius = seamless ? 'rounded-t-xl rounded-b-none' : 'rounded-xl';
+
+    // Progress dots — <span> with role="button" to avoid nested <button> in collapsed bar
     const progressDots = (
         <div className="flex items-center gap-1">
             {variableDefaults.map((v, i) => {
                 const filled = (values[v.name] ?? v.defaultValue ?? '').trim() !== '';
                 const isCurrent = i === activeIndex;
                 return (
-                    <button
+                    <span
                         key={v.name}
-                        type="button"
-                        onClick={() => {
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                            e.stopPropagation();
                             setActiveIndex(i);
                             if (isCollapsed) setIsCollapsed(false);
                         }}
-                        className={`rounded-full transition-all ${
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveIndex(i); if (isCollapsed) setIsCollapsed(false); } }}
+                        className={`rounded-full transition-all cursor-pointer ${
                             isCurrent
                                 ? 'w-5 h-2 bg-primary'
                                 : filled
@@ -513,14 +609,16 @@ export function GuidedVariableInputs({
         </div>
     );
 
-    // --- Collapsed state: compact bar ---
+    // --- Collapsed state ---
     if (isCollapsed) {
         return (
-            <div className="bg-card rounded-xl border border-border">
-                <button
-                    type="button"
+            <div className={`bg-card border border-border ${collapsedRadius} ${seamless ? 'border-b-0' : ''}`}>
+                <div
+                    role="button"
+                    tabIndex={0}
                     onClick={handleToggleCollapse}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-accent/50 transition-colors rounded-xl"
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleCollapse(); } }}
+                    className={`w-full flex items-center justify-between px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer ${collapsedRadius}`}
                 >
                     <div className="flex items-center gap-2 min-w-0">
                         {progressDots}
@@ -529,17 +627,19 @@ export function GuidedVariableInputs({
                         </span>
                     </div>
                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                </button>
+                </div>
             </div>
         );
     }
 
-    // --- Expanded state: one question at a time ---
+    // --- Expanded state ---
     return (
-        <div className="bg-card rounded-xl border border-border overflow-hidden" onKeyDown={handleKeyDown}>
-            {/* Question header + navigation */}
+        <div
+            className={`bg-card border border-border overflow-hidden ${outerRadius} ${seamless ? 'border-b-0' : ''}`}
+            onKeyDown={handleKeyDown}
+        >
+            {/* Header: dots + collapse/skip */}
             <div className="px-3 pt-3 pb-2">
-                {/* Top row: dots + collapse/skip */}
                 <div className="flex items-center justify-between mb-2">
                     {progressDots}
                     <div className="flex items-center gap-1">
@@ -570,7 +670,7 @@ export function GuidedVariableInputs({
                 </div>
             </div>
 
-            {/* Question content — full width */}
+            {/* Question content */}
             <div className="px-3 pb-2">
                 <GuidedVariableContent
                     variable={variable}
@@ -580,7 +680,7 @@ export function GuidedVariableInputs({
                 />
             </div>
 
-            {/* Navigation row */}
+            {/* Navigation */}
             <div className="flex items-center justify-between px-3 py-2 border-t border-border/50">
                 <button
                     type="button"

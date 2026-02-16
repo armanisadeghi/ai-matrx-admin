@@ -17,7 +17,7 @@ import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
-import { MessageCircle, Share2 } from 'lucide-react';
+import { MessageCircle, Share2, List, Layers } from 'lucide-react';
 import { ShareModal } from '@/features/sharing';
 import { useLayoutAgent } from '@/app/(public)/p/chat/ChatLayoutShell';
 
@@ -40,8 +40,8 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const { onAgentChange, isLoadingConversation, focusKey, openAgentPicker } = useLayoutAgent();
     const { sidebarEvents } = useAgentsContext();
 
-    // ?vars=guided → one-at-a-time guided flow; default (classic) → stacked rows
-    const useGuidedVars = searchParams.get('vars') === 'guided';
+    // Default to guided mode; ?vars=classic → stacked rows
+    const useGuidedVars = searchParams.get('vars') !== 'classic';
 
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
@@ -300,12 +300,95 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         const agentName = hasVariables ? state.currentAgent?.name : null;
         const agentDescription = hasVariables ? state.currentAgent?.description : null;
         const varCount = state.currentAgent?.variableDefaults?.length || 0;
-        // Hide description when >3 variables to save vertical space
         const showDescription = agentDescription && varCount <= 3;
 
+        // Build the vars=classic/guided toggle URL
+        const toggleUrl = (() => {
+            const params = new URLSearchParams(searchParams.toString());
+            if (useGuidedVars) {
+                params.set('vars', 'classic');
+            } else {
+                params.delete('vars');
+            }
+            const qs = params.toString();
+            return qs ? `?${qs}` : window.location.pathname;
+        })();
+
+        // Guided mode: pin input to bottom (like conversation mode)
+        if (useGuidedVars && hasVariables) {
+            return (
+                <div className={`h-full flex flex-col ${className}`}>
+                    {/* Top area — agent name + description, fills available space */}
+                    <div className="flex-1 min-h-0 overflow-y-auto">
+                        <div className="flex flex-col items-center justify-end min-h-full px-3 md:px-8 pb-4">
+                            <div className="w-full max-w-3xl text-center">
+                                <h1 className={`font-semibold text-foreground ${
+                                    varCount > 2 ? 'text-xl md:text-3xl' : 'text-2xl md:text-3xl'
+                                }`}>
+                                    {agentName || 'What can I help with?'}
+                                </h1>
+                                {showDescription && (
+                                    <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                                        {agentDescription}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom-pinned: guided vars + input merged seamlessly */}
+                    <div
+                        className="flex-shrink-0 px-2 md:px-4 bg-transparent md:bg-background/95 md:backdrop-blur-sm"
+                        style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
+                    >
+                        <div className="w-full max-w-3xl mx-auto">
+                            <GuidedVariableInputs
+                                variableDefaults={state.currentAgent!.variableDefaults!}
+                                values={variableValues}
+                                onChange={handleVariableChange}
+                                disabled={isExecuting}
+                                textInputRef={textInputRef}
+                                submitOnEnter={true}
+                                onSubmit={handleSubmit}
+                                seamless
+                            />
+                            <div className="rounded-b-2xl border border-t-0 border-border bg-background">
+                                <ChatInputWithControls
+                                    onSubmit={handleSubmit}
+                                    disabled={isExecuting}
+                                    placeholder="Enter your message (or just press Enter to use variables only)"
+                                    conversationId={conversationId}
+                                    onOpenAgentPicker={openAgentPicker}
+                                    hasVariables={hasVariables}
+                                    selectedAgent={state.currentAgent}
+                                    textInputRef={textInputRef}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between mt-3 pb-2">
+                                <AgentActionButtons
+                                    agents={DEFAULT_AGENTS}
+                                    selectedAgent={currentAgentOption}
+                                    onSelect={handleAgentSelect}
+                                    disabled={isExecuting}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => router.replace(toggleUrl)}
+                                    className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
+                                    title="Switch to classic variable view"
+                                >
+                                    <List className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Classic mode (or no variables): centered layout
         return (
             <div className={`h-full flex flex-col ${className}`}>
-                {/* Scrollable content — centers when it fits, scrolls when it doesn't */}
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <div className={`min-h-full flex flex-col items-center px-3 md:px-8 ${
                         varCount > 2 ? 'justify-start pt-8 md:pt-16 md:justify-center' : 'justify-center'
@@ -330,28 +413,16 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
                             {hasVariables && (
                                 <div className={varCount > 2 ? 'mb-3 md:mb-6' : 'mb-6'}>
-                                    {useGuidedVars ? (
-                                        <GuidedVariableInputs
-                                            variableDefaults={state.currentAgent!.variableDefaults!}
-                                            values={variableValues}
-                                            onChange={handleVariableChange}
-                                            disabled={isExecuting}
-                                            textInputRef={textInputRef}
-                                            submitOnEnter={true}
-                                            onSubmit={handleSubmit}
-                                        />
-                                    ) : (
-                                        <PublicVariableInputs
-                                            variableDefaults={state.currentAgent!.variableDefaults!}
-                                            values={variableValues}
-                                            onChange={handleVariableChange}
-                                            disabled={isExecuting}
-                                            minimal
-                                            textInputRef={textInputRef}
-                                            submitOnEnter={true}
-                                            onSubmit={handleSubmit}
-                                        />
-                                    )}
+                                    <PublicVariableInputs
+                                        variableDefaults={state.currentAgent!.variableDefaults!}
+                                        values={variableValues}
+                                        onChange={handleVariableChange}
+                                        disabled={isExecuting}
+                                        minimal
+                                        textInputRef={textInputRef}
+                                        submitOnEnter={true}
+                                        onSubmit={handleSubmit}
+                                    />
                                 </div>
                             )}
 
@@ -372,13 +443,23 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 />
                             </div>
 
-                            <div className={varCount > 2 ? 'mt-3 md:mt-6 pb-4' : 'mt-6 pb-4'}>
+                            <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
                                 <AgentActionButtons
                                     agents={DEFAULT_AGENTS}
                                     selectedAgent={currentAgentOption}
                                     onSelect={handleAgentSelect}
                                     disabled={isExecuting}
                                 />
+                                {hasVariables && (
+                                    <button
+                                        type="button"
+                                        onClick={() => router.replace(toggleUrl)}
+                                        className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
+                                        title="Switch to guided variable view"
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -445,20 +526,22 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 className="flex-shrink-0 px-2 md:px-4 md:pt-2 bg-transparent md:bg-background/95 md:backdrop-blur-sm"
                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
             >
-                <div className="w-full max-w-[800px] mx-auto space-y-2">
+                <div className="w-full max-w-[800px] mx-auto">
                     {/* Variables above input — mid-conversation */}
-                    {hasVariables && (
-                        useGuidedVars ? (
-                            <GuidedVariableInputs
-                                variableDefaults={state.currentAgent!.variableDefaults!}
-                                values={variableValues}
-                                onChange={handleVariableChange}
-                                disabled={isExecuting}
-                                textInputRef={textInputRef}
-                                submitOnEnter={true}
-                                onSubmit={handleSubmit}
-                            />
-                        ) : (
+                    {hasVariables && useGuidedVars && (
+                        <GuidedVariableInputs
+                            variableDefaults={state.currentAgent!.variableDefaults!}
+                            values={variableValues}
+                            onChange={handleVariableChange}
+                            disabled={isExecuting}
+                            textInputRef={textInputRef}
+                            submitOnEnter={true}
+                            onSubmit={handleSubmit}
+                            seamless
+                        />
+                    )}
+                    {hasVariables && !useGuidedVars && (
+                        <div className="mb-2">
                             <PublicVariableInputs
                                 variableDefaults={state.currentAgent!.variableDefaults!}
                                 values={variableValues}
@@ -469,9 +552,11 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 submitOnEnter={true}
                                 onSubmit={handleSubmit}
                             />
-                        )
+                        </div>
                     )}
-                    <div className="rounded-2xl border border-border bg-background">
+                    <div className={`border border-border bg-background ${
+                        hasVariables && useGuidedVars ? 'rounded-b-2xl border-t-0' : 'rounded-2xl'
+                    }`}>
                         <ChatInputWithControls
                             onSubmit={handleSubmit}
                             disabled={isExecuting}
