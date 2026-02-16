@@ -5,7 +5,7 @@ import { BasicInput } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Loader2, Key, Check, X, Monitor, Globe, Pencil } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { clearStoredAdminToken } from '@/utils/api-test-auth';
 import { toast } from 'sonner';
 import type { UseApiTestConfigReturn } from './useApiTestConfig';
@@ -24,22 +24,12 @@ interface ApiTestConfigPanelProps {
 }
 
 /**
- * Reusable configuration panel for API test pages
- * Displays server selection and auth token management
- * 
- * Tokens are stored in cookies for persistence across all API test pages
- * 
- * @example
- * ```tsx
- * const apiConfig = useApiTestConfig();
- * 
- * return (
- *   <div>
- *     <ApiTestConfigPanel config={apiConfig} />
- *     {/* Your test UI *\/}
- *   </div>
- * );
- * ```
+ * Reusable configuration panel for API test pages.
+ *
+ * This component is the SOLE authority for server selection UI. It reads
+ * availability state from the hook and disables the localhost toggle when
+ * the server is unreachable. Pages render this panel and consume the
+ * resulting config — they never perform their own validation.
  */
 export function ApiTestConfigPanel({
   config,
@@ -53,6 +43,14 @@ export function ApiTestConfigPanel({
 }: ApiTestConfigPanelProps) {
   const [isEditingToken, setIsEditingToken] = useState(!config.hasToken);
   const [tempToken, setTempToken] = useState(config.authToken);
+
+  // Sync when config loads token from cookies (after mount, avoids hydration mismatch)
+  useEffect(() => {
+    if (config.hasToken) {
+      setIsEditingToken(false);
+      setTempToken(config.authToken);
+    }
+  }, [config.authToken, config.hasToken]);
 
   const handleSaveToken = () => {
     if (tempToken.trim()) {
@@ -79,6 +77,14 @@ export function ApiTestConfigPanel({
     setIsEditingToken(false);
   };
 
+  const localhostDisabled = config.isCheckingLocalhost || (!config.isLocalhostAvailable && config.serverType !== 'local');
+
+  const localhostTooltip = config.isCheckingLocalhost
+    ? 'Checking localhost...'
+    : config.isLocalhostAvailable
+      ? 'Localhost'
+      : 'Localhost unavailable';
+
   return (
     <TooltipProvider>
       <div className={className}>
@@ -89,7 +95,7 @@ export function ApiTestConfigPanel({
               {title}
             </div>
           )}
-          {/* Server toggle - icon only */}
+          {/* Server toggle */}
           <div className="flex items-center gap-1 flex-shrink-0">
             <ToggleGroup
               type="single"
@@ -99,19 +105,29 @@ export function ApiTestConfigPanel({
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="local" aria-label="Localhost" disabled={config.isCheckingLocalhost} className="h-6 w-6 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                    {config.isCheckingLocalhost && config.serverType !== 'local' ? (
+                  <ToggleGroupItem
+                    value="local"
+                    aria-label="Localhost"
+                    disabled={localhostDisabled}
+                    className="h-6 w-6 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground disabled:opacity-40"
+                  >
+                    {config.isCheckingLocalhost ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
                       <Monitor className="h-3 w-3" />
                     )}
                   </ToggleGroupItem>
                 </TooltipTrigger>
-                <TooltipContent>Localhost</TooltipContent>
+                <TooltipContent>{localhostTooltip}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="production" aria-label="Production" disabled={config.isCheckingLocalhost} className="h-6 w-6 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  <ToggleGroupItem
+                    value="production"
+                    aria-label="Production"
+                    disabled={config.isCheckingLocalhost}
+                    className="h-6 w-6 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  >
                     <Globe className="h-3 w-3" />
                   </ToggleGroupItem>
                 </TooltipTrigger>
@@ -225,4 +241,3 @@ export function ApiTestConfigPanel({
     </TooltipProvider>
   );
 }
-

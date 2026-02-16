@@ -9,7 +9,7 @@ import { SearchablePromptSelect } from '@/features/prompt-apps/components/Search
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, X, Play, FileText, FileJson, BarChart3, FlaskConical, Copy, Check, PanelRightClose, PanelRightOpen, Key } from 'lucide-react';
+import { Loader2, Plus, Trash2, X, Play, FileText, FileJson, BarChart3, FlaskConical, Copy, Check, PanelRightClose, PanelRightOpen, Key, ChevronDown, ChevronRight } from 'lucide-react';
 // Removed hardcoded TEST_ADMIN_TOKEN - now using cookie-based storage
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
@@ -21,6 +21,7 @@ import { SettingsJsonEditor } from '@/features/prompts/components/configuration/
 import { removeNullSettings } from '@/features/prompts/utils/settings-filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { UsageStatsModal } from '@/components/chat/UsageStatsModal';
 import { supabase } from '@/utils/supabase/client';
@@ -72,7 +73,6 @@ interface Tool {
 export default function ChatTestPage() {
   const apiConfig = useApiTestConfig({
     defaultServerType: 'local',
-    autoCheckLocalhost: true,
     requireToken: true,
   });
 
@@ -309,6 +309,7 @@ export default function ChatTestPage() {
         ...cleanedConfig,
         stream: streamEnabled,
         debug: debugMode,
+        is_new_conversation: true,
       };
 
       const response = await fetch(url, {
@@ -500,183 +501,196 @@ export default function ChatTestPage() {
       {/* Scrollable content area */}
       <div className="flex-1 min-h-0 px-3 py-1">
         <div className="grid grid-cols-12 gap-2 h-full">
-          {/* Left: Configuration Panel */}
-          {showSettings && (
-            <Card className="col-span-3 h-full flex flex-col overflow-hidden">
-              {/* Sticky top: Prompt + Model */}
-              <div className="flex-shrink-0 p-3 space-y-2 border-b">
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Prompt</Label>
-                  <div className="flex-1 min-w-0">
-                    <SearchablePromptSelect
-                      prompts={prompts}
-                      value={selectedPromptId}
-                      onChange={(id) => handlePromptSelect(id)}
-                      placeholder={prompts.length > 0 ? 'Select a prompt...' : 'No prompts available'}
-                      compact
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Model</Label>
-                  <Select value={selectedModelId} onValueChange={handleModelChange}>
-                    <SelectTrigger className="h-7 text-xs flex-1">
-                      <SelectValue placeholder="Select model..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {models.map(model => (
-                        <SelectItem key={model.id} value={model.id} className="text-xs">
-                          {model.common_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Scrollable middle */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                {/* Stream & Debug Mode Toggles */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Checkbox 
-                      id="stream-mode" 
-                      checked={streamEnabled} 
-                      onCheckedChange={(checked) => setStreamEnabled(checked as boolean)}
-                    />
-                    <Label htmlFor="stream-mode" className="text-xs font-medium cursor-pointer">
-                      Stream Response
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox 
-                      id="debug-mode" 
-                      checked={debugMode} 
-                      onCheckedChange={(checked) => setDebugMode(checked as boolean)}
-                    />
-                    <Label htmlFor="debug-mode" className="text-xs font-medium cursor-pointer">
-                      Debug Mode
-                    </Label>
-                  </div>
-                </div>
-
-                {/* Model Settings */}
-                <div className="space-y-1.5 pt-1">
-                  <ModelSettings
-                    modelId={selectedModelId}
-                    models={models}
-                    settings={modelConfig}
-                    onSettingsChange={setModelConfig}
-                    availableTools={availableTools}
+          {/* Left: Configuration Panel - always visible */}
+          <Card className="col-span-3 h-full flex flex-col overflow-hidden">
+            {/* Sticky top: Prompt + Model */}
+            <div className="flex-shrink-0 p-3 space-y-2 border-b">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Prompt</Label>
+                <div className="flex-1 min-w-0">
+                  <SearchablePromptSelect
+                    prompts={prompts}
+                    value={selectedPromptId}
+                    onChange={(id) => handlePromptSelect(id)}
+                    placeholder={prompts.length > 0 ? 'Select a prompt...' : 'No prompts available'}
+                    compact
                   />
                 </div>
-
-                {/* Messages Configuration */}
-                <div className="space-y-1.5 border-t pt-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold">Messages</Label>
-                    <Button size="sm" variant="outline" onClick={addMessage} className="h-6 text-xs px-2">
-                      <Plus className="h-3 w-3 mr-1" />
-                      Add Message
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {messages.map((message, index) => (
-                      <Card key={index} className="p-2 space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <Select
-                            value={message.role}
-                            onValueChange={(value) => updateMessage(index, 'role', value)}
-                          >
-                            <SelectTrigger className="h-7 text-xs flex-shrink-0 w-28">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="system" className="text-xs">System</SelectItem>
-                              <SelectItem value="user" className="text-xs">User</SelectItem>
-                              <SelectItem value="assistant" className="text-xs">Assistant</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            {index + 1}
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => deleteMessage(index)}
-                            className="h-6 w-6 p-0 ml-auto"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={message.content}
-                          onChange={(e) => updateMessage(index, 'content', e.target.value)}
-                          placeholder={`Enter ${message.role} message...`}
-                          className="min-h-[60px] text-xs font-mono"
-                        />
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Configuration Summary */}
-                <div className="space-y-1.5 border-t pt-3">
-                  <Label className="text-xs font-semibold">Configuration Summary</Label>
-                  <div className="space-y-1 text-xs text-muted-foreground font-mono">
-                    <div className="flex justify-between">
-                      <span>Model:</span>
-                      <span className="text-foreground">{models.find(m => m.id === selectedModelId)?.common_name || 'None'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Messages:</span>
-                      <span className="text-foreground">{messages.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Streaming:</span>
-                      <span className={streamEnabled ? "text-green-600 dark:text-green-400" : "text-foreground"}>
-                        {streamEnabled ? 'Enabled' : 'Disabled'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Debug Mode:</span>
-                      <span className={debugMode ? "text-green-600 dark:text-green-400" : "text-foreground"}>
-                        {debugMode ? 'Enabled' : 'Disabled'}
-                      </span>
-                    </div>
-                    {typeof modelConfig.temperature === 'number' && (
-                      <div className="flex justify-between">
-                        <span>Temperature:</span>
-                        <span className="text-foreground">{modelConfig.temperature.toFixed(2)}</span>
-                      </div>
-                    )}
-                    {typeof modelConfig.max_output_tokens === 'number' && (
-                      <div className="flex justify-between">
-                        <span>Max Tokens:</span>
-                        <span className="text-foreground">{modelConfig.max_output_tokens}</span>
-                      </div>
-                    )}
-                    {modelConfig.tools && modelConfig.tools.length > 0 && (
-                      <div className="flex justify-between">
-                        <span>Tools:</span>
-                        <span className="text-foreground">{modelConfig.tools.length}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
               </div>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-semibold whitespace-nowrap flex-shrink-0">Model</Label>
+                <Select value={selectedModelId} onValueChange={handleModelChange}>
+                  <SelectTrigger className="h-7 text-xs flex-1">
+                    <SelectValue placeholder="Select model..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {models.map(model => (
+                      <SelectItem key={model.id} value={model.id} className="text-xs">
+                        {model.common_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-              {/* Sticky bottom: Run + Edit Config buttons side by side */}
-              <div className="flex-shrink-0 p-3 border-t flex flex-col gap-2">
-                {!apiConfig.hasToken && (
-                  <p className="text-xs text-warning-foreground flex items-center gap-1.5">
-                    <Key className="h-3.5 w-3.5 flex-shrink-0" />
-                    Auth token required — configure in the API config panel above to run the test
-                  </p>
+            {/* Collapsible Settings (Stream Response, Debug, Model Settings, Config Summary) */}
+            <Collapsible
+              open={showSettings}
+              onOpenChange={setShowSettings}
+              className="flex-shrink-0"
+            >
+              <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 py-2 border-b hover:bg-muted/50 transition-colors text-left">
+                <span className="text-xs font-semibold">Settings</span>
+                {showSettings ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
-                <div className="flex gap-2">
+              </CollapsibleTrigger>
+              <CollapsibleContent className="max-h-[min(40vh,280px)] overflow-y-auto data-[state=closed]:hidden">
+                <div className="p-3 space-y-3">
+                  {/* Stream & Debug Mode Toggles */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        id="stream-mode" 
+                        checked={streamEnabled} 
+                        onCheckedChange={(checked) => setStreamEnabled(checked as boolean)}
+                      />
+                      <Label htmlFor="stream-mode" className="text-xs font-medium cursor-pointer">
+                        Stream Response
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        id="debug-mode" 
+                        checked={debugMode} 
+                        onCheckedChange={(checked) => setDebugMode(checked as boolean)}
+                      />
+                      <Label htmlFor="debug-mode" className="text-xs font-medium cursor-pointer">
+                        Debug Mode
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Model Settings */}
+                  <div className="space-y-1.5 pt-1">
+                    <ModelSettings
+                      modelId={selectedModelId}
+                      models={models}
+                      settings={modelConfig}
+                      onSettingsChange={setModelConfig}
+                      availableTools={availableTools}
+                    />
+                  </div>
+
+                  {/* Configuration Summary */}
+                  <div className="space-y-1.5 border-t pt-3">
+                    <Label className="text-xs font-semibold">Configuration Summary</Label>
+                    <div className="space-y-1 text-xs text-muted-foreground font-mono">
+                      <div className="flex justify-between">
+                        <span>Model:</span>
+                        <span className="text-foreground">{models.find(m => m.id === selectedModelId)?.common_name || 'None'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Messages:</span>
+                        <span className="text-foreground">{messages.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Streaming:</span>
+                        <span className={streamEnabled ? "text-green-600 dark:text-green-400" : "text-foreground"}>
+                          {streamEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Debug Mode:</span>
+                        <span className={debugMode ? "text-green-600 dark:text-green-400" : "text-foreground"}>
+                          {debugMode ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                      {typeof modelConfig.temperature === 'number' && (
+                        <div className="flex justify-between">
+                          <span>Temperature:</span>
+                          <span className="text-foreground">{modelConfig.temperature.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {typeof modelConfig.max_output_tokens === 'number' && (
+                        <div className="flex justify-between">
+                          <span>Max Tokens:</span>
+                          <span className="text-foreground">{modelConfig.max_output_tokens}</span>
+                        </div>
+                      )}
+                      {modelConfig.tools && modelConfig.tools.length > 0 && (
+                        <div className="flex justify-between">
+                          <span>Tools:</span>
+                          <span className="text-foreground">{modelConfig.tools.length}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Messages Configuration - always visible (focus area when settings collapsed) */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 border-t">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Messages</Label>
+                <Button size="sm" variant="outline" onClick={addMessage} className="h-6 text-xs px-2">
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add Message
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {messages.map((message, index) => (
+                  <Card key={index} className="p-2 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={message.role}
+                        onValueChange={(value) => updateMessage(index, 'role', value)}
+                      >
+                        <SelectTrigger className="h-7 text-xs flex-shrink-0 w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="system" className="text-xs">System</SelectItem>
+                          <SelectItem value="user" className="text-xs">User</SelectItem>
+                          <SelectItem value="assistant" className="text-xs">Assistant</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {index + 1}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteMessage(index)}
+                        className="h-6 w-6 p-0 ml-auto"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={message.content}
+                      onChange={(e) => updateMessage(index, 'content', e.target.value)}
+                      placeholder={`Enter ${message.role} message...`}
+                      className="min-h-[120px] text-xs font-mono"
+                    />
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Sticky bottom: Run + Edit Config buttons side by side */}
+            <div className="flex-shrink-0 p-3 border-t flex flex-col gap-2">
+              {!apiConfig.hasToken && (
+                <p className="text-xs text-warning-foreground flex items-center gap-1.5">
+                  <Key className="h-3.5 w-3.5 flex-shrink-0" />
+                  Auth token required — configure in the API config panel above to run the test
+                </p>
+              )}
+              <div className="flex gap-2">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -707,10 +721,9 @@ export default function ChatTestPage() {
                   <FileJson className="mr-2 h-4 w-4" />
                   Edit Config
                 </Button>
-                </div>
               </div>
-            </Card>
-          )}
+            </div>
+          </Card>
 
           {/* JSON Editor Modal */}
           <SettingsJsonEditor
@@ -728,7 +741,7 @@ export default function ChatTestPage() {
           />
 
           {/* Right: Results Panel */}
-          <Card className={`${showSettings ? 'col-span-9' : 'col-span-12'} p-3 h-full overflow-hidden flex flex-col`}>
+          <Card className="col-span-9 p-3 h-full overflow-hidden flex flex-col">
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <Label className="text-xs font-semibold">Results</Label>

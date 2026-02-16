@@ -172,7 +172,9 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        // This is the conversation we just created (streaming in progress) — skip fetch
+        // This conversation was just created in the current session — the
+        // Python server is handling persistence and the messages are already
+        // in context. Skip the DB fetch.
         if (state.dbConversationId === urlConversationId) {
             loadedConversationRef.current = urlConversationId;
             return;
@@ -246,21 +248,32 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         loadedConversationRef.current = null;
         setIsLoadingConversation(false);
         setFocusKey(k => k + 1);
-        router.push(`/p/chat/a/${agent.promptId}`);
-    }, [router, setAgent, startNewConversation, selectedAgent.promptId, activeConversationId]);
+        // Preserve vars mode across agent changes
+        const varsParam = searchParams.get('vars');
+        const qs = varsParam ? `?vars=${varsParam}` : '';
+        router.push(`/p/chat/a/${agent.promptId}${qs}`);
+    }, [router, setAgent, startNewConversation, selectedAgent.promptId, activeConversationId, searchParams]);
 
     // ── Handler: Select existing chat from sidebar ────────────────────────
     const handleSelectChat = useCallback((id: string) => {
-        router.push(`/p/chat/c/${id}`);
-    }, [router]);
+        // Preserve agent context in URL so reloads keep the agent selected
+        const params = new URLSearchParams();
+        if (selectedAgent.promptId) {
+            params.set('agent', selectedAgent.promptId);
+        }
+        const qs = params.toString();
+        router.push(`/p/chat/c/${id}${qs ? `?${qs}` : ''}`);
+    }, [router, selectedAgent.promptId]);
 
-    // ── Handler: New chat — preserves current agent ───────────────────────
+    // ── Handler: New chat — preserves current agent and vars mode ─────────
     const handleNewChat = useCallback(() => {
         startNewConversation();
         loadedConversationRef.current = null;
         setIsLoadingConversation(false);
-        router.push(`/p/chat/a/${selectedAgent.promptId}`);
-    }, [router, selectedAgent.promptId, startNewConversation]);
+        const varsParam = searchParams.get('vars');
+        const qs = varsParam ? `?vars=${varsParam}` : '';
+        router.push(`/p/chat/a/${selectedAgent.promptId}${qs}`);
+    }, [router, selectedAgent.promptId, startNewConversation, searchParams]);
 
     // ── Context value ─────────────────────────────────────────────────────
     const openAgentPicker = useCallback(() => setIsAgentPickerOpen(true), []);

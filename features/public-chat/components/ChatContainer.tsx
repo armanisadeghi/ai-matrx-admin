@@ -8,7 +8,6 @@ import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice
 import { useChatContext } from '../context/ChatContext';
 import { useAgentsContext } from '../context/AgentsContext';
 import { useAgentChat } from '../hooks/useAgentChat';
-import { useChatPersistence } from '../hooks/useChatPersistence';
 import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
@@ -17,6 +16,7 @@ import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
+import type { PromptVariable } from '@/features/prompts/types/core';
 import { MessageCircle, Share2, List, Layers } from 'lucide-react';
 import { ShareModal } from '@/features/sharing';
 import { useLayoutAgent } from '@/app/(public)/p/chat/ChatLayoutShell';
@@ -44,6 +44,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const useGuidedVars = searchParams.get('vars') !== 'classic';
 
     const [variableValues, setVariableValues] = useState<Record<string, any>>({});
+    // Active variable definitions currently shown in the UI. Starts from the
+    // agent's defaults and is cleared after the first submit. In the future,
+    // the AI agent can push new variables mid-conversation by setting this.
+    const [activeVariables, setActiveVariables] = useState<PromptVariable[]>([]);
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const latestAssistantRef = useRef<HTMLDivElement>(null);
@@ -60,7 +64,6 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const user = useSelector(selectUser);
     const isAuthenticated = !!user?.id;
     const useLocalhost = useSelector(selectIsUsingLocalhost);
-    const { createConversation, saveMessages } = useChatPersistence();
 
     // Keep ref in sync with state
     useEffect(() => {
@@ -73,11 +76,9 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         },
         onComplete: () => {
             setTimeout(() => setStreamEvents([]), 100);
-            // Persist to database (fire and forget)
+            // Notify sidebar that this conversation was updated (Python server
+            // handles actual DB persistence — we only update the sidebar UI).
             if (dbConvIdRef.current) {
-                const currentMessages = state.messages;
-                saveMessages(dbConvIdRef.current, currentMessages).catch(console.error);
-                // Notify sidebar that this conversation was updated
                 sidebarEvents.emit('conversation-updated', { id: dbConvIdRef.current });
             }
             // Apply deferred URL update now that the stream is complete.
@@ -91,7 +92,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         onError: (error) => {
             console.error('Chat error:', error);
             // Apply deferred URL even on error — the conversation was already
-            // created in the DB before the stream started.
+            // sent to the Python server before the stream started.
             if (pendingUrlRef.current) {
                 router.replace(pendingUrlRef.current);
                 pendingUrlRef.current = null;
@@ -104,7 +105,12 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         setUseLocalhost(useLocalhost);
     }, [useLocalhost, setUseLocalhost]);
 
-    // Initialize variables from current agent on mount or agent change
+    // Initialize variables from current agent on mount or agent change.
+    // Only populate activeVariables for a fresh conversation (no messages).
+    // Once the user has submitted, activeVariables is cleared by handleSubmit
+    // and should stay empty until the agent changes or a new conversation starts.
+    const hasMessages = state.messages.length > 0;
+
     useEffect(() => {
         const agent = state.currentAgent;
         if (!agent) {
@@ -117,8 +123,17 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
             });
         }
 
+        // If there are already messages, the initial variables have been
+        // consumed — don't re-populate them.
+        if (hasMessages) {
+            setActiveVariables([]);
+            setVariableValues({});
+            return;
+        }
+
         const varDefs = (agent || DEFAULT_AGENTS[0]).variableDefaults;
         if (varDefs && varDefs.length > 0) {
+            setActiveVariables(varDefs);
             const initialValues: Record<string, string> = {};
             varDefs.forEach(variable => {
                 if (variable.defaultValue) {
@@ -127,9 +142,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
             });
             setVariableValues(initialValues);
         } else {
+            setActiveVariables([]);
             setVariableValues({});
         }
-    }, [state.currentAgent?.promptId]);
+    }, [state.currentAgent?.promptId, hasMessages]);
 
     // Focus the first available input whenever the agent changes, on initial load,
     // or when a conversation finishes loading.
@@ -155,8 +171,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
             if (cancelled) return;
             attempts++;
 
-            const varDefs = state.currentAgent?.variableDefaults;
-            if (varDefs && varDefs.length > 0) {
+            if (activeVariables.length > 0) {
                 const container = document.querySelector('[data-variable-inputs]');
                 const firstInput = container?.querySelector<HTMLInputElement>('[data-variable-index="0"]');
                 if (firstInput) {
@@ -221,32 +236,47 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         async (content: string, resources?: PublicResource[]) => {
             setStreamEvents([]);
 
-            // Create database conversation on first message
+            // On first message, use the context's conversationId (the same UUID
+            // sent to the Python backend) as the canonical conversation ID.
+            // We do NOT create a DB row — the Python server handles that.
             if (!dbConvIdRef.current) {
-                const title = (content?.trim().slice(0, 80) || state.currentAgent?.name || 'New Chat');
-                const dbConvId = await createConversation({ title });
-                if (dbConvId) {
-                    dbConvIdRef.current = dbConvId;
-                    setDbConversationId(dbConvId);
-                    // Defer URL update until stream completes — doing router.replace
-                    // now would remount ChatContainer (page changes from /p/chat to
-                    // /p/chat/c/[id]), destroying streamEvents and killing real-time
-                    // tool call visualization.
-                    const agentParam = state.currentAgent?.promptId
-                        ? `?agent=${state.currentAgent.promptId}`
-                        : '';
-                    pendingUrlRef.current = `/p/chat/c/${dbConvId}${agentParam}`;
-                    // Notify sidebar immediately
-                    sidebarEvents.emit('conversation-created', { id: dbConvId, title });
+                const convId = state.conversationId;
+                dbConvIdRef.current = convId;
+                setDbConversationId(convId);
+
+                // Build URL params preserving current state
+                const params = new URLSearchParams();
+                if (state.currentAgent?.promptId) {
+                    params.set('agent', state.currentAgent.promptId);
                 }
+                const varsParam = searchParams.get('vars');
+                if (varsParam) {
+                    params.set('vars', varsParam);
+                }
+                const qs = params.toString();
+                const targetUrl = `/p/chat/c/${convId}${qs ? `?${qs}` : ''}`;
+
+                // Defer URL update until stream completes — doing router.replace
+                // now would remount ChatContainer (page changes from /p/chat to
+                // /p/chat/c/[id]), destroying streamEvents and killing real-time
+                // tool call visualization.
+                // Note: no ?new=1 needed here — by the time this URL is applied
+                // (onComplete), the Python server has already persisted the
+                // conversation. The dbConversationId === urlConversationId check
+                // in ChatLayoutShell handles skipping the fetch during transition.
+                pendingUrlRef.current = targetUrl;
+
+                // Notify sidebar immediately with the same ID Python will use
+                const title = (content?.trim().slice(0, 80) || state.currentAgent?.name || 'New Chat');
+                sidebarEvents.emit('conversation-created', { id: convId, title });
             }
 
             // Format message content with variables for display
             let displayContent = '';
 
-            if (state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0) {
+            if (activeVariables.length > 0) {
                 const variableLines: string[] = [];
-                state.currentAgent.variableDefaults.forEach(varDef => {
+                activeVariables.forEach(varDef => {
                     const value = variableValues[varDef.name] || varDef.defaultValue || '';
                     if (value) {
                         const formattedName = formatText(varDef.name);
@@ -266,13 +296,22 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 displayContent = content;
             }
 
+            // Capture current variable values before clearing
+            const submittedVariables = { ...variableValues };
+
+            // Clear active variables after submission — the initial variable
+            // inputs have been consumed. If the AI agent needs new variables
+            // mid-conversation, it will push them via setActiveVariables.
+            setActiveVariables([]);
+            setVariableValues({});
+
             return sendMessage({
                 content: displayContent,
-                variables: variableValues,
+                variables: submittedVariables,
                 resources,
             });
         },
-        [sendMessage, variableValues, state.currentAgent, createConversation, setDbConversationId, sidebarEvents]
+        [sendMessage, variableValues, activeVariables, state.currentAgent, state.conversationId, setDbConversationId, sidebarEvents, searchParams]
     );
 
     const handleMessageContentChange = useCallback((messageId: string, newContent: string) => {
@@ -280,7 +319,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     }, [updateMessage]);
 
     const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
-    const hasVariables = state.currentAgent?.variableDefaults && state.currentAgent.variableDefaults.length > 0;
+    const hasVariables = activeVariables.length > 0;
     const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
 
     // Loading state for existing conversations (driven by layout)
@@ -299,7 +338,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     if (isWelcomeScreen) {
         const agentName = hasVariables ? state.currentAgent?.name : null;
         const agentDescription = hasVariables ? state.currentAgent?.description : null;
-        const varCount = state.currentAgent?.variableDefaults?.length || 0;
+        const varCount = activeVariables.length;
         const showDescription = agentDescription && varCount <= 3;
 
         // Build the vars=classic/guided toggle URL
@@ -343,7 +382,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                     >
                         <div className="w-full max-w-3xl mx-auto">
                             <GuidedVariableInputs
-                                variableDefaults={state.currentAgent!.variableDefaults!}
+                                variableDefaults={activeVariables}
                                 values={variableValues}
                                 onChange={handleVariableChange}
                                 disabled={isExecuting}
@@ -415,7 +454,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             {hasVariables && (
                                 <div className={varCount > 2 ? 'mb-3 md:mb-6' : 'mb-6'}>
                                     <PublicVariableInputs
-                                        variableDefaults={state.currentAgent!.variableDefaults!}
+                                        variableDefaults={activeVariables}
                                         values={variableValues}
                                         onChange={handleVariableChange}
                                         disabled={isExecuting}
@@ -531,7 +570,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                     {/* Variables above input — mid-conversation */}
                     {hasVariables && useGuidedVars && (
                         <GuidedVariableInputs
-                            variableDefaults={state.currentAgent!.variableDefaults!}
+                            variableDefaults={activeVariables}
                             values={variableValues}
                             onChange={handleVariableChange}
                             disabled={isExecuting}
@@ -544,7 +583,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                     {hasVariables && !useGuidedVars && (
                         <div className="mb-2">
                             <PublicVariableInputs
-                                variableDefaults={state.currentAgent!.variableDefaults!}
+                                variableDefaults={activeVariables}
                                 values={variableValues}
                                 onChange={handleVariableChange}
                                 disabled={isExecuting}

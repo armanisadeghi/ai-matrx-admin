@@ -36,6 +36,7 @@ interface AgentExecuteRequestWithContent {
     stream: boolean;
     debug: boolean;
     is_builtin: boolean;
+    is_new_conversation: boolean;
 }
 
 // ============================================================================
@@ -150,6 +151,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setError(null);
         streamEventsRef.current = [];
 
+        // Determine if this is a new conversation (before adding messages)
+        // True when there are no messages yet, false for all subsequent messages
+        const isNewConversation = state.messages.length === 0;
+
         // Build content array for API
         const contentItems = buildContentArray(content, resources);
 
@@ -211,6 +216,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 stream: true,
                 debug: true,
                 is_builtin: false,
+                is_new_conversation: isNewConversation,
             };
 
             // Debug log to verify variables are being sent

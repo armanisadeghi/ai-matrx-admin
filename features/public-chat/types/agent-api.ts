@@ -101,6 +101,12 @@ export interface AgentExecuteRequest {
   stream?: boolean; // default: true
   /** Enable debug logging */
   debug?: boolean; // default: false
+  /**
+   * Indicates if this is the first message in a new conversation.
+   * Set to true when sending the first message with a new conversation_id.
+   * Set to false for all subsequent messages in the same conversation.
+   */
+  is_new_conversation: boolean;
 }
 
 // ============================================================================
