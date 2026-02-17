@@ -86,9 +86,9 @@ export async function POST(request: NextRequest) {
       output_schema: body.output_schema || null,
       annotations: body.annotations || [],
       function_path: body.function_path,
-      category: body.category || null,
+      category: body.category === '' ? null : (body.category || null),
       tags: body.tags || [],
-      icon: body.icon || null,
+      icon: body.icon === '' ? null : (body.icon || null),
       is_active: body.is_active !== undefined ? body.is_active : true,
       version: body.version || '1.0.0'
     };

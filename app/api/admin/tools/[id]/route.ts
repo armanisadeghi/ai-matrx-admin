@@ -79,8 +79,9 @@ export async function PUT(
       );
     }
 
-    // Set updated_at to current timestamp
-    updateData.updated_at = new Date().toISOString();
+    // Convert empty strings to null for nullable fields
+    if (updateData.category === '') updateData.category = null;
+    if (updateData.icon === '') updateData.icon = null;
 
     const { data, error } = await supabase
       .from('tools')
