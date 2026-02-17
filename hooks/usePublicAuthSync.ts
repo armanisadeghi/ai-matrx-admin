@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/lib/redux/hooks';
 import { setUser, setFingerprintId } from '@/lib/redux/slices/userSlice';
 import { loadPreferencesFromDatabase } from '@/lib/redux/slices/userPreferencesSlice';
 import { createClient } from '@/utils/supabase/client';
@@ -27,7 +27,7 @@ import { getFingerprint } from '@/lib/services/fingerprint-service';
  * - Non-blocking, runs after hydration
  */
 export function usePublicAuthSync() {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const hasRun = useRef(false);
 
     useEffect(() => {
@@ -41,18 +41,28 @@ export function usePublicAuthSync() {
             try {
                 const supabase = createClient();
                 
-                // Use getUser() for secure server-validated auth check
-                // getSession() only reads from local storage and can be spoofed
-                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                // First check local session — this is a fast local-only read with
+                // no network call and no error when no session exists. Only call
+                // getUser() (which validates against the server) when a session is
+                // present. This avoids the noisy AuthSessionMissingError on public
+                // routes where the user is a guest.
+                const { data: { session: localSession } } = await supabase.auth.getSession();
                 
-                if (userError) {
-                    console.error('Auth error:', userError);
+                let user = localSession?.user ?? null;
+                
+                if (localSession) {
+                    // Session exists locally — validate it against the server
+                    const { data: { user: validatedUser }, error: userError } = await supabase.auth.getUser();
+                    if (userError) {
+                        console.error('Auth validation error:', userError);
+                    }
+                    user = validatedUser;
                 }
                 
                 if (user) {
                     // AUTHENTICATED USER PATH
-                    // Get the session for the access token (safe here since we already validated with getUser)
-                    const { data: { session } } = await supabase.auth.getSession();
+                    // We already have the session from the local check above
+                    const session = localSession;
                     
                     // Check admin status
                     let isAdmin = false;

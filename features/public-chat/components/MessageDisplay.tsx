@@ -651,9 +651,10 @@ export function MessageList({
                 return (
                     <div
                         key={message.id}
-                        // Latest assistant message gets min-height so it can scroll to top
-                        // but user can't scroll past the content itself
-                        className={isLatestAssistant ? 'min-h-[calc(100dvh-var(--header-height))]' : ''}
+                        // Latest assistant message gets min-height so the user can
+                        // scroll past the end of the content — keeps the last lines
+                        // comfortably above the input bar rather than pinned to the bottom.
+                        className={isLatestAssistant ? 'min-h-[50dvh]' : ''}
                     >
                         {/* Condensed/Active boundary separator */}
                         {showCondensedSeparator && (

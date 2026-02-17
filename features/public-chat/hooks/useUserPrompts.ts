@@ -37,13 +37,13 @@ export function useUserPrompts() {
 
             try {
                 const supabase = createClient();
-                let user: { id: string } | null = null;
 
-                try {
-                    const { data } = await supabase.auth.getUser();
-                    user = data?.user ?? null;
-                } catch (authErr) {
-                    // No session (e.g. public page) — treat as no user, don't surface error
+                // Check local session first — avoids AuthSessionMissingError on
+                // public routes where the user is a guest.
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session?.user) {
+                    // No session — guest user, no prompts to fetch
                     if (isMounted) {
                         setPrompts([]);
                         setIsLoading(false);
@@ -51,13 +51,7 @@ export function useUserPrompts() {
                     return;
                 }
 
-                if (!user) {
-                    if (isMounted) {
-                        setPrompts([]);
-                        setIsLoading(false);
-                    }
-                    return;
-                }
+                const user = session.user;
 
                 // Fetch only necessary fields
                 const { data, error: fetchError } = await supabase

@@ -79,13 +79,14 @@ export function AgentsProvider({ children }: { children: ReactNode }) {
 
             try {
                 const supabase = createClient();
-                let user: { id: string } | null = null;
 
-                try {
-                    const { data } = await supabase.auth.getUser();
-                    user = data?.user ?? null;
-                } catch {
-                    // No session (public page) — no user prompts
+                // Check local session first — avoids AuthSessionMissingError on
+                // public routes where the user is a guest. getSession() reads from
+                // local storage (no network call, no error).
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session?.user) {
+                    // No session — guest user, no user prompts to fetch
                     if (isMounted) {
                         setUserPrompts([]);
                         setUserPromptsLoading(false);
@@ -93,13 +94,7 @@ export function AgentsProvider({ children }: { children: ReactNode }) {
                     return;
                 }
 
-                if (!user) {
-                    if (isMounted) {
-                        setUserPrompts([]);
-                        setUserPromptsLoading(false);
-                    }
-                    return;
-                }
+                const user = session.user;
 
                 // Fetch only the fields needed for agent selection (no messages)
                 const { data, error } = await supabase

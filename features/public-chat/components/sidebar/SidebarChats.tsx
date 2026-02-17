@@ -430,6 +430,11 @@ export function SidebarChats({
     }, [loadHistory]);
 
     useEffect(() => {
+        // Skip history loading and realtime subscription for guests —
+        // they have no saved conversations and the Supabase channel would
+        // trigger an AuthSessionMissingError.
+        if (!isAuthenticated) return;
+
         // Initial load
         fetchHistory();
 
@@ -480,7 +485,7 @@ export function SidebarChats({
                 supabase.removeChannel(realtimeSubscriptionRef.current);
             }
         };
-    }, [fetchHistory]);
+    }, [fetchHistory, isAuthenticated]);
 
     // Subscribe to sidebar events for immediate UI updates
     useEffect(() => {
