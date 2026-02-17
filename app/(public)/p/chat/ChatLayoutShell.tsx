@@ -289,8 +289,8 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>
-            {/* Hide the public-layout header on mobile — ChatMobileHeader replaces it */}
-            <style>{`@media(max-width:767px){[data-public-header]{display:none!important}}`}</style>
+            {/* Hide the public-layout header — ChatMobileHeader replaces it on all viewports */}
+            <style>{`[data-public-header]{display:none!important}`}</style>
 
             {/* Unified agent picker — rendered once, opened from any trigger */}
             <AgentPickerSheet
@@ -300,8 +300,8 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                 onSelect={handleAgentChange}
             />
 
-            <div className="h-full w-full flex flex-col">
-                {/* Mobile-only consolidated header */}
+            <div className="h-full w-full relative">
+                {/* Floating transparent header — overlays content on all viewports */}
                 <ChatMobileHeader
                     onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
                     onNewChat={handleNewChat}
@@ -318,7 +318,8 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                     isOpen={isSidebarOpen}
                     onOpenChange={setIsSidebarOpen}
                 />
-                <div className="flex-1 min-h-0 relative">
+                {/* Content fills full height — header floats on top */}
+                <div className="h-full">
                     {children}
                 </div>
             </div>

@@ -53,7 +53,7 @@ const PublicHeaderThemeToggle = dynamic(
  */
 export function PublicHeader() {
     return (
-        <header data-public-header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm">
+        <header data-public-header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-transparent backdrop-blur-sm">
             <div className="w-full px-4 h-10 flex items-center justify-between">
                 {/* Logo */}
                 <Link 
@@ -62,15 +62,12 @@ export function PublicHeader() {
                 >
                     <Image 
                         src="/matrx/matrx-icon.svg" 
-                        width={24} 
-                        height={24} 
+                        width={18} 
+                        height={18} 
                         alt="AI Matrx Logo" 
                         className="flex-shrink-0"
                         priority
                     />
-                    <span className="text-sm font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600">
-                        AI Matrx
-                    </span>
                 </Link>
 
                 {/* Right Actions */}

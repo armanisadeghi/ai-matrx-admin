@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { PanelLeft } from 'lucide-react';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -124,31 +123,14 @@ export function ChatSidebar({
 
     return (
         <>
-            {/* ── Desktop: Fixed toggle button — hidden on mobile ── */}
-            <button
-                onClick={toggleSidebar}
-                className="hidden md:flex fixed top-[2.875rem] left-2 z-50 h-8 items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-300 ease-in-out"
-                title={isOpen ? 'Close sidebar' : 'Open chat history'}
-            >
-                <PanelLeft
-                    className={`h-4 w-4 transition-transform duration-300 ease-in-out ${
-                        isOpen ? 'rotate-180' : 'rotate-0'
-                    }`}
-                />
-            </button>
+            {/* ── Desktop: Fixed toggle button — hidden on mobile (now handled by floating header) ── */}
+            {/* Toggle button removed — sidebar toggle is in the floating ChatMobileHeader on all viewports */}
 
-            {/* ── Desktop: Floating agent selector — visible only when sidebar is closed ── */}
-            <div className={`hidden md:block transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none visibility-hidden' : 'opacity-100 visibility-visible'}`}>
-                <SidebarAgentHeader
-                    selectedAgent={selectedAgent}
-                    onAgentSelect={onOpenAgentPicker ? () => onOpenAgentPicker() : onAgentSelect}
-                    floating
-                />
-            </div>
+            {/* Desktop floating agent selector removed — now in the floating ChatMobileHeader */}
 
-            {/* ── Mobile overlay backdrop ── */}
+            {/* ── Overlay backdrop (all viewports) ── */}
             <div
-                className={`fixed inset-0 z-40 bg-black/40 md:hidden transition-opacity duration-300 ${
+                className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${
                     isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
                 onClick={closeSidebar}
@@ -166,7 +148,7 @@ export function ChatSidebar({
 
             {/* ── Desktop panel ── */}
             <div
-                className={`hidden md:block fixed left-0 top-10 bottom-0 w-[256px] bg-card border-r border-border z-30 transition-transform duration-300 ease-in-out ${
+                className={`hidden md:block fixed left-0 top-0 bottom-0 w-[256px] bg-card border-r border-border z-40 transition-transform duration-300 ease-in-out ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >

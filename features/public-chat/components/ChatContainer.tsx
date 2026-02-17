@@ -516,18 +516,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
     return (
         <div className={`h-full flex flex-col ${className}`}>
-            {/* Share bar — desktop only to avoid extra header row on mobile */}
-            {isAuthenticated && shareConversationId && (
-                <div className="flex-shrink-0 hidden md:flex items-center justify-end px-3 py-1">
-                    <button
-                        onClick={() => setIsShareOpen(true)}
-                        className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors"
-                        title="Share conversation"
-                    >
-                        <Share2 className="h-3.5 w-3.5" />
-                    </button>
-                </div>
-            )}
+            {/* Share button — floats in the message scroll area, visible after header clearance */}
 
             {isShareOpen && shareConversationId && (
                 <ShareModal
@@ -542,11 +531,23 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
             {/* Message area with fade overlays on mobile */}
             <div className="flex-1 min-h-0 relative">
-                {/* Top fade gradient — mobile only */}
-                <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none md:hidden" />
+                {/* Top fade gradient — helps readability under floating header */}
+                <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/80 to-transparent z-10 pointer-events-none" />
 
                 <div className="h-full overflow-y-auto scrollbar-hide">
-                    <div className="w-full max-w-[800px] mx-auto px-3 pt-2 pb-2 md:px-3 md:py-4 md:pb-4">
+                    <div className="w-full max-w-[800px] mx-auto px-3 pt-12 pb-2 md:px-3 md:pt-12 md:pb-4 relative">
+                        {/* Share button — positioned top-right within the message area */}
+                        {isAuthenticated && shareConversationId && (
+                            <div className="absolute top-1 right-3 z-10 hidden md:block">
+                                <button
+                                    onClick={() => setIsShareOpen(true)}
+                                    className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors"
+                                    title="Share conversation"
+                                >
+                                    <Share2 className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        )}
                         <MessageList
                             messages={messages}
                             streamEvents={streamEvents.length > 0 ? streamEvents : undefined}
@@ -559,6 +560,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
 
                 {/* Bottom fade gradient — mobile only */}
                 <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none md:hidden" />
+
             </div>
 
             {/* Input area — flush on mobile with gradient, padded on desktop */}

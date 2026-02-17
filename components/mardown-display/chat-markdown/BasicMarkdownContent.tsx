@@ -122,6 +122,11 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const preprocessContent = (rawContent: string): string => {
         let processed = rawContent;
         
+        // Convert bracketed bare URLs [https://...] into proper markdown links
+        // This prevents dangling brackets when long URLs wrap across lines
+        // Matches [URL] where URL starts with http(s):// and is not followed by () (which would be a standard markdown link)
+        processed = processed.replace(/\[(https?:\/\/[^\]\s]+)\](?!\()/g, '[$1]($1)');
+        
         // Convert LaTeX-style math delimiters to markdown math notation
         // \[...\] → $$...$$ (display/block math)
         // IMPORTANT: Display math needs blank lines before and after for remark-math to recognize it
