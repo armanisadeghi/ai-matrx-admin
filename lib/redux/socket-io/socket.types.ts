@@ -58,6 +58,8 @@ export interface SocketTask {
 export interface SocketErrorObject {
     message?: string;
     type?: string;
+    user_message?: string;
+    /** @deprecated Use user_message. Kept for backward compatibility. */
     user_visible_message?: string;
     code?: string;
     details?: any;
@@ -66,6 +68,8 @@ export interface SocketErrorObject {
 export type SocketInfoObject = {
     status: "confirm" | "processing";
     system_message: string;
+    user_message?: string;
+    /** @deprecated Use user_message. Kept for backward compatibility. */
     user_visible_message?: string;
     metadata?: Record<string, unknown> | null;
 };
@@ -89,11 +93,13 @@ export interface StepDataObject {
 
 export interface ToolCallObject {
     id?: string;
-    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_visible_message";
+    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_message" | "user_visible_message";
     mcp_input?: McpInputObject;
     mcp_output?: Record<string, unknown>;
     mcp_error?: string;
     step_data?: StepDataObject;
+    user_message?: string;
+    /** @deprecated Use user_message. Kept for backward compatibility. */
     user_visible_message?: string;
 }
 

@@ -112,9 +112,9 @@ const InfoResponseItem: React.FC<{
                     {info.status || "unknown"}
                 </span>
             </div>
-            {info.user_visible_message && (
+            {(info.user_message ?? info.user_visible_message) && (
                 <div className={`text-xs leading-tight ${isSelected ? "text-primary-foreground/90" : "text-foreground"}`}>
-                    {info.user_visible_message}
+                    {info.user_message ?? info.user_visible_message}
                 </div>
             )}
         </div>
@@ -146,9 +146,9 @@ const ErrorResponseItem: React.FC<{
                     {error.error_type || "error"}
                 </span>
             </div>
-            {error.user_visible_message && (
+            {(error.user_message ?? error.user_visible_message) && (
                 <div className={`text-xs leading-tight ${isSelected ? "text-primary-foreground/90" : "text-foreground"}`}>
-                    {error.user_visible_message}
+                    {error.user_message ?? error.user_visible_message}
                 </div>
             )}
         </div>

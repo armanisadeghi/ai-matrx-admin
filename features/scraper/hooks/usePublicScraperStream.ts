@@ -104,7 +104,7 @@ export function usePublicScraperStream(
 
           switch (event.event) {
             case 'status_update':
-              const message = event.data.user_visible_message || event.data.system_message;
+              const message = (event.data.user_message ?? event.data.user_visible_message) || event.data.system_message;
               setStatusMessage(message || null);
               onStatusUpdate?.(event.data.status, message);
               break;
@@ -120,7 +120,7 @@ export function usePublicScraperStream(
               break;
 
             case 'error':
-              const errorMsg = event.data.user_visible_message || event.data.message;
+              const errorMsg = (event.data.user_message ?? event.data.user_visible_message) || event.data.message;
               setError(errorMsg);
               onError?.(errorMsg);
               break;

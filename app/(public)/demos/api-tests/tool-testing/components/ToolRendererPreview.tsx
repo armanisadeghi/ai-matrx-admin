@@ -38,12 +38,14 @@ function buildToolCallObjects(
   for (const event of toolEvents) {
     switch (event.event) {
       case 'tool_progress':
-      case 'tool_step':
-        if (event.message) {
+      case 'tool_step': {
+        const msg = (event as { message?: string; user_message?: string; user_visible_message?: string }).user_message || (event as { message?: string; user_message?: string; user_visible_message?: string }).user_visible_message || event.message;
+        if (msg) {
           objects.push({
             id: event.call_id,
             type: 'user_visible_message',
-            user_visible_message: event.message,
+            user_message: msg,
+            user_visible_message: msg,
           });
         }
         if (Object.keys(event.data).length > 0) {
@@ -57,6 +59,7 @@ function buildToolCallObjects(
           });
         }
         break;
+      }
       case 'tool_result_preview':
         if (event.data.preview) {
           objects.push({
@@ -69,15 +72,18 @@ function buildToolCallObjects(
           });
         }
         break;
-      case 'tool_started':
-        if (event.message) {
+      case 'tool_started': {
+        const startedMsg = (event as { message?: string; user_message?: string; user_visible_message?: string }).user_message || (event as { message?: string; user_message?: string; user_visible_message?: string }).user_visible_message || event.message;
+        if (startedMsg) {
           objects.push({
             id: event.call_id,
             type: 'user_visible_message',
-            user_visible_message: event.message,
+            user_message: startedMsg,
+            user_visible_message: startedMsg,
           });
         }
         break;
+      }
       case 'tool_error':
         objects.push({
           id: event.call_id,

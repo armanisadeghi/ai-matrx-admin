@@ -59,10 +59,10 @@ const InputView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
 
             {/* Content */}
             <div className="flex-1 overflow-auto p-4 space-y-4">
-                {update.user_visible_message && (
+                {(update.user_message || update.user_visible_message) && (
                     <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                         <MessageSquare className="w-4 h-4 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                        <p className="text-sm text-blue-900 dark:text-blue-100">{update.user_visible_message}</p>
+                        <p className="text-sm text-blue-900 dark:text-blue-100">{update.user_message || update.user_visible_message}</p>
                     </div>
                 )}
 
@@ -138,10 +138,10 @@ const OutputView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
 
     return (
         <div className="p-4 space-y-4">
-            {update.user_visible_message && (
+            {(update.user_message || update.user_visible_message) && (
                 <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                     <MessageSquare className="w-4 h-4 mt-0.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                    <p className="text-sm text-green-900 dark:text-green-100">{update.user_visible_message}</p>
+                    <p className="text-sm text-green-900 dark:text-green-100">{update.user_message || update.user_visible_message}</p>
                 </div>
             )}
 
@@ -275,10 +275,10 @@ const ErrorView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {update.user_visible_message && (
+                    {(update.user_message || update.user_visible_message) && (
                         <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
                             <MessageSquare className="w-4 h-4 mt-0.5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                            <p className="text-sm text-red-900 dark:text-red-100">{update.user_visible_message}</p>
+                            <p className="text-sm text-red-900 dark:text-red-100">{update.user_message || update.user_visible_message}</p>
                         </div>
                     )}
                     <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">

@@ -138,7 +138,7 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
         abortRef.current = abortController;
 
         try {
-            const response = await fetch("/api/chat/unified", {
+            const response = await fetch("/api/ai/chat/unified", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 signal: abortController.signal,

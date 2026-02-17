@@ -78,10 +78,10 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
                     
                     return (
                         <div key={`brave-${index}`} className="space-y-2">
-                            {/* Always show user visible message first */}
-                            {update.user_visible_message && (
+                            {/* Always show user message first */}
+                            {(update.user_message || update.user_visible_message) && (
                                 <div className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300">
-                                    {update.user_visible_message}
+                                    {update.user_message || update.user_visible_message}
                                 </div>
                             )}
                             
@@ -144,14 +144,14 @@ export const BraveSearchInline: React.FC<ToolRendererProps> = ({
                     );
                 }
                 
-                // Render user visible messages (for non-step_data updates)
-                if (update.user_visible_message && update.type !== "step_data") {
+                // Render user messages (for non-step_data updates)
+                if ((update.user_message || update.user_visible_message) && update.type !== "step_data") {
                     return (
                         <div
                             key={`message-${index}`}
                             className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300"
                         >
-                            {update.user_visible_message}
+                            {update.user_message || update.user_visible_message}
                         </div>
                     );
                 }

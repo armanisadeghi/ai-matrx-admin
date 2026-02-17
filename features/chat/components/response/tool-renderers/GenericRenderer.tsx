@@ -120,8 +120,8 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
     
     // Collect meaningful (non-redundant) user messages
     const meaningfulMessages = visibleUpdates
-        .filter(u => u.type === "user_visible_message" && u.user_visible_message)
-        .map(u => u.user_visible_message!)
+        .filter(u => u.type === "user_visible_message" && (u.user_message || u.user_visible_message))
+        .map(u => (u.user_message || u.user_visible_message)!)
         .filter(msg => !isRedundantMessage(msg));
     
     // Get output data for preview/stats

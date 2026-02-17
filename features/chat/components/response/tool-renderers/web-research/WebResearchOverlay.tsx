@@ -69,9 +69,9 @@ function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
         .filter(
             (u) =>
                 u.type === "user_visible_message" &&
-                u.user_visible_message?.startsWith("Browsing ")
+                (u.user_message || u.user_visible_message)?.startsWith("Browsing ")
         )
-        .map((u) => u.user_visible_message?.replace("Browsing ", "") || "");
+        .map((u) => (u.user_message || u.user_visible_message)?.replace("Browsing ", "") || "");
 
     const summaryUpdate = updates.find(
         (u) =>

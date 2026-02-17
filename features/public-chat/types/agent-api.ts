@@ -2,11 +2,11 @@
  * Agent API Types
  *
  * Endpoints:
- * - POST /api/agent/warm   - Pre-cache a prompt (no auth required)
- * - POST /api/agent/execute - Execute agent with streaming response
+ * - POST /api/ai/agent/warm   - Pre-cache a prompt (no auth required)
+ * - POST /api/ai/agent/execute - Execute agent with streaming response
  *
  * Authentication:
- * All /api/agent/execute requests require ONE of:
+ * All /api/ai/agent/execute requests require ONE of:
  * - Authorization header (Bearer token) - for authenticated users
  * - X-Fingerprint-ID header - for guest users (FingerprintJS visitor ID)
  */
@@ -39,7 +39,7 @@
  * You can include both headers - if the token is valid, it takes priority.
  * If the token is invalid/expired, the request will fail (no fingerprint fallback).
  *
- * The /api/agent/warm endpoint does NOT require any authentication.
+ * The /api/ai/agent/warm endpoint does NOT require any authentication.
  */
 
 // ============================================================================
@@ -140,6 +140,8 @@ export interface AgentStatusUpdateEvent {
   data: {
     status: "connected" | "processing" | "warning";
     system_message?: string;
+    user_message?: string;
+    /** @deprecated Use user_message */
     user_visible_message?: string;
     metadata?: Record<string, unknown>;
   };
@@ -217,8 +219,13 @@ export interface AgentDataEvent {
 export interface AgentErrorEvent {
   event: "error";
   data: {
-    type: string;
+    /** Machine-readable error code (new field name) */
+    error?: string;
+    /** @deprecated Use error field instead */
+    type?: string;
     message: string;
+    user_message?: string;
+    /** @deprecated Use user_message */
     user_visible_message?: string;
     code?: string;
     details?: unknown;
@@ -248,7 +255,7 @@ export interface TokenUsage {
  * const conversationId = crypto.randomUUID();
  *
  * // Execute with JWT token
- * const response = await fetch("/api/agent/execute", {
+ * const response = await fetch("/api/ai/agent/execute", {
  *   method: "POST",
  *   headers: {
  *     "Content-Type": "application/json",
@@ -271,7 +278,7 @@ export interface TokenUsage {
  * const fingerprintId = await getFingerprint();
  *
  * // Execute with fingerprint
- * const response = await fetch("/api/agent/execute", {
+ * const response = await fetch("/api/ai/agent/execute", {
  *   method: "POST",
  *   headers: {
  *     "Content-Type": "application/json",
@@ -289,7 +296,7 @@ export interface TokenUsage {
  *
  * ```typescript
  * // Pre-warm on page load or hover (no auth required)
- * await fetch("/api/agent/warm", {
+ * await fetch("/api/ai/agent/warm", {
  *   method: "POST",
  *   headers: { "Content-Type": "application/json" },
  *   body: JSON.stringify({ prompt_id: "35461e07-bbd1-46cc-81a7-910850815703" }),
@@ -351,7 +358,7 @@ async function* streamAgentExecuteWithHeaders(
   request: AgentExecuteRequest,
   headers: Record<string, string>
 ): AsyncGenerator<AgentStreamEvent> {
-  const response = await fetch("/api/agent/execute", {
+  const response = await fetch("/api/ai/agent/execute", {
     method: "POST",
     headers,
     body: JSON.stringify(request),

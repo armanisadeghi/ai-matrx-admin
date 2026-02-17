@@ -1,6 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { getStoredAdminToken, setStoredAdminToken } from '@/utils/api-test-auth';
+import { useAdminOverride } from '@/hooks/useAdminOverride';
+import type { ContextScope } from '@/lib/api/types';
 
 export type ServerType = 'local' | 'production';
 
@@ -16,6 +19,9 @@ export interface UseApiTestConfigReturn extends ApiTestConfig {
   isCheckingLocalhost: boolean;
   isLocalhostAvailable: boolean;
   hasToken: boolean;
+  /** Admin scope overrides for testing */
+  scopeOverride: ContextScope;
+  setScopeOverride: (scope: ContextScope) => void;
 }
 
 interface UseApiTestConfigOptions {
@@ -29,57 +35,37 @@ interface UseApiTestConfigOptions {
 /**
  * Hook for managing API test configuration (server type and auth token).
  *
- * **Authority model:** This hook is the single source of truth for server
- * selection. Pages provide a `defaultServerType` for instant render, but
- * the hook validates localhost on mount and overrides if unavailable.
- * Pages must NEVER perform their own health checks or override the config.
- *
- * Auth tokens are stored in cookies for persistence across sessions and pages.
+ * Now unified with the global admin override system:
+ * - Server selection reads/writes from Redux adminPreferences (synced with AdminMenu)
+ * - Localhost health check uses the shared useAdminOverride hook
+ * - Auth tokens stored in cookies for persistence across sessions
+ * - Adds scope override support for admin testing with org/project/task context
  */
 export function useApiTestConfig(options: UseApiTestConfigOptions = {}): UseApiTestConfigReturn {
   const {
-    defaultServerType = 'production',
     defaultAuthToken = '',
-    localUrl = process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000',
-    productionUrl = process.env.NEXT_PUBLIC_PRODUCTION_SOCKET_URL || 'https://server.app.matrxserver.com',
     requireToken = true,
   } = options;
 
+  // Use the unified admin override for server selection
+  const {
+    backendUrl,
+    isLocalhost,
+    isChecking: isCheckingLocalhost,
+    setServer,
+    serverOverride,
+  } = useAdminOverride();
+
   // Initialize with empty to avoid hydration mismatch (cookies only exist on client).
-  // Stored token is loaded in useEffect after mount.
   const [authToken, setAuthTokenState] = useState<string>(defaultAuthToken);
 
-  const [serverType, setServerType] = useState<ServerType>(defaultServerType);
-  const [isCheckingLocalhost, setIsCheckingLocalhost] = useState(defaultServerType === 'local');
-  const [isLocalhostAvailable, setIsLocalhostAvailable] = useState(false);
-  const hasCheckedRef = useRef(false);
+  // Scope override for admin testing
+  const [scopeOverride, setScopeOverride] = useState<ContextScope>({});
 
   const setAuthToken = (token: string) => {
     setAuthTokenState(token);
     if (token) {
       setStoredAdminToken(token);
-    }
-  };
-
-  const getBaseUrl = (): string => {
-    return serverType === 'local' ? localUrl : productionUrl;
-  };
-
-  // Ping localhost to determine availability (any HTTP response = available)
-  const checkLocalhostAvailability = async (): Promise<boolean> => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-      await fetch(`${localUrl}/api/health`, {
-        method: 'GET',
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-      return true;
-    } catch {
-      return false;
     }
   };
 
@@ -91,56 +77,37 @@ export function useApiTestConfig(options: UseApiTestConfigOptions = {}): UseApiT
     }
   }, []);
 
-  // Always check localhost on mount — this is the single validation point
-  useEffect(() => {
-    if (hasCheckedRef.current) return;
-    hasCheckedRef.current = true;
+  // Server type derived from unified admin override
+  const serverType: ServerType = isLocalhost ? 'local' : 'production';
 
-    const validate = async () => {
-      setIsCheckingLocalhost(true);
-      const available = await checkLocalhostAvailability();
-      setIsLocalhostAvailable(available);
+  // Localhost available if we're currently on localhost or override says so
+  const isLocalhostAvailable = isLocalhost || serverOverride === 'localhost';
 
-      if (!available && serverType === 'local') {
-        setServerType('production');
-        toast.info('Localhost unavailable', {
-          description: 'Automatically switched to production server',
-        });
-      }
-
-      setIsCheckingLocalhost(false);
-    };
-
-    validate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Manual server type change — validated before committing
-  const handleSetServerType = async (type: ServerType) => {
+  // Server type change delegates to the unified hook
+  const handleSetServerType = useCallback(async (type: ServerType) => {
     if (type === 'local') {
-      setIsCheckingLocalhost(true);
-      const available = await checkLocalhostAvailability();
-      setIsLocalhostAvailable(available);
-      setIsCheckingLocalhost(false);
-
-      if (!available) {
+      const success = await setServer('localhost');
+      if (!success) {
         toast.error('Localhost unavailable', {
           description: 'Cannot connect to localhost server. Please start the server and try again.',
         });
         return;
       }
+    } else {
+      await setServer(null);
     }
-
-    setServerType(type);
-  };
+  }, [setServer]);
 
   return {
     serverType,
     authToken,
-    baseUrl: getBaseUrl(),
+    baseUrl: backendUrl,
     setServerType: handleSetServerType,
     setAuthToken,
     isCheckingLocalhost,
     isLocalhostAvailable,
     hasToken: authToken.length > 0,
+    scopeOverride,
+    setScopeOverride,
   };
 }

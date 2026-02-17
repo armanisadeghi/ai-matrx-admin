@@ -39,6 +39,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isStreamComplete, setIsStreamComplete] = useState(false);
     const [conversationId] = useState(() => uuidv4()); // Generate once per component instance
+    const isFirstExecutionRef = useRef(true);
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     
@@ -81,7 +82,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     is_builtin: false
                 };
                 
-                await fetch(`${BACKEND_URL}/api/agent/warm`, {
+                await fetch(`${BACKEND_URL}/api/ai/agent/warm`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(warmRequest),
@@ -271,17 +272,18 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             const agentRequest: AgentExecuteRequest = {
                 prompt_id: promptId,
                 conversation_id: conversationId,
+                is_new_conversation: isFirstExecutionRef.current,
                 variables: validVariables,
                 user_input: userInput,
                 stream: true,
                 debug: false,
-                is_builtin: false
+                is_builtin: false,
             };
             
             logTiming('➡️ Initiating Agent API request...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}/api/agent/execute`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}/api/ai/agent/execute`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -297,7 +299,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     const errorData = await fetchResponse.json();
                     console.log('errorData', JSON.stringify(errorData, null, 2));
                     if (typeof errorData.error === 'object' && errorData.error !== null) {
-                        errorMsg = errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
+                        errorMsg = (errorData.error.user_message || errorData.error.user_visible_message) || errorData.error.message || JSON.stringify(errorData.error);
                     } else {
                         errorMsg = errorData.error || errorData.message || errorData.detail || errorData.details || errorMsg;
                     }
@@ -381,7 +383,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                                     const errData = agentEvent.data;
                                     setError({
                                         type: 'stream_error',
-                                        message: errData.user_visible_message || errData.message || 'Unknown error from stream'
+                                        message: (errData.user_message || errData.user_visible_message) || errData.message || 'Unknown error from stream'
                                     });
                                 }
                             } catch (e) {
@@ -406,6 +408,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             
             logTiming('✅ Stream complete from Agent API');
+            isFirstExecutionRef.current = false;
             setIsStreamComplete(true);
             
         } catch (error: any) {

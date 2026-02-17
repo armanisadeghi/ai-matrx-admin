@@ -80,6 +80,8 @@ export interface ScraperStatusUpdateEvent {
   data: {
     status: 'connected' | 'processing' | 'warning';
     system_message?: string;
+    user_message?: string;
+    /** @deprecated Use user_message. Kept for backward compatibility. */
     user_visible_message?: string;
     metadata?: Record<string, unknown>;
   };
@@ -95,6 +97,8 @@ export interface ScraperErrorEvent {
   data: {
     type: string;
     message: string;
+    user_message?: string;
+    /** @deprecated Use user_message. Kept for backward compatibility. */
     user_visible_message?: string;
     code?: string;
     details?: unknown;

@@ -30,7 +30,8 @@
     "ship:update": "tsx scripts/matrx/ship.ts update",
     "ship:init": "tsx scripts/matrx/ship.ts init",
     "ship:setup": "tsx scripts/matrx/ship.ts setup",
-    "ship:history": "tsx scripts/matrx/ship.ts history"
+    "ship:history": "tsx scripts/matrx/ship.ts history",
+    "check:public-imports": "npx tsx scripts/check-public-imports.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.52",

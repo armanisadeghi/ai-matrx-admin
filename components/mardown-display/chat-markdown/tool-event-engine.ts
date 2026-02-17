@@ -39,7 +39,8 @@ export function convertToolUpdate(event: StreamEvent): ToolCallObject | null {
         mcp_output: d.mcp_output as ToolCallObject['mcp_output'],
         mcp_error: d.mcp_error,
         step_data: d.step_data as ToolCallObject['step_data'],
-        user_visible_message: d.user_visible_message,
+        user_message: d.user_message ?? d.user_visible_message,
+        user_visible_message: d.user_message ?? d.user_visible_message,
     };
 }
 
@@ -66,6 +67,7 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                     name: te.tool_name,
                     arguments: (eventData.arguments as Record<string, unknown>) ?? {},
                 },
+                user_message: te.message ?? undefined,
                 user_visible_message: te.message ?? undefined,
             };
 
@@ -73,10 +75,11 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
         case 'tool_step':
             return {
                 id: te.call_id,
-                type: 'user_visible_message',
+                type: 'user_message',
+                user_message: te.message ?? undefined,
                 user_visible_message: te.message ?? undefined,
                 step_data: Object.keys(eventData).length > 0
-                    ? (eventData as ToolCallObject['step_data'])
+                    ? (eventData as unknown as ToolCallObject['step_data'])
                     : undefined,
             };
 
@@ -84,7 +87,8 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
             return {
                 id: te.call_id,
                 type: 'step_data',
-                step_data: eventData as ToolCallObject['step_data'],
+                step_data: eventData as unknown as ToolCallObject['step_data'],
+                user_message: te.message ?? undefined,
                 user_visible_message: te.message ?? undefined,
             };
 
@@ -96,6 +100,7 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                     status: 'success',
                     result: eventData.result ?? eventData,
                 } as ToolCallObject['mcp_output'],
+                user_message: te.message ?? undefined,
                 user_visible_message: te.message ?? undefined,
             };
 

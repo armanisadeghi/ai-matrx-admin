@@ -243,14 +243,14 @@ export const DeepResearchInline: React.FC<ToolRendererProps> = ({
     const unreadResults = parsed?.unreadResults ?? [];
     const displayResults = readResults.slice(0, 4);
 
-    // Extract browsing URLs from user_visible_message updates
+    // Extract browsing URLs from user_message updates
     const browsingUrls = visibleUpdates
         .filter(
             (u) =>
                 u.type === "user_visible_message" &&
-                u.user_visible_message?.startsWith("Browsing ")
+                (u.user_message || u.user_visible_message)?.startsWith("Browsing ")
         )
-        .map((u) => u.user_visible_message?.replace("Browsing ", "") || "");
+        .map((u) => (u.user_message || u.user_visible_message)?.replace("Browsing ", "") || "");
 
     // Check for summarizing step (step_data may have a loose shape at runtime)
     const isSummarizing = visibleUpdates.some(

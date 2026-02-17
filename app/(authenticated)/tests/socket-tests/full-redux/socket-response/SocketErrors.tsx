@@ -42,7 +42,8 @@ const ErrorProperty = ({
 // Individual error item component
 const ErrorItem = ({ error, index }: { error: SocketErrorObject; index: number }) => {
     if (!error) return null;
-    const { type, message, user_visible_message, code, details } = error;
+    const { type, message, code, details } = error;
+    const userMessage = error.user_message ?? error.user_visible_message;
     const hasDetails = details !== undefined && details !== null;
     
     return (
@@ -51,7 +52,7 @@ const ErrorItem = ({ error, index }: { error: SocketErrorObject; index: number }
         
         <ErrorProperty label="Type" value={type} />
         <ErrorProperty label="Message" value={message} />
-        <ErrorProperty label="User Message" value={user_visible_message} />
+        <ErrorProperty label="User Message" value={userMessage} />
         <ErrorProperty label="Code" value={code} />
         
         {hasDetails && (

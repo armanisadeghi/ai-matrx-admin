@@ -164,7 +164,7 @@ export const toolRendererRegistry: ToolRegistry = {
             const args = input?.mcp_input?.arguments ?? {};
             const queryCount = Array.isArray(args.queries) ? (args.queries as unknown[]).length : (typeof args.query === "string" ? 1 : 0);
             const browsingCount = toolUpdates.filter(
-                (u) => u.type === "user_visible_message" && u.user_visible_message?.startsWith("Browsing ")
+                (u) => u.type === "user_visible_message" && (u.user_message || u.user_visible_message)?.startsWith("Browsing ")
             ).length;
             if (queryCount === 0 && browsingCount === 0) return null;
             const parts: string[] = [];

@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { Shield, Server, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,118 +12,49 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    selectServerOverride,
-    setServerOverride,
-    ServerEnvironment,
-} from '@/lib/redux/slices/adminPreferencesSlice';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
-const COOKIE_NAME = 'admin_server_override';
-const LOCALHOST_URL = process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000';
-const HEALTH_CHECK_TIMEOUT_MS = 2000;
-
-async function checkLocalhostHealth(): Promise<boolean> {
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
-        await fetch(`${LOCALHOST_URL}/api/health`, {
-            method: 'GET',
-            signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        return true;
-    } catch {
-        return false;
-    }
-}
+import { useAdminOverride } from '@/hooks/useAdminOverride';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 /**
  * AdminMenu - Dropdown for admin-only preferences
- * 
+ *
  * Only rendered when user is admin (lazy loaded).
- * Manages:
- * - Server environment override (localhost vs production)
- * - Future: Other admin-specific toggles
- * 
- * Validates localhost health before allowing the switch.
- * If cookie says localhost but the server is unreachable, auto-falls back to production.
- * Persists preferences to cookies for cross-session persistence.
+ * Uses the shared useAdminOverride hook for server detection/switching.
+ * Both this and ApiTestConfigPanel read/write the same Redux state.
  */
 export function AdminMenu() {
-    const dispatch = useDispatch();
-    const serverOverride = useSelector(selectServerOverride);
-    const [isChecking, setIsChecking] = useState(false);
-    const hasValidatedRef = useRef(false);
-
-    // Load from cookie on mount — validate localhost health before applying
-    useEffect(() => {
-        if (hasValidatedRef.current) return;
-        hasValidatedRef.current = true;
-
-        const cookieValue = document.cookie
-            .split('; ')
-            .find(row => row.startsWith(`${COOKIE_NAME}=`))
-            ?.split('=')[1] as ServerEnvironment | undefined;
-
-        if (!cookieValue || cookieValue === 'production') {
-            if (cookieValue === 'production') {
-                dispatch(setServerOverride('production'));
-            }
-            return;
-        }
-
-        if (cookieValue === 'localhost') {
-            (async () => {
-                const healthy = await checkLocalhostHealth();
-                if (healthy) {
-                    dispatch(setServerOverride('localhost'));
-                } else {
-                    dispatch(setServerOverride(null));
-                    document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`;
-                    toast.info('Localhost unavailable', {
-                        description: 'Could not reach the local server. Using production instead.',
-                    });
-                }
-            })();
-        }
-    }, [dispatch]);
+    const {
+        isLocalhost,
+        isChecking,
+        serverOverride,
+        setServer,
+    } = useAdminOverride();
 
     const handleServerChange = async (value: string) => {
-        const serverValue = value as ServerEnvironment | 'default';
-
-        if (serverValue === 'default') {
-            dispatch(setServerOverride(null));
-            document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`;
+        if (value === 'default') {
+            await setServer(null);
             return;
         }
 
-        if (serverValue === 'localhost') {
-            setIsChecking(true);
-            const healthy = await checkLocalhostHealth();
-            setIsChecking(false);
-
-            if (!healthy) {
+        if (value === 'localhost') {
+            const success = await setServer('localhost');
+            if (!success) {
                 toast.error('Localhost unavailable', {
                     description: 'Cannot connect to the local server. Please start it and try again.',
                 });
                 return;
             }
-        }
-
-        dispatch(setServerOverride(serverValue));
-        document.cookie = `${COOKIE_NAME}=${serverValue}; path=/; max-age=${30 * 24 * 60 * 60}`;
-
-        if (serverValue === 'localhost') {
             toast.success('Switched to localhost', {
-                description: `Connected to ${LOCALHOST_URL}`,
+                description: `Connected to ${BACKEND_URLS.localhost}`,
             });
+        } else {
+            await setServer(value === 'production' ? 'production' : null);
         }
     };
 
     const currentValue = serverOverride || 'default';
-    const isLocalhost = serverOverride === 'localhost';
 
     return (
         <DropdownMenu>
@@ -173,8 +103,6 @@ export function AdminMenu() {
                         </DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                 )}
-
-                {/* Add more admin options here in the future */}
             </DropdownMenuContent>
         </DropdownMenu>
     );

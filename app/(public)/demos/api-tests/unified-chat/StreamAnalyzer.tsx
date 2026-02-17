@@ -560,7 +560,7 @@ function ToolCallGroup({ groupId, events }: { groupId: string; events: Timestamp
                     {formatDuration(evt.offsetMs)}
                   </span>
                   <Globe className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                  <span className="text-foreground">{data.user_visible_message as string}</span>
+                  <span className="text-foreground">{(data.user_message || data.user_visible_message) as string}</span>
                 </div>
               );
             })}
@@ -623,9 +623,9 @@ function StatusUpdateCategoryView({ events }: { events: TimestampedEvent[] }) {
               {(data.status as string) ?? '?'}
             </Badge>
             <span className="text-muted-foreground">{data.system_message as string}</span>
-            {data.user_visible_message && (
+            {(data.user_message || data.user_visible_message) && (
               <span className="text-foreground ml-auto">
-                {data.user_visible_message as string}
+                {(data.user_message || data.user_visible_message) as string}
               </span>
             )}
             {metadata && (
@@ -758,8 +758,8 @@ function ErrorCategoryView({ events }: { events: TimestampedEvent[] }) {
             </div>
             {typeof data === 'object' && data !== null ? (
               <div className="space-y-1 text-xs font-mono">
-                {(data as Record<string, unknown>).user_visible_message && (
-                  <div className="text-destructive font-medium">{(data as Record<string, unknown>).user_visible_message as string}</div>
+                {((data as Record<string, unknown>).user_message || (data as Record<string, unknown>).user_visible_message) && (
+                  <div className="text-destructive font-medium">{((data as Record<string, unknown>).user_message || (data as Record<string, unknown>).user_visible_message) as string}</div>
                 )}
                 <pre className="whitespace-pre-wrap text-muted-foreground mt-1">
                   {JSON.stringify(data, null, 2)}
@@ -905,7 +905,7 @@ function RawEventDisplay({ event, index }: { event: TimestampedEvent; index: num
   // Extract metadata from event.raw.data
   const data = event.raw.data as Record<string, unknown> | undefined;
   const type = data?.type as string | undefined;
-  const userMessage = data?.user_visible_message as string | undefined;
+  const userMessage = (data?.user_message || data?.user_visible_message) as string | undefined;
   
   // Check for presence of key fields
   const hasInput = data?.mcp_input !== undefined && data?.mcp_input !== null;
@@ -1053,13 +1053,13 @@ function eventPreview(evt: TimestampedEvent): string {
 
     case 'status_update': {
       const d = data as Record<string, unknown>;
-      return `[${d.status}] ${d.system_message ?? d.user_visible_message ?? ''}`;
+      return `[${d.status}] ${d.system_message ?? (d.user_message || d.user_visible_message) ?? ''}`;
     }
 
     case 'tool_update': {
       const d = data as Record<string, unknown>;
       const toolName = d.tool_name as string | null;
-      const msg = d.user_visible_message as string | null;
+      const msg = (d.user_message || d.user_visible_message) as string | null;
       return toolName
         ? `${toolName} → ${msg ?? evt.subType ?? ''}`
         : msg ?? evt.subType ?? '';
@@ -1073,7 +1073,7 @@ function eventPreview(evt: TimestampedEvent): string {
 
     case 'error': {
       const d = data as Record<string, unknown>;
-      return (d.user_visible_message as string) ?? (d.message as string) ?? 'Error';
+      return ((d.user_message || d.user_visible_message) as string) ?? (d.message as string) ?? 'Error';
     }
 
     case 'end':

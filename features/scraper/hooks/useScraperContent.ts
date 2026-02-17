@@ -222,7 +222,7 @@ export const useScraperContent = (): UseScraperContentReturn => {
     // Update error state when errors come from Redux
     useEffect(() => {
         if (errors && errors.length > 0) {
-            const errorMessage = errors.map((err) => err.user_visible_message).join(", ");
+            const errorMessage = errors.map((err) => err.user_message ?? err.user_visible_message).filter(Boolean).join(", ");
             setError(errorMessage);
         }
     }, [errors]);

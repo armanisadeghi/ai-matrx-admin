@@ -53,12 +53,12 @@ Every tool update is a `ToolCallObject`:
 ```typescript
 interface ToolCallObject {
     id?: string;
-    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_visible_message";
+    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_message";
     mcp_input?: { name: string; arguments: Record<string, any> };
     mcp_output?: Record<string, unknown>;
     mcp_error?: string;
     step_data?: { type: string; [key: string]: any };
-    user_visible_message?: string;
+    user_message?: string;
 }
 ```
 
@@ -79,7 +79,7 @@ Your parser function must:
 2. If string: look for known structural patterns (XML tags, markdown headers, key-value blocks, delimiters)
 3. Extract ALL data points — never skip a field because it's hard to parse
 4. Handle `step_data` updates (status changes, summaries, intermediate results)
-5. Handle `user_visible_message` updates (browsing URLs, status messages)
+5. Handle `user_message` updates (browsing URLs, status messages)
 
 ## The Three Modal Tabs
 
@@ -129,7 +129,7 @@ function parseToolData(updates: ToolCallObject[]): ParsedToolData {
     const inputUpdate = updates.find((u) => u.type === "mcp_input");
     const outputUpdate = updates.find((u) => u.type === "mcp_output");
     const stepDataUpdates = updates.filter((u) => u.type === "step_data");
-    const visibleMessages = updates.filter((u) => u.type === "user_visible_message");
+    const visibleMessages = updates.filter((u) => u.type === "user_message");
     const errorUpdate = updates.find((u) => u.type === "mcp_error");
 
     // Extract from mcp_input
@@ -142,7 +142,7 @@ function parseToolData(updates: ToolCallObject[]): ParsedToolData {
     const resultObject = typeof rawResult === "object" ? rawResult : null;
 
     // Extract from step_data (intermediate results, summaries, status)
-    // Extract from user_visible_message (browsing URLs, progress updates)
+    // Extract from user_message (browsing URLs, progress updates)
     // Parse structured text if result is a string with known patterns
 
     return { /* ALL extracted data */ };
@@ -322,7 +322,7 @@ Use randomized durations (3-7s per phase) for natural, non-robotic timing.
 
 **3. Aggregate waiting indicator** — after individual items complete:
 - Show a summary "brain" indicator with messages like "Comparing sources...", "Putting it all together..."
-- Use `user_visible_message` updates to drive real status when available
+- Use `user_message` updates to drive real status when available
 - Fall back to timed phases only when no real status is streaming
 
 **4. Step data awareness** — use `step_data` updates for real progress:
@@ -435,7 +435,7 @@ style={{
 
 *Parser:*
 - Handles `mcp_input` arguments (queries array or single query, instructions)
-- Handles `user_visible_message` browsing URLs
+- Handles `user_message` browsing URLs
 - Handles `step_data` summaries (web_result_summary with text content)
 - Handles `mcp_output.result` as string — parses structured text blocks with regex
 - Extracts AI analysis text (strips delimiters, headers)

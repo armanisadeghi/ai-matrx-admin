@@ -456,9 +456,9 @@ export const WebResearchInline: React.FC<ToolRendererProps> = ({
         .filter(
             (u) =>
                 u.type === "user_visible_message" &&
-                u.user_visible_message?.startsWith("Browsing ")
+                (u.user_message || u.user_visible_message)?.startsWith("Browsing ")
         )
-        .map((u) => u.user_visible_message?.replace("Browsing ", "") || "");
+        .map((u) => (u.user_message || u.user_visible_message)?.replace("Browsing ", "") || "");
 
     // Extract queries (always available, even from DB)
     const inputUpdate = visibleUpdates.find((u) => u.type === "mcp_input");

@@ -58,6 +58,7 @@ function classifyToolUpdate(data: Record<string, unknown>): string {
       if (stepData?.status === 'summarizing') return 'tool_summarizing';
       return 'tool_step_data';
     }
+    case 'user_message':
     case 'user_visible_message':
       return 'tool_progress';
     default:
@@ -129,7 +130,7 @@ export function classifyEvent(
 
     case 'error':
       category = 'error';
-      subType = 'error';
+      subType = ((data.error ?? data.type) as string) ?? 'error';
       break;
 
     case 'end':

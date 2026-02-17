@@ -46,7 +46,7 @@ Every tool update is a `ToolCallObject` from `@/lib/redux/socket-io/socket.types
 ```typescript
 interface ToolCallObject {
     id?: string;  // Unique ID for the tool call (groups related updates)
-    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_visible_message";
+    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_message";
     mcp_input?: {
         name: string;        // Tool name (e.g., "get_news_headlines")
         arguments: Record<string, any>;  // Tool parameters
@@ -54,7 +54,7 @@ interface ToolCallObject {
     mcp_output?: Record<string, unknown>;  // Tool result data
     mcp_error?: string;                     // Error message if tool failed
     step_data?: { type: string; [key: string]: any };  // Streaming intermediate data
-    user_visible_message?: string;          // Status messages (e.g., "Browsing https://...")
+    user_message?: string;          // Status messages (e.g., "Browsing https://...")
 }
 ```
 
@@ -63,7 +63,7 @@ A typical tool call produces updates in this order:
 | # | Type | Description |
 |---|------|-------------|
 | 1 | `mcp_input` | Tool name + arguments (always first) |
-| 2–N | `user_visible_message` | Optional status messages during execution |
+| 2–N | `user_message` | Optional status messages during execution |
 | 2–N | `step_data` | Optional intermediate data (e.g., partial search results) |
 | N+1 | `mcp_output` | Final result data (always last on success) |
 | N+1 | `mcp_error` | Error message (instead of output, on failure) |
@@ -323,8 +323,8 @@ const stepUpdates = toolUpdates.filter(u => u.type === "step_data");
 
 // Get status messages (e.g., "Browsing https://...")
 const messages = toolUpdates
-    .filter(u => u.type === "user_visible_message")
-    .map(u => u.user_visible_message);
+    .filter(u => u.type === "user_message")
+    .map(u => u.user_message);
 
 // Check if tool execution is complete
 const isComplete = toolUpdates.some(u => u.type === "mcp_output" || u.type === "mcp_error");

@@ -64,8 +64,8 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
         streamError &&
         Array.isArray(streamError) &&
         streamError.length > 0 &&
-        streamError[0]?.user_visible_message !== null &&
-        streamError[0]?.user_visible_message?.length > 5;
+        (streamError[0]?.user_message || streamError[0]?.user_visible_message) != null &&
+        (streamError[0]?.user_message || streamError[0]?.user_visible_message)?.length > 5;
 
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
@@ -205,7 +205,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                     scrollToBottom={handleScrollToBottom}
                 />
                 {hasUserVisibleMessage && (
-                    <ErrorCard message={streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose} />
+                    <ErrorCard message={streamError[0].user_message || streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose} />
                 )}
 
                 <div ref={bottomRef} style={{ height: "1px" }} />

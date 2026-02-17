@@ -196,7 +196,7 @@ function setupGlobalErrorListener(socket: Socket, store: MiddlewareAPI<AppDispat
           error: {
             message: `Global error: ${errorMessage}`,
             type: 'global_error',
-            user_visible_message: 'A global error occurred',
+            user_message: 'A global error occurred',
             code: 'GLOBAL_ERROR',
             details: {}
           }

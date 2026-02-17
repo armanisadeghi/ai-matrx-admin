@@ -138,7 +138,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         case 'error':
           // Handle error events
           const errorData = event.data as any;
-          const errorMessage = errorData?.user_visible_message || errorData?.message || 'An error occurred';
+          const errorMessage = errorData?.user_message || errorData?.user_visible_message || errorData?.message || 'An error occurred';
           onErrorRef.current?.(errorMessage);
           setHasStreamError(true);
           break;
@@ -146,7 +146,7 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
         case 'status_update':
           // Handle status updates
           const statusData = event.data as any;
-          onStatusUpdateRef.current?.(statusData?.status, statusData?.user_visible_message || statusData?.system_message);
+          onStatusUpdateRef.current?.(statusData?.status, statusData?.user_message || statusData?.user_visible_message || statusData?.system_message);
           break;
 
         case 'data':

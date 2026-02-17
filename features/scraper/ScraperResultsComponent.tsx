@@ -103,7 +103,7 @@ const ScraperResultsComponent = ({ taskId }: ScraperResultsComponentProps) => {
       <div className="w-full h-full flex items-center justify-center p-4">
         <Alert className="w-full max-w-2xl">
           <AlertDescription>
-            {errors.map((error) => error.user_visible_message).join(", ")}
+            {errors.map((error) => error.user_message ?? error.user_visible_message).filter(Boolean).join(", ")}
           </AlertDescription>
         </Alert>
       </div>

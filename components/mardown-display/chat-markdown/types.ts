@@ -20,6 +20,8 @@ export interface ChunkData {
 export interface StatusUpdateData {
   status: string;
   system_message?: string;
+  user_message?: string;
+  /** @deprecated Use user_message */
   user_visible_message?: string;
   metadata?: Record<string, any>;
 }
@@ -27,8 +29,13 @@ export interface StatusUpdateData {
 // Error events - error information
 export interface ErrorData {
   message: string;
-  type: string;
-  user_visible_message: string;
+  /** Machine-readable error code */
+  error?: string;
+  /** @deprecated Use error field instead */
+  type?: string;
+  user_message?: string;
+  /** @deprecated Use user_message */
+  user_visible_message?: string;
   code?: string;
   details?: Record<string, any>;
 }
@@ -36,11 +43,13 @@ export interface ErrorData {
 // Tool/Function call events - MCP tool execution updates (legacy format)
 export interface ToolUpdateData {
   id?: string;
-  type?: 'mcp_input' | 'mcp_output' | 'mcp_error' | 'step_data' | 'user_visible_message';
+  type?: 'mcp_input' | 'mcp_output' | 'mcp_error' | 'step_data' | 'user_message' | 'user_visible_message';
   mcp_input?: Record<string, any>;
   mcp_output?: Record<string, any>;
   mcp_error?: string;
   step_data?: Record<string, any>;
+  user_message?: string;
+  /** @deprecated Use user_message */
   user_visible_message?: string;
 }
 

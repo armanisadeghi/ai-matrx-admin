@@ -61,7 +61,7 @@ export async function extractTextFromPdf(
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${backendUrl}/api/pdf/extract-text`, {
+    const response = await fetch(`${backendUrl}/api/utilities/pdf/extract-text`, {
       method: 'POST',
       headers: {
         // Don't set Content-Type - browser will set it with boundary for FormData

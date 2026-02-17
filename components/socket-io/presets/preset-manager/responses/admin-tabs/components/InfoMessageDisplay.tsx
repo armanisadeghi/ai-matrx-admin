@@ -16,7 +16,9 @@ interface InfoMessageDisplayProps {
             status?: string;
             [key: string]: any;
         } | null;
-        user_visible_message: string;
+        user_message?: string;
+        /** @deprecated Use user_message. Kept for backward compatibility. */
+        user_visible_message?: string;
     };
 }
 
@@ -134,7 +136,7 @@ export const InfoMessageDisplay: React.FC<InfoMessageDisplayProps> = ({ data }) 
                             <span className="text-sm font-medium text-blue-700 dark:text-blue-300">User Message</span>
                         </div>
                         <div className="pl-6 text-sm font-medium text-foreground">
-                            {data.user_visible_message}
+                            {data.user_message ?? data.user_visible_message}
                         </div>
                     </div>
 

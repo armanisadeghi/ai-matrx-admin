@@ -122,7 +122,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 is_builtin: false,
             };
 
-            await fetch(`${BACKEND_URL}/api/agent/warm`, {
+            await fetch(`${BACKEND_URL}/api/ai/agent/warm`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(warmRequest),
@@ -231,7 +231,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             updateMessage(assistantMessageId, { status: 'streaming' });
 
-            const response = await fetch(`${BACKEND_URL}/api/agent/execute`, {
+            const response = await fetch(`${BACKEND_URL}/api/ai/agent/execute`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -243,7 +243,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 try {
                     const errorData = await response.json();
                     if (typeof errorData.error === 'object' && errorData.error !== null) {
-                        errorMsg = errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
+                        errorMsg = errorData.error.user_message || errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
+                    } else if (typeof errorData.user_message === 'string') {
+                        errorMsg = errorData.user_message;
                     } else {
                         errorMsg = errorData.error || errorData.message || errorData.details || errorMsg;
                     }
@@ -297,7 +299,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                                     // Handle error events
                                     if (agentEvent.event === 'error') {
                                         const errData = agentEvent.data;
-                                        const errorMessage = errData.user_visible_message || errData.message || 'Unknown error';
+                                        const errorMessage = errData.user_message || errData.user_visible_message || errData.message || 'Unknown error';
                                         setError({ type: 'stream_error', message: errorMessage });
                                         options.onError?.(errorMessage);
                                     }

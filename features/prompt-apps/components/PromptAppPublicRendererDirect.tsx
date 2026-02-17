@@ -233,7 +233,7 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
             logTiming('➡️ Initiating fetch to backend...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}/api/chat/direct`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}/api/ai/chat/unified`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(chatConfig),

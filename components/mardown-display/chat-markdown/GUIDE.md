@@ -86,7 +86,7 @@ const handleEvent = (event: StreamEvent) => {
     type: 'mcp_input',  // or 'mcp_output', 'mcp_error'
     mcp_input: { name: 'tool_name', arguments: {...} },
     mcp_output: { status: 'success', result: {...} },
-    user_visible_message: 'Using tool...'
+    user_message: 'Using tool...'
   }
 }
 ```
@@ -98,7 +98,7 @@ const handleEvent = (event: StreamEvent) => {
   data: {
     message: 'Error message',
     type: 'error_type',
-    user_visible_message: 'User-friendly error'
+    user_message: 'User-friendly error'
   }
 }
 ```
@@ -109,7 +109,7 @@ const handleEvent = (event: StreamEvent) => {
   event: 'status_update',
   data: {
     status: 'processing',
-    user_visible_message: 'Thinking...',
+    user_message: 'Thinking...',
     metadata: {...}
   }
 }
