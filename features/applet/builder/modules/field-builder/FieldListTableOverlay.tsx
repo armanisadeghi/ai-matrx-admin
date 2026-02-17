@@ -388,7 +388,7 @@ export default function FieldListTableOverlay({
         {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
         <SheetContent 
           side={sheetSide}
-          className={`w-[50vw] min-w-[800px] max-w-[90vw] ${overlaySize === "full" ? "max-w-none w-[95vw]" : ""}`}
+          className={`w-[95vw] sm:w-[50vw] sm:min-w-[800px] max-w-[90vw] ${overlaySize === "full" ? "max-w-none w-[95vw]" : ""}`}
         >
           <SheetHeader className="mb-0">
             <SheetTitle>{getDynamicTitle()}</SheetTitle>

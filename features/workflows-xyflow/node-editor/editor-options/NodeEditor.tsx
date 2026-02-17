@@ -57,7 +57,7 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ nodeId, isOpen, onOpenCh
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[70vw] h-[90vh] max-w-none flex flex-col">
+            <DialogContent className="w-[95vw] sm:w-[70vw] h-[90dvh] sm:h-[90vh] max-w-none flex flex-col overflow-hidden">
                 <DialogHeader>
                     <DialogTitle>Edit Node: {nodeData.step_name || nodeData.id}</DialogTitle>
                 </DialogHeader>
@@ -65,7 +65,7 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ nodeId, isOpen, onOpenCh
                 {/* Tabs Content */}
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                        <TabsList className="flex-shrink-0 grid w-full grid-cols-7">
+                        <TabsList className="flex-shrink-0 flex w-full overflow-x-auto sm:grid sm:grid-cols-7">
                             <TabsTrigger value="overview">Overview</TabsTrigger>
                             <TabsTrigger value="inputs">Inputs</TabsTrigger>
                             <TabsTrigger value="outputs">Outputs</TabsTrigger>

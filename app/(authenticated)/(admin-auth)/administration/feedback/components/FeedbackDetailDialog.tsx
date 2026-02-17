@@ -622,7 +622,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+            <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden">
                 {/* Header */}
                 <div className="px-6 pt-6 pb-4 border-b flex-shrink-0">
                     <DialogHeader>
@@ -698,7 +698,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 {/* Tabbed Content */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
                     <div className="px-6 pt-2 flex-shrink-0">
-                        <TabsList className="w-full justify-start">
+                        <TabsList className="w-full justify-start overflow-x-auto">
                             <TabsTrigger value="submission" className="gap-1.5 text-xs">
                                 <MessageSquare className="w-3.5 h-3.5" />
                                 Submission

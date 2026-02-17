@@ -97,7 +97,7 @@ export function AIHelpDialog(
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[80vw] h-[80vh] max-w-[80vw] max-h-[80vh] flex flex-col">
+            <DialogContent className="w-[95vw] sm:w-[80vw] h-[85dvh] sm:h-[80vh] max-w-[95vw] sm:max-w-[80vw] max-h-[85dvh] sm:max-h-[80vh] flex flex-col">
                 <DialogHeader className="px-6 pt-6">
                     <DialogTitle>Page Context & Help</DialogTitle>
                 </DialogHeader>
@@ -109,7 +109,7 @@ export function AIHelpDialog(
                         </div>
                     ) : lastContext ? (
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-                            <TabsList className="grid w-full grid-cols-5">
+                            <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5">
                                 <TabsTrigger value="ai-ready">
                                     <Bot className="h-4 w-4 mr-2"/>
                                     AI Ready

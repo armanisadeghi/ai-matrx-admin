@@ -330,7 +330,7 @@ export function ContextAwareCodeEditorModal({
     // Standard display needs Dialog wrapper
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0">
+            <DialogContent className="max-w-[95vw] w-full h-[90dvh] p-0 gap-0">
                 {content}
             </DialogContent>
         </Dialog>

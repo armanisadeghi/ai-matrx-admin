@@ -275,7 +275,7 @@ export const CompiledRecipeOverlay: React.FC<CompiledRecipeOverlayProps> = ({
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent className={cn("w-[50vw] h-[95vh] max-w-none p-4 gap-0 flex flex-col", className)}>
+            <DialogContent className={cn("w-[95vw] sm:w-[50vw] h-[90dvh] sm:h-[95vh] max-w-none p-4 gap-0 flex flex-col overflow-hidden", className)}>
                 <DialogTitle className="text-lg font-semibold mb-4">{recipeRecord.name}</DialogTitle>
                 <div className="flex-1 min-h-0 overflow-hidden">
                     <CompiledRecipeView recipeId={recipeRecord.id} />

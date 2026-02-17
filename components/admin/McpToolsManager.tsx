@@ -346,7 +346,7 @@ export function McpToolsManager() {
                                         Add Tool
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90vh] overflow-hidden flex flex-col">
+                                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
                                     <DialogHeader className="flex-shrink-0">
                                         <DialogTitle>Create New Tool</DialogTitle>
                                     </DialogHeader>
@@ -426,7 +426,7 @@ export function McpToolsManager() {
 
             {/* Edit Dialog */}
             <Dialog open={!!editingTool} onOpenChange={() => setEditingTool(null)}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
                     <DialogHeader className="flex-shrink-0">
                         <DialogTitle>Edit Tool</DialogTitle>
                     </DialogHeader>
@@ -473,7 +473,7 @@ export function McpToolsManager() {
 
             {/* UI Component Editor Dialog */}
             <Dialog open={!!uiEditorTool} onOpenChange={() => setUiEditorTool(null)}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
                     <DialogHeader className="flex-shrink-0">
                         <DialogTitle className="flex items-center gap-2">
                             <Paintbrush className="h-5 w-5" />
@@ -496,7 +496,7 @@ export function McpToolsManager() {
 
             {/* Incidents Viewer Dialog */}
             <Dialog open={showIncidents} onOpenChange={setShowIncidents}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
                     <DialogHeader className="flex-shrink-0">
                         <DialogTitle className="flex items-center gap-2">
                             <Bug className="h-5 w-5" />
@@ -511,7 +511,7 @@ export function McpToolsManager() {
 
             {/* AI Component Generator Dialog */}
             <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
                     <DialogHeader className="flex-shrink-0">
                         <DialogTitle className="flex items-center gap-2">
                             <Wand2 className="h-5 w-5" />

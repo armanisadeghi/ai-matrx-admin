@@ -157,7 +157,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
             {/* The Overlay (if needed) */}
             {needsOverlay && (
                 <Dialog open={isOverlayOpen} onOpenChange={handleOverlayClose}>
-                    <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-hidden p-0 flex flex-col">
+                    <DialogContent className="w-[95vw] max-w-none h-[95dvh] overflow-hidden p-0 flex flex-col">
                         <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700 flex-shrink-0">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">

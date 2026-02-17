@@ -65,7 +65,7 @@ export function PromptBuilderModal({
 
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="max-w-[95vw] h-[95vh] flex flex-col p-0 overflow-hidden">
+        <DialogContent className="max-w-[95vw] h-[90dvh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="px-3 py-2 border-b flex-shrink-0">
             <div className="flex items-center gap-2">
               <Button

@@ -42,7 +42,7 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
     >
       <DialogContent className={cn(
         "bg-textured text-gray-900 dark:text-gray-100 overflow-hidden",
-        "max-w-[95vw] w-[95vw] h-[95vh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
+        "max-w-[95vw] w-[95vw] h-[90dvh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
       )}>
         <DialogHeader className="flex flex-row items-center justify-between mb-1">
           <DialogTitle className="text-xl font-semibold">

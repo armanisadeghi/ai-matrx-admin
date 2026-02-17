@@ -88,7 +88,7 @@ export function AdditionalInfoModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="max-w-[500px] p-4">
+            <DialogContent className="sm:max-w-[500px] p-4">
                 <div className="space-y-2.5">
                     {customMessage && (
                         <p className="text-sm text-foreground pr-6">

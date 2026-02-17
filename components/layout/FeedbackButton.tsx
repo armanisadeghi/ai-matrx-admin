@@ -14,11 +14,17 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Drawer,
+    DrawerContent,
+    DrawerTitle,
+} from '@/components/ui/drawer';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { FileUploadWithStorage, UploadedFileResult } from '@/components/ui/file-upload/FileUploadWithStorage';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
 interface FeedbackButtonProps {
@@ -32,9 +38,275 @@ const feedbackTypes: { value: FeedbackType; label: string }[] = [
     { value: 'other', label: 'Other' },
 ];
 
+// ============================================================================
+// FEEDBACK FORM CONTENT — shared between mobile drawer and desktop dropdown
+// ============================================================================
+
+interface FeedbackFormContentProps {
+    feedbackType: FeedbackType;
+    setFeedbackType: (type: FeedbackType) => void;
+    description: string;
+    setDescription: (desc: string) => void;
+    uploadedImages: string[];
+    setUploadedImages: React.Dispatch<React.SetStateAction<string[]>>;
+    isSubmitting: boolean;
+    isPasting: boolean;
+    submitted: boolean;
+    feedbackStats: { total: number; pending: number; resolved: number } | null;
+    username: string;
+    pathname: string;
+    handleSubmit: () => void;
+    handleCancel: () => void;
+    handleUploadComplete: (results: UploadedFileResult[]) => void;
+    handlePasteButton: () => void;
+    removeImage: (index: number) => void;
+    onClose: () => void;
+}
+
+function FeedbackFormContent({
+    feedbackType,
+    setFeedbackType,
+    description,
+    setDescription,
+    uploadedImages,
+    isSubmitting,
+    isPasting,
+    submitted,
+    feedbackStats,
+    username,
+    pathname,
+    handleSubmit,
+    handleCancel,
+    handleUploadComplete,
+    handlePasteButton,
+    removeImage,
+    onClose,
+}: FeedbackFormContentProps) {
+    if (submitted) {
+        return (
+            <div className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-green-100 dark:bg-green-900/30">
+                    <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-gray-100">
+                    Thank You!
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Your feedback has been submitted and we&apos;ll get on it.
+                </p>
+
+                {feedbackStats && (
+                    <div className="flex justify-center gap-4 mb-3 text-xs">
+                        <div className="text-center">
+                            <div className="text-lg font-bold text-foreground">{feedbackStats.total}</div>
+                            <div className="text-muted-foreground">Submitted</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{feedbackStats.pending}</div>
+                            <div className="text-muted-foreground">Pending</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-lg font-bold text-green-600 dark:text-green-400">{feedbackStats.resolved}</div>
+                            <div className="text-muted-foreground">Resolved</div>
+                        </div>
+                    </div>
+                )}
+
+                <Link
+                    href="/settings/feedback"
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                    View all your submissions
+                    <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+
+                <div className="mt-3">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onClose}
+                        className="text-xs text-muted-foreground"
+                    >
+                        Close
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Submit Feedback
+                </h3>
+                <button
+                    onClick={handleCancel}
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    disabled={isSubmitting}
+                >
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+
+            {/* Form Content */}
+            <div className="p-4 space-y-4">
+                {/* Feedback Type */}
+                <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                        Type
+                    </label>
+                    <Select
+                        value={feedbackType}
+                        onValueChange={(value) => setFeedbackType(value as FeedbackType)}
+                        disabled={isSubmitting}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {feedbackTypes.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                    {type.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Auto-captured info */}
+                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                    <div>
+                        <span className="font-medium text-blue-500">User:</span> {username}
+                    </div>
+                    <div>
+                        <span className="font-medium text-blue-500">Route:</span> {pathname}
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                        Description
+                    </label>
+                    <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Please describe your feedback in detail..."
+                        className="min-h-[100px] resize-none"
+                        style={{ fontSize: '16px' }}
+                        disabled={isSubmitting}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                        Tip: Paste screenshots anytime with Ctrl+V
+                    </p>
+                </div>
+
+                {/* Screenshot/Image Upload */}
+                <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                        Screenshots (optional)
+                    </label>
+
+                    <FileUploadWithStorage
+                        bucket="userContent"
+                        path="feedback-images"
+                        saveTo="public"
+                        onUploadComplete={handleUploadComplete}
+                        multiple={true}
+                        useMiniUploader={true}
+                        maxHeight="150px"
+                    />
+
+                    {/* Paste button */}
+                    <div className="mt-2 flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={handlePasteButton}
+                            disabled={isSubmitting || isPasting}
+                            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
+                        >
+                            <Clipboard className="w-3 h-3" />
+                            {isPasting ? 'Pasting...' : 'Paste Image'}
+                        </button>
+                        <span className="text-[10px] text-muted-foreground">
+                            or Ctrl+V
+                        </span>
+                    </div>
+
+                    {/* Image thumbnails with remove */}
+                    {uploadedImages.length > 0 && (
+                        <div className="mt-2">
+                            <p className="text-xs text-muted-foreground mb-1.5">
+                                {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} attached
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {uploadedImages.map((url, index) => (
+                                    <div
+                                        key={`img-${index}`}
+                                        className="relative group w-14 h-14 rounded-md overflow-hidden border border-border bg-muted"
+                                    >
+                                        <img
+                                            src={url}
+                                            alt={`Attachment ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(index)}
+                                            className="absolute top-0 right-0 p-0.5 bg-black/60 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                            aria-label={`Remove image ${index + 1}`}
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 justify-end pt-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleCancel}
+                        disabled={isSubmitting}
+                        size="sm"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || !description.trim()}
+                        size="sm"
+                        className="gap-2"
+                    >
+                        {isSubmitting ? (
+                            'Submitting...'
+                        ) : (
+                            <>
+                                <Send className="w-4 h-4" />
+                                Submit
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </div>
+        </>
+    );
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export default function FeedbackButton({ className = '' }: FeedbackButtonProps) {
     const dispatch = useAppDispatch();
     const pathname = usePathname();
+    const isMobile = useIsMobile();
     const username = useAppSelector(state => state.user.userMetadata.preferredUsername || state.user.userMetadata.fullName || state.user.email || 'Anonymous');
     const userId = useAppSelector(state => state.user.id);
     const feedbackFeatureViewCount = useAppSelector(state => state.userPreferences.system.feedbackFeatureViewCount);
@@ -49,7 +321,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const [feedbackStats, setFeedbackStats] = useState<{ total: number; pending: number; resolved: number } | null>(null);
     const [showNewFeatureHighlight, setShowNewFeatureHighlight] = useState(false);
 
-    // Reset submitted state after dropdown close animation completes
+    // Reset submitted state after close animation completes
     useEffect(() => {
         if (!isOpen && (submitted || feedbackStats)) {
             const timer = setTimeout(() => {
@@ -64,9 +336,6 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const { uploadToPublicUserAssets, isLoading: isUploadHookLoading } = useFileUploadWithStorage('user-public-assets', 'feedback-images');
 
     // Show new feature highlight for first 5 views
-    // GUARD: Only evaluate once we have a confirmed user AND their preferences loaded from DB.
-    // Without this, public routes start with default preferences (count=0) before the real
-    // value loads, causing the badge to incorrectly show and increment on every page load.
     useEffect(() => {
         console.log(
             `[FeedbackButton] New Feature Badge Check:\n` +
@@ -77,14 +346,12 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
             `  shouldShow: ${!!userId && preferencesLoadedFromDb && feedbackFeatureViewCount < 5}`
         );
 
-        // Don't show until we have a user and their real preferences from DB
         if (!userId || !preferencesLoadedFromDb) {
             return;
         }
 
         if (feedbackFeatureViewCount < 5) {
             setShowNewFeatureHighlight(true);
-            // Increment view count after 3 seconds
             const timer = setTimeout(() => {
                 const newCount = feedbackFeatureViewCount + 1;
                 dispatch(setModulePreferences({
@@ -102,7 +369,6 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
             }, 3000);
             return () => clearTimeout(timer);
         } else {
-            // Preferences loaded and count is >= 5, ensure highlight is hidden
             setShowNewFeatureHighlight(false);
         }
     }, [userId, preferencesLoadedFromDb, feedbackFeatureViewCount, dispatch]);
@@ -168,7 +434,6 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                 setDescription('');
                 setUploadedImages([]);
 
-                // Fetch user's feedback stats to show in the confirmation
                 getUserFeedback().then(res => {
                     if (res.success && res.data) {
                         const items = res.data;
@@ -196,18 +461,15 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
         setIsOpen(false);
     };
 
-    // Callback from FileUploadWithStorage (drag/click uploads)
     const handleUploadComplete = (results: UploadedFileResult[]) => {
         const urls = results.map(r => r.url);
         setUploadedImages(prev => [...prev, ...urls]);
     };
 
-    // Remove an uploaded image
     const removeImage = useCallback((index: number) => {
         setUploadedImages(prev => prev.filter((_, i) => i !== index));
     }, []);
 
-    // Paste button handler (uses Clipboard API)
     const handlePasteButton = useCallback(async () => {
         try {
             const items = await navigator.clipboard.read();
@@ -227,303 +489,130 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
         }
     }, [uploadPastedImage]);
 
+    const formProps: FeedbackFormContentProps = {
+        feedbackType,
+        setFeedbackType,
+        description,
+        setDescription,
+        uploadedImages,
+        setUploadedImages,
+        isSubmitting,
+        isPasting,
+        submitted,
+        feedbackStats,
+        username,
+        pathname,
+        handleSubmit,
+        handleCancel,
+        handleUploadComplete,
+        handlePasteButton,
+        removeImage,
+        onClose: () => setIsOpen(false),
+    };
+
+    // Trigger button (shared between mobile and desktop)
+    const triggerButton = (
+        <div className="relative">
+            <button
+                className={`p-2 rounded-lg transition-all duration-200 ease-in-out ${className}`}
+                aria-label="Submit Feedback"
+                onClick={() => {
+                    if (showNewFeatureHighlight) {
+                        setShowNewFeatureHighlight(false);
+                    }
+                    if (isMobile) {
+                        setIsOpen(true);
+                    }
+                }}
+            >
+                <Bug className="w-5 h-5" />
+            </button>
+
+            {/* New Feature Highlight */}
+            {showNewFeatureHighlight && (
+                <>
+                    <span className="absolute top-0 right-0 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+
+                    <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50">
+                        <div className="bg-blue-600 text-white text-xs font-medium px-3 py-2 pr-8 rounded-lg shadow-lg whitespace-nowrap animate-bounce relative">
+                            <PartyPopper className="w-4 h-4 inline mr-1" /> NEW! Report bugs & issues
+                            <button
+                                onPointerDown={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    setShowNewFeatureHighlight(false);
+                                    dispatch(setModulePreferences({
+                                        module: 'system',
+                                        preferences: {
+                                            feedbackFeatureViewCount: 5,
+                                        },
+                                    }));
+                                    dispatch(saveModulePreferencesToDatabase({
+                                        module: 'system',
+                                        preferences: {
+                                            feedbackFeatureViewCount: 5,
+                                        },
+                                    }));
+                                }}
+                                className="absolute right-1.5 top-1/2 -translate-y-1/2 hover:bg-blue-700 rounded p-0.5 transition-colors"
+                                aria-label="Dismiss"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-600 rotate-45"></div>
+                        </div>
+                    </div>
+
+                    <div className="absolute inset-0 rounded-lg animate-pulse bg-blue-500 opacity-20 -z-10"></div>
+                </>
+            )}
+        </div>
+    );
+
+    // Mobile: bottom sheet drawer
+    if (isMobile) {
+        return (
+            <>
+                {triggerButton}
+                <Drawer open={isOpen} onOpenChange={(open) => {
+                    if (isSubmitting) return;
+                    setIsOpen(open);
+                }}>
+                    <DrawerContent className="max-h-[85dvh]">
+                        <DrawerTitle className="sr-only">Submit Feedback</DrawerTitle>
+                        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}>
+                            <FeedbackFormContent {...formProps} />
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            </>
+        );
+    }
+
+    // Desktop: dropdown menu
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
-                <div className="relative">
-                    <button
-                        className={`p-2 rounded-lg transition-all duration-200 ease-in-out ${className}`}
-                        aria-label="Submit Feedback"
-                        onClick={() => {
-                            // Dismiss highlight on click
-                            if (showNewFeatureHighlight) {
-                                setShowNewFeatureHighlight(false);
-                            }
-                        }}
-                    >
-                        <Bug className="w-5 h-5" />
-                    </button>
-                    
-                    {/* New Feature Highlight */}
-                    {showNewFeatureHighlight && (
-                        <>
-                            {/* Pulsing ring animation */}
-                            <span className="absolute top-0 right-0 flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                            </span>
-                            
-                            {/* Tooltip */}
-                            <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50">
-                                <div className="bg-blue-600 text-white text-xs font-medium px-3 py-2 pr-8 rounded-lg shadow-lg whitespace-nowrap animate-bounce relative">
-                                    <PartyPopper className="w-4 h-4 inline mr-1" /> NEW! Report bugs & issues
-                                    <button
-                                        onPointerDown={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            setShowNewFeatureHighlight(false);
-                                            // Mark as seen by setting count to max
-                                            dispatch(setModulePreferences({
-                                                module: 'system',
-                                                preferences: {
-                                                    feedbackFeatureViewCount: 5,
-                                                },
-                                            }));
-                                            dispatch(saveModulePreferencesToDatabase({
-                                                module: 'system',
-                                                preferences: {
-                                                    feedbackFeatureViewCount: 5,
-                                                },
-                                            }));
-                                        }}
-                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 hover:bg-blue-700 rounded p-0.5 transition-colors"
-                                        aria-label="Dismiss"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-600 rotate-45"></div>
-                                </div>
-                            </div>
-                            
-                            {/* Background glow pulse */}
-                            <div className="absolute inset-0 rounded-lg animate-pulse bg-blue-500 opacity-20 -z-10"></div>
-                        </>
-                    )}
-                </div>
+                {triggerButton}
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-                align="end" 
+            <DropdownMenuContent
+                align="end"
                 className="w-[400px] p-0"
                 onInteractOutside={(e) => {
-                    // Prevent closing while actively submitting
                     if (isSubmitting) {
                         e.preventDefault();
                     }
-                    // When submitted, let the dropdown close naturally.
-                    // State reset happens via useEffect after close animation.
                 }}
             >
                 <Card className="border-0 shadow-none">
-                    {submitted ? (
-                        // Success Message
-                        <div className="p-6 text-center">
-                            <div className="inline-flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-green-100 dark:bg-green-900/30">
-                                <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-gray-100">
-                                Thank You!
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                Your feedback has been submitted and we&apos;ll get on it.
-                            </p>
-
-                            {/* Stats */}
-                            {feedbackStats && (
-                                <div className="flex justify-center gap-4 mb-3 text-xs">
-                                    <div className="text-center">
-                                        <div className="text-lg font-bold text-foreground">{feedbackStats.total}</div>
-                                        <div className="text-muted-foreground">Submitted</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{feedbackStats.pending}</div>
-                                        <div className="text-muted-foreground">Pending</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-lg font-bold text-green-600 dark:text-green-400">{feedbackStats.resolved}</div>
-                                        <div className="text-muted-foreground">Resolved</div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Link to feedback portal */}
-                            <Link
-                                href="/settings/feedback"
-                                onClick={() => setIsOpen(false)}
-                                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-                            >
-                                View all your submissions
-                                <ExternalLink className="w-3.5 h-3.5" />
-                            </Link>
-
-                            {/* Close button */}
-                            <div className="mt-3">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-xs text-muted-foreground"
-                                >
-                                    Close
-                                </Button>
-                            </div>
-                        </div>
-                    ) : (
-                        // Feedback Form
-                        <>
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-border">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    Submit Feedback
-                                </h3>
-                                <button
-                                    onClick={handleCancel}
-                                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                                    disabled={isSubmitting}
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            {/* Form Content */}
-                            <div className="p-4 space-y-4">
-                                {/* Feedback Type */}
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                                        Type
-                                    </label>
-                                    <Select
-                                        value={feedbackType}
-                                        onValueChange={(value) => setFeedbackType(value as FeedbackType)}
-                                        disabled={isSubmitting}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {feedbackTypes.map((type) => (
-                                                <SelectItem key={type.value} value={type.value}>
-                                                    {type.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Auto-captured info */}
-                                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                                    <div>
-                                        <span className="font-medium text-blue-500">User:</span> {username}
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-500">Route:</span> {pathname}
-                                    </div>
-                                </div>
-
-                                {/* Description */}
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                                        Description
-                                    </label>
-                                    <Textarea
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="Please describe your feedback in detail..."
-                                        className="min-h-[100px] resize-none"
-                                        disabled={isSubmitting}
-                                    />
-                                    <p className="text-[10px] text-muted-foreground mt-1">
-                                        Tip: Paste screenshots anytime with Ctrl+V
-                                    </p>
-                                </div>
-
-                                {/* Screenshot/Image Upload */}
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                                        Screenshots (optional)
-                                    </label>
-                                    
-                                    {/* Original file uploader -- handles drag/drop and click-to-upload */}
-                                    <FileUploadWithStorage
-                                        bucket="userContent"
-                                        path="feedback-images"
-                                        saveTo="public"
-                                        onUploadComplete={handleUploadComplete}
-                                        multiple={true}
-                                        useMiniUploader={true}
-                                        maxHeight="150px"
-                                    />
-
-                                    {/* Paste button */}
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={handlePasteButton}
-                                            disabled={isSubmitting || isPasting}
-                                            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
-                                        >
-                                            <Clipboard className="w-3 h-3" />
-                                            {isPasting ? 'Pasting...' : 'Paste Image'}
-                                        </button>
-                                        <span className="text-[10px] text-muted-foreground">
-                                            or Ctrl+V
-                                        </span>
-                                    </div>
-
-                                    {/* Image thumbnails with remove */}
-                                    {uploadedImages.length > 0 && (
-                                        <div className="mt-2">
-                                            <p className="text-xs text-muted-foreground mb-1.5">
-                                                {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} attached
-                                            </p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {uploadedImages.map((url, index) => (
-                                                    <div
-                                                        key={`img-${index}`}
-                                                        className="relative group w-14 h-14 rounded-md overflow-hidden border border-border bg-muted"
-                                                    >
-                                                        <img
-                                                            src={url}
-                                                            alt={`Attachment ${index + 1}`}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeImage(index)}
-                                                            className="absolute top-0 right-0 p-0.5 bg-black/60 text-white rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            aria-label={`Remove image ${index + 1}`}
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-2 justify-end pt-2">
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleCancel}
-                                        disabled={isSubmitting}
-                                        size="sm"
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        onClick={handleSubmit}
-                                        disabled={isSubmitting || !description.trim()}
-                                        size="sm"
-                                        className="gap-2"
-                                    >
-                                        {isSubmitting ? (
-                                            'Submitting...'
-                                        ) : (
-                                            <>
-                                                <Send className="w-4 h-4" />
-                                                Submit
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
-                            </div>
-                        </>
-                    )}
+                    <FeedbackFormContent {...formProps} />
                 </Card>
             </DropdownMenuContent>
         </DropdownMenu>

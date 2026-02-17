@@ -368,7 +368,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     className={cn(
                         "bg-textured text-gray-900 dark:text-gray-100 overflow-hidden",
                         stage === "result"
-                            ? "max-w-[95vw] w-[95vw] h-[90vh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
+                            ? "max-w-[95vw] w-[95vw] h-[90dvh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
                             : "sm:max-w-[425px] p-6"
                     )}
                 >

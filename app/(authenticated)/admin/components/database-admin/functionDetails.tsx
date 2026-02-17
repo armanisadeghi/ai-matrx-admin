@@ -67,7 +67,7 @@ const FunctionDetails = ({ func, open, onOpenChange }) => {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[85vh] flex flex-col overflow-hidden">
+            <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[85dvh] flex flex-col overflow-hidden">
                 <DialogHeader className="space-y-4 flex-shrink-0">
                     <div className="flex items-center justify-between">
                         <DialogTitle className="flex items-center gap-3 text-xl">

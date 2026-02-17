@@ -238,7 +238,7 @@ export function CategoryNotesModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[95vw] w-full md:w-[1400px] max-h-[90vh] h-[90vh] flex flex-col p-0">
+            <DialogContent className="max-w-[95vw] w-full md:w-[1400px] max-h-[90dvh] h-[90dvh] flex flex-col p-0">
                 {/* Header */}
                 <DialogHeader className="px-4 py-3 border-b border-border flex-shrink-0">
                     <div className="flex items-center justify-between pr-8">
