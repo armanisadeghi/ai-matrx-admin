@@ -51,50 +51,15 @@ alwaysApply: true
 <mobile_layout_essentials>
 1. **Viewport Heights:** Use `h-dvh`, `min-h-dvh`, `max-h-dvh` (NEVER `h-screen` or `min-h-screen`)
 2. **Safe Areas:** Always add `pb-safe` to fixed bottom elements
-3. **Header Height:** Use `--header-height` (2.5rem/h-10) - never hardcode
+3. **Header Height:** Use `--header-height` (2.5rem/h-10) — never hardcode
 4. **Full-height pages:** `h-[calc(100dvh-var(--header-height))]` for content below header
-5. **iOS Zoom Prevention:** Input/textarea must be `≥16px` font-size (use `text-base` or inline style)
-6. **Header Injection:** Use `<PageSpecificHeader>` component - never create custom headers
-7. **CRITICAL - Dialogs:** ALWAYS use `useIsMobile()` to conditionally render:
-   - **Mobile:** `<Drawer>` with `max-h-[85dvh]` (bottom sheet)
-   - **Desktop:** `<Dialog>` with `max-h-[90dvh]` (modal)
-   - **NEVER use Dialog component on mobile**
-8. **CRITICAL - Tabs:** NEVER use tabs on mobile:
-   - **Mobile:** Stack all sections vertically with dividers
-   - **Desktop:** Tabs OK (max 5 tabs)
-   - Tabs cause UX friction and nested scrolling problems on mobile
+5. **iOS Zoom Prevention:** Input/textarea must be `≥16px` font-size (`text-base` + inline style)
+6. **Header Injection:** Use `<PageSpecificHeader>` component — never create custom headers
+7. **Dialogs:** NEVER use Dialog on mobile — use `useIsMobile()` + Drawer (bottom sheet)
+8. **Tabs:** NEVER use tabs on mobile — stack sections vertically with dividers
+9. **Scrolling:** NEVER nest scroll areas on mobile — single scroll area per view
 
-**Common Pattern:**
-```tsx
-<div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
-  <div className="flex-1 overflow-y-auto pb-safe">{/* Scrollable content */}</div>
-  <div className="flex-shrink-0 pb-safe">{/* Fixed bottom */}</div>
-</div>
-```
-
-**Dialog/Drawer Pattern (MANDATORY):**
-```tsx
-const isMobile = useIsMobile();
-{isMobile ? (
-  <Drawer open={isOpen} onOpenChange={setIsOpen}>
-    <DrawerContent className="max-h-[85dvh]">
-      <DrawerTitle className="sr-only">Title</DrawerTitle>
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-        {content}
-      </div>
-    </DrawerContent>
-  </Drawer>
-) : (
-  <Dialog open={isOpen} onOpenChange={setIsOpen}>
-    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-      <DialogHeader><DialogTitle>Title</DialogTitle></DialogHeader>
-      <div className="flex-1 overflow-y-auto">{content}</div>
-    </DialogContent>
-  </Dialog>
-)}
-```
-
-*Full details: See `.cursor/skills/ios-mobile-first/SKILL.md` for comprehensive mobile UX guidelines*
+**📱 Single source of truth: `.cursor/skills/ios-mobile-first/SKILL.md`** — patterns, examples, checklist, decision tree
 </mobile_layout_essentials>
 
 <navigation_interactions>

@@ -100,25 +100,15 @@ MCP server and REST endpoint for cross-project issue tracking. Agents submit bug
 
 ## Mobile Layout (Responsive Web)
 
-- Use `h-dvh`, `min-h-dvh` — **never** `h-screen`
+- `h-dvh` / `min-h-dvh` — **never** `h-screen` or `vh`
 - `pb-safe` on all fixed bottom elements
-- Header height: `--header-height` (2.5rem)
-- Input font-size ≥ 16px to prevent iOS zoom
-- Use `<PageSpecificHeader>` for header injection
+- `--header-height` (2.5rem) — never hardcode
+- Input font-size ≥ 16px — prevents iOS zoom
+- **NEVER Dialog on mobile** — use Drawer (bottom sheet) via `useIsMobile()`
+- **NEVER tabs on mobile** — stack sections vertically
+- **NEVER nested scrolling** — single scroll area per view
 
-**CRITICAL - Dialogs (MANDATORY):**
-- **Mobile:** ALWAYS use `<Drawer>` with `max-h-[85dvh]` (bottom sheet, iOS-native feel)
-- **Desktop:** Use `<Dialog>` with `max-h-[90dvh]` (modal)
-- Use `useIsMobile()` hook for conditional rendering
-- **NEVER use Dialog component on mobile — it creates poor UX**
-
-**CRITICAL - Tabs (MANDATORY):**
-- **Mobile:** NEVER use tabs — stack sections vertically with clear dividers
-- **Desktop:** Tabs OK (recommended max 5 tabs)
-- Tabs on mobile cause UX friction and nested scrolling problems
-- Stack pattern: sections with colored accent bars + border separators
-
-See `.cursor/skills/ios-mobile-first/SKILL.md` for complete patterns and examples
+**Single source of truth:** `.cursor/skills/ios-mobile-first/SKILL.md` — all patterns, examples, and checklist
 
 ---
 
