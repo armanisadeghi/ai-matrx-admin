@@ -152,17 +152,17 @@ export const toolRendererRegistry: ToolRegistry = {
         keepExpandedOnStream: true,
         getHeaderSubtitle: (toolUpdates) => {
             const input = toolUpdates.find((u) => u.type === "mcp_input");
-            const args = input?.mcp_input?.arguments;
-            const queries = Array.isArray(args?.queries) ? args.queries : [];
+            const args = input?.mcp_input?.arguments ?? {};
+            const queries = Array.isArray(args.queries) ? args.queries : [];
             if (queries.length > 0) {
                 return queries.length === 1 ? String(queries[0]) : `${queries.length} queries`;
             }
-            return typeof args?.query === "string" ? String(args.query) : null;
+            return typeof args.query === "string" ? String(args.query) : null;
         },
         getHeaderExtras: (toolUpdates) => {
             const input = toolUpdates.find((u) => u.type === "mcp_input");
-            const args = input?.mcp_input?.arguments;
-            const queryCount = Array.isArray(args?.queries) ? args.queries.length : (typeof args?.query === "string" ? 1 : 0);
+            const args = input?.mcp_input?.arguments ?? {};
+            const queryCount = Array.isArray(args.queries) ? (args.queries as unknown[]).length : (typeof args.query === "string" ? 1 : 0);
             const browsingCount = toolUpdates.filter(
                 (u) => u.type === "user_visible_message" && u.user_visible_message?.startsWith("Browsing ")
             ).length;

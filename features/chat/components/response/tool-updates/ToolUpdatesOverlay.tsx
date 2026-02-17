@@ -24,7 +24,7 @@ const InputView: React.FC<{ update: ToolCallObject }> = ({ update }) => {
     const [wordWrap, setWordWrap] = useState(false);
 
     if (!update.mcp_input) return null;
-    const args = update.mcp_input.arguments;
+    const args = update.mcp_input.arguments ?? {};
     const argEntries = Object.entries(args);
     const fullInputJson = JSON.stringify(update.mcp_input, null, 2);
 
@@ -320,8 +320,8 @@ const ToolGroupTab: React.FC<ToolGroupTabProps> = ({ group, toolLabel, toolDispl
 
     // Extract a subtitle from the input arguments (query, url, etc.)
     const subtitle = useMemo(() => {
-        if (!inputUpdate?.mcp_input?.arguments) return null;
-        const args = inputUpdate.mcp_input.arguments;
+        const args = inputUpdate?.mcp_input?.arguments;
+        if (!args) return null;
         const val = args.query || args.q || args.search || args.url || args.urls;
         if (typeof val === "string") return val;
         if (Array.isArray(val)) return val.slice(0, 3).join(", ");

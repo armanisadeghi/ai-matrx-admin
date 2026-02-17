@@ -109,12 +109,10 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
     // Get query from mcp_input arguments (for first tool)
     const query = useMemo(() => {
         const inputUpdate = firstToolGroup.find((u) => u.type === "mcp_input");
-        if (inputUpdate?.mcp_input?.arguments) {
-            const args = inputUpdate.mcp_input.arguments;
-            const queryValue = args.query || args.q || args.search;
-            return typeof queryValue === "string" ? queryValue : null;
-        }
-        return null;
+        const args = inputUpdate?.mcp_input?.arguments;
+        if (!args) return null;
+        const queryValue = args.query || args.q || args.search;
+        return typeof queryValue === "string" ? queryValue : null;
     }, [firstToolGroup]);
 
     // Render all tool groups with their appropriate renderers

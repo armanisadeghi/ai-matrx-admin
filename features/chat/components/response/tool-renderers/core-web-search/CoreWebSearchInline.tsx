@@ -32,7 +32,7 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
     // Extract all queries from mcp_input updates
     const queries = visibleUpdates
         .filter(u => u.type === "mcp_input" && u.mcp_input?.arguments?.query)
-        .map(u => u.mcp_input!.arguments.query as string);
+        .map(u => u.mcp_input!.arguments!.query as string);
     
     // Extract all results from mcp_output updates
     const outputUpdates = visibleUpdates.filter(u => u.type === "mcp_output");

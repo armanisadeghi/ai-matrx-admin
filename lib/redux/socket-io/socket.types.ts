@@ -79,7 +79,7 @@ export interface SocketBrokerObject {
 
 export interface McpInputObject {
     name: string;
-    arguments: Record<string, unknown>;
+    arguments?: Record<string, unknown>;
 }
 
 export interface StepDataObject {

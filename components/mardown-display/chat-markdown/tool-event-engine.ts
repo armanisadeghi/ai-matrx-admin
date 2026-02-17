@@ -64,8 +64,8 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                 type: 'mcp_input',
                 mcp_input: {
                     name: te.tool_name,
-                    arguments: eventData.arguments ?? undefined,
-                } as ToolCallObject['mcp_input'],
+                    arguments: (eventData.arguments as Record<string, unknown>) ?? {},
+                },
                 user_visible_message: te.message ?? undefined,
             };
 
