@@ -15,15 +15,15 @@ interface NewsArticle {
     title: string;
     description: string | null;
     url: string;
-    urlToImage: string | null;
-    publishedAt: string;
+    url_to_image: string | null;
+    published_at: string | null;
     content: string | null;
 }
 
 interface NewsApiResult {
     intro?: string;
-    status: string;
-    totalResults: number;
+    date?: string;
+    total_results: number;
     articles: NewsArticle[];
 }
 
@@ -68,8 +68,8 @@ export const NewsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
         
         // Sort by date
         articles.sort((a, b) => {
-            const dateA = new Date(a.publishedAt).getTime();
-            const dateB = new Date(b.publishedAt).getTime();
+            const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
+            const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
             return sortBy === "newest" ? dateB - dateA : dateA - dateB;
         });
         
@@ -142,10 +142,10 @@ export const NewsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
                     >
                         <div className="flex flex-col md:flex-row gap-4 p-4">
                             {/* Article Image */}
-                            {article.urlToImage && (
+                            {article.url_to_image && (
                                 <div className="w-full md:w-64 flex-shrink-0">
                                     <img
-                                        src={article.urlToImage}
+                                        src={article.url_to_image}
                                         alt={article.title}
                                         className="w-full h-48 md:h-full object-cover rounded-lg"
                                         onError={(e) => {
@@ -162,11 +162,11 @@ export const NewsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
                                     <Badge variant="default" className="text-xs">
                                         {article.source.name}
                                     </Badge>
-                                    {article.publishedAt && (
+                                    {article.published_at && (
                                         <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-500">
                                             <Calendar className="w-3 h-3" />
                                             <span>
-                                                {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                                                {new Date(article.published_at).toLocaleDateString('en-US', {
                                                     month: 'long',
                                                     day: 'numeric',
                                                     year: 'numeric',

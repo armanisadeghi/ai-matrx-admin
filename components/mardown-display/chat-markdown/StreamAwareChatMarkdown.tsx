@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps } from "./EnhancedChatMarkdown";
-import { StreamEvent, ToolUpdateData } from "./types";
+import { StreamEvent } from "./types";
+import { convertStreamEventToToolCall } from "./tool-event-engine";
 
 /**
  * Extended props that include stream event handling
@@ -124,20 +125,15 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           break;
 
         case 'tool_update':
-          // Collect tool updates for visualization
-          const toolData = event.data as ToolUpdateData;
-
-          toolUpdatesRef.current.push({
-            id: toolData.id || `tool-${toolUpdatesRef.current.length}`,
-            type: toolData.type,
-            mcp_input: toolData.mcp_input,
-            mcp_output: toolData.mcp_output,
-            mcp_error: toolData.mcp_error,
-            step_data: toolData.step_data,
-            user_visible_message: toolData.user_visible_message,
-          });
-          hasNewTools = true;
+        case 'tool_event': {
+          // Both legacy and V2 tool events — use the shared engine
+          const toolCallObj = convertStreamEventToToolCall(event);
+          if (toolCallObj) {
+            toolUpdatesRef.current.push(toolCallObj);
+            hasNewTools = true;
+          }
           break;
+        }
 
         case 'error':
           // Handle error events

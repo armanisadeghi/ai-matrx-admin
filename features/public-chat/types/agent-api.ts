@@ -130,6 +130,7 @@ export type AgentStreamEvent =
   | AgentStatusUpdateEvent
   | AgentChunkEvent
   | AgentToolUpdateEvent
+  | AgentToolEvent
   | AgentDataEvent
   | AgentErrorEvent
   | AgentEndEvent;
@@ -149,6 +150,7 @@ export interface AgentChunkEvent {
   data: string; // Text chunk from AI response
 }
 
+/** @deprecated Use AgentToolEvent for V2 tool system. Kept for backward compat during transition. */
 export interface AgentToolUpdateEvent {
   event: "tool_update";
   data: {
@@ -165,6 +167,40 @@ export interface AgentToolUpdateEvent {
     mcp_error?: string;
     step_data?: Record<string, unknown>;
     user_visible_message?: string;
+  };
+}
+
+/**
+ * V2 Tool Event — replaces tool_update.
+ *
+ * Lifecycle: tool_started → tool_progress* → tool_step* → tool_result_preview? → tool_completed | tool_error
+ *
+ * Backend `data` field contract:
+ *   tool_started:        { arguments: Record<string, unknown> }
+ *   tool_progress:       { ...custom }
+ *   tool_step:           { step: string, ...custom }
+ *   tool_result_preview: { preview: string }
+ *   tool_completed:      { result: unknown }
+ *   tool_error:          { error_type: string }
+ */
+export type AgentToolEventType =
+  | "tool_started"
+  | "tool_progress"
+  | "tool_step"
+  | "tool_result_preview"
+  | "tool_completed"
+  | "tool_error";
+
+export interface AgentToolEvent {
+  event: "tool_event";
+  data: {
+    event: AgentToolEventType;
+    call_id: string;
+    tool_name: string;
+    timestamp: number;
+    message: string | null;
+    show_spinner: boolean;
+    data: Record<string, unknown>;
   };
 }
 

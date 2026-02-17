@@ -13,6 +13,7 @@ import type {
     CxConversationSummary,
     CxMessage,
     CxMessageInsert,
+    CxToolCall,
     CxConversationWithMessages,
 } from '../types/cx-tables';
 
@@ -169,17 +170,46 @@ export async function bulkCreateCxMessages(messages: CxMessageInsert[]): Promise
 }
 
 // ============================================================================
+// cx_tool_call queries
+// ============================================================================
+
+/** Get all tool calls for a conversation, ordered by creation time */
+export async function getCxToolCalls(conversationId: string): Promise<CxToolCall[]> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('cx_tool_call')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('getCxToolCalls error:', error);
+        return [];
+    }
+    return (data || []) as CxToolCall[];
+}
+
+// ============================================================================
 // Composite queries
 // ============================================================================
 
-/** Load a full conversation with all messages */
+/** Load a full conversation with all messages and tool calls */
 export async function loadFullConversation(
     conversationId: string,
 ): Promise<CxConversationWithMessages | null> {
     const conversation = await getCxConversation(conversationId);
     if (!conversation) return null;
 
-    const messages = await getCxMessages(conversationId);
+    // Fetch messages and tool calls in parallel
+    const [messages, toolCalls] = await Promise.all([
+        getCxMessages(conversationId),
+        getCxToolCalls(conversationId),
+    ]);
 
-    return { conversation, messages };
+    return {
+        conversation,
+        messages,
+        toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+    };
 }

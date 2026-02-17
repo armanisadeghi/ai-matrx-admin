@@ -7,11 +7,13 @@
  * Tables used by chat UI:
  *   cx_conversation - Chat sessions (title, status, message_count)
  *   cx_message      - Messages within a conversation (role, content as jsonb, position)
+ *   cx_tool_call    - Tool execution records (arguments, output, events)
  *   cx_media        - Media attachments linked to a conversation
  *
  * Tables NOT used by chat UI (analytics/telemetry):
  *   cx_request       - Individual API call metrics (tokens, cost, duration)
  *   cx_user_request  - Aggregated user request metrics
+ *   cx_agent_memory  - Agent short/medium/long-term memory
  */
 
 // ============================================================================
@@ -33,6 +35,7 @@ export interface CxConversation {
     deleted_at: string | null;                  // timestamptz
     metadata: Record<string, unknown>;          // jsonb NOT NULL, default '{}'
     ai_model_id: string | null;                 // uuid
+    parent_conversation_id: string | null;      // uuid, FK to cx_conversation (sub-conversations)
 }
 
 export type CxConversationStatus = 'active' | 'completed' | 'archived';
@@ -110,20 +113,31 @@ export interface CxMediaContent {
     metadata?: Record<string, unknown>;
 }
 
-/** Tool call — AI requests a tool (assistant messages) */
+/**
+ * Tool call — AI requests a tool (assistant messages).
+ *
+ * DB stores: { type: "tool_call", id: "gemini_...", name: "...", arguments: {...} }
+ * The `id` field is the provider-assigned call ID that joins to cx_tool_call.call_id.
+ */
 export interface CxToolCallContent {
     type: 'tool_call';
-    tool_call_id: string;
+    id: string;                                 // Provider call ID (joins to cx_tool_call.call_id)
     name: string;
-    arguments: string; // JSON string — parse for display
+    arguments: Record<string, unknown>;         // Parsed JSON object (DB stores jsonb, not string)
 }
 
-/** Tool result — response from a tool (tool-role messages) */
+/**
+ * Tool result — response from a tool (tool-role messages).
+ *
+ * NOTE: In the V2 schema, role="tool" messages have content: [] (empty).
+ * The actual tool output lives in cx_tool_call.output, joined via call_id.
+ * This type is kept for backward compatibility with any legacy data.
+ */
 export interface CxToolResultContent {
     type: 'tool_result';
     tool_call_id: string;
     name: string;
-    content: string; // JSON string — parse for display
+    content: string;                            // JSON string — parse for display
     is_error: boolean;
 }
 
@@ -190,6 +204,59 @@ export interface CxMediaInsert {
 }
 
 // ============================================================================
+// cx_tool_call - Tool execution records (V2 tool system)
+// ============================================================================
+
+/** Lifecycle event stored in cx_tool_call.execution_events */
+export interface CxToolExecutionEvent {
+    event: 'tool_started' | 'tool_progress' | 'tool_step' | 'tool_result_preview' | 'tool_completed' | 'tool_error';
+    call_id: string;
+    tool_name: string;
+    timestamp: number;                          // Unix float
+    message: string;
+    show_spinner: boolean;
+    data: Record<string, unknown>;
+}
+
+export type CxToolCallStatus = 'pending' | 'running' | 'completed' | 'error';
+export type CxToolType = 'local' | 'external_mcp' | 'agent';
+
+export interface CxToolCall {
+    id: string;                                 // uuid PK
+    conversation_id: string;                    // uuid NOT NULL, FK to cx_conversation
+    message_id: string | null;                  // uuid, FK to cx_message (tool-role placeholder)
+    user_id: string;                            // uuid NOT NULL, FK to auth.users
+    request_id: string | null;                  // uuid, FK to cx_user_request
+    tool_name: string;                          // text NOT NULL
+    tool_type: CxToolType;                      // text NOT NULL, default 'local'
+    call_id: string;                            // text NOT NULL — joins to cx_message content[].id
+    status: CxToolCallStatus;                   // text NOT NULL, default 'pending'
+    arguments: Record<string, unknown>;         // jsonb NOT NULL, default '{}'
+    success: boolean;                           // boolean NOT NULL, default true
+    output: string | null;                      // text — full tool result
+    output_type: string | null;                 // text — 'text' | 'json'
+    is_error: boolean | null;                   // boolean, default false
+    error_type: string | null;                  // text — error category
+    error_message: string | null;               // text — error description
+    duration_ms: number;                        // integer NOT NULL, default 0
+    started_at: string;                         // timestamptz NOT NULL
+    completed_at: string;                       // timestamptz NOT NULL
+    input_tokens: number | null;                // integer, default 0
+    output_tokens: number | null;               // integer, default 0
+    total_tokens: number | null;                // integer, default 0
+    cost_usd: string | null;                    // numeric, default 0
+    iteration: number;                          // integer NOT NULL, default 0
+    retry_count: number | null;                 // integer, default 0
+    parent_call_id: string | null;              // uuid — FK to self (agent-as-tool nesting)
+    execution_events: CxToolExecutionEvent[];   // jsonb, default '[]'
+    persist_key: string | null;                 // text
+    file_path: string | null;                   // text
+    metadata: Record<string, unknown>;          // jsonb NOT NULL, default '{}'
+    created_at: string;                         // timestamptz NOT NULL
+    deleted_at: string | null;                  // timestamptz
+}
+
+// ============================================================================
 // Composite / View Types (for UI convenience)
 // ============================================================================
 
@@ -209,8 +276,10 @@ export interface SharedCxConversationSummary extends CxConversationSummary {
     owner_email: string | null;
 }
 
-/** A full conversation with all its messages, used when loading a chat */
+/** A full conversation with all its messages and tool calls, used when loading a chat */
 export interface CxConversationWithMessages {
     conversation: CxConversation;
     messages: CxMessage[];
+    /** Tool call records for this conversation, keyed by call_id for fast lookup */
+    toolCalls?: CxToolCall[];
 }

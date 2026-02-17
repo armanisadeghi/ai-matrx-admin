@@ -3,6 +3,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import { extractPersistableToolUpdates } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
 import type { AgentStreamEvent, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
 import { useApiAuth } from '@/hooks/useApiAuth';
@@ -79,7 +80,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             case 'status_update':
                 return { event: 'status_update', data: agentEvent.data };
             case 'tool_update':
+                // Legacy format — kept for backward compat during transition
                 return { event: 'tool_update', data: agentEvent.data };
+            case 'tool_event':
+                // V2 tool events — pass through with the full data envelope
+                return { event: 'tool_event', data: agentEvent.data };
             case 'data':
                 return { event: 'data', data: agentEvent.data };
             case 'error':
@@ -326,20 +331,8 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             // Extract tool updates from the stream and persist them on the
             // assistant message so they survive after stream events are cleared.
-            const toolUpdates = streamEventsRef.current
-                .filter((e) => e.event === 'tool_update' && e.data)
-                .map((e) => {
-                    const d = e.data as Record<string, unknown>;
-                    return {
-                        id: d.id || `tool-${Math.random().toString(36).slice(2, 8)}`,
-                        type: d.type,
-                        mcp_input: d.mcp_input,
-                        mcp_output: d.mcp_output,
-                        mcp_error: d.mcp_error,
-                        step_data: d.step_data,
-                        user_visible_message: d.user_visible_message,
-                    };
-                });
+            // Uses the shared tool-event-engine for consistent conversion.
+            const toolUpdates = extractPersistableToolUpdates(streamEventsRef.current);
 
             // Mark as complete, attaching any tool updates from the stream
             updateMessage(assistantMessageId, {

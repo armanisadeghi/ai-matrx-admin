@@ -107,14 +107,14 @@ export const toolRendererRegistry: ToolRegistry = {
     },
     
     // News API - custom inline and overlay components
-    "api_news_fetch_headlines": {
+    "get_news_headlines": {
         displayName: "News Headlines",
         resultsLabel: "News Results",
         inline: NewsInline,
         overlay: NewsOverlay,
-        keepExpandedOnStream: true, // Keep news visible when response streams
+        keepExpandedOnStream: true,
     },
-    
+
     // SEO Meta Tags Checker - batch analysis display
     "seo_check_meta_tags_batch": {
         displayName: "SEO Meta Tags",

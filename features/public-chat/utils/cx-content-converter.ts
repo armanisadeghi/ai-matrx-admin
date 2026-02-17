@@ -14,6 +14,7 @@
 import type {
     CxContentBlock,
     CxMessage,
+    CxToolCall,
     CxTextContent,
     CxThinkingContent,
     CxMediaContent,
@@ -228,8 +229,85 @@ export function convertCxContentToDisplay(
 }
 
 // ============================================================================
+// Build tool updates from cx_tool_call records
+// ============================================================================
+
+/**
+ * Build ToolUpdateDisplay pairs (input + output) from a CxToolCall record.
+ *
+ * This is used for V2 tool-role messages where content is [] and the actual
+ * tool data lives in the cx_tool_call table.
+ */
+function buildToolUpdatesFromToolCall(tc: CxToolCall): ToolUpdateDisplay[] {
+    const updates: ToolUpdateDisplay[] = [];
+
+    // Input (the tool call request)
+    updates.push({
+        id: tc.call_id,
+        type: 'mcp_input',
+        mcp_input: {
+            name: tc.tool_name,
+            arguments: tc.arguments,
+        },
+    });
+
+    // Output or error (the tool call result)
+    if (tc.is_error || !tc.success) {
+        updates.push({
+            id: tc.call_id,
+            type: 'mcp_error',
+            mcp_error: tc.error_message || tc.output || 'Tool execution failed',
+        });
+    } else if (tc.output != null) {
+        let resultValue: unknown;
+        if (tc.output_type === 'json') {
+            try {
+                resultValue = JSON.parse(tc.output);
+            } catch {
+                resultValue = tc.output;
+            }
+        } else {
+            resultValue = tc.output;
+        }
+
+        updates.push({
+            id: tc.call_id,
+            type: 'mcp_output',
+            mcp_output: {
+                status: 'success',
+                result: resultValue,
+            },
+        });
+    }
+
+    return updates;
+}
+
+// ============================================================================
 // Full conversation processing
 // ============================================================================
+
+/**
+ * Build a call_id → CxToolCall lookup map from an array of tool call records.
+ */
+export function buildToolCallMap(toolCalls: CxToolCall[]): Map<string, CxToolCall> {
+    return new Map(toolCalls.map(tc => [tc.call_id, tc]));
+}
+
+/**
+ * Build a message_id → CxToolCall[] lookup map for tool-role message resolution.
+ */
+function buildMessageToolCallMap(toolCalls: CxToolCall[]): Map<string, CxToolCall[]> {
+    const map = new Map<string, CxToolCall[]>();
+    for (const tc of toolCalls) {
+        if (tc.message_id) {
+            const existing = map.get(tc.message_id) || [];
+            existing.push(tc);
+            map.set(tc.message_id, existing);
+        }
+    }
+    return map;
+}
 
 /**
  * Process an array of CxMessage rows from the database into display-ready ChatMessages.
@@ -237,11 +315,23 @@ export function convertCxContentToDisplay(
  * Handles:
  * - Converting all content block types
  * - Merging `tool`-role messages into the preceding assistant message
+ * - V2: tool-role messages with empty content — resolved via cx_tool_call records
  * - Filtering out `summary` and `deleted` status messages
  * - Marking `condensed` messages
+ *
+ * @param dbMessages Messages ordered by position
+ * @param toolCalls Optional array of CxToolCall records for the conversation.
+ *   When provided, empty tool-role messages are resolved from these records.
  */
-export function processDbMessagesForDisplay(dbMessages: CxMessage[]): ProcessedChatMessage[] {
+export function processDbMessagesForDisplay(
+    dbMessages: CxMessage[],
+    toolCalls?: CxToolCall[],
+): ProcessedChatMessage[] {
     const result: ProcessedChatMessage[] = [];
+
+    // Build lookup maps for tool call resolution
+    const msgToolCallMap = toolCalls ? buildMessageToolCallMap(toolCalls) : null;
+    const callIdToolCallMap = toolCalls ? buildToolCallMap(toolCalls) : null;
 
     for (const msg of dbMessages) {
         // Skip summary and deleted messages
@@ -252,24 +342,57 @@ export function processDbMessagesForDisplay(dbMessages: CxMessage[]): ProcessedC
         const isCondensed = msg.status === 'condensed';
 
         if (msg.role === 'tool') {
-            // Tool-role messages contain tool_result blocks.
-            // Merge their tool results into the preceding assistant message.
-            const { toolUpdates } = convertCxContentToDisplay(msg.content);
+            // V2: tool-role messages have content: [] — the actual tool output
+            // lives in cx_tool_call and has already been enriched onto the
+            // preceding assistant message (position 1) via callIdToolCallMap.
+            // Only process tool-role messages in legacy mode (when they have
+            // actual content blocks with tool_result data).
+            const hasContent = Array.isArray(msg.content) && msg.content.length > 0;
 
-            if (toolUpdates.length > 0) {
-                // Find the last assistant message to attach results to
-                for (let i = result.length - 1; i >= 0; i--) {
-                    if (result[i].role === 'assistant') {
-                        result[i].toolUpdates = [...result[i].toolUpdates, ...toolUpdates];
-                        break;
+            if (hasContent) {
+                // Legacy: content blocks exist (tool_result blocks)
+                const { toolUpdates } = convertCxContentToDisplay(msg.content);
+
+                if (toolUpdates.length > 0) {
+                    // Find the last assistant message to attach results to
+                    for (let i = result.length - 1; i >= 0; i--) {
+                        if (result[i].role === 'assistant') {
+                            result[i].toolUpdates = [...result[i].toolUpdates, ...toolUpdates];
+                            break;
+                        }
                     }
                 }
             }
+            // V2 (empty content): skip — tool data is already on the assistant
+            // message via the callIdToolCallMap enrichment below.
             continue;
         }
 
         // Process user / assistant / system messages
         const { content, toolUpdates } = convertCxContentToDisplay(msg.content);
+
+        // For assistant messages with tool_call content blocks, enrich with
+        // cx_tool_call output data so the full input+output is available.
+        if (msg.role === 'assistant' && callIdToolCallMap && toolUpdates.length > 0) {
+            // For each mcp_input tool update, check if we have a corresponding
+            // cx_tool_call with output data and add the result.
+            const enrichedUpdates = [...toolUpdates];
+            for (const tu of toolUpdates) {
+                if (tu.type === 'mcp_input') {
+                    const tc = callIdToolCallMap.get(tu.id);
+                    if (tc && tc.output != null) {
+                        // Add the output entry from the tool call record
+                        const outputUpdates = buildToolUpdatesFromToolCall(tc);
+                        // Only add the output part (skip the duplicate input)
+                        const outputOnly = outputUpdates.filter(u => u.type !== 'mcp_input');
+                        enrichedUpdates.push(...outputOnly);
+                    }
+                }
+            }
+            // Replace with enriched set
+            toolUpdates.length = 0;
+            toolUpdates.push(...enrichedUpdates);
+        }
 
         // Map role — treat any unexpected roles as 'assistant'
         const role: 'user' | 'assistant' | 'system' =

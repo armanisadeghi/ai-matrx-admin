@@ -199,8 +199,8 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
             loadedConversationRef.current = urlConversationId;
 
-            // Convert DB messages to display format
-            const processedMessages = processDbMessagesForDisplay(data.messages);
+            // Convert DB messages to display format (pass tool calls for V2 resolution)
+            const processedMessages = processDbMessagesForDisplay(data.messages, data.toolCalls);
             const chatMessages = processedMessages.map(msg => ({
                 id: msg.id || crypto.randomUUID(),
                 role: msg.role,

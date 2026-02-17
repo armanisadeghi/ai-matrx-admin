@@ -29,7 +29,7 @@
             },
             {
                 "id": "gemini_7240132781104653211",
-                "name": "api_news_fetch_headlines",
+                "name": "get_news_headlines",
                 "type": "tool_call",
                 "arguments": {
                     "country": "us"
@@ -48,7 +48,7 @@
         "status": "active",
         "content": [
             {
-                "name": "api_news_fetch_headlines",
+                "name": "get_news_headlines",
                 "type": "tool_result",
                 "content": {
                     "intro": "Today is Saturday, February 14, 2026. Here are the current top news headlines for US on Saturday, February 14, 2026:",
@@ -63,9 +63,9 @@
                                 "name": "CBS Sports"
                             },
                             "content": "Team USA will try to boost its medal count on Friday with a few key events throughout the day. Figure skating phenom Ilia Malinin will go for another gold medal as he looks to follow up an exceptiona… [+2135 chars]",
-                            "urlToImage": "https://sportshub.cbsistatic.com/i/r/2026/02/13/16dc00af-a83f-4943-8583-9fa8bf61db16/thumbnail/1200x675/540fa9839a4c4a63e6667840358e6fd0/gettyimages-2260972282-2.jpg",
+                            "url_to_image": "https://sportshub.cbsistatic.com/i/r/2026/02/13/16dc00af-a83f-4943-8583-9fa8bf61db16/thumbnail/1200x675/540fa9839a4c4a63e6667840358e6fd0/gettyimages-2260972282-2.jpg",
                             "description": "More medals will be handed out Friday from Milano Cortina, highlighted by figure skating phenom Ilia Malinin's quest for gold",
-                            "publishedAt": "2026-02-13T18:30:30Z"
+                            "published_at": "2026-02-13T18:30:30Z"
                         },
                         {
                             "url": "https://www.sfchronicle.com/sf/article/sfusd-teachers-strike-over-21351605.php",
@@ -76,9 +76,9 @@
                                 "name": "San Francisco Chronicle"
                             },
                             "content": "Ekena Dominguez, 6, holds a sign in support of her educator mother, Keani Dominguez, right, while on the shoulders of her father Kelii Dominguez during a rally as part of the teachers strike in Embar… [+9160 chars]",
-                            "urlToImage": "https://s.hdnux.com/photos/01/63/16/35/30205809/3/rawImage.jpg",
+                            "url_to_image": "https://s.hdnux.com/photos/01/63/16/35/30205809/3/rawImage.jpg",
                             "description": "The San Francisco teachers strike is over as school district and union reach tentative agreement",
-                            "publishedAt": "2026-02-13T18:11:15Z"
+                            "published_at": "2026-02-13T18:11:15Z"
                         },
                         {
                             "url": "https://apnews.com/article/immigration-prosecutors-assault-shooting-minneapolis-charges-d713836a06471af9f38ee6ee8976a20c",
@@ -89,9 +89,9 @@
                                 "name": "Associated Press"
                             },
                             "content": "MINNEAPOLIS (AP) A federal judge in Minneapolis on Friday ordered the dismissal of felony assault charges against two Venezuelan men, including one shot in the leg by an immigration officer, after ev… [+6165 chars]",
-                            "urlToImage": "https://dims.apnews.com/dims4/default/d3f9c86/2147483647/strip/true/crop/8261x5505+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F20%2Ff1%2F62e0fda7abda84475e301fc5a317%2Fd22523d053694d60b87218827e882500",
+                            "url_to_image": "https://dims.apnews.com/dims4/default/d3f9c86/2147483647/strip/true/crop/8261x5505+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F20%2Ff1%2F62e0fda7abda84475e301fc5a317%2Fd22523d053694d60b87218827e882500",
                             "description": "A federal judge in Minneapolis has ordered the dismissal of felony assault charges against two Venezuelan men, including one shot in the leg by an immigration officer. The charges were dropped Friday after a highly unusual filing the night before by the U.S. …",
-                            "publishedAt": "2026-02-13T16:54:00Z"
+                            "published_at": "2026-02-13T16:54:00Z"
                         },
                         {
                             "url": "https://www.cnn.com/2026/02/13/business/wendys-is-closing-6-of-its-stores-by-mid-2026",
@@ -102,9 +102,9 @@
                                 "name": "CNN"
                             },
                             "content": "Wendys said Friday that it plans to shutter between 5% and 6% of its restaurants in the first half of the year.\r\nThe closures are part of a previously announced turnaround plan, which the fast-food c… [+1257 chars]",
-                            "urlToImage": "https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-2244403240-20260213151701276.jpg?c=16x9&q=w_800,c_fill",
+                            "url_to_image": "https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-2244403240-20260213151701276.jpg?c=16x9&q=w_800,c_fill",
                             "description": "Wendy’s is planning to close hundreds of locations across the United States as part of its turnaround plan.",
-                            "publishedAt": "2026-02-13T16:50:12Z"
+                            "published_at": "2026-02-13T16:50:12Z"
                         },
                         {
                             "url": "https://www.politico.com/news/2026/02/13/republican-trump-congress-defections-00780479",
@@ -115,9 +115,9 @@
                                 "name": "Politico"
                             },
                             "content": "When a vote to overturn his Canada levies came to the floor Wednesday, I was in the cloakroom, and I heard people say, I hate tariffs, and then voted to leave them in place, Bacon recalled. Were it n… [+6187 chars]",
-                            "urlToImage": "https://www.politico.com/dims4/default/resize/1200/quality/90/format/jpg?url=https%3A%2F%2Fstatic.politico.com%2Fa7%2F6e%2Fd04a07984d02b4c3b8b125a26dad%2Fu-s-congress-51147.jpg",
+                            "url_to_image": "https://www.politico.com/dims4/default/resize/1200/quality/90/format/jpg?url=https%3A%2F%2Fstatic.politico.com%2Fa7%2F6e%2Fd04a07984d02b4c3b8b125a26dad%2Fu-s-congress-51147.jpg",
                             "description": "A small group of politically insulated members is causing headaches for party leaders and anxiety among their GOP colleagues.",
-                            "publishedAt": "2026-02-13T16:44:42Z"
+                            "published_at": "2026-02-13T16:44:42Z"
                         },
                         {
                             "url": "https://www.cnbc.com/2026/02/12/stock-market-today-live-updates.html",
@@ -128,9 +128,9 @@
                                 "name": "CNBC"
                             },
                             "content": "The S&amp;P 500 rose on Friday after a key consumer inflation report came in slightly lighter than expected, but stocks were still on pace for a losing week.\r\nThe broad market index traded up 0.4%, w… [+2633 chars]",
-                            "urlToImage": "https://image.cnbcfm.com/api/v1/image/108265604-1770996500070-gettyimages-2261448645-anotherday183751731_vlbdi7jv.jpeg?v=1770996558&w=1920&h=1080",
+                            "url_to_image": "https://image.cnbcfm.com/api/v1/image/108265604-1770996500070-gettyimages-2261448645-anotherday183751731_vlbdi7jv.jpeg?v=1770996558&w=1920&h=1080",
                             "description": "Major U.S. averages dropped on Thursday as fears around artificial intelligence disruption spread across the market.",
-                            "publishedAt": "2026-02-13T16:09:00Z"
+                            "published_at": "2026-02-13T16:09:00Z"
                         },
                         {
                             "url": "https://www.washingtonpost.com/national-security/2026/02/12/munich-aoc-rubio/",
@@ -141,9 +141,9 @@
                                 "name": "The Washington Post"
                             },
                             "content": "MUNICHSecretary of State Marco Rubio and Rep. Alexandria Ocasio-Cortez (D-New York) are poised to deliver clashing visions of U.S. global leadership during a key European security summit this week wh… [+75 chars]",
-                            "urlToImage": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://cloudfront-us-east-1.images.arcpublishing.com/wapo/4WFQWWSZAF4L52YV5F5UG3RKNQ.jpg&w=1440",
+                            "url_to_image": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://cloudfront-us-east-1.images.arcpublishing.com/wapo/4WFQWWSZAF4L52YV5F5UG3RKNQ.jpg&w=1440",
                             "description": "German Chancellor Frederich Merz kicked off the conference on Friday saying the rules-based international order “no longer exists,” in a new era of “big power politics.”",
-                            "publishedAt": "2026-02-13T15:43:59Z"
+                            "published_at": "2026-02-13T15:43:59Z"
                         },
                         {
                             "url": "https://www.democracydocket.com/news-alerts/in-victory-for-democrats-virginia-supreme-court-says-redistricting-vote-can-go-forward/",
@@ -154,9 +154,9 @@
                                 "name": "Democracydocket.com"
                             },
                             "content": "Virginia Senate President Pro Tempore, Sen. Louise Lucas, D-Portsmouth, recognizes a visitor in the gallery as she presides over the Senate, Jan 27, 2020, at the state Capitol in Richmond, Va. (AP Ph… [+2612 chars]",
-                            "urlToImage": "https://www.democracydocket.com/wp-content/uploads/2026/01/AP25210541644648-scaled.jpg",
+                            "url_to_image": "https://www.democracydocket.com/wp-content/uploads/2026/01/AP25210541644648-scaled.jpg",
                             "description": "Voters will get to decide on a proposed “10-1” map that could deliver four more Democratic seats in Congress.",
-                            "publishedAt": "2026-02-13T15:24:23Z"
+                            "published_at": "2026-02-13T15:24:23Z"
                         },
                         {
                             "url": "https://www.contemporaryobgyn.net/shorts/kelly-b-zafman-md-mscr-on-the-risks-of-stopping-antidepressants-during-pregnancy",
@@ -167,9 +167,9 @@
                                 "name": "Contemporaryobgyn.net"
                             },
                             "content": "259 Prospect Plains Rd, Bldg HCranbury, NJ 08512",
-                            "urlToImage": "https://cdn.sanity.io/images/0vv8moc6/contobgyn/dce605068d75d1d3d95064a6b23be5bd6bc46d18-1080x1920.png",
+                            "url_to_image": "https://cdn.sanity.io/images/0vv8moc6/contobgyn/dce605068d75d1d3d95064a6b23be5bd6bc46d18-1080x1920.png",
                             "description": "Kelly B. Zafman, MD, MSCR, shares findings from a study evaluating antidepressant discussion during pregnancy.\n\nClick here for more on this study.",
-                            "publishedAt": "2026-02-13T15:10:18Z"
+                            "published_at": "2026-02-13T15:10:18Z"
                         },
                         {
                             "url": "https://slate.com/culture/2026/02/neighbors-hbo-max-a24-show-review-trump-covid.html",
@@ -180,9 +180,9 @@
                                 "name": "Slate Magazine"
                             },
                             "content": "HBOs new docuseries Neighbors is billed, at least in some quarters, as a comedy, but its the most sobering non-news content Ive seen on my TV in a while. Created by Harrison Fishman and Dylan Redford… [+7341 chars]",
-                            "urlToImage": "https://compote.slate.com/images/c6d8f378-624e-4675-b66e-765957861f97.jpeg?crop=1560%2C1040%2Cx0%2Cy0&width=1560",
+                            "url_to_image": "https://compote.slate.com/images/c6d8f378-624e-4675-b66e-765957861f97.jpeg?crop=1560%2C1040%2Cx0%2Cy0&width=1560",
                             "description": "The new series from the producers of Marty Supreme is alternately hilarious, jaw-dropping, and terrifying.",
-                            "publishedAt": "2026-02-13T15:00:00Z"
+                            "published_at": "2026-02-13T15:00:00Z"
                         },
                         {
                             "url": "https://apnews.com/article/milan-cortina-olympics-cross-country-klaebo-6d712004bd9250bf8921d3c1a8333312",
@@ -193,9 +193,9 @@
                                 "name": "Associated Press"
                             },
                             "content": "TESERO, Italy (AP) Friday the 13th will be remembered as a lucky day for Johannes Hoesflot Klaebo. Norways cross-country skiing star tied an alltime Winter Games record by winning his eighth gold med… [+3966 chars]",
-                            "urlToImage": "https://dims.apnews.com/dims4/default/11dad16/2147483647/strip/true/crop/7000x4664+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F45%2Fcb%2F824d3358b9142e3ea4838ab470b2%2Ff7c991748d9b4cba977e3808cc3bf3d2",
+                            "url_to_image": "https://dims.apnews.com/dims4/default/11dad16/2147483647/strip/true/crop/7000x4664+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F45%2Fcb%2F824d3358b9142e3ea4838ab470b2%2Ff7c991748d9b4cba977e3808cc3bf3d2",
                             "description": "Norway’s Johannes Hoesflot Klaebo has won an eighth gold medal in cross-country skiing at the Milan Cortina Olympics, tying an all‑time Winter Games record. The 29‑year‑old claimed victory Friday in the men’s 10 kilometer interval‑start race, for his third go…",
-                            "publishedAt": "2026-02-13T14:47:00Z"
+                            "published_at": "2026-02-13T14:47:00Z"
                         },
                         {
                             "url": "https://www.cnbc.com/2026/02/13/shipping-auotmation-logistics-labor.html",
@@ -206,9 +206,9 @@
                                 "name": "CNBC"
                             },
                             "content": "DHL Autonomous Robot at work.\r\nWorkers at DHL Group used to walk close to a half marathon each day just to classify, pick and move items across massive warehouses.\r\nNow, their distance and efforts ar… [+8320 chars]",
-                            "urlToImage": "https://image.cnbcfm.com/api/v1/image/108264650-1770839435386-DHL_StretchRobot_2.jpg?v=1770839728&w=1920&h=1080",
+                            "url_to_image": "https://image.cnbcfm.com/api/v1/image/108264650-1770839435386-DHL_StretchRobot_2.jpg?v=1770839728&w=1920&h=1080",
                             "description": "Companies like UPS, FedEx and DHL are increasingly turning to automation in their warehouse processes to work toward greater efficiency and lower costs.",
-                            "publishedAt": "2026-02-13T12:30:01Z"
+                            "published_at": "2026-02-13T12:30:01Z"
                         },
                         {
                             "url": "https://www.androidauthority.com/android-canary-live-updates-new-look-3640753/",
@@ -219,9 +219,9 @@
                                 "name": "Android Authority"
                             },
                             "content": "<ul><li>Google is rolling out subtle visual upgrades to Live Updates on Android.</li><li>With the latest Android Canary build, were seeing a slightly wider progress bar for Live Updates.</li><li>The … [+1974 chars]",
-                            "urlToImage": "https://www.androidauthority.com/wp-content/uploads/2025/05/Android-16-Live-Updates-with-Uber-Eats-app-5.jpg",
+                            "url_to_image": "https://www.androidauthority.com/wp-content/uploads/2025/05/Android-16-Live-Updates-with-Uber-Eats-app-5.jpg",
                             "description": "Google is testing an enhanced look for Android's Live Updates with a recently released Android Canary build.",
-                            "publishedAt": "2026-02-13T12:10:07Z"
+                            "published_at": "2026-02-13T12:10:07Z"
                         },
                         {
                             "url": "https://www.npr.org/2026/02/13/g-s1-109343/gaza-israel-police",
@@ -232,9 +232,9 @@
                                 "name": "NPR"
                             },
                             "content": "TEL AVIV, Israel On Oct. 30, 2023, just three weeks after the deadly Oct. 7 Hamas-led attack on Israel sparked Israel's war in Gaza, U.S. security officials stationed in Jerusalem drew up a plan for … [+8009 chars]",
-                            "urlToImage": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/4794x2697+0+0/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Fee%2F04%2Fbe4f06d1473f89db19ffa2a5787c%2Fap841304887737.jpg",
+                            "url_to_image": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/4794x2697+0+0/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Fee%2F04%2Fbe4f06d1473f89db19ffa2a5787c%2Fap841304887737.jpg",
                             "description": "Under President Trump's Gaza ceasefire plan, Arab countries and the European Union are supposed to train a new police force in the Gaza Strip. But U.S. plans have run into serious challenges.",
-                            "publishedAt": "2026-02-13T10:01:00Z"
+                            "published_at": "2026-02-13T10:01:00Z"
                         },
                         {
                             "url": "https://www.cnn.com/2026/02/13/business/chocolate-prices-valentines-day",
@@ -245,9 +245,9 @@
                                 "name": "CNN"
                             },
                             "content": "Chocolate lovers are experiencing sticker shock this Valentines Day.\r\nConsumer prices for chocolate have spiked 14.4% year-over-yearduring the January 1 to early February window, according to market … [+3448 chars]",
-                            "urlToImage": "https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-2199177120.jpg?c=16x9&q=w_800,c_fill",
+                            "url_to_image": "https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-2199177120.jpg?c=16x9&q=w_800,c_fill",
                             "description": "Chocolate lovers are experiencing sticker shock this Valentine’s Day.",
-                            "publishedAt": "2026-02-13T10:00:47Z"
+                            "published_at": "2026-02-13T10:00:47Z"
                         },
                         {
                             "url": "https://apnews.com/article/bangladesh-election-hasina-tarique-rahman-bnp-8ec3a74b4488dfe998b3d1d232c3ba4f",
@@ -258,9 +258,9 @@
                                 "name": "Associated Press"
                             },
                             "content": "DHAKA, Bangladesh (AP) The Bangladesh Nationalist Party has claimed victory in the countrys first election since the 2024 uprising, positioning itself to form the next government and potentially resh… [+5806 chars]",
-                            "urlToImage": "https://dims.apnews.com/dims4/default/37151c1/2147483647/strip/true/crop/8256x5501+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F82%2F44%2F7747dbce65dcabfc430d8c1c1529%2F16e81434400c4ff3bd4df076b9020ac3",
+                            "url_to_image": "https://dims.apnews.com/dims4/default/37151c1/2147483647/strip/true/crop/8256x5501+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F82%2F44%2F7747dbce65dcabfc430d8c1c1529%2F16e81434400c4ff3bd4df076b9020ac3",
                             "description": "The Bangladesh Nationalist Party has claimed victory in the country’s first election since the 2024 uprising, positioning itself to form the next government and potentially reshape Bangladesh’s political landscape after years of intense rivalry and disputed p…",
-                            "publishedAt": "2026-02-13T08:21:00Z"
+                            "published_at": "2026-02-13T08:21:00Z"
                         },
                         {
                             "url": "https://www.businessinsider.com/ukraine-starlink-operation-cyber-assault-fake-registration-location-data-2026-2",
@@ -271,9 +271,9 @@
                                 "name": "Business Insider"
                             },
                             "content": "A Ukrainian cyberwarfare division said on Thursday that it created a fake Starlink registration service to trick Russian soldiers into giving up sensitive data.\r\nThe 256th Cyber Assault Division said… [+3503 chars]",
-                            "urlToImage": "https://i.insider.com/698ea911a645d118818947c3?width=1200&format=jpeg",
+                            "url_to_image": "https://i.insider.com/698ea911a645d118818947c3?width=1200&format=jpeg",
                             "description": "Ukrainian OSINT groups pushed the ruse by pretending to complain about a Russian Telegram bot actually run by Kyiv's troops, the division said.",
-                            "publishedAt": "2026-02-13T05:14:00Z"
+                            "published_at": "2026-02-13T05:14:00Z"
                         },
                         {
                             "url": "https://apnews.com/article/north-korea-kim-drone-flights-7b19eb7282aa2af2d7e7a1b640e96109",
@@ -284,12 +284,12 @@
                                 "name": "Associated Press"
                             },
                             "content": "SEOUL, South Korea (AP) The powerful sister of North Korean leader Kim Jong Un said Friday it was sensible for a South Korean government official to express regret for alleged civilian drone flights … [+2209 chars]",
-                            "urlToImage": "https://dims.apnews.com/dims4/default/74fd4c5/2147483647/strip/true/crop/6000x3998+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F1a%2F2c%2F9acfc58700c567896a0fcc64a0a8%2Fe7d272d8246740cd8472cae35a468540",
+                            "url_to_image": "https://dims.apnews.com/dims4/default/74fd4c5/2147483647/strip/true/crop/6000x3998+0+1/resize/980x653!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F1a%2F2c%2F9acfc58700c567896a0fcc64a0a8%2Fe7d272d8246740cd8472cae35a468540",
                             "description": "The sister of North Korean leader Kim Jong Un says it was “sensible” for a South Korean official to express regret for alleged civilian drone flights over North Korea but warned of counterattacks if they recur. The statement by Kim Yo Jong came after South Ko…",
-                            "publishedAt": "2026-02-13T04:03:00Z"
+                            "published_at": "2026-02-13T04:03:00Z"
                         }
                     ],
-                    "totalResults": 33
+                    "total_results": 33
                 },
                 "tool_use_id": "gemini_7240132781104653211"
             }

@@ -13,15 +13,15 @@ interface NewsArticle {
     title: string;
     description: string | null;
     url: string;
-    urlToImage: string | null;
-    publishedAt: string;
+    url_to_image: string | null;
+    published_at: string | null;
     content: string | null;
 }
 
 interface NewsApiResult {
     intro?: string;
-    status: string;
-    totalResults: number;
+    date?: string;
+    total_results: number;
     articles: NewsArticle[];
 }
 
@@ -56,7 +56,7 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                     }
                     
                     const articles = result.articles;
-                    const totalResults = result.totalResults || articles.length;
+                    const totalResults = result.total_results || articles.length;
                     const displayArticles = articles.slice(0, 6); // Show first 6 articles
                     const hasMore = articles.length > displayArticles.length;
                     
@@ -78,10 +78,10 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                                         }}
                                     >
                                         {/* Article Image */}
-                                        {article.urlToImage ? (
+                                        {article.url_to_image ? (
                                             <div className="relative w-full aspect-video bg-slate-100 dark:bg-slate-900 overflow-hidden">
                                                 <img
-                                                    src={article.urlToImage}
+                                                    src={article.url_to_image}
                                                     alt={article.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                                     onError={(e) => {
@@ -130,11 +130,11 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                                             )}
                                             
                                             {/* Published Date */}
-                                            {article.publishedAt && (
+                                            {article.published_at && (
                                                 <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-500">
                                                     <Calendar className="w-3 h-3" />
                                                     <span>
-                                                        {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                                                        {new Date(article.published_at).toLocaleDateString('en-US', {
                                                             month: 'short',
                                                             day: 'numeric',
                                                             year: 'numeric'

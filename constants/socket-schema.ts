@@ -4187,7 +4187,7 @@ export const validToolNames = [
     'code_python_execute',
     'code_web_store_html',
     'code_fetcher_fetch',
-    'api_news_fetch_headlines',
+    'get_news_headlines',
     'core_math_calculate',
     'core_web_search',
     'core_web_read_web_pages',

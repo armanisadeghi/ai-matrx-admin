@@ -48,7 +48,7 @@ interface ToolCallObject {
     id?: string;  // Unique ID for the tool call (groups related updates)
     type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_visible_message";
     mcp_input?: {
-        name: string;        // Tool name (e.g., "api_news_fetch_headlines")
+        name: string;        // Tool name (e.g., "get_news_headlines")
         arguments: Record<string, any>;  // Tool parameters
     };
     mcp_output?: Record<string, unknown>;  // Tool result data
@@ -383,7 +383,7 @@ const hasError = toolUpdates.some(u => u.type === "mcp_error");
 
 ## Existing Implementations (Reference)
 
-### 1. News Headlines (`api_news_fetch_headlines`)
+### 1. News Headlines (`get_news_headlines`)
 
 **Best example for a full custom implementation.**
 

@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
 import type { PublicResource, PublicResourceType } from '../types/content';
-import { StreamEvent, ToolUpdateData } from '@/components/mardown-display/chat-markdown/types';
-import type { ToolCallObject } from '@/lib/redux/socket-io/socket.types';
+import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import { buildStreamBlocks } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';
 
@@ -66,74 +66,9 @@ const ToolCallVisualization = lazy(() => import('@/features/chat/components/resp
 
 // ============================================================================
 // INTERLEAVED STREAM BLOCKS
-// Builds an ordered sequence of text and tool blocks from stream events so
-// that content renders in the exact order it arrives from the API.
+// Uses the shared tool-event-engine for consistent conversion across all routes.
+// See: components/mardown-display/chat-markdown/tool-event-engine.ts
 // ============================================================================
-
-interface TextBlock {
-    type: 'text';
-    content: string;
-}
-
-interface ToolBlock {
-    type: 'tool';
-    toolId: string;
-    updates: ToolCallObject[];
-}
-
-type ContentBlock = TextBlock | ToolBlock;
-
-/**
- * Converts a flat array of StreamEvents into ordered content blocks.
- *
- * - Consecutive `chunk` events are merged into a single TextBlock.
- * - Each unique tool ID (from `tool_update` events) gets its own ToolBlock,
- *   positioned where the first update for that ID appeared.
- * - Subsequent updates for the same ID are appended to the existing ToolBlock
- *   (in-place), preserving the original position in the sequence.
- */
-function buildStreamBlocks(events: StreamEvent[]): ContentBlock[] {
-    const blocks: ContentBlock[] = [];
-    const toolBlockIndices = new Map<string, number>();
-
-    for (const event of events) {
-        if (event.event === 'chunk') {
-            const text = event.data as string;
-            const lastBlock = blocks[blocks.length - 1];
-            if (lastBlock && lastBlock.type === 'text') {
-                lastBlock.content += text;
-            } else {
-                blocks.push({ type: 'text', content: text });
-            }
-        } else if (event.event === 'tool_update') {
-            const toolData = event.data as ToolUpdateData;
-            const toolId = toolData.id || `tool-anon-${blocks.length}`;
-
-            const update: ToolCallObject = {
-                id: toolId,
-                type: toolData.type as ToolCallObject['type'],
-                mcp_input: toolData.mcp_input as ToolCallObject['mcp_input'],
-                mcp_output: toolData.mcp_output as ToolCallObject['mcp_output'],
-                mcp_error: toolData.mcp_error,
-                step_data: toolData.step_data as ToolCallObject['step_data'],
-                user_visible_message: toolData.user_visible_message,
-            };
-
-            if (toolBlockIndices.has(toolId)) {
-                // Append to the existing ToolBlock (same position in sequence)
-                const idx = toolBlockIndices.get(toolId)!;
-                (blocks[idx] as ToolBlock).updates.push(update);
-            } else {
-                // First time seeing this tool ID — create a new ToolBlock
-                toolBlockIndices.set(toolId, blocks.length);
-                blocks.push({ type: 'tool', toolId, updates: [update] });
-            }
-        }
-        // status_update, data, end, info, broker — skip for block building
-    }
-
-    return blocks;
-}
 
 // ============================================================================
 // STREAMING CONTENT BLOCKS
