@@ -106,6 +106,20 @@ MCP server and REST endpoint for cross-project issue tracking. Agents submit bug
 - Input font-size ≥ 16px to prevent iOS zoom
 - Use `<PageSpecificHeader>` for header injection
 
+**CRITICAL - Dialogs (MANDATORY):**
+- **Mobile:** ALWAYS use `<Drawer>` with `max-h-[85dvh]` (bottom sheet, iOS-native feel)
+- **Desktop:** Use `<Dialog>` with `max-h-[90dvh]` (modal)
+- Use `useIsMobile()` hook for conditional rendering
+- **NEVER use Dialog component on mobile — it creates poor UX**
+
+**CRITICAL - Tabs (MANDATORY):**
+- **Mobile:** NEVER use tabs — stack sections vertically with clear dividers
+- **Desktop:** Tabs OK (recommended max 5 tabs)
+- Tabs on mobile cause UX friction and nested scrolling problems
+- Stack pattern: sections with colored accent bars + border separators
+
+See `.cursor/skills/ios-mobile-first/SKILL.md` for complete patterns and examples
+
 ---
 
 ## Navigation Feedback

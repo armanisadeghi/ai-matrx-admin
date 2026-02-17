@@ -34,6 +34,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { COMPONENT_GENERATOR_PROMPT_ID, COMPONENT_GENERATOR_SYSTEM_PROMPT } from "./tool-ui-generator-prompt";
 
 // ---------------------------------------------------------------------------
@@ -96,6 +97,7 @@ function extractJsonFromResponse(text: string): GeneratedComponent | null {
 
 export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) {
     const { toast } = useToast();
+    const isMobile = useIsMobile();
     const [step, setStep] = useState<WizardStep>("select-tool");
     const [selectedToolName, setSelectedToolName] = useState("");
     const [streamData, setStreamData] = useState("");
@@ -465,52 +467,114 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
                                     </div>
                                 </div>
 
-                                {/* Code tabs */}
-                                <Tabs value={activeReviewTab} onValueChange={setActiveReviewTab}>
-                                    <TabsList>
-                                        <TabsTrigger value="inline" className="text-xs">Inline</TabsTrigger>
-                                        <TabsTrigger value="overlay" className="text-xs">Overlay</TabsTrigger>
-                                        <TabsTrigger value="utility" className="text-xs">Utility</TabsTrigger>
-                                        <TabsTrigger value="headers" className="text-xs">Headers</TabsTrigger>
-                                        <TabsTrigger value="raw" className="text-xs">Raw Output</TabsTrigger>
-                                    </TabsList>
-                                    <TabsContent value="inline">
-                                        <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
-                                            {generatedComponent.inline_code || "Not generated"}
-                                        </pre>
-                                    </TabsContent>
-                                    <TabsContent value="overlay">
-                                        <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
-                                            {generatedComponent.overlay_code || "Not generated"}
-                                        </pre>
-                                    </TabsContent>
-                                    <TabsContent value="utility">
-                                        <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
-                                            {generatedComponent.utility_code || "Not generated"}
-                                        </pre>
-                                    </TabsContent>
-                                    <TabsContent value="headers">
-                                        <div className="space-y-3">
-                                            <div>
-                                                <Label className="text-[11px]">Header Subtitle</Label>
-                                                <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[150px] whitespace-pre-wrap">
-                                                    {generatedComponent.header_subtitle_code || "Not generated"}
-                                                </pre>
-                                            </div>
-                                            <div>
-                                                <Label className="text-[11px]">Header Extras</Label>
-                                                <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[150px] whitespace-pre-wrap">
-                                                    {generatedComponent.header_extras_code || "Not generated"}
-                                                </pre>
-                                            </div>
+                                {/* Code display - tabs on desktop, stacked on mobile */}
+                                {isMobile ? (
+                                    <div className="space-y-4">
+                                        {/* Inline Code */}
+                                        <div>
+                                            <Label className="text-sm font-medium mb-2 block">Inline Code</Label>
+                                            <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[250px] whitespace-pre-wrap">
+                                                {generatedComponent.inline_code || "Not generated"}
+                                            </pre>
                                         </div>
-                                    </TabsContent>
-                                    <TabsContent value="raw">
-                                        <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
-                                            {generationOutput}
-                                        </pre>
-                                    </TabsContent>
-                                </Tabs>
+                                        
+                                        {/* Overlay Code */}
+                                        {generatedComponent.overlay_code && (
+                                            <div>
+                                                <Label className="text-sm font-medium mb-2 block">Overlay Code</Label>
+                                                <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[250px] whitespace-pre-wrap">
+                                                    {generatedComponent.overlay_code}
+                                                </pre>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Utility Code */}
+                                        {generatedComponent.utility_code && (
+                                            <div>
+                                                <Label className="text-sm font-medium mb-2 block">Utility Code</Label>
+                                                <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[250px] whitespace-pre-wrap">
+                                                    {generatedComponent.utility_code}
+                                                </pre>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Headers */}
+                                        {(generatedComponent.header_subtitle_code || generatedComponent.header_extras_code) && (
+                                            <div className="space-y-3">
+                                                {generatedComponent.header_subtitle_code && (
+                                                    <div>
+                                                        <Label className="text-sm font-medium mb-2 block">Header Subtitle</Label>
+                                                        <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[150px] whitespace-pre-wrap">
+                                                            {generatedComponent.header_subtitle_code}
+                                                        </pre>
+                                                    </div>
+                                                )}
+                                                {generatedComponent.header_extras_code && (
+                                                    <div>
+                                                        <Label className="text-sm font-medium mb-2 block">Header Extras</Label>
+                                                        <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[150px] whitespace-pre-wrap">
+                                                            {generatedComponent.header_extras_code}
+                                                        </pre>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        
+                                        {/* Raw Output */}
+                                        <div>
+                                            <Label className="text-sm font-medium mb-2 block">Raw Output</Label>
+                                            <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[250px] whitespace-pre-wrap">
+                                                {generationOutput}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Tabs value={activeReviewTab} onValueChange={setActiveReviewTab}>
+                                        <TabsList>
+                                            <TabsTrigger value="inline" className="text-xs">Inline</TabsTrigger>
+                                            <TabsTrigger value="overlay" className="text-xs">Overlay</TabsTrigger>
+                                            <TabsTrigger value="utility" className="text-xs">Utility</TabsTrigger>
+                                            <TabsTrigger value="headers" className="text-xs">Headers</TabsTrigger>
+                                            <TabsTrigger value="raw" className="text-xs">Raw Output</TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="inline">
+                                            <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
+                                                {generatedComponent.inline_code || "Not generated"}
+                                            </pre>
+                                        </TabsContent>
+                                        <TabsContent value="overlay">
+                                            <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
+                                                {generatedComponent.overlay_code || "Not generated"}
+                                            </pre>
+                                        </TabsContent>
+                                        <TabsContent value="utility">
+                                            <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
+                                                {generatedComponent.utility_code || "Not generated"}
+                                            </pre>
+                                        </TabsContent>
+                                        <TabsContent value="headers">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <Label className="text-[11px]">Header Subtitle</Label>
+                                                    <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[150px] whitespace-pre-wrap">
+                                                        {generatedComponent.header_subtitle_code || "Not generated"}
+                                                    </pre>
+                                                </div>
+                                                <div>
+                                                    <Label className="text-[11px]">Header Extras</Label>
+                                                    <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[150px] whitespace-pre-wrap">
+                                                        {generatedComponent.header_extras_code || "Not generated"}
+                                                    </pre>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+                                        <TabsContent value="raw">
+                                            <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-lg overflow-auto max-h-[350px] whitespace-pre-wrap">
+                                                {generationOutput}
+                                            </pre>
+                                        </TabsContent>
+                                    </Tabs>
+                                )}
 
                                 {/* Actions */}
                                 <div className="flex items-center justify-between pt-2">

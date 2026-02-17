@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StickyNote, CheckSquare, Database, LayoutGrid, Bell, MessageSquare, Crown, LogOut, Sun, Moon, FolderOpen, Sparkles } from 'lucide-react';
+import { StickyNote, CheckSquare, Database, LayoutGrid, Bell, MessageSquare, Crown, LogOut, Sun, Moon, FolderOpen, Sparkles, Bug } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,7 @@ import { RootState } from '@/lib/redux/store';
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import { Notification } from '@/types/notification.types';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
+import FeedbackButton from '@/components/layout/FeedbackButton';
 
 export function MobileUnifiedMenu() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export function MobileUnifiedMenu() {
   const user = useAppSelector((state: RootState) => state.user);
   const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split('@')[0] || 'User';
   const profilePhoto = user.userMetadata.picture || null;
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   
   const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, 'APPLET_USER_IS_ADMIN'));
   
@@ -44,6 +46,10 @@ export function MobileUnifiedMenu() {
   
   const handleThemeToggle = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+  
+  const handleFeedbackClick = () => {
+    setFeedbackOpen(true);
   };
 
   return (
@@ -132,8 +138,8 @@ export function MobileUnifiedMenu() {
         <DropdownMenuSeparator />
         
         {/* System Actions */}
-        <DropdownMenuItem onClick={() => router.push('/feedback')}>
-          <MessageSquare className="h-4 w-4 mr-3 text-blue-600 dark:text-blue-400" />
+        <DropdownMenuItem onClick={handleFeedbackClick}>
+          <Bug className="h-4 w-4 mr-3 text-blue-600 dark:text-blue-400" />
           <span className="text-sm">Feedback</span>
         </DropdownMenuItem>
         
@@ -182,6 +188,14 @@ export function MobileUnifiedMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    
+    {/* Hidden FeedbackButton for mobile menu trigger */}
+    <div className="hidden">
+      <FeedbackButton 
+        triggerOpen={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
+      />
+    </div>
   </>
   );
 }

@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -48,6 +49,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTools } from "@/hooks/useTools";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { formatText } from "@/utils/text/text-case-converter";
 import { ToolUiComponentEditor } from "./ToolUiComponentEditor";
@@ -78,6 +80,7 @@ interface EditingTool extends Tool {
 export function McpToolsManager() {
     const { databaseTools, isLoading, error, refetch } = useTools({ autoFetch: true });
     const { toast } = useToast();
+    const isMobile = useIsMobile();
     const [tools, setTools] = useState<EditingTool[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -280,7 +283,7 @@ export function McpToolsManager() {
     }
 
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6 pb-safe">
             {/* Header Controls */}
             <Card>
                 <CardContent className="pt-6">
@@ -293,13 +296,14 @@ export function McpToolsManager() {
                                     placeholder="Search tools..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-10 text-base"
+                                    style={{ fontSize: '16px' }}
                                 />
                             </div>
 
                             {/* Category Filter */}
                             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                <SelectTrigger className="w-48">
+                                <SelectTrigger className="w-full sm:w-48">
                                     <Filter className="h-4 w-4 mr-2" />
                                     <SelectValue placeholder="Filter by category" />
                                 </SelectTrigger>
@@ -314,59 +318,85 @@ export function McpToolsManager() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowGenerator(true)}
                             >
-                                <Wand2 className="h-4 w-4 mr-2" />
-                                Generate UI
+                                <Wand2 className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Generate UI</span>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowIncidents(true)}
                             >
-                                <Bug className="h-4 w-4 mr-2" />
-                                Incidents
+                                <Bug className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Incidents</span>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={refetch}
                             >
-                                <Settings className="h-4 w-4 mr-2" />
-                                Refresh
+                                <Settings className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Refresh</span>
                             </Button>
-                            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button size="sm">
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Tool
+                            {isMobile ? (
+                                <>
+                                    <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                                        <Plus className="h-4 w-4 sm:mr-2" />
+                                        <span className="hidden sm:inline">Add Tool</span>
                                     </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-                                    <DialogHeader className="flex-shrink-0">
-                                        <DialogTitle>Create New Tool</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="flex-1 overflow-y-auto">
-                                        <ToolEditor
-                                            tool={null}
-                                            onSave={(tool) => {
-                                                handleSaveTool(tool);
-                                                setIsCreateDialogOpen(false);
-                                            }}
-                                            onCancel={() => setIsCreateDialogOpen(false)}
-                                        />
-                                    </div>
-                                </DialogContent>
-                            </Dialog>
+                                    <Drawer open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                                        <DrawerContent className="max-h-[85dvh]">
+                                            <DrawerTitle className="sr-only">Create New Tool</DrawerTitle>
+                                            <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+                                                <ToolEditor
+                                                    tool={null}
+                                                    onSave={(tool) => {
+                                                        handleSaveTool(tool);
+                                                        setIsCreateDialogOpen(false);
+                                                    }}
+                                                    onCancel={() => setIsCreateDialogOpen(false)}
+                                                    isMobile={true}
+                                                />
+                                            </div>
+                                        </DrawerContent>
+                                    </Drawer>
+                                </>
+                            ) : (
+                                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button size="sm">
+                                            <Plus className="h-4 w-4 sm:mr-2" />
+                                            <span className="hidden sm:inline">Add Tool</span>
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
+                                        <DialogHeader className="flex-shrink-0">
+                                            <DialogTitle>Create New Tool</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="flex-1 overflow-y-auto">
+                                            <ToolEditor
+                                                tool={null}
+                                                onSave={(tool) => {
+                                                    handleSaveTool(tool);
+                                                    setIsCreateDialogOpen(false);
+                                                }}
+                                                onCancel={() => setIsCreateDialogOpen(false)}
+                                                isMobile={false}
+                                            />
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
                         </div>
                     </div>
 
                     {/* Stats */}
-                    <div className="flex gap-6 mt-4 pt-4 border-t border-border">
+                    <div className="flex flex-wrap gap-4 sm:gap-6 mt-4 pt-4 border-t border-border">
                         <div className="text-sm">
                             <span className="font-medium text-gray-900 dark:text-gray-100">{filteredTools.length}</span>
                             <span className="text-gray-500 dark:text-gray-400 ml-1">
@@ -425,22 +455,41 @@ export function McpToolsManager() {
             </div>
 
             {/* Edit Dialog */}
-            <Dialog open={!!editingTool} onOpenChange={() => setEditingTool(null)}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle>Edit Tool</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto">
-                        {editingTool && (
-                            <ToolEditor
-                                tool={editingTool}
-                                onSave={handleSaveTool}
-                                onCancel={() => setEditingTool(null)}
-                            />
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+            {isMobile ? (
+                <Drawer open={!!editingTool} onOpenChange={(open) => !open && setEditingTool(null)}>
+                    <DrawerContent className="max-h-[85dvh]">
+                        <DrawerTitle className="sr-only">Edit Tool</DrawerTitle>
+                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+                            {editingTool && (
+                                <ToolEditor
+                                    tool={editingTool}
+                                    onSave={handleSaveTool}
+                                    onCancel={() => setEditingTool(null)}
+                                    isMobile={true}
+                                />
+                            )}
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            ) : (
+                <Dialog open={!!editingTool} onOpenChange={() => setEditingTool(null)}>
+                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
+                        <DialogHeader className="flex-shrink-0">
+                            <DialogTitle>Edit Tool</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-1 overflow-y-auto">
+                            {editingTool && (
+                                <ToolEditor
+                                    tool={editingTool}
+                                    onSave={handleSaveTool}
+                                    onCancel={() => setEditingTool(null)}
+                                    isMobile={false}
+                                />
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog
@@ -472,67 +521,127 @@ export function McpToolsManager() {
             </AlertDialog>
 
             {/* UI Component Editor Dialog */}
-            <Dialog open={!!uiEditorTool} onOpenChange={() => setUiEditorTool(null)}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle className="flex items-center gap-2">
+            {isMobile ? (
+                <Drawer open={!!uiEditorTool} onOpenChange={(open) => !open && setUiEditorTool(null)}>
+                    <DrawerContent className="max-h-[85dvh]">
+                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
                             <Paintbrush className="h-5 w-5" />
                             UI Component: {uiEditorTool?.name}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto">
-                        {uiEditorTool && (
-                            <ToolUiComponentEditor
-                                toolName={uiEditorTool.name}
-                                toolId={uiEditorTool.id}
-                                onSaved={() => {
-                                    toast({ title: "Saved", description: "UI component saved. Changes will take effect on next tool use." });
-                                }}
-                            />
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+                        </DrawerTitle>
+                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+                            {uiEditorTool && (
+                                <ToolUiComponentEditor
+                                    toolName={uiEditorTool.name}
+                                    toolId={uiEditorTool.id}
+                                    onSaved={() => {
+                                        toast({ title: "Saved", description: "UI component saved. Changes will take effect on next tool use." });
+                                    }}
+                                />
+                            )}
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            ) : (
+                <Dialog open={!!uiEditorTool} onOpenChange={() => setUiEditorTool(null)}>
+                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
+                        <DialogHeader className="flex-shrink-0">
+                            <DialogTitle className="flex items-center gap-2">
+                                <Paintbrush className="h-5 w-5" />
+                                UI Component: {uiEditorTool?.name}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-1 overflow-y-auto">
+                            {uiEditorTool && (
+                                <ToolUiComponentEditor
+                                    toolName={uiEditorTool.name}
+                                    toolId={uiEditorTool.id}
+                                    onSaved={() => {
+                                        toast({ title: "Saved", description: "UI component saved. Changes will take effect on next tool use." });
+                                    }}
+                                />
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {/* Incidents Viewer Dialog */}
-            <Dialog open={showIncidents} onOpenChange={setShowIncidents}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle className="flex items-center gap-2">
+            {isMobile ? (
+                <Drawer open={showIncidents} onOpenChange={setShowIncidents}>
+                    <DrawerContent className="max-h-[85dvh]">
+                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
                             <Bug className="h-5 w-5" />
                             Dynamic Component Incidents
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto">
-                        <ToolUiIncidentViewer />
-                    </div>
-                </DialogContent>
-            </Dialog>
+                        </DrawerTitle>
+                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+                            <ToolUiIncidentViewer />
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            ) : (
+                <Dialog open={showIncidents} onOpenChange={setShowIncidents}>
+                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
+                        <DialogHeader className="flex-shrink-0">
+                            <DialogTitle className="flex items-center gap-2">
+                                <Bug className="h-5 w-5" />
+                                Dynamic Component Incidents
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-1 overflow-y-auto">
+                            <ToolUiIncidentViewer />
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {/* AI Component Generator Dialog */}
-            <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
-                <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle className="flex items-center gap-2">
+            {isMobile ? (
+                <Drawer open={showGenerator} onOpenChange={setShowGenerator}>
+                    <DrawerContent className="max-h-[85dvh]">
+                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
                             <Wand2 className="h-5 w-5" />
                             AI Component Generator
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto">
-                        <ToolUiComponentGenerator
-                            tools={tools.map(t => ({
-                                id: t.id,
-                                name: t.name,
-                                description: t.description,
-                                category: t.category,
-                            }))}
-                            onComplete={() => {
-                                toast({ title: "Component generated", description: "The new UI component has been saved and will be active on next tool use." });
-                            }}
-                        />
-                    </div>
-                </DialogContent>
-            </Dialog>
+                        </DrawerTitle>
+                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+                            <ToolUiComponentGenerator
+                                tools={tools.map(t => ({
+                                    id: t.id,
+                                    name: t.name,
+                                    description: t.description,
+                                    category: t.category,
+                                }))}
+                                onComplete={() => {
+                                    toast({ title: "Component generated", description: "The new UI component has been saved and will be active on next tool use." });
+                                }}
+                            />
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            ) : (
+                <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
+                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
+                        <DialogHeader className="flex-shrink-0">
+                            <DialogTitle className="flex items-center gap-2">
+                                <Wand2 className="h-5 w-5" />
+                                AI Component Generator
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-1 overflow-y-auto">
+                            <ToolUiComponentGenerator
+                                tools={tools.map(t => ({
+                                    id: t.id,
+                                    name: t.name,
+                                    description: t.description,
+                                    category: t.category,
+                                }))}
+                                onComplete={() => {
+                                    toast({ title: "Component generated", description: "The new UI component has been saved and will be active on next tool use." });
+                                }}
+                            />
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     );
 }
@@ -555,21 +664,21 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
         <Card className={`transition-all ${!tool.is_active ? 'opacity-60' : ''}`}>
             <CardContent className="pt-6">
                 {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start space-x-3 flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row items-start sm:justify-between mb-4 gap-3">
+                    <div className="flex items-start space-x-3 flex-1 min-w-0 w-full sm:w-auto">
                         <div className="flex-shrink-0 mt-1">
                             {icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
+                            <div className="flex items-center flex-wrap gap-2 mb-1">
                                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
                                     {formatText(tool.name)}
                                 </h3>
-                                <Badge variant={tool.is_active ? "default" : "secondary"}>
+                                <Badge variant={tool.is_active ? "default" : "secondary"} className="text-xs">
                                     {tool.is_active ? "Active" : "Inactive"}
                                 </Badge>
                                 {tool.category && (
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" className="text-xs">
                                         {formatText(tool.category)}
                                     </Badge>
                                 )}
@@ -577,11 +686,11 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                             <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                 {tool.description}
                             </p>
-                            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                <span className="font-mono">{tool.name}</span>
+                            <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <span className="font-mono truncate max-w-[150px] sm:max-w-none">{tool.name}</span>
                                 <span>v{tool.version}</span>
                                 {tool.tags && tool.tags.length > 0 && (
-                                    <div className="flex space-x-1">
+                                    <div className="flex flex-wrap gap-1">
                                         {tool.tags.slice(0, 3).map(tag => (
                                             <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0">
                                                 {tag}
@@ -597,15 +706,17 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                         <Switch
                             checked={tool.is_active}
                             onCheckedChange={onToggleActive}
+                            className="scale-90 sm:scale-100"
                         />
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={onToggleExpanded}
+                            className="h-8 w-8 p-0"
                         >
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
@@ -614,6 +725,7 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                             size="sm"
                             onClick={onEditUiComponent}
                             title="Edit UI Component"
+                            className="h-8 w-8 p-0"
                         >
                             <Paintbrush className="h-4 w-4" />
                         </Button>
@@ -621,6 +733,7 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                             variant="ghost"
                             size="sm"
                             onClick={onEdit}
+                            className="h-8 w-8 p-0"
                         >
                             <Edit className="h-4 w-4" />
                         </Button>
@@ -628,7 +741,7 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                             variant="ghost"
                             size="sm"
                             onClick={onDelete}
-                            className="text-red-600 hover:text-red-700 dark:text-red-400"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 dark:text-red-400"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
@@ -688,9 +801,10 @@ interface ToolEditorProps {
     tool: EditingTool | null;
     onSave: (tool: EditingTool) => void;
     onCancel: () => void;
+    isMobile: boolean;
 }
 
-function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
+function ToolEditor({ tool, onSave, onCancel, isMobile }: ToolEditorProps) {
     const { toast } = useToast();
     const [editedTool, setEditedTool] = useState<EditingTool>(() => 
         tool || {
@@ -770,6 +884,238 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
         setEditedTool(prev => ({ ...prev, tags }));
     };
 
+    // Mobile: Stack all sections vertically (no tabs)
+    if (isMobile) {
+        return (
+            <div className="space-y-6 p-4">
+                {/* Mobile Header */}
+                <div className="pb-4 border-b border-border">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {tool ? 'Edit Tool' : 'Create New Tool'}
+                    </h2>
+                </div>
+
+                {/* Basic Info Section */}
+                <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        Basic Info
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4">
+                        <div>
+                            <Label htmlFor="name">Tool Name (Identifier)</Label>
+                            <Input
+                                id="name"
+                                value={editedTool.name}
+                                onChange={(e) => handleFieldChange('name', e.target.value)}
+                                placeholder="e.g., core_web_search"
+                                className="font-mono text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="category">Category</Label>
+                            <Input
+                                id="category"
+                                value={editedTool.category || ''}
+                                onChange={(e) => handleFieldChange('category', e.target.value)}
+                                placeholder="e.g., core, web, data"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                            id="description"
+                            value={editedTool.description}
+                            onChange={(e) => handleFieldChange('description', e.target.value)}
+                            placeholder="Describe what this tool does..."
+                            rows={3}
+                            className="text-base"
+                            style={{ fontSize: '16px' }}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="icon">Icon Name</Label>
+                            <IconInputWithValidation
+                                id="icon"
+                                value={editedTool.icon || ''}
+                                onChange={(value) => handleFieldChange('icon', value)}
+                                placeholder="e.g., Search"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="version">Version</Label>
+                            <Input
+                                id="version"
+                                value={editedTool.version || ''}
+                                onChange={(e) => handleFieldChange('version', e.target.value)}
+                                placeholder="e.g., 1.0.0"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="is_active"
+                            checked={editedTool.is_active}
+                            onCheckedChange={(checked) => handleFieldChange('is_active', checked)}
+                        />
+                        <Label htmlFor="is_active">Active</Label>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="function_path">Function Path</Label>
+                        <Input
+                            id="function_path"
+                            value={editedTool.function_path}
+                            onChange={(e) => handleFieldChange('function_path', e.target.value)}
+                            placeholder="e.g., scraper.db_version.tools_functions.search.search_tool_util"
+                            className="font-mono text-base"
+                            style={{ fontSize: '16px' }}
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="tags">Tags (comma-separated)</Label>
+                        <Input
+                            id="tags"
+                            value={editedTool.tags?.join(', ') || ''}
+                            onChange={(e) => handleTagsChange(e.target.value)}
+                            placeholder="e.g., core, web, search"
+                            className="text-base"
+                            style={{ fontSize: '16px' }}
+                        />
+                    </div>
+                </div>
+
+                {/* Parameters Section */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        Parameters Schema
+                    </h3>
+                    <div>
+                        <Label htmlFor="parameters">Parameters Schema (JSON)</Label>
+                        <Textarea
+                            id="parameters"
+                            value={JSON.stringify(editedTool.parameters, null, 2)}
+                            onChange={(e) => handleJsonFieldChange('parameters', e.target.value)}
+                            className={`font-mono text-sm ${jsonErrors.parameters ? 'border-red-500 dark:border-red-400' : ''}`}
+                            style={{ fontSize: '16px' }}
+                            rows={12}
+                        />
+                        {jsonErrors.parameters ? (
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                JSON Error: {jsonErrors.parameters}
+                            </p>
+                        ) : (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Define the JSON schema for tool parameters. Must be valid JSON.
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Output Schema Section */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        Output Schema
+                    </h3>
+                    <div>
+                        <Label htmlFor="output_schema">Output Schema (JSON)</Label>
+                        <Textarea
+                            id="output_schema"
+                            value={JSON.stringify(editedTool.output_schema, null, 2)}
+                            onChange={(e) => handleJsonFieldChange('output_schema', e.target.value)}
+                            className={`font-mono text-sm ${jsonErrors.output_schema ? 'border-red-500 dark:border-red-400' : ''}`}
+                            style={{ fontSize: '16px' }}
+                            rows={12}
+                        />
+                        {jsonErrors.output_schema ? (
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                JSON Error: {jsonErrors.output_schema}
+                            </p>
+                        ) : (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Define the JSON schema for tool output. Must be valid JSON.
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Advanced Section */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        Advanced
+                    </h3>
+                    <div>
+                        <Label htmlFor="annotations">Annotations (JSON Array)</Label>
+                        <Textarea
+                            id="annotations"
+                            value={JSON.stringify(editedTool.annotations, null, 2)}
+                            onChange={(e) => handleJsonFieldChange('annotations', e.target.value)}
+                            className={`font-mono text-sm ${jsonErrors.annotations ? 'border-red-500 dark:border-red-400' : ''}`}
+                            style={{ fontSize: '16px' }}
+                            rows={8}
+                        />
+                        {jsonErrors.annotations ? (
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                JSON Error: {jsonErrors.annotations}
+                            </p>
+                        ) : (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Additional metadata and annotations for the tool.
+                            </p>
+                        )}
+                    </div>
+
+                    {tool && (
+                        <div className="grid grid-cols-1 gap-4 pt-4 border-t border-border">
+                            <div>
+                                <Label>Tool ID</Label>
+                                <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
+                                    {tool.id}
+                                </p>
+                            </div>
+                            <div>
+                                <Label>Created At</Label>
+                                <p className="text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
+                                    {tool.created_at ? new Date(tool.created_at).toLocaleString() : 'N/A'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col gap-3 pt-4 border-t border-border pb-safe">
+                    <Button onClick={handleSave} disabled={isSaving} className="w-full">
+                        {isSaving ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                        )}
+                        {isSaving ? 'Saving...' : 'Save Tool'}
+                    </Button>
+                    <Button variant="outline" onClick={onCancel} className="w-full">
+                        Cancel
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Desktop: Use tabs
     return (
         <div className="space-y-6 p-1">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -789,7 +1135,8 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                                 value={editedTool.name}
                                 onChange={(e) => handleFieldChange('name', e.target.value)}
                                 placeholder="e.g., core_web_search"
-                                className="font-mono"
+                                className="font-mono text-base"
+                                style={{ fontSize: '16px' }}
                             />
                         </div>
                         <div>
@@ -799,6 +1146,8 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                                 value={editedTool.category || ''}
                                 onChange={(e) => handleFieldChange('category', e.target.value)}
                                 placeholder="e.g., core, web, data"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
                             />
                         </div>
                     </div>
@@ -811,6 +1160,8 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                             onChange={(e) => handleFieldChange('description', e.target.value)}
                             placeholder="Describe what this tool does..."
                             rows={3}
+                            className="text-base"
+                            style={{ fontSize: '16px' }}
                         />
                     </div>
 
@@ -831,6 +1182,8 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                                 value={editedTool.version || ''}
                                 onChange={(e) => handleFieldChange('version', e.target.value)}
                                 placeholder="e.g., 1.0.0"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
                             />
                         </div>
                         <div className="flex items-center space-x-2">
@@ -850,7 +1203,8 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                             value={editedTool.function_path}
                             onChange={(e) => handleFieldChange('function_path', e.target.value)}
                             placeholder="e.g., scraper.db_version.tools_functions.search.search_tool_util"
-                            className="font-mono"
+                            className="font-mono text-base"
+                            style={{ fontSize: '16px' }}
                         />
                     </div>
 
@@ -861,6 +1215,8 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                             value={editedTool.tags?.join(', ') || ''}
                             onChange={(e) => handleTagsChange(e.target.value)}
                             placeholder="e.g., core, web, search"
+                            className="text-base"
+                            style={{ fontSize: '16px' }}
                         />
                     </div>
                 </TabsContent>
@@ -873,6 +1229,7 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                             value={JSON.stringify(editedTool.parameters, null, 2)}
                             onChange={(e) => handleJsonFieldChange('parameters', e.target.value)}
                             className={`font-mono text-sm ${jsonErrors.parameters ? 'border-red-500 dark:border-red-400' : ''}`}
+                            style={{ fontSize: '16px' }}
                             rows={15}
                         />
                         {jsonErrors.parameters ? (
@@ -895,6 +1252,7 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                             value={JSON.stringify(editedTool.output_schema, null, 2)}
                             onChange={(e) => handleJsonFieldChange('output_schema', e.target.value)}
                             className={`font-mono text-sm ${jsonErrors.output_schema ? 'border-red-500 dark:border-red-400' : ''}`}
+                            style={{ fontSize: '16px' }}
                             rows={15}
                         />
                         {jsonErrors.output_schema ? (
@@ -917,6 +1275,7 @@ function ToolEditor({ tool, onSave, onCancel }: ToolEditorProps) {
                             value={JSON.stringify(editedTool.annotations, null, 2)}
                             onChange={(e) => handleJsonFieldChange('annotations', e.target.value)}
                             className={`font-mono text-sm ${jsonErrors.annotations ? 'border-red-500 dark:border-red-400' : ''}`}
+                            style={{ fontSize: '16px' }}
                             rows={8}
                         />
                         {jsonErrors.annotations ? (

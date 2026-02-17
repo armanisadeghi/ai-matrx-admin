@@ -38,6 +38,8 @@ alwaysApply: true
 - Modern, professional, elegant interfaces
 - Lucide React icons only (no emojis)
 - **NEVER use browser alerts, confirms, prompts** - Always use custom components for notifications, confirmations, and user input (eg. @/components/ui/alert-dialog)
+- **NEVER use Dialog on mobile** - Always use Drawer (bottom sheet) via `useIsMobile()` conditional rendering
+- **NEVER use tabs on mobile** - Stack sections vertically with clear dividers (tabs cause UX friction)
 - `bg-textured` for main backgrounds (textured bg-zinc-100 dark:bg-zinc-850)
 - Consistent light/dark theme with proper contrast
 - Space-efficient layouts (minimal padding/gaps, maintain readability)
@@ -53,6 +55,14 @@ alwaysApply: true
 4. **Full-height pages:** `h-[calc(100dvh-var(--header-height))]` for content below header
 5. **iOS Zoom Prevention:** Input/textarea must be `≥16px` font-size (use `text-base` or inline style)
 6. **Header Injection:** Use `<PageSpecificHeader>` component - never create custom headers
+7. **CRITICAL - Dialogs:** ALWAYS use `useIsMobile()` to conditionally render:
+   - **Mobile:** `<Drawer>` with `max-h-[85dvh]` (bottom sheet)
+   - **Desktop:** `<Dialog>` with `max-h-[90dvh]` (modal)
+   - **NEVER use Dialog component on mobile**
+8. **CRITICAL - Tabs:** NEVER use tabs on mobile:
+   - **Mobile:** Stack all sections vertically with dividers
+   - **Desktop:** Tabs OK (max 5 tabs)
+   - Tabs cause UX friction and nested scrolling problems on mobile
 
 **Common Pattern:**
 ```tsx
@@ -62,7 +72,29 @@ alwaysApply: true
 </div>
 ```
 
-*Full details: See 'mobile-layout-reference'*
+**Dialog/Drawer Pattern (MANDATORY):**
+```tsx
+const isMobile = useIsMobile();
+{isMobile ? (
+  <Drawer open={isOpen} onOpenChange={setIsOpen}>
+    <DrawerContent className="max-h-[85dvh]">
+      <DrawerTitle className="sr-only">Title</DrawerTitle>
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+        {content}
+      </div>
+    </DrawerContent>
+  </Drawer>
+) : (
+  <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
+      <DialogHeader><DialogTitle>Title</DialogTitle></DialogHeader>
+      <div className="flex-1 overflow-y-auto">{content}</div>
+    </DialogContent>
+  </Dialog>
+)}
+```
+
+*Full details: See `.cursor/skills/ios-mobile-first/SKILL.md` for comprehensive mobile UX guidelines*
 </mobile_layout_essentials>
 
 <navigation_interactions>

@@ -29,6 +29,8 @@ import { toast } from 'sonner';
 
 interface FeedbackButtonProps {
     className?: string;
+    triggerOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 const feedbackTypes: { value: FeedbackType; label: string }[] = [
@@ -303,7 +305,7 @@ function FeedbackFormContent({
 // MAIN COMPONENT
 // ============================================================================
 
-export default function FeedbackButton({ className = '' }: FeedbackButtonProps) {
+export default function FeedbackButton({ className = '', triggerOpen, onOpenChange }: FeedbackButtonProps) {
     const dispatch = useAppDispatch();
     const pathname = usePathname();
     const isMobile = useIsMobile();
@@ -320,6 +322,19 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
     const [submitted, setSubmitted] = useState(false);
     const [feedbackStats, setFeedbackStats] = useState<{ total: number; pending: number; resolved: number } | null>(null);
     const [showNewFeatureHighlight, setShowNewFeatureHighlight] = useState(false);
+    
+    // Handle external trigger
+    useEffect(() => {
+        if (triggerOpen !== undefined) {
+            setIsOpen(triggerOpen);
+        }
+    }, [triggerOpen]);
+    
+    // Notify parent of open state changes
+    const handleOpenChange = useCallback((open: boolean) => {
+        setIsOpen(open);
+        onOpenChange?.(open);
+    }, [onOpenChange]);
 
     // Reset submitted state after close animation completes
     useEffect(() => {
@@ -583,7 +598,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                 {triggerButton}
                 <Drawer open={isOpen} onOpenChange={(open) => {
                     if (isSubmitting) return;
-                    setIsOpen(open);
+                    handleOpenChange(open);
                 }}>
                     <DrawerContent className="max-h-[85dvh]">
                         <DrawerTitle className="sr-only">Submit Feedback</DrawerTitle>
@@ -598,7 +613,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
 
     // Desktop: dropdown menu
     return (
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
                 {triggerButton}
             </DropdownMenuTrigger>

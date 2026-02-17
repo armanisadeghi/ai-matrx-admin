@@ -43,6 +43,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { ToolUiComponentRow } from "@/features/chat/components/response/tool-renderers/dynamic/types";
 import { getAllAvailableImports, getDefaultImportsForToolRenderer } from "@/features/chat/components/response/tool-renderers/dynamic/allowed-imports";
 
@@ -171,6 +172,7 @@ export default function headerExtras(toolUpdates) {
 
 export function ToolUiComponentEditor({ toolName, toolId, onSaved }: ToolUiComponentEditorProps) {
     const { toast } = useToast();
+    const isMobile = useIsMobile();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [activeTab, setActiveTab] = useState("inline");
@@ -315,6 +317,326 @@ export function ToolUiComponentEditor({ toolName, toolId, onSaved }: ToolUiCompo
         );
     }
 
+    // Mobile: Stack all sections vertically
+    if (isMobile) {
+        return (
+            <div className="space-y-6 p-4">
+                {/* Status indicator */}
+                {existingComponent && (
+                    <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 pb-4 border-b border-border">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Editing existing component (v{existingComponent.version})</span>
+                    </div>
+                )}
+
+                {/* Inline Code Section */}
+                <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        <FileCode className="w-4 h-4" />
+                        Inline Component
+                    </h3>
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <Label>Inline Component Code (Required)</Label>
+                            <Badge variant="outline" className="text-[10px]">TSX</Badge>
+                        </div>
+                        <Textarea
+                            value={formData.inline_code}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, inline_code: e.target.value }))}
+                            className="font-mono text-xs min-h-[300px] leading-relaxed"
+                            style={{ fontSize: '16px' }}
+                            placeholder="Write your inline component code here..."
+                        />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                            The compact preview shown in the chat stream. Receives props: toolUpdates, currentIndex, onOpenOverlay, toolGroupId
+                        </p>
+                    </div>
+                </div>
+
+                {/* Overlay Code Section */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        <Layers className="w-4 h-4" />
+                        Overlay Component
+                    </h3>
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <Label>Overlay Component Code (Optional)</Label>
+                            {!formData.overlay_code && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs h-7"
+                                    onClick={() => handleUseTemplate("overlay_code")}
+                                >
+                                    <Plus className="w-3 h-3 mr-1" />
+                                    Template
+                                </Button>
+                            )}
+                        </div>
+                        <Textarea
+                            value={formData.overlay_code}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, overlay_code: e.target.value }))}
+                            className="font-mono text-xs min-h-[300px] leading-relaxed"
+                            style={{ fontSize: '16px' }}
+                            placeholder="Write overlay component code (shown in the full-screen modal)..."
+                        />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                            Full detailed view shown in the modal. If not provided, the inline component is used.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Header Functions Section */}
+                <div className="space-y-6 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        <Paintbrush className="w-4 h-4" />
+                        Header Customization
+                    </h3>
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <Label>Header Subtitle Function (Optional)</Label>
+                            {!formData.header_subtitle_code && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs h-7"
+                                    onClick={() => handleUseTemplate("header_subtitle_code")}
+                                >
+                                    <Plus className="w-3 h-3 mr-1" />
+                                    Template
+                                </Button>
+                            )}
+                        </div>
+                        <Textarea
+                            value={formData.header_subtitle_code}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, header_subtitle_code: e.target.value }))}
+                            className="font-mono text-xs min-h-[120px] leading-relaxed"
+                            style={{ fontSize: '16px' }}
+                            placeholder="Function that receives toolUpdates and returns a subtitle string or null..."
+                        />
+                    </div>
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <Label>Header Extras Function (Optional)</Label>
+                            {!formData.header_extras_code && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs h-7"
+                                    onClick={() => handleUseTemplate("header_extras_code")}
+                                >
+                                    <Plus className="w-3 h-3 mr-1" />
+                                    Template
+                                </Button>
+                            )}
+                        </div>
+                        <Textarea
+                            value={formData.header_extras_code}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, header_extras_code: e.target.value }))}
+                            className="font-mono text-xs min-h-[150px] leading-relaxed"
+                            style={{ fontSize: '16px' }}
+                            placeholder="Function that receives toolUpdates and returns a ReactNode for the header..."
+                        />
+                    </div>
+                </div>
+
+                {/* Utility Code Section */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        <Code className="w-4 h-4" />
+                        Utilities
+                    </h3>
+                    <div>
+                        <Label className="mb-2 block">Shared Utility Code (Optional)</Label>
+                        <Textarea
+                            value={formData.utility_code}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, utility_code: e.target.value }))}
+                            className="font-mono text-xs min-h-[250px] leading-relaxed"
+                            style={{ fontSize: '16px' }}
+                            placeholder="Shared helper functions, parsers, constants available to all components..."
+                        />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                            Export functions and constants here. They will be available in scope for inline, overlay, and header code.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Config Section */}
+                <div className="space-y-6 pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <div className="h-6 w-1 bg-primary rounded-full" />
+                        <Settings className="w-4 h-4" />
+                        Configuration
+                    </h3>
+                    
+                    {/* Basic settings */}
+                    <div className="grid grid-cols-1 gap-4">
+                        <div>
+                            <Label htmlFor="tool_name">Tool Name (identifier)</Label>
+                            <Input
+                                id="tool_name"
+                                value={formData.tool_name}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, tool_name: e.target.value }))}
+                                placeholder="e.g. web_search_v1"
+                                className="font-mono text-base"
+                                style={{ fontSize: '16px' }}
+                                disabled={!!toolName}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="display_name">Display Name</Label>
+                            <Input
+                                id="display_name"
+                                value={formData.display_name}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, display_name: e.target.value }))}
+                                placeholder="e.g. Web Search"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="results_label">Results Label</Label>
+                            <Input
+                                id="results_label"
+                                value={formData.results_label}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, results_label: e.target.value }))}
+                                placeholder="e.g. Search Results"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="version">Version</Label>
+                            <Input
+                                id="version"
+                                value={formData.version}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, version: e.target.value }))}
+                                placeholder="1.0.0"
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="language">Language</Label>
+                        <Select
+                            value={formData.language}
+                            onValueChange={(v) => setFormData((prev) => ({ ...prev, language: v as "tsx" | "jsx" }))}
+                        >
+                            <SelectTrigger id="language" className="text-base" style={{ fontSize: '16px' }}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="tsx">TSX (TypeScript)</SelectItem>
+                                <SelectItem value="jsx">JSX (JavaScript)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                checked={formData.is_active}
+                                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_active: checked }))}
+                            />
+                            <Label>Active</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                checked={formData.keep_expanded_on_stream}
+                                onCheckedChange={(checked) =>
+                                    setFormData((prev) => ({ ...prev, keep_expanded_on_stream: checked }))
+                                }
+                            />
+                            <Label>Keep expanded on stream</Label>
+                        </div>
+                    </div>
+
+                    {/* Allowed imports */}
+                    <div>
+                        <Label className="mb-2 block">Allowed Imports</Label>
+                        <div className="space-y-2">
+                            {availableImports.map((imp) => (
+                                <label
+                                    key={imp.path}
+                                    className="flex items-start gap-2 p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer text-xs"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.allowed_imports.includes(imp.path)}
+                                        onChange={() => handleImportToggle(imp.path)}
+                                        className="mt-0.5"
+                                    />
+                                    <div>
+                                        <div className="font-mono text-slate-700 dark:text-slate-300">{imp.path}</div>
+                                        <div className="text-slate-500 dark:text-slate-400">{imp.description}</div>
+                                    </div>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                        <Label htmlFor="notes">Developer Notes</Label>
+                        <Textarea
+                            id="notes"
+                            value={formData.notes}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                            placeholder="Any notes about this component..."
+                            rows={3}
+                            className="text-base"
+                            style={{ fontSize: '16px' }}
+                        />
+                    </div>
+                </div>
+
+                {/* Import rules info box */}
+                <Card className="border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-950/20">
+                    <CardContent className="pt-4 pb-3">
+                        <div className="flex items-start gap-2">
+                            <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <div className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+                                <p className="font-medium">Component Writing Rules:</p>
+                                <ul className="list-disc pl-4 space-y-0.5 text-blue-700 dark:text-blue-300">
+                                    <li>Write code as if it were a normal React file with imports and <code>export default</code></li>
+                                    <li>Props: <code>{"{ toolUpdates, currentIndex, onOpenOverlay, toolGroupId }"}</code></li>
+                                    <li>Only imports listed in the Allowed Imports config are available</li>
+                                    <li>All Lucide icons are available by name (missing icons show a placeholder)</li>
+                                    <li>Use <code>cn()</code> for conditional className merging</li>
+                                    <li>Do not use <code>import()</code> or <code>require()</code> — only static import syntax</li>
+                                    <li>Utility code exports are automatically available in inline/overlay scope</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Save button */}
+                <div className="flex flex-col gap-3 pt-4 border-t border-border pb-safe">
+                    <Button onClick={handleSave} disabled={isSaving} className="w-full">
+                        {isSaving ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                        )}
+                        {isSaving ? "Saving..." : existingComponent ? "Update Component" : "Create Component"}
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Desktop: Use tabs
     return (
         <div className="space-y-6 p-1">
             {/* Status indicator */}

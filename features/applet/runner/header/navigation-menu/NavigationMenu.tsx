@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Crown, Settings, Sun, Moon } from "lucide-react";
+import { Menu, Crown, Settings, Sun, Moon, Bug } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,6 +22,7 @@ import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
 import AdminMenu from "./AdminMenu";
 import CreatorMenu from "./CreatorMenu";
 import { useMenuAnimations } from "./useMenuAnimations";
+import FeedbackButton from "@/components/layout/FeedbackButton";
 
 interface NavigationItem {
     label: string;
@@ -72,6 +73,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
+    const [feedbackOpen, setFeedbackOpen] = useState(false);
     
     // Creator and admin status
     const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
@@ -79,6 +81,10 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     
     const handleThemeToggle = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
+    
+    const handleFeedbackClick = () => {
+        setFeedbackOpen(true);
     };
     
     // Get current task information from redux state (only for applet-specific animations)
@@ -109,6 +115,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     const shouldShowAdminMenu = showAdminFeatures && isAdmin;
     
     return (
+        <>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
@@ -199,6 +206,18 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                 <div className="flex-shrink-0">
                     <DropdownMenuSeparator />
                     
+                    {/* Feedback - Only show on mobile */}
+                    {isMobile && (
+                        <DropdownMenuItem onClick={handleFeedbackClick}>
+                            <div className="flex items-center gap-3 w-full">
+                                <Bug className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                    Send Feedback
+                                </span>
+                            </div>
+                        </DropdownMenuItem>
+                    )}
+                    
                     {/* Theme toggle */}
                     <DropdownMenuItem onClick={handleThemeToggle}>
                         <div className="flex items-center gap-3 w-full">
@@ -245,6 +264,17 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                 </div>
             </DropdownMenuContent>
         </DropdownMenu>
+        
+        {/* Hidden FeedbackButton for mobile menu trigger - rendered outside dropdown to avoid conflicts */}
+        {isMobile && (
+            <div className="hidden">
+                <FeedbackButton 
+                    triggerOpen={feedbackOpen}
+                    onOpenChange={setFeedbackOpen}
+                />
+            </div>
+        )}
+        </>
     );
 };
 
