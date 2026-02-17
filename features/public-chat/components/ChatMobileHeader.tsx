@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,7 @@ import {
     Moon,
     LogIn,
     LayoutDashboard,
+    Bug,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -24,8 +25,11 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { selectUser } from '@/lib/redux/slices/userSlice';
+import { selectUser, selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import type { AgentConfig } from '../context/ChatContext';
+
+const AdminMenu = lazy(() => import('@/components/matrx/AdminMenu'));
+const FeedbackButton = lazy(() => import('@/components/layout/FeedbackButton'));
 
 // ============================================================================
 // TYPES
@@ -36,13 +40,15 @@ interface ChatMobileHeaderProps {
     onNewChat: () => void;
     selectedAgent?: AgentConfig | null;
     onOpenAgentPicker: () => void;
+    /** When true, header left group hides to avoid overlapping the open sidebar */
+    isSidebarOpen?: boolean;
 }
 
 // ============================================================================
 // CHAT HEADER (all viewports)
 // Transparent floating header — no background, icons overlay content.
 // Replaces PublicHeader entirely on the chat route.
-// Layout: [sidebar] [new chat] [agent name ▼] --- [logo] [discover] [menu]
+// Layout: [sidebar] [new chat] [agent name ▼] --- [admin] [feedback] [discover] [menu] [logo]
 // ============================================================================
 
 export function ChatMobileHeader({
@@ -50,10 +56,12 @@ export function ChatMobileHeader({
     onNewChat,
     selectedAgent,
     onOpenAgentPicker,
+    isSidebarOpen = false,
 }: ChatMobileHeaderProps) {
     const router = useRouter();
     const { theme, setTheme } = useTheme();
     const user = useSelector(selectUser);
+    const isAdmin = useSelector(selectIsAdmin);
     const isAuthenticated = !!user?.id;
     const [mounted, setMounted] = useState(false);
 
@@ -66,7 +74,10 @@ export function ChatMobileHeader({
     return (
         <header className="absolute top-0 left-0 right-0 z-50 flex items-center h-10 px-1.5 pointer-events-none">
             {/* Left group: sidebar, new chat, agent selector */}
-            <div className="flex items-center gap-0.5 min-w-0 flex-1 pointer-events-auto">
+            {/* Hides when sidebar is open to avoid overlapping sidebar content */}
+            <div className={`flex items-center gap-0.5 min-w-0 flex-1 pointer-events-auto transition-opacity duration-200 ${
+                isSidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}>
                 <button
                     onClick={onToggleSidebar}
                     className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
@@ -94,8 +105,22 @@ export function ChatMobileHeader({
                 </button>
             </div>
 
-            {/* Right group: logo, discover, hamburger menu */}
+            {/* Right group: admin, feedback, discover, hamburger menu, logo */}
             <div className="flex items-center gap-1 pointer-events-auto">
+                {/* Admin Menu — admin-only server environment toggle */}
+                {isAdmin && mounted && (
+                    <Suspense fallback={null}>
+                        <AdminMenu />
+                    </Suspense>
+                )}
+
+                {/* Feedback button — authenticated only */}
+                {isAuthenticated && mounted && (
+                    <Suspense fallback={<button className="p-1.5 opacity-30" disabled aria-hidden><Bug className="h-4 w-4" /></button>}>
+                        <FeedbackButton className="text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors [&_svg]:h-4 [&_svg]:w-4 p-1.5" />
+                    </Suspense>
+                )}
+
                 {/* Discover link — desktop only */}
                 <Link
                     href="/canvas/discover"

@@ -307,6 +307,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                     onNewChat={handleNewChat}
                     selectedAgent={selectedAgent}
                     onOpenAgentPicker={openAgentPicker}
+                    isSidebarOpen={isSidebarOpen}
                 />
                 <ChatSidebar
                     activeRequestId={activeConversationId}
