@@ -21,7 +21,7 @@ const SimplifiedView = ({ pageData }) => {
     };
 
     return (
-        <div className="h-full w-full bg-white rounded-lg overflow-hidden">
+        <div className="w-full bg-white rounded-lg">
             <div className="p-2 bg-gray-200">
                 {/* Header with centered title and copy button in top right */}
                 <div className="relative flex justify-center items-center p-4 border-b border-gray-100">

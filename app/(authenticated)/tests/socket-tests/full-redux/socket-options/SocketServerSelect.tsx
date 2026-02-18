@@ -3,6 +3,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/lib/redux/store';
 import { changeConnectionUrl, selectSocketUrl, selectConnectionStatus } from '@/lib/redux/socket-io';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 
 
@@ -29,8 +30,8 @@ const SocketServerSelect: React.FC = () => {
           className="w-full p-2 border border-border rounded-md bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none"
         >
           <option value="">Select Socket URL</option>
-          <option value="https://server.app.matrxserver.com">Production Server</option>
-          <option value="http://localhost:8000">Local Server</option>
+          <option value={BACKEND_URLS.production}>Production Server</option>
+          <option value={BACKEND_URLS.localhost}>Local Server</option>
         </select>
       </div>
     </>

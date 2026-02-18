@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 /**
  * API route to proxy scraper requests to the Python backend.
@@ -85,8 +86,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Get backend URL
-        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+        // Get backend URL from single source of truth
+        const BACKEND_URL = BACKEND_URLS.production;
 
         // Build scraper request with default options for content extraction
         const scraperRequest: QuickScrapeRequest = {

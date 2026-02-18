@@ -14,7 +14,6 @@ import RemovalDetails from "../RemovalDetails";
 import HashesContent from "../HashesContent";
 import RawJSON from "../RawJSON";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
-import ActionButtons from "../ActionButtons";
 import FancyJsonExplorer from "../FancyJsonExplorer";
 import BookmarkViewer from "../BookmarkViewer";
 import { formatJson } from "@/utils/json/json-cleaner-utility";
@@ -141,7 +140,7 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
 
     return (
         <div className="h-full flex flex-col w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
-            <div className="max-w-full px-2 sm:px-4 lg:px-6 py-4">
+            <div className="flex-1 min-h-0 flex flex-col max-w-full px-2 sm:px-4 lg:px-6 py-4">
                 <PageHeader
                     title={overview?.page_title}
                     url={overview?.url}
@@ -223,9 +222,6 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                         </TabsContent>
                     </div>
                 </Tabs>
-                <div className="mt-4">
-                    <ActionButtons url={overview?.url} />
-                </div>
             </div>
         </div>
     );

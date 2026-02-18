@@ -1,27 +1,46 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useScraperContent } from "@/features/scraper/hooks";
+import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Search, Copy, CheckCircle, ExternalLink } from "lucide-react";
+import { Loader2, Search, Copy, CheckCircle, ExternalLink, ScanSearch } from "lucide-react";
 
 export default function QuickScrapePage() {
-    const [url, setUrl] = useState("");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const [url, setUrl] = useState(searchParams.get("url") ?? "");
     const { scrapeUrl, data, isLoading, hasError, error, reset } = useScraperContent();
+    const { quickScrapeUrl } = useScraperSocket();
     const [copied, setCopied] = useState(false);
+    const [isFullScraping, setIsFullScraping] = useState(false);
+    const [, startTransition] = useTransition();
+
+    // Auto-scrape when arriving with a URL query param
+    useEffect(() => {
+        const initialUrl = searchParams.get("url");
+        if (initialUrl) {
+            try {
+                new URL(initialUrl);
+                scrapeUrl(initialUrl).catch(console.error);
+            } catch {
+                // invalid URL, ignore
+            }
+        }
+        // Only run on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleScrape = async () => {
         if (!url.trim()) return;
-
-        // Basic URL validation
         try {
             new URL(url);
         } catch {
             return;
         }
-
         try {
             await scrapeUrl(url);
         } catch (err) {
@@ -29,7 +48,7 @@ export default function QuickScrapePage() {
         }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !isLoading) {
             handleScrape();
         }
@@ -48,58 +67,80 @@ export default function QuickScrapePage() {
         setUrl("");
     };
 
+    const handleFullScrape = async () => {
+        const targetUrl = url.trim();
+        if (!targetUrl) return;
+        try {
+            new URL(targetUrl);
+        } catch {
+            return;
+        }
+        setIsFullScraping(true);
+        try {
+            const taskId = await quickScrapeUrl(targetUrl);
+            startTransition(() => {
+                router.push(`/scraper/${taskId}`);
+            });
+        } catch (err) {
+            console.error("Full scrape failed:", err);
+        } finally {
+            setIsFullScraping(false);
+        }
+    };
+
     return (
         <div className="h-page flex flex-col overflow-hidden bg-textured">
-            {/* Header */}
-            <div className="flex-shrink-0 p-4 border-b border-border bg-white/50 dark:bg-gray-900/50">
-                <div className="max-w-5xl mx-auto">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Search className="w-5 h-5 text-gray-500" />
-                        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Quick Scrape
-                        </h1>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                        <Input
-                            type="url"
-                            placeholder="Enter URL to scrape..."
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            disabled={isLoading}
-                            className="flex-1"
-                        />
-                        {data ? (
-                            <Button onClick={handleNewScrape} variant="outline">
-                                New Scrape
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={handleScrape}
-                                disabled={isLoading || !url.trim()}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Scraping...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Search className="w-4 h-4 mr-2" />
-                                        Scrape
-                                    </>
-                                )}
-                            </Button>
-                        )}
-                    </div>
-
-                    {hasError && (
-                        <Alert variant="destructive" className="mt-3">
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
+            {/* Compact header bar */}
+            <div className="flex-shrink-0 px-3 py-2 border-b border-border bg-white/50 dark:bg-gray-900/50">
+                <div className="max-w-5xl mx-auto flex gap-2 items-center">
+                    <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <Input
+                        type="url"
+                        placeholder="Enter URL to scrape..."
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={isLoading}
+                        className="flex-1 h-8 text-sm"
+                    />
+                    {data ? (
+                        <Button onClick={handleNewScrape} variant="outline" size="sm" className="flex-shrink-0">
+                            New
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={handleScrape}
+                            disabled={isLoading || !url.trim()}
+                            size="sm"
+                            className="flex-shrink-0"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                                "Scrape"
+                            )}
+                        </Button>
                     )}
+                    <Button
+                        onClick={handleFullScrape}
+                        disabled={isFullScraping || !url.trim()}
+                        size="sm"
+                        variant="secondary"
+                        className="flex-shrink-0 gap-1.5"
+                    >
+                        {isFullScraping ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                            <ScanSearch className="w-3.5 h-3.5" />
+                        )}
+                        <span className="hidden sm:inline">Full Scrape</span>
+                    </Button>
                 </div>
+                {hasError && (
+                    <Alert variant="destructive" className="mt-2 max-w-5xl mx-auto py-2">
+                        <AlertDescription className="text-xs">{error}</AlertDescription>
+                    </Alert>
+                )}
             </div>
 
             {/* Content Area */}
@@ -206,18 +247,13 @@ export default function QuickScrapePage() {
                     )}
 
                     {!isLoading && !data && !hasError && (
-                        <Card>
-                            <CardContent className="flex items-center justify-center py-16">
-                                <div className="text-center text-gray-500 dark:text-gray-400">
-                                    <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                    <p className="text-sm">Enter a URL above to quickly extract content</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
+                            <Search className="w-10 h-10 mb-3 opacity-40" />
+                            <p className="text-sm">Enter a URL above to quickly extract content</p>
+                        </div>
                     )}
                 </div>
             </div>
         </div>
     );
 }
-

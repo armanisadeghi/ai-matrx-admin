@@ -1,163 +1,133 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
-import { Globe, Search, Loader2, X, CheckCircle } from "lucide-react";
+import { Globe, Search, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTaskStatus } from "@/lib/redux/socket-io";
+import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
 
 export default function Page() {
     const router = useRouter();
     const { quickScrapeUrl } = useScraperSocket();
     const [url, setUrl] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isFullScraping, setIsFullScraping] = useState(false);
+    const [, startTransition] = useTransition();
 
-    // Get task status from Redux
-    const taskStatus = useAppSelector(state => 
-        currentTaskId ? selectTaskStatus(state, currentTaskId) : null
-    );
-    
-    const isTaskRunning = taskStatus === "submitted";
-    const isTaskCompleted = taskStatus === "completed";
-
-    // Auto-navigate to results page when scraping completes
-    useEffect(() => {
-        if (isTaskCompleted && currentTaskId) {
-            // Add a small delay to show the completed state briefly
-            const timer = setTimeout(() => {
-                router.push(`/scraper/${currentTaskId}`);
-            }, 1500);
-            
-            return () => clearTimeout(timer);
-        }
-    }, [isTaskCompleted, currentTaskId, router]);
-
-    const handleScrape = async () => {
-        // If task is completed, navigate to results
-        if (isTaskCompleted && currentTaskId) {
-            router.push(`/scraper/${currentTaskId}`);
-            return;
-        }
-
+    const validateUrl = (): boolean => {
         if (!url.trim()) {
             setError("Please enter a URL");
-            return;
+            return false;
         }
-
-        // Basic URL validation
         try {
             new URL(url);
+            return true;
         } catch {
             setError("Please enter a valid URL");
-            return;
+            return false;
         }
+    };
 
-        setIsLoading(true);
+    const handleQuickScrape = () => {
+        if (!validateUrl()) return;
         setError(null);
+        startTransition(() => {
+            router.push(`/scraper/quick?url=${encodeURIComponent(url)}`);
+        });
+    };
 
+    const handleFullScrape = async () => {
+        if (!validateUrl()) return;
+        setError(null);
+        setIsFullScraping(true);
         try {
             const taskId = await quickScrapeUrl(url);
-            setCurrentTaskId(taskId);
+            startTransition(() => {
+                router.push(`/scraper/${taskId}`);
+            });
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to start scraping");
         } finally {
-            setIsLoading(false);
+            setIsFullScraping(false);
         }
     };
 
-    const handleClear = () => {
-        setCurrentTaskId(null);
-        setUrl("");
-        setError(null);
-    };
-
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && !isLoading) {
-            handleScrape();
+        if (e.key === "Enter") {
+            handleQuickScrape();
         }
     };
 
     return (
-        <div className="h-full flex flex-col bg-textured">
-            {/* Compact Input Row */}
-            <div className="p-4 border-b border-border bg-textured flex-shrink-0">
-                <div className="flex gap-3 items-center max-w-6xl mx-auto">
-                    <div className="flex-1">
-                        <Input
-                            type="url"
-                            placeholder="Enter URL to scrape..."
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="text-base"
-                            disabled={isLoading}
-                        />
-                    </div>
-                    <Button
-                        onClick={handleScrape}
-                        disabled={isLoading || !url.trim()}
-                        className={`px-6 transition-all duration-300 ${
-                            isTaskCompleted 
-                                ? "bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
-                                : ""
-                        }`}
-                    >
-                        {isLoading || isTaskRunning ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Scraping...
-                            </>
-                        ) : isTaskCompleted ? (
-                            <>
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                View Results
-                            </>
-                        ) : (
-                            <>
-                                <Search className="w-4 h-4 mr-2" />
-                                Scrape
-                            </>
-                        )}
-                    </Button>
-                    {currentTaskId && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleClear}
-                            className="text-gray-600 dark:text-gray-400"
-                        >
-                            Clear
-                        </Button>
+        /*
+         * Mobile keyboard strategy:
+         * - h-dvh tracks the VISUAL viewport (shrinks when iOS keyboard opens)
+         * - justify-start + pt-[30dvh] positions content ~30% from top when keyboard is closed
+         * - When keyboard opens and dvh shrinks, content naturally stays near the top of the
+         *   visible area rather than getting pushed off-screen or squeezed behind the keyboard
+         * - overflow-y-auto allows scrolling if the keyboard pushes content too tight
+         */
+        <div className="h-dvh overflow-y-auto flex flex-col items-center justify-start pt-[28dvh] pb-safe bg-textured px-4">
+            <div className="w-full max-w-2xl flex flex-col items-center gap-5">
+                {/* Logo / Brand — hidden on mobile when keyboard is open (small screens) */}
+                <div className="flex flex-col items-center gap-2 mb-1">
+                    <Globe className="w-12 h-12 sm:w-14 sm:h-14 text-primary opacity-80" />
+                    <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Web Scraper</h1>
+                    <p className="text-sm text-muted-foreground text-center hidden sm:block">
+                        Extract content from any web page instantly
+                    </p>
+                </div>
+
+                {/* Input — fontSize 16px prevents iOS auto-zoom on focus */}
+                <div className="w-full">
+                    <Input
+                        type="url"
+                        placeholder="Enter a URL to scrape..."
+                        value={url}
+                        onChange={(e) => {
+                            setUrl(e.target.value);
+                            if (error) setError(null);
+                        }}
+                        onKeyDown={handleKeyDown}
+                        className="text-base h-12 rounded-full px-5 shadow-sm border-border/60 focus-visible:ring-primary/40"
+                        style={{ fontSize: "16px" }}
+                        inputMode="url"
+                        autoComplete="url"
+                    />
+                    {error && (
+                        <p className="text-xs text-destructive mt-2 text-center">{error}</p>
                     )}
                 </div>
-                {error && (
-                    <div className="flex items-center gap-2 mt-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md max-w-6xl mx-auto">
-                        <X className="w-4 h-4 text-red-600 dark:text-red-400" />
-                        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                    </div>
-                )}
-            </div>
 
-            {/* Main content area - can be expanded for future features */}
-            <div className="flex-1 flex items-center justify-center p-8">
-                <div className="text-center text-gray-500 dark:text-gray-400">
-                    <Globe className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <h2 className="text-xl font-semibold mb-2">Web Scraper</h2>
-                    <p className="text-sm mb-4">Enter a URL above to start scraping content</p>
+                {/* Action Buttons — full-width stack on mobile, side-by-side on desktop */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto sm:justify-center">
                     <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push("/scraper/quick")}
-                        className="mt-2"
+                        onClick={handleQuickScrape}
+                        variant="secondary"
+                        className="w-full sm:w-auto px-6 h-11 sm:h-10 rounded-full gap-2"
                     >
-                        <Search className="w-4 h-4 mr-2" />
-                        Try Quick Scrape
+                        <Zap className="w-4 h-4" />
+                        Quick Scrape
+                    </Button>
+                    <Button
+                        onClick={handleFullScrape}
+                        disabled={isFullScraping}
+                        className="w-full sm:w-auto px-6 h-11 sm:h-10 rounded-full gap-2"
+                    >
+                        {isFullScraping ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Search className="w-4 h-4" />
+                        )}
+                        Full Scrape
                     </Button>
                 </div>
+
+                {/* Helper text — hidden on mobile to save vertical space */}
+                <p className="text-xs text-muted-foreground text-center max-w-md hidden sm:block">
+                    <span className="font-medium">Quick Scrape</span> extracts plain text instantly.{" "}
+                    <span className="font-medium">Full Scrape</span> captures structured data, images, links & metadata.
+                </p>
             </div>
         </div>
     );

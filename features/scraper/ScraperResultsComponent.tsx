@@ -120,7 +120,7 @@ const ScraperResultsComponent = ({ taskId }: ScraperResultsComponentProps) => {
       />
       
       {/* Main content area */}
-      <div className="flex-1 h-full overflow-hidden">
+      <div className="flex-1 min-h-0">
         {processedData.length > 0 && activePageIndex < processedData.length ? (
           <PageContent 
             pageData={processedData[activePageIndex]} 

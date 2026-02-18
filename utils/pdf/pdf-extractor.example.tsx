@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { extractTextFromPdf, extractTextFromMultiplePdfs } from './pdf-extractor';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 // ============================================================
 // Example 1: Basic usage with file input
@@ -50,7 +51,7 @@ export function Example2_WithAuth() {
 export function Example3_CustomServer() {
   const handleExtract = async (file: File) => {
     const result = await extractTextFromPdf(file, {
-      serverUrl: 'https://server.app.matrxserver.com',
+      serverUrl: BACKEND_URLS.production,
       authToken: 'your-token',
     });
     

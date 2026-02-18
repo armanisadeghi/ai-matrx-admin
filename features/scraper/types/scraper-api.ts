@@ -163,7 +163,9 @@ export interface SearchResult {
  * AUTHENTICATED USER FLOW
  *
  * ```typescript
- * const response = await fetch("https://server.app.matrxserver.com/api/scraper/quick-scrape", {
+ * import { BACKEND_URLS } from '@/lib/api/endpoints';
+ *
+ * const response = await fetch(`${BACKEND_URLS.production}/api/scraper/quick-scrape`, {
  *   method: "POST",
  *   headers: {
  *     "Content-Type": "application/json",
@@ -181,10 +183,11 @@ export interface SearchResult {
  *
  * ```typescript
  * import { getFingerprint } from '@/lib/services/fingerprint-service';
+ * import { BACKEND_URLS } from '@/lib/api/endpoints';
  *
  * const fingerprintId = await getFingerprint();
  *
- * const response = await fetch("https://server.app.matrxserver.com/api/scraper/quick-scrape", {
+ * const response = await fetch(`${BACKEND_URLS.production}/api/scraper/quick-scrape`, {
  *   method: "POST",
  *   headers: {
  *     "Content-Type": "application/json",

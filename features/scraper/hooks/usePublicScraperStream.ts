@@ -14,6 +14,7 @@ import type {
   SearchResult,
 } from '../types/scraper-api';
 import * as scraperService from '../services/scraperApiService';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 // ============================================================================
 // TYPES
@@ -72,10 +73,9 @@ export function usePublicScraperStream(
   const useLocalhost = useSelector(selectIsUsingLocalhost);
   
   const getBackendUrl = useCallback(() => {
-    const url = (isAdmin && useLocalhost) 
-      ? 'http://localhost:8000'
-      : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
-    
+    const url = (isAdmin && useLocalhost)
+      ? BACKEND_URLS.localhost
+      : BACKEND_URLS.production;
     console.log('[Scraper Hook] Backend URL:', url, { isAdmin, useLocalhost });
     return url;
   }, [isAdmin, useLocalhost]);

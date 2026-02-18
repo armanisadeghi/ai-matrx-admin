@@ -10,6 +10,7 @@ import { SignupConversionModal } from '@/components/guest/SignupConversionModal'
 import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
 import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import type { PromptApp } from '../types';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 interface ExecuteAppResponse {
     success: boolean;
@@ -75,7 +76,7 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 const { createClient } = await import('@/utils/supabase/client');
                 const { v5: uuidv5 } = await import('uuid');
                 
-                const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+                const BACKEND_URL = BACKEND_URLS.production;
                 const SOCKET_NAMESPACE = '/UserSession';
                 const GUEST_NAMESPACE = '00000000-0000-0000-0000-000000000001'; // UUID namespace for guests
                 

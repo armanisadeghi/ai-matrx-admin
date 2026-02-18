@@ -10,6 +10,7 @@ import {
 } from '../slices/socketConnectionsSlice';
 import { updateErrorResponse } from '../slices/socketResponseSlice';
 import type { AppDispatch, RootState } from '@/lib/redux/store';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 interface SocketAction {
   type: string;
@@ -51,12 +52,12 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
       dispatch(setConnection({
         connectionId: nsConnectionId,
         socket: null,
-        url: getState().socketConnections.connections[nsConnectionId]?.url || 'https://server.app.matrxserver.com',
+        url: getState().socketConnections.connections[nsConnectionId]?.url || BACKEND_URLS.production,
         namespace: namespaceChange,
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       }));
-      socketManager.getSocket(nsConnectionId, getState().socketConnections.connections[nsConnectionId]?.url || 'https://server.app.matrxserver.com', namespaceChange).then((socket: Socket | null) => {
+      socketManager.getSocket(nsConnectionId, getState().socketConnections.connections[nsConnectionId]?.url || BACKEND_URLS.production, namespaceChange).then((socket: Socket | null) => {
         if (socket) {
           dispatch(setSocket({ connectionId: nsConnectionId, socket }));
           dispatch(setConnectionStatus({ connectionId: nsConnectionId, status: 'connected' }));

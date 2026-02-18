@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { get_prompt_sample, TEST_ADMIN_TOKEN } from './sample-prompt';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import MarkdownStream from '@/components/MarkdownStream';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 type ServerType = 'local' | 'production';
 
@@ -28,9 +29,9 @@ export default function DirectChatClient() {
 
   const getBaseUrl = () => {
     if (serverType === 'local') {
-      return process.env.NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000';
+      return BACKEND_URLS.localhost;
     }
-    return process.env.NEXT_PUBLIC_PRODUCTION_SOCKET_URL || 'https://server.app.matrxserver.com';
+    return BACKEND_URLS.production;
   };
 
   // Load prompt when selected

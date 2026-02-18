@@ -48,7 +48,7 @@ interface UseApiTestConfigOptions {
   defaultServerType?: 'local' | 'production';  // Default: 'production'
   defaultAuthToken?: string;                    // Fallback if no cookie stored
   localUrl?: string;         // Default: NEXT_PUBLIC_LOCAL_SOCKET_URL || 'http://localhost:8000'
-  productionUrl?: string;    // Default: NEXT_PUBLIC_PRODUCTION_SOCKET_URL || 'https://server.app.matrxserver.com'
+  productionUrl?: string;    // Default: NEXT_PUBLIC_BACKEND_URL (from BACKEND_URLS.production)
   requireToken?: boolean;    // Default: true
 }
 ```

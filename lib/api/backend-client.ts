@@ -20,7 +20,7 @@ import { BACKEND_URLS, ENDPOINTS } from './endpoints';
  * Configuration for creating a BackendClient instance.
  */
 export interface BackendClientConfig {
-    /** Backend base URL (e.g. "https://server.app.matrxserver.com") */
+    /** Backend base URL — use BACKEND_URLS.production or NEXT_PUBLIC_BACKEND_URL */
     baseUrl?: string;
     /** Authentication credentials */
     auth?: AuthCredentials;
@@ -40,7 +40,7 @@ export interface BackendClientConfig {
  * Usage:
  * ```typescript
  * const client = new BackendClient({
- *   baseUrl: 'https://server.app.matrxserver.com',
+ *   baseUrl: BACKEND_URLS.production,
  *   auth: { type: 'token', token: 'eyJ...' },
  *   scope: { organization_id: 'org-123' },
  * });

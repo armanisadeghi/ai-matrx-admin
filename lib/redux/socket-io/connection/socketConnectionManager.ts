@@ -3,6 +3,7 @@ import { supabase } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { PredefinedConnection } from "../socket.types";
 import { getAdminUserIds } from "@/config/admin.config";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
 
 const DEBUG = false;
 
@@ -19,7 +20,7 @@ export class SocketConnectionManager {
 
     private readonly adminIds = getAdminUserIds();
 
-    public static readonly DEFAULT_URL = "https://server.app.matrxserver.com";
+    public static readonly DEFAULT_URL = BACKEND_URLS.production;
     public static readonly GPU_SERVER_URL = "https://gpu.app.matrxserver.com";
     public static readonly LOCAL_URL = "http://localhost:8000";
     public static readonly DEFAULT_NAMESPACE = "/UserSession";

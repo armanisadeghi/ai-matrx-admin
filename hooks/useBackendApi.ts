@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { useApiAuth } from './useApiAuth';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { selectUser } from '@/lib/redux/slices/userSlice';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 export function useBackendApi() {
     const { getHeaders, waitForAuth } = useApiAuth();
@@ -28,8 +29,8 @@ export function useBackendApi() {
     // Backend URL - determined by Redux state
     const backendUrl = useMemo(() => {
         return (isAdmin && useLocalhost)
-            ? 'http://localhost:8000'
-            : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
+            ? BACKEND_URLS.localhost
+            : BACKEND_URLS.production;
     }, [isAdmin, useLocalhost]);
 
     // Ready-to-use headers

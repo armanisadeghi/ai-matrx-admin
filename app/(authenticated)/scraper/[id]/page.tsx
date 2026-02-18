@@ -1,6 +1,6 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScraperResultsComponent from "@/features/scraper/ScraperResultsComponent";
 
@@ -9,66 +9,43 @@ export default function ScraperResultPage() {
     const router = useRouter();
     const taskId = params.id as string;
 
-    // TODO: In the future, this could fetch from database if task doesn't exist in Redux
-    // const [resultData, setResultData] = useState(null);
-
-    const handleBackToScraper = () => {
-        router.push("/scraper");
-    };
-
-    const handleNewScrape = () => {
-        router.push("/scraper");
-    };
-
     return (
-        <div className="min-h-screen bg-textured">
-            {/* Header Bar */}
-            <div className="p-4 border-b border-border bg-textured">
-                <div className="flex items-center justify-between max-w-6xl mx-auto">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="outline"
-                            onClick={handleBackToScraper}
-                            className="flex items-center gap-2"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Scraper
-                        </Button>
-                        <div>
-                            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                Scraper Results
-                            </h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Task ID: {taskId}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                const url = window.location.href;
-                                navigator.clipboard.writeText(url);
-                                // Could add toast notification here
-                            }}
-                            className="flex items-center gap-2"
-                        >
-                            <ExternalLink className="w-4 h-4" />
-                            Copy Link
-                        </Button>
-                        <Button
-                            onClick={handleNewScrape}
-                            className="flex items-center gap-2"
-                        >
-                            New Scrape
-                        </Button>
-                    </div>
-                </div>
+        <div className="h-page flex flex-col bg-textured overflow-hidden">
+            {/* Compact header bar */}
+            <div className="flex-shrink-0 px-3 py-2 border-b border-border bg-white/50 dark:bg-gray-900/50 flex items-center gap-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/scraper")}
+                    className="h-8 px-2 gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span className="text-xs">Scraper</span>
+                </Button>
+
+                <div className="flex-1" />
+
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigator.clipboard.writeText(window.location.href)}
+                    className="h-8 px-2 gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span className="text-xs hidden sm:inline">Copy Link</span>
+                </Button>
+                <Button
+                    size="sm"
+                    onClick={() => router.push("/scraper")}
+                    className="h-8 px-3 gap-1.5"
+                >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="text-xs">New Scrape</span>
+                </Button>
             </div>
 
-            {/* Results Section - Full Width */}
-            <div className="w-full">
+            {/* Results — flex-1 min-h-0 gives a bounded height so the inner scroll chain works */}
+            <div className="flex-1 min-h-0 w-full">
                 <ScraperResultsComponent taskId={taskId} />
             </div>
         </div>
