@@ -14,6 +14,8 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
     const [isFlipped, setIsFlipped] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
 
+    const isMultiLineBack = back.includes('\n');
+
     const handleClick = () => {
         setIsFlipped(!isFlipped);
     };
@@ -25,19 +27,25 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
         }
     };
 
-    // Calculate text size based on content length and layout mode
-    // List mode has more horizontal space, so we can use larger text
-    const getTextSizeClass = (text: string) => {
+    const getTextSizeClass = (text: string, isMultiLine: boolean = false) => {
         const length = text.length;
         
+        if (isMultiLine) {
+            if (layoutMode === "list") {
+                if (length < 120) return "text-sm md:text-base";
+                return "text-xs md:text-sm";
+            }
+            if (length < 80) return "text-sm md:text-base";
+            if (length < 150) return "text-xs md:text-sm";
+            return "text-[11px] md:text-xs";
+        }
+
         if (layoutMode === "list") {
-            // More generous sizing for list mode (full width)
             if (length < 80) return "text-xl md:text-2xl";
             if (length < 150) return "text-lg md:text-xl";
             if (length < 250) return "text-base md:text-lg";
             return "text-sm md:text-base";
         } else {
-            // Tighter sizing for grid mode (half width on desktop)
             if (length < 50) return "text-lg md:text-xl";
             if (length < 100) return "text-base md:text-lg";
             if (length < 200) return "text-sm md:text-base";
@@ -45,10 +53,23 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
         }
     };
 
+    const renderBackContent = () => {
+        if (!isMultiLineBack) {
+            return back;
+        }
+        
+        return back.split('\n').map((line, i) => (
+            <div key={i} className={line === '' ? 'h-1.5' : undefined}>
+                {line}
+            </div>
+        ));
+    };
+
     return (
         <div
             className={cn(
-                "relative w-full h-48 cursor-pointer group",
+                "relative w-full cursor-pointer group",
+                isMultiLineBack ? "h-56" : "h-48",
                 "animate-in fade-in duration-300",
             )}
             style={{
@@ -115,19 +136,25 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
                         transform: 'rotateY(180deg)',
                     }}
                 >
-                    <CardContent className="flex flex-col items-center justify-center h-full p-4 relative">
+                    <CardContent className={cn(
+                        "flex flex-col h-full p-4 relative",
+                        isMultiLineBack ? "items-start justify-start pt-5" : "items-center justify-center"
+                    )}>
                         <div 
                             className={cn(
-                                "text-center font-medium text-gray-800 dark:text-gray-200 leading-relaxed",
+                                "font-medium text-gray-800 dark:text-gray-200",
                                 "max-h-full overflow-y-auto scrollbar-thin scrollbar-thumb-green-300 dark:scrollbar-thumb-green-700",
-                                "px-2",
-                                getTextSizeClass(back)
+                                "px-2 w-full",
+                                isMultiLineBack 
+                                    ? "text-left leading-snug" 
+                                    : "text-center leading-relaxed",
+                                getTextSizeClass(back, isMultiLineBack)
                             )}
                         >
-                            {back}
+                            {renderBackContent()}
                         </div>
                         {isHovered && (
-                            <div className="absolute bottom-2 text-[10px] text-green-600/70 dark:text-green-400/70 animate-in fade-in duration-200">
+                            <div className="absolute bottom-2 right-0 left-0 text-center text-[10px] text-green-600/70 dark:text-green-400/70 animate-in fade-in duration-200">
                                 Click to flip back
                             </div>
                         )}

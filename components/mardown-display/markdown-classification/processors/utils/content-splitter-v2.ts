@@ -413,7 +413,9 @@ function validateFlashcardStreaming(content: string, foundClosingTag: boolean): 
             currentCard = [];
             hasFront = false;
             hasBack = false;
-        } else if (currentCard.length > 0 && line.length > 0) {
+        } else if (currentCard.length > 0) {
+            // Include blank lines and content lines as part of the current card
+            // (supports multi-line Back: content)
             currentCard.push(lines[i]);
         }
     }
