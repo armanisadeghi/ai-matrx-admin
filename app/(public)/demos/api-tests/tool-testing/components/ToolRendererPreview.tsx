@@ -107,12 +107,12 @@ function buildToolCallObjects(
 
   // 3. mcp_output — from final payload, only if tool_completed didn't already produce one
   const alreadyHasOutput = objects.some((o) => o.type === 'mcp_output');
-  if (!alreadyHasOutput && finalPayload?.full_result) {
+  if (!alreadyHasOutput && finalPayload?.output?.full_result) {
     objects.push({
       id: toolEvents[0]?.call_id ?? 'test-call',
       type: 'mcp_output',
       mcp_output: {
-        result: finalPayload.full_result.output,
+        result: finalPayload.output.full_result.output,
       },
     });
   }

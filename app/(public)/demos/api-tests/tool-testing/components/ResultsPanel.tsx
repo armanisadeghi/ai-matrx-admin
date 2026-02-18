@@ -305,9 +305,9 @@ export function ResultsPanel({
               {(duration / 1000).toFixed(2)}s
             </span>
           )}
-          {finalPayload?.call_id && (
-            <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px]" title={finalPayload.call_id}>
-              {finalPayload.call_id}
+          {finalPayload?.metadata?.call_id && (
+            <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px]" title={finalPayload.metadata.call_id}>
+              {finalPayload.metadata.call_id}
             </span>
           )}
         </div>
@@ -399,26 +399,26 @@ export function ResultsPanel({
               Model-Facing Result
             </span>
             <CopyButton
-              content={finalPayload?.model_facing_result?.content ?? ''}
+              content={finalPayload?.output?.model_facing_result?.content ?? ''}
               label="Copy"
             />
           </div>
           <div className="flex-1 overflow-y-auto min-h-0 p-3">
-            {finalPayload?.model_facing_result ? (
+            {finalPayload?.output?.model_facing_result ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge
-                    variant={finalPayload.model_facing_result.is_error ? 'destructive' : 'outline'}
+                    variant={finalPayload.output.model_facing_result.is_error ? 'destructive' : 'outline'}
                     className="text-[10px]"
                   >
-                    {finalPayload.model_facing_result.is_error ? 'Error' : 'Success'}
+                    {finalPayload.output.model_facing_result.is_error ? 'Error' : 'Success'}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground font-mono">
-                    call_id: {finalPayload.model_facing_result.call_id}
+                    call_id: {finalPayload.output.model_facing_result.call_id}
                   </span>
                 </div>
                 <pre className="text-xs font-mono whitespace-pre-wrap text-foreground/80 bg-muted/50 rounded p-3 border border-border">
-                  {finalPayload.model_facing_result.content}
+                  {finalPayload.output.model_facing_result.content}
                 </pre>
               </div>
             ) : (
@@ -432,15 +432,15 @@ export function ResultsPanel({
         {/* Schema Validation */}
         <TabsContent value="schema" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
           <SchemaValidator
-            output={finalPayload?.full_result?.output ?? null}
-            schema={finalPayload?.output_schema ?? null}
-            success={finalPayload?.full_result?.success ?? false}
+            output={finalPayload?.output?.full_result?.output ?? null}
+            schema={finalPayload?.metadata?.output_schema ?? null}
+            success={finalPayload?.output?.full_result?.success ?? false}
           />
         </TabsContent>
 
         {/* Cost Estimate */}
         <TabsContent value="cost" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
-          <CostEstimateTable costEstimate={finalPayload?.cost_estimate ?? null} />
+          <CostEstimateTable costEstimate={finalPayload?.metadata?.cost_estimate ?? null} />
         </TabsContent>
 
         {/* JSON Stream */}
