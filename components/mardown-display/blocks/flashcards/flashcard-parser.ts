@@ -18,6 +18,12 @@ export interface FlashcardParseResult {
 /**
  * Parse flashcard content into individual cards
  * Only returns complete flashcards (both front and back present)
+ * 
+ * Supports both single-line and multi-line Back/Answer content:
+ *   Back: single line answer
+ *   Back: 
+ *   - bullet one
+ *   - bullet two
  */
 export const parseFlashcards = (content: string): FlashcardParseResult => {
     const lines = content.split('\n');
@@ -25,82 +31,89 @@ export const parseFlashcards = (content: string): FlashcardParseResult => {
     let currentCard: Partial<Flashcard> = {};
     let partialCard: Partial<Flashcard> | null = null;
     let isComplete = false;
+    let collectingBack = false;
+    let backLines: string[] = [];
 
-    // Check if content has closing tag
     isComplete = content.includes('</flashcards>');
+
+    const finalizeCard = () => {
+        if (collectingBack && backLines.length > 0) {
+            currentCard.back = backLines.join('\n').trim();
+            collectingBack = false;
+            backLines = [];
+        }
+        if (currentCard.front && currentCard.back) {
+            flashcards.push({
+                front: currentCard.front,
+                back: currentCard.back,
+            });
+            currentCard = {};
+        }
+    };
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
 
-        // Skip empty lines and separators at the start
-        if (!line || line === '---') {
-            // If we have a complete card, save it
-            if (currentCard.front && currentCard.back) {
-                flashcards.push({
-                    front: currentCard.front,
-                    back: currentCard.back,
-                });
-                currentCard = {};
-            }
+        if (line === '---') {
+            finalizeCard();
             continue;
         }
 
-        // Match Front: or Question: format
-        const frontMatch = line.match(/^(?:Front|Question):\s*(.+)/i);
+        const frontMatch = line.match(/^(?:Front|Question):\s*(.*)/i);
         if (frontMatch) {
-            // If we have a complete card, save it
-            if (currentCard.front && currentCard.back) {
-                flashcards.push({
-                    front: currentCard.front,
-                    back: currentCard.back,
-                });
-                currentCard = {};
-            }
+            finalizeCard();
             currentCard.front = frontMatch[1].trim();
+            collectingBack = false;
+            backLines = [];
             continue;
         }
 
-        // Match Back: or Answer: format
-        const backMatch = line.match(/^(?:Back|Answer):\s*(.+)/i);
+        const backMatch = line.match(/^(?:Back|Answer):\s*(.*)/i);
         if (backMatch) {
-            currentCard.back = backMatch[1].trim();
-            
-            // If we now have both front and back, the card is potentially complete
-            // But we'll wait for the next separator or end to confirm
+            collectingBack = true;
+            backLines = [];
+            const inlineContent = backMatch[1].trim();
+            if (inlineContent) {
+                backLines.push(inlineContent);
+            }
             continue;
         }
 
-        // If we have front but no back yet, this might be continuation of front text
+        if (collectingBack) {
+            if (line === '') {
+                // Blank lines within back content are preserved
+                backLines.push('');
+            } else {
+                backLines.push(line);
+            }
+            continue;
+        }
+
+        // Continuation of front text (no Back: seen yet for this card)
         if (currentCard.front && !currentCard.back && line) {
-            // Check if this is actually a continuation or a new field
-            if (!line.match(/^(?:Back|Answer):/i)) {
-                currentCard.front += ' ' + line;
-            }
+            currentCard.front += ' ' + line;
         }
-        // If we have both front and back, this might be continuation of back text
-        else if (currentCard.front && currentCard.back && line) {
-            // Check if this is a continuation
-            if (!line.match(/^(?:Front|Question|Back|Answer):/i) && line !== '---') {
-                currentCard.back += ' ' + line;
-            }
-        }
+    }
+
+    // Finalize any in-progress back collection
+    if (collectingBack && backLines.length > 0) {
+        currentCard.back = backLines.join('\n').trim();
+        collectingBack = false;
+        backLines = [];
     }
 
     // Handle the last card
     if (currentCard.front && currentCard.back) {
         if (isComplete) {
-            // Content is complete, add the last card
             flashcards.push({
                 front: currentCard.front,
                 back: currentCard.back,
             });
             partialCard = null;
         } else {
-            // Content is still streaming, keep the last card as partial
             partialCard = currentCard;
         }
     } else if (currentCard.front || currentCard.back) {
-        // Incomplete card
         partialCard = currentCard;
     }
 
