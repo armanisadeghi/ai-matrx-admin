@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UniversalPromptEditor } from '../UniversalPromptEditor';
 import { normalizePromptData, UniversalPromptData } from '../types';
 import { toast } from 'sonner';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { updatePromptBuiltin } from '@/features/prompt-builtins/services/admin-service';
 
 interface BuiltinEditorProps {
     /** Builtin ID to edit */
@@ -63,18 +64,22 @@ export function BuiltinEditor({
     const [tools, setTools] = useState<any[]>(preloadedTools || []);
     const [loading, setLoading] = useState(!preloadedBuiltinData);
     const [isSaving, setIsSaving] = useState(false);
+    const initializedForId = useRef<string | null>(null);
 
-    // Load all data when modal opens (only if not preloaded)
+    // Initialize data when modal opens — only once per builtin ID to prevent
+    // parent re-renders from resetting editor state and isDirty flag
     useEffect(() => {
-        if (isOpen && builtinId) {
+        if (isOpen && builtinId && initializedForId.current !== builtinId) {
+            initializedForId.current = builtinId;
             if (preloadedBuiltinData) {
-                // Use preloaded data
                 setBuiltinData(normalizePromptData(preloadedBuiltinData, 'builtin'));
                 setLoading(false);
             } else {
-                // Load from API
                 loadData();
             }
+        }
+        if (!isOpen) {
+            initializedForId.current = null;
         }
     }, [isOpen, builtinId, preloadedBuiltinData]);
 
@@ -110,31 +115,22 @@ export function BuiltinEditor({
     async function handleSave(updated: UniversalPromptData) {
         setIsSaving(true);
         try {
-            const response = await fetch(`/api/admin/prompt-builtins/${builtinId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: updated.name,
-                    description: updated.description,
-                    messages: updated.messages,
-                    variable_defaults: updated.variable_defaults,
-                    settings: updated.settings,
-                    is_active: updated.is_active,
-                }),
+            await updatePromptBuiltin({
+                id: builtinId,
+                name: updated.name,
+                description: updated.description ?? undefined,
+                messages: updated.messages,
+                variableDefaults: updated.variable_defaults ?? undefined,
+                settings: updated.settings,
+                is_active: updated.is_active,
             });
-
-            if (!response.ok) {
-                const text = await response.text();
-                const error = text ? JSON.parse(text) : {};
-                throw new Error(error.error || `Failed to save builtin (${response.status})`);
-            }
 
             toast.success('Builtin saved successfully');
             onSaveSuccess?.();
             onClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Save failed:', error);
-            toast.error(error.message || 'Failed to save builtin');
+            toast.error(error instanceof Error ? error.message : 'Failed to save builtin');
         } finally {
             setIsSaving(false);
         }

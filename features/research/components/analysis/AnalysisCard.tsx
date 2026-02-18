@@ -64,7 +64,7 @@ export function AnalysisCard({ analysis, projectId, sourceId, onAnalyzed }: Anal
                 {expanded ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
             </button>
 
-            {!expanded && analysis.result && (
+            {!expanded && analysis.result && typeof analysis.result === 'string' && (
                 <div className="px-4 pb-3 text-xs text-muted-foreground line-clamp-2">
                     {analysis.result.slice(0, 200)}
                 </div>
@@ -74,7 +74,7 @@ export function AnalysisCard({ analysis, projectId, sourceId, onAnalyzed }: Anal
                 <div className="border-t border-border px-4 py-3 space-y-3">
                     <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {analysis.result}
+                            {analysis.result ?? ''}
                         </ReactMarkdown>
                     </div>
 

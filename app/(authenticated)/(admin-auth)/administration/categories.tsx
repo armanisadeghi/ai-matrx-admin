@@ -42,7 +42,7 @@ import {
     IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
-import { Container, Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker } from "lucide-react";
+import { Container, Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker, Search } from "lucide-react";
 
 export const adminCategories = [
     {
@@ -69,6 +69,21 @@ export const adminCategories = [
                 description: "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
                 icon: <IconServer />,
                 link: "/administration/sandbox",
+                isNew: true,
+            },
+        ],
+    },
+    {
+        name: "Research System",
+        icon: <Search className="w-6 h-6" />,
+        iconColor: "text-emerald-600",
+        features: [
+            {
+                title: "Research Admin",
+                description:
+                    "Manage research templates, agent wiring, system constants, and monitor active research projects",
+                icon: <Search />,
+                link: "/administration/research-system",
                 isNew: true,
             },
         ],

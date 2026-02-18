@@ -42,11 +42,18 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
         setError(null);
         try {
             const response = await api.suggest(projectId, { subject_name: subjectName.trim() });
+            if (!response.ok) {
+                const errBody = await response.text();
+                throw new Error(errBody || `Suggest failed (${response.status})`);
+            }
             const data: SuggestResponse = await response.json();
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid response from suggest endpoint');
+            }
             setSuggestions(data);
-            setTitle(data.title);
-            setDescription(data.description);
-            setSelectedKeywords(data.keywords.slice(0, 2));
+            setTitle(data.title ?? '');
+            setDescription(data.description ?? '');
+            setSelectedKeywords(Array.isArray(data.keywords) ? data.keywords.slice(0, 2) : []);
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -218,7 +225,7 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
                                         Suggested Keywords
                                     </label>
                                     <div className="flex flex-wrap gap-2">
-                                        {suggestions.keywords.map(kw => (
+                                        {(suggestions.keywords ?? []).map(kw => (
                                             <button
                                                 key={kw}
                                                 onClick={() => toggleKeyword(kw)}
