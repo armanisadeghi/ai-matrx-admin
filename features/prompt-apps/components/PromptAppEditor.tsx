@@ -650,12 +650,12 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slug</label>
                         <a 
-                          href={`https://aimatrx.com/p/${app.slug}`}
+                          href={`https://aimatrx.com/p/fast/${app.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-muted-foreground hover:text-primary font-mono text-sm underline decoration-muted-foreground/50 hover:decoration-primary transition-colors block"
                         >
-                          aimatrx.com/p/{app.slug}
+                          aimatrx.com/p/fast/{app.slug}
                         </a>
                       </div>
                     </div>
@@ -802,7 +802,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                         Slug <span className="text-destructive">*</span>
                       </Label>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground shrink-0">aimatrx.com/p/</span>
+                        <span className="text-xs text-muted-foreground shrink-0">aimatrx.com/p/fast/</span>
                         <Input
                           id="slug"
                           value={editSlug}
