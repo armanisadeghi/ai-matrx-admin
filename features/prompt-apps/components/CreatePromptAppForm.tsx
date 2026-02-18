@@ -337,7 +337,7 @@ export function CreatePromptAppForm({ prompts, categories, preselectedPromptId, 
                 {/* Slug */}
                 <Label htmlFor="slug" className="md:pt-2">App URL</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">aimatrx.com/p/</span>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">aimatrx.com/p/fast/</span>
                   <Input
                     id="slug"
                     value={slug}
