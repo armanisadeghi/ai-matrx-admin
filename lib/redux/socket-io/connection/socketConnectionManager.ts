@@ -203,11 +203,11 @@ export class SocketConnectionManager {
     }
 
     public async initializePrimaryConnection(): Promise<string> {
-        const isAdmin = await this.isAdmin();
-        const url =
-            isAdmin && (await this.isLocalServerAvailable()) ? SocketConnectionManager.LOCAL_URL : SocketConnectionManager.DEFAULT_URL;
+        // Always connect to production on startup — localhost is only used when
+        // the admin explicitly switches via AdminMenu to avoid the browser's
+        // "connect to devices on local network" permission prompt on login.
         const connectionId = "primary";
-        await this.getSocket(connectionId, url, SocketConnectionManager.DEFAULT_NAMESPACE);
+        await this.getSocket(connectionId, SocketConnectionManager.DEFAULT_URL, SocketConnectionManager.DEFAULT_NAMESPACE);
         return connectionId;
     }
 

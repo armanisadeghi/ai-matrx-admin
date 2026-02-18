@@ -1,17 +1,25 @@
-// Project service for database operations
+/**
+ * Task Project Service
+ *
+ * Legacy project service for the tasks feature.
+ * Personal/unscoped projects (no organization_id) are handled here.
+ * For org-scoped projects, use features/projects/service.ts instead.
+ */
 import { supabase } from '@/utils/supabase/client';
 import type { DatabaseProject, ProjectWithTasks } from '../types';
 
 /**
- * Create a new project
+ * Create a new personal project (not org-scoped)
  */
 export async function createProject(
-  name: string, 
+  name: string,
   description?: string
 ): Promise<DatabaseProject | null> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       console.error('No authenticated user found');
       return null;
@@ -21,8 +29,11 @@ export async function createProject(
       .from('projects')
       .insert({
         name,
-        description: description || null,
+        description: description ?? null,
         created_by: user.id,
+        organization_id: null,
+        is_personal: true,
+        settings: {},
       })
       .select()
       .single();
@@ -40,27 +51,25 @@ export async function createProject(
 }
 
 /**
- * Create default "Personal" project if none exist
+ * Create default "Personal" project if none exist for the user
  */
 export async function ensureDefaultProject(): Promise<DatabaseProject | null> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) return null;
 
-    // Check if user has any projects
-    const { data: existingProjects } = await supabase
-      .from('projects')
-      .select('id')
-      .eq('created_by', user.id)
+    // Check if user has any projects (created_by or project_members)
+    const { data: memberProjects } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id)
       .limit(1);
 
-    // If they have projects, don't create default
-    if (existingProjects && existingProjects.length > 0) {
-      return null;
-    }
+    if (memberProjects && memberProjects.length > 0) return null;
 
-    // Create default "Personal" project
     return await createProject('Personal', 'Your personal tasks');
   } catch (error) {
     console.error('Exception ensuring default project:', error);
@@ -69,20 +78,52 @@ export async function ensureDefaultProject(): Promise<DatabaseProject | null> {
 }
 
 /**
- * Get all projects for current user
+ * Get all projects the current user is a member of (personal + org)
  */
 export async function getUserProjects(): Promise<DatabaseProject[]> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    // Query via project_members (RLS-safe) for member projects
+    const { data: memberRows, error: memberError } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id);
+
+    if (memberError) {
+      console.error('Error fetching project memberships:', memberError);
+    }
+
+    const memberProjectIds = (memberRows ?? []).map((r: { project_id: string }) => r.project_id);
+
+    // Also fetch personal projects created by user that may not have members yet
+    const { data: createdProjects, error: createdError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('created_by', user.id)
+      .order('created_at', { ascending: false });
+
+    if (createdError) {
+      console.error('Error fetching created projects:', createdError);
       return [];
     }
+
+    // Merge without duplicates
+    const allIds = new Set([
+      ...memberProjectIds,
+      ...(createdProjects ?? []).map((p: DatabaseProject) => p.id),
+    ]);
+
+    if (allIds.size === 0) return [];
 
     const { data, error } = await supabase
       .from('projects')
       .select('*')
-      .eq('created_by', user.id)
+      .in('id', Array.from(allIds))
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -90,7 +131,7 @@ export async function getUserProjects(): Promise<DatabaseProject[]> {
       return [];
     }
 
-    return data || [];
+    return data ?? [];
   } catch (error) {
     console.error('Exception fetching projects:', error);
     return [];
@@ -98,38 +139,45 @@ export async function getUserProjects(): Promise<DatabaseProject[]> {
 }
 
 /**
- * Get projects with their tasks - OPTIMIZED single query with JOIN
- * This is significantly faster than making 2 separate queries
+ * Get projects with their tasks — optimized single JOIN query
  */
 export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return [];
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data: memberRows } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id);
+
+    const memberProjectIds = (memberRows ?? []).map((r: { project_id: string }) => r.project_id);
+
+    // Fetch with tasks joined
+    let query = supabase
+      .from('projects')
+      .select(`*, tasks(*)`)
+      .order('created_at', { ascending: false });
+
+    if (memberProjectIds.length > 0) {
+      query = query.or(
+        `created_by.eq.${user.id},id.in.(${memberProjectIds.join(',')})`
+      );
+    } else {
+      query = query.eq('created_by', user.id);
     }
 
-    // Single optimized query - fetch projects with their tasks in one go
-    const { data: projects, error: projectsError } = await supabase
-      .from('projects')
-      .select(`
-        *,
-        tasks (*)
-      `)
-      .eq('created_by', user.id)
-      .order('created_at', { ascending: false });
+    const { data: projects, error: projectsError } = await query;
 
     if (projectsError) {
       console.error('Error fetching projects with tasks:', projectsError);
       return [];
     }
 
-    if (!projects || projects.length === 0) {
-      return [];
-    }
-
-    // Data is already joined, just ensure proper typing
-    return projects as ProjectWithTasks[];
+    return (projects ?? []) as ProjectWithTasks[];
   } catch (error) {
     console.error('Exception fetching projects with tasks:', error);
     return [];
@@ -168,10 +216,7 @@ export async function updateProject(
  */
 export async function deleteProject(projectId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', projectId);
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
 
     if (error) {
       console.error('Error deleting project:', error);

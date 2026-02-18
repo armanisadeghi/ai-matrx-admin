@@ -104,11 +104,18 @@ export interface FinalPayload {
   output_schema: Record<string, unknown> | null;
 }
 
-// ─── Session Types ──────────────────────────────────────────────────────────
+// ─── Context Types ──────────────────────────────────────────────────────────
 
-export interface TestSessionResponse {
+/**
+ * Full context sent with every tool test execution.
+ * All fields except conversation_id map to Python's ContextScope.
+ * Must use real IDs from the database — never fake values.
+ */
+export interface TestContext {
   conversation_id: string;
-  user_id: string;
+  organization_id?: string;
+  project_id?: string;
+  task_id?: string;
 }
 
 // ─── Streaming Client Types ─────────────────────────────────────────────────

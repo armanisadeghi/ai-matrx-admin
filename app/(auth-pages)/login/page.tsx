@@ -73,7 +73,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
             }
             message={message}
         >
-            <form action={loginWithRedirect} className="space-y-6">
+            <form action={loginWithRedirect} className="space-y-4 sm:space-y-6">
                 {/* Hidden input to pass redirectTo in case the binding fails */}
                 <input type="hidden" name="redirectTo" value={redirectTo} />
 
@@ -132,7 +132,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
                 </div>
             </form>
 
-            <div className="mt-6">
+            <div className="mt-4 sm:mt-6">
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-300 dark:border-gray-600" />
@@ -144,7 +144,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
                     </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-2">
+                <div className="mt-4 sm:mt-6 grid grid-cols-3 gap-2">
                     <form action={googleLoginWithRedirect}>
                         <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton

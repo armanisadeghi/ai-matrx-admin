@@ -3,15 +3,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { RefreshCw } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { RefreshCw, User, Monitor, Globe, Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
-import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
+import { useAdminOverride } from '@/hooks/useAdminOverride';
 import { ToolListSidebar } from './components/ToolListSidebar';
 import { ToolConfigPanel } from './components/ToolConfigPanel';
 import { buildDefaults } from './components/ArgumentForm';
 import { ResultsPanel } from './components/ResultsPanel';
-import { fetchToolsFromDatabase, executeToolTest, initTestSession } from './streaming-client';
+import { ConversationSelector } from './components/ConversationSelector';
+import { ContextScopeModal } from './components/ContextScopeModal';
+import { fetchToolsFromDatabase, executeToolTest } from './streaming-client';
+import { useToolTestContext } from './hooks/useToolTestContext';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type {
   ToolDefinition,
@@ -21,24 +26,51 @@ import type {
 } from './types';
 
 export default function ToolTestingClient() {
-  const apiConfig = useApiTestConfig({
-    defaultServerType: 'local',
-    requireToken: true,
-  });
+  // ─── Server selection (local vs production) ─────────────────────────────
+  // Only the server toggle is kept from the old admin config — auth is never
+  // a static token on this page. It always comes from the active session.
+  const {
+    backendUrl,
+    isLocalhost,
+    isChecking: isCheckingServer,
+    setServer,
+  } = useAdminOverride();
 
-  // ─── Tool list state ────────────────────────────────────────────────────
+  const serverType = isLocalhost ? 'local' : 'production';
+
+  const handleSetServer = useCallback(async (type: 'local' | 'production') => {
+    if (type === 'local') {
+      const ok = await setServer('localhost');
+      if (!ok) toast.error('Localhost unavailable', { description: 'Start the local server first.' });
+    } else {
+      await setServer(null);
+    }
+  }, [setServer]);
+
+  // ─── Real user context — JWT + user ID + conversation + scope ───────────
+  const {
+    userId,
+    authToken,
+    tokenReady,
+    conversationId,
+    conversationReady,
+    scopeOverride,
+    setConversationId,
+    createConversation,
+    isCreatingConversation,
+    setScopeOverride,
+    buildTestContext,
+  } = useToolTestContext();
+
+  // ─── Tool list state ─────────────────────────────────────────────────────
   const [tools, setTools] = useState<ToolDefinition[]>([]);
   const [loadingTools, setLoadingTools] = useState(false);
   const [selectedToolName, setSelectedToolName] = useState<string | null>(null);
 
-  // ─── Argument form state ────────────────────────────────────────────────
+  // ─── Argument form state ─────────────────────────────────────────────────
   const [argValues, setArgValues] = useState<Record<string, unknown>>({});
 
-  // ─── Session state ──────────────────────────────────────────────────────
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [sessionInitialized, setSessionInitialized] = useState(false);
-
-  // ─── Execution state ────────────────────────────────────────────────────
+  // ─── Execution state ─────────────────────────────────────────────────────
   const [executionStatus, setExecutionStatus] = useState<ExecutionStatus>('idle');
   const [toolEvents, setToolEvents] = useState<ToolStreamEvent[]>([]);
   const [rawLines, setRawLines] = useState<StreamEvent[]>([]);
@@ -47,10 +79,11 @@ export default function ToolTestingClient() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // ─── Derived ────────────────────────────────────────────────────────────
+  // ─── Derived ─────────────────────────────────────────────────────────────
   const selectedTool = tools.find((t) => t.name === selectedToolName) ?? null;
+  const canExecute = !!authToken && conversationReady;
 
-  // ─── Load tools from Supabase (source of truth) ────────────────────────
+  // ─── Load tools ──────────────────────────────────────────────────────────
   const loadTools = useCallback(async () => {
     setLoadingTools(true);
     try {
@@ -58,50 +91,23 @@ export default function ToolTestingClient() {
       setTools(data);
       toast.success(`Loaded ${data.length} tools`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load tools';
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : 'Failed to load tools');
     } finally {
       setLoadingTools(false);
     }
   }, []);
 
-  // Load on mount
-  useEffect(() => {
-    loadTools();
-  }, [loadTools]);
+  useEffect(() => { loadTools(); }, [loadTools]);
 
-  // ─── Init test session once API config is ready ─────────────────────────
-  useEffect(() => {
-    if (sessionInitialized || !apiConfig.hasToken || apiConfig.isCheckingLocalhost) return;
-
-    const init = async () => {
-      try {
-        const session = await initTestSession(apiConfig.baseUrl, apiConfig.authToken);
-        setConversationId(session.conversation_id);
-        setSessionInitialized(true);
-        console.log(`[ToolTest] Session initialized: conversation_id=${session.conversation_id}`);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Failed to init session';
-        console.warn(`[ToolTest] Session init failed (non-blocking): ${msg}`);
-        // Non-blocking — execute will auto-create if conversation_id is missing
-      }
-    };
-
-    init();
-  }, [apiConfig.hasToken, apiConfig.isCheckingLocalhost, apiConfig.baseUrl, apiConfig.authToken, sessionInitialized]);
-
-  // ─── Tool selection ─────────────────────────────────────────────────────
+  // ─── Tool selection ───────────────────────────────────────────────────────
   const handleSelectTool = (toolName: string) => {
     setSelectedToolName(toolName);
     const tool = tools.find((t) => t.name === toolName);
-    if (tool) {
-      setArgValues(buildDefaults(tool.parameters));
-    }
-    // Clear previous results
+    if (tool) setArgValues(buildDefaults(tool.parameters));
     clearResults();
   };
 
-  // ─── Clear results ──────────────────────────────────────────────────────
+  // ─── Clear / reset ────────────────────────────────────────────────────────
   const clearResults = () => {
     setToolEvents([]);
     setRawLines([]);
@@ -111,49 +117,53 @@ export default function ToolTestingClient() {
     setExecutionStatus('idle');
   };
 
-  // ─── Reset form ─────────────────────────────────────────────────────────
   const handleReset = () => {
-    if (selectedTool) {
-      setArgValues(buildDefaults(selectedTool.parameters));
-    }
+    if (selectedTool) setArgValues(buildDefaults(selectedTool.parameters));
     clearResults();
   };
 
-  // ─── Execute tool ───────────────────────────────────────────────────────
+  // ─── Execute ──────────────────────────────────────────────────────────────
   const handleExecute = async () => {
-    if (!selectedTool || !apiConfig.hasToken) return;
+    if (!selectedTool || !authToken || !conversationReady) return;
 
-    // Clear previous results
     clearResults();
     setExecutionStatus('connecting');
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Strip empty string values from args (don't send empty optional fields)
     const cleanedArgs: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(argValues)) {
       if (val === '' || val === undefined) continue;
       cleanedArgs[key] = val;
     }
 
-    const targetUrl = `${apiConfig.baseUrl}/api/tools/test/execute`;
-    console.log(`[ToolTest] Executing "${selectedTool.name}" via ${targetUrl} (server: ${apiConfig.serverType})`);
+    const context = buildTestContext();
+    if (!context) {
+      toast.error('No conversation set', {
+        description: 'Create or paste a real conversation ID before executing.',
+      });
+      setExecutionStatus('idle');
+      return;
+    }
+
+    console.log(
+      `[ToolTest] Executing "${selectedTool.name}" → ${backendUrl}/api/tools/test/execute`,
+      '\n  user:', userId,
+      '\n  context:', context,
+    );
 
     try {
       await executeToolTest(
-        apiConfig.baseUrl,
-        apiConfig.authToken,
+        backendUrl,
+        authToken,
         selectedTool.name,
         cleanedArgs,
         {
-          onStatusUpdate: (data) => {
-            setExecutionStatus('running');
-          },
+          onStatusUpdate: () => setExecutionStatus('running'),
           onToolEvent: (event) => {
             setExecutionStatus('running');
             setToolEvents((prev) => [...prev, event]);
-
             if (event.event === 'tool_error') {
               setErrorMessage(event.message ?? 'Tool execution failed');
             }
@@ -161,20 +171,16 @@ export default function ToolTestingClient() {
           onFinalResult: (payload) => {
             setFinalPayload(payload);
             if (payload.full_result?.success === false) {
-              setErrorMessage(
-                payload.full_result.error?.message ?? 'Tool returned error',
-              );
+              setErrorMessage(payload.full_result.error?.message ?? 'Tool returned error');
               setExecutionStatus('error');
             } else {
               setExecutionStatus('complete');
             }
           },
           onError: (error) => {
-            const msg =
-              (error.user_message as string) ??
-              (error.message as string) ??
-              'Stream error';
-            setErrorMessage(msg);
+            setErrorMessage(
+              (error.user_message as string) ?? (error.message as string) ?? 'Stream error',
+            );
             setExecutionStatus('error');
           },
           onEnd: () => {
@@ -188,39 +194,31 @@ export default function ToolTestingClient() {
           },
         },
         controller.signal,
-        conversationId ?? undefined,
+        context,
       );
     } catch (err) {
       if (controller.signal.aborted) {
         setExecutionStatus('cancelled');
         toast.info('Execution cancelled');
       } else {
-        const msg = err instanceof Error ? err.message : 'Execution failed';
-        setErrorMessage(msg);
+        setErrorMessage(err instanceof Error ? err.message : 'Execution failed');
         setExecutionStatus('error');
       }
     }
   };
 
-  // ─── Cancel execution ───────────────────────────────────────────────────
+  // ─── Cancel ───────────────────────────────────────────────────────────────
   const handleCancel = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
   };
 
-  // ─── Keyboard shortcut ─────────────────────────────────────────────────
+  // ─── Keyboard shortcuts ───────────────────────────────────────────────────
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        if (
-          selectedTool &&
-          apiConfig.hasToken &&
-          executionStatus !== 'running' &&
-          executionStatus !== 'connecting'
-        ) {
+        if (selectedTool && canExecute && executionStatus !== 'running' && executionStatus !== 'connecting') {
           handleExecute();
         }
       }
@@ -228,19 +226,71 @@ export default function ToolTestingClient() {
         handleCancel();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTool, apiConfig.hasToken, executionStatus, argValues]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedTool, canExecute, executionStatus, argValues]);
 
   return (
     <TooltipProvider>
       <div className="h-full flex flex-col overflow-hidden bg-background">
-        {/* Header: API config */}
+
+        {/* ── Header ── */}
         <div className="flex-shrink-0 px-3 py-1">
-          <ApiTestConfigPanel
-            config={apiConfig}
-            title={<h1 className="text-lg font-bold">Tool Testing Dashboard</h1>}
-            actions={
+
+          {/* Top row: title + server toggle + reload */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1 border-b">
+            <h1 className="text-lg font-bold flex-shrink-0">Tool Testing Dashboard</h1>
+
+            {/* Server toggle */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <ToggleGroup
+                type="single"
+                value={serverType}
+                onValueChange={(v) => v && handleSetServer(v as 'local' | 'production')}
+                className="gap-0"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem
+                      value="local"
+                      aria-label="Localhost"
+                      disabled={isCheckingServer}
+                      className="h-6 w-6 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground disabled:opacity-40"
+                    >
+                      {isCheckingServer ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Monitor className="h-3 w-3" />
+                      )}
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent className="text-xs">Localhost</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem
+                      value="production"
+                      aria-label="Production"
+                      disabled={isCheckingServer}
+                      className="h-6 w-6 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                    >
+                      <Globe className="h-3 w-3" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent className="text-xs">Production</TooltipContent>
+                </Tooltip>
+              </ToggleGroup>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px] cursor-default">
+                    {backendUrl}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="font-mono text-xs break-all max-w-xs">{backendUrl}</TooltipContent>
+              </Tooltip>
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -251,21 +301,122 @@ export default function ToolTestingClient() {
                     className="h-6 text-xs px-2 gap-1"
                   >
                     <RefreshCw className={`h-3 w-3 ${loadingTools ? 'animate-spin' : ''}`} />
-                    {loadingTools ? 'Loading...' : 'Reload Tools'}
+                    {loadingTools ? 'Loading…' : 'Reload'}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="text-xs">
-                  Reload active tools from database
+                <TooltipContent className="text-xs">Reload active tools from database</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+
+          {/* Context row: session status + user ID + conversation + scope */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1 border-b">
+
+            {/* Session / JWT status */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1 flex-shrink-0 cursor-default">
+                  {!tokenReady ? (
+                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  ) : authToken ? (
+                    <ShieldCheck className="h-3 w-3 text-success" />
+                  ) : (
+                    <ShieldAlert className="h-3 w-3 text-destructive" />
+                  )}
+                  <span className="text-[10px] text-muted-foreground">
+                    {!tokenReady ? 'Loading…' : authToken ? 'Session active' : 'Not signed in'}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs max-w-[260px]">
+                {authToken
+                  ? 'Your real Supabase JWT is being sent with every request.'
+                  : 'No active session — sign in to test tools.'}
+              </TooltipContent>
+            </Tooltip>
+
+            <div className="h-4 w-px bg-border flex-shrink-0" />
+
+            {/* Real user ID badge */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <User className="h-3 w-3 text-muted-foreground" />
+              {userId ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="h-5 text-[10px] font-mono px-1.5 cursor-default">
+                      {userId.slice(0, 8)}…
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="font-mono text-xs break-all max-w-xs">
+                    User ID: {userId}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Badge variant="destructive" className="h-5 text-[10px] px-1.5">No user</Badge>
+              )}
+            </div>
+
+            <div className="h-4 w-px bg-border flex-shrink-0" />
+
+            {/* Conversation selector */}
+            <ConversationSelector
+              conversationId={conversationId}
+              isCreating={isCreatingConversation}
+              onCreateNew={createConversation}
+              onSetExisting={setConversationId}
+            />
+
+            <div className="h-4 w-px bg-border flex-shrink-0" />
+
+            {/* Scope modal */}
+            <ContextScopeModal
+              scopeOverride={scopeOverride}
+              onScopeChange={setScopeOverride}
+            />
+
+            {/* Active scope preview badges */}
+            {scopeOverride.organization_id && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="h-5 text-[10px] px-1.5 font-mono cursor-default">
+                    org: {scopeOverride.organization_id.slice(0, 8)}…
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="font-mono text-xs break-all">
+                  organization_id: {scopeOverride.organization_id}
                 </TooltipContent>
               </Tooltip>
-            }
-          />
+            )}
+            {scopeOverride.project_id && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="h-5 text-[10px] px-1.5 font-mono cursor-default">
+                    proj: {scopeOverride.project_id.slice(0, 8)}…
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="font-mono text-xs break-all">
+                  project_id: {scopeOverride.project_id}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {scopeOverride.task_id && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="h-5 text-[10px] px-1.5 font-mono cursor-default">
+                    task: {scopeOverride.task_id.slice(0, 8)}…
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="font-mono text-xs break-all">
+                  task_id: {scopeOverride.task_id}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
 
-        {/* Three-panel layout */}
+        {/* ── Three-panel layout ── */}
         <div className="flex-1 min-h-0 px-3 py-1">
           <div className="grid grid-cols-12 gap-2 h-full">
-            {/* Left: Tool list (col-span-2) */}
             <Card className="col-span-2 h-full overflow-hidden">
               <ToolListSidebar
                 tools={tools}
@@ -275,7 +426,6 @@ export default function ToolTestingClient() {
               />
             </Card>
 
-            {/* Center: Config / Form (col-span-4) */}
             <Card className="col-span-4 h-full overflow-hidden">
               <ToolConfigPanel
                 tool={selectedTool}
@@ -285,11 +435,11 @@ export default function ToolTestingClient() {
                 onExecute={handleExecute}
                 onCancel={handleCancel}
                 onReset={handleReset}
-                serverInfo={{ type: apiConfig.serverType, baseUrl: apiConfig.baseUrl }}
+                serverInfo={{ type: serverType, baseUrl: backendUrl }}
+                conversationReady={conversationReady}
               />
             </Card>
 
-            {/* Right: Results (col-span-6) */}
             <Card className="col-span-6 h-full overflow-hidden">
               <ResultsPanel
                 toolName={selectedToolName ?? ''}

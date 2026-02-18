@@ -4,8 +4,12 @@
 export interface DatabaseProject {
   id: string;
   name: string;
+  slug: string | null;
   description: string | null;
   created_by: string;
+  organization_id: string | null;
+  is_personal: boolean;
+  settings: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

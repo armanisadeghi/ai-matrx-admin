@@ -24,6 +24,8 @@ interface ToolConfigPanelProps {
   onCancel: () => void;
   onReset: () => void;
   serverInfo?: { type: string; baseUrl: string };
+  /** Whether a real conversation is set — required before execution */
+  conversationReady?: boolean;
 }
 
 export function ToolConfigPanel({
@@ -35,6 +37,7 @@ export function ToolConfigPanel({
   onCancel,
   onReset,
   serverInfo,
+  conversationReady = true,
 }: ToolConfigPanelProps) {
   const isRunning = executionStatus === 'running' || executionStatus === 'connecting';
 
@@ -137,7 +140,12 @@ export function ToolConfigPanel({
             </span>
           </div>
         )}
-        {hasRequired && !requiredFilled && (
+        {!conversationReady && (
+          <p className="text-[10px] text-warning text-center">
+            Set a conversation ID above before executing
+          </p>
+        )}
+        {conversationReady && hasRequired && !requiredFilled && (
           <p className="text-[10px] text-warning text-center">
             Fill in required fields (*) before executing
           </p>
@@ -154,15 +162,26 @@ export function ToolConfigPanel({
               Cancel
             </Button>
           ) : (
-            <Button
-              onClick={onExecute}
-              disabled={!requiredFilled}
-              size="sm"
-              className="flex-1"
-            >
-              <Play className="h-3.5 w-3.5 mr-1.5" />
-              Execute
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex-1">
+                  <Button
+                    onClick={onExecute}
+                    disabled={!requiredFilled || !conversationReady}
+                    size="sm"
+                    className="w-full"
+                  >
+                    <Play className="h-3.5 w-3.5 mr-1.5" />
+                    Execute
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!conversationReady && (
+                <TooltipContent className="text-xs max-w-[200px]">
+                  Set a real conversation ID in the header before executing
+                </TooltipContent>
+              )}
+            </Tooltip>
           )}
           <Tooltip>
             <TooltipTrigger asChild>

@@ -148,6 +148,49 @@ export const emailTemplates = {
     `,
   }),
 
+  projectInvitation: (
+    projectName: string,
+    organizationName: string,
+    inviterName: string,
+    invitationUrl: string,
+    expiresAt: Date
+  ) => ({
+    subject: `You've been invited to join project "${projectName}" on AI Matrx`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #6366f1;">Project Invitation</h1>
+        <p><strong>${inviterName}</strong> has invited you to join project <strong>${projectName}</strong> in <strong>${organizationName}</strong> on AI Matrx.</p>
+        <p>AI Matrx is a powerful platform for AI prompt engineering, canvas creation, and team collaboration.</p>
+        <div style="margin: 24px 0;">
+          <a href="${invitationUrl}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Accept Invitation</a>
+        </div>
+        <p style="color: #666; font-size: 14px;">This invitation will expire on ${expiresAt.toLocaleDateString()}.</p>
+        <p style="color: #666; font-size: 14px;">If you didn't expect this invitation, you can safely ignore this email.</p>
+      </div>
+    `,
+  }),
+
+  projectInvitationReminder: (
+    projectName: string,
+    organizationName: string,
+    inviterName: string,
+    invitationUrl: string,
+    expiresAt: Date
+  ) => ({
+    subject: `Reminder: Join project "${projectName}" on AI Matrx`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #f59e0b;">Project Invitation Reminder</h1>
+        <p>This is a reminder that <strong>${inviterName}</strong> has invited you to join project <strong>${projectName}</strong> in <strong>${organizationName}</strong> on AI Matrx.</p>
+        <div style="margin: 24px 0;">
+          <a href="${invitationUrl}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Accept Invitation</a>
+        </div>
+        <p style="color: #666; font-size: 14px;">This invitation has been extended and will now expire on ${expiresAt.toLocaleDateString()}.</p>
+        <p style="color: #666; font-size: 14px;">If you're not interested, you can safely ignore this email.</p>
+      </div>
+    `,
+  }),
+
   organizationInvitationReminder: (
     organizationName: string,
     inviterName: string,

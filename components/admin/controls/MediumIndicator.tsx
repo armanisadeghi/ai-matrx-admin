@@ -272,11 +272,9 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
     const handleResetToDefault = async () => {
         if (!primaryConnection) return;
 
-        const defaultUrl =
-            isAdmin && (await socketManager.isLocalServerAvailable())
-                ? SocketConnectionManager.LOCAL_URL
-                : SocketConnectionManager.DEFAULT_URL;
-
+        // Always reset to production — no localhost auto-detection to avoid
+        // triggering the browser's local network permission prompt.
+        const defaultUrl = SocketConnectionManager.DEFAULT_URL;
         const defaultNamespace = SocketConnectionManager.DEFAULT_NAMESPACE;
 
         if (primaryConnection.url === defaultUrl && primaryConnection.namespace === defaultNamespace) {

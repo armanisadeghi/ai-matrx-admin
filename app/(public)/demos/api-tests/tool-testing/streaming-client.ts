@@ -6,36 +6,12 @@ import type {
   ToolStreamEvent,
   FinalPayload,
   ToolDefinition,
-  TestSessionResponse,
+  TestContext,
 } from "./types";
 
 /**
- * Initialize (or reuse) a test session conversation for the authenticated user.
- * Call once on mount — returns a conversation_id used for all subsequent executions.
- */
-export async function initTestSession(
-  baseUrl: string,
-  authToken: string,
-): Promise<TestSessionResponse> {
-  const response = await fetch(`${baseUrl}/api/tools/test/session`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
-    throw new Error(
-      errorBody?.detail ?? `HTTP ${response.status}: ${response.statusText}`,
-    );
-  }
-
-  return response.json();
-}
-
-/**
  * Execute a tool test via the Python backend streaming endpoint.
+ * Sends the full TestContext (conversation_id + optional scope) in the request body.
  * Uses the shared NDJSON parser and dispatches to typed handlers.
  */
 export async function executeToolTest(
@@ -45,14 +21,18 @@ export async function executeToolTest(
   args: Record<string, unknown>,
   handlers: StreamEventHandlers,
   abortSignal?: AbortSignal,
-  conversationId?: string,
+  context?: TestContext,
 ): Promise<void> {
   const body: Record<string, unknown> = {
     tool_name: toolName,
     arguments: args,
   };
-  if (conversationId) {
-    body.conversation_id = conversationId;
+
+  if (context) {
+    body.conversation_id = context.conversation_id;
+    if (context.organization_id) body.organization_id = context.organization_id;
+    if (context.project_id) body.project_id = context.project_id;
+    if (context.task_id) body.task_id = context.task_id;
   }
 
   const response = await fetch(`${baseUrl}/api/tools/test/execute`, {
