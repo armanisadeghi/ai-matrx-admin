@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
 import type { ResearchTemplate } from '../types';
-import type { PromptBuiltinRef, TemplateFormData, AGENT_CONFIG_KEYS } from './types';
+import type { PromptBuiltinRef, TemplateFormData, AgentConfigKey } from './types';
 
 const supabase = createClient();
 
@@ -84,7 +84,7 @@ export async function deleteTemplate(id: string): Promise<void> {
 
 export async function updateTemplateAgentConfig(
     templateId: string,
-    key: (typeof AGENT_CONFIG_KEYS)[number],
+    key: AgentConfigKey,
     value: string | null,
 ): Promise<ResearchTemplate> {
     const template = await fetchTemplateById(templateId);
