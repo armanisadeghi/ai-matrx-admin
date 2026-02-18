@@ -172,6 +172,7 @@
     "react-copy-to-clipboard": "latest",
     "react-day-picker": "^9.13.0",
     "react-device-detect": "latest",
+    "react-diff-viewer-continued": "^4.1.2",
     "react-dom": "latest",
     "react-dropzone": "latest",
     "react-easy-crop": "^5.5.6",

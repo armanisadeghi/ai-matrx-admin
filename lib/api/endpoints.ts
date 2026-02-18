@@ -74,6 +74,44 @@ export const ENDPOINTS = {
         /** GET — Detailed health with component status */
         detailed: '/api/health/detailed',
     },
+
+    /** Research endpoints — Authenticated */
+    research: {
+        /** POST — Initialize research config */
+        init: '/api/research/init',
+        /** GET — List templates */
+        templatesList: '/api/research/templates/list',
+        /** POST — Create template */
+        templatesCreate: '/api/research/templates',
+        /** GET — Template detail */
+        templateDetail: (templateId: string) => `/api/research/templates/${templateId}` as const,
+        /** GET — Extension scrape queue */
+        extensionScrapeQueue: '/api/research/extension/scrape-queue',
+        /** GET — Research state / PATCH — Update config */
+        state: (projectId: string) => `/api/research/${projectId}` as const,
+        /** POST — Suggest setup */
+        suggest: (projectId: string) => `/api/research/${projectId}/suggest` as const,
+        /** POST — Run full pipeline (streaming) */
+        run: (projectId: string) => `/api/research/${projectId}/run` as const,
+        /** POST — Trigger search (streaming) */
+        search: (projectId: string) => `/api/research/${projectId}/search` as const,
+        /** POST — Trigger scrape (streaming) */
+        scrape: (projectId: string) => `/api/research/${projectId}/scrape` as const,
+        /** POST — Analyze all sources (streaming) */
+        analyzeAll: (projectId: string) => `/api/research/${projectId}/analyze-all` as const,
+        /** POST — Synthesize */
+        synthesize: (projectId: string) => `/api/research/${projectId}/synthesize` as const,
+        /** GET — Keywords */
+        keywords: (projectId: string) => `/api/research/${projectId}/keywords` as const,
+        /** GET — Sources */
+        sources: (projectId: string) => `/api/research/${projectId}/sources` as const,
+        /** GET — Tags */
+        tags: (projectId: string) => `/api/research/${projectId}/tags` as const,
+        /** GET/POST — Document */
+        document: (projectId: string) => `/api/research/${projectId}/document` as const,
+        /** GET — Costs */
+        costs: (projectId: string) => `/api/research/${projectId}/costs` as const,
+    },
 } as const;
 
 /**

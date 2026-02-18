@@ -63,6 +63,16 @@ export type AgentExecuteRequestBody = components['schemas']['AgentExecuteRequest
 export type UnifiedChatRequestBody = components['schemas']['UnifiedChatRequest'];
 export type ToolTestExecuteRequestBody = components['schemas']['ToolTestExecuteRequest'];
 
+export type ResearchConfigCreateBody = components['schemas']['ResearchConfigCreate'];
+export type ResearchConfigUpdateBody = components['schemas']['ResearchConfigUpdate'];
+export type KeywordCreateBody = components['schemas']['KeywordCreate'];
+export type SourceUpdateBody = components['schemas']['SourceUpdate'];
+export type SourceBulkActionBody = components['schemas']['SourceBulkAction'];
+export type SynthesisRequestBody = components['schemas']['SynthesisRequest'];
+export type SuggestRequestBody = components['schemas']['SuggestRequest'];
+export type TagCreateBody = components['schemas']['TagCreate'];
+export type TemplateCreateBody = components['schemas']['TemplateCreate'];
+
 // ============================================================================
 // ERROR TYPES (frontend-only — no Python counterpart)
 // ============================================================================

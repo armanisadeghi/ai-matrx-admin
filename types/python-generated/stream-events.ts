@@ -84,7 +84,7 @@ export interface EndPayload {
 
 export interface StreamEvent {
   event: EventType;
-  data: Record<string, unknown>;
+  data: unknown;
 }
 
 // Typed event helpers
