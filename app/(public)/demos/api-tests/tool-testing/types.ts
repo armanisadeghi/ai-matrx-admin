@@ -94,14 +94,25 @@ export interface CostEstimate {
   models: CostEstimateModel[];
 }
 
+// Wire format from the Python backend `completion` event:
+// { status, output: { model_facing_result, full_result }, metadata: { call_id, conversation_id, cost_estimate, output_schema }, ... }
 export interface FinalPayload {
   status: "complete";
-  conversation_id?: string;
-  call_id?: string;
-  model_facing_result: ModelFacingResult;
-  full_result: FullResult;
-  cost_estimate: CostEstimate | null;
-  output_schema: Record<string, unknown> | null;
+  output: {
+    model_facing_result: ModelFacingResult;
+    full_result: FullResult;
+  };
+  metadata: {
+    conversation_id?: string;
+    call_id?: string;
+    cost_estimate: CostEstimate | null;
+    output_schema: Record<string, unknown> | null;
+  };
+  iterations?: unknown;
+  total_usage?: unknown;
+  timing_stats?: unknown;
+  tool_call_stats?: unknown;
+  finish_reason?: string | null;
 }
 
 // ─── Context Types ──────────────────────────────────────────────────────────

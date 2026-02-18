@@ -170,8 +170,8 @@ export default function ToolTestingClient() {
           },
           onFinalResult: (payload) => {
             setFinalPayload(payload);
-            if (payload.full_result?.success === false) {
-              setErrorMessage(payload.full_result.error?.message ?? 'Tool returned error');
+            if (payload.output?.full_result?.success === false) {
+              setErrorMessage(payload.output.full_result.error?.message ?? 'Tool returned error');
               setExecutionStatus('error');
             } else {
               setExecutionStatus('complete');

@@ -244,7 +244,7 @@ export function ResultsPanel({
   const isRunning = executionStatus === 'running' || executionStatus === 'connecting';
   const isComplete = executionStatus === 'complete';
   const isError = executionStatus === 'error';
-  const duration = finalPayload?.full_result?.duration_ms;
+  const duration = finalPayload?.output?.full_result?.duration_ms;
   const canSave = (isComplete || isError) && !!finalPayload;
 
   const { save, isSaving, savedId, reset } = useSaveSample();
@@ -312,9 +312,9 @@ export function ResultsPanel({
           )}
         </div>
         <div className="flex items-center gap-1.5">
-          {finalPayload?.cost_estimate && (
+          {finalPayload?.metadata?.cost_estimate && (
             <span className="text-[10px] text-muted-foreground font-mono">
-              ~{finalPayload.cost_estimate.estimated_tokens.toLocaleString()} tokens
+              ~{finalPayload.metadata.cost_estimate.estimated_tokens.toLocaleString()} tokens
             </span>
           )}
           <SaveSamplePopover
