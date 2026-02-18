@@ -1,9 +1,10 @@
 import { supabase } from "@/utils/supabase/client";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import type { CompletionPayload, EndPayload } from "@/types/python-generated/stream-events";
 import type {
   StreamEventHandlers,
   ToolStreamEvent,
   FinalPayload,
-  StreamLine,
   ToolDefinition,
   TestSessionResponse,
 } from "./types";
@@ -35,7 +36,7 @@ export async function initTestSession(
 
 /**
  * Execute a tool test via the Python backend streaming endpoint.
- * Parses NDJSON lines and dispatches to typed handlers.
+ * Uses the shared NDJSON parser and dispatches to typed handlers.
  */
 export async function executeToolTest(
   baseUrl: string,
@@ -71,63 +72,40 @@ export async function executeToolTest(
     );
   }
 
-  const reader = response.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
+  const { events } = parseNdjsonStream(response, abortSignal);
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  for await (const event of events) {
+    handlers.onRawLine?.(event);
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop()!;
+    switch (event.event) {
+      case "status_update":
+        handlers.onStatusUpdate?.(event.data as Record<string, unknown>);
+        break;
 
-    for (const line of lines) {
-      if (!line.trim()) continue;
+      case "tool_event":
+        handlers.onToolEvent?.(event.data as unknown as ToolStreamEvent);
+        break;
 
-      try {
-        const parsed = JSON.parse(line) as StreamLine;
-        handlers.onRawLine?.(parsed);
+      case "completion":
+        handlers.onCompletion?.(event.data as unknown as CompletionPayload);
+        handlers.onFinalResult?.(event.data as unknown as FinalPayload);
+        break;
 
-        switch (parsed.event) {
-          case "status_update":
-            handlers.onStatusUpdate?.(parsed.data as Record<string, unknown>);
-            break;
+      case "data":
+        handlers.onFinalResult?.(event.data as unknown as FinalPayload);
+        break;
 
-          case "tool_event":
-            handlers.onToolEvent?.(parsed.data as ToolStreamEvent);
-            break;
+      case "error":
+        handlers.onError?.(event.data as Record<string, unknown>);
+        break;
 
-          case "data":
-            handlers.onFinalResult?.(parsed.data as unknown as FinalPayload);
-            break;
+      case "heartbeat":
+        handlers.onHeartbeat?.();
+        break;
 
-          case "error":
-            handlers.onError?.(parsed.data as Record<string, unknown>);
-            break;
-
-          case "end":
-            handlers.onEnd?.();
-            break;
-        }
-      } catch {
-        console.warn("[ToolTest] Failed to parse NDJSON line:", line);
-      }
-    }
-  }
-
-  // Process remaining buffer
-  if (buffer.trim()) {
-    try {
-      const parsed = JSON.parse(buffer) as StreamLine;
-      handlers.onRawLine?.(parsed);
-      if (parsed.event === "end") handlers.onEnd?.();
-      if (parsed.event === "data") {
-        handlers.onFinalResult?.(parsed.data as unknown as FinalPayload);
-      }
-    } catch {
-      // Ignore incomplete trailing data
+      case "end":
+        handlers.onEnd?.(event.data as unknown as EndPayload);
+        break;
     }
   }
 }

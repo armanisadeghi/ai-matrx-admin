@@ -23,10 +23,10 @@ import { StreamEventTimeline } from './StreamEventTimeline';
 import { SchemaValidator } from './SchemaValidator';
 import { CostEstimateTable } from './CostEstimateTable';
 import { ToolRendererPreview } from './ToolRendererPreview';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type {
   ToolStreamEvent,
   FinalPayload,
-  StreamLine,
   ExecutionStatus,
 } from '../types';
 
@@ -65,7 +65,7 @@ interface ResultsPanelProps {
   toolName: string;
   args: Record<string, unknown>;
   toolEvents: ToolStreamEvent[];
-  rawLines: StreamLine[];
+  rawLines: StreamEvent[];
   finalPayload: FinalPayload | null;
   rawJsonLog: string;
   executionStatus: ExecutionStatus;

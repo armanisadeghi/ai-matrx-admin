@@ -30,7 +30,7 @@ import {
   EventCategory,
   classifyEvent,
   groupByCategory,
-  groupToolUpdatesById,
+  groupToolEventsById,
   categoryLabel,
   subTypeLabel,
   categoryColor,
@@ -61,11 +61,12 @@ function CategoryIcon({ category, className }: { category: EventCategory; classN
   switch (category) {
     case 'status_update': return <Radio className={cn} />;
     case 'chunk': return <MessageSquareText className={cn} />;
-    case 'tool_update': return <Wrench className={cn} />;
+    case 'tool_event': return <Wrench className={cn} />;
+    case 'completion': return <BarChart3 className={cn} />;
     case 'data': return <BarChart3 className={cn} />;
     case 'error': return <AlertCircle className={cn} />;
     case 'end': return <Zap className={cn} />;
-    case 'info': return <FileText className={cn} />;
+    case 'heartbeat': return <Activity className={cn} />;
     case 'broker': return <Globe className={cn} />;
     default: return <Activity className={cn} />;
   }
@@ -76,11 +77,12 @@ function CategoryIcon({ category, className }: { category: EventCategory; classN
 const CATEGORY_ORDER: EventCategory[] = [
   'status_update',
   'chunk',
-  'tool_update',
+  'tool_event',
+  'completion',
   'data',
   'error',
   'end',
-  'info',
+  'heartbeat',
   'broker',
   'unknown',
 ];
@@ -193,7 +195,7 @@ export default function StreamAnalyzer({ rawEvents, isStreaming, streamStartTime
               onClick={() => setActiveTab('tool_debug')}
               label="Tool Debug"
               icon={<Wrench className="h-3 w-3" />}
-              count={grouped['tool_update']?.length ?? 0}
+              count={grouped['tool_event']?.length ?? 0}
               colorClass="bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/25"
             />
             {presentCategories.map(cat => (
@@ -217,7 +219,7 @@ export default function StreamAnalyzer({ rawEvents, isStreaming, streamStartTime
         {activeTab === 'timeline' ? (
           <TimelineView events={classified} streamStartTime={streamStartTime} />
         ) : activeTab === 'tool_debug' ? (
-          <ToolDebugView events={grouped['tool_update'] ?? []} />
+          <ToolDebugView events={grouped['tool_event'] ?? []} />
         ) : (
           <CategoryView
             category={activeTab}
@@ -408,7 +410,7 @@ function CategoryView({ category, events }: { category: EventCategory; events: T
   switch (category) {
     case 'chunk':
       return <ChunkCategoryView events={events} />;
-    case 'tool_update':
+    case 'tool_event':
       return <ToolUpdateCategoryView events={events} />;
     case 'status_update':
       return <StatusUpdateCategoryView events={events} />;
@@ -427,14 +429,20 @@ function ChunkCategoryView({ events }: { events: TimestampedEvent[] }) {
   const reasoning = events.filter(e => e.subType === 'chunk_reasoning');
   const content = events.filter(e => e.subType === 'chunk_content');
 
-  // Build assembled text
+  // Build assembled text (new ChunkPayload shape: { text: string })
   const assembledContent = content.map(e => {
     const data = e.raw.data;
+    if (typeof data === 'object' && data !== null && 'text' in data) {
+      return (data as Record<string, unknown>).text as string;
+    }
     return typeof data === 'string' ? data : '';
   }).join('');
 
   const assembledReasoning = reasoning.map(e => {
     const data = e.raw.data;
+    if (typeof data === 'object' && data !== null && 'text' in data) {
+      return (data as Record<string, unknown>).text as string;
+    }
     return typeof data === 'string' ? data : '';
   }).join('');
 
@@ -488,7 +496,7 @@ function ChunkCategoryView({ events }: { events: TimestampedEvent[] }) {
 // ─── Tool Update Category View ───────────────────────────────────────────────
 
 function ToolUpdateCategoryView({ events }: { events: TimestampedEvent[] }) {
-  const grouped = groupToolUpdatesById(events);
+  const grouped = groupToolEventsById(events);
 
   return (
     <div className="space-y-3">
@@ -560,7 +568,7 @@ function ToolCallGroup({ groupId, events }: { groupId: string; events: Timestamp
                     {formatDuration(evt.offsetMs)}
                   </span>
                   <Globe className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                  <span className="text-foreground">{(data.user_message || data.user_visible_message) as string}</span>
+                  <span className="text-foreground">{(data.user_message) as string}</span>
                 </div>
               );
             })}
@@ -623,9 +631,9 @@ function StatusUpdateCategoryView({ events }: { events: TimestampedEvent[] }) {
               {(data.status as string) ?? '?'}
             </Badge>
             <span className="text-muted-foreground">{data.system_message as string}</span>
-            {(data.user_message || data.user_visible_message) && (
+            {(data.user_message) && (
               <span className="text-foreground ml-auto">
-                {(data.user_message || data.user_visible_message) as string}
+                {(data.user_message) as string}
               </span>
             )}
             {metadata && (
@@ -758,8 +766,8 @@ function ErrorCategoryView({ events }: { events: TimestampedEvent[] }) {
             </div>
             {typeof data === 'object' && data !== null ? (
               <div className="space-y-1 text-xs font-mono">
-                {((data as Record<string, unknown>).user_message || (data as Record<string, unknown>).user_visible_message) && (
-                  <div className="text-destructive font-medium">{((data as Record<string, unknown>).user_message || (data as Record<string, unknown>).user_visible_message) as string}</div>
+                {((data as Record<string, unknown>).user_message) && (
+                  <div className="text-destructive font-medium">{((data as Record<string, unknown>).user_message) as string}</div>
                 )}
                 <pre className="whitespace-pre-wrap text-muted-foreground mt-1">
                   {JSON.stringify(data, null, 2)}
@@ -807,7 +815,7 @@ function GenericCategoryView({ events }: { events: TimestampedEvent[] }) {
 // ─── Tool Debug View ─────────────────────────────────────────────────────────
 
 function ToolDebugView({ events }: { events: TimestampedEvent[] }) {
-  const grouped = groupToolUpdatesById(events);
+  const grouped = groupToolEventsById(events);
 
   if (events.length === 0) {
     return <EmptyState message="No tool events received yet." />;
@@ -905,7 +913,7 @@ function RawEventDisplay({ event, index }: { event: TimestampedEvent; index: num
   // Extract metadata from event.raw.data
   const data = event.raw.data as Record<string, unknown> | undefined;
   const type = data?.type as string | undefined;
-  const userMessage = (data?.user_message || data?.user_visible_message) as string | undefined;
+  const userMessage = data?.user_message as string | undefined;
   
   // Check for presence of key fields
   const hasInput = data?.mcp_input !== undefined && data?.mcp_input !== null;
@@ -1046,34 +1054,42 @@ function eventPreview(evt: TimestampedEvent): string {
 
   switch (evt.category) {
     case 'chunk': {
-      const text = typeof data === 'string' ? data : '';
+      const d = data as Record<string, unknown>;
+      const text = typeof d.text === 'string' ? d.text : '';
       const clean = text.replace(/<reasoning>|<\/reasoning>/g, '').trim();
       return clean.length > 80 ? clean.slice(0, 80) + '...' : clean || '(empty chunk)';
     }
 
     case 'status_update': {
       const d = data as Record<string, unknown>;
-      return `[${d.status}] ${d.system_message ?? (d.user_message || d.user_visible_message) ?? ''}`;
+      return `[${d.status}] ${d.system_message ?? d.user_message ?? ''}`;
     }
 
-    case 'tool_update': {
+    case 'tool_event': {
       const d = data as Record<string, unknown>;
       const toolName = d.tool_name as string | null;
-      const msg = (d.user_message || d.user_visible_message) as string | null;
+      const msg = d.message as string | null;
       return toolName
         ? `${toolName} → ${msg ?? evt.subType ?? ''}`
         : msg ?? evt.subType ?? '';
     }
 
+    case 'completion': {
+      return 'Completion — final output and usage stats';
+    }
+
+    case 'heartbeat': {
+      return 'Keepalive';
+    }
+
     case 'data': {
       const d = data as Record<string, unknown>;
-      if (d.status === 'complete') return 'Usage & completion data';
-      return JSON.stringify(data).slice(0, 80);
+      return JSON.stringify(d).slice(0, 80);
     }
 
     case 'error': {
       const d = data as Record<string, unknown>;
-      return ((d.user_message || d.user_visible_message) as string) ?? (d.message as string) ?? 'Error';
+      return (d.user_message as string) ?? (d.message as string) ?? 'Error';
     }
 
     case 'end':

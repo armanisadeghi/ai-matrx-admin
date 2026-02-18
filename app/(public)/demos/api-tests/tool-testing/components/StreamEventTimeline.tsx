@@ -20,7 +20,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ToolStreamEvent, StreamLine } from '../types';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
+import type { ToolStreamEvent } from '../types';
 
 // ─── Event icon/color mapping ───────────────────────────────────────────────
 
@@ -165,7 +166,7 @@ function TimelineEntry({
 
 interface StreamEventTimelineProps {
   toolEvents: ToolStreamEvent[];
-  rawLines: StreamLine[];
+  rawLines: StreamEvent[];
   isRunning: boolean;
 }
 

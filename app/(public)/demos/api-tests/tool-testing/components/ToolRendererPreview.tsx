@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Info, Eye } from 'lucide-react';
-import type { ToolCallObject } from '@/lib/redux/socket-io/socket.types';
+import type { ToolCallObject } from '@/lib/api/tool-call.types';
 import {
   getInlineRenderer,
   getToolDisplayName,
@@ -34,18 +34,17 @@ function buildToolCallObjects(
     },
   });
 
-  // 2. Map tool events to step_data / user_visible_message
+  // 2. Map tool events to step_data / user_message
   for (const event of toolEvents) {
     switch (event.event) {
       case 'tool_progress':
       case 'tool_step': {
-        const msg = (event as { message?: string; user_message?: string; user_visible_message?: string }).user_message || (event as { message?: string; user_message?: string; user_visible_message?: string }).user_visible_message || event.message;
+        const msg = event.message;
         if (msg) {
           objects.push({
             id: event.call_id,
-            type: 'user_visible_message',
+            type: 'user_message',
             user_message: msg,
-            user_visible_message: msg,
           });
         }
         if (Object.keys(event.data).length > 0) {
@@ -73,13 +72,12 @@ function buildToolCallObjects(
         }
         break;
       case 'tool_started': {
-        const startedMsg = (event as { message?: string; user_message?: string; user_visible_message?: string }).user_message || (event as { message?: string; user_message?: string; user_visible_message?: string }).user_visible_message || event.message;
+        const startedMsg = event.message;
         if (startedMsg) {
           objects.push({
             id: event.call_id,
-            type: 'user_visible_message',
+            type: 'user_message',
             user_message: startedMsg,
-            user_visible_message: startedMsg,
           });
         }
         break;

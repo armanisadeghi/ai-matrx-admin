@@ -13,7 +13,7 @@ import { Loader2, Plus, Trash2, X, Play, FileText, FileJson, BarChart3, FlaskCon
 // Removed hardcoded TEST_ADMIN_TOKEN - now using cookie-based storage
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
-import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload } from '@/types/python-generated/stream-events';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
@@ -392,22 +392,22 @@ export default function ChatTestClient() {
                 // Accumulate raw event for StreamAnalyzer
                 rawEventsRef.current.push(json as Record<string, unknown>);
 
-                // Extract text chunks (keep for backward compatibility with debug view)
-                if (json.event === 'chunk' && typeof json.data === 'string') {
-                  setStreamText(prev => prev + json.data);
+                // Extract text chunks using new ChunkPayload shape
+                if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
+                  setStreamText(prev => prev + (json.data as ChunkPayload).text);
                 }
                 // Check for error events
                 if (json.event === 'error') {
-                  const errData = json.data;
+                  const errData = json.data as ErrorPayload;
                   if (typeof errData === 'object' && errData !== null) {
-                    setErrorMessage(errData.user_message || errData.user_visible_message || errData.message || JSON.stringify(errData));
+                    setErrorMessage(errData.user_message || errData.message || JSON.stringify(errData));
                   } else {
-                    setErrorMessage(errData || 'Unknown error from stream');
+                    setErrorMessage('Unknown error from stream');
                   }
                 }
-                // Capture usage stats data
-                if (json.event === 'data' && json.data?.status === 'complete') {
-                  setUsageStatsData(json.data);
+                // Capture usage stats from completion events
+                if (json.event === 'completion') {
+                  setUsageStatsData(json.data as CompletionPayload);
                 }
               } catch (e) {
                 setStreamOutput(prev => prev + line + '\n');
@@ -431,12 +431,11 @@ export default function ChatTestClient() {
           setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
           setStreamEvents(prev => [...prev, json as StreamEvent]);
           rawEventsRef.current.push(json as Record<string, unknown>);
-          if (json.event === 'chunk' && typeof json.data === 'string') {
-            setStreamText(prev => prev + json.data);
+          if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
+            setStreamText(prev => prev + (json.data as ChunkPayload).text);
           }
-          // Capture usage stats from remaining buffer
-          if (json.event === 'data' && json.data?.status === 'complete') {
-            setUsageStatsData(json.data);
+          if (json.event === 'completion') {
+            setUsageStatsData(json.data as CompletionPayload);
           }
         } catch (e) {
           setStreamOutput(prev => prev + buffer + '\n');

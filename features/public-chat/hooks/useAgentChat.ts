@@ -2,10 +2,12 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
-import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
+import type { AgentWarmRequestBody } from '@/lib/api/types';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { extractPersistableToolUpdates } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
-import type { AgentStreamEvent, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
+import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { useApiAuth } from '@/hooks/useApiAuth';
 
 // ============================================================================
@@ -20,19 +22,15 @@ interface UseAgentChatOptions {
 
 interface SendMessageParams {
     content: string;
-    variables?: Record<string, any>;
-    /** Resources to attach to the message */
+    variables?: Record<string, unknown>;
     resources?: PublicResource[];
 }
 
-/**
- * Agent Execute Request with content array support 
- */
 interface AgentExecuteRequestWithContent {
     prompt_id: string;
     conversation_id: string;
     user_input: string | ContentItem[];
-    variables?: Record<string, any>;
+    variables?: Record<string, unknown>;
     config_overrides?: Record<string, unknown>;
     stream: boolean;
     debug: boolean;
@@ -48,22 +46,15 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     const { state, addMessage, updateMessage, setStreaming, setExecuting, setError } = useChatContext();
     const abortControllerRef = useRef<AbortController | null>(null);
     const streamEventsRef = useRef<StreamEvent[]>([]);
-    // Track executing state in a ref so the cleanup effect always reads the
-    // current value (not a stale closure capture).
     const isExecutingRef = useRef(false);
-    
-    // Centralized auth - handles both authenticated users and guests
+    const serverRequestIdRef = useRef<string | null>(null);
+
     const { getHeaders, waitForAuth, isAdmin } = useApiAuth();
 
-    // Keep executing ref in sync
     useEffect(() => {
         isExecutingRef.current = state.isExecuting;
     }, [state.isExecuting]);
 
-    // Cleanup on unmount — only abort if NOT actively executing a request.
-    // During same-layout route transitions (e.g. /p/chat → /p/chat/c/[id]),
-    // ChatContainer remounts but the ChatContext (and the in-flight request)
-    // should survive. Aborting here would kill the request mid-stream.
     useEffect(() => {
         return () => {
             if (abortControllerRef.current && !isExecutingRef.current) {
@@ -72,57 +63,24 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         };
     }, []);
 
-    // Convert Agent API events to StreamEvent format
-    const convertAgentEventToStreamEvent = useCallback((agentEvent: AgentStreamEvent): StreamEvent | null => {
-        switch (agentEvent.event) {
-            case 'chunk':
-                return { event: 'chunk', data: agentEvent.data };
-            case 'status_update':
-                return { event: 'status_update', data: agentEvent.data };
-            case 'tool_update':
-                // Legacy format — kept for backward compat during transition
-                return { event: 'tool_update', data: agentEvent.data };
-            case 'tool_event':
-                // V2 tool events — pass through with the full data envelope
-                return { event: 'tool_event', data: agentEvent.data };
-            case 'data':
-                return { event: 'data', data: agentEvent.data };
-            case 'error':
-                return { event: 'error', data: agentEvent.data };
-            case 'end':
-                return { event: 'end', data: true };
-            default:
-                return null;
-        }
-    }, []);
-
-    // Get backend URL (admin can override to localhost via Redux)
     const getBackendUrl = useCallback(() => {
         if (isAdmin && state.useLocalhost) {
-            return 'http://localhost:8000';
+            return BACKEND_URLS.localhost;
         }
-        return process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+        return BACKEND_URLS.production;
     }, [isAdmin, state.useLocalhost]);
 
-    // Warm up agent (pre-cache prompt) - no auth required for production backend.
-    // When targeting localhost (admin override), skip the eager warm entirely to
-    // avoid browser-level ERR_CONNECTION_REFUSED console noise. The warm will be
-    // attempted lazily when the admin actually sends a message.
     const warmAgent = useCallback(async (promptId: string) => {
         try {
             const BACKEND_URL = getBackendUrl();
-
-            // Never eagerly warm to localhost — the browser will log
-            // ERR_CONNECTION_REFUSED which cannot be suppressed from JS.
-            // Localhost warm happens implicitly on first sendMessage instead.
             if (BACKEND_URL.includes('localhost')) return;
 
-            const warmRequest: AgentWarmRequest = {
+            const warmRequest: AgentWarmRequestBody = {
                 prompt_id: promptId,
                 is_builtin: false,
             };
 
-            await fetch(`${BACKEND_URL}/api/ai/agent/warm`, {
+            await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(warmRequest),
@@ -132,7 +90,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         }
     }, [getBackendUrl]);
 
-    // Send message to agent
     const sendMessage = useCallback(async ({ content, variables = {}, resources = [] }: SendMessageParams) => {
         if (!state.currentAgent) {
             setError({ type: 'config_error', message: 'No agent configured' });
@@ -145,26 +102,20 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             return false;
         }
 
-        // Wait for auth to be ready (handles both authenticated users and guests)
         const authReady = await waitForAuth();
         if (!authReady) {
             setError({ type: 'auth_error', message: 'Unable to verify access. Please refresh the page.' });
             return false;
         }
 
-        // Reset state
         setError(null);
         streamEventsRef.current = [];
+        serverRequestIdRef.current = null;
 
-        // Determine if this is a new conversation (before adding messages)
-        // True when there are no messages yet, false for all subsequent messages
         const isNewConversation = state.messages.length === 0;
-
-        // Build content array for API
         const contentItems = buildContentArray(content, resources);
 
-        // Add user message with resources
-        const userMessageId = addMessage({
+        addMessage({
             role: 'user',
             content,
             status: 'complete',
@@ -173,29 +124,21 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             variables,
         });
 
-        // Add assistant message placeholder
         const assistantMessageId = addMessage({
             role: 'assistant',
             content: '',
             status: 'pending',
         });
 
-        // Create abort controller
         abortControllerRef.current = new AbortController();
-
-        // Set executing immediately in the ref (not just via dispatch) so the
-        // unmount cleanup sees the current value even before React re-renders.
         isExecutingRef.current = true;
         setExecuting(true);
         setStreaming(true);
 
         try {
             const BACKEND_URL = getBackendUrl();
-            
-            // Get auth headers (handles both authenticated users and guests)
             const headers = getHeaders();
 
-            // Build config overrides
             const configOverrides: Record<string, unknown> = {};
             if (state.modelOverride) {
                 configOverrides.ai_model_id = state.modelOverride;
@@ -207,10 +150,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 configOverrides.thinking_enabled = true;
             }
 
-            // Build request - use content array if we have resources, otherwise just text
-            const userInput = contentItems.length > 1 
-                ? contentItems 
-                : content;
+            const userInput = contentItems.length > 1 ? contentItems : content;
 
             const agentRequest: AgentExecuteRequestWithContent = {
                 prompt_id: promptId,
@@ -224,14 +164,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 is_new_conversation: isNewConversation,
             };
 
-            // Debug log to verify variables are being sent
-            if (variables && Object.keys(variables).length > 0) {
-                console.log('📝 Sending variables to API:', variables);
-            }
-
             updateMessage(assistantMessageId, { status: 'streaming' });
 
-            const response = await fetch(`${BACKEND_URL}/api/ai/agent/execute`, {
+            const response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -243,13 +178,13 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 try {
                     const errorData = await response.json();
                     if (typeof errorData.error === 'object' && errorData.error !== null) {
-                        errorMsg = errorData.error.user_message || errorData.error.user_visible_message || errorData.error.message || JSON.stringify(errorData.error);
+                        errorMsg = errorData.error.user_message || errorData.error.message || JSON.stringify(errorData.error);
                     } else if (typeof errorData.user_message === 'string') {
                         errorMsg = errorData.user_message;
                     } else {
                         errorMsg = errorData.error || errorData.message || errorData.details || errorMsg;
                     }
-                } catch (e) {
+                } catch {
                     // Use default error
                 }
                 throw new Error(errorMsg);
@@ -259,84 +194,53 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 throw new Error('No response body from Agent API');
             }
 
-            // Process streaming NDJSON response
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let done = false;
-            let buffer = '';
+            // Parse NDJSON stream using the shared parser
+            const { events, requestId } = parseNdjsonStream(response, abortControllerRef.current.signal);
+            serverRequestIdRef.current = requestId;
+
             let accumulatedContent = '';
 
-            while (!done) {
-                const { value, done: doneReading } = await reader.read();
-                done = doneReading;
+            for await (const event of events) {
+                streamEventsRef.current.push(event);
+                options.onStreamEvent?.(event);
 
-                if (value) {
-                    const decodedChunk = decoder.decode(value, { stream: true });
-                    buffer += decodedChunk;
-
-                    // Process complete lines (NDJSON format)
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        if (line.trim()) {
-                            try {
-                                const agentEvent = JSON.parse(line) as AgentStreamEvent;
-                                const streamEvent = convertAgentEventToStreamEvent(agentEvent);
-
-                                if (streamEvent) {
-                                    streamEventsRef.current.push(streamEvent);
-                                    options.onStreamEvent?.(streamEvent);
-
-                                    // Handle chunk events (accumulate text)
-                                    if (agentEvent.event === 'chunk' && typeof agentEvent.data === 'string') {
-                                        accumulatedContent += agentEvent.data;
-                                        updateMessage(assistantMessageId, {
-                                            content: accumulatedContent,
-                                        });
-                                    }
-
-                                    // Handle error events
-                                    if (agentEvent.event === 'error') {
-                                        const errData = agentEvent.data;
-                                        const errorMessage = errData.user_message || errData.user_visible_message || errData.message || 'Unknown error';
-                                        setError({ type: 'stream_error', message: errorMessage });
-                                        options.onError?.(errorMessage);
-                                    }
-                                }
-                            } catch (e) {
-                                console.warn('Failed to parse Agent API event:', line, e);
-                            }
-                        }
+                switch (event.event) {
+                    case 'chunk': {
+                        const chunkData = event.data as unknown as ChunkPayload;
+                        accumulatedContent += chunkData.text;
+                        updateMessage(assistantMessageId, { content: accumulatedContent });
+                        break;
                     }
+                    case 'error': {
+                        const errData = event.data as unknown as ErrorPayload;
+                        const errorMessage = errData.user_message || errData.message || 'Unknown error';
+                        setError({ type: 'stream_error', message: errorMessage });
+                        options.onError?.(errorMessage);
+                        break;
+                    }
+                    case 'completion': {
+                        // Completion event carries final output and usage stats.
+                        // The accumulated chunks already have the full text, so
+                        // we only use completion for metadata/stats if needed.
+                        const _completion = event.data as unknown as CompletionPayload;
+                        void _completion;
+                        break;
+                    }
+                    case 'heartbeat':
+                        // Connection keepalive — no action needed
+                        break;
+                    case 'end': {
+                        const _endData = event.data as unknown as EndPayload;
+                        void _endData;
+                        break;
+                    }
+                    // status_update, tool_event, data, broker — stored in streamEventsRef
+                    // and forwarded via onStreamEvent for downstream rendering
                 }
             }
 
-            // Process remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const agentEvent = JSON.parse(buffer) as AgentStreamEvent;
-                    const streamEvent = convertAgentEventToStreamEvent(agentEvent);
-                    if (streamEvent) {
-                        streamEventsRef.current.push(streamEvent);
-                        options.onStreamEvent?.(streamEvent);
-
-                        if (agentEvent.event === 'chunk' && typeof agentEvent.data === 'string') {
-                            accumulatedContent += agentEvent.data;
-                            updateMessage(assistantMessageId, { content: accumulatedContent });
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Failed to parse final Agent API event:', buffer, e);
-                }
-            }
-
-            // Extract tool updates from the stream and persist them on the
-            // assistant message so they survive after stream events are cleared.
-            // Uses the shared tool-event-engine for consistent conversion.
             const toolUpdates = extractPersistableToolUpdates(streamEventsRef.current);
 
-            // Mark as complete, attaching any tool updates from the stream
             updateMessage(assistantMessageId, {
                 status: 'complete',
                 ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
@@ -344,13 +248,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             options.onComplete?.();
             return true;
 
-        } catch (error: any) {
-            if (error.name === 'AbortError') {
+        } catch (error: unknown) {
+            const err = error as Error;
+            if (err.name === 'AbortError') {
                 console.log('Request aborted');
                 updateMessage(assistantMessageId, { status: 'error', content: 'Request cancelled' });
             } else {
-                console.error('Agent execution error:', error);
-                const errorMessage = error.message || 'Execution failed';
+                console.error('Agent execution error:', err);
+                const errorMessage = err.message || 'Execution failed';
                 setError({ type: 'execution_error', message: errorMessage });
                 updateMessage(assistantMessageId, { status: 'error', content: errorMessage });
                 options.onError?.(errorMessage);
@@ -367,6 +272,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         state.conversationId,
         state.modelOverride,
         state.settings,
+        state.messages.length,
         waitForAuth,
         getHeaders,
         addMessage,
@@ -374,19 +280,32 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setStreaming,
         setExecuting,
         setError,
-        convertAgentEventToStreamEvent,
         getBackendUrl,
         options,
     ]);
 
-    // Cancel ongoing request
-    const cancelRequest = useCallback(() => {
+    const cancelRequest = useCallback(async () => {
+        // Client-side abort (immediate stream teardown)
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
-    }, []);
 
-    // Get current stream events
+        // Server-side cancel (graceful iteration-boundary stop)
+        const requestId = serverRequestIdRef.current;
+        if (requestId) {
+            try {
+                const BACKEND_URL = getBackendUrl();
+                const headers = getHeaders();
+                await fetch(`${BACKEND_URL}${ENDPOINTS.ai.cancel(requestId)}`, {
+                    method: 'POST',
+                    headers,
+                });
+            } catch {
+                // Best-effort — don't block the UI if cancel fails
+            }
+        }
+    }, [getBackendUrl, getHeaders]);
+
     const getStreamEvents = useCallback(() => {
         return streamEventsRef.current;
     }, []);

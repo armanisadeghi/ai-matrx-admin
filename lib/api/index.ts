@@ -8,25 +8,63 @@ export { ENDPOINTS, BACKEND_URLS } from './endpoints';
 
 export { BackendApiError, parseHttpError, parseStreamError, getUserMessage } from './errors';
 
-export { parseNdjsonStream, consumeStream, accumulateChunks, findStreamError, isStreamEvent } from './stream-parser';
+export { parseNdjsonStream, consumeStream, accumulateChunks, findStreamError } from './stream-parser';
 export type { StreamCallbacks } from './stream-parser';
 
+// Tool call renderer types (extracted from socket.io)
+export type { ToolCallObject, McpInputObject, StepDataObject } from './tool-call.types';
+
+// Re-export everything from the canonical types file
 export type {
-    BackendApiErrorData,
-    BackendErrorCode,
-    BackendStreamEvent,
-    StreamEventType,
-    StreamErrorData,
-    ContextScope,
-    AuthCredentials,
-    ScopeUrlParam,
+    // Auto-generated stream event types
+    EventType,
+    ToolEventType,
+    ChunkPayload,
+    StatusUpdatePayload,
+    DataPayload,
+    CompletionPayload,
+    ErrorPayload,
+    ToolEventPayload,
+    BrokerPayload,
+    HeartbeatPayload,
+    EndPayload,
+    StreamEvent,
+    TypedStreamEvent,
+    ChunkEvent,
+    StatusUpdateEvent,
+    DataEvent,
+    CompletionEvent,
+    ErrorEvent,
+    ToolEventEvent,
+    BrokerEvent,
+    HeartbeatEvent,
+    EndEvent,
+    // Auto-generated request/response schemas
     AgentWarmRequestBody,
     AgentExecuteRequestBody,
     UnifiedChatRequestBody,
     ToolTestExecuteRequestBody,
+    // Frontend-only types
+    BackendApiErrorData,
+    BackendErrorCode,
+    ContextScope,
+    AuthCredentials,
+    ScopeUrlParam,
     ToolTestSessionResponse,
     HealthCheckResponse,
     HealthDetailedResponse,
 } from './types';
 
-export { SCOPE_URL_PARAMS } from './types';
+export {
+    EventTypeEnum,
+    isChunkEvent,
+    isStatusUpdateEvent,
+    isDataEvent,
+    isCompletionEvent,
+    isErrorEvent,
+    isToolEventEvent,
+    isBrokerEvent,
+    isHeartbeatEvent,
+    isEndEvent,
+    SCOPE_URL_PARAMS,
+} from './types';

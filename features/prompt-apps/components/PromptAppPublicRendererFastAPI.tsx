@@ -11,9 +11,11 @@ import { SignupConversionModal } from '@/components/guest/SignupConversionModal'
 import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
 import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import MarkdownStream from '@/components/MarkdownStream';
-import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
 import type { PromptApp } from '../types';
-import type { AgentStreamEvent, AgentExecuteRequest, AgentWarmRequest } from '@/features/public-chat/types/agent-api';
+import type { AgentWarmRequestBody, AgentExecuteRequestBody } from '@/lib/api/types';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { useSelector } from 'react-redux';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 
@@ -68,21 +70,18 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
         
         const warmAgent = async () => {
             try {
-                // Admin can override to use localhost
                 const BACKEND_URL = (isAdmin && useLocalhost) 
-                    ? 'http://localhost:8000' 
-                    : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
+                    ? BACKEND_URLS.localhost 
+                    : BACKEND_URLS.production;
 
-                // Never eagerly warm to localhost — the browser will log
-                // ERR_CONNECTION_REFUSED which cannot be suppressed from JS.
                 if (BACKEND_URL.includes('localhost')) return;
                 
-                const warmRequest: AgentWarmRequest = {
+                const warmRequest: AgentWarmRequestBody = {
                     prompt_id: promptId,
                     is_builtin: false
                 };
                 
-                await fetch(`${BACKEND_URL}/api/ai/agent/warm`, {
+                await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(warmRequest),
@@ -148,44 +147,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
         return { validVariables: valid, validationErrors: errors };
     }, [app.variable_schema]);
 
-    // Convert Agent API events to our StreamEvent format for MarkdownStream
-    const convertAgentEventToStreamEvent = useCallback((agentEvent: AgentStreamEvent): StreamEvent | null => {
-        switch (agentEvent.event) {
-            case 'chunk':
-                return {
-                    event: 'chunk',
-                    data: agentEvent.data
-                };
-            case 'status_update':
-                return {
-                    event: 'status_update',
-                    data: agentEvent.data
-                };
-            case 'tool_update':
-                return {
-                    event: 'tool_update',
-                    data: agentEvent.data
-                };
-            case 'data':
-                return {
-                    event: 'data',
-                    data: agentEvent.data
-                };
-            case 'error':
-                return {
-                    event: 'error',
-                    data: agentEvent.data
-                };
-            case 'end':
-                return {
-                    event: 'end',
-                    data: true
-                };
-            default:
-                return null;
-        }
-    }, []);
-    
     // Execute handler with Agent API streaming
     const handleExecute = useCallback(async (variables: Record<string, any>, userInput?: string) => {
         const perfStart = performance.now();
@@ -261,15 +222,13 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 return;
             }
             
-            // Admin can override to use localhost
             const BACKEND_URL = (isAdmin && useLocalhost) 
-                ? 'http://localhost:8000' 
-                : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com');
+                ? BACKEND_URLS.localhost 
+                : BACKEND_URLS.production;
             
-            // Get auth headers (handles both authenticated users and guests)
             const headers = getHeaders();
             
-            const agentRequest: AgentExecuteRequest = {
+            const agentRequest: AgentExecuteRequestBody = {
                 prompt_id: promptId,
                 conversation_id: conversationId,
                 is_new_conversation: isFirstExecutionRef.current,
@@ -280,10 +239,10 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 is_builtin: false,
             };
             
-            logTiming('➡️ Initiating Agent API request...');
+            logTiming('Initiating Agent API request...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}/api/ai/agent/execute`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -341,73 +300,29 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 console.debug('Background logging error (non-critical):', err);
             });
             
-            // STEP 5: Process streaming NDJSON response from Agent API
-            const reader = fetchResponse.body.getReader();
-            const decoder = new TextDecoder();
-            let done = false;
-            let buffer = '';
+            // STEP 5: Process streaming NDJSON response using shared parser
+            const { events } = parseNdjsonStream(fetchResponse, abortControllerRef.current.signal);
             
-            logTiming('✓ Stream reader initialized, awaiting Agent API events...');
+            logTiming('Stream reader initialized, awaiting Agent API events...');
             
-            while (!done) {
-                const { value, done: doneReading } = await reader.read();
-                done = doneReading;
+            for await (const event of events) {
+                if (!firstEventReceived) {
+                    logTiming('First event received from Agent API');
+                    firstEventReceived = true;
+                }
                 
-                if (value) {
-                    if (!firstEventReceived) {
-                        logTiming('📥 First event received from Agent API');
-                        firstEventReceived = true;
-                    }
-                    
-                    // Decode chunk and add to buffer
-                    const decodedChunk = decoder.decode(value, { stream: true });
-                    buffer += decodedChunk;
-                    
-                    // Process complete lines (NDJSON format)
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-                    
-                    for (const line of lines) {
-                        if (line.trim()) {
-                            try {
-                                const agentEvent = JSON.parse(line) as AgentStreamEvent;
-                                
-                                // Convert Agent event to StreamEvent
-                                const streamEvent = convertAgentEventToStreamEvent(agentEvent);
-                                if (streamEvent) {
-                                    setStreamEvents(prev => [...prev, streamEvent]);
-                                }
-                                
-                                // Check for error events
-                                if (agentEvent.event === 'error') {
-                                    const errData = agentEvent.data;
-                                    setError({
-                                        type: 'stream_error',
-                                        message: (errData.user_message || errData.user_visible_message) || errData.message || 'Unknown error from stream'
-                                    });
-                                }
-                            } catch (e) {
-                                console.warn('Failed to parse Agent API event:', line, e);
-                            }
-                        }
-                    }
+                setStreamEvents(prev => [...prev, event]);
+                
+                if (event.event === 'error') {
+                    const errData = event.data as unknown as ErrorPayload;
+                    setError({
+                        type: 'stream_error',
+                        message: errData.user_message || errData.message || 'Unknown error from stream'
+                    });
                 }
             }
             
-            // Process remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const agentEvent = JSON.parse(buffer) as AgentStreamEvent;
-                    const streamEvent = convertAgentEventToStreamEvent(agentEvent);
-                    if (streamEvent) {
-                        setStreamEvents(prev => [...prev, streamEvent]);
-                    }
-                } catch (e) {
-                    console.warn('Failed to parse final Agent API event:', buffer, e);
-                }
-            }
-            
-            logTiming('✅ Stream complete from Agent API');
+            logTiming('Stream complete from Agent API');
             isFirstExecutionRef.current = false;
             setIsStreamComplete(true);
             
@@ -426,7 +341,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             setIsExecuting(false);
             abortControllerRef.current = null;
         }
-    }, [app, slug, conversationId, isAdmin, useLocalhost, isAuthenticated, fingerprintId, guestLimit, waitForAuth, getHeaders, validateVariables, convertAgentEventToStreamEvent]);
+    }, [app, slug, conversationId, isAdmin, useLocalhost, isAuthenticated, fingerprintId, guestLimit, waitForAuth, getHeaders, validateVariables]);
 
     // Transform and render custom UI component
     // If TestComponent is provided, use it directly (for testing purposes)
@@ -479,8 +394,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     // Extract response text from stream events for backward compatibility
     const responseText = useMemo(() => {
         return streamEvents
-            .filter(e => e.event === 'chunk' && typeof e.data === 'string')
-            .map(e => e.data)
+            .filter(e => e.event === 'chunk')
+            .map(e => (e.data as unknown as ChunkPayload).text)
             .join('');
     }, [streamEvents]);
 

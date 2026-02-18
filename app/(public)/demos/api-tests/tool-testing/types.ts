@@ -33,22 +33,23 @@ export interface ToolDefinition {
 }
 
 // ─── Streaming Protocol Types ───────────────────────────────────────────────
+// Re-export generated types for convenience, but also keep tool-testing
+// specific types that aren't in the wire protocol.
 
-export interface StreamLine {
-  event: string;
-  data: Record<string, unknown>;
-}
+import type {
+  StreamEvent,
+  ToolEventPayload,
+  CompletionPayload,
+  ErrorPayload,
+  EndPayload,
+  StatusUpdatePayload,
+} from '@/types/python-generated/stream-events';
 
-export type ToolEventType =
-  | "tool_started"
-  | "tool_progress"
-  | "tool_step"
-  | "tool_result_preview"
-  | "tool_completed"
-  | "tool_error";
+export type { StreamEvent, ToolEventPayload, CompletionPayload, ErrorPayload, EndPayload, StatusUpdatePayload };
 
+// Tool-testing specific enriched types
 export interface ToolStreamEvent {
-  event: ToolEventType;
+  event: string;
   call_id: string;
   tool_name: string;
   timestamp: number;
@@ -116,9 +117,11 @@ export interface StreamEventHandlers {
   onStatusUpdate?: (data: Record<string, unknown>) => void;
   onToolEvent?: (event: ToolStreamEvent) => void;
   onFinalResult?: (payload: FinalPayload) => void;
+  onCompletion?: (data: CompletionPayload) => void;
   onError?: (error: Record<string, unknown>) => void;
-  onEnd?: () => void;
-  onRawLine?: (line: StreamLine) => void;
+  onEnd?: (data: EndPayload) => void;
+  onHeartbeat?: () => void;
+  onRawLine?: (line: StreamEvent) => void;
 }
 
 // ─── Execution State ────────────────────────────────────────────────────────

@@ -13,7 +13,7 @@ import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
 import { GuidedVariableInputs } from './GuidedVariableInputs';
 import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
-import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
 import type { PromptVariable } from '@/features/prompts/types/core';

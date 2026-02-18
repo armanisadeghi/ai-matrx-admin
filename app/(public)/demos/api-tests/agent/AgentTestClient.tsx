@@ -96,12 +96,12 @@ export default function AgentTestClient() {
                             
                             setStreamOutput(prev => prev + JSON.stringify(event, null, 2) + '\n\n');
 
-                            if (event.event === 'chunk' && typeof event.data === 'string') {
-                                setTextOutput(prev => prev + event.data);
+                            if (event.event === 'chunk' && event.data && typeof event.data === 'object' && 'text' in event.data) {
+                                setTextOutput(prev => prev + event.data.text);
                             }
 
                             if (event.event === 'error') {
-                                const errMsg = event.data.user_message || event.data.user_visible_message || event.data.message || JSON.stringify(event.data);
+                                const errMsg = event.data?.user_message || event.data?.message || JSON.stringify(event.data);
                                 setError(errMsg);
                             }
                         } catch (err) {

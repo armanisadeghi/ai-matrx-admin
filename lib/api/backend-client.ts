@@ -5,12 +5,12 @@
 import type {
     AuthCredentials,
     ContextScope,
-    BackendStreamEvent,
+    StreamEvent,
 } from './types';
 import { BackendApiError, parseHttpError } from './errors';
 import { parseNdjsonStream, consumeStream } from './stream-parser';
 import type { StreamCallbacks } from './stream-parser';
-import { BACKEND_URLS } from './endpoints';
+import { BACKEND_URLS, ENDPOINTS } from './endpoints';
 
 // ============================================================================
 // CLIENT
@@ -177,30 +177,51 @@ export class BackendClient {
     }
 
     /**
-     * Streaming POST request — returns an async generator of typed events.
+     * Streaming POST request — returns an async generator of typed events
+     * and the X-Request-ID for cancellation support.
      * Scope is automatically merged into the request body.
      */
-    async *stream<T = unknown>(
+    async stream(
         endpoint: string,
         body: Record<string, unknown> = {},
         signal?: AbortSignal,
-    ): AsyncGenerator<BackendStreamEvent<T>, void, undefined> {
+    ): Promise<{ events: AsyncGenerator<StreamEvent, void, undefined>; requestId: string | null }> {
         const response = await this.rawPost(endpoint, body, signal);
-        yield* parseNdjsonStream<T>(response, signal);
+        return parseNdjsonStream(response, signal);
     }
 
     /**
      * Streaming POST request with callback-based consumption.
      * Convenience wrapper for components that prefer callbacks.
      */
-    async streamWithCallbacks<T = unknown>(
+    async streamWithCallbacks(
         endpoint: string,
         body: Record<string, unknown> = {},
-        callbacks: StreamCallbacks<T>,
+        callbacks: StreamCallbacks,
         signal?: AbortSignal,
-    ): Promise<void> {
+    ): Promise<{ requestId: string | null }> {
         const response = await this.rawPost(endpoint, body, signal);
-        await consumeStream<T>(response, callbacks, signal);
+        return consumeStream(response, callbacks, signal);
+    }
+
+    /**
+     * Cancel a running server-side request by its request ID.
+     * The request ID comes from the X-Request-ID response header
+     * returned by streaming endpoints.
+     *
+     * This is a best-effort operation — it may fail silently if
+     * the request has already completed or the server is unreachable.
+     */
+    async cancelRequest(requestId: string): Promise<void> {
+        try {
+            const url = `${this.baseUrl}${ENDPOINTS.ai.cancel(requestId)}`;
+            await fetch(url, {
+                method: 'POST',
+                headers: this.buildHeaders(),
+            });
+        } catch {
+            // Best-effort — don't propagate cancel failures
+        }
     }
 
     // ========================================================================

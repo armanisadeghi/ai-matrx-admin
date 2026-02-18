@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { ChatMessage } from '../context/ChatContext';
 import type { PublicResource, PublicResourceType } from '../types/content';
-import { StreamEvent } from '@/components/mardown-display/chat-markdown/types';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { buildStreamBlocks } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from '@/features/prompts/utils/resource-parsing';
 import { ResourcesContainer } from '@/features/prompts/components/resource-display/ResourceDisplay';

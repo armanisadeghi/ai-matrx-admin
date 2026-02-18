@@ -5,17 +5,18 @@ export { StreamAwareChatMarkdown, useStreamEvents } from './StreamAwareChatMarkd
 // Type exports
 export type { ChatMarkdownDisplayProps } from './EnhancedChatMarkdown';
 export type { StreamAwareChatMarkdownProps } from './StreamAwareChatMarkdown';
-export type { 
-  StreamEvent, 
-  ChunkData, 
-  StatusUpdateData, 
-  ErrorData, 
-  ToolUpdateData, 
-  BrokerData,
-  StreamEventType,
-  EventName 
+export type {
+  StreamEvent,
+  EventType,
+  ChunkPayload,
+  StatusUpdatePayload,
+  ErrorPayload,
+  ToolEventPayload,
+  BrokerPayload,
+  CompletionPayload,
+  HeartbeatPayload,
+  EndPayload,
 } from './types';
 
 // Utility exports
 export { PlainTextFallback, MarkdownErrorBoundary } from './EnhancedChatMarkdown';
-

@@ -288,17 +288,17 @@ export default function ChatDemoClient() {
                 // Append to JSON output
                 setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
 
-                // Extract text chunks
-                if (json.event === 'chunk' && typeof json.data === 'string') {
-                  setStreamText(prev => prev + json.data);
+                // Extract text chunks (new ChunkPayload shape: { text: string })
+                if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
+                  setStreamText(prev => prev + json.data.text);
                 }
                 // Check for error events
                 if (json.event === 'error') {
                   const errData = json.data;
                   if (typeof errData === 'object' && errData !== null) {
-                    setErrorMessage(errData.user_message || errData.user_visible_message || errData.message || JSON.stringify(errData));
+                    setErrorMessage(errData.user_message || errData.message || JSON.stringify(errData));
                   } else {
-                    setErrorMessage(errData || 'Unknown error from stream');
+                    setErrorMessage('Unknown error from stream');
                   }
                 }
               } catch (e) {
@@ -321,8 +321,8 @@ export default function ChatDemoClient() {
         try {
           const json = JSON.parse(buffer);
           setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
-          if (json.event === 'chunk' && typeof json.data === 'string') {
-            setStreamText(prev => prev + json.data);
+          if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
+            setStreamText(prev => prev + json.data.text);
           }
         } catch (e) {
           setStreamOutput(prev => prev + buffer + '\n');

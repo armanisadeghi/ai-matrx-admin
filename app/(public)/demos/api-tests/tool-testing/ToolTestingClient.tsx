@@ -12,11 +12,11 @@ import { ToolConfigPanel } from './components/ToolConfigPanel';
 import { buildDefaults } from './components/ArgumentForm';
 import { ResultsPanel } from './components/ResultsPanel';
 import { fetchToolsFromDatabase, executeToolTest, initTestSession } from './streaming-client';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type {
   ToolDefinition,
   ToolStreamEvent,
   FinalPayload,
-  StreamLine,
   ExecutionStatus,
 } from './types';
 
@@ -41,7 +41,7 @@ export default function ToolTestingClient() {
   // ─── Execution state ────────────────────────────────────────────────────
   const [executionStatus, setExecutionStatus] = useState<ExecutionStatus>('idle');
   const [toolEvents, setToolEvents] = useState<ToolStreamEvent[]>([]);
-  const [rawLines, setRawLines] = useState<StreamLine[]>([]);
+  const [rawLines, setRawLines] = useState<StreamEvent[]>([]);
   const [rawJsonLog, setRawJsonLog] = useState('');
   const [finalPayload, setFinalPayload] = useState<FinalPayload | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export default function ToolTestingClient() {
           },
           onError: (error) => {
             const msg =
-              (error.user_visible_message as string) ??
+              (error.user_message as string) ??
               (error.message as string) ??
               'Stream error';
             setErrorMessage(msg);

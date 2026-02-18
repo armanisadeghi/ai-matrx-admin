@@ -1,8 +1,17 @@
 // lib/api/stream-parser.ts
 // Reusable NDJSON stream parser for the Python FastAPI backend.
-// Replaces 5+ duplicated implementations across the codebase.
+// Single implementation — all consumers use this instead of inline parsing.
 
-import type { BackendStreamEvent, StreamEventType } from './types';
+import type {
+    StreamEvent,
+    ChunkPayload,
+    CompletionPayload,
+    ErrorPayload,
+    StatusUpdatePayload,
+    ToolEventPayload,
+    HeartbeatPayload,
+    EndPayload,
+} from './types';
 import { parseStreamError, BackendApiError } from './errors';
 
 // ============================================================================
@@ -12,22 +21,33 @@ import { parseStreamError, BackendApiError } from './errors';
 /**
  * Parse an NDJSON streaming response into typed events.
  *
+ * Returns the `X-Request-ID` header value (if present) alongside the generator,
+ * so callers can use it for cancellation.
+ *
  * Usage:
  * ```typescript
  * const response = await fetch(url, { ... });
- * for await (const event of parseNdjsonStream(response)) {
- *   switch (event.event) {
- *     case 'chunk': handleChunk(event.data as string); break;
- *     case 'error': handleError(event.data); break;
- *     case 'end': handleEnd(); break;
- *   }
+ * const { events, requestId } = parseNdjsonStream(response);
+ * for await (const event of events) {
+ *   if (event.event === 'chunk') appendToMessage(event.data.text);
  * }
  * ```
  */
-export async function* parseNdjsonStream<T = unknown>(
+export function parseNdjsonStream(
     response: Response,
     signal?: AbortSignal,
-): AsyncGenerator<BackendStreamEvent<T>, void, undefined> {
+): { events: AsyncGenerator<StreamEvent, void, undefined>; requestId: string | null } {
+    const requestId = response.headers.get('X-Request-ID');
+    return {
+        events: _parseNdjsonStream(response, signal),
+        requestId,
+    };
+}
+
+async function* _parseNdjsonStream(
+    response: Response,
+    signal?: AbortSignal,
+): AsyncGenerator<StreamEvent, void, undefined> {
     if (!response.body) {
         throw new BackendApiError({
             code: 'internal_error',
@@ -51,7 +71,6 @@ export async function* parseNdjsonStream<T = unknown>(
 
             buffer += decoder.decode(value, { stream: true });
 
-            // Split on newlines — last element may be incomplete
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
 
@@ -60,20 +79,18 @@ export async function* parseNdjsonStream<T = unknown>(
                 if (!trimmed) continue;
 
                 try {
-                    const parsed = JSON.parse(trimmed) as BackendStreamEvent<T>;
+                    const parsed = JSON.parse(trimmed) as StreamEvent;
                     yield parsed;
                 } catch {
-                    // Non-JSON line — skip silently
                     console.warn('[stream-parser] Failed to parse NDJSON line:', trimmed);
                 }
             }
         }
 
-        // Process remaining buffer
         const remaining = buffer.trim();
         if (remaining) {
             try {
-                const parsed = JSON.parse(remaining) as BackendStreamEvent<T>;
+                const parsed = JSON.parse(remaining) as StreamEvent;
                 yield parsed;
             } catch {
                 // Ignore incomplete trailing data
@@ -88,27 +105,19 @@ export async function* parseNdjsonStream<T = unknown>(
 // STREAM EVENT HELPERS
 // ============================================================================
 
-/** Type guard for checking stream event types */
-export function isStreamEvent(
-    event: BackendStreamEvent,
-    type: StreamEventType,
-): boolean {
-    return event.event === type;
-}
-
 /** Extract accumulated text from chunk events */
-export function accumulateChunks(events: BackendStreamEvent[]): string {
+export function accumulateChunks(events: StreamEvent[]): string {
     let text = '';
     for (const event of events) {
-        if (event.event === 'chunk' && typeof event.data === 'string') {
-            text += event.data;
+        if (event.event === 'chunk') {
+            text += (event.data as unknown as ChunkPayload).text;
         }
     }
     return text;
 }
 
 /** Extract error from stream events, if any */
-export function findStreamError(events: BackendStreamEvent[]): BackendApiError | null {
+export function findStreamError(events: StreamEvent[]): BackendApiError | null {
     for (const event of events) {
         if (event.event === 'error') {
             return parseStreamError(event.data);
@@ -125,53 +134,63 @@ export function findStreamError(events: BackendStreamEvent[]): BackendApiError |
  * Stream event handler callbacks.
  * Provides a familiar callback API on top of the async generator.
  */
-export interface StreamCallbacks<T = unknown> {
-    onEvent?: (event: BackendStreamEvent<T>) => void;
+export interface StreamCallbacks {
+    onEvent?: (event: StreamEvent) => void;
     onChunk?: (text: string) => void;
-    onStatusUpdate?: (data: Record<string, unknown>) => void;
-    onToolEvent?: (data: unknown) => void;
-    onData?: (data: unknown) => void;
+    onStatusUpdate?: (data: StatusUpdatePayload) => void;
+    onToolEvent?: (data: ToolEventPayload) => void;
+    onCompletion?: (data: CompletionPayload) => void;
+    onData?: (data: Record<string, unknown>) => void;
     onError?: (error: BackendApiError) => void;
-    onEnd?: () => void;
-    onRawLine?: (parsed: BackendStreamEvent<T>) => void;
+    onHeartbeat?: (data: HeartbeatPayload) => void;
+    onEnd?: (data: EndPayload) => void;
+    onRawLine?: (parsed: StreamEvent) => void;
 }
 
 /**
  * Consume a streaming response with callbacks.
- * Convenience wrapper over `parseNdjsonStream` for components
+ * Convenience wrapper over the async generator for components
  * that prefer callbacks over async iteration.
  */
-export async function consumeStream<T = unknown>(
+export async function consumeStream(
     response: Response,
-    callbacks: StreamCallbacks<T>,
+    callbacks: StreamCallbacks,
     signal?: AbortSignal,
-): Promise<void> {
-    for await (const event of parseNdjsonStream<T>(response, signal)) {
+): Promise<{ requestId: string | null }> {
+    const { events, requestId } = parseNdjsonStream(response, signal);
+
+    for await (const event of events) {
         callbacks.onRawLine?.(event);
         callbacks.onEvent?.(event);
 
+        const data = event.data as unknown;
         switch (event.event) {
             case 'chunk':
-                if (typeof event.data === 'string') {
-                    callbacks.onChunk?.(event.data);
-                }
+                callbacks.onChunk?.((data as ChunkPayload).text);
                 break;
             case 'status_update':
-                callbacks.onStatusUpdate?.(event.data as Record<string, unknown>);
+                callbacks.onStatusUpdate?.(data as StatusUpdatePayload);
                 break;
             case 'tool_event':
-            case 'tool_update':
-                callbacks.onToolEvent?.(event.data);
+                callbacks.onToolEvent?.(data as ToolEventPayload);
+                break;
+            case 'completion':
+                callbacks.onCompletion?.(data as CompletionPayload);
                 break;
             case 'data':
-                callbacks.onData?.(event.data);
+                callbacks.onData?.(data as Record<string, unknown>);
                 break;
             case 'error':
-                callbacks.onError?.(parseStreamError(event.data));
+                callbacks.onError?.(parseStreamError(data));
+                break;
+            case 'heartbeat':
+                callbacks.onHeartbeat?.(data as HeartbeatPayload);
                 break;
             case 'end':
-                callbacks.onEnd?.();
+                callbacks.onEnd?.(data as EndPayload);
                 break;
         }
     }
+
+    return { requestId };
 }

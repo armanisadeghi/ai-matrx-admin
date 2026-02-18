@@ -1,9 +1,70 @@
 // lib/api/types.ts
 // Canonical types for the Python FastAPI backend API.
-// These match the backend's Pydantic models exactly.
+//
+// Stream event types and request/response schemas are auto-generated from
+// the Python Pydantic models. This file re-exports them alongside the
+// frontend-only types (auth, scope, error) that have no Python counterpart.
 
 // ============================================================================
-// ERROR TYPES
+// RE-EXPORTS — Auto-generated from Python
+// ============================================================================
+
+// Stream event types (wire protocol)
+export type {
+    EventType,
+    ToolEventType,
+    ChunkPayload,
+    StatusUpdatePayload,
+    DataPayload,
+    CompletionPayload,
+    ErrorPayload,
+    ToolEventPayload,
+    BrokerPayload,
+    HeartbeatPayload,
+    EndPayload,
+    StreamEvent,
+    TypedStreamEvent,
+    ChunkEvent,
+    StatusUpdateEvent,
+    DataEvent,
+    CompletionEvent,
+    ErrorEvent,
+    ToolEventEvent,
+    BrokerEvent,
+    HeartbeatEvent,
+    EndEvent,
+} from '@/types/python-generated/stream-events';
+
+export {
+    EventType as EventTypeEnum,
+    isChunkEvent,
+    isStatusUpdateEvent,
+    isDataEvent,
+    isCompletionEvent,
+    isErrorEvent,
+    isToolEventEvent,
+    isBrokerEvent,
+    isHeartbeatEvent,
+    isEndEvent,
+} from '@/types/python-generated/stream-events';
+
+// Request/response schemas (from OpenAPI)
+export type {
+    components,
+    operations,
+    paths,
+} from '@/types/python-generated/api-types';
+
+// Named aliases for the most-used request schemas
+import type { components } from '@/types/python-generated/api-types';
+
+export type AgentWarmRequestBody = components['schemas']['AgentWarmRequest'];
+export type AgentExecuteRequestBody = components['schemas']['AgentExecuteRequest'];
+export type UnifiedChatRequestBody = components['schemas']['UnifiedChatRequest'];
+export type ToolTestExecuteRequestBody = components['schemas']['ToolTestExecuteRequest'];
+
+// ============================================================================
+// ERROR TYPES (frontend-only — no Python counterpart)
 // ============================================================================
 
 /**
@@ -33,36 +94,6 @@ export type BackendErrorCode =
     | 'internal_error'
     | 'agent_error'
     | (string & {});
-
-// ============================================================================
-// STREAMING TYPES
-// ============================================================================
-
-/** All possible NDJSON event types from the backend */
-export type StreamEventType =
-    | 'status_update'
-    | 'chunk'
-    | 'data'
-    | 'tool_event'
-    | 'tool_update'
-    | 'error'
-    | 'end';
-
-/**
- * Streaming event envelope — each line in an NDJSON response.
- * Generic over the data payload type.
- */
-export interface BackendStreamEvent<T = unknown> {
-    event: StreamEventType;
-    data: T;
-}
-
-/** Error data inside a streaming error event */
-export interface StreamErrorData {
-    error: string;
-    message: string;
-    user_message: string;
-}
 
 // ============================================================================
 // CONTEXT / SCOPE TYPES
@@ -102,59 +133,8 @@ export type AuthCredentials =
     | { type: 'anonymous' };
 
 // ============================================================================
-// REQUEST/RESPONSE TYPES — Per-Endpoint
+// RESPONSE TYPES (not in OpenAPI — simple enough to define here)
 // ============================================================================
-
-/** Agent warm request body */
-export interface AgentWarmRequestBody {
-    prompt_id: string;
-    is_builtin?: boolean;
-}
-
-/** Agent execute request body */
-export interface AgentExecuteRequestBody {
-    prompt_id: string;
-    conversation_id?: string | null;
-    is_new_conversation?: boolean;
-    user_input?: string | unknown[] | null;
-    variables?: Record<string, unknown> | null;
-    config_overrides?: Record<string, unknown> | null;
-    is_builtin?: boolean;
-    stream?: boolean;
-    debug?: boolean;
-}
-
-/** Unified chat request body */
-export interface UnifiedChatRequestBody {
-    ai_model_id: string;
-    messages: Array<{ role: string; content: string }>;
-    conversation_id?: string | null;
-    is_new_conversation?: boolean;
-    max_iterations?: number;
-    max_retries_per_iteration?: number;
-    stream?: boolean;
-    debug?: boolean;
-    system_instruction?: string | null;
-    max_output_tokens?: number | null;
-    temperature?: number | null;
-    top_p?: number | null;
-    top_k?: number | null;
-    tools?: string[] | null;
-    tool_choice?: unknown | null;
-    parallel_tool_calls?: boolean;
-    reasoning_effort?: string | null;
-    response_format?: Record<string, unknown> | null;
-    metadata?: Record<string, unknown> | null;
-    store?: boolean;
-    [key: string]: unknown; // Backend model has extra="allow"
-}
-
-/** Tool test execute request body */
-export interface ToolTestExecuteRequestBody {
-    tool_name: string;
-    arguments: Record<string, unknown>;
-    conversation_id?: string | null;
-}
 
 /** Tool test session response */
 export interface ToolTestSessionResponse {

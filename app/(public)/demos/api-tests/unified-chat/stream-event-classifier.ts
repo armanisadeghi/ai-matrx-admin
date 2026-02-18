@@ -3,6 +3,9 @@
  *
  * Case-based pattern for detecting, categorizing, and sub-typing stream events.
  * Designed for easy extension — add new event types or sub-classifiers by adding a case.
+ *
+ * Updated for V2 protocol: no more tool_update or info events.
+ * New events: completion, heartbeat, tool_event.
  */
 
 // ─── Classified Event Envelope ───────────────────────────────────────────────
@@ -16,20 +19,21 @@ export interface TimestampedEvent {
   offsetMs: number;
   /** Primary category derived from `event` field */
   category: EventCategory;
-  /** Optional secondary classification (e.g. tool_update sub-type) */
+  /** Optional secondary classification (e.g. tool_event sub-type) */
   subType: string | null;
-  /** For tool_update events, the tool call id to group by */
+  /** For tool_event events, the tool call id to group by */
   groupId: string | null;
 }
 
 export type EventCategory =
   | 'status_update'
   | 'chunk'
-  | 'tool_update'
+  | 'tool_event'
+  | 'completion'
   | 'data'
   | 'error'
   | 'end'
-  | 'info'
+  | 'heartbeat'
   | 'broker'
   | 'unknown';
 
@@ -37,32 +41,28 @@ export type EventCategory =
 
 /** Determine the sub-type of a `data` event */
 function classifyDataEvent(data: Record<string, unknown>): string {
-  if (data.status === 'complete') return 'usage_complete';
   if (typeof data.status === 'string') return `data_${data.status}`;
   return 'data_generic';
 }
 
-/** Determine the sub-type of a `tool_update` event */
-function classifyToolUpdate(data: Record<string, unknown>): string {
-  const type = data.type as string | undefined;
-  switch (type) {
-    case 'mcp_input':
-      return 'tool_input';
-    case 'mcp_output':
-      return 'tool_output';
-    case 'mcp_error':
-      return 'tool_error';
-    case 'step_data': {
-      const stepData = data.step_data as Record<string, unknown> | null;
-      if (stepData?.type === 'web_result_summary') return 'tool_web_summary';
-      if (stepData?.status === 'summarizing') return 'tool_summarizing';
-      return 'tool_step_data';
-    }
-    case 'user_message':
-    case 'user_visible_message':
+/** Determine the sub-type of a `tool_event` event */
+function classifyToolEvent(data: Record<string, unknown>): string {
+  const event = data.event as string | undefined;
+  switch (event) {
+    case 'tool_started':
+      return 'tool_started';
+    case 'tool_progress':
       return 'tool_progress';
+    case 'tool_step':
+      return 'tool_step';
+    case 'tool_result_preview':
+      return 'tool_result_preview';
+    case 'tool_completed':
+      return 'tool_completed';
+    case 'tool_error':
+      return 'tool_error';
     default:
-      return type ? `tool_${type}` : 'tool_unknown';
+      return event ? `tool_${event}` : 'tool_unknown';
   }
 }
 
@@ -107,7 +107,8 @@ export function classifyEvent(
   switch (eventName) {
     case 'chunk':
       category = 'chunk';
-      subType = typeof raw.data === 'string' && raw.data.includes('<reasoning>')
+      // New chunk payload has { text: string }
+      subType = typeof data.text === 'string' && data.text.includes('<reasoning>')
         ? 'chunk_reasoning'
         : 'chunk_content';
       break;
@@ -117,10 +118,15 @@ export function classifyEvent(
       subType = classifyStatusUpdate(data);
       break;
 
-    case 'tool_update':
-      category = 'tool_update';
-      subType = classifyToolUpdate(data);
-      groupId = (data.id as string) ?? null;
+    case 'tool_event':
+      category = 'tool_event';
+      subType = classifyToolEvent(data);
+      groupId = (data.call_id as string) ?? null;
+      break;
+
+    case 'completion':
+      category = 'completion';
+      subType = 'completion';
       break;
 
     case 'data':
@@ -130,7 +136,7 @@ export function classifyEvent(
 
     case 'error':
       category = 'error';
-      subType = ((data.error ?? data.type) as string) ?? 'error';
+      subType = ((data.error_type ?? data.error ?? data.type) as string) ?? 'error';
       break;
 
     case 'end':
@@ -138,9 +144,9 @@ export function classifyEvent(
       subType = 'end';
       break;
 
-    case 'info':
-      category = 'info';
-      subType = 'info';
+    case 'heartbeat':
+      category = 'heartbeat';
+      subType = 'heartbeat';
       break;
 
     case 'broker':
@@ -176,8 +182,8 @@ export function groupByCategory(events: TimestampedEvent[]): Record<EventCategor
   return groups as Record<EventCategory, TimestampedEvent[]>;
 }
 
-/** Group tool_update events by their groupId (tool call id) */
-export function groupToolUpdatesById(events: TimestampedEvent[]): Map<string, TimestampedEvent[]> {
+/** Group tool_event events by their groupId (tool call id) */
+export function groupToolEventsById(events: TimestampedEvent[]): Map<string, TimestampedEvent[]> {
   const map = new Map<string, TimestampedEvent[]>();
   for (const evt of events) {
     const key = evt.groupId ?? '__ungrouped__';
@@ -187,6 +193,9 @@ export function groupToolUpdatesById(events: TimestampedEvent[]): Map<string, Ti
   return map;
 }
 
+/** @deprecated Use groupToolEventsById */
+export const groupToolUpdatesById = groupToolEventsById;
+
 // ─── Display helpers ─────────────────────────────────────────────────────────
 
 /** Human-friendly label for a category */
@@ -194,11 +203,12 @@ export function categoryLabel(cat: EventCategory): string {
   switch (cat) {
     case 'status_update': return 'Status Updates';
     case 'chunk': return 'Text Chunks';
-    case 'tool_update': return 'Tool Updates';
-    case 'data': return 'Data / Usage';
+    case 'tool_event': return 'Tool Events';
+    case 'completion': return 'Completion';
+    case 'data': return 'Data';
     case 'error': return 'Errors';
     case 'end': return 'End';
-    case 'info': return 'Info';
+    case 'heartbeat': return 'Heartbeat';
     case 'broker': return 'Broker';
     case 'unknown': return 'Unknown';
   }
@@ -217,22 +227,22 @@ export function subTypeLabel(subType: string): string {
     // Chunks
     chunk_reasoning: 'Reasoning',
     chunk_content: 'Content',
-    // Tool updates
-    tool_input: 'Tool Input',
-    tool_output: 'Tool Output',
+    // Tool events
+    tool_started: 'Tool Started',
+    tool_progress: 'Progress',
+    tool_step: 'Step',
+    tool_result_preview: 'Result Preview',
+    tool_completed: 'Tool Completed',
     tool_error: 'Tool Error',
-    tool_progress: 'Progress Message',
-    tool_web_summary: 'Web Result Summary',
-    tool_summarizing: 'Summarizing',
-    tool_step_data: 'Step Data',
     tool_unknown: 'Unknown Tool',
     // Data
-    usage_complete: 'Usage / Complete',
     data_generic: 'Generic Data',
+    // Completion
+    completion: 'Completion',
     // Others
     error: 'Error',
     end: 'Stream End',
-    info: 'Info',
+    heartbeat: 'Heartbeat',
     broker: 'Broker',
   };
   return labels[subType] ?? subType;
@@ -243,11 +253,12 @@ export function categoryColor(cat: EventCategory): string {
   switch (cat) {
     case 'status_update': return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25';
     case 'chunk': return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25';
-    case 'tool_update': return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/25';
+    case 'tool_event': return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/25';
+    case 'completion': return 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/25';
     case 'data': return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25';
     case 'error': return 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/25';
     case 'end': return 'bg-zinc-500/15 text-zinc-700 dark:text-zinc-400 border-zinc-500/25';
-    case 'info': return 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/25';
+    case 'heartbeat': return 'bg-gray-500/15 text-gray-600 dark:text-gray-400 border-gray-500/25';
     case 'broker': return 'bg-pink-500/15 text-pink-700 dark:text-pink-400 border-pink-500/25';
     case 'unknown': return 'bg-zinc-500/15 text-zinc-500 border-zinc-500/25';
   }

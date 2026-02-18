@@ -40,7 +40,7 @@ export interface DataPayload {
 
 export interface CompletionPayload {
   status?: "complete" | "failed" | "max_iterations_exceeded";
-  output?: string;
+  output?: unknown;
   iterations?: number | null;
   total_usage?: Record<string, unknown> | null;
   timing_stats?: Record<string, unknown> | null;
@@ -69,7 +69,7 @@ export interface ToolEventPayload {
 
 export interface BrokerPayload {
   broker_id: string;
-  value: string;
+  value: unknown;
   source?: string | null;
   source_id?: string | null;
 }

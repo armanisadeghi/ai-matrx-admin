@@ -81,27 +81,12 @@ export interface SocketBrokerObject {
     source_id?: string; // Defaults to listenerId if not provided
 }
 
-export interface McpInputObject {
-    name: string;
-    arguments?: Record<string, unknown>;
-}
-
-export interface StepDataObject {
-    type: string;
-    content: Record<string, unknown>;
-}
-
-export interface ToolCallObject {
-    id?: string;
-    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_message" | "user_visible_message";
-    mcp_input?: McpInputObject;
-    mcp_output?: Record<string, unknown>;
-    mcp_error?: string;
-    step_data?: StepDataObject;
-    user_message?: string;
-    /** @deprecated Use user_message. Kept for backward compatibility. */
-    user_visible_message?: string;
-}
+// ToolCallObject and related types have been extracted to lib/api/tool-call.types.ts
+// Re-export here so existing authenticated-route imports continue to work.
+import type { McpInputObject as _McpInputObject, StepDataObject as _StepDataObject, ToolCallObject as _ToolCallObject } from '@/lib/api/tool-call.types';
+export type McpInputObject = _McpInputObject;
+export type StepDataObject = _StepDataObject;
+export type ToolCallObject = _ToolCallObject;
 
 export interface ResponseState {
     text: string;

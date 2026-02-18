@@ -1,14 +1,14 @@
 /**
  * Tool Event Engine — Single Source of Truth
  *
- * Converts streaming tool events (both legacy `tool_update` and V2 `tool_event`)
- * into the `ToolCallObject` shape that all renderers consume.
+ * Converts V2 `tool_event` streaming events into the `ToolCallObject`
+ * shape that all renderers consume.
  *
  * EVERY consumer in the codebase must use these functions instead of inline
  * conversion logic. This guarantees that backend contract changes are fixed
  * in exactly one place.
  *
- * Backend contract for V2 `tool_event` (ToolStreamEvent.data):
+ * Backend contract for `tool_event` (ToolEventPayload.data):
  *   tool_started:        { arguments: Record<string, unknown> }
  *   tool_progress:       { ...custom }
  *   tool_step:           { step: string, ...custom }
@@ -17,45 +17,25 @@
  *   tool_error:          { error_type: string }
  */
 
-import type { StreamEvent, ToolUpdateData, ToolEventData } from './types';
-import type { ToolCallObject } from '@/lib/redux/socket-io/socket.types';
+import type { StreamEvent, ToolEventPayload, ChunkPayload } from '@/types/python-generated/stream-events';
+import type { ToolCallObject } from '@/lib/api/tool-call.types';
 
 // ============================================================================
 // SINGLE-EVENT CONVERSION
 // ============================================================================
 
 /**
- * Convert a legacy `tool_update` StreamEvent into a ToolCallObject.
- * Returns null if the event is not a tool_update or has no data.
- */
-export function convertToolUpdate(event: StreamEvent): ToolCallObject | null {
-    if (event.event !== 'tool_update' || !event.data) return null;
-
-    const d = event.data as ToolUpdateData;
-    return {
-        id: d.id || `tool-anon-${Date.now()}`,
-        type: d.type as ToolCallObject['type'],
-        mcp_input: d.mcp_input as ToolCallObject['mcp_input'],
-        mcp_output: d.mcp_output as ToolCallObject['mcp_output'],
-        mcp_error: d.mcp_error,
-        step_data: d.step_data as ToolCallObject['step_data'],
-        user_message: d.user_message ?? d.user_visible_message,
-        user_visible_message: d.user_message ?? d.user_visible_message,
-    };
-}
-
-/**
- * Convert a V2 `tool_event` StreamEvent into a ToolCallObject.
+ * Convert a `tool_event` StreamEvent into a ToolCallObject.
  * Returns null if the event is not a tool_event or has no data.
  *
  * The ToolCallObject `id` is set to the backend `call_id` so that
- * subsequent events for the same tool call (started → progress → completed)
+ * subsequent events for the same tool call (started -> progress -> completed)
  * are grouped together by consumers.
  */
 export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
     if (event.event !== 'tool_event' || !event.data) return null;
 
-    const te = event.data as ToolEventData;
+    const te = event.data as unknown as ToolEventPayload;
     const eventData = te.data ?? {};
 
     switch (te.event) {
@@ -68,7 +48,6 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                     arguments: (eventData.arguments as Record<string, unknown>) ?? {},
                 },
                 user_message: te.message ?? undefined,
-                user_visible_message: te.message ?? undefined,
             };
 
         case 'tool_progress':
@@ -77,7 +56,6 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                 id: te.call_id,
                 type: 'user_message',
                 user_message: te.message ?? undefined,
-                user_visible_message: te.message ?? undefined,
                 step_data: Object.keys(eventData).length > 0
                     ? (eventData as unknown as ToolCallObject['step_data'])
                     : undefined,
@@ -89,7 +67,6 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                 type: 'step_data',
                 step_data: eventData as unknown as ToolCallObject['step_data'],
                 user_message: te.message ?? undefined,
-                user_visible_message: te.message ?? undefined,
             };
 
         case 'tool_completed':
@@ -101,7 +78,6 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
                     result: eventData.result ?? eventData,
                 } as ToolCallObject['mcp_output'],
                 user_message: te.message ?? undefined,
-                user_visible_message: te.message ?? undefined,
             };
 
         case 'tool_error':
@@ -118,11 +94,10 @@ export function convertToolEvent(event: StreamEvent): ToolCallObject | null {
 
 /**
  * Convert any StreamEvent into a ToolCallObject.
- * Handles both legacy `tool_update` and V2 `tool_event`.
  * Returns null for non-tool events.
  */
 export function convertStreamEventToToolCall(event: StreamEvent): ToolCallObject | null {
-    return convertToolUpdate(event) || convertToolEvent(event);
+    return convertToolEvent(event);
 }
 
 /**
@@ -130,12 +105,8 @@ export function convertStreamEventToToolCall(event: StreamEvent): ToolCallObject
  * Returns null for non-tool events.
  */
 export function getToolIdFromEvent(event: StreamEvent): string | null {
-    if (event.event === 'tool_update' && event.data) {
-        const d = event.data as ToolUpdateData;
-        return d.id || null;
-    }
     if (event.event === 'tool_event' && event.data) {
-        return (event.data as ToolEventData).call_id || null;
+        return (event.data as unknown as ToolEventPayload).call_id || null;
     }
     return null;
 }
@@ -145,12 +116,8 @@ export function getToolIdFromEvent(event: StreamEvent): string | null {
  * Returns null for non-tool events.
  */
 export function getToolNameFromEvent(event: StreamEvent): string | null {
-    if (event.event === 'tool_update' && event.data) {
-        const d = event.data as ToolUpdateData;
-        return d.mcp_input?.name as string || null;
-    }
     if (event.event === 'tool_event' && event.data) {
-        return (event.data as ToolEventData).tool_name || null;
+        return (event.data as unknown as ToolEventPayload).tool_name || null;
     }
     return null;
 }
@@ -163,20 +130,16 @@ export function getToolNameFromEvent(event: StreamEvent): string | null {
  * Filter a stream event array down to only the tool events that should be
  * persisted on the assistant message (for DB-loaded conversations).
  *
- * For V2, only `tool_started`, `tool_completed`, and `tool_error` are
- * persisted — progress/step/preview events are informational and
- * not needed after the stream ends.
+ * Only `tool_started`, `tool_completed`, and `tool_error` are persisted —
+ * progress/step/preview events are informational and not needed after
+ * the stream ends.
  */
 export function extractPersistableToolUpdates(events: StreamEvent[]): ToolCallObject[] {
     const updates: ToolCallObject[] = [];
 
     for (const event of events) {
-        if (event.event === 'tool_update') {
-            const obj = convertToolUpdate(event);
-            if (obj) updates.push(obj);
-        } else if (event.event === 'tool_event' && event.data) {
-            const te = event.data as ToolEventData;
-            // Only persist the structural events, not intermediate progress
+        if (event.event === 'tool_event' && event.data) {
+            const te = event.data as unknown as ToolEventPayload;
             if (te.event === 'tool_started' || te.event === 'tool_completed' || te.event === 'tool_error') {
                 const obj = convertToolEvent(event);
                 if (obj) updates.push(obj);
@@ -212,9 +175,6 @@ export type ContentBlock = TextBlock | ToolBlock;
  *   event for that ID appeared.
  * - Subsequent events for the same ID are appended to the existing ToolBlock
  *   (in-place), preserving the original position in the sequence.
- *
- * Handles both legacy `tool_update` and V2 `tool_event` formats through
- * the shared conversion functions above.
  */
 export function buildStreamBlocks(events: StreamEvent[]): ContentBlock[] {
     const blocks: ContentBlock[] = [];
@@ -232,21 +192,20 @@ export function buildStreamBlocks(events: StreamEvent[]): ContentBlock[] {
 
     for (const event of events) {
         if (event.event === 'chunk') {
-            const text = event.data as string;
+            const text = (event.data as unknown as ChunkPayload).text;
             const lastBlock = blocks[blocks.length - 1];
             if (lastBlock && lastBlock.type === 'text') {
                 lastBlock.content += text;
             } else {
                 blocks.push({ type: 'text', content: text });
             }
-        } else if (event.event === 'tool_update' || event.event === 'tool_event') {
+        } else if (event.event === 'tool_event') {
             const toolId = getToolIdFromEvent(event) || `tool-anon-${blocks.length}`;
             const toolCallObj = convertStreamEventToToolCall(event);
             if (toolCallObj) {
                 pushToolUpdate(toolId, toolCallObj);
             }
         }
-        // status_update, data, end, info, broker — skip for block building
     }
 
     return blocks;

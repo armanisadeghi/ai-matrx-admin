@@ -118,15 +118,15 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
       const event = events[i];
       
       switch (event.event) {
-        case 'chunk':
-          // Accumulate text chunks (always strings)
-          accumulatedContentRef.current += event.data as string;
+        case 'chunk': {
+          // New ChunkPayload shape: { text: string }
+          const chunkData = event.data as unknown as { text: string };
+          accumulatedContentRef.current += chunkData.text;
           hasNewContent = true;
           break;
+        }
 
-        case 'tool_update':
         case 'tool_event': {
-          // Both legacy and V2 tool events — use the shared engine
           const toolCallObj = convertStreamEventToToolCall(event);
           if (toolCallObj) {
             toolUpdatesRef.current.push(toolCallObj);
@@ -135,33 +135,30 @@ export const StreamAwareChatMarkdown: React.FC<StreamAwareChatMarkdownProps> = (
           break;
         }
 
-        case 'error':
-          // Handle error events
-          const errorData = event.data as any;
-          const errorMessage = errorData?.user_message || errorData?.user_visible_message || errorData?.message || 'An error occurred';
+        case 'error': {
+          const errorData = event.data as Record<string, unknown>;
+          const errorMessage = (errorData?.user_message as string) || (errorData?.message as string) || 'An error occurred';
           onErrorRef.current?.(errorMessage);
           setHasStreamError(true);
           break;
+        }
 
-        case 'status_update':
-          // Handle status updates
-          const statusData = event.data as any;
-          onStatusUpdateRef.current?.(statusData?.status, statusData?.user_message || statusData?.user_visible_message || statusData?.system_message);
+        case 'status_update': {
+          const statusData = event.data as Record<string, unknown>;
+          onStatusUpdateRef.current?.(statusData?.status as string, (statusData?.user_message as string) || (statusData?.system_message as string));
           break;
+        }
 
+        case 'completion':
+        case 'heartbeat':
         case 'data':
-        case 'info':
         case 'broker':
-          // These might contain additional information
-          // For now, we'll log them but not process
           break;
 
         case 'end':
-          // Stream ended
           break;
 
         default:
-          // Unknown event type - log for debugging
           console.debug('[StreamAwareChatMarkdown] Unknown event type:', event.event);
       }
     }

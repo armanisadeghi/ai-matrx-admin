@@ -10,6 +10,9 @@ import { SignupConversionModal } from '@/components/guest/SignupConversionModal'
 import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
 import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import type { PromptApp } from '../types';
+import type { ChunkPayload, ErrorPayload, EndPayload } from '@/types/python-generated/stream-events';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 
 interface PromptAppPublicRendererDirectProps {
     app: PromptApp;
@@ -220,7 +223,7 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
             logTiming('✓ Chat config built');
             
             // STEP 5: Prepare backend request
-            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+            const BACKEND_URL = BACKEND_URLS.production;
             
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
@@ -230,10 +233,10 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
                 headers['Authorization'] = `Bearer ${authToken}`;
             }
             
-            logTiming('➡️ Initiating fetch to backend...');
+            logTiming('Initiating fetch to backend...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}/api/ai/chat/unified`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(chatConfig),
@@ -279,96 +282,36 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
                 console.debug('Background logging error (non-critical):', err);
             });
             
-            // STEP 6: Process streaming JSONL response
-            const reader = fetchResponse.body.getReader();
-            const decoder = new TextDecoder();
-            let done = false;
-            let buffer = '';
+            // STEP 6: Process streaming NDJSON response using shared parser
+            const { events } = parseNdjsonStream(fetchResponse, abortControllerRef.current.signal);
             
-            logTiming('✓ Stream reader initialized, awaiting data...');
+            logTiming('Stream reader initialized, awaiting data...');
             
-            while (!done) {
-                const { value, done: doneReading } = await reader.read();
-                done = doneReading;
-                
-                if (value) {
+            for await (const event of events) {
+                if (event.event === 'chunk') {
+                    const chunkData = event.data as unknown as ChunkPayload;
                     if (!firstTextReceived) {
-                        logTiming('📥 First data chunk received from backend');
+                        firstTextReceived = true;
+                        logTiming('FIRST TEXT CHUNK RECEIVED - TIME TO FIRST TOKEN');
                     }
-                    
-                    // Decode chunk and add to buffer
-                    const decodedChunk = decoder.decode(value, { stream: true });
-                    buffer += decodedChunk;
-                    
-                    // Process complete lines (JSONL format - newline-delimited JSON)
-                    const lines = buffer.split('\n');
-                    // Keep the last incomplete line in buffer
-                    buffer = lines.pop() || '';
-                    
-                    // Process each complete line
-                    for (const line of lines) {
-                        if (line.trim()) {
-                            try {
-                                const json = JSON.parse(line);
-                                
-                                // Handle different event types
-                                if (json.event === 'chunk' && typeof json.data === 'string') {
-                                    if (!firstTextReceived) {
-                                        firstTextReceived = true;
-                                        logTiming('✨ FIRST TEXT CHUNK RECEIVED - TIME TO FIRST TOKEN');
-                                    }
-                                    // Accumulate text chunks
-                                    setResponse(prev => prev + json.data);
-                                } else if (json.event === 'end') {
-                                    // Stream completed successfully
-                                    logTiming('✅ Stream complete');
-                                    setIsExecuting(false);
-                                    setIsStreamComplete(true);
-                                    // Clear timeout on completion
-                                    if (executionTimeoutRef.current) {
-                                        clearTimeout(executionTimeoutRef.current);
-                                        executionTimeoutRef.current = null;
-                                    }
-                                } else if (json.event === 'error') {
-                                    // Error from backend
-                                    throw new Error(json.data?.message || 'Error during execution');
-                                }
-                            } catch (e) {
-                                if (e instanceof Error && e.message.includes('Error during execution')) {
-                                    throw e; // Re-throw execution errors
-                                }
-                                // JSON parse errors - silently continue
-                            }
-                        }
+                    setResponse(prev => prev + chunkData.text);
+                } else if (event.event === 'end') {
+                    logTiming('Stream complete');
+                    setIsExecuting(false);
+                    setIsStreamComplete(true);
+                    if (executionTimeoutRef.current) {
+                        clearTimeout(executionTimeoutRef.current);
+                        executionTimeoutRef.current = null;
                     }
+                } else if (event.event === 'error') {
+                    const errData = event.data as unknown as ErrorPayload;
+                    throw new Error(errData.user_message || errData.message || 'Error during execution');
                 }
             }
             
-            // Process any remaining buffer
-            if (buffer.trim()) {
-                try {
-                    const json = JSON.parse(buffer);
-                    if (json.event === 'chunk' && typeof json.data === 'string') {
-                        if (!firstTextReceived) {
-                            firstTextReceived = true;
-                            logTiming('✨ FIRST TEXT CHUNK RECEIVED (from buffer)');
-                        }
-                        setResponse(prev => prev + json.data);
-                    } else if (json.event === 'end') {
-                        logTiming('✅ Stream complete (from buffer)');
-                        setIsStreamComplete(true);
-                    }
-                } catch (e) {
-                    // Silently handle parse errors
-                }
-            }
-            
-            // Mark as complete if not already marked
             if (!isStreamComplete) {
                 setIsStreamComplete(true);
             }
-            
-            // Guest limit is updated via background logging request
             
         } catch (err) {
             logTiming('❌ Error occurred');

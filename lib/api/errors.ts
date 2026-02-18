@@ -3,7 +3,7 @@
 // Parses both HTTP error responses and streaming error events
 // into a consistent BackendApiError shape.
 
-import type { BackendApiErrorData, BackendErrorCode, StreamErrorData } from './types';
+import type { BackendApiErrorData, BackendErrorCode } from './types';
 
 // ============================================================================
 // ERROR CLASS
@@ -184,11 +184,10 @@ export function parseStreamError(data: unknown): BackendApiError {
 
     const obj = data as Record<string, unknown>;
     return new BackendApiError({
-        code: (obj.error as string) || (obj.type as string) || 'internal_error',
+        code: (obj.error_type as string) || (obj.error as string) || 'internal_error',
         detail: (obj.message as string) || 'Streaming error',
         userMessage:
             (obj.user_message as string) ||
-            (obj.user_visible_message as string) ||
             (obj.message as string) ||
             'Something went wrong',
         details: obj.details ?? null,

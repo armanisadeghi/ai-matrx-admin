@@ -15,7 +15,7 @@
  * - Admin: Valid JWT token + admin role
  */
 export const ENDPOINTS = {
-    /** AI endpoints — chat, agents */
+    /** AI endpoints — chat, agents, cancellation */
     ai: {
         /** POST — Unified chat completion (Guest OK) */
         chatUnified: '/api/ai/chat/unified',
@@ -23,6 +23,8 @@ export const ENDPOINTS = {
         agentWarm: '/api/ai/agent/warm',
         /** POST — Execute agent with streaming (Guest OK) */
         agentExecute: '/api/ai/agent/execute',
+        /** POST — Cancel a running request by request_id (Authenticated) */
+        cancel: (requestId: string) => `/api/ai/cancel/${requestId}` as const,
     },
 
     /** Tool testing endpoints — Authenticated */
