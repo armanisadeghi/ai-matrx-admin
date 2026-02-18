@@ -112,8 +112,14 @@ export default function SettingsProjectsPage() {
                     'p-4 cursor-pointer transition-all duration-200 hover:shadow-md'
                   )}
                   onClick={() => {
-                    // We don't have org slug directly; navigate to settings
-                    router.push(`/settings/projects`);
+                    const slug = project.slug ?? project.id;
+                    if (project.isPersonal || !project.organizationId) {
+                      router.push(`/projects/${slug}/settings`);
+                    } else {
+                      // For org projects we need the org slug — navigate to the project detail
+                      // which will redirect to the correct org-scoped URL
+                      router.push(`/projects/${slug}`);
+                    }
                   }}
                 >
                   <div className="flex items-start justify-between gap-4">

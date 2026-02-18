@@ -20,7 +20,7 @@ import { deleteProject, type Project } from '@/features/projects';
 
 interface DangerZoneProps {
   project: Project;
-  orgSlug: string;
+  orgSlug?: string | null;
 }
 
 export function DangerZone({ project, orgSlug }: DangerZoneProps) {
@@ -40,7 +40,7 @@ export function DangerZone({ project, orgSlug }: DangerZoneProps) {
       const result = await deleteProject(project.id);
       if (result.success) {
         toast.success('Project deleted');
-        router.push(`/org/${orgSlug}/projects`);
+        router.push(orgSlug ? `/org/${orgSlug}/projects` : '/projects');
       } else {
         toast.error(result.error ?? 'Failed to delete project');
       }

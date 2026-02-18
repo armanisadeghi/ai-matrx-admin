@@ -23,6 +23,7 @@ export * from "./seo-meta-descriptions";
 export * from "./web-research";
 export * from "./core-web-search";
 export * from "./deep-research";
+export * from "./get-user-lists";
 
 // Dynamic tool renderer system
 export { prefetchRenderer } from "./dynamic";

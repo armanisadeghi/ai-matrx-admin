@@ -29,16 +29,16 @@ interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  organizationId: string;
-  orgSlug: string;
+  organizationId?: string | null;
+  orgSlug?: string | null;
 }
 
 export function CreateProjectModal({
   isOpen,
   onClose,
   onSuccess,
-  organizationId,
-  orgSlug,
+  organizationId = null,
+  orgSlug = null,
 }: CreateProjectModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +50,7 @@ export function CreateProjectModal({
 
   const { available: slugAvailable, checking: checkingSlug } = useProjectSlugAvailability(
     slug,
-    organizationId,
+    organizationId ?? undefined,
     500
   );
 
@@ -94,7 +94,7 @@ export function CreateProjectModal({
       const result = await createProject({
         name,
         slug,
-        organizationId,
+        organizationId: organizationId ?? undefined,
         description: description || undefined,
       });
 
@@ -102,7 +102,11 @@ export function CreateProjectModal({
         toast.success('Project created successfully!');
         onClose();
         onSuccess?.();
-        router.push(`/org/${orgSlug}/projects/${result.project.slug ?? result.project.id}/settings`);
+        if (orgSlug) {
+          router.push(`/org/${orgSlug}/projects/${result.project.slug ?? result.project.id}/settings`);
+        } else {
+          router.push(`/projects/${result.project.slug ?? result.project.id}/settings`);
+        }
       } else {
         toast.error(result.error || 'Failed to create project');
       }
@@ -154,7 +158,9 @@ export function CreateProjectModal({
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
-            Set up a new project to collaborate with your team
+            {organizationId
+              ? 'Set up a new project to collaborate with your team'
+              : 'Create a personal project to organize your work'}
           </DialogDescription>
         </DialogHeader>
 
@@ -183,7 +189,7 @@ export function CreateProjectModal({
             <Label htmlFor="project-slug">URL Slug *</Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                /org/{orgSlug}/projects/
+                {orgSlug ? `/org/${orgSlug}/projects/` : '/projects/'}
               </span>
               <Input
                 id="project-slug"

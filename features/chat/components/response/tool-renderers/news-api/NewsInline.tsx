@@ -1,3 +1,5 @@
+// features/chat/components/response/tool-renderers/news-api/NewsInline.tsx
+
 "use client";
 
 import React from "react";

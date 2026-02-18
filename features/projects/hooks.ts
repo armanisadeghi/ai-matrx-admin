@@ -20,6 +20,7 @@ import {
 } from './types';
 import {
   getOrgProjects,
+  getPersonalProjects,
   getUserProjects,
   getProject,
   createProject,
@@ -87,6 +88,32 @@ export function useUserProjects() {
       setProjects(data);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch projects';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  return { projects, loading, error, refresh: fetchProjects };
+}
+
+export function usePersonalProjects() {
+  const [projects, setProjects] = useState<ProjectWithRole[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getPersonalProjects();
+      setProjects(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch personal projects';
       setError(msg);
     } finally {
       setLoading(false);
@@ -474,14 +501,14 @@ export function useUserProjectInvitations() {
 
 export function useProjectSlugAvailability(
   slug: string,
-  organizationId: string,
+  organizationId: string | undefined | null,
   debounceMs = 500
 ) {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    if (!slug || slug.trim().length === 0 || !organizationId) {
+    if (!slug || slug.trim().length === 0) {
       setAvailable(null);
       return;
     }
@@ -489,7 +516,7 @@ export function useProjectSlugAvailability(
     setChecking(true);
 
     const timer = setTimeout(async () => {
-      const isAvailable = await isProjectSlugAvailable(slug, organizationId);
+      const isAvailable = await isProjectSlugAvailable(slug, organizationId ?? null);
       setAvailable(isAvailable);
       setChecking(false);
     }, debounceMs);

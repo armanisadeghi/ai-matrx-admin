@@ -12,6 +12,7 @@ import { SeoMetaDescriptionsInline } from "./seo-meta-descriptions";
 import { WebResearchInline, WebResearchOverlay } from "./web-research";
 import { CoreWebSearchInline, CoreWebSearchOverlay } from "./core-web-search";
 import { DeepResearchInline, DeepResearchOverlay } from "./deep-research";
+import { UserListsInline, UserListsOverlay } from "./get-user-lists";
 import BraveSearchDisplay from "@/features/workflows/results/registered-components/BraveSearchDisplay";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 import {
@@ -221,6 +222,46 @@ export const toolRendererRegistry: ToolRegistry = {
         },
     },
     
+    // User Lists - paginated list of the authenticated user's lists
+    "get_user_lists": {
+        displayName: "User Lists",
+        resultsLabel: "Lists",
+        inline: UserListsInline,
+        overlay: UserListsOverlay,
+        keepExpandedOnStream: true,
+        getHeaderSubtitle: (toolUpdates) => {
+            const input = toolUpdates.find((u) => u.type === "mcp_input");
+            const args = input?.mcp_input?.arguments ?? {};
+            const search = typeof args.search_term === "string" && args.search_term ? args.search_term : null;
+            const page = typeof args.page === "number" ? args.page : 1;
+            const parts: string[] = [];
+            if (search) parts.push(`"${search}"`);
+            if (page > 1) parts.push(`Page ${page}`);
+            return parts.length > 0 ? parts.join(" · ") : null;
+        },
+        getHeaderExtras: (toolUpdates) => {
+            const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
+            if (!outputUpdate?.mcp_output) return null;
+            const rawResult = outputUpdate.mcp_output.result;
+            let result: { count?: number; page?: number; page_size?: number } | null = null;
+            if (typeof rawResult === "object" && rawResult !== null) {
+                result = rawResult as typeof result;
+            } else if (typeof rawResult === "string") {
+                try { result = JSON.parse(rawResult); } catch { /* ignore */ }
+            }
+            if (!result) return null;
+            const count = result.count;
+            const pageSize = result.page_size;
+            if (!count) return null;
+            return (
+                <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+                    <span>{count} {count === 1 ? "list" : "lists"}</span>
+                    {pageSize && <span>{pageSize} per page</span>}
+                </div>
+            );
+        },
+    },
+
     // Web Page Reader - read specific web pages (same format as deep research)
     "core_web_read_web_pages": {
         displayName: "Web Page Reader",

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { BasicInput } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Loader2, Plus, ClipboardPaste, Check, AlertCircle, MessageSquare } from 'lucide-react';
+import { Loader2, Plus, ClipboardPaste, Check, AlertCircle, MessageSquare, Cookie } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ConversationSelectorProps {
@@ -26,10 +26,21 @@ export function ConversationSelector({
 }: ConversationSelectorProps) {
   const [mode, setMode] = useState<Mode>('create');
   const [inputValue, setInputValue] = useState('');
+  // Track whether the current conversationId was restored from a cookie on mount
+  const [restoredFromCookie, setRestoredFromCookie] = useState(false);
+
+  useEffect(() => {
+    if (conversationId) {
+      setRestoredFromCookie(true);
+    }
+    // Only run on mount to detect initial cookie-restored value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreate = async () => {
     try {
       await onCreateNew();
+      setRestoredFromCookie(false);
       toast.success('Conversation created', {
         description: 'A real conversation entry has been created in the database.',
       });
@@ -42,19 +53,20 @@ export function ConversationSelector({
   const handleApplyExisting = () => {
     const trimmed = inputValue.trim();
     if (!trimmed) return;
-    // Basic UUID validation
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(trimmed)) {
       toast.error('Invalid conversation ID', { description: 'Must be a valid UUID.' });
       return;
     }
     onSetExisting(trimmed);
+    setRestoredFromCookie(false);
     toast.success('Conversation ID set');
   };
 
   const handleClear = () => {
     onSetExisting(null);
     setInputValue('');
+    setRestoredFromCookie(false);
   };
 
   return (
@@ -104,7 +116,16 @@ export function ConversationSelector({
       {mode === 'create' ? (
         conversationId ? (
           <div className="flex items-center gap-1">
-            <Check className="h-3 w-3 text-success flex-shrink-0" />
+            {restoredFromCookie ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Cookie className="h-3 w-3 text-muted-foreground flex-shrink-0 cursor-default" />
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">Restored from last session</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Check className="h-3 w-3 text-success flex-shrink-0" />
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[120px] cursor-default">

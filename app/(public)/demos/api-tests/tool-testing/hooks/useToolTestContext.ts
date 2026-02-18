@@ -6,6 +6,23 @@ import { selectUserId } from '@/lib/redux/selectors/userSelectors';
 import { supabase } from '@/utils/supabase/client';
 import type { TestContext } from '../types';
 
+const CONVERSATION_COOKIE_KEY = 'tool_test_conversation_id';
+
+function readConversationCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${CONVERSATION_COOKIE_KEY}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function writeConversationCookie(id: string | null): void {
+  if (typeof document === 'undefined') return;
+  if (id) {
+    document.cookie = `${CONVERSATION_COOKIE_KEY}=${encodeURIComponent(id)};path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
+  } else {
+    document.cookie = `${CONVERSATION_COOKIE_KEY}=;path=/;max-age=0`;
+  }
+}
+
 export interface UseToolTestContextReturn {
   /** Authenticated user's real ID from Redux (Supabase auth) */
   userId: string | null;
@@ -16,7 +33,7 @@ export interface UseToolTestContextReturn {
   authToken: string | null;
   /** Whether the session token has been loaded */
   tokenReady: boolean;
-  /** Real conversation ID — null until created or provided by user */
+  /** Real conversation ID — persisted to cookie across page loads */
   conversationId: string | null;
   /** Whether a conversation is ready for execution */
   conversationReady: boolean;
@@ -26,9 +43,9 @@ export interface UseToolTestContextReturn {
     project_id?: string;
     task_id?: string;
   };
-  /** Set conversation ID directly (user-provided existing ID) */
+  /** Set conversation ID directly (user-provided existing ID) — persisted to cookie */
   setConversationId: (id: string | null) => void;
-  /** Create a real placeholder conversation directly via Supabase client */
+  /** Create a new placeholder conversation via API route */
   createConversation: () => Promise<void>;
   /** Whether conversation creation is in progress */
   isCreatingConversation: boolean;
@@ -72,9 +89,14 @@ export function useToolTestContext(): UseToolTestContextReturn {
     };
   }, []);
 
-  // ── Conversation state ─────────────────────────────────────────────────────
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  // ── Conversation state — persisted to cookie ───────────────────────────────
+  const [conversationId, setConversationIdState] = useState<string | null>(() => readConversationCookie());
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
+
+  const setConversationId = useCallback((id: string | null) => {
+    setConversationIdState(id);
+    writeConversationCookie(id);
+  }, []);
 
   // ── Scope state ────────────────────────────────────────────────────────────
   const [scopeOverride, setScopeOverride] = useState<{
@@ -86,44 +108,19 @@ export function useToolTestContext(): UseToolTestContextReturn {
   const createConversation = useCallback(async () => {
     setIsCreatingConversation(true);
     try {
-      // Use the client-side Supabase instance directly — it carries the active
-      // JWT so auth.uid() resolves correctly and RLS passes without a server hop.
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          type: 'direct',
-          name: `Tool Test — ${new Date().toISOString()}`,
-          created_by: user.id,
-        })
-        .select('id')
-        .single();
-
-      if (convError || !conversation) {
-        throw new Error(convError?.message ?? 'Failed to create conversation');
+      // Use the API route — the server-side Supabase client resolves auth correctly
+      // and avoids RLS issues that occur when inserting directly from the browser client.
+      const res = await fetch('/api/tool-testing/conversation', { method: 'POST' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { message?: string };
+        throw new Error(body.message ?? `HTTP ${res.status}`);
       }
-
-      const { error: participantError } = await supabase
-        .from('conversation_participants')
-        .insert({
-          conversation_id: conversation.id,
-          user_id: user.id,
-          role: 'owner',
-        });
-
-      if (participantError) {
-        // Best-effort cleanup
-        await supabase.from('conversations').delete().eq('id', conversation.id);
-        throw new Error(participantError.message);
-      }
-
-      setConversationId(conversation.id);
+      const { conversation_id } = await res.json() as { conversation_id: string };
+      setConversationId(conversation_id);
     } finally {
       setIsCreatingConversation(false);
     }
-  }, []);
+  }, [setConversationId]);
 
   const buildTestContext = useCallback((): TestContext | undefined => {
     if (!conversationId) return undefined;

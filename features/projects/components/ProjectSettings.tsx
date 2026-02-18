@@ -14,7 +14,7 @@ interface ProjectSettingsProps {
   userRole: ProjectRole;
   isOwner: boolean;
   isAdmin: boolean;
-  orgSlug: string;
+  orgSlug?: string | null;
 }
 
 export function ProjectSettings({

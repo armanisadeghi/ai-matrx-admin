@@ -5,22 +5,24 @@ import { Puzzle, Plus, Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useOrgProjects } from '@/features/projects';
+import { useOrgProjects, usePersonalProjects } from '@/features/projects';
 import { ProjectCard } from './ProjectCard';
 import { CreateProjectModal } from './CreateProjectModal';
 
 interface ProjectListProps {
-  organizationId: string;
-  orgSlug: string;
+  organizationId?: string | null;
+  orgSlug?: string | null;
   canCreate?: boolean;
 }
 
 export function ProjectList({ organizationId, orgSlug, canCreate = false }: ProjectListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
-  const { projects, loading, error, refresh } = useOrgProjects(organizationId);
+  const orgResult = useOrgProjects(organizationId ?? undefined);
+  const personalResult = usePersonalProjects();
+
+  const { projects, loading, error, refresh } = organizationId ? orgResult : personalResult;
 
   const filteredProjects = projects.filter(
     (p) =>
@@ -122,7 +124,6 @@ export function ProjectList({ organizationId, orgSlug, canCreate = false }: Proj
               project={project}
               orgSlug={orgSlug}
               onUpdate={refresh}
-              isAnyNavigating={navigatingId !== null && navigatingId !== project.id}
             />
           ))}
         </div>
@@ -148,3 +149,4 @@ export function ProjectList({ organizationId, orgSlug, canCreate = false }: Proj
     </div>
   );
 }
+

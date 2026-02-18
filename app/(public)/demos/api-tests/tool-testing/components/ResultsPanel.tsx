@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Activity,
   Eye,
@@ -14,15 +18,20 @@ import {
   Copy,
   Check,
   X,
-  BarChart3,
   Timer,
   Loader2,
+  Save,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
+  BookmarkCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StreamEventTimeline } from './StreamEventTimeline';
 import { SchemaValidator } from './SchemaValidator';
 import { CostEstimateTable } from './CostEstimateTable';
 import { ToolRendererPreview } from './ToolRendererPreview';
+import { useSaveSample } from '../hooks/useSaveSample';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type {
   ToolStreamEvent,
@@ -59,10 +68,157 @@ function CopyButton({ content, label = 'Copy' }: { content: string; label?: stri
   );
 }
 
+// ─── Save Sample Popover ─────────────────────────────────────────────────────
+
+type SuccessVote = 'yes' | 'no' | null;
+
+interface SaveSamplePopoverProps {
+  disabled: boolean;
+  onSave: (opts: { adminComments: string; isSuccess: boolean | null; useForComponent: boolean }) => Promise<void>;
+  isSaving: boolean;
+  savedId: string | null;
+}
+
+function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePopoverProps) {
+  const [open, setOpen] = useState(false);
+  const [adminComments, setAdminComments] = useState('');
+  const [successVote, setSuccessVote] = useState<SuccessVote>(null);
+  const [useForComponent, setUseForComponent] = useState(false);
+
+  const handleSave = async () => {
+    await onSave({
+      adminComments: adminComments.trim() || '',
+      isSuccess: successVote === 'yes' ? true : successVote === 'no' ? false : null,
+      useForComponent,
+    });
+    setOpen(false);
+  };
+
+  if (savedId) {
+    return (
+      <div className="flex items-center gap-1 text-[10px] text-success font-medium">
+        <BookmarkCheck className="h-3 w-3" />
+        Saved
+      </div>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-6 text-xs px-2 gap-1"
+          disabled={disabled}
+        >
+          <Save className="h-3 w-3" />
+          Save Sample
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold">Save Test Sample</p>
+
+          {/* Success vote */}
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">Success?</Label>
+            <div className="flex gap-1.5">
+              <Button
+                size="sm"
+                variant={successVote === 'yes' ? 'default' : 'outline'}
+                className="h-7 text-xs px-2.5 gap-1 flex-1"
+                onClick={() => setSuccessVote(successVote === 'yes' ? null : 'yes')}
+              >
+                <ThumbsUp className="h-3 w-3" />
+                Yes
+              </Button>
+              <Button
+                size="sm"
+                variant={successVote === null ? 'secondary' : 'outline'}
+                className="h-7 text-xs px-2.5 gap-1 flex-1"
+                onClick={() => setSuccessVote(null)}
+              >
+                <Minus className="h-3 w-3" />
+                Unset
+              </Button>
+              <Button
+                size="sm"
+                variant={successVote === 'no' ? 'destructive' : 'outline'}
+                className="h-7 text-xs px-2.5 gap-1 flex-1"
+                onClick={() => setSuccessVote(successVote === 'no' ? null : 'no')}
+              >
+                <ThumbsDown className="h-3 w-3" />
+                No
+              </Button>
+            </div>
+          </div>
+
+          {/* Admin comments */}
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">Comments</Label>
+            <Textarea
+              placeholder="Notes about this sample response…"
+              value={adminComments}
+              onChange={(e) => setAdminComments(e.target.value)}
+              className="text-xs min-h-[64px] resize-none"
+            />
+          </div>
+
+          {/* Use for component */}
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px] text-muted-foreground cursor-pointer" htmlFor="use-for-component">
+              Use for component
+            </Label>
+            <Switch
+              id="use-for-component"
+              checked={useForComponent}
+              onCheckedChange={setUseForComponent}
+              className="scale-75 origin-right"
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs px-2"
+              onClick={() => setOpen(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs px-3 gap-1"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                <>
+                  <Save className="h-3 w-3" />
+                  Save
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 interface ResultsPanelProps {
   toolName: string;
+  toolId?: string | null;
   args: Record<string, unknown>;
   toolEvents: ToolStreamEvent[];
   rawLines: StreamEvent[];
@@ -75,6 +231,7 @@ interface ResultsPanelProps {
 
 export function ResultsPanel({
   toolName,
+  toolId,
   args,
   toolEvents,
   rawLines,
@@ -88,6 +245,36 @@ export function ResultsPanel({
   const isComplete = executionStatus === 'complete';
   const isError = executionStatus === 'error';
   const duration = finalPayload?.full_result?.duration_ms;
+  const canSave = (isComplete || isError) && !!finalPayload;
+
+  const { save, isSaving, savedId, reset } = useSaveSample();
+
+  const handleSave = async (opts: {
+    adminComments: string;
+    isSuccess: boolean | null;
+    useForComponent: boolean;
+  }) => {
+    try {
+      await save({
+        toolName,
+        toolId: toolId ?? null,
+        arguments: args,
+        rawStreamEvents: rawLines,
+        finalPayload,
+        adminComments: opts.adminComments || null,
+        isSuccess: opts.isSuccess,
+        useForComponent: opts.useForComponent,
+      });
+      toast.success('Sample saved', {
+        description: opts.useForComponent ? 'Marked for component development.' : undefined,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save sample');
+    }
+  };
+
+  // Reset saved state when a new execution starts
+  if (isRunning && savedId) reset();
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -130,6 +317,12 @@ export function ResultsPanel({
               ~{finalPayload.cost_estimate.estimated_tokens.toLocaleString()} tokens
             </span>
           )}
+          <SaveSamplePopover
+            disabled={!canSave}
+            onSave={handleSave}
+            isSaving={isSaving}
+            savedId={savedId}
+          />
           <Button
             size="sm"
             variant="ghost"

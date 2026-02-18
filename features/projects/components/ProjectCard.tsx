@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {
   project: ProjectWithRole;
-  orgSlug: string;
+  orgSlug?: string | null;
   onUpdate?: () => void;
   isAnyNavigating?: boolean;
 }
@@ -65,7 +65,8 @@ export function ProjectCard({ project, orgSlug, onUpdate, isAnyNavigating }: Pro
     startTransition(() => router.push(path));
   };
 
-  const projectPath = `/org/${orgSlug}/projects/${project.slug ?? project.id}`;
+  const basePath = orgSlug ? `/org/${orgSlug}/projects` : '/projects';
+  const projectPath = `${basePath}/${project.slug ?? project.id}`;
   const settingsPath = `${projectPath}/settings`;
 
   return (

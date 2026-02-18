@@ -443,6 +443,7 @@ export default function ToolTestingClient() {
             <Card className="col-span-6 h-full overflow-hidden">
               <ResultsPanel
                 toolName={selectedToolName ?? ''}
+                toolId={selectedTool?.id ?? null}
                 args={argValues}
                 toolEvents={toolEvents}
                 rawLines={rawLines}

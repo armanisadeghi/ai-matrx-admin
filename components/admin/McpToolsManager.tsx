@@ -24,6 +24,7 @@ import {
     Paintbrush,
     Bug,
     Wand2,
+    FlaskConical,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ import { formatText } from "@/utils/text/text-case-converter";
 import { ToolUiComponentEditor } from "./ToolUiComponentEditor";
 import { ToolUiIncidentViewer } from "./ToolUiIncidentViewer";
 import { ToolUiComponentGenerator } from "./ToolUiComponentGenerator";
+import { ToolTestSamplesViewer } from "./ToolTestSamplesViewer";
 
 interface Tool {
     id: string;
@@ -99,6 +101,7 @@ export function McpToolsManager() {
     const [uiEditorTool, setUiEditorTool] = useState<{ name: string; id: string } | null>(null);
     const [showIncidents, setShowIncidents] = useState(false);
     const [showGenerator, setShowGenerator] = useState(false);
+    const [samplesTool, setSamplesTool] = useState<{ name: string; id: string } | null>(null);
 
     // Update tools when database tools change
     useEffect(() => {
@@ -431,6 +434,7 @@ export function McpToolsManager() {
                         onDelete={() => handleDeleteTool(tool.id, tool.name)}
                         onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
                         onEditUiComponent={() => setUiEditorTool({ name: tool.name, id: tool.id })}
+                        onViewSamples={() => setSamplesTool({ name: tool.name, id: tool.id })}
                     />
                 ))}
 
@@ -594,6 +598,45 @@ export function McpToolsManager() {
                 </Dialog>
             )}
 
+            {/* Test Samples Viewer Dialog */}
+            {isMobile ? (
+                <Drawer open={!!samplesTool} onOpenChange={(open) => !open && setSamplesTool(null)}>
+                    <DrawerContent className="max-h-[90dvh] flex flex-col">
+                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
+                            <FlaskConical className="h-5 w-5" />
+                            Test Samples: {samplesTool?.name}
+                        </DrawerTitle>
+                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe min-h-0">
+                            {samplesTool && (
+                                <ToolTestSamplesViewer
+                                    toolName={samplesTool.name}
+                                    toolId={samplesTool.id}
+                                />
+                            )}
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            ) : (
+                <Dialog open={!!samplesTool} onOpenChange={(open) => !open && setSamplesTool(null)}>
+                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1200px] max-h-[90dvh] overflow-hidden flex flex-col">
+                        <DialogHeader className="flex-shrink-0">
+                            <DialogTitle className="flex items-center gap-2">
+                                <FlaskConical className="h-5 w-5" />
+                                Test Samples: {samplesTool?.name}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+                            {samplesTool && (
+                                <ToolTestSamplesViewer
+                                    toolName={samplesTool.name}
+                                    toolId={samplesTool.id}
+                                />
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
             {/* AI Component Generator Dialog */}
             {isMobile ? (
                 <Drawer open={showGenerator} onOpenChange={setShowGenerator}>
@@ -655,9 +698,10 @@ interface ToolCardProps {
     onDelete: () => void;
     onToggleActive: (isActive: boolean) => void;
     onEditUiComponent: () => void;
+    onViewSamples: () => void;
 }
 
-function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onToggleActive, onEditUiComponent }: ToolCardProps) {
+function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onToggleActive, onEditUiComponent, onViewSamples }: ToolCardProps) {
     const icon = mapIcon(tool.icon, tool.category, 20);
     
     return (
@@ -728,6 +772,15 @@ function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onTogg
                             className="h-8 w-8 p-0"
                         >
                             <Paintbrush className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onViewSamples}
+                            title="View Test Samples"
+                            className="h-8 w-8 p-0"
+                        >
+                            <FlaskConical className="h-4 w-4" />
                         </Button>
                         <Button
                             variant="ghost"

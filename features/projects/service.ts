@@ -49,9 +49,10 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
       return { success: false, error: slugValidation.error };
     }
 
-    const slugFree = await isProjectSlugAvailable(slug, organizationId);
+    const slugFree = await isProjectSlugAvailable(slug, organizationId ?? null);
     if (!slugFree) {
-      return { success: false, error: 'A project with that slug already exists in this organization' };
+      const scope = organizationId ? 'in this organization' : 'in your personal projects';
+      return { success: false, error: `A project with that slug already exists ${scope}` };
     }
 
     const {
@@ -68,10 +69,10 @@ export async function createProject(options: CreateProjectOptions): Promise<Proj
       .insert({
         name,
         slug,
-        organization_id: organizationId,
+        organization_id: organizationId ?? null,
         description: description ?? null,
         created_by: currentUser.id,
-        is_personal: false,
+        is_personal: !organizationId,
         settings: settings ?? {},
       })
       .select()
@@ -192,6 +193,28 @@ export async function getProjectBySlug(
   }
 }
 
+export async function getPersonalProjectBySlug(slug: string): Promise<Project | null> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('slug', slug)
+      .is('organization_id', null)
+      .eq('created_by', user.id)
+      .single();
+    if (error) throw error;
+    return transformProjectFromDb(data);
+  } catch (error) {
+    console.error('Error fetching personal project by slug:', error);
+    return null;
+  }
+}
+
 export async function getOrgProjects(organizationId: string): Promise<ProjectWithRole[]> {
   try {
     const {
@@ -280,18 +303,64 @@ export async function getUserProjects(): Promise<ProjectWithRole[]> {
 
 export async function isProjectSlugAvailable(
   slug: string,
-  organizationId: string
+  organizationId: string | null
 ): Promise<boolean> {
   try {
-    const { data } = await supabase
-      .from('projects')
-      .select('id')
-      .eq('slug', slug)
-      .eq('organization_id', organizationId)
-      .single();
+    let query = supabase.from('projects').select('id').eq('slug', slug);
+    if (organizationId) {
+      query = query.eq('organization_id', organizationId);
+    } else {
+      // Personal project: scope uniqueness to the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return true;
+      query = query.is('organization_id', null).eq('created_by', user.id);
+    }
+    const { data } = await query.single();
     return !data;
   } catch {
     return true;
+  }
+}
+
+export async function getPersonalProjects(): Promise<ProjectWithRole[]> {
+  try {
+    const {
+      data: { user: currentUser },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !currentUser) return [];
+
+    const { data, error } = await supabase
+      .from('project_members')
+      .select(`role, projects(*)`)
+      .eq('user_id', currentUser.id);
+
+    if (error) {
+      console.error('Error fetching personal projects:', error.message);
+      return [];
+    }
+
+    const projects: ProjectWithRole[] = await Promise.all(
+      (data ?? [])
+        .filter((item: Record<string, unknown>) => {
+          const proj = item.projects as Record<string, unknown> | null;
+          return proj && (proj.is_personal === true || proj.organization_id === null);
+        })
+        .map(async (item: Record<string, unknown>) => {
+          const proj = transformProjectFromDb(item.projects as Record<string, unknown>);
+          const { count } = await supabase
+            .from('project_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('project_id', proj.id);
+          return { ...proj, role: item.role as ProjectRole, memberCount: count ?? 0 };
+        })
+    );
+
+    return projects.sort((a, b) => a.name.localeCompare(b.name));
+  } catch (error) {
+    console.error('Error in getPersonalProjects:', error);
+    return [];
   }
 }
 

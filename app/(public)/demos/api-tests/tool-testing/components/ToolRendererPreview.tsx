@@ -4,12 +4,8 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Info, Eye } from 'lucide-react';
 import type { ToolCallObject } from '@/lib/api/tool-call.types';
-import {
-  getInlineRenderer,
-  getToolDisplayName,
-  hasCustomRenderer,
-} from '@/features/chat/components/response/tool-renderers/registry';
-import { GenericRenderer } from '@/features/chat/components/response/tool-renderers/GenericRenderer';
+import { hasCustomRenderer } from '@/features/chat/components/response/tool-renderers/registry';
+import ToolCallVisualization from '@/features/chat/components/response/assistant-message/stream/ToolCallVisualization';
 import type { ToolStreamEvent, FinalPayload } from '../types';
 
 /**
@@ -82,6 +78,23 @@ function buildToolCallObjects(
         }
         break;
       }
+      case 'tool_completed': {
+        // The completed event carries the full result — map it to mcp_output
+        // so renderers see a complete output before finalPayload is set.
+        // finalPayload will later add its own mcp_output; we deduplicate by
+        // checking whether one already exists before pushing from finalPayload.
+        const completedResult = event.data.result;
+        if (completedResult !== undefined) {
+          objects.push({
+            id: event.call_id,
+            type: 'mcp_output',
+            mcp_output: {
+              result: completedResult,
+            },
+          });
+        }
+        break;
+      }
       case 'tool_error':
         objects.push({
           id: event.call_id,
@@ -92,8 +105,9 @@ function buildToolCallObjects(
     }
   }
 
-  // 3. mcp_output — from final payload
-  if (finalPayload?.full_result) {
+  // 3. mcp_output — from final payload, only if tool_completed didn't already produce one
+  const alreadyHasOutput = objects.some((o) => o.type === 'mcp_output');
+  if (!alreadyHasOutput && finalPayload?.full_result) {
     objects.push({
       id: toolEvents[0]?.call_id ?? 'test-call',
       type: 'mcp_output',
@@ -124,8 +138,6 @@ export function ToolRendererPreview({
   isRunning,
 }: ToolRendererPreviewProps) {
   const hasRenderer = hasCustomRenderer(toolName);
-  const displayName = getToolDisplayName(toolName);
-  const InlineRenderer = useMemo(() => getInlineRenderer(toolName), [toolName]);
 
   const toolCallObjects = useMemo(
     () => buildToolCallObjects(toolName, args, toolEvents, finalPayload),
@@ -142,13 +154,13 @@ export function ToolRendererPreview({
   }
 
   return (
-    <div className="space-y-3 p-4">
-      {/* Renderer info */}
+    <div className="space-y-2 p-3">
+      {/* Renderer badge */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-semibold">Rendered via:</span>
         {hasRenderer ? (
           <Badge variant="default" className="text-[10px]">
-            {displayName} (Custom)
+            {toolName} (Custom)
           </Badge>
         ) : (
           <Badge variant="outline" className="text-[10px]">
@@ -157,29 +169,15 @@ export function ToolRendererPreview({
         )}
       </div>
 
-      {/* The renderer */}
-      <div className="rounded-lg border border-border bg-card p-3">
-        <InlineRenderer
-          toolUpdates={toolCallObjects}
-          currentIndex={toolCallObjects.length - 1}
-          toolGroupId="test-preview"
-        />
-      </div>
+      {/* Full tool visualization — same shell used in real chat */}
+      <ToolCallVisualization toolUpdates={toolCallObjects} />
 
       {/* Data bridge info */}
-      <div className="text-[10px] text-muted-foreground space-y-0.5">
-        <p>
-          <Info className="h-3 w-3 inline mr-1" />
-          {toolCallObjects.length} ToolCallObject(s) generated from{' '}
-          {toolEvents.length} stream events
-        </p>
-        {!hasRenderer && (
-          <p>
-            No custom renderer registered for &quot;{toolName}&quot;. Create one
-            using the tool renderer skill to get a richer display.
-          </p>
-        )}
-      </div>
+      <p className="text-[10px] text-muted-foreground">
+        <Info className="h-3 w-3 inline mr-1" />
+        {toolCallObjects.length} ToolCallObject(s) generated from{' '}
+        {toolEvents.length} stream events
+      </p>
     </div>
   );
 }
