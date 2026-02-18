@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Shield, Server, ChevronDown, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Server, ChevronDown, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -17,47 +17,71 @@ import { toast } from 'sonner';
 import { useAdminOverride } from '@/hooks/useAdminOverride';
 import { BACKEND_URLS } from '@/lib/api/endpoints';
 
-/**
- * AdminMenu - Dropdown for admin-only preferences
- *
- * Only rendered when user is admin (lazy loaded).
- * Uses the shared useAdminOverride hook for server detection/switching.
- * Both this and ApiTestConfigPanel read/write the same Redux state.
- */
+type HealthStatus = 'idle' | 'checking' | 'healthy' | 'unhealthy';
+
 export function AdminMenu() {
     const {
         isLocalhost,
         isChecking,
         serverOverride,
         setServer,
+        checkHealth,
     } = useAdminOverride();
 
+    const [healthStatus, setHealthStatus] = useState<HealthStatus>('idle');
+
     const handleServerChange = async (value: string) => {
+        setHealthStatus('checking');
+
         if (value === 'default') {
-            await setServer(null);
+            const healthy = await checkHealth('production');
+            if (healthy) {
+                await setServer(null);
+                setHealthStatus('healthy');
+                toast.success('Switched to production', {
+                    description: `${BACKEND_URLS.production} is healthy`,
+                });
+            } else {
+                setHealthStatus('unhealthy');
+                toast.error('Production server unreachable', {
+                    description: `Cannot connect to ${BACKEND_URLS.production}`,
+                });
+            }
             return;
         }
 
         if (value === 'localhost') {
             const success = await setServer('localhost');
             if (!success) {
+                setHealthStatus('unhealthy');
                 toast.error('Localhost unavailable', {
                     description: 'Cannot connect to the local server. Please start it and try again.',
                 });
                 return;
             }
+            setHealthStatus('healthy');
             toast.success('Switched to localhost', {
-                description: `Connected to ${BACKEND_URLS.localhost}`,
+                description: `${BACKEND_URLS.localhost} is healthy`,
             });
         } else {
-            await setServer(value === 'production' ? 'production' : null);
+            const healthy = await checkHealth('production');
+            if (healthy) {
+                await setServer(value === 'production' ? 'production' : null);
+                setHealthStatus('healthy');
+            } else {
+                setHealthStatus('unhealthy');
+                toast.error('Server unreachable', {
+                    description: 'Cannot connect to the selected server.',
+                });
+            }
         }
     };
 
     const currentValue = serverOverride || 'default';
+    const showSpinner = isChecking || healthStatus === 'checking';
 
     return (
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={() => setHealthStatus('idle')}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
@@ -73,7 +97,7 @@ export function AdminMenu() {
                     <ChevronDown className="h-3 w-3 opacity-50" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                     Admin Settings
                 </DropdownMenuLabel>
@@ -84,21 +108,23 @@ export function AdminMenu() {
                     Server Environment
                 </DropdownMenuLabel>
 
-                {isChecking ? (
+                {showSpinner ? (
                     <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground">
                         <Loader2 className="h-3 w-3 animate-spin" />
-                        Checking localhost...
+                        Running health check...
                     </div>
                 ) : (
                     <DropdownMenuRadioGroup value={currentValue} onValueChange={handleServerChange}>
                         <DropdownMenuRadioItem value="default" className="text-xs">
                             <span className="flex items-center gap-2">
                                 Production (default)
+                                {currentValue === 'default' && <HealthIndicator status={healthStatus} />}
                             </span>
                         </DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="localhost" className="text-xs">
                             <span className="flex items-center gap-2">
                                 localhost:8000
+                                {currentValue === 'localhost' && <HealthIndicator status={healthStatus} />}
                             </span>
                         </DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
@@ -106,6 +132,13 @@ export function AdminMenu() {
             </DropdownMenuContent>
         </DropdownMenu>
     );
+}
+
+function HealthIndicator({ status }: { status: HealthStatus }) {
+    if (status === 'idle') return null;
+    if (status === 'healthy') return <CheckCircle2 className="h-3 w-3 text-green-500" />;
+    if (status === 'unhealthy') return <XCircle className="h-3 w-3 text-destructive" />;
+    return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />;
 }
 
 export default AdminMenu;

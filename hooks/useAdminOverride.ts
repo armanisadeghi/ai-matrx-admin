@@ -15,17 +15,17 @@ import {
 import { selectIsAdmin, selectAuthReady } from '@/lib/redux/slices/userSlice';
 import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
 
-const HEALTH_CHECK_TIMEOUT_MS = 2000;
+const HEALTH_CHECK_TIMEOUT_MS = 3000;
 
 /**
- * Check if localhost backend is healthy.
+ * Check if a backend server is healthy.
  * Returns true if we get ANY response (even error) — the server is running.
  */
-async function checkLocalhostHealth(): Promise<boolean> {
+async function checkServerHealth(baseUrl: string): Promise<boolean> {
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
-        await fetch(`${BACKEND_URLS.localhost}${ENDPOINTS.health.check}`, {
+        await fetch(`${baseUrl}${ENDPOINTS.health.check}`, {
             method: 'GET',
             signal: controller.signal,
         });
@@ -34,6 +34,10 @@ async function checkLocalhostHealth(): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+async function checkLocalhostHealth(): Promise<boolean> {
+    return checkServerHealth(BACKEND_URLS.localhost);
 }
 
 /**
@@ -147,5 +151,10 @@ export function useAdminOverride() {
             setIsChecking(false);
             return healthy;
         }, [dispatch, isLocalhost]),
+        /** Check health of any server by key */
+        checkHealth: useCallback(async (server: 'production' | 'localhost') => {
+            const url = server === 'localhost' ? BACKEND_URLS.localhost : BACKEND_URLS.production;
+            return checkServerHealth(url);
+        }, []),
     };
 }
