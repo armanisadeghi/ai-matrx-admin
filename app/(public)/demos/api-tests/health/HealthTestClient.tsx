@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Activity, Loader2, CheckCircle, AlertCircle, Server, Database, Zap } from "lucide-react";
+import { Activity, Loader2, CheckCircle, AlertCircle, Server, Database, Zap, Link, Clock, Hash, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApiTestConfig, ApiTestConfigPanel } from "@/components/api-test-config";
 import { TEST_ADMIN_TOKEN } from "../sample-prompt";
@@ -29,7 +29,18 @@ interface DetailedHealthResponse extends HealthResponse {
     };
 }
 
-function HealthCard({ title, data, icon: Icon }: { title: string; data: any; icon: any }) {
+interface RequestMeta {
+    url: string;
+    method: string;
+    statusCode: number;
+    statusText: string;
+    responseTimeMs: number;
+    requestedAt: string;
+    hasAuth: boolean;
+    serverType: string;
+}
+
+function HealthCard({ title, data, icon: Icon }: { title: string; data: Record<string, unknown>; icon: React.ComponentType<{ className?: string }> }) {
     const isHealthy = data?.status === 'healthy' || data?.status === 'ok';
     
     return (
@@ -41,13 +52,64 @@ function HealthCard({ title, data, icon: Icon }: { title: string; data: any; ico
             <p className={`text-sm font-medium ${
                 isHealthy ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
             }`}>
-                {data?.status || 'unknown'}
+                {String(data?.status ?? 'unknown')}
             </p>
-            {data?.latency_ms && (
+            {typeof data?.latency_ms === 'number' && (
                 <p className="text-xs text-muted-foreground mt-1">
                     {data.latency_ms}ms latency
                 </p>
             )}
+        </div>
+    );
+}
+
+function RequestMetaPanel({ meta }: { meta: RequestMeta }) {
+    const isSuccess = meta.statusCode >= 200 && meta.statusCode < 300;
+
+    return (
+        <div className="bg-muted/50 border border-border rounded-lg overflow-hidden">
+            <div className="px-4 py-2 border-b border-border flex items-center gap-2 bg-muted">
+                <Hash className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Request Details</span>
+            </div>
+            <div className="divide-y divide-border">
+                <MetaRow icon={Link} label="URL" value={meta.url} mono />
+                <MetaRow icon={Activity} label="Method" value={meta.method} />
+                <MetaRow
+                    icon={CheckCircle}
+                    label="Status"
+                    value={`${meta.statusCode} ${meta.statusText}`}
+                    valueClass={isSuccess ? 'text-green-600 dark:text-green-400' : 'text-destructive'}
+                />
+                <MetaRow icon={Clock} label="Response Time" value={`${meta.responseTimeMs}ms`} />
+                <MetaRow icon={Server} label="Server" value={meta.serverType === 'local' ? 'Local (localhost)' : 'Production'} />
+                <MetaRow icon={Shield} label="Auth Token" value={meta.hasAuth ? 'Provided' : 'None'} valueClass={meta.hasAuth ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'} />
+                <MetaRow icon={Clock} label="Requested At" value={new Date(meta.requestedAt).toLocaleString()} />
+            </div>
+        </div>
+    );
+}
+
+function MetaRow({
+    icon: Icon,
+    label,
+    value,
+    mono = false,
+    valueClass,
+}: {
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    value: string;
+    mono?: boolean;
+    valueClass?: string;
+}) {
+    return (
+        <div className="flex items-start gap-3 px-4 py-2.5">
+            <Icon className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <span className="text-xs text-muted-foreground w-28 flex-shrink-0">{label}</span>
+            <span className={`text-xs break-all ${mono ? 'font-mono' : ''} ${valueClass ?? 'text-foreground'}`}>
+                {value}
+            </span>
         </div>
     );
 }
@@ -59,29 +121,49 @@ export default function HealthTestClient() {
     });
     
     const [basicHealth, setBasicHealth] = useState<HealthResponse | null>(null);
+    const [basicMeta, setBasicMeta] = useState<RequestMeta | null>(null);
     const [detailedHealth, setDetailedHealth] = useState<DetailedHealthResponse | null>(null);
+    const [detailedMeta, setDetailedMeta] = useState<RequestMeta | null>(null);
     const [isLoadingBasic, setIsLoadingBasic] = useState(false);
     const [isLoadingDetailed, setIsLoadingDetailed] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [basicError, setBasicError] = useState<string | null>(null);
+    const [detailedError, setDetailedError] = useState<string | null>(null);
 
     const checkBasicHealth = async () => {
         setIsLoadingBasic(true);
-        setError(null);
+        setBasicError(null);
         setBasicHealth(null);
+        setBasicMeta(null);
+
+        const url = `${apiConfig.baseUrl}/api/health`;
+        const requestedAt = new Date().toISOString();
+        const start = performance.now();
 
         try {
-            const response = await fetch(`${apiConfig.baseUrl}/api/health`, {
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${apiConfig.authToken}`,
                 },
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const responseTimeMs = Math.round(performance.now() - start);
+
+            setBasicMeta({
+                url,
+                method: 'GET',
+                statusCode: response.status,
+                statusText: response.statusText,
+                responseTimeMs,
+                requestedAt,
+                hasAuth: !!apiConfig.authToken,
+                serverType: apiConfig.serverType,
+            });
+
+            if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
             const data = await response.json();
             setBasicHealth(data);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Health check failed';
-            setError(errorMessage);
+            setBasicError(err instanceof Error ? err.message : 'Health check failed');
         } finally {
             setIsLoadingBasic(false);
         }
@@ -89,26 +171,46 @@ export default function HealthTestClient() {
 
     const checkDetailedHealth = async () => {
         setIsLoadingDetailed(true);
-        setError(null);
+        setDetailedError(null);
         setDetailedHealth(null);
+        setDetailedMeta(null);
+
+        const url = `${apiConfig.baseUrl}/api/health/detailed`;
+        const requestedAt = new Date().toISOString();
+        const start = performance.now();
 
         try {
-            const response = await fetch(`${apiConfig.baseUrl}/api/health/detailed`, {
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${apiConfig.authToken}`,
                 },
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const responseTimeMs = Math.round(performance.now() - start);
+
+            setDetailedMeta({
+                url,
+                method: 'GET',
+                statusCode: response.status,
+                statusText: response.statusText,
+                responseTimeMs,
+                requestedAt,
+                hasAuth: !!apiConfig.authToken,
+                serverType: apiConfig.serverType,
+            });
+
+            if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
             const data = await response.json();
             setDetailedHealth(data);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Detailed health check failed';
-            setError(errorMessage);
+            setDetailedError(err instanceof Error ? err.message : 'Detailed health check failed');
         } finally {
             setIsLoadingDetailed(false);
         }
     };
+
+    const isOverallHealthy = (data: HealthResponse) =>
+        data.status === 'healthy' || data.status === 'ok';
 
     return (
         <div className="h-full flex flex-col overflow-hidden bg-background">
@@ -167,83 +269,94 @@ export default function HealthTestClient() {
                         </div>
                     </div>
 
-                    {/* Error Display */}
-                    {error && (
-                        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h4 className="font-semibold text-destructive mb-1">Health Check Failed</h4>
-                                <p className="text-sm text-destructive/80">{error}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Basic Health Response */}
-                    {basicHealth && (
+                    {/* Basic Health */}
+                    {(basicMeta || basicError) && (
                         <div className="bg-card border border-border rounded-lg overflow-hidden">
                             <div className="border-b border-border px-6 py-3 flex items-center gap-2">
                                 <Activity className="w-4 h-4 text-muted-foreground" />
                                 <h3 className="font-semibold">Basic Health</h3>
                             </div>
-                            <div className="p-6">
-                                <div className="flex items-center justify-center mb-6">
-                                    <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/30">
-                                        <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
+                            <div className="p-4 space-y-4">
+                                {basicMeta && <RequestMetaPanel meta={basicMeta} />}
+
+                                {basicError ? (
+                                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
+                                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <h4 className="font-semibold text-destructive mb-1">Health Check Failed</h4>
+                                            <p className="text-sm text-destructive/80">{basicError}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="text-center mb-6">
-                                    <h2 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
-                                        {basicHealth.status || 'Healthy'}
-                                    </h2>
-                                    <p className="text-muted-foreground">
-                                        {basicHealth.message || 'Service is operational'}
-                                    </p>
-                                </div>
-                                {basicHealth.timestamp && (
-                                    <p className="text-xs text-muted-foreground text-center">
-                                        Checked at: {new Date(basicHealth.timestamp).toLocaleString()}
-                                    </p>
+                                ) : basicHealth && (
+                                    <div className="text-center py-4">
+                                        <div className="inline-flex items-center justify-center p-3 rounded-full mb-3 bg-green-100 dark:bg-green-900/30">
+                                            <CheckCircle className={`w-8 h-8 ${isOverallHealthy(basicHealth) ? 'text-green-600 dark:text-green-400' : 'text-amber-500'}`} />
+                                        </div>
+                                        <h2 className={`text-xl font-bold mb-1 ${isOverallHealthy(basicHealth) ? 'text-green-600 dark:text-green-400' : 'text-amber-500'}`}>
+                                            {String(basicHealth.status ?? 'Healthy')}
+                                        </h2>
+                                        {basicHealth.message && (
+                                            <p className="text-sm text-muted-foreground">{String(basicHealth.message)}</p>
+                                        )}
+                                        {basicHealth.timestamp && (
+                                            <p className="text-xs text-muted-foreground mt-2">
+                                                Server time: {new Date(String(basicHealth.timestamp)).toLocaleString()}
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
                     )}
 
-                    {/* Detailed Health Response */}
-                    {detailedHealth && (
+                    {/* Detailed Health */}
+                    {(detailedMeta || detailedError) && (
                         <div className="bg-card border border-border rounded-lg overflow-hidden">
                             <div className="border-b border-border px-6 py-3 flex items-center gap-2">
                                 <Zap className="w-4 h-4 text-muted-foreground" />
                                 <h3 className="font-semibold">Detailed Health</h3>
                             </div>
-                            <div className="p-6 space-y-6">
-                                {/* Overall Status */}
-                                <div className="text-center pb-6 border-b border-border">
-                                    <div className="inline-flex items-center justify-center p-3 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
-                                        <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                            <div className="p-4 space-y-4">
+                                {detailedMeta && <RequestMetaPanel meta={detailedMeta} />}
+
+                                {detailedError ? (
+                                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
+                                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <h4 className="font-semibold text-destructive mb-1">Detailed Health Check Failed</h4>
+                                            <p className="text-sm text-destructive/80">{detailedError}</p>
+                                        </div>
                                     </div>
-                                    <h2 className="text-xl font-bold text-green-600 dark:text-green-400">
-                                        {detailedHealth.status || 'Healthy'}
-                                    </h2>
-                                </div>
+                                ) : detailedHealth && (
+                                    <div className="space-y-4">
+                                        <div className="text-center py-2">
+                                            <div className="inline-flex items-center justify-center p-3 rounded-full mb-3 bg-green-100 dark:bg-green-900/30">
+                                                <CheckCircle className={`w-8 h-8 ${isOverallHealthy(detailedHealth) ? 'text-green-600 dark:text-green-400' : 'text-amber-500'}`} />
+                                            </div>
+                                            <h2 className={`text-xl font-bold ${isOverallHealthy(detailedHealth) ? 'text-green-600 dark:text-green-400' : 'text-amber-500'}`}>
+                                                {String(detailedHealth.status ?? 'Healthy')}
+                                            </h2>
+                                            {detailedHealth.timestamp && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Server time: {new Date(String(detailedHealth.timestamp)).toLocaleString()}
+                                                </p>
+                                            )}
+                                        </div>
 
-                                {/* Service Components */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    {detailedHealth.database && (
-                                        <HealthCard title="Database" data={detailedHealth.database} icon={Database} />
-                                    )}
-                                    {detailedHealth.cache && (
-                                        <HealthCard title="Cache" data={detailedHealth.cache} icon={Zap} />
-                                    )}
-                                    {detailedHealth.services && Object.entries(detailedHealth.services).map(([name, data]) => (
-                                        <HealthCard key={name} title={name} data={data} icon={Server} />
-                                    ))}
-                                </div>
-
-                                {/* Timestamp */}
-                                {detailedHealth.timestamp && (
-                                    <p className="text-xs text-muted-foreground text-center pt-4 border-t border-border">
-                                        Last checked: {new Date(detailedHealth.timestamp).toLocaleString()}
-                                    </p>
+                                        {(detailedHealth.database || detailedHealth.cache || detailedHealth.services) && (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {detailedHealth.database && (
+                                                    <HealthCard title="Database" data={detailedHealth.database as Record<string, unknown>} icon={Database} />
+                                                )}
+                                                {detailedHealth.cache && (
+                                                    <HealthCard title="Cache" data={detailedHealth.cache as Record<string, unknown>} icon={Zap} />
+                                                )}
+                                                {detailedHealth.services && Object.entries(detailedHealth.services).map(([name, data]) => (
+                                                    <HealthCard key={name} title={name} data={data as Record<string, unknown>} icon={Server} />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
