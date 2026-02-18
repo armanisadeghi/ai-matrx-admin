@@ -237,14 +237,16 @@ export const {
   setCanvasRenderMode,
 } = canvasSlice.actions;
 
-// Selectors
-export const selectCanvasIsOpen = (state: RootState) => state.canvas.isOpen;
-export const selectCanvasItems = (state: RootState) => state.canvas.items;
-export const selectCurrentItemId = (state: RootState) => state.canvas.currentItemId;
-export const selectCanvasIsAvailable = (state: RootState) => state.canvas.isAvailable;
+// Selectors — use optional chaining so these work safely with the lite Redux store
+// (public routes use LiteStoreProvider which doesn't include the canvas slice)
+export const selectCanvasIsOpen = (state: RootState) => state.canvas?.isOpen ?? false;
+export const selectCanvasItems = (state: RootState) => state.canvas?.items ?? [];
+export const selectCurrentItemId = (state: RootState) => state.canvas?.currentItemId ?? null;
+export const selectCanvasIsAvailable = (state: RootState) => state.canvas?.isAvailable ?? false;
 
 // Get the currently active canvas item
 export const selectCurrentCanvasItem = (state: RootState): CanvasItem | null => {
+  if (!state.canvas) return null;
   const { items, currentItemId } = state.canvas;
   if (!currentItemId) return null;
   return items.find(item => item.id === currentItemId) || null;
@@ -257,13 +259,13 @@ export const selectCanvasContent = (state: RootState): CanvasContent | null => {
 };
 
 // Get canvas count
-export const selectCanvasCount = (state: RootState) => state.canvas.items.length;
+export const selectCanvasCount = (state: RootState) => state.canvas?.items?.length ?? 0;
 
 // Get canvas width
-export const selectCanvasWidth = (state: RootState) => state.canvas.canvasWidth;
+export const selectCanvasWidth = (state: RootState) => state.canvas?.canvasWidth ?? 400;
 
 // Get canvas render mode
-export const selectCanvasRenderMode = (state: RootState) => state.canvas.renderMode;
+export const selectCanvasRenderMode = (state: RootState) => state.canvas?.renderMode ?? 'panel';
 
 // Export types
 export type { CanvasItem };
