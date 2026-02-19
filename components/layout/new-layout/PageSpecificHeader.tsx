@@ -357,12 +357,6 @@ interface PromptAppHeaderProps {
 }
 
 export function PromptAppHeader(props: PromptAppHeaderProps) {
-  const pathname = usePathname();
-
-  if (!pathname?.includes('/prompt-apps/')) {
-    return null;
-  }
-
   const [PromptAppHeaderCompact, setPromptAppHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
