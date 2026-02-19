@@ -717,20 +717,87 @@
     }
 
     /* Glass header/footer — frosted bar for fixed chrome that content scrolls behind.
-       Uses a very subtle tint + strong blur so content is visible but softened.
+       Uses a subtle tint + strong blur with a gradient fade edge (no hard line).
        Individual interactive elements (buttons, inputs) use .glass on top. */
     .glass-header {
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-bottom: 1px solid var(--glass-border);
+        position: relative;
+    }
+
+    /* Gradient fade below the header — replaces any hard border/line */
+    .glass-header::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        height: 2rem;
+        background: linear-gradient(to bottom, var(--glass-bg-subtle), transparent);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        mask-image: linear-gradient(to bottom, black, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+        pointer-events: none;
+        z-index: -1;
     }
 
     .glass-footer {
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-top: 1px solid var(--glass-border);
+        position: relative;
+    }
+
+    /* Gradient fade above the footer — replaces any hard border/line */
+    .glass-footer::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        height: 2rem;
+        background: linear-gradient(to top, var(--glass-bg-subtle), transparent);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        mask-image: linear-gradient(to top, black, transparent);
+        -webkit-mask-image: linear-gradient(to top, black, transparent);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    /* Glass overlay — for modal/dialog/sheet backdrops */
+    .glass-overlay {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px) saturate(120%);
+        -webkit-backdrop-filter: blur(8px) saturate(120%);
+    }
+
+    /* Glass modal — for dialog and alert-dialog content panels */
+    .glass-modal {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow-lg);
+    }
+
+    /* Glass sheet — for side sheets sliding in from edges */
+    .glass-sheet {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+    }
+
+    /* Glass drawer — for bottom drawers/sheets */
+    .glass-drawer {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        border-bottom: none;
     }
 
     /* ===== END GLASS EFFECT UTILITIES ===== */

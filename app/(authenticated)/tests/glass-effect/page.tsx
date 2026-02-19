@@ -1,6 +1,23 @@
 "use client";
 
-import { Search, SlidersHorizontal, Plus, Mic, Star, Heart, Zap, Globe, ArrowDown } from "lucide-react";
+import { useState } from "react";
+import {
+    Search, SlidersHorizontal, Plus, Mic, Star, Heart, Zap, Globe,
+    ArrowDown, X, Settings, User, Bell, MessageSquare
+} from "lucide-react";
+import {
+    Dialog, DialogTrigger, DialogContent, DialogHeader,
+    DialogTitle, DialogDescription, DialogFooter
+} from "@/components/ui/dialog";
+import {
+    Sheet, SheetTrigger, SheetContent, SheetHeader,
+    SheetTitle, SheetDescription
+} from "@/components/ui/sheet";
+import {
+    Drawer, DrawerTrigger, DrawerContent, DrawerHeader,
+    DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
 
 const GRADIENT_BLOCKS = [
     "bg-gradient-to-r from-rose-500 to-pink-600",
@@ -24,30 +41,28 @@ const GRADIENT_BLOCKS = [
 export default function GlassEffectTestPage() {
     return (
         <div className="relative pb-24">
-            {/* Hero instruction area */}
+            {/* Hero */}
             <div className="bg-gradient-to-b from-indigo-600 to-purple-700 text-white p-6 -mx-1 rounded-b-3xl">
                 <div className="flex items-center gap-2 mb-3">
                     <ArrowDown className="w-5 h-5 animate-bounce" />
                     <h1 className="text-xl font-bold">Glass Effect Test</h1>
                 </div>
                 <p className="text-sm text-white/80 mb-2">
-                    Scroll this page. The colored blocks below should blur/show through the
-                    header bar at the top. If the header looks like a solid bar, the glass
-                    is not working.
+                    Scroll this page. Colored blocks should blur through the header
+                    (gradient fade, no hard line). The bottom dock also fades in.
                 </p>
                 <p className="text-sm text-white/80">
-                    The floating dock at the bottom should also show color bleeding through
-                    when blocks scroll behind it.
+                    Open modals, sheets, and drawers below to see glass overlays.
                 </p>
             </div>
 
-            {/* Section: Inline glass component demos */}
+            {/* Glass variant demos on colored bg */}
             <div className="p-3 mt-4">
                 <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-                    Glass variants on a colored background
+                    Glass variants on colored background
                 </h2>
                 <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <button className="px-4 py-2 rounded-lg glass text-white text-sm font-medium">
                             .glass
                         </button>
@@ -67,12 +82,144 @@ export default function GlassEffectTestPage() {
                             <span className="text-sm text-white/60">.glass-input</span>
                         </div>
                     </div>
-                    <div className="h-10 rounded-xl glass-header flex items-center px-3">
-                        <span className="text-sm text-white font-medium">.glass-header (used on the actual header bar)</span>
+                    <div className="h-12 rounded-xl glass-header flex items-center px-3">
+                        <span className="text-sm text-white font-medium">.glass-header (fade below this bar)</span>
                     </div>
-                    <div className="h-10 rounded-xl glass-footer flex items-center px-3">
-                        <span className="text-sm text-white font-medium">.glass-footer (used on bottom docks)</span>
+                    <div className="h-12 rounded-xl glass-footer flex items-center px-3">
+                        <span className="text-sm text-white font-medium">.glass-footer (fade above this bar)</span>
                     </div>
+                </div>
+            </div>
+
+            {/* Modal / Sheet / Drawer demos */}
+            <div className="p-3 mt-4">
+                <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+                    Glass modals, sheets, and drawers
+                </h2>
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Dialog */}
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                                <MessageSquare className="w-5 h-5" />
+                                <span className="text-xs">Dialog</span>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Glass Dialog</DialogTitle>
+                                <DialogDescription>
+                                    This dialog uses glass-modal for the panel and glass-overlay
+                                    for the backdrop. Content behind should be softly blurred.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4">
+                                <p className="text-sm text-muted-foreground">
+                                    The overlay uses a light blur so the colorful page content
+                                    shows through with a frosted effect.
+                                </p>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline">Cancel</Button>
+                                <Button>Confirm</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* Sheet (right) */}
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                                <Settings className="w-5 h-5" />
+                                <span className="text-xs">Side Sheet</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Glass Sheet</SheetTitle>
+                                <SheetDescription>
+                                    This side sheet uses glass-sheet. The overlay behind it
+                                    uses glass-overlay for a frosted backdrop.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-6 space-y-4">
+                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <User className="w-5 h-5" />
+                                    <span className="text-sm">Profile Settings</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <Bell className="w-5 h-5" />
+                                    <span className="text-sm">Notifications</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <Settings className="w-5 h-5" />
+                                    <span className="text-sm">Preferences</span>
+                                </div>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+
+                    {/* Drawer (bottom) */}
+                    <Drawer>
+                        <DrawerTrigger asChild>
+                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                                <ArrowDown className="w-5 h-5" />
+                                <span className="text-xs">Drawer</span>
+                            </Button>
+                        </DrawerTrigger>
+                        <DrawerContent>
+                            <DrawerHeader>
+                                <DrawerTitle>Glass Drawer</DrawerTitle>
+                                <DrawerDescription>
+                                    Bottom drawer with glass-drawer. Drag down to dismiss.
+                                </DrawerDescription>
+                            </DrawerHeader>
+                            <div className="p-4 space-y-3">
+                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <Star className="w-5 h-5" />
+                                    <span className="text-sm">Option A</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <Heart className="w-5 h-5" />
+                                    <span className="text-sm">Option B</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <Zap className="w-5 h-5" />
+                                    <span className="text-sm">Option C</span>
+                                </div>
+                            </div>
+                            <DrawerFooter>
+                                <DrawerClose asChild>
+                                    <Button variant="outline">Close</Button>
+                                </DrawerClose>
+                            </DrawerFooter>
+                        </DrawerContent>
+                    </Drawer>
+
+                    {/* Sheet (left) */}
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                                <Globe className="w-5 h-5" />
+                                <span className="text-xs">Left Sheet</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left">
+                            <SheetHeader>
+                                <SheetTitle>Left Sheet</SheetTitle>
+                                <SheetDescription>
+                                    Same glass-sheet effect, sliding from the left.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="py-6 space-y-4">
+                                {["Navigation", "Dashboard", "Analytics", "Reports"].map((item) => (
+                                    <div key={item} className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                        <span className="text-sm">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
 
@@ -94,7 +241,7 @@ export default function GlassEffectTestPage() {
                             <h3 className="text-base font-bold">Block {i + 1}</h3>
                         </div>
                         <p className="text-sm text-white/70">
-                            This color should be visible through the header when scrolled up.
+                            This color should blur through the header when scrolled up.
                         </p>
                     </div>
                 ))}
