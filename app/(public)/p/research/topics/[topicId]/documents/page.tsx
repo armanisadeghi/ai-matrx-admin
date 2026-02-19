@@ -1,12 +1,10 @@
-import { Suspense, lazy } from 'react';
-import { DocumentSkeleton } from '@/features/research/components/shared/Skeletons';
+import { redirect } from 'next/navigation';
 
-const DocumentViewer = lazy(() => import('@/features/research/components/document/DocumentViewer'));
+interface Props {
+    params: Promise<{ topicId: string }>;
+}
 
-export default function DocumentsPage() {
-    return (
-        <Suspense fallback={<DocumentSkeleton />}>
-            <DocumentViewer />
-        </Suspense>
-    );
+export default async function DocumentsRedirect({ params }: Props) {
+    const { topicId } = await params;
+    redirect(`/p/research/topics/${topicId}/document`);
 }

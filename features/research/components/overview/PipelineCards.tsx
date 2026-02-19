@@ -136,8 +136,8 @@ export function PipelineCards({ topicId, progress }: PipelineCardsProps) {
                 )}
             </StatCard>
 
-            {/* Research Report → /documents */}
-            <StatCard icon={File} label="Research Report" href={`${base}/documents`}>
+            {/* Research Report → /synthesis */}
+            <StatCard icon={File} label="Research Report" href={`${base}/synthesis`}>
                 <div className={cn(
                     'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold',
                     progress.project_syntheses > 0
@@ -163,8 +163,8 @@ export function PipelineCards({ topicId, progress }: PipelineCardsProps) {
                 <div className="text-xs text-muted-foreground">organize sources</div>
             </StatCard>
 
-            {/* Documents → /documents */}
-            <StatCard icon={DollarSign} label="Documents" href={`${base}/documents`}>
+            {/* Documents → /document */}
+            <StatCard icon={DollarSign} label="Documents" href={`${base}/document`}>
                 <div className="text-2xl font-bold">{progress.total_documents}</div>
                 <div className="text-xs text-muted-foreground">
                     {progress.total_documents > 0 ? `${progress.total_documents} version${progress.total_documents !== 1 ? 's' : ''}` : 'none yet'}

@@ -1,0 +1,126 @@
+# AI Matrx Research System
+
+A structured, multi-stage research pipeline designed to take a topic from raw keywords all the way to a polished, human-edited document. The system is project-based, fully traceable, and built for AI-assisted analysis at every stage.
+
+---
+
+## Core Concepts
+
+| Term | Definition |
+|------|-----------|
+| **Project** | The root container. Groups one or more related research topics together. |
+| **Topic** | The fundamental unit of research. Everything in the system — keywords, sources, content, analysis — belongs to a topic. |
+| **Keyword** | Search terms used to discover sources for a topic. |
+| **Source** | A webpage or document discovered through keyword research. |
+| **Content** | Scraped or extracted content from a source. |
+| **Analysis** | AI-generated analysis of individual pages or content. |
+| **Synthesis** | AI-generated cross-source analysis, grouped by keyword, tag, or manual selection. |
+| **Document** | The final versioned output — human-edited, and the source of truth for the topic. |
+
+---
+
+## Research Pipeline
+
+Topics flow through a structured, sequential pipeline:
+
+**Keywords → Sources → Content → Analysis → Synthesis → Document**
+
+### Example — Project: All Green Rebrand / Topic: All Green Brand Profile
+
+| Stage | Detail |
+|-------|--------|
+| **Keywords** | `"All Green Electronics Recycling"`, `"All Green Los Angeles e-waste"` |
+| **Sources** | 100–150 unique webpages discovered from keyword searches |
+| **Content** | Scraped content from the 6–20 highest-value pages |
+| **Analysis** | AI-generated analysis per page |
+| **Synthesis** | AI cross-page analysis, grouped by keyword, tag, or manual selection |
+| **Document** | Final polished output — human-edited source of truth for the topic |
+
+### Example Topics Within a Project
+
+| # | Name | Description |
+|---|------|-------------|
+| 1 | **All Green Brand Profile** | Current brand identity, positioning, messaging, and visual language — including tone, target audience, competitive differentiation, and marketing presence. |
+| 2 | **All Green Services** | Full catalog of services: IT asset disposition, data destruction, e-waste recycling, and compliance/logistics offerings. Covers scope, process, and client-facing value. |
+| 3 | **Federal Recycling & Data Security Laws** | Federal laws and regulations affecting All Green's corporate clients across healthcare, finance, and government — covering e-waste disposal, data destruction standards, and compliance requirements. |
+
+---
+
+## Schema Reference
+
+> Single source of truth for the `rs_` table structure. Updated after the schema cleanup (Feb 2026).
+
+## Architecture
+
+```
+projects (existing)
+  └── rs_topic          ← only table with project_id
+        ├── rs_keyword
+        │     └── rs_keyword_source (join)
+        ├── rs_source
+        │     ├── rs_content
+        │     ├── rs_media
+        │     └── rs_source_tag (join)
+        ├── rs_analysis
+        ├── rs_synthesis   ← scope: keyword | project | tag | custom
+        ├── rs_tag
+        └── rs_document
+```
+
+All child tables reference `rs_topic` via `topic_id`. No child table carries `project_id` — RLS policies chain through `rs_topic.project_id → projects`.
+
+---
+
+## Tables
+
+| Table | Purpose | Key FKs | Example |
+|-------|---------|---------|---------|
+| **rs_topic** | A research topic within a project. Holds config, agent settings, autonomy level. | `project_id → projects` | "All Green Brand Profile" for the "All Green Rebrand" project |
+| **rs_keyword** | Search terms for a topic. Tracks search provider, params, staleness. | `topic_id → rs_topic` | `"e-waste recycling regulations"` |
+| **rs_source** | A discovered URL (web page, PDF, YouTube). Stores title, hostname, rank, scrape status. | `topic_id → rs_topic` | `https://epa.gov/e-waste` |
+| **rs_keyword_source** | Join table linking keywords to sources with per-keyword rank. | `keyword_id → rs_keyword`, `source_id → rs_source` | keyword #1 found source #5 at rank 3 |
+| **rs_content** | Versioned scraped text for a source. Tracks hash, char count, quality, capture method. | `source_id → rs_source`, `topic_id → rs_topic` | Version 2 of scraped HTML from epa.gov |
+| **rs_media** | Images/videos extracted from a source during scraping. | `source_id → rs_source`, `topic_id → rs_topic` | An infographic from epa.gov |
+| **rs_analysis** | Per-page LLM summary (Tier A). One per source+agent. Tracks status, error, tokens. | `source_id → rs_source`, `content_id → rs_content`, `topic_id → rs_topic` | GPT-4o summary of the EPA page |
+| **rs_synthesis** | Unified LLM synthesis table. Scope determines what it consolidates. Versioned with `is_current`. | `topic_id → rs_topic`, `keyword_id → rs_keyword` (nullable), `tag_id → rs_tag` (nullable) | See scopes below |
+| **rs_tag** | User-defined category labels for a topic (e.g., "Pricing", "Compliance"). | `topic_id → rs_topic` | Tag: "Federal Regulations" |
+| **rs_source_tag** | Join table linking sources to tags. Includes confidence and assigned_by for auto-tagging. | `source_id → rs_source`, `tag_id → rs_tag` | Source #5 tagged "Federal Regulations" with 0.92 confidence |
+| **rs_document** | Versioned final research document. `is_current` marks the latest version. | `topic_id → rs_topic` | "Research Report: All Green Brand Profile" v3 |
+| **rs_template** | Reusable research templates with default keywords, tags, and agent config. | `created_by → auth.users` | "Company Profile" template |
+
+---
+
+## rs_synthesis Scopes
+
+| Scope | `keyword_id` | `tag_id` | Purpose | Example |
+|-------|-------------|----------|---------|---------|
+| `keyword` | set | null | Synthesis of all analyses for one keyword | Synthesis of all pages found via "e-waste recycling" |
+| `project` | null | null | Full research report combining all keyword syntheses | Complete research report for the topic |
+| `tag` | null | set | Consolidation of all sources tagged with a specific tag | All "Federal Regulations" content consolidated |
+| `custom` | null | null | User-created or manually assembled synthesis | A hand-curated executive summary |
+
+---
+
+## Version Control
+
+- **rs_content**: `version` (int) + `is_current` (bool). New scrape → old version set `is_current=false`, new row inserted.
+- **rs_synthesis**: `version` (int) + `is_current` (bool) + `previous_synthesis_id`. Same pattern as content.
+- **rs_document**: `version` (int) + `is_current` (bool). New generation marks all previous as not current.
+
+---
+
+## Status Tracking
+
+Tables with LLM output (`rs_analysis`, `rs_synthesis`, `rs_document`) have:
+- `status`: `'success'` or `'failed'`
+- `error`: error message (null on success)
+
+Failed rows are retained for debugging and retry. The pipeline skips sources with `status='success'` during re-runs (idempotency).
+
+---
+
+## RLS Policy Chain
+
+All policies chain through the `projects` table:
+- **Direct children of rs_topic**: `topic_id IN (SELECT id FROM rs_topic WHERE project_id IN (SELECT id FROM projects))`
+- **Join tables**: Chain through their parent (e.g., `rs_source_tag` → `rs_source` → `rs_topic` → `projects`)

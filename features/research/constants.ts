@@ -64,19 +64,26 @@ export interface ResearchNavItem {
     label: string;
     icon: string;
     href: (topicId: string) => string;
+    /** 'primary' = pipeline steps shown prominently; 'secondary' = utility tabs below the divider */
+    group: 'primary' | 'secondary';
     mobileVisible: boolean;
+    comingSoon?: boolean;
 }
 
 export const RESEARCH_NAV_ITEMS: ResearchNavItem[] = [
-    { key: 'overview',   label: 'Overview',   icon: 'LayoutDashboard', href: (id) => `/p/research/topics/${id}`,           mobileVisible: true  },
-    { key: 'keywords',   label: 'Keywords',   icon: 'Search',          href: (id) => `/p/research/topics/${id}/keywords`,  mobileVisible: true  },
-    // Sources is the primary research workspace: lists all URLs found, their scrape status,
-    // scraped content, and per-source AI analysis. Content & Analysis live here as source detail tabs.
-    { key: 'sources',    label: 'Sources',    icon: 'Globe',           href: (id) => `/p/research/topics/${id}/sources`,   mobileVisible: true  },
-    { key: 'documents',  label: 'Document',   icon: 'FileText',        href: (id) => `/p/research/topics/${id}/documents`, mobileVisible: true  },
-    { key: 'tags',       label: 'Tags',       icon: 'Tags',            href: (id) => `/p/research/topics/${id}/tags`,      mobileVisible: false },
-    { key: 'media',      label: 'Media',      icon: 'Image',           href: (id) => `/p/research/topics/${id}/media`,     mobileVisible: false },
-    { key: 'costs',      label: 'Costs',      icon: 'DollarSign',      href: (id) => `/p/research/topics/${id}/costs`,     mobileVisible: false },
+    // ── Primary pipeline steps ──────────────────────────────────────────────
+    { key: 'topic',     label: 'Topic',     icon: 'LayoutDashboard', href: (id) => `/p/research/topics/${id}`,           group: 'primary',   mobileVisible: true  },
+    { key: 'keywords',  label: 'Keywords',  icon: 'Search',          href: (id) => `/p/research/topics/${id}/keywords`,  group: 'primary',   mobileVisible: true  },
+    { key: 'sources',   label: 'Sources',   icon: 'Globe',           href: (id) => `/p/research/topics/${id}/sources`,   group: 'primary',   mobileVisible: true  },
+    { key: 'content',   label: 'Content',   icon: 'BookOpen',        href: (id) => `/p/research/topics/${id}/content`,   group: 'primary',   mobileVisible: true  },
+    { key: 'synthesis', label: 'Synthesis', icon: 'FlaskConical',    href: (id) => `/p/research/topics/${id}/synthesis`, group: 'primary',   mobileVisible: true  },
+    { key: 'document',  label: 'Document',  icon: 'FileText',        href: (id) => `/p/research/topics/${id}/document`,  group: 'primary',   mobileVisible: false },
+    // ── Secondary utility tabs ───────────────────────────────────────────────
+    { key: 'tags',      label: 'Tags',      icon: 'Tags',            href: (id) => `/p/research/topics/${id}/tags`,      group: 'secondary', mobileVisible: false },
+    { key: 'media',     label: 'Media',     icon: 'Image',           href: (id) => `/p/research/topics/${id}/media`,     group: 'secondary', mobileVisible: false },
+    { key: 'costs',     label: 'Costs',     icon: 'DollarSign',      href: (id) => `/p/research/topics/${id}/costs`,     group: 'secondary', mobileVisible: false },
+    { key: 'agents',    label: 'Agents',    icon: 'Bot',             href: (id) => `/p/research/topics/${id}/agents`,    group: 'secondary', mobileVisible: false, comingSoon: true },
+    { key: 'settings',  label: 'Settings',  icon: 'Settings2',       href: (id) => `/p/research/topics/${id}/settings`,  group: 'secondary', mobileVisible: false },
 ];
 
 // ============================================================================
