@@ -9,9 +9,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchContext } from '../../context/ResearchContext';
-import { useResearchApi } from '../../hooks/useResearchApi';
+import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchSources, useResearchKeywords } from '../../hooks/useResearchState';
+import { bulkUpdateSources, updateSource } from '../../service';
 import { useSourceFilters } from '../../hooks/useSourceFilters';
 import { SourceFilters } from './SourceFilters';
 import { BulkActionBar } from './BulkActionBar';
@@ -21,12 +21,11 @@ import { OriginBadge } from '../shared/OriginBadge';
 import type { ResearchSource, BulkAction } from '../../types';
 
 export default function SourceList() {
-    const { projectId, refresh } = useResearchContext();
-    const api = useResearchApi();
+    const { topicId, refresh } = useTopicContext();
     const isMobile = useIsMobile();
     const { filters, setFilters, resetFilters, hasActiveFilters } = useSourceFilters();
-    const { data: sources, refetch: refetchSources } = useResearchSources(projectId, filters);
-    const { data: keywords } = useResearchKeywords(projectId);
+    const { data: sources, refetch: refetchSources } = useResearchSources(topicId, filters);
+    const { data: keywords } = useResearchKeywords(topicId);
 
     const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -53,16 +52,16 @@ export default function SourceList() {
     }, [selected.size, sourceList]);
 
     const handleBulk = useCallback(async (action: BulkAction) => {
-        await api.bulkUpdateSources(projectId, { source_ids: [...selected], action });
+        await bulkUpdateSources(topicId, { source_ids: [...selected], action });
         setSelected(new Set());
         refetchSources();
         refresh();
-    }, [api, projectId, selected, refetchSources, refresh]);
+    }, [topicId, selected, refetchSources, refresh]);
 
     const handleToggleInclude = useCallback(async (source: ResearchSource) => {
-        await api.updateSource(projectId, source.id, { is_included: !source.is_included });
+        await updateSource(source.id, { is_included: !source.is_included });
         refetchSources();
-    }, [api, projectId, refetchSources]);
+    }, [refetchSources]);
 
     return (
         <div className="p-4 sm:p-6 space-y-4">
@@ -127,7 +126,7 @@ export default function SourceList() {
                                     </td>
                                     <td className="px-3 py-2">
                                         <Link
-                                            href={`/p/research/${projectId}/sources/${source.id}`}
+                                            href={`/p/research/topics/${topicId}/sources/${source.id}`}
                                             className="font-medium hover:text-primary transition-colors line-clamp-1"
                                         >
                                             {source.title || source.url}
@@ -155,18 +154,18 @@ export default function SourceList() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={`/p/research/${projectId}/sources/${source.id}`}>
+                                                    <Link href={`/p/research/topics/${topicId}/sources/${source.id}`}>
                                                         View Content
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleToggleInclude(source)}>
                                                     {source.is_included ? 'Exclude' : 'Include'}
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => api.updateSource(projectId, source.id, { scrape_status: 'complete' }).then(() => refetchSources())}>
+                                                <DropdownMenuItem onClick={() => updateSource(source.id, { scrape_status: 'complete' }).then(() => refetchSources())}>
                                                     <CheckCircle2 className="h-4 w-4 mr-2" />
                                                     Mark Complete
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => api.updateSource(projectId, source.id, { is_stale: true }).then(() => refetchSources())}>
+                                                <DropdownMenuItem onClick={() => updateSource(source.id, { is_stale: true }).then(() => refetchSources())}>
                                                     <AlertTriangle className="h-4 w-4 mr-2" />
                                                     Mark Stale
                                                 </DropdownMenuItem>
@@ -193,7 +192,7 @@ export default function SourceList() {
                     {sourceList.map(source => (
                         <Link
                             key={source.id}
-                            href={`/p/research/${projectId}/sources/${source.id}`}
+                            href={`/p/research/topics/${topicId}/sources/${source.id}`}
                             className={cn(
                                 'block rounded-xl border border-border bg-card p-3 transition-colors active:bg-muted/50',
                                 !source.is_included && 'opacity-50',

@@ -7,41 +7,34 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useQuery } from '@tanstack/react-query';
 import { useResearchApi } from '../../hooks/useResearchApi';
+import { useResearchTags } from '../../hooks/useResearchState';
 import type { ResearchTag, TagConsolidation } from '../../types';
 
 interface ConsolidationViewProps {
-    projectId: string;
+    topicId: string;
     tagId: string;
 }
 
-export default function ConsolidationView({ projectId, tagId }: ConsolidationViewProps) {
+export default function ConsolidationView({ topicId, tagId }: ConsolidationViewProps) {
     const api = useResearchApi();
     const [consolidating, setConsolidating] = useState(false);
-
-    const { data: tags } = useQuery({
-        queryKey: ['research-tags', projectId],
-        queryFn: async ({ signal }) => {
-            const res = await api.getTags(projectId, signal);
-            return res.json() as Promise<ResearchTag[]>;
-        },
-    });
+    const { data: tags } = useResearchTags(topicId);
 
     const tag = tags?.find(t => t.id === tagId);
 
     const handleConsolidate = useCallback(async () => {
         setConsolidating(true);
         try {
-            await api.consolidateTag(projectId, tagId);
+            await api.consolidateTag(topicId, tagId);
         } finally {
             setConsolidating(false);
         }
-    }, [api, projectId, tagId]);
+    }, [api, topicId, tagId]);
 
     return (
         <div className="p-4 sm:p-6 space-y-6">
-            <Link href={`/p/research/${projectId}/tags`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href={`/p/research/topics/${topicId}/tags`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <ChevronLeft className="h-4 w-4" />
                 Back to Tags
             </Link>

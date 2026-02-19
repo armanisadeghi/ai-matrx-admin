@@ -5,18 +5,18 @@ import { ResearchMobileNav } from './ResearchMobileNav';
 import type { ReactNode } from 'react';
 
 interface ResearchLayoutShellProps {
-    projectId: string;
+    topicId: string;
     children: ReactNode;
 }
 
-export default function ResearchLayoutShell({ projectId, children }: ResearchLayoutShellProps) {
+export default function ResearchLayoutShell({ topicId, children }: ResearchLayoutShellProps) {
     return (
         <div className="h-full flex overflow-hidden">
-            <ResearchSidebar projectId={projectId} />
+            <ResearchSidebar topicId={topicId} />
             <main className="flex-1 min-w-0 overflow-y-auto pb-16 md:pb-0">
                 {children}
             </main>
-            <ResearchMobileNav projectId={projectId} />
+            <ResearchMobileNav topicId={topicId} />
         </div>
     );
 }

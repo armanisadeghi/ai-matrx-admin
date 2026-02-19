@@ -13,11 +13,12 @@ import { cn } from '@/lib/utils';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import type { ResearchTemplate } from '../types';
 import { AGENT_CONFIG_KEYS, AGENT_CONFIG_META } from './types';
-import { fetchResearchConfigs, fetchTemplates, resolveBuiltinNames } from './service';
+import { fetchResearchTopics, fetchTemplates } from './service';
 
-interface ResearchConfigRow {
+interface ResearchTopicRow {
     id: string;
     project_id: string;
+    name: string;
     status: string;
     template_id: string | null;
     agent_config: Record<string, unknown> | null;
@@ -26,7 +27,7 @@ interface ResearchConfigRow {
 }
 
 export function ProjectsOverview() {
-    const [configs, setConfigs] = useState<ResearchConfigRow[]>([]);
+    const [configs, setConfigs] = useState<ResearchTopicRow[]>([]);
     const [templates, setTemplates] = useState<ResearchTemplate[]>([]);
     const [loading, setLoading] = useState(true);
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export function ProjectsOverview() {
         try {
             setLoading(true);
             const [configsData, templatesData] = await Promise.all([
-                fetchResearchConfigs(),
+                fetchResearchTopics(),
                 fetchTemplates(),
             ]);
             setConfigs(configsData);
@@ -89,7 +90,7 @@ export function ProjectsOverview() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
                 <div>
                     <h2 className="text-sm font-semibold">Active Research Projects</h2>
-                    <p className="text-xs text-muted-foreground">{configs.length} project(s) found (last 50)</p>
+                    <p className="text-xs text-muted-foreground">{configs.length} topic(s) found (last 50)</p>
                 </div>
                 <Button size="sm" variant="outline" onClick={loadData} className="gap-1.5">
                     <RefreshCw className="h-3.5 w-3.5" />
@@ -160,7 +161,7 @@ export function ProjectsOverview() {
                                 </TableCell>
                                 <TableCell>
                                     <Button size="icon" variant="ghost" className="h-7 w-7" asChild>
-                                        <a href={`/p/research/${config.project_id}`} target="_blank" rel="noreferrer">
+                                        <a href={`/p/research/topics/${config.id}`} target="_blank" rel="noreferrer">
                                             <ExternalLink className="h-3.5 w-3.5" />
                                         </a>
                                     </Button>

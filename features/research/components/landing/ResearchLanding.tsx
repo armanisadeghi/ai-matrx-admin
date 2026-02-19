@@ -68,7 +68,7 @@ export default function ResearchLanding() {
                     </p>
                     <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Button size="lg" className="w-full sm:w-auto min-h-[44px] text-base px-8 gap-2" asChild>
-                            <Link href="/p/research/new">
+                            <Link href="/p/research/topics">
                                 Start Researching
                                 <ArrowRight className="h-4 w-4" />
                             </Link>
@@ -185,7 +185,7 @@ export default function ResearchLanding() {
                         Create your first research project and let AI do the heavy lifting.
                     </p>
                     <Button size="lg" className="min-h-[44px] text-base px-10 gap-2" asChild>
-                        <Link href="/p/research/new">
+                        <Link href="/p/research/topics">
                             Get Started Free
                             <ArrowRight className="h-4 w-4" />
                         </Link>

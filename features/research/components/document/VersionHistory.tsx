@@ -5,30 +5,20 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { useQuery } from '@tanstack/react-query';
-import { useResearchApi } from '../../hooks/useResearchApi';
+import { useDocumentVersions } from '../../hooks/useResearchState';
 import type { ResearchDocument } from '../../types';
 
 interface VersionHistoryProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    projectId: string;
+    topicId: string;
     currentVersion: number;
     onCompare: (oldDoc: ResearchDocument, newDoc: ResearchDocument) => void;
 }
 
-export function VersionHistory({ open, onOpenChange, projectId, currentVersion, onCompare }: VersionHistoryProps) {
-    const api = useResearchApi();
+export function VersionHistory({ open, onOpenChange, topicId, currentVersion, onCompare }: VersionHistoryProps) {
     const isMobile = useIsMobile();
-
-    const { data: versions } = useQuery({
-        queryKey: ['document-versions', projectId],
-        queryFn: async ({ signal }) => {
-            const res = await api.getDocumentVersions(projectId, signal);
-            return res.json() as Promise<ResearchDocument[]>;
-        },
-        enabled: open && !!projectId,
-    });
+    const { data: versions } = useDocumentVersions(topicId);
 
     const versionList = versions ?? [];
 

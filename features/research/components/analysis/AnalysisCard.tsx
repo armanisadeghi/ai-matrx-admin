@@ -12,26 +12,26 @@ import type { ResearchAnalysis } from '../../types';
 
 interface AnalysisCardProps {
     analysis: ResearchAnalysis | null;
-    projectId?: string;
+    topicId?: string;
     sourceId?: string;
     onAnalyzed?: () => void;
 }
 
-export function AnalysisCard({ analysis, projectId, sourceId, onAnalyzed }: AnalysisCardProps) {
+export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: AnalysisCardProps) {
     const api = useResearchApi();
     const [expanded, setExpanded] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
 
     const handleAnalyze = useCallback(async () => {
-        if (!projectId || !sourceId) return;
+        if (!topicId || !sourceId) return;
         setAnalyzing(true);
         try {
-            await api.analyzeSource(projectId, sourceId);
+            await api.analyzeSource(topicId, sourceId);
             onAnalyzed?.();
         } finally {
             setAnalyzing(false);
         }
-    }, [api, projectId, sourceId, onAnalyzed]);
+    }, [api, topicId, sourceId, onAnalyzed]);
 
     if (!analysis) {
         return (
@@ -92,7 +92,7 @@ export function AnalysisCard({ analysis, projectId, sourceId, onAnalyzed }: Anal
                         </div>
                     )}
 
-                    {projectId && sourceId && (
+                    {topicId && sourceId && (
                         <div className="flex justify-end">
                             <Button size="sm" variant="ghost" onClick={handleAnalyze} disabled={analyzing} className="gap-1.5 text-xs">
                                 {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}

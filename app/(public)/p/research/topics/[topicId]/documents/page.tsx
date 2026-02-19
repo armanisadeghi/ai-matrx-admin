@@ -3,7 +3,7 @@ import { DocumentSkeleton } from '@/features/research/components/shared/Skeleton
 
 const DocumentViewer = lazy(() => import('@/features/research/components/document/DocumentViewer'));
 
-export default function DocumentPage() {
+export default function DocumentsPage() {
     return (
         <Suspense fallback={<DocumentSkeleton />}>
             <DocumentViewer />

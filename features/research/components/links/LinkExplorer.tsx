@@ -1,20 +1,44 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, Plus, Loader2, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchContext } from '../../context/ResearchContext';
+import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
-import { useResearchLinks } from '../../hooks/useResearchState';
 import type { ExtractedLink } from '../../types';
 
 export default function LinkExplorer() {
-    const { projectId, refresh } = useResearchContext();
+    const { topicId, refresh } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: links, refetch } = useResearchLinks(projectId);
+    const [links, setLinks] = useState<ExtractedLink[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        setIsLoading(true);
+        api.getLinks(topicId)
+            .then(res => res.json())
+            .then((data: ExtractedLink[]) => {
+                if (!cancelled) setLinks(data);
+            })
+            .catch(() => {
+                if (!cancelled) setLinks([]);
+            })
+            .finally(() => {
+                if (!cancelled) setIsLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [api, topicId]);
+
+    const refetch = useCallback(() => {
+        api.getLinks(topicId)
+            .then(res => res.json())
+            .then((data: ExtractedLink[]) => setLinks(data))
+            .catch(() => setLinks([]));
+    }, [api, topicId]);
 
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [adding, setAdding] = useState(false);
@@ -34,14 +58,14 @@ export default function LinkExplorer() {
         if (urlsToAdd.length === 0) return;
         setAdding(true);
         try {
-            await api.addLinksToScope(projectId, { urls: urlsToAdd });
+            await api.addLinksToScope(topicId, { urls: urlsToAdd });
             setSelected(new Set());
             refetch();
             refresh();
         } finally {
             setAdding(false);
         }
-    }, [api, projectId, selected, refetch, refresh]);
+    }, [api, topicId, selected, refetch, refresh]);
 
     return (
         <div className="p-4 sm:p-6 space-y-4">

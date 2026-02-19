@@ -6,13 +6,13 @@ const ConsolidationView = lazy(() => import('@/features/research/components/cons
 export default async function TagConsolidationPage({
     params,
 }: {
-    params: Promise<{ projectId: string; tagId: string }>;
+    params: Promise<{ topicId: string; tagId: string }>;
 }) {
-    const { projectId, tagId } = await params;
+    const { topicId, tagId } = await params;
 
     return (
         <Suspense fallback={<GenericPageSkeleton />}>
-            <ConsolidationView projectId={projectId} tagId={tagId} />
+            <ConsolidationView topicId={topicId} tagId={tagId} />
         </Suspense>
     );
 }

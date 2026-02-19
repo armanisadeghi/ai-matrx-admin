@@ -146,9 +146,10 @@ export async function resolveBuiltinNames(ids: string[]): Promise<Record<string,
     return map;
 }
 
-export async function fetchResearchConfigs(): Promise<Array<{
+export async function fetchResearchTopics(): Promise<Array<{
     id: string;
     project_id: string;
+    name: string;
     status: string;
     template_id: string | null;
     agent_config: Record<string, unknown> | null;
@@ -156,11 +157,11 @@ export async function fetchResearchConfigs(): Promise<Array<{
     created_at: string;
 }>> {
     const { data, error } = await supabase
-        .from('rs_config')
-        .select('id, project_id, status, template_id, agent_config, autonomy_level, created_at')
+        .from('rs_topic')
+        .select('id, project_id, name, status, template_id, agent_config, autonomy_level, created_at')
         .order('created_at', { ascending: false })
         .limit(50);
 
-    if (error) throw new Error(`Failed to fetch research configs: ${error.message}`);
+    if (error) throw new Error(`Failed to fetch research topics: ${error.message}`);
     return data ?? [];
 }

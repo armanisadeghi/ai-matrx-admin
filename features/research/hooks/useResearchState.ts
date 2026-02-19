@@ -1,160 +1,191 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useResearchApi } from './useResearchApi';
-import type { ResearchState } from '../types';
+import { useState, useEffect, useCallback } from 'react';
+import * as service from '../service';
+import type {
+    ResearchTopic,
+    ResearchKeyword,
+    ResearchSource,
+    ResearchContent,
+    ResearchSynthesis,
+    ResearchTag,
+    ResearchDocument,
+    ResearchMedia,
+    ResearchTemplate,
+    SourceFilters,
+} from '../types';
 
-const RESEARCH_STATE_KEY = 'research-state';
+// ============================================================================
+// Generic fetch hook
+// ============================================================================
 
-export function useResearchState(projectId: string, options?: { pollInterval?: number }) {
-    const api = useResearchApi();
-    const queryClient = useQueryClient();
-
-    const query = useQuery<ResearchState>({
-        queryKey: [RESEARCH_STATE_KEY, projectId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getResearchState(projectId, signal);
-            return response.json();
-        },
-        refetchInterval: options?.pollInterval,
-        enabled: !!projectId,
-        staleTime: 5_000,
-    });
-
-    const invalidate = () =>
-        queryClient.invalidateQueries({ queryKey: [RESEARCH_STATE_KEY, projectId] });
-
-    return {
-        ...query,
-        state: query.data ?? null,
-        config: query.data?.config ?? null,
-        progress: query.data?.progress ?? null,
-        invalidate,
-    };
+interface UseQueryResult<T> {
+    data: T | null;
+    isLoading: boolean;
+    error: string | null;
+    refresh: () => void;
 }
 
-export function useResearchKeywords(projectId: string) {
-    const api = useResearchApi();
+function useServiceQuery<T>(
+    fetcher: () => Promise<T>,
+    deps: unknown[],
+    enabled = true,
+): UseQueryResult<T> {
+    const [data, setData] = useState<T | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
-    return useQuery({
-        queryKey: ['research-keywords', projectId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getKeywords(projectId, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 10_000,
-    });
+    const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+    useEffect(() => {
+        if (!enabled) {
+            setIsLoading(false);
+            return;
+        }
+        let cancelled = false;
+        setIsLoading(true);
+        setError(null);
+
+        fetcher()
+            .then(result => {
+                if (!cancelled) setData(result);
+            })
+            .catch(err => {
+                if (!cancelled) setError(err instanceof Error ? err.message : 'Unknown error');
+            })
+            .finally(() => {
+                if (!cancelled) setIsLoading(false);
+            });
+
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [enabled, refreshKey, ...deps]);
+
+    return { data, isLoading, error, refresh };
 }
 
-export function useResearchSources(projectId: string, filters?: Record<string, unknown>) {
-    const api = useResearchApi();
+// ============================================================================
+// Topic hooks
+// ============================================================================
+
+export function useTopicsForProject(projectId: string | undefined) {
+    return useServiceQuery<ResearchTopic[]>(
+        () => service.getTopicsForProject(projectId!),
+        [projectId],
+        !!projectId,
+    );
+}
+
+export function useTopic(topicId: string | undefined) {
+    return useServiceQuery<ResearchTopic | null>(
+        () => service.getTopic(topicId!),
+        [topicId],
+        !!topicId,
+    );
+}
+
+// ============================================================================
+// Keyword hooks
+// ============================================================================
+
+export function useResearchKeywords(topicId: string) {
+    return useServiceQuery<ResearchKeyword[]>(
+        () => service.getKeywords(topicId),
+        [topicId],
+        !!topicId,
+    );
+}
+
+// ============================================================================
+// Source hooks
+// ============================================================================
+
+export function useResearchSources(topicId: string, filters?: Partial<SourceFilters>) {
     const filterKey = filters ? JSON.stringify(filters) : 'all';
-
-    return useQuery({
-        queryKey: ['research-sources', projectId, filterKey],
-        queryFn: async ({ signal }) => {
-            const response = await api.getSources(projectId, filters as Record<string, string | number | boolean>, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 5_000,
-    });
+    return useServiceQuery<ResearchSource[]>(
+        () => service.getSources(topicId, filters),
+        [topicId, filterKey],
+        !!topicId,
+    );
 }
 
-export function useResearchTags(projectId: string) {
-    const api = useResearchApi();
+// ============================================================================
+// Content hooks
+// ============================================================================
 
-    return useQuery({
-        queryKey: ['research-tags', projectId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getTags(projectId, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 10_000,
-    });
+export function useSourceContent(sourceId: string) {
+    return useServiceQuery<ResearchContent[]>(
+        () => service.getSourceContent(sourceId),
+        [sourceId],
+        !!sourceId,
+    );
 }
 
-export function useResearchDocument(projectId: string) {
-    const api = useResearchApi();
+// ============================================================================
+// Synthesis hooks
+// ============================================================================
 
-    return useQuery({
-        queryKey: ['research-document', projectId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getDocument(projectId, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 30_000,
-    });
+export function useResearchSynthesis(topicId: string, params?: { scope?: string; keyword_id?: string }) {
+    const paramsKey = params ? JSON.stringify(params) : 'all';
+    return useServiceQuery<ResearchSynthesis[]>(
+        () => service.getSynthesis(topicId, params),
+        [topicId, paramsKey],
+        !!topicId,
+    );
 }
 
-export function useResearchCosts(projectId: string) {
-    const api = useResearchApi();
+// ============================================================================
+// Tag hooks
+// ============================================================================
 
-    return useQuery({
-        queryKey: ['research-costs', projectId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getCosts(projectId, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 30_000,
-    });
+export function useResearchTags(topicId: string) {
+    return useServiceQuery<ResearchTag[]>(
+        () => service.getTags(topicId),
+        [topicId],
+        !!topicId,
+    );
 }
+
+// ============================================================================
+// Document hooks
+// ============================================================================
+
+export function useResearchDocument(topicId: string) {
+    return useServiceQuery<ResearchDocument | null>(
+        () => service.getDocument(topicId),
+        [topicId],
+        !!topicId,
+    );
+}
+
+export function useDocumentVersions(topicId: string) {
+    return useServiceQuery<ResearchDocument[]>(
+        () => service.getDocumentVersions(topicId),
+        [topicId],
+        !!topicId,
+    );
+}
+
+// ============================================================================
+// Media hooks
+// ============================================================================
+
+export function useResearchMedia(topicId: string) {
+    return useServiceQuery<ResearchMedia[]>(
+        () => service.getMedia(topicId),
+        [topicId],
+        !!topicId,
+    );
+}
+
+// ============================================================================
+// Template hooks
+// ============================================================================
 
 export function useResearchTemplates() {
-    const api = useResearchApi();
-
-    return useQuery({
-        queryKey: ['research-templates'],
-        queryFn: async ({ signal }) => {
-            const response = await api.getTemplates(signal);
-            return response.json();
-        },
-        staleTime: 60_000,
-    });
-}
-
-export function useSourceContent(projectId: string, sourceId: string) {
-    const api = useResearchApi();
-
-    return useQuery({
-        queryKey: ['research-source-content', projectId, sourceId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getSourceContent(projectId, sourceId, signal);
-            return response.json();
-        },
-        enabled: !!projectId && !!sourceId,
-        staleTime: 10_000,
-    });
-}
-
-export function useResearchLinks(projectId: string) {
-    const api = useResearchApi();
-
-    return useQuery({
-        queryKey: ['research-links', projectId],
-        queryFn: async ({ signal }) => {
-            const response = await api.getLinks(projectId, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 15_000,
-    });
-}
-
-export function useResearchMedia(projectId: string, params?: string) {
-    const api = useResearchApi();
-
-    return useQuery({
-        queryKey: ['research-media', projectId, params],
-        queryFn: async ({ signal }) => {
-            const response = await api.getMedia(projectId, params, signal);
-            return response.json();
-        },
-        enabled: !!projectId,
-        staleTime: 15_000,
-    });
+    return useServiceQuery<ResearchTemplate[]>(
+        () => service.getTemplates(),
+        [],
+    );
 }

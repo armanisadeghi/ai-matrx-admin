@@ -9,12 +9,12 @@ import { useResearchApi } from '../../hooks/useResearchApi';
 import type { ResearchContent } from '../../types';
 
 interface ContentViewerProps {
-    projectId: string;
+    topicId: string;
     content: ResearchContent;
     onSaved: () => void;
 }
 
-export function ContentViewer({ projectId, content, onSaved }: ContentViewerProps) {
+export function ContentViewer({ topicId, content, onSaved }: ContentViewerProps) {
     const api = useResearchApi();
     const [editing, setEditing] = useState(false);
     const [editText, setEditText] = useState('');
@@ -33,13 +33,13 @@ export function ContentViewer({ projectId, content, onSaved }: ContentViewerProp
     const saveEdit = useCallback(async () => {
         setSaving(true);
         try {
-            await api.editContent(projectId, content.id, { content: editText });
+            await api.editContent(topicId, content.id, { content: editText });
             setEditing(false);
             onSaved();
         } finally {
             setSaving(false);
         }
-    }, [api, projectId, content.id, editText, onSaved]);
+    }, [api, topicId, content.id, editText, onSaved]);
 
     return (
         <div className="space-y-3">

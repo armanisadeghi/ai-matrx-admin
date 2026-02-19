@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Settings, Plus } from 'lucide-react';
+import { Settings, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchContext } from '../../context/ResearchContext';
+import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
 import { PipelineCards } from './PipelineCards';
@@ -17,7 +18,7 @@ import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 
 export default function ResearchOverview() {
-    const { projectId, progress, config, refresh, isLoading } = useResearchContext();
+    const { topicId, progress, topic, refresh, isLoading, error } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
 
@@ -25,66 +26,104 @@ export default function ResearchOverview() {
         refresh();
     });
 
+    if (isLoading) {
+        return (
+            <div className="p-4 sm:p-6 space-y-6">
+                <Skeleton className="h-8 w-64" />
+                <div className="flex gap-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <Skeleton key={i} className="h-10 w-24 rounded-lg" />
+                    ))}
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <Skeleton key={i} className="h-24 rounded-xl" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (!topic || error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">
+                    <AlertCircle className="h-7 w-7" />
+                </div>
+                <h2 className="text-xl font-bold mb-2">Project Not Initialized</h2>
+                <p className="text-muted-foreground text-sm max-w-md mb-6">
+                    This project hasn&apos;t been set up yet. Complete the setup wizard to configure your research topic, keywords, and settings.
+                </p>
+                <Button asChild className="gap-2 min-h-[44px]">
+                    <Link href="/p/research/topics/new">
+                        Set Up Research
+                        <ArrowRight className="h-4 w-4" />
+                    </Link>
+                </Button>
+            </div>
+        );
+    }
+
     const [keywordModalOpen, setKeywordModalOpen] = useState(false);
     const [newKeyword, setNewKeyword] = useState('');
     const [addingKeyword, setAddingKeyword] = useState(false);
 
     const handleRun = useCallback(async () => {
-        const response = await api.runPipeline(projectId);
+        const response = await api.runPipeline(topicId);
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleSearch = useCallback(async () => {
-        const response = await api.triggerSearch(projectId);
+        const response = await api.triggerSearch(topicId);
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleScrape = useCallback(async () => {
-        const response = await api.triggerScrape(projectId);
+        const response = await api.triggerScrape(topicId);
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleAnalyze = useCallback(async () => {
-        const response = await api.analyzeAll(projectId);
+        const response = await api.analyzeAll(topicId);
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleReport = useCallback(async () => {
-        const response = await api.synthesize(projectId, {
+        const response = await api.synthesize(topicId, {
             scope: 'project',
             iteration_mode: 'initial',
         });
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleRebuild = useCallback(async () => {
-        const response = await api.synthesize(projectId, {
+        const response = await api.synthesize(topicId, {
             scope: 'project',
             iteration_mode: 'rebuild',
         });
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleUpdate = useCallback(async () => {
-        const response = await api.synthesize(projectId, {
+        const response = await api.synthesize(topicId, {
             scope: 'project',
             iteration_mode: 'update',
         });
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleAddKeyword = useCallback(async () => {
         if (!newKeyword.trim()) return;
         setAddingKeyword(true);
         try {
-            await api.addKeywords(projectId, { keywords: [newKeyword.trim()] });
+            await api.addKeywords(topicId, { keywords: [newKeyword.trim()] });
             setNewKeyword('');
             setKeywordModalOpen(false);
             refresh();
         } finally {
             setAddingKeyword(false);
         }
-    }, [api, projectId, newKeyword, refresh]);
+    }, [api, topicId, newKeyword, refresh]);
 
     const hasReport = (progress?.project_syntheses ?? 0) > 0;
 
@@ -114,15 +153,15 @@ export default function ResearchOverview() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold">Research Overview</h1>
-                    {config && (
+                    {topic && (
                         <p className="text-sm text-muted-foreground mt-1">
-                            {config.metadata?.subject_name as string || 'Research Project'} &middot; {config.autonomy_level}
+                            {topic.subject_name || 'Research Project'} &middot; {topic.autonomy_level}
                         </p>
                     )}
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
-                        <Link href={`/p/research/${projectId}/new`}>
+                        <Link href="/p/research/topics/new">
                             <Settings className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -168,21 +207,21 @@ export default function ResearchOverview() {
             {/* Quick Links */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <Link
-                    href={`/p/research/${projectId}/sources`}
+                    href={`/p/research/topics/${topicId}/sources`}
                     className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
                 >
                     <div className="text-sm font-medium">View Sources</div>
                     <div className="text-xs text-muted-foreground mt-1">{progress?.total_sources ?? 0} sources</div>
                 </Link>
                 <Link
-                    href={`/p/research/${projectId}/document`}
+                    href={`/p/research/topics/${topicId}/document`}
                     className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
                 >
                     <div className="text-sm font-medium">View Document</div>
                     <div className="text-xs text-muted-foreground mt-1">{progress?.total_documents ?? 0} versions</div>
                 </Link>
                 <Link
-                    href={`/p/research/${projectId}/tags`}
+                    href={`/p/research/topics/${topicId}/tags`}
                     className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
                 >
                     <div className="text-sm font-medium">Manage Tags</div>

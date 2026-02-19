@@ -1,12 +1,12 @@
 import { Suspense, lazy } from 'react';
 import { GenericPageSkeleton } from '@/features/research/components/shared/Skeletons';
 
-const LinkExplorer = lazy(() => import('@/features/research/components/links/LinkExplorer'));
+const KeywordManager = lazy(() => import('@/features/research/components/keywords/KeywordManager'));
 
-export default function LinksPage() {
+export default function KeywordsPage() {
     return (
         <Suspense fallback={<GenericPageSkeleton />}>
-            <LinkExplorer />
+            <KeywordManager />
         </Suspense>
     );
 }

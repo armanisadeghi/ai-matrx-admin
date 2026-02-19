@@ -17,20 +17,21 @@ import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useApiAuth } from './useApiAuth';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
-import { selectUser } from '@/lib/redux/slices/userSlice';
+import { selectIsAdmin } from '@/lib/redux/slices/userSlice';
 import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 export function useBackendApi() {
     const { getHeaders, waitForAuth } = useApiAuth();
     const useLocalhost = useSelector(selectIsUsingLocalhost);
-    const user = useSelector(selectUser);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = useSelector(selectIsAdmin);
 
     // Backend URL - determined by Redux state
     const backendUrl = useMemo(() => {
-        return (isAdmin && useLocalhost)
+        const url = (isAdmin && useLocalhost)
             ? BACKEND_URLS.localhost
             : BACKEND_URLS.production;
+        console.log('[useBackendApi] isAdmin:', isAdmin, '| useLocalhost:', useLocalhost, '| backendUrl:', url);
+        return url;
     }, [isAdmin, useLocalhost]);
 
     // Ready-to-use headers
@@ -48,7 +49,7 @@ export function useBackendApi() {
     // Unified POST helper
     const post = useCallback(async (endpoint: string, body: any, signal?: AbortSignal) => {
         await waitForAuth();
-        
+        console.log('[useBackendApi] POST', `${backendUrl}${endpoint}`);
         const response = await fetch(`${backendUrl}${endpoint}`, {
             method: 'POST',
             headers: getApiHeaders(),
@@ -67,7 +68,7 @@ export function useBackendApi() {
     // Unified GET helper
     const get = useCallback(async (endpoint: string, signal?: AbortSignal) => {
         await waitForAuth();
-        
+        console.log('[useBackendApi] GET', `${backendUrl}${endpoint}`);
         const response = await fetch(`${backendUrl}${endpoint}`, {
             method: 'GET',
             headers: getApiHeaders(),
@@ -101,30 +102,24 @@ export function useBackendApi() {
         return response;
     }, [backendUrl, getApiHeaders, waitForAuth]);
 
-    return {
-        // Core values
+    const customFetch = useCallback(async (endpoint: string, options: RequestInit = {}) => {
+        await waitForAuth();
+        return fetch(`${backendUrl}${endpoint}`, {
+            ...options,
+            headers: {
+                ...getApiHeaders(),
+                ...options.headers,
+            },
+        });
+    }, [backendUrl, getApiHeaders, waitForAuth]);
+
+    return useMemo(() => ({
         backendUrl,
-        headers: getApiHeaders(),
-        
-        // Helpers
         getHeaders: getApiHeaders,
         waitForAuth,
-        
-        // Fetch methods
         post,
         get,
         upload,
-        
-        // For custom fetch calls
-        fetch: useCallback(async (endpoint: string, options: RequestInit = {}) => {
-            await waitForAuth();
-            return fetch(`${backendUrl}${endpoint}`, {
-                ...options,
-                headers: {
-                    ...getApiHeaders(),
-                    ...options.headers,
-                },
-            });
-        }, [backendUrl, getApiHeaders, waitForAuth]),
-    };
+        fetch: customFetch,
+    }), [backendUrl, getApiHeaders, waitForAuth, post, get, upload, customFetch]);
 }

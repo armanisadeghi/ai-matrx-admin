@@ -1,11 +1,25 @@
 import type { components } from '@/types/python-generated/api-types';
 
 // ============================================================================
-// REQUEST BODY TYPES (from Python OpenAPI schema)
+// REQUEST BODY TYPES
 // ============================================================================
 
-export type ResearchConfigCreate = components['schemas']['ResearchConfigCreate'];
-export type ResearchConfigUpdate = components['schemas']['ResearchConfigUpdate'];
+export type TopicCreate = {
+    name: string;
+    autonomy_level?: AutonomyLevel;
+    template_id?: string | null;
+    subject_name?: string | null;
+};
+
+export type TopicUpdate = {
+    autonomy_level?: AutonomyLevel | null;
+    default_search_provider?: SearchProvider | null;
+    default_search_params?: Record<string, unknown> | null;
+    good_scrape_threshold?: number | null;
+    scrapes_per_keyword?: number | null;
+    name?: string | null;
+};
+
 export type KeywordCreate = components['schemas']['KeywordCreate'];
 export type SourceUpdate = components['schemas']['SourceUpdate'];
 export type SourceBulkAction = components['schemas']['SourceBulkAction'];
@@ -38,23 +52,27 @@ export type IterationMode = 'initial' | 'rebuild' | 'update';
 export type BulkAction = 'include' | 'exclude' | 'mark_stale' | 'mark_complete' | 'scrape';
 export type MediaType = 'image' | 'video' | 'document';
 export type TagAssignedBy = 'manual' | 'auto' | 'llm_suggestion';
+export type TopicStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
 
 // ============================================================================
-// RESPONSE TYPES (frontend-defined, matching backend responses)
+// RESPONSE TYPES (matching database tables)
 // ============================================================================
 
-export interface ResearchConfig {
+export interface ResearchTopic {
     id: string;
     project_id: string;
+    name: string;
+    subject_name: string | null;
     autonomy_level: AutonomyLevel;
     default_search_provider: SearchProvider;
     default_search_params: Record<string, unknown>;
     good_scrape_threshold: number;
     scrapes_per_keyword: number;
-    status: string;
+    status: TopicStatus;
     template_id: string | null;
     agent_config: Record<string, unknown> | null;
     metadata: Record<string, unknown> | null;
+    created_by: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -74,13 +92,14 @@ export interface ResearchProgress {
     total_documents: number;
 }
 
-export interface ResearchState {
-    config: ResearchConfig;
+export interface TopicWithProgress {
+    topic: ResearchTopic;
     progress: ResearchProgress;
 }
 
 export interface ResearchKeyword {
     id: string;
+    topic_id: string;
     project_id: string;
     keyword: string;
     search_provider: SearchProvider;
@@ -94,6 +113,7 @@ export interface ResearchKeyword {
 
 export interface ResearchSource {
     id: string;
+    topic_id: string;
     project_id: string;
     url: string;
     title: string | null;
@@ -116,6 +136,7 @@ export interface ResearchSource {
 export interface ResearchContent {
     id: string;
     source_id: string;
+    topic_id: string;
     project_id: string;
     content: string;
     content_hash: string | null;
@@ -140,6 +161,7 @@ export interface ResearchAnalysis {
     id: string;
     content_id: string;
     source_id: string;
+    topic_id: string;
     project_id: string;
     agent_type: string;
     agent_id: string | null;
@@ -153,6 +175,7 @@ export interface ResearchAnalysis {
 
 export interface ResearchSynthesis {
     id: string;
+    topic_id: string;
     project_id: string;
     keyword_id: string | null;
     scope: SynthesisScope;
@@ -174,6 +197,7 @@ export interface ResearchSynthesis {
 
 export interface ResearchTag {
     id: string;
+    topic_id: string;
     project_id: string;
     name: string;
     description: string | null;
@@ -195,6 +219,7 @@ export interface SourceTag {
 export interface TagConsolidation {
     id: string;
     tag_id: string;
+    topic_id: string;
     project_id: string;
     agent_type: string;
     agent_id: string | null;
@@ -210,6 +235,7 @@ export interface TagConsolidation {
 
 export interface ResearchDocument {
     id: string;
+    topic_id: string;
     project_id: string;
     title: string;
     content: string;
@@ -241,6 +267,7 @@ export interface ResearchTemplate {
 export interface ResearchMedia {
     id: string;
     source_id: string;
+    topic_id: string;
     project_id: string;
     media_type: MediaType;
     url: string;
@@ -329,3 +356,12 @@ export const DEFAULT_SOURCE_FILTERS: SourceFilters = {
     limit: 50,
     offset: 0,
 };
+
+// ============================================================================
+// BACKWARD COMPATIBILITY ALIASES
+// ============================================================================
+
+/** @deprecated Use ResearchTopic instead */
+export type ResearchConfig = ResearchTopic;
+/** @deprecated Use TopicWithProgress instead */
+export type ResearchState = TopicWithProgress;

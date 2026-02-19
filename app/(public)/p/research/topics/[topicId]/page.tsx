@@ -3,7 +3,7 @@ import { OverviewSkeleton } from '@/features/research/components/shared/Skeleton
 
 const ResearchOverview = lazy(() => import('@/features/research/components/overview/ResearchOverview'));
 
-export default function ResearchOverviewPage() {
+export default function TopicOverviewPage() {
     return (
         <Suspense fallback={<OverviewSkeleton />}>
             <ResearchOverview />

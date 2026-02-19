@@ -1,13 +1,33 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { DollarSign, Loader2 } from 'lucide-react';
-import { useResearchContext } from '../../context/ResearchContext';
-import { useResearchCosts } from '../../hooks/useResearchState';
+import { useTopicContext } from '../../context/ResearchContext';
+import { useResearchApi } from '../../hooks/useResearchApi';
 import type { ResearchCosts } from '../../types';
 
 export default function CostDashboard() {
-    const { projectId } = useResearchContext();
-    const { data, isLoading } = useResearchCosts(projectId);
+    const { topicId } = useTopicContext();
+    const api = useResearchApi();
+    const [data, setData] = useState<ResearchCosts | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        setIsLoading(true);
+        api.getCosts(topicId)
+            .then(res => res.json())
+            .then((costs: ResearchCosts) => {
+                if (!cancelled) setData(costs);
+            })
+            .catch(() => {
+                if (!cancelled) setData(null);
+            })
+            .finally(() => {
+                if (!cancelled) setIsLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [api, topicId]);
 
     const costs = data as ResearchCosts | null;
 

@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchContext } from '../../context/ResearchContext';
+import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchDocument } from '../../hooks/useResearchState';
 import { useResearchStream } from '../../hooks/useResearchStream';
@@ -17,10 +17,10 @@ import { VersionDiff } from './VersionDiff';
 import type { ResearchDocument } from '../../types';
 
 export default function DocumentViewer() {
-    const { projectId, refresh } = useResearchContext();
+    const { topicId, refresh } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: docData, refetch: refetchDoc } = useResearchDocument(projectId);
+    const { data: docData, refetch: refetchDoc } = useResearchDocument(topicId);
     const stream = useResearchStream(() => { refetchDoc(); refresh(); });
 
     const [showHistory, setShowHistory] = useState(false);
@@ -40,24 +40,36 @@ export default function DocumentViewer() {
     }, [document?.content]);
 
     const handleRegenerate = useCallback(async () => {
-        const response = await api.generateDocument(projectId);
+        const response = await api.generateDocument(topicId);
         stream.startStream(response);
-    }, [api, projectId, stream]);
+    }, [api, topicId, stream]);
 
     const handleExport = useCallback(async (format: string) => {
+        if (!document) return;
         try {
-            const response = await api.exportDocument(projectId, format);
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = window.document.createElement('a');
-            a.href = url;
-            a.download = `research-${projectId}.${format}`;
-            a.click();
-            URL.revokeObjectURL(url);
+            if (format === 'json') {
+                const content = JSON.stringify({ title: document.title, content: document.content, version: document.version }, null, 2);
+                const blob = new Blob([content], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = window.document.createElement('a');
+                a.href = url;
+                a.download = `research-${topicId}.${format}`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                // For other formats, download as text for now
+                const blob = new Blob([document.content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = window.document.createElement('a');
+                a.href = url;
+                a.download = `research-${topicId}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
         } catch {
             // fallback — download as text
         }
-    }, [api, projectId]);
+    }, [document, topicId]);
 
     if (!document) {
         return (
@@ -175,7 +187,7 @@ export default function DocumentViewer() {
             <VersionHistory
                 open={showHistory}
                 onOpenChange={setShowHistory}
-                projectId={projectId}
+                topicId={topicId}
                 currentVersion={document.version}
                 onCompare={(old, current) => {
                     setDiffDocs([old, current]);

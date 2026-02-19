@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchSources, useSourceContent } from '../../hooks/useResearchState';
+import { updateSource } from '../../service';
 import { StatusBadge } from '../shared/StatusBadge';
 import { SourceTypeIcon } from '../shared/SourceTypeIcon';
 import { OriginBadge } from '../shared/OriginBadge';
@@ -17,15 +18,15 @@ import { AnalysisCard } from '../analysis/AnalysisCard';
 import type { ResearchSource, ResearchContent, ResearchAnalysis } from '../../types';
 
 interface SourceDetailProps {
-    projectId: string;
+    topicId: string;
     sourceId: string;
 }
 
-export default function SourceDetail({ projectId, sourceId }: SourceDetailProps) {
+export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: sources, refetch: refetchSources } = useResearchSources(projectId, { limit: 1, offset: 0 });
-    const { data: contentData, refetch: refetchContent } = useSourceContent(projectId, sourceId);
+    const { data: sources, refetch: refetchSources } = useResearchSources(topicId, { limit: 1, offset: 0 });
+    const { data: contentData, refetch: refetchContent } = useSourceContent(sourceId);
 
     const [pasteOpen, setPasteOpen] = useState(false);
 
@@ -36,19 +37,19 @@ export default function SourceDetail({ projectId, sourceId }: SourceDetailProps)
     const currentContent = contentVersions[selectedVersion] ?? null;
 
     const handleMarkComplete = useCallback(async () => {
-        await api.updateSource(projectId, sourceId, { scrape_status: 'complete' });
+        await updateSource(sourceId, { scrape_status: 'complete' });
         refetchSources();
-    }, [api, projectId, sourceId, refetchSources]);
+    }, [sourceId, refetchSources]);
 
     const handleMarkStale = useCallback(async () => {
-        await api.updateSource(projectId, sourceId, { is_stale: true });
+        await updateSource(sourceId, { is_stale: true });
         refetchSources();
-    }, [api, projectId, sourceId, refetchSources]);
+    }, [sourceId, refetchSources]);
 
     const handleRescrape = useCallback(async () => {
-        await api.updateSource(projectId, sourceId, { scrape_status: 'pending' });
+        await updateSource(sourceId, { scrape_status: 'pending' });
         refetchSources();
-    }, [api, projectId, sourceId, refetchSources]);
+    }, [sourceId, refetchSources]);
 
     const handleContentSaved = useCallback(() => {
         refetchContent();
@@ -58,7 +59,7 @@ export default function SourceDetail({ projectId, sourceId }: SourceDetailProps)
         <div className="flex flex-col md:flex-row h-full min-h-0">
             {/* Left Panel — Source Metadata */}
             <div className="w-full md:w-[300px] lg:w-[320px] shrink-0 border-b md:border-b-0 md:border-r border-border overflow-y-auto p-4 space-y-4">
-                <Link href={`/p/research/${projectId}/sources`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link href={`/p/research/topics/${topicId}/sources`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <ChevronLeft className="h-4 w-4" />
                     Back to Sources
                 </Link>
@@ -167,7 +168,7 @@ export default function SourceDetail({ projectId, sourceId }: SourceDetailProps)
             <div className="flex-1 min-w-0 overflow-y-auto p-4 space-y-6">
                 {currentContent ? (
                     <ContentViewer
-                        projectId={projectId}
+                        topicId={topicId}
                         content={currentContent}
                         onSaved={handleContentSaved}
                     />
@@ -188,7 +189,7 @@ export default function SourceDetail({ projectId, sourceId }: SourceDetailProps)
                         ) : (
                             <AnalysisCard
                                 analysis={null}
-                                projectId={projectId}
+                                topicId={topicId}
                                 sourceId={sourceId}
                                 onAnalyzed={refetchContent}
                             />
@@ -201,7 +202,7 @@ export default function SourceDetail({ projectId, sourceId }: SourceDetailProps)
             <PasteContentModal
                 open={pasteOpen}
                 onOpenChange={setPasteOpen}
-                projectId={projectId}
+                topicId={topicId}
                 sourceId={sourceId}
                 onSaved={() => { setPasteOpen(false); refetchContent(); }}
             />

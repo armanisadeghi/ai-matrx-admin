@@ -63,18 +63,18 @@ export interface ResearchNavItem {
     key: string;
     label: string;
     icon: string;
-    href: (projectId: string) => string;
+    href: (topicId: string) => string;
     mobileVisible: boolean;
 }
 
 export const RESEARCH_NAV_ITEMS: ResearchNavItem[] = [
-    { key: 'overview', label: 'Overview', icon: 'LayoutDashboard', href: (id) => `/p/research/${id}`, mobileVisible: true },
-    { key: 'sources', label: 'Sources', icon: 'Globe', href: (id) => `/p/research/${id}/sources`, mobileVisible: true },
-    { key: 'document', label: 'Document', icon: 'FileText', href: (id) => `/p/research/${id}/document`, mobileVisible: true },
-    { key: 'tags', label: 'Tags', icon: 'Tags', href: (id) => `/p/research/${id}/tags`, mobileVisible: true },
-    { key: 'links', label: 'Links', icon: 'Link2', href: (id) => `/p/research/${id}/links`, mobileVisible: false },
-    { key: 'media', label: 'Media', icon: 'Image', href: (id) => `/p/research/${id}/media`, mobileVisible: false },
-    { key: 'costs', label: 'Costs', icon: 'DollarSign', href: (id) => `/p/research/${id}/costs`, mobileVisible: false },
+    { key: 'overview', label: 'Overview', icon: 'LayoutDashboard', href: (id) => `/p/research/topics/${id}`, mobileVisible: true },
+    { key: 'sources', label: 'Sources', icon: 'Globe', href: (id) => `/p/research/topics/${id}/sources`, mobileVisible: true },
+    { key: 'keywords', label: 'Keywords', icon: 'Search', href: (id) => `/p/research/topics/${id}/keywords`, mobileVisible: true },
+    { key: 'documents', label: 'Documents', icon: 'FileText', href: (id) => `/p/research/topics/${id}/documents`, mobileVisible: true },
+    { key: 'tags', label: 'Tags', icon: 'Tags', href: (id) => `/p/research/topics/${id}/tags`, mobileVisible: false },
+    { key: 'media', label: 'Media', icon: 'Image', href: (id) => `/p/research/topics/${id}/media`, mobileVisible: false },
+    { key: 'costs', label: 'Costs', icon: 'DollarSign', href: (id) => `/p/research/topics/${id}/costs`, mobileVisible: false },
 ];
 
 // ============================================================================

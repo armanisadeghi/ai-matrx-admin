@@ -12,12 +12,12 @@ import { useResearchApi } from '../../hooks/useResearchApi';
 interface PasteContentModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    projectId: string;
+    topicId: string;
     sourceId: string;
     onSaved: () => void;
 }
 
-export function PasteContentModal({ open, onOpenChange, projectId, sourceId, onSaved }: PasteContentModalProps) {
+export function PasteContentModal({ open, onOpenChange, topicId, sourceId, onSaved }: PasteContentModalProps) {
     const api = useResearchApi();
     const isMobile = useIsMobile();
     const [content, setContent] = useState('');
@@ -28,7 +28,7 @@ export function PasteContentModal({ open, onOpenChange, projectId, sourceId, onS
         if (!content.trim()) return;
         setSaving(true);
         try {
-            await api.pasteContent(projectId, sourceId, { content, content_type: contentType });
+            await api.pasteContent(topicId, sourceId, { content, content_type: contentType });
             setContent('');
             onSaved();
         } finally {

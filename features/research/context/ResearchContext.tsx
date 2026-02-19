@@ -1,68 +1,89 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useResearchApi } from '../hooks/useResearchApi';
-import type { ResearchState, ResearchConfig, ResearchProgress } from '../types';
+import * as service from '../service';
+import type { ResearchTopic, ResearchProgress } from '../types';
 
-interface ResearchContextValue {
-    projectId: string;
-    state: ResearchState | null;
-    config: ResearchConfig | null;
+interface TopicContextValue {
+    topicId: string;
+    topic: ResearchTopic | null;
     progress: ResearchProgress | null;
     isLoading: boolean;
     error: string | null;
     refresh: () => Promise<void>;
 }
 
-const ResearchContext = createContext<ResearchContextValue | null>(null);
+const TopicContext = createContext<TopicContextValue | null>(null);
 
-interface ResearchProviderProps {
-    projectId: string;
+interface TopicProviderProps {
+    topicId: string;
     children: ReactNode;
 }
 
-export function ResearchProvider({ projectId, children }: ResearchProviderProps) {
+export function TopicProvider({ topicId, children }: TopicProviderProps) {
     const api = useResearchApi();
-    const [state, setState] = useState<ResearchState | null>(null);
+    const apiRef = useRef(api);
+    apiRef.current = api;
+
+    const [topic, setTopic] = useState<ResearchTopic | null>(null);
+    const [progress, setProgress] = useState<ResearchProgress | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const refresh = useCallback(async () => {
         try {
             setError(null);
-            const response = await api.getResearchState(projectId);
-            const data = await response.json();
-            setState(data);
+
+            const topicData = await service.getTopic(topicId);
+            setTopic(topicData);
+
+            if (topicData) {
+                try {
+                    const response = await apiRef.current.getTopicState(topicId);
+                    const stateData = await response.json();
+                    if (stateData?.progress) {
+                        setProgress(stateData.progress);
+                    }
+                } catch {
+                    // Progress from Python is optional; topic data from Supabase is primary
+                }
+            }
         } catch (err) {
-            setError((err as Error).message);
+            const msg = (err as Error).message ?? '';
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
-    }, [api, projectId]);
+    }, [topicId]);
 
     useEffect(() => {
         refresh();
     }, [refresh]);
 
     return (
-        <ResearchContext.Provider value={{
-            projectId,
-            state,
-            config: state?.config ?? null,
-            progress: state?.progress ?? null,
+        <TopicContext.Provider value={{
+            topicId,
+            topic,
+            progress,
             isLoading,
             error,
             refresh,
         }}>
             {children}
-        </ResearchContext.Provider>
+        </TopicContext.Provider>
     );
 }
 
-export function useResearchContext() {
-    const ctx = useContext(ResearchContext);
+export function useTopicContext() {
+    const ctx = useContext(TopicContext);
     if (!ctx) {
-        throw new Error('useResearchContext must be used within a ResearchProvider');
+        throw new Error('useTopicContext must be used within a TopicProvider');
     }
     return ctx;
 }
+
+/** @deprecated Use TopicProvider and useTopicContext instead */
+export const ResearchProvider = TopicProvider;
+/** @deprecated Use useTopicContext instead */
+export const useResearchContext = useTopicContext;

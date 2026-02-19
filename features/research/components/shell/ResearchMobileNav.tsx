@@ -4,19 +4,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Globe, FileText, Tags, MoreHorizontal, Link2, Image, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Globe, FileText, Tags, MoreHorizontal, Search, Image, DollarSign } from 'lucide-react';
 import { RESEARCH_NAV_ITEMS } from '../../constants';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
-    LayoutDashboard, Globe, FileText, Tags, Link2, Image, DollarSign,
+    LayoutDashboard, Globe, FileText, Tags, Search, Image, DollarSign,
 };
 
 interface ResearchMobileNavProps {
-    projectId: string;
+    topicId: string;
 }
 
-export function ResearchMobileNav({ projectId }: ResearchMobileNavProps) {
+export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
     const pathname = usePathname();
     const [moreOpen, setMoreOpen] = useState(false);
 
@@ -29,7 +29,7 @@ export function ResearchMobileNav({ projectId }: ResearchMobileNavProps) {
                 <div className="flex items-center justify-around h-14">
                     {visibleItems.map((item) => {
                         const Icon = ICON_MAP[item.icon];
-                        const href = item.href(projectId);
+                        const href = item.href(topicId);
                         const isActive = item.key === 'overview'
                             ? pathname === href
                             : pathname.startsWith(href);
@@ -67,7 +67,7 @@ export function ResearchMobileNav({ projectId }: ResearchMobileNavProps) {
                     <div className="p-4 space-y-1">
                         {hiddenItems.map((item) => {
                             const Icon = ICON_MAP[item.icon];
-                            const href = item.href(projectId);
+                            const href = item.href(topicId);
                             const isActive = pathname.startsWith(href);
 
                             return (

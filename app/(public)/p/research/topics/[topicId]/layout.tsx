@@ -1,16 +1,16 @@
 import { Suspense, lazy } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const ResearchProjectShell = lazy(() => import('./ResearchProjectShell'));
+const ResearchTopicShell = lazy(() => import('./ResearchTopicShell'));
 
-export default async function ResearchProjectLayout({
+export default async function ResearchTopicLayout({
     children,
     params,
 }: {
     children: React.ReactNode;
-    params: Promise<{ projectId: string }>;
+    params: Promise<{ topicId: string }>;
 }) {
-    const { projectId } = await params;
+    const { topicId } = await params;
 
     return (
         <div className="h-full w-full bg-textured">
@@ -33,9 +33,9 @@ export default async function ResearchProjectLayout({
                     </div>
                 </div>
             }>
-                <ResearchProjectShell projectId={projectId}>
+                <ResearchTopicShell topicId={topicId}>
                     {children}
-                </ResearchProjectShell>
+                </ResearchTopicShell>
             </Suspense>
         </div>
     );

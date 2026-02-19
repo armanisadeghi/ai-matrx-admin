@@ -10,16 +10,17 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { useResearchContext } from '../../context/ResearchContext';
+import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchTags } from '../../hooks/useResearchState';
+import { createTag, updateTag, deleteTag } from '../../service';
 import type { ResearchTag } from '../../types';
 
 export default function TagManager() {
-    const { projectId } = useResearchContext();
+    const { topicId } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: tags, refetch } = useResearchTags(projectId);
+    const { data: tags, refetch } = useResearchTags(topicId);
 
     const [createOpen, setCreateOpen] = useState(false);
     const [editTag, setEditTag] = useState<ResearchTag | null>(null);
@@ -38,28 +39,28 @@ export default function TagManager() {
         setSaving(true);
         try {
             if (editTag) {
-                await api.updateTag(projectId, editTag.id, { name, description: description || null });
+                await updateTag(editTag.id, { name, description: description || null });
             } else {
-                await api.createTag(projectId, { name, description: description || null });
+                await createTag(topicId, { name, description: description || null });
             }
             setCreateOpen(false);
             refetch();
         } finally {
             setSaving(false);
         }
-    }, [api, projectId, editTag, name, description, refetch]);
+    }, [topicId, editTag, name, description, refetch]);
 
     const handleDelete = useCallback(async () => {
         if (!deleteTag) return;
-        await api.deleteTag(projectId, deleteTag.id);
+        await deleteTag(deleteTag.id);
         setDeleteTag(null);
         refetch();
-    }, [api, projectId, deleteTag, refetch]);
+    }, [deleteTag, refetch]);
 
     const handleConsolidate = useCallback(async (tagId: string) => {
-        await api.consolidateTag(projectId, tagId);
+        await api.consolidateTag(topicId, tagId);
         refetch();
-    }, [api, projectId, refetch]);
+    }, [api, topicId, refetch]);
 
     const formContent = (
         <div className="space-y-4 p-4">
@@ -117,7 +118,7 @@ export default function TagManager() {
                             <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0 cursor-grab hidden sm:block" />
                             <div className="flex-1 min-w-0">
                                 <Link
-                                    href={`/p/research/${projectId}/tags/${tag.id}`}
+                                    href={`/p/research/topics/${topicId}/tags/${tag.id}`}
                                     className="font-medium text-sm hover:text-primary transition-colors"
                                 >
                                     {tag.name}

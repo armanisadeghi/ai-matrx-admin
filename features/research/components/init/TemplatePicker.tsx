@@ -22,11 +22,10 @@ export function TemplatePicker({ selected, onSelect }: TemplatePickerProps) {
         );
     }
 
-    const items = (templates as ResearchTemplate[]) ?? [];
+    const items = templates ?? [];
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* No template option */}
             <button
                 onClick={() => onSelect(null)}
                 className={cn(

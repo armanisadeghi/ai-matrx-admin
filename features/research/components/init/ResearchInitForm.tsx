@@ -2,69 +2,49 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Plus, FolderOpen, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { useUserProjects } from '@/features/projects';
+import { CreateProjectModal } from '@/features/projects/components/CreateProjectModal';
 import { useResearchApi } from '../../hooks/useResearchApi';
-import { AUTONOMY_CONFIG } from '../../constants';
 import { TemplatePicker } from './TemplatePicker';
 import { AutonomySelector } from './AutonomySelector';
-import type { AutonomyLevel, SuggestResponse, ResearchTemplate } from '../../types';
+import type { AutonomyLevel, ResearchTemplate } from '../../types';
+import type { ProjectWithRole } from '@/features/projects';
 
-interface ResearchInitFormProps {
-    projectId: string;
-}
+const STEPS = ['Project', 'Topic', 'Template', 'Keywords', 'Settings'] as const;
 
-const STEPS = ['Subject', 'Template', 'Keywords', 'Settings'] as const;
-
-export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
+export default function ResearchInitForm() {
     const router = useRouter();
     const api = useResearchApi();
     const [isPending, startTransition] = useTransition();
+    const { projects, loading: projectsLoading, refresh: refreshProjects } = useUserProjects();
+    const [createProjectOpen, setCreateProjectOpen] = useState(false);
 
     const [step, setStep] = useState(0);
+    const [selectedProject, setSelectedProject] = useState<ProjectWithRole | null>(null);
+    const [topicName, setTopicName] = useState('');
     const [subjectName, setSubjectName] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<ResearchTemplate | null>(null);
-    const [suggestions, setSuggestions] = useState<SuggestResponse | null>(null);
-    const [suggestLoading, setSuggestLoading] = useState(false);
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
     const [customKeyword, setCustomKeyword] = useState('');
     const [autonomyLevel, setAutonomyLevel] = useState<AutonomyLevel>('semi');
     const [error, setError] = useState<string | null>(null);
 
-    const fetchSuggestions = async () => {
-        if (!subjectName.trim()) return;
-        setSuggestLoading(true);
-        setError(null);
-        try {
-            const response = await api.suggest(projectId, { subject_name: subjectName.trim() });
-            if (!response.ok) {
-                const errBody = await response.text();
-                throw new Error(errBody || `Suggest failed (${response.status})`);
-            }
-            const data: SuggestResponse = await response.json();
-            if (!data || typeof data !== 'object') {
-                throw new Error('Invalid response from suggest endpoint');
-            }
-            setSuggestions(data);
-            setTitle(data.title ?? '');
-            setDescription(data.description ?? '');
-            setSelectedKeywords(Array.isArray(data.keywords) ? data.keywords.slice(0, 2) : []);
-        } catch (err) {
-            setError((err as Error).message);
-        } finally {
-            setSuggestLoading(false);
+    const handleTemplateSelect = (template: ResearchTemplate | null) => {
+        setSelectedTemplate(template);
+        if (template?.keyword_templates?.length) {
+            setSelectedKeywords(prev => {
+                const merged = new Set([...prev, ...template.keyword_templates!]);
+                return Array.from(merged);
+            });
         }
     };
 
     const handleNext = () => {
-        if (step === 0 && subjectName.trim()) {
-            fetchSuggestions();
-        }
         setStep(s => Math.min(s + 1, STEPS.length - 1));
     };
 
@@ -72,9 +52,7 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
 
     const toggleKeyword = (kw: string) => {
         setSelectedKeywords(prev =>
-            prev.includes(kw)
-                ? prev.filter(k => k !== kw)
-                : [...prev, kw],
+            prev.includes(kw) ? prev.filter(k => k !== kw) : [...prev, kw],
         );
     };
 
@@ -87,43 +65,39 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
     };
 
     const handleSubmit = () => {
-        if (selectedKeywords.length < 1) {
-            setError('Select at least one keyword');
+        if (!selectedProject || selectedKeywords.length < 1) {
+            setError('Missing required fields');
             return;
         }
         setError(null);
 
         startTransition(async () => {
             try {
-                await api.initResearch({
-                    project_id: projectId,
+                const response = await api.createTopic(selectedProject.id, {
+                    name: topicName.trim(),
                     autonomy_level: autonomyLevel,
                     template_id: selectedTemplate?.id ?? null,
                     subject_name: subjectName.trim() || null,
-                    default_search_provider: 'brave',
-                    default_search_params: {},
-                    good_scrape_threshold: 1000,
-                    scrapes_per_keyword: 5,
                 });
+                const topic = await response.json();
 
-                await api.addKeywords(projectId, {
-                    keywords: selectedKeywords,
-                });
+                await api.addKeywords(topic.id, { keywords: selectedKeywords });
 
                 if (autonomyLevel === 'auto') {
-                    api.runPipeline(projectId).catch(() => {});
+                    api.runPipeline(topic.id).catch(() => {});
                 }
 
-                router.push(`/p/research/${projectId}`);
+                router.push(`/p/research/topics/${topic.id}`);
             } catch (err) {
                 setError((err as Error).message);
             }
         });
     };
 
-    const canProceed = step === 0 ? subjectName.trim().length > 0
-        : step === 1 ? true
-        : step === 2 ? selectedKeywords.length >= 1
+    const canProceed = step === 0 ? !!selectedProject
+        : step === 1 ? topicName.trim().length > 0
+        : step === 2 ? true
+        : step === 3 ? selectedKeywords.length >= 1
         : true;
 
     return (
@@ -143,34 +117,110 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
                             {i + 1}
                         </div>
                         {i < STEPS.length - 1 && (
-                            <div className={cn('h-px w-8 sm:w-12', i < step ? 'bg-primary/40' : 'bg-border')} />
+                            <div className={cn('h-px w-6 sm:w-10', i < step ? 'bg-primary/40' : 'bg-border')} />
                         )}
                     </div>
                 ))}
             </div>
 
             <div className="w-full max-w-2xl">
-                {/* Step 0: Subject */}
+                {/* Step 0: Select Project */}
                 {step === 0 && (
                     <div className="space-y-6">
                         <div className="text-center">
-                            <h1 className="text-2xl font-bold">What do you want to research?</h1>
-                            <p className="mt-2 text-muted-foreground">Enter any topic — a company, person, scientific subject, product, or anything else.</p>
+                            <h1 className="text-2xl font-bold">Select a Project</h1>
+                            <p className="mt-2 text-muted-foreground">Research topics belong to a project. Pick one or create a new one.</p>
                         </div>
-                        <Input
-                            value={subjectName}
-                            onChange={e => setSubjectName(e.target.value)}
-                            placeholder="e.g., All Green Electronics, Cardiac Surgery advances..."
-                            className="text-base h-12"
-                            style={{ fontSize: '16px' }}
-                            autoFocus
-                            onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
-                        />
+
+                        {projectsLoading ? (
+                            <div className="flex items-center justify-center py-12 text-muted-foreground">
+                                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                Loading projects...
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {projects.map(project => (
+                                    <button
+                                        key={project.id}
+                                        onClick={() => setSelectedProject(project)}
+                                        className={cn(
+                                            'w-full flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-colors min-h-[44px]',
+                                            selectedProject?.id === project.id
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border hover:border-primary/30',
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            'h-9 w-9 rounded-lg flex items-center justify-center shrink-0',
+                                            selectedProject?.id === project.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                        )}>
+                                            {selectedProject?.id === project.id ? <Check className="h-4 w-4" /> : <FolderOpen className="h-4 w-4" />}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="font-semibold text-sm truncate">{project.name}</div>
+                                            {project.description && (
+                                                <div className="text-xs text-muted-foreground truncate mt-0.5">{project.description}</div>
+                                            )}
+                                        </div>
+                                        {project.isPersonal && (
+                                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-muted rounded-full px-2 py-0.5 shrink-0">Personal</span>
+                                        )}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => setCreateProjectOpen(true)}
+                                    className="w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-border p-4 text-left transition-colors hover:border-primary/30 min-h-[44px]"
+                                >
+                                    <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                        <Plus className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <span className="text-sm font-medium text-muted-foreground">Create New Project</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* Step 1: Template */}
+                {/* Step 1: Topic Details */}
                 {step === 1 && (
+                    <div className="space-y-6">
+                        <div className="text-center">
+                            <h1 className="text-2xl font-bold">Name Your Research Topic</h1>
+                            <p className="mt-2 text-muted-foreground">
+                                Project: <span className="font-semibold text-foreground">{selectedProject?.name}</span>
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-sm font-medium">Topic Name</label>
+                            <Input
+                                value={topicName}
+                                onChange={e => setTopicName(e.target.value)}
+                                placeholder="e.g., All Green Brand Profile, ITAD Industry Trends..."
+                                className="text-base h-12"
+                                style={{ fontSize: '16px' }}
+                                autoFocus
+                                onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
+                            />
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className="text-sm font-medium">Subject Name (optional)</label>
+                            <p className="text-xs text-muted-foreground">The entity being researched. Used for AI context and template substitution.</p>
+                            <Input
+                                value={subjectName}
+                                onChange={e => setSubjectName(e.target.value)}
+                                placeholder="e.g., All Green Electronics, Cardiac Surgery..."
+                                className="text-base"
+                                style={{ fontSize: '16px' }}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 2: Template */}
+                {step === 2 && (
                     <div className="space-y-6">
                         <div className="text-center">
                             <h1 className="text-2xl font-bold">Choose a Template</h1>
@@ -178,107 +228,55 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
                         </div>
                         <TemplatePicker
                             selected={selectedTemplate}
-                            onSelect={setSelectedTemplate}
+                            onSelect={handleTemplateSelect}
                         />
                     </div>
                 )}
 
-                {/* Step 2: Keywords */}
-                {step === 2 && (
+                {/* Step 3: Keywords */}
+                {step === 3 && (
                     <div className="space-y-6">
                         <div className="text-center">
-                            <h1 className="text-2xl font-bold">Review & Pick Keywords</h1>
-                            <p className="mt-2 text-muted-foreground">Select at least one keyword for your research.</p>
+                            <h1 className="text-2xl font-bold">Add Keywords</h1>
+                            <p className="mt-2 text-muted-foreground">Keywords drive the search and analysis pipeline. Add at least one.</p>
                         </div>
 
-                        {suggestLoading && (
-                            <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                                <span>AI is generating suggestions...</span>
+                        <div className="space-y-3">
+                            <div className="flex gap-2">
+                                <Input
+                                    value={customKeyword}
+                                    onChange={e => setCustomKeyword(e.target.value)}
+                                    placeholder="Type a keyword and press Enter..."
+                                    className="text-base flex-1"
+                                    style={{ fontSize: '16px' }}
+                                    autoFocus
+                                    onKeyDown={e => e.key === 'Enter' && addCustomKeyword()}
+                                />
+                                <Button variant="outline" onClick={addCustomKeyword} disabled={!customKeyword.trim()} className="min-h-[44px]">
+                                    Add
+                                </Button>
                             </div>
-                        )}
-
-                        {suggestions && !suggestLoading && (
-                            <div className="space-y-4">
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium">Suggested Title</label>
-                                    <Input
-                                        value={title}
-                                        onChange={e => setTitle(e.target.value)}
-                                        className="text-base"
-                                        style={{ fontSize: '16px' }}
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium">Description</label>
-                                    <Textarea
-                                        value={description}
-                                        onChange={e => setDescription(e.target.value)}
-                                        rows={3}
-                                        className="text-base resize-none"
-                                        style={{ fontSize: '16px' }}
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium flex items-center gap-2">
-                                        <Sparkles className="h-4 w-4 text-primary" />
-                                        Suggested Keywords
-                                    </label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {(suggestions.keywords ?? []).map(kw => (
-                                            <button
-                                                key={kw}
-                                                onClick={() => toggleKeyword(kw)}
-                                                className={cn(
-                                                    'rounded-full px-4 py-2 text-sm font-medium border transition-colors min-h-[44px]',
-                                                    selectedKeywords.includes(kw)
-                                                        ? 'bg-primary text-primary-foreground border-primary'
-                                                        : 'bg-card border-border hover:border-primary/50 text-foreground',
-                                                )}
-                                            >
-                                                {kw}
+                            {selectedKeywords.length > 0 && (
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    {selectedKeywords.map(kw => (
+                                        <span key={kw} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-sm font-medium">
+                                            {kw}
+                                            <button onClick={() => toggleKeyword(kw)} className="hover:text-destructive min-w-[28px] min-h-[28px] flex items-center justify-center">
+                                                &times;
                                             </button>
-                                        ))}
-                                    </div>
+                                        </span>
+                                    ))}
                                 </div>
-                            </div>
-                        )}
-
-                        {!suggestLoading && (
-                            <div className="space-y-3">
-                                <label className="text-sm font-medium">Add Custom Keyword</label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={customKeyword}
-                                        onChange={e => setCustomKeyword(e.target.value)}
-                                        placeholder="Type a keyword..."
-                                        className="text-base flex-1"
-                                        style={{ fontSize: '16px' }}
-                                        onKeyDown={e => e.key === 'Enter' && addCustomKeyword()}
-                                    />
-                                    <Button variant="outline" onClick={addCustomKeyword} disabled={!customKeyword.trim()} className="min-h-[44px]">
-                                        Add
-                                    </Button>
-                                </div>
-                                {selectedKeywords.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 pt-2">
-                                        {selectedKeywords.map(kw => (
-                                            <span key={kw} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-sm font-medium">
-                                                {kw}
-                                                <button onClick={() => toggleKeyword(kw)} className="hover:text-destructive">
-                                                    &times;
-                                                </button>
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                            )}
+                            {selectedKeywords.length === 0 && (
+                                <p className="text-xs text-muted-foreground italic pt-1">No keywords yet. Add at least one to continue.</p>
+                            )}
+                        </div>
                     </div>
                 )}
 
-                {/* Step 3: Settings */}
-                {step === 3 && (
+                {/* Step 4: Settings */}
+                {step === 4 && (
                     <div className="space-y-6">
                         <div className="text-center">
                             <h1 className="text-2xl font-bold">How Much Automation?</h1>
@@ -309,7 +307,7 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
                     {step < STEPS.length - 1 ? (
                         <Button
                             onClick={handleNext}
-                            disabled={!canProceed || suggestLoading}
+                            disabled={!canProceed}
                             className="gap-2 min-h-[44px]"
                         >
                             Next
@@ -322,11 +320,20 @@ export default function ResearchInitForm({ projectId }: ResearchInitFormProps) {
                             className="gap-2 min-h-[44px]"
                         >
                             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                            {autonomyLevel === 'auto' ? 'Start Research' : 'Create Project'}
+                            {autonomyLevel === 'auto' ? 'Start Research' : 'Create Topic'}
                         </Button>
                     )}
                 </div>
             </div>
+
+            <CreateProjectModal
+                isOpen={createProjectOpen}
+                onClose={() => setCreateProjectOpen(false)}
+                onSuccess={() => {
+                    refreshProjects();
+                    setCreateProjectOpen(false);
+                }}
+            />
         </div>
     );
 }
