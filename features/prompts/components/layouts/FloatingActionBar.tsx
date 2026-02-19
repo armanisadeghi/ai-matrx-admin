@@ -104,9 +104,9 @@ export function FloatingActionBar({
     if (isTranscribing) {
         return (
             <>
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-50" />
+                <div className="fixed inset-0 bg-background/60 backdrop-blur-md z-50" />
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl p-8 flex flex-col items-center gap-4">
+                    <div className="glass-strong rounded-3xl p-8 flex flex-col items-center gap-4">
                         <TranscriptionLoader duration={duration} size="lg" />
                         <div className="text-sm text-muted-foreground">
                             Transcribing...
@@ -117,20 +117,19 @@ export function FloatingActionBar({
         );
     }
 
-    // Default state - compact bar
+    // Default state - compact bar with glass elements
     if (!isSearchActive) {
         return (
             <>
-                {/* Backdrop blur overlay when interacting */}
                 <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                        <div className="flex items-center gap-2 p-2 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-lg">
-                            {/* Filter Button */}
+                        <div className="flex items-center gap-2 p-2">
+                            {/* Filter Button — glass pill */}
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={onFilterClick}
-                                className="h-10 w-10 flex-shrink-0 rounded-full relative"
+                                className="h-10 w-10 flex-shrink-0 glass-pill relative border-0"
                             >
                                 <SlidersHorizontal className="h-5 w-5" />
                                 {showFilterBadge && (
@@ -138,10 +137,10 @@ export function FloatingActionBar({
                                 )}
                             </Button>
 
-                            {/* Compact Search Bar */}
+                            {/* Compact Search Bar — glass input */}
                             <button
                                 onClick={handleSearchActivate}
-                                className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full bg-muted/50 hover:bg-muted/70 transition-colors"
+                                className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full glass-input transition-colors"
                             >
                                 <Search className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-sm text-muted-foreground truncate">
@@ -149,13 +148,13 @@ export function FloatingActionBar({
                                 </span>
                                 <button
                                     onClick={handleMicClick}
-                                    className="ml-auto p-1 hover:bg-background/50 rounded-full transition-colors"
+                                    className="ml-auto p-1.5 rounded-full glass-subtle transition-colors"
                                 >
                                     <Mic className="h-4 w-4 text-muted-foreground" />
                                 </button>
                             </button>
 
-                            {/* New Button */}
+                            {/* New Button — solid primary accent */}
                             <Button
                                 size="icon"
                                 onClick={onNewClick}
@@ -170,20 +169,20 @@ export function FloatingActionBar({
         );
     }
 
-    // Search Active State - Full width search
+    // Search Active State - Full width search with glass
     return (
         <>
             {/* Backdrop blur overlay */}
-            <div 
+            <div
                 className="fixed inset-0 bg-background/60 backdrop-blur-sm z-30"
                 onClick={handleSearchCancel}
             />
 
-            {/* Active Search Bar */}
+            {/* Active Search Bar — glass container */}
             <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                    <div className="flex items-center gap-2 p-2 rounded-full bg-background/95 backdrop-blur-xl border border-border shadow-2xl">
-                        {/* Search Input Container - seamless with main container */}
+                    <div className="flex items-center gap-2 p-2 rounded-full glass-strong">
+                        {/* Search Input Container */}
                         <div className="flex-1 flex items-center gap-2 h-10 px-3">
                             <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <input
@@ -197,18 +196,18 @@ export function FloatingActionBar({
                             />
                             <button
                                 onClick={handleMicClick}
-                                className="flex-shrink-0 p-1 hover:bg-muted/30 rounded-full transition-colors"
+                                className="flex-shrink-0 p-1.5 rounded-full glass-subtle transition-colors"
                             >
                                 <Mic className="h-4 w-4 text-muted-foreground" />
                             </button>
                         </div>
 
-                        {/* Clear/Cancel Button - Outside search container */}
+                        {/* Clear/Cancel Button */}
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={localSearchValue ? () => handleSearchChange("") : handleSearchCancel}
-                            className="h-10 w-10 flex-shrink-0 rounded-full"
+                            className="h-10 w-10 flex-shrink-0 rounded-full glass-subtle border-0"
                         >
                             <X className="h-5 w-5" />
                         </Button>

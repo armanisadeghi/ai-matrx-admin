@@ -97,10 +97,10 @@ export default function DesktopLayout({
             delayDuration={300} 
             skipDelayDuration={0}
         >
-            <div id={uniqueId} className="min-h-dvh bg-textured text-gray-800 dark:text-gray-100"
+            <div id={uniqueId} className="min-h-dvh text-gray-800 dark:text-gray-100"
             >
-                {/* Main Header */}
-                <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured overflow-visible">
+                {/* Main Header — glass bar, content blurs through */}
+                <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible glass-header">
                 <div className="flex items-center justify-between h-full pl-1 pr-2 overflow-visible">
                     {/* Left side - Menu toggle and page-specific content */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -108,14 +108,14 @@ export default function DesktopLayout({
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={toggleSidebar}
-                                    className="p-2 rounded-lg hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
+                                    className="p-2 rounded-lg glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
                                 >
-                                    <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out" />
+                                    <Menu className="w-5 h-5 text-foreground transition-all duration-200 ease-in-out" />
                                 </button>
                             </TooltipTrigger>
-                            <TooltipContent 
-                                side="right" 
-                                className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                            <TooltipContent
+                                side="right"
+                                className="glass-strong text-foreground"
                             >
                                 {isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                             </TooltipContent>
@@ -126,8 +126,8 @@ export default function DesktopLayout({
                     </div>
                     {/* Right side - Actions */}
                     <div className="flex items-center gap-1 overflow-visible">
-                        <QuickActionsMenu className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
-                        <FeedbackButton className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+                        <QuickActionsMenu className="glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+                        <FeedbackButton className="glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <MessageIcon />
                         <NotificationDropdown
                             notifications={notifications}

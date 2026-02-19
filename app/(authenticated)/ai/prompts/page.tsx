@@ -50,7 +50,7 @@ export default async function PromptsPage() {
         <>
             <PromptsPageHeader />
             
-            <div className="h-page w-full overflow-auto">
+            <div className="w-full">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 max-w-[1800px]">
                     <PromptsGrid prompts={prompts || []} sharedPrompts={sharedPrompts} />
                 </div>

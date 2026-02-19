@@ -312,7 +312,16 @@
     :root {
         /* Layout Header Heights - Unified: 2.5rem (h-10) for both mobile and desktop */
         --header-height: 2.5rem;
-        
+
+        /* Glass Effect — iOS-inspired frosted glass */
+        --glass-bg: rgba(255, 255, 255, 0.65);
+        --glass-bg-hover: rgba(255, 255, 255, 0.78);
+        --glass-bg-strong: rgba(255, 255, 255, 0.82);
+        --glass-bg-subtle: rgba(255, 255, 255, 0.5);
+        --glass-border: rgba(255, 255, 255, 0.5);
+        --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --glass-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+
         /* Base Background - Zinc-100 with texture (rgb 244 244 245) */
         --background: 240 5% 96%;
 
@@ -440,6 +449,15 @@
     }
 
     .dark {
+        /* Glass Effect — Dark mode */
+        --glass-bg: rgba(39, 39, 42, 0.65);
+        --glass-bg-hover: rgba(39, 39, 42, 0.78);
+        --glass-bg-strong: rgba(39, 39, 42, 0.82);
+        --glass-bg-subtle: rgba(39, 39, 42, 0.5);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+        --glass-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+
         /* Base Background - Zinc-850 with texture (rgb 39 39 42) */
         --background: 240 4% 16%;
 
@@ -632,6 +650,154 @@
 }
 
 @layer utilities {
+    /* ===== GLASS EFFECT UTILITIES — iOS-inspired frosted glass ===== */
+
+    /* Standard glass — use on buttons, icon wrappers, inputs, cards */
+    .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+    }
+
+    .glass:hover {
+        background: var(--glass-bg-hover);
+    }
+
+    /* Subtle glass — lighter frosting, less prominent */
+    .glass-subtle {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(8px) saturate(150%);
+        -webkit-backdrop-filter: blur(8px) saturate(150%);
+    }
+
+    .glass-subtle:hover {
+        background: var(--glass-bg);
+    }
+
+    /* Strong glass — heavier frosting for modals, prominent containers */
+    .glass-strong {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(20px) saturate(200%);
+        -webkit-backdrop-filter: blur(20px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow-lg);
+    }
+
+    .glass-strong:hover {
+        background: var(--glass-bg-hover);
+    }
+
+    /* Glass pill — pre-composed rounded-full glass for icon buttons */
+    .glass-pill {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        border-radius: 9999px;
+    }
+
+    .glass-pill:hover {
+        background: var(--glass-bg-hover);
+    }
+
+    /* Glass input — for text inputs and search fields */
+    .glass-input {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid var(--glass-border);
+    }
+
+    .glass-input:focus, .glass-input:focus-within {
+        background: var(--glass-bg);
+        border-color: hsl(var(--ring));
+    }
+
+    /* Glass header/footer — frosted bar for fixed chrome that content scrolls behind.
+       Uses a subtle tint + strong blur with a gradient fade edge (no hard line).
+       Individual interactive elements (buttons, inputs) use .glass on top. */
+    .glass-header {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+
+    /* Gradient fade below the header — replaces any hard border/line.
+       Uses only a tinted gradient (no backdrop-filter) since nested
+       backdrop-filter inside a parent stacking-context is unreliable. */
+    .glass-header::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        height: 3.5rem;
+        background: linear-gradient(to bottom, var(--glass-bg-subtle), transparent);
+        mask-image: linear-gradient(to bottom, black 10%, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, black 10%, transparent);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .glass-footer {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+
+    /* Gradient fade above the footer — replaces any hard border/line */
+    .glass-footer::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        height: 3.5rem;
+        background: linear-gradient(to top, var(--glass-bg-subtle), transparent);
+        mask-image: linear-gradient(to top, black 10%, transparent);
+        -webkit-mask-image: linear-gradient(to top, black 10%, transparent);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    /* Glass overlay — for modal/dialog/sheet backdrops */
+    .glass-overlay {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(8px) saturate(120%);
+        -webkit-backdrop-filter: blur(8px) saturate(120%);
+    }
+
+    /* Glass modal — for dialog and alert-dialog content panels */
+    .glass-modal {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow-lg);
+    }
+
+    /* Glass sheet — for side sheets sliding in from edges */
+    .glass-sheet {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+    }
+
+    /* Glass drawer — for bottom drawers/sheets */
+    .glass-drawer {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        border-bottom: none;
+    }
+
+    /* ===== END GLASS EFFECT UTILITIES ===== */
+
     /* Automatically apply textures and colors to backgrounds */
     .bg-card {
         background-color: hsl(var(--card));

@@ -41,7 +41,7 @@ export function MessageIcon({ className }: MessageIconProps) {
             onClick={handleClick}
             className={cn(
               "relative h-9 w-9 overflow-visible",
-              isOpen && "bg-zinc-100 dark:bg-zinc-800",
+              isOpen && "glass-strong",
               className
             )}
             aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
