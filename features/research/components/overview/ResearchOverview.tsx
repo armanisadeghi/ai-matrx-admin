@@ -213,8 +213,8 @@ export default function ResearchOverview() {
                 onCancel={stream.cancel}
             />
 
-            {/* Pipeline Cards */}
-            <PipelineCards progress={progress} />
+            {/* Pipeline Cards — all clickable, navigate to the relevant section */}
+            <PipelineCards topicId={topicId} progress={progress} />
 
             {/* Iteration Controls */}
             {hasReport && (
@@ -228,31 +228,6 @@ export default function ResearchOverview() {
                     />
                 </div>
             )}
-
-            {/* Quick Links */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <Link
-                    href={`/p/research/topics/${topicId}/sources`}
-                    className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-                >
-                    <div className="text-sm font-medium">View Sources</div>
-                    <div className="text-xs text-muted-foreground mt-1">{progress?.total_sources ?? 0} sources</div>
-                </Link>
-                <Link
-                    href={`/p/research/topics/${topicId}/documents`}
-                    className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-                >
-                    <div className="text-sm font-medium">View Document</div>
-                    <div className="text-xs text-muted-foreground mt-1">{progress?.total_documents ?? 0} versions</div>
-                </Link>
-                <Link
-                    href={`/p/research/topics/${topicId}/tags`}
-                    className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-                >
-                    <div className="text-sm font-medium">Manage Tags</div>
-                    <div className="text-xs text-muted-foreground mt-1">{progress?.total_tags ?? 0} tags</div>
-                </Link>
-            </div>
 
             {/* Topic Settings Panel */}
             <TopicSettingsPanel

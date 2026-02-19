@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { RefreshCw, Download, History, Loader2, FileText } from 'lucide-react';
+import { RefreshCw, Download, History, Loader2, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -84,6 +84,24 @@ export default function DocumentViewer() {
         );
     }
 
+    if (document.status === 'failed') {
+        return (
+            <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
+                <AlertTriangle className="h-12 w-12 text-destructive/60" />
+                <div className="text-center space-y-1">
+                    <p className="font-medium text-destructive">Document generation failed</p>
+                    {document.error && (
+                        <p className="text-sm text-muted-foreground max-w-md">{document.error}</p>
+                    )}
+                </div>
+                <Button onClick={handleRegenerate} disabled={stream.isStreaming} variant="outline" className="gap-2">
+                    {stream.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    Retry Generation
+                </Button>
+            </div>
+        );
+    }
+
     if (diffDocs) {
         return (
             <VersionDiff
@@ -120,7 +138,7 @@ export default function DocumentViewer() {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
-                        <h1 className="text-lg sm:text-xl font-bold">{document.title || 'Research Document'}</h1>
+                        <h1 className="text-lg sm:text-xl font-bold">{document.title ?? 'Research Document'}</h1>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge variant="secondary" className="text-[10px]">v{document.version}</Badge>
                             <span className="text-xs text-muted-foreground">
@@ -178,7 +196,7 @@ export default function DocumentViewer() {
                             h3: ({ children, ...props }) => <h3 id={String(children).toLowerCase().replace(/[^a-z0-9]+/g, '-')} {...props}>{children}</h3>,
                         }}
                     >
-                        {document.content}
+                        {document.content ?? ''}
                     </ReactMarkdown>
                 </article>
             </div>

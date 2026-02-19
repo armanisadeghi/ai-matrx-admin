@@ -20,6 +20,7 @@ export type TopicUpdate = {
     default_search_params?: Record<string, unknown> | null;
     good_scrape_threshold?: number | null;
     scrapes_per_keyword?: number | null;
+    project_id?: string | null;
 };
 
 export type KeywordCreate = components['schemas']['KeywordCreate'];
@@ -82,6 +83,8 @@ export interface ResearchTopic {
     updated_at: string;
 }
 
+export type LlmStatus = 'success' | 'failed';
+
 export interface ResearchProgress {
     total_keywords: number;
     stale_keywords: number;
@@ -91,8 +94,11 @@ export interface ResearchProgress {
     total_content: number;
     total_analyses: number;
     total_eligible_for_analysis: number;
+    failed_analyses: number;
     keyword_syntheses: number;
+    failed_keyword_syntheses: number;
     project_syntheses: number;
+    failed_project_syntheses: number;
     total_tags: number;
     total_documents: number;
 }
@@ -172,7 +178,9 @@ export interface ResearchAnalysis {
     agent_id: string | null;
     model_id: string | null;
     instructions: string | null;
-    result: string;
+    status: LlmStatus;
+    result: string | null;
+    error: string | null;
     result_structured: Record<string, unknown> | null;
     token_usage: TokenUsage | null;
     created_at: string;
@@ -188,7 +196,9 @@ export interface ResearchSynthesis {
     agent_id: string | null;
     model_id: string | null;
     instructions: string | null;
-    result: string;
+    status: LlmStatus;
+    result: string | null;
+    error: string | null;
     result_structured: Record<string, unknown> | null;
     input_source_ids: string[];
     input_analysis_ids: string[];
@@ -229,7 +239,9 @@ export interface TagConsolidation {
     agent_type: string;
     agent_id: string | null;
     model_id: string | null;
-    result: string;
+    status: LlmStatus;
+    result: string | null;
+    error: string | null;
     result_structured: Record<string, unknown> | null;
     source_content_ids: string[];
     token_usage: TokenUsage | null;
@@ -242,8 +254,10 @@ export interface ResearchDocument {
     id: string;
     topic_id: string;
     project_id: string;
-    title: string;
-    content: string;
+    title: string | null;
+    status: LlmStatus;
+    content: string | null;
+    error: string | null;
     content_structured: Record<string, unknown> | null;
     source_consolidation_ids: string[];
     agent_type: string;

@@ -90,6 +90,13 @@ export function useResearchApi() {
         addLinksToScope: (topicId: string, body: AddLinksToScope) =>
             api.post(endpoints(topicId).linksAddToScope, body),
 
+        // --- Analysis Retry ---
+        retryAnalysis: (topicId: string, analysisId: string) =>
+            api.post(endpoints(topicId).analyses.retry(analysisId), {}),
+
+        retryFailedAnalyses: (topicId: string) =>
+            api.post(endpoints(topicId).analyses.retryFailed, {}),
+
         // --- Costs (Python for multi-table aggregation) ---
         getCosts: (topicId: string, signal?: AbortSignal) =>
             api.get(endpoints(topicId).costs, signal),

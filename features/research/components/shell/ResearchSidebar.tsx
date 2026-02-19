@@ -8,6 +8,12 @@ import { RESEARCH_NAV_ITEMS } from '../../constants';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
+// Sub-labels that appear under nav items to clarify what each section contains
+const NAV_SUBLABELS: Record<string, string> = {
+    sources: 'content · analysis',
+    documents: 'final report',
+};
+
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
     LayoutDashboard, Globe, FileText, Tags, Search, Image, DollarSign,
 };
@@ -49,8 +55,18 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
                                             : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                                     )}
                                 >
-                                    {Icon && <Icon className="h-4 w-4 shrink-0" />}
-                                    <span className="truncate">{item.label}</span>
+                                    {Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5" />}
+                                    <div className="min-w-0">
+                                        <div className="truncate">{item.label}</div>
+                                        {NAV_SUBLABELS[item.key] && (
+                                            <div className={cn(
+                                                'text-[10px] truncate leading-tight',
+                                                isActive ? 'text-primary/60' : 'text-muted-foreground/60',
+                                            )}>
+                                                {NAV_SUBLABELS[item.key]}
+                                            </div>
+                                        )}
+                                    </div>
                                 </Link>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="md:hidden">

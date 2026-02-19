@@ -55,5 +55,10 @@ export const RESEARCH_ENDPOINTS = {
         },
 
         linksAddToScope: `${BASE}/topics/${topicId}/links/add-to-scope`,
+
+        analyses: {
+            retry: (analysisId: string) => `${BASE}/topics/${topicId}/analyses/${analysisId}/retry`,
+            retryFailed: `${BASE}/topics/${topicId}/retry-failed`,
+        },
     }),
 } as const;

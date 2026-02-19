@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Brain, Loader2, RefreshCw } from 'lucide-react';
+import { ChevronDown, ChevronUp, Brain, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
     const api = useResearchApi();
     const [expanded, setExpanded] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
+    const [retrying, setRetrying] = useState(false);
 
     const handleAnalyze = useCallback(async () => {
         if (!topicId || !sourceId) return;
@@ -33,6 +34,18 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
         }
     }, [api, topicId, sourceId, onAnalyzed]);
 
+    const handleRetry = useCallback(async () => {
+        if (!topicId || !analysis) return;
+        setRetrying(true);
+        try {
+            await api.retryAnalysis(topicId, analysis.id);
+            onAnalyzed?.();
+        } finally {
+            setRetrying(false);
+        }
+    }, [api, topicId, analysis, onAnalyzed]);
+
+    // No analysis yet — prompt to run one
     if (!analysis) {
         return (
             <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 flex items-center justify-between">
@@ -45,6 +58,46 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
         );
     }
 
+    const isFailed = analysis.status === 'failed';
+
+    // Failed analysis — show error state with retry
+    if (isFailed) {
+        return (
+            <div className="rounded-xl border border-destructive/40 bg-destructive/5 overflow-hidden">
+                <div className="flex items-start justify-between gap-3 px-4 py-3">
+                    <div className="flex items-start gap-2 min-w-0">
+                        <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-medium text-destructive">Analysis failed</span>
+                                <Badge variant="secondary" className="text-[10px]">{analysis.agent_type}</Badge>
+                                <span className="text-xs text-muted-foreground">
+                                    {new Date(analysis.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                            {analysis.error && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{analysis.error}</p>
+                            )}
+                        </div>
+                    </div>
+                    {topicId && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleRetry}
+                            disabled={retrying}
+                            className="gap-1.5 shrink-0 border-destructive/40 hover:border-destructive text-destructive hover:text-destructive min-h-[44px] sm:min-h-0"
+                        >
+                            {retrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                            Retry
+                        </Button>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // Successful analysis
     return (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
             <button
@@ -64,7 +117,7 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
                 {expanded ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
             </button>
 
-            {!expanded && analysis.result && typeof analysis.result === 'string' && (
+            {!expanded && analysis.result && (
                 <div className="px-4 pb-3 text-xs text-muted-foreground line-clamp-2">
                     {analysis.result.slice(0, 200)}
                 </div>

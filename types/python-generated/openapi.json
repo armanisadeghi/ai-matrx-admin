@@ -1624,6 +1624,95 @@
         }
       }
     },
+    "/research/topics/{topic_id}/analyses/{analysis_id}/retry": {
+      "post": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "Retry Analysis",
+        "operationId": "retry_analysis_research_topics__topic_id__analyses__analysis_id__retry_post",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/research/topics/{topic_id}/retry-failed": {
+      "post": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "Retry All Failed Analyses",
+        "operationId": "retry_all_failed_analyses_research_topics__topic_id__retry_failed_post",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/research/topics/{topic_id}/analyze-all": {
       "post": {
         "tags": [
@@ -4084,7 +4173,8 @@
         "properties": {
           "project_id": {
             "type": "string",
-            "title": "Project Id"
+            "title": "Project Id",
+            "default": ""
           },
           "created_by": {
             "anyOf": [
@@ -4160,9 +4250,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "project_id"
-        ],
         "title": "TopicCreate"
       },
       "TopicUpdate": {
@@ -4761,6 +4848,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",

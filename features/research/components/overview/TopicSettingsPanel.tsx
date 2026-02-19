@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, FolderOpen, FolderPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { AutonomySelector } from '../init/AutonomySelector';
 import { StatusBadge } from '../shared/StatusBadge';
 import { updateTopic } from '../../service';
+import { useUserProjects, ProjectFormSheet } from '@/features/projects';
 import type { ResearchTopic, AutonomyLevel, SearchProvider, TopicStatus } from '../../types';
 
 interface TopicSettingsPanelProps {
@@ -37,6 +38,7 @@ const SEARCH_PROVIDERS: { value: SearchProvider; label: string }[] = [
 
 export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: TopicSettingsPanelProps) {
     const isMobile = useIsMobile();
+    const { projects, loading: projectsLoading, refresh: refreshProjects } = useUserProjects();
 
     const [name, setName] = useState(topic.name);
     const [description, setDescription] = useState(topic.description ?? '');
@@ -45,6 +47,8 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
     const [status, setStatus] = useState<TopicStatus>(topic.status);
     const [goodScrapeThreshold, setGoodScrapeThreshold] = useState(topic.good_scrape_threshold);
     const [scrapesPerKeyword, setScrapesPerKeyword] = useState(topic.scrapes_per_keyword);
+    const [selectedProjectId, setSelectedProjectId] = useState(topic.project_id);
+    const [newProjectOpen, setNewProjectOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -58,12 +62,14 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
             setStatus(topic.status);
             setGoodScrapeThreshold(topic.good_scrape_threshold);
             setScrapesPerKeyword(topic.scrapes_per_keyword);
+            setSelectedProjectId(topic.project_id);
             setError(null);
         }
     }, [open, topic]);
 
     const handleSave = async () => {
         if (!name.trim()) { setError('Topic name is required.'); return; }
+        if (!selectedProjectId) { setError('Please select a project.'); return; }
         setSaving(true);
         setError(null);
         try {
@@ -75,6 +81,7 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
                 status,
                 good_scrape_threshold: goodScrapeThreshold,
                 scrapes_per_keyword: scrapesPerKeyword,
+                project_id: selectedProjectId,
             });
             onSaved();
             onOpenChange(false);
@@ -88,9 +95,61 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
     const content = (
         <div className="flex flex-col gap-0 overflow-hidden h-full">
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
+                {/* Project */}
+                <section className="space-y-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-2">Project</h3>
+                    <div className="space-y-2">
+                        <Label>Move to Project</Label>
+                        <Select
+                            value={selectedProjectId}
+                            onValueChange={setSelectedProjectId}
+                            disabled={projectsLoading || saving}
+                        >
+                            <SelectTrigger style={{ fontSize: '16px' }}>
+                                {projectsLoading ? (
+                                    <span className="flex items-center gap-2 text-muted-foreground">
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        Loading projects...
+                                    </span>
+                                ) : (
+                                    <SelectValue placeholder="Select a project" />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent>
+                                {projects.map(p => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                        <span className="flex items-center gap-2">
+                                            <FolderOpen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                            <span>{p.name}</span>
+                                            {p.isPersonal && (
+                                                <span className="text-[10px] text-muted-foreground ml-1">Personal</span>
+                                            )}
+                                        </span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1.5 text-xs text-primary px-1"
+                            onClick={() => setNewProjectOpen(true)}
+                        >
+                            <FolderPlus className="h-3.5 w-3.5" />
+                            Create new project
+                        </Button>
+                        {selectedProjectId !== topic.project_id && (
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                                This topic will be moved to a different project on save.
+                            </p>
+                        )}
+                    </div>
+                </section>
+
                 {/* Basic Info */}
                 <section className="space-y-4">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-2">Basic Info</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Basic Info</h3>
 
                     <div className="space-y-2">
                         <Label htmlFor="topic-name">Topic Name</Label>
@@ -213,27 +272,45 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
         </div>
     );
 
+    const newProjectSheet = (
+        <ProjectFormSheet
+            open={newProjectOpen}
+            onOpenChange={setNewProjectOpen}
+            skipRedirect
+            onSuccess={(project) => {
+                refreshProjects();
+                setSelectedProjectId(project.id);
+            }}
+        />
+    );
+
     if (isMobile) {
         return (
-            <Drawer open={open} onOpenChange={onOpenChange}>
-                <DrawerContent className="h-[85dvh] flex flex-col">
-                    <DrawerHeader className="shrink-0 border-b border-border px-4 pb-3">
-                        <DrawerTitle>Topic Settings</DrawerTitle>
-                    </DrawerHeader>
-                    {content}
-                </DrawerContent>
-            </Drawer>
+            <>
+                <Drawer open={open} onOpenChange={onOpenChange}>
+                    <DrawerContent className="h-[85dvh] flex flex-col">
+                        <DrawerHeader className="shrink-0 border-b border-border px-4 pb-3">
+                            <DrawerTitle>Topic Settings</DrawerTitle>
+                        </DrawerHeader>
+                        {content}
+                    </DrawerContent>
+                </Drawer>
+                {newProjectSheet}
+            </>
         );
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-xl max-h-[85dvh] flex flex-col p-0 gap-0">
-                <DialogHeader className="shrink-0 px-4 pt-4 pb-3 border-b border-border">
-                    <DialogTitle>Topic Settings</DialogTitle>
-                </DialogHeader>
-                {content}
-            </DialogContent>
-        </Dialog>
+        <>
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-xl max-h-[85dvh] flex flex-col p-0 gap-0">
+                    <DialogHeader className="shrink-0 px-4 pt-4 pb-3 border-b border-border">
+                        <DialogTitle>Topic Settings</DialogTitle>
+                    </DialogHeader>
+                    {content}
+                </DialogContent>
+            </Dialog>
+            {newProjectSheet}
+        </>
     );
 }
