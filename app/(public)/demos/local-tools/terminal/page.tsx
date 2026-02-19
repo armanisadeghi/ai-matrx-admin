@@ -16,17 +16,12 @@ import {
     ArrowLeft,
 } from 'lucide-react';
 
+import type { ToolResult } from '../_lib/types';
+import { DEFAULT_LOCAL_URL } from '../_lib/constants';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface ToolResult {
-    id?: string;
-    type: 'success' | 'error';
-    output: string;
-    image?: { media_type: string; base64_data: string };
-    metadata?: Record<string, unknown>;
-}
 
 interface TerminalLine {
     id: string;
@@ -38,8 +33,6 @@ interface TerminalLine {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const DEFAULT_LOCAL_URL = 'http://localhost:8000';
 
 function parseCommand(raw: string): { tool: string; input: Record<string, unknown> } | null {
     const trimmed = raw.trim();
