@@ -97,10 +97,10 @@ export default function DesktopLayout({
             delayDuration={300} 
             skipDelayDuration={0}
         >
-            <div id={uniqueId} className="min-h-dvh bg-textured text-gray-800 dark:text-gray-100"
+            <div id={uniqueId} className="min-h-dvh text-gray-800 dark:text-gray-100"
             >
-                {/* Main Header — transparent with glass interactive elements */}
-                <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible">
+                {/* Main Header — glass bar, content blurs through */}
+                <header className="fixed top-0 left-0 right-0 z-50 h-10 overflow-visible glass-header">
                 <div className="flex items-center justify-between h-full pl-1 pr-2 overflow-visible">
                     {/* Left side - Menu toggle and page-specific content */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">

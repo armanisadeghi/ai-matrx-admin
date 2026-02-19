@@ -716,6 +716,23 @@
         border-color: hsl(var(--ring));
     }
 
+    /* Glass header/footer — frosted bar for fixed chrome that content scrolls behind.
+       Uses a very subtle tint + strong blur so content is visible but softened.
+       Individual interactive elements (buttons, inputs) use .glass on top. */
+    .glass-header {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .glass-footer {
+        background: var(--glass-bg-subtle);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-top: 1px solid var(--glass-border);
+    }
+
     /* ===== END GLASS EFFECT UTILITIES ===== */
 
     /* Automatically apply textures and colors to backgrounds */

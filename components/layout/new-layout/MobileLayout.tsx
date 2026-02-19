@@ -49,9 +49,9 @@ export default function MobileLayout({
   }, [isSidebarOpen]);
 
   return (
-    <div id={uniqueId} className="min-h-dvh bg-textured">
-      {/* Mobile Header — transparent with glass interactive elements */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-10">
+    <div id={uniqueId} className="min-h-dvh">
+      {/* Mobile Header — glass bar, content scrolls behind and blurs through */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-10 glass-header">
         <div className="flex items-center justify-between h-full px-2">
           {/* Left side - Menu and page-specific content */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
