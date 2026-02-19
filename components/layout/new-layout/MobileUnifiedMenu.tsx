@@ -57,7 +57,7 @@ export function MobileUnifiedMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="flex items-center rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none"
+          className="flex items-center rounded-full p-1 glass-pill transition focus:outline-none"
           aria-label="Open menu"
         >
           {profilePhoto ? (
