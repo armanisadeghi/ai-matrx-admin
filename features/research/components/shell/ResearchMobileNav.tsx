@@ -30,8 +30,8 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
 
     return (
         <>
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border pb-safe">
-                <div className="flex items-center justify-around h-14">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-4">
+                <div className="flex items-center justify-around h-14 glass rounded-2xl shadow-lg border border-border/50 mb-2">
                     {visibleItems.map((item) => {
                         const Icon = ICON_MAP[item.icon];
                         const href = item.href(topicId);

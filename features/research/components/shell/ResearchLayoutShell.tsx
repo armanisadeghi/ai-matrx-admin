@@ -13,7 +13,7 @@ export default function ResearchLayoutShell({ topicId, children }: ResearchLayou
     return (
         <div className="h-full flex overflow-hidden">
             <ResearchSidebar topicId={topicId} />
-            <main className="flex-1 min-w-0 overflow-y-auto pb-16 md:pb-0">
+            <main className="flex-1 min-w-0 overflow-y-auto pb-20 md:pb-0">
                 {children}
             </main>
             <ResearchMobileNav topicId={topicId} />

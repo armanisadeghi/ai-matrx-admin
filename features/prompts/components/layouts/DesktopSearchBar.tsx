@@ -128,10 +128,10 @@ export function DesktopSearchBar({
 
                 {/* Filter Button */}
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="lg"
                     onClick={onFilterClick}
-                    className="h-[52px] px-5 rounded-2xl glass hover:shadow-xl relative"
+                    className="h-[52px] px-5 rounded-2xl glass hover:shadow-xl relative border border-border/50"
                 >
                     <SlidersHorizontal className="h-5 w-5 mr-2" />
                     Filter

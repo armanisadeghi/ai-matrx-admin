@@ -107,7 +107,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     return (
         <div className="flex flex-col md:flex-row h-full min-h-0">
             {/* Left Panel — Source Info */}
-            <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-b md:border-b-0 md:border-r border-border overflow-y-auto">
+            <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-b md:border-b-0 md:border-r border-border overflow-y-auto pb-16 md:pb-0">
                 <div className="p-4 space-y-4">
                     <div className="flex items-center justify-between gap-2">
                         <Link
@@ -329,7 +329,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
             </div>
 
             {/* Right Panel — Actions + Content + Analysis */}
-            <div className="flex-1 min-w-0 overflow-y-auto p-4 space-y-6">
+            <div className="flex-1 min-w-0 overflow-y-auto p-4 pb-20 md:pb-4 space-y-6">
                 {/* Actions bar */}
                 {typedSource && (
                     <div className="flex items-center gap-2 flex-wrap">
