@@ -89,6 +89,16 @@ interface ShortcutWithRelations extends PromptShortcut {
 
 const DEFAULT_AVAILABLE_SCOPES = ['selection', 'content', 'context'];
 
+// Normalize a variable to a canonical shape for comparison.
+// Handles both camelCase (variableDefaults from builtin transform) and
+// snake_case (variable_defaults from prompt API) field names.
+function normalizeVar(v: PromptVariable & { default_value?: string }): { name: string; defaultValue: string } {
+  return {
+    name: (v.name || '').trim(),
+    defaultValue: ((v.defaultValue ?? v.default_value ?? '') as string).trim(),
+  };
+}
+
 // Helper to compare variables
 function compareVariables(
   oldVars: PromptVariable[] | undefined, 
@@ -106,8 +116,12 @@ function compareVariables(
     const oldVar = oldMap.get(name);
     if (!oldVar) {
       added.push(newVar);
-    } else if (JSON.stringify(oldVar) !== JSON.stringify(newVar)) {
-      changed.push({ old: oldVar, new: newVar });
+    } else {
+      const oldNorm = normalizeVar(oldVar as PromptVariable & { default_value?: string });
+      const newNorm = normalizeVar(newVar as PromptVariable & { default_value?: string });
+      if (oldNorm.defaultValue !== newNorm.defaultValue) {
+        changed.push({ old: oldVar, new: newVar });
+      }
     }
   }
 

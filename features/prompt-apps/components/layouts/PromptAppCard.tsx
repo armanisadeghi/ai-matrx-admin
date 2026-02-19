@@ -167,28 +167,28 @@ export function PromptAppCard({
             </div>
 
             {/* App Name & Tagline */}
-            <div className="p-4 pl-12 flex-1 flex flex-col items-center justify-center text-center">
+            <div className="p-4 pl-12 flex-1 flex flex-col items-center justify-center text-center min-h-[100px]">
                 <h3
                     className={cn(
-                        "text-lg font-semibold text-foreground line-clamp-2 break-words transition-colors duration-200",
+                        "text-lg font-semibold text-foreground line-clamp-3 break-words transition-colors duration-200",
                         !isDisabled && "group-hover:text-primary"
                     )}
                 >
                     {app.name || "Untitled App"}
                 </h3>
                 {app.tagline && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-snug">
                         {app.tagline}
                     </p>
                 )}
                 {/* Stats Row */}
-                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1">
                         <BarChart3 className="w-3 h-3" />
                         {app.total_executions} runs
                     </span>
                     {app.tags && app.tags.length > 0 && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap justify-center">
                             {app.tags.slice(0, 2).map((tag) => (
                                 <Badge
                                     key={tag}

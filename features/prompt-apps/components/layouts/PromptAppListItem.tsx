@@ -176,7 +176,7 @@ export function PromptAppListItem({
                 <Badge
                     variant={isPublished ? "default" : "secondary"}
                     className={cn(
-                        "text-[10px] flex-shrink-0",
+                        "text-[10px] flex-shrink-0 whitespace-nowrap",
                         isPublished && "bg-green-500/90 hover:bg-green-500"
                     )}
                 >

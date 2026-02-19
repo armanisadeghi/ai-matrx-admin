@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/adminClient';
 
 /**
  * POST /api/admin/prompt-builtins/create-from-ai
@@ -10,7 +11,8 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
-    
+    const adminClient = createAdminClient();
+
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -30,8 +32,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create the builtin (no source_prompt_id - standalone AI generation)
-    const { data: builtin, error: createError } = await supabase
+    // Create the builtin using admin client (bypasses RLS on prompt_builtins)
+    const { data: builtin, error: createError } = await adminClient
       .from('prompt_builtins')
       .insert([{
         name,
@@ -66,9 +68,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // If shortcut_id provided, link the builtin to the shortcut
+    // If shortcut_id provided, link the builtin to the shortcut (admin client for prompt_shortcuts)
     if (shortcut_id) {
-      const { error: linkError } = await supabase
+      const { error: linkError } = await adminClient
         .from('prompt_shortcuts')
         .update({ 
           prompt_builtin_id: builtin.id,

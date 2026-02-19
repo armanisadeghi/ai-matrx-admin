@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/adminClient";
 import { NextRequest, NextResponse } from "next/server";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 
@@ -9,6 +10,7 @@ export async function POST(
     try {
         const { id } = await context.params;
         const supabase = await createClient();
+        const adminClient = createAdminClient();
 
         // Check if user is authenticated
         const {
@@ -42,7 +44,7 @@ export async function POST(
         }
 
         // Check if a template with this name already exists
-        const { data: existingTemplate } = await supabase
+        const { data: existingTemplate } = await adminClient
             .from("prompt_templates")
             .select("id")
             .eq("name", originalPrompt.name)
@@ -54,8 +56,8 @@ export async function POST(
             templateName = `${originalPrompt.name} (Template ${new Date().toISOString().split('T')[0]})`;
         }
 
-        // Create a new template from the prompt
-        const { data: newTemplate, error: insertError } = await supabase
+        // Create a new template using admin client (bypasses RLS on prompt_templates)
+        const { data: newTemplate, error: insertError } = await adminClient
             .from("prompt_templates")
             .insert({
                 name: templateName,

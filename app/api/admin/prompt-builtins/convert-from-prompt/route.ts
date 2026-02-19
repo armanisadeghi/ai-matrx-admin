@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/adminClient';
 
 /**
  * POST /api/admin/prompt-builtins/convert-from-prompt
@@ -12,6 +13,7 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
+    const adminClient = createAdminClient();
     
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
       // UPDATE EXISTING BUILTIN
       isUpdate = true;
 
-      // First, get the prompt data
+      // Fetch the prompt data using the user client (respects RLS on prompts)
       const { data: prompt, error: promptError } = await supabase
         .from('prompts')
         .select('*')
@@ -53,8 +55,8 @@ export async function POST(request: Request) {
         );
       }
 
-      // Update the builtin with prompt data
-      const { error: updateError } = await supabase
+      // Update the builtin using the admin client (bypasses RLS on prompt_builtins)
+      const { error: updateError } = await adminClient
         .from('prompt_builtins')
         .update({
           name: prompt.name,
@@ -83,8 +85,8 @@ export async function POST(request: Request) {
 
       finalBuiltinId = builtin_id;
     } else {
-      // CREATE NEW BUILTIN
-      const { data: builtinId, error: convertError } = await supabase
+      // CREATE NEW BUILTIN — use admin client so the RPC can write to prompt_builtins
+      const { data: builtinId, error: convertError } = await adminClient
         .rpc('convert_prompt_to_builtin', {
           p_prompt_id: prompt_id,
           p_created_by_user_id: user.id
@@ -114,7 +116,7 @@ export async function POST(request: Request) {
 
     // If shortcut_id provided, link the builtin to the shortcut
     if (shortcut_id) {
-      const { error: linkError } = await supabase
+      const { error: linkError } = await adminClient
         .from('prompt_shortcuts')
         .update({ 
           prompt_builtin_id: finalBuiltinId,

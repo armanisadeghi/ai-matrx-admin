@@ -486,27 +486,23 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         
         setIsCreatingCopy(true);
         try {
-            const allMessages: PromptMessage[] = [{ role: "system", content: developerMessage }, ...messages];
-            const settings = {
-                model_id: model,
-                ...modelConfig,
-            };
+            const response = await fetch(`/api/prompts/${initialData.id}/duplicate`, {
+                method: 'POST',
+            });
 
-            const promptData = {
-                name: `${promptName} (Copy)`,
-                messages: allMessages,
-                variableDefaults,
-                settings,
-            };
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error((err as { error?: string }).error || `Failed to duplicate prompt (${response.status})`);
+            }
 
-            const result = await createPrompt(promptData as any);
-            
-            if (result?.id) {
+            const data = await response.json() as { prompt?: { id: string } };
+
+            if (data?.prompt?.id) {
                 toast.success('Copy created successfully!', {
                     description: 'Redirecting to your copy...'
                 });
                 setShowSharedWarningModal(false);
-                router.push(`/ai/prompts/edit/${result.id}`);
+                router.push(`/ai/prompts/edit/${data.prompt.id}`);
             }
         } catch (error) {
             console.error('Error creating copy:', error);

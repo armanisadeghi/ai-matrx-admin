@@ -527,8 +527,16 @@ function StreamingResponseDisplay({
   content: string;
   isStreamActive: boolean;
 }) {
-  // Check if content contains a JSON block
-  const hasJsonBlock = content.includes('```json');
+  // Check if content contains a JSON block (tagged or untagged)
+  const hasTaggedJson = content.includes('```json');
+  // Also detect plain ``` blocks that contain JSON (start with '{' after optional whitespace)
+  const hasPlainCodeBlock = !hasTaggedJson && /```\s*\n\s*\{/.test(content);
+  const hasJsonBlock = hasTaggedJson || hasPlainCodeBlock;
+
+  // Normalize plain ``` to ```json so the rest of the pipeline handles it uniformly
+  const normalizedContent = hasPlainCodeBlock
+    ? content.replace(/```(\s*\n\s*\{)/, '```json$1')
+    : content;
   
   if (!hasJsonBlock) {
     // No JSON block, render as normal markdown
@@ -542,7 +550,7 @@ function StreamingResponseDisplay({
   }
   
   // Split content into before/after JSON
-  const { before, after } = extractNonJsonContent(content);
+  const { before, after } = extractNonJsonContent(normalizedContent);
   
   return (
     <div className="space-y-4">
@@ -557,7 +565,7 @@ function StreamingResponseDisplay({
       
       {/* JSON Display */}
       <PromptJsonDisplay
-        content={content}
+        content={normalizedContent}
         isStreamActive={isStreamActive}
       />
       

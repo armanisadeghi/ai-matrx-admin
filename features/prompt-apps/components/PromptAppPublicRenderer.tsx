@@ -321,6 +321,16 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 })
             });
             
+            if (!res.ok) {
+                const text = await res.text();
+                let errorMsg = `Request failed (${res.status})`;
+                try {
+                    const err = text ? (JSON.parse(text) as { error?: { message?: string }; message?: string }) : {};
+                    errorMsg = err.error?.message || err.message || errorMsg;
+                } catch { /* use default errorMsg */ }
+                throw new Error(errorMsg);
+            }
+
             const data: ExecuteAppResponse = await res.json();
             
             // Update guest limit state in background

@@ -1,4 +1,4 @@
-import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient';
+import { getAdminSupabaseClient } from '@/utils/supabase/getScriptClient';
 import {
   ShortcutCategory,
   PromptBuiltin,
@@ -15,12 +15,16 @@ import { ContentBlockDB, UpdateContentBlockInput } from '@/types/content-blocks-
 import { logDetailedError } from '../utils/error-handler';
 import { createClient } from '@/utils/supabase/client';
 
-// Helper to get the right client based on context
+// Helper to get the right client based on context.
+// On the server (API routes), use the admin client so writes to admin-only tables
+// (prompt_builtins, prompt_shortcuts, etc.) bypass RLS correctly.
+// On the client (browser), use the regular anon client — RLS applies and the
+// user must be an admin to reach these pages anyway.
 function getClient() {
   if (typeof window !== 'undefined') {
     return createClient();
   } else {
-    return getScriptSupabaseClient();
+    return getAdminSupabaseClient();
   }
 }
 
