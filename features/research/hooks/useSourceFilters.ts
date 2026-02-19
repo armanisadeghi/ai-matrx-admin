@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import type { SourceFilters } from '../types';
+import type { SourceFilters, SourceSortBy, SortDir } from '../types';
 import { DEFAULT_SOURCE_FILTERS } from '../types';
 
 export function useSourceFilters() {
@@ -17,6 +17,8 @@ export function useSourceFilters() {
         hostname: searchParams.get('hostname') || undefined,
         is_included: searchParams.has('is_included') ? searchParams.get('is_included') === 'true' : undefined,
         origin: (searchParams.get('origin') as SourceFilters['origin']) || undefined,
+        sort_by: (searchParams.get('sort_by') as SourceSortBy) || undefined,
+        sort_dir: (searchParams.get('sort_dir') as SortDir) || undefined,
         limit: Number(searchParams.get('limit')) || DEFAULT_SOURCE_FILTERS.limit,
         offset: Number(searchParams.get('offset')) || DEFAULT_SOURCE_FILTERS.offset,
     };

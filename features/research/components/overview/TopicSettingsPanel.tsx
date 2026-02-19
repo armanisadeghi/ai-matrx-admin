@@ -25,10 +25,11 @@ interface TopicSettingsPanelProps {
 
 const TOPIC_STATUSES: { value: TopicStatus; label: string }[] = [
     { value: 'draft', label: 'Draft' },
-    { value: 'active', label: 'Active' },
-    { value: 'paused', label: 'Paused' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'archived', label: 'Archived' },
+    { value: 'searching', label: 'Searching' },
+    { value: 'scraping', label: 'Scraping' },
+    { value: 'curating', label: 'Curating' },
+    { value: 'analyzing', label: 'Analyzing' },
+    { value: 'complete', label: 'Complete' },
 ];
 
 const SEARCH_PROVIDERS: { value: SearchProvider; label: string }[] = [

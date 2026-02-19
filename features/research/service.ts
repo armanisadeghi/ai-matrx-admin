@@ -110,12 +110,17 @@ export async function getSources(topicId: string, filters?: Partial<SourceFilter
     if (filters?.is_included !== undefined) query = query.eq('is_included', filters.is_included);
     if (filters?.origin) query = query.eq('origin', filters.origin);
 
-    // Primary sort: rank ASC (search result relevance, nulls last for manually-added sources)
-    // Secondary sort: discovered_at DESC so newest manual/link-extracted sources appear at top of their group
-    query = query
-        .order('rank', { ascending: true, nullsFirst: false })
-        .order('discovered_at', { ascending: false })
-        .range(filters?.offset ?? 0, (filters?.offset ?? 0) + (filters?.limit ?? 50) - 1);
+    if (filters?.sort_by) {
+        query = query
+            .order(filters.sort_by, { ascending: filters.sort_dir !== 'desc', nullsFirst: false })
+            .order('rank', { ascending: true, nullsFirst: false });
+    } else {
+        // Default: rank ASC (search result relevance), nulls last; then discovered_at DESC
+        query = query
+            .order('rank', { ascending: true, nullsFirst: false })
+            .order('discovered_at', { ascending: false });
+    }
+    query = query.range(filters?.offset ?? 0, (filters?.offset ?? 0) + (filters?.limit ?? 50) - 1);
 
     const { data, error } = await query;
     if (error) throw error;

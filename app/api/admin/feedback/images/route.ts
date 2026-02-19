@@ -12,29 +12,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 /**
- * Extract bucket name and file path from a Supabase storage URL
- * URLs follow the pattern: .../storage/v1/render/image/sign/{bucket}/{path}?token=...
- * or: .../storage/v1/object/public/{bucket}/{path}
- * or: .../storage/v1/object/sign/{bucket}/{path}?token=...
+ * Returns true if the stored URL is already a permanent public URL
+ * (i.e. /storage/v1/object/public/...) that never expires.
  */
-function parseStorageUrl(url: string): { bucket: string; path: string } | null {
+function isPublicUrl(url: string): boolean {
+    try {
+        const pathname = new URL(url).pathname;
+        return /\/storage\/v1\/object\/public\//.test(pathname);
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Extract bucket name and file path from a Supabase storage URL.
+ * Handles signed URLs: .../storage/v1/render/image/sign/{bucket}/{path}?token=...
+ * and legacy signed object URLs: .../storage/v1/object/sign/{bucket}/{path}?token=...
+ */
+function parseSignedStorageUrl(url: string): { bucket: string; path: string } | null {
     try {
         const urlObj = new URL(url);
         const pathname = urlObj.pathname;
 
-        // Match various Supabase storage URL patterns
-        const patterns = [
-            /\/storage\/v1\/(?:render\/image|object)\/(?:sign|public)\/([^/]+)\/(.+)/,
-        ];
-
-        for (const pattern of patterns) {
-            const match = pathname.match(pattern);
-            if (match) {
-                return {
-                    bucket: match[1],
-                    path: decodeURIComponent(match[2]),
-                };
-            }
+        const pattern = /\/storage\/v1\/(?:render\/image|object)\/sign\/([^/]+)\/(.+)/;
+        const match = pathname.match(pattern);
+        if (match) {
+            return {
+                bucket: match[1],
+                path: decodeURIComponent(match[2]),
+            };
         }
 
         return null;
@@ -90,11 +96,20 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Generate signed URLs for each image
+        // Resolve URLs for each image.
+        // New uploads use permanent public URLs — return them directly.
+        // Legacy items have signed URLs (expired) — re-sign them for 24h.
         const signedUrls: { original_url: string; signed_url: string | null; error?: string }[] = [];
 
         for (const url of feedback.image_urls) {
-            const parsed = parseStorageUrl(url);
+            // Public URLs never expire — pass through as-is
+            if (isPublicUrl(url)) {
+                signedUrls.push({ original_url: url, signed_url: url });
+                continue;
+            }
+
+            // Legacy signed URL — re-sign it
+            const parsed = parseSignedStorageUrl(url);
             if (!parsed) {
                 signedUrls.push({ original_url: url, signed_url: null, error: 'Could not parse storage URL' });
                 continue;
@@ -102,7 +117,7 @@ export async function GET(request: NextRequest) {
 
             const { data, error } = await supabase.storage
                 .from(parsed.bucket)
-                .createSignedUrl(parsed.path, 3600); // 1 hour expiry
+                .createSignedUrl(parsed.path, 86400); // 24h for legacy items
 
             if (error) {
                 signedUrls.push({ original_url: url, signed_url: null, error: error.message });

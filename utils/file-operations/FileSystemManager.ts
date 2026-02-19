@@ -5,6 +5,28 @@ import {BucketTreeStructure, TransformOptions, StorageMetadata} from "./types";
 import LocalFileSystem from "./LocalFileSystem";
 import {getCreatePath} from "@/utils/file-operations/utils";
 
+/**
+ * Buckets with public: true in Supabase Storage.
+ * Files in these buckets are permanently accessible via getPublicUrl() — no expiry.
+ * Use getPublicUrl() for these instead of createSignedUrl() so stored URLs never expire.
+ */
+const PUBLIC_BUCKETS = new Set([
+    'user-public-assets',
+    'app-assets',
+    'public-chat-uploads',
+    'temp-files',
+    'any-file',
+    'Any File',
+    'Audio',
+    'Code',
+    'Documents',
+    'Images',
+    'Notes',
+    'Spreadsheets',
+    'Videos',
+    'code-editor',
+]);
+
 class FileSystemManager {
     private static instance: FileSystemManager;
     private supabase: SupabaseClient;
@@ -255,16 +277,27 @@ class FileSystemManager {
                 });
             if (error) throw error;
 
-            // Get signed URL
+            // Get URL — use permanent public URL for public buckets, signed URL for private ones
             const isImage = contentType.startsWith('image/');
-            const { data: signedData, error: signedError } = await this.supabase.storage
-                .from(bucketName)
-                .createSignedUrl(path, 900, {
-                    transform: isImage ? { width: 800 } : undefined
-                });
-            if (signedError) throw signedError;
+            const isPublicBucket = PUBLIC_BUCKETS.has(bucketName);
+            let signedUrl: string;
 
-            const signedUrl = signedData.signedUrl;
+            if (isPublicBucket) {
+                const { data: publicData } = this.supabase.storage
+                    .from(bucketName)
+                    .getPublicUrl(path, {
+                        transform: isImage ? { width: 800 } : undefined
+                    });
+                signedUrl = publicData.publicUrl;
+            } else {
+                const { data: signedData, error: signedError } = await this.supabase.storage
+                    .from(bucketName)
+                    .createSignedUrl(path, 3600, {
+                        transform: isImage ? { width: 800 } : undefined
+                    });
+                if (signedError) throw signedError;
+                signedUrl = signedData.signedUrl;
+            }
 
             // Fetch server-side metadata
             const folderPath = path.split('/').slice(0, -1).join('/');

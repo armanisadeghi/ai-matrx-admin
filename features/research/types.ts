@@ -58,7 +58,7 @@ export type IterationMode = 'initial' | 'rebuild' | 'update';
 export type BulkAction = 'include' | 'exclude' | 'mark_stale' | 'mark_complete' | 'scrape';
 export type MediaType = 'image' | 'video' | 'document';
 export type TagAssignedBy = 'manual' | 'auto' | 'llm_suggestion';
-export type TopicStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
+export type TopicStatus = 'draft' | 'searching' | 'scraping' | 'curating' | 'analyzing' | 'complete';
 
 // ============================================================================
 // RESPONSE TYPES (matching database tables)
@@ -360,6 +360,9 @@ export interface ResearchStreamStatus {
 // SOURCE FILTER TYPES
 // ============================================================================
 
+export type SourceSortBy = 'rank' | 'page_age' | 'discovered_at' | 'hostname' | 'scrape_status';
+export type SortDir = 'asc' | 'desc';
+
 export interface SourceFilters {
     keyword_id?: string;
     scrape_status?: ScrapeStatus;
@@ -367,6 +370,8 @@ export interface SourceFilters {
     hostname?: string;
     is_included?: boolean;
     origin?: SourceOrigin;
+    sort_by?: SourceSortBy;
+    sort_dir?: SortDir;
     limit: number;
     offset: number;
 }
