@@ -167,7 +167,7 @@ export function PromptAppCard({
             </div>
 
             {/* App Name & Tagline */}
-            <div className="p-4 pt-14 flex-1 flex flex-col items-center justify-center text-center">
+            <div className="p-4 pl-12 flex-1 flex flex-col items-center justify-center text-center">
                 <h3
                     className={cn(
                         "text-lg font-semibold text-foreground line-clamp-2 break-words transition-colors duration-200",
