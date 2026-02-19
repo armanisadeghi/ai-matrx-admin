@@ -76,7 +76,7 @@ export function CanvasNavigation({
   
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
+      <div className="flex items-center gap-0.5 bg-muted/60 rounded-lg p-0.5">
         {/* Previous Button */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -85,9 +85,9 @@ export function CanvasNavigation({
               size="sm"
               onClick={handlePrevious}
               disabled={!hasPrevious}
-              className="h-7 w-7 p-0"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" sideOffset={8}>
@@ -95,7 +95,7 @@ export function CanvasNavigation({
           </TooltipContent>
         </Tooltip>
         
-        {/* Canvas List Dropdown */}
+        {/* Canvas List Dropdown — icon+count on desktop, count-only on mobile */}
         <Tooltip>
           <DropdownMenu>
             <TooltipTrigger asChild>
@@ -103,11 +103,11 @@ export function CanvasNavigation({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 gap-1.5"
+                  className="h-6 sm:h-7 px-1.5 sm:px-2 gap-1"
                 >
-                  <List className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">
-                    {currentIndex + 1} / {items.length}
+                  <List className="w-3 h-3 sm:w-3.5 sm:h-3.5 hidden sm:block" />
+                  <span className="text-[10px] sm:text-xs font-medium tabular-nums">
+                    {currentIndex + 1}/{items.length}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
@@ -179,9 +179,9 @@ export function CanvasNavigation({
               size="sm"
               onClick={handleNext}
               disabled={!hasNext}
-              className="h-7 w-7 p-0"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" sideOffset={8}>

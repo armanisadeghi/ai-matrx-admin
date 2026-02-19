@@ -86,15 +86,14 @@ export function CanvasHeader({
     <TooltipProvider delayDuration={300}>
       <div 
         className={cn(
-          "flex-shrink-0 flex items-center justify-between gap-3",
-          "bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-sm",
-          "border-b border-zinc-200 dark:border-zinc-800",
-          isCompact ? "px-2 py-1" : isMinimal ? "px-4 py-2" : "px-4 py-2.5",
+          "flex-shrink-0 flex items-center justify-between gap-2",
+          "glass border-b border-border/50",
+          isCompact ? "px-2 py-1" : isMinimal ? "px-3 py-1.5" : "px-2 py-1.5 sm:px-4 sm:py-2",
           className
         )}
       >
         {/* Left: Title and Subtitle */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 hidden sm:block">
           <div className={cn(
             "font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 min-w-0",
             isCompact ? "text-xs" : "text-sm"
@@ -107,7 +106,7 @@ export function CanvasHeader({
           </div>
           {subtitle && (
             <div className={cn(
-              "text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2 min-w-0",
+              "hidden sm:flex text-zinc-500 dark:text-zinc-400 mt-0.5 items-center gap-2 min-w-0",
               isCompact ? "text-[10px]" : "text-xs"
             )}>
               {typeof subtitle === 'string' ? (
@@ -124,8 +123,7 @@ export function CanvasHeader({
           {/* View Mode Toggle */}
           {!hideViewToggle && onViewModeChange && (
             <div className={cn(
-              "flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg",
-              isCompact ? "p-0.5" : "p-0.5"
+              "flex items-center gap-0.5 bg-muted/60 rounded-lg p-0.5"
             )}>
                <Tooltip>
                  <TooltipTrigger asChild>
@@ -136,8 +134,8 @@ export function CanvasHeader({
                      className={cn(
                        buttonSize, textSize, "rounded-md transition-colors",
                        viewMode === 'source'
-                         ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                         : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                         ? "bg-background/80 text-foreground shadow-sm"
+                         : "text-muted-foreground hover:text-foreground"
                      )}
                    >
                      <Code className={cn(iconSize, !isCompact && "mr-0 sm:mr-1.5")} />
@@ -157,8 +155,8 @@ export function CanvasHeader({
                     className={cn(
                       buttonSize, textSize, "rounded-md transition-colors",
                       viewMode === 'preview'
-                        ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                        ? "bg-background/80 text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Eye className={cn(iconSize, !isCompact && "mr-0 sm:mr-1.5")} />
@@ -175,7 +173,7 @@ export function CanvasHeader({
 
           {/* Divider */}
           {(!hideViewToggle || customActions) && !hideSync && (
-            <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
+            <div className="w-px h-5 bg-border/60 mx-0.5 sm:mx-1 hidden sm:block" />
           )}
 
           {/* Custom Actions Slot */}
@@ -185,7 +183,7 @@ export function CanvasHeader({
           {showLibraryToggle && onViewModeChange && (
             <>
               {(customActions || !hideViewToggle) && (
-                <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-700 mx-1" />
+                <div className="w-px h-5 bg-border/60 mx-0.5 sm:mx-1" />
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -249,7 +247,7 @@ export function CanvasHeader({
                    variant="ghost"
                    size="sm"
                    onClick={onShare}
-                   className={cn(iconOnlySize, "p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100")}
+                   className={cn(iconOnlySize, "p-0 text-muted-foreground hover:text-foreground")}
                  >
                    <Share2 className={iconSize} />
                  </Button>
@@ -261,7 +259,7 @@ export function CanvasHeader({
            )}
 
            {/* Divider before close */}
-           <div className={cn("w-px bg-zinc-300 dark:bg-zinc-700", isCompact ? "h-4 mx-0.5" : "h-5 mx-1")} />
+           <div className={cn("w-px bg-border/60", isCompact ? "h-4 mx-0.5" : "h-5 mx-0.5 sm:mx-1")} />
 
            {/* Close Button */}
            <Tooltip>
@@ -270,7 +268,7 @@ export function CanvasHeader({
                  variant="ghost"
                  size="sm"
                  onClick={onClose}
-                 className={cn(iconOnlySize, "p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800")}
+                 className={cn(iconOnlySize, "p-0 text-muted-foreground hover:text-foreground hover:bg-muted")}
                >
                  <X className={iconSize} />
                </Button>
