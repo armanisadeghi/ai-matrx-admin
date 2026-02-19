@@ -1,612 +1,676 @@
-# Matrx Local — Frontend & AI Integration Guide
+# Matrx Local — Frontend Integration Guide
 
-> **Audience:** The frontend team building UI in `ai-matrx-admin` and the AI integration team wiring tool calls into agent workflows.
->
-> **What this covers:** Everything the `matrx_local` backend service currently does, what UI needs to be built for it, and exactly how AI agents should invoke local tools.
-
----
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────┐
-│         ai-matrx-admin              │
-│      (Next.js — web/mobile)         │
-│                                     │
-│  ┌──────────┐    ┌───────────────┐  │
-│  │    UI     │    │  AI Agent     │  │
-│  │ Components│    │  Orchestrator │  │
-│  └─────┬─────┘    └──────┬────────┘  │
-│        │                 │           │
-│        └────────┬────────┘           │
-│                 │                    │
-│          ┌──────▼──────┐             │
-│          │  WebSocket   │             │
-│          │  or REST     │             │
-│          └──────┬──────┘             │
-└─────────────────┼───────────────────┘
-                  │ localhost:8000
-┌─────────────────▼───────────────────┐
-│           matrx_local               │
-│        (FastAPI — Python)           │
-│                                     │
-│  ┌──────────────────────────────┐   │
-│  │      Tool Dispatcher         │   │
-│  │  ┌─────┐ ┌─────┐ ┌───────┐  │   │
-│  │  │File │ │Shell│ │System │  │   │
-│  │  │ Ops │ │Exec │ │ Info  │  │   │
-│  │  └─────┘ └─────┘ └───────┘  │   │
-│  └──────────────────────────────┘   │
-│                                     │
-│  Per-connection session:            │
-│  - Working directory (cwd)          │
-│  - Background processes             │
-│  - File read history                │
-└─────────────────────────────────────┘
-```
-
-**The user installs and runs `matrx_local` on their machine.** It listens on `localhost:8000`. The web app connects to it via WebSocket (stateful, recommended) or REST (stateless, simpler).
+> **Audience:** React frontend team building the AI Matrx web app.
+> **Purpose:** Everything you need to connect to Matrx Local, test all 23 tools, and build UI for the new scraper system.
 
 ---
 
-## Connection
+## Table of Contents
 
-### Pairing Flow (UI needed)
-
-The user needs to:
-
-1. Start `matrx_local` on their machine (`uv run run.py`)
-2. In the web app, click "Connect Local Machine"
-3. Web app attempts WebSocket connection to `ws://localhost:8000/ws`
-4. On success, show a "Connected" indicator; on failure, show setup instructions
-
-**UI to build:**
-- A global connection status indicator (header bar or sidebar badge)
-- A settings panel where the user can change the URL (default `http://localhost:8000`) for non-standard setups
-- A first-time setup flow with download/install instructions for `matrx_local`
-- Auto-reconnect with exponential backoff when the connection drops
-
-### Transport Protocols
-
-| Protocol | Endpoint | Use Case |
-|----------|----------|----------|
-| **WebSocket** | `ws://localhost:8000/ws` | Stateful sessions, real-time streaming, concurrent tools, background tasks. **Preferred.** |
-| **REST** | `http://localhost:8000/tools/invoke` | One-shot tool calls from server-side code or simple integrations. Fresh session per request. |
+1. [Connection Overview](#1-connection-overview)
+2. [REST API](#2-rest-api)
+3. [WebSocket API](#3-websocket-api)
+4. [All Available Tools](#4-all-available-tools)
+5. [Scraper Engine Tools (New)](#5-scraper-engine-tools-new)
+6. [Testing Checklist](#6-testing-checklist)
+7. [UI Recommendations](#7-ui-recommendations)
 
 ---
 
-## Available Tools (Current)
+## 1. Connection Overview
 
-These are the tools currently registered in the dispatcher. Each can be called via WebSocket or REST.
+Matrx Local runs on the user's desktop. Its default port is **22140**, chosen specifically to avoid conflicts with common dev ports (3000, 5173, 8000, 8001, etc.). If the default is taken, it auto-scans ports 22140-22159 until it finds a free one.
 
-### File Operations
+**Two transport options:**
 
-| Tool | Parameters | Returns | Notes |
-|------|-----------|---------|-------|
-| **Read** | `file_path: string`, `offset?: number`, `limit?: number` | File contents with line numbers | Supports images (returns base64). Respects session cwd. |
-| **Write** | `file_path: string`, `content: string`, `create_directories?: boolean` | Confirmation message | Creates parent dirs by default |
-| **Edit** | `file_path: string`, `old_string: string`, `new_string: string` | Confirmation message | `old_string` must be unique in file |
-| **Glob** | `pattern: string`, `path?: string` | Matching file paths | Uses `fd` if available, falls back to Python glob. 15s timeout. |
-| **Grep** | `pattern: string`, `path?: string`, `include?: string`, `max_results?: number` | Matching lines with file:line:content | Uses `rg` if available. 15s timeout. Default 100 results. |
+| Transport | Endpoint | Use Case |
+|-----------|----------|----------|
+| **REST** | `POST http://127.0.0.1:{port}/tools/invoke` | One-shot, stateless tool calls |
+| **WebSocket** | `ws://127.0.0.1:{port}/ws` | Persistent session, concurrent calls, cancellation, background processes |
 
-### Shell Execution
+**CORS** is configured to allow `localhost:3000-3002`, `localhost:5173`, `127.0.0.1` equivalents, `aimatrx.com`, and `www.aimatrx.com`.
 
-| Tool | Parameters | Returns | Notes |
-|------|-----------|---------|-------|
-| **Bash** | `command: string`, `description?: string`, `timeout?: number`, `run_in_background?: boolean` | Command output | `timeout` in ms (default 120s, max 600s). Session cwd persists. |
-| **BashOutput** | `bash_id: string`, `filter?: string` | New output since last check | `filter` is regex. Shows running/completed status. |
-| **TaskStop** | `task_id: string` | Confirmation | Kills background process by shell_id |
+### Port Discovery
 
-### System
-
-| Tool | Parameters | Returns | Notes |
-|------|-----------|---------|-------|
-| **SystemInfo** | _(none)_ | Platform, hostname, Python version, cwd, user | Metadata dict included |
-| **Screenshot** | _(none)_ | Screenshot image (base64 PNG) | Saved to temp dir |
-| **ListDirectory** | `path?: string`, `show_hidden?: boolean` | Directory listing | Sorted, shows dirs with `/` suffix |
-| **OpenUrl** | `url: string` | Confirmation | Opens in user's default browser |
-| **OpenPath** | `path: string` | Confirmation | Opens in Finder/Explorer/xdg-open |
-
----
-
-## WebSocket Protocol
-
-### Sending a Tool Call
+Matrx Local writes its connection info to **`~/.matrx/local.json`** on startup:
 
 ```json
 {
-  "id": "req-1707500000000-abc1",
-  "tool": "Bash",
+  "port": 22140,
+  "host": "127.0.0.1",
+  "url": "http://127.0.0.1:22140",
+  "ws": "ws://127.0.0.1:22140/ws",
+  "pid": 12345,
+  "version": "0.3.0"
+}
+```
+
+**On the web (browser):** The browser cannot read local files, so use a port scan approach — try the known port range:
+
+```typescript
+const MATRX_LOCAL_PORT_START = 22140;
+const MATRX_LOCAL_PORT_RANGE = 20;
+
+async function discoverMatrxLocal(): Promise<{ url: string; ws: string } | null> {
+  for (let offset = 0; offset < MATRX_LOCAL_PORT_RANGE; offset++) {
+    const port = MATRX_LOCAL_PORT_START + offset;
+    const url = `http://127.0.0.1:${port}`;
+    try {
+      const res = await fetch(`${url}/tools/list`, {
+        signal: AbortSignal.timeout(500),
+      });
+      if (res.ok) {
+        return { url, ws: `ws://127.0.0.1:${port}/ws` };
+      }
+    } catch {
+      // Port not responding, try next
+    }
+  }
+  return null;
+}
+```
+
+**On mobile / Electron / Node.js:** Read `~/.matrx/local.json` directly — it's the fastest path.
+
+**Important:** Cache the discovered port for the session. Don't re-scan on every request. Re-scan only if a request fails with a connection error (Matrx Local may have restarted on a different port).
+
+### Connection Detection
+
+```typescript
+async function isMatrxLocalRunning(): Promise<boolean> {
+  const connection = await discoverMatrxLocal();
+  return connection !== null;
+}
+```
+
+---
+
+## 2. REST API
+
+### List Tools
+
+```
+GET /tools/list
+```
+
+Response:
+```json
+{
+  "tools": [
+    "Bash", "BashOutput", "ClipboardRead", "ClipboardWrite",
+    "DownloadFile", "Edit", "FetchUrl", "FetchWithBrowser",
+    "Glob", "Grep", "ListDirectory", "Notify", "OpenPath",
+    "OpenUrl", "Read", "Research", "Scrape", "Screenshot",
+    "Search", "SystemInfo", "TaskStop", "UploadFile", "Write"
+  ]
+}
+```
+
+### Invoke Tool
+
+```
+POST /tools/invoke
+Content-Type: application/json
+
+{
+  "tool": "<ToolName>",
+  "input": { ... }
+}
+```
+
+Response:
+```json
+{
+  "type": "success" | "error",
+  "output": "Human-readable text output",
+  "image": null | { "media_type": "image/png", "base64_data": "..." },
+  "metadata": null | { ... }
+}
+```
+
+**Important:** REST creates a fresh session per request. Working directory, background processes, and other state do **not** persist between calls. Use WebSocket for stateful workflows.
+
+---
+
+## 3. WebSocket API
+
+### Connect
+
+```typescript
+// Use the discovered connection info (see Port Discovery above)
+const { ws: wsUrl } = await discoverMatrxLocal();
+const ws = new WebSocket(wsUrl); // e.g. ws://127.0.0.1:22140/ws
+```
+
+### Message Format
+
+All messages are JSON.
+
+**Send a tool call:**
+```json
+{
+  "id": "unique-request-id",
+  "tool": "Scrape",
   "input": {
-    "command": "ls -la",
-    "timeout": 10000
+    "urls": ["https://example.com"]
   }
 }
 ```
 
-- **`id`** — Unique request identifier. Include this to correlate responses. Use `req-{timestamp}-{random}` format.
-- **`tool`** — Exact tool name from the table above (case-sensitive).
-- **`input`** — Object with tool parameters.
-
-### Receiving a Response
-
+**Receive a response:**
 ```json
 {
-  "id": "req-1707500000000-abc1",
+  "id": "unique-request-id",
   "type": "success",
-  "output": "total 48\ndrwxr-xr-x  12 user  staff  384 Feb  9 10:00 .\n...",
+  "output": "URL: https://example.com\nStatus: 200\n...",
   "metadata": {
-    "cwd": "/Users/user/projects"
+    "status": "success",
+    "url": "https://example.com",
+    "status_code": 200,
+    "content_type": "html"
   }
 }
 ```
-
-- **`id`** — Matches the request `id`.
-- **`type`** — `"success"` or `"error"`.
-- **`output`** — Text content (always present, may be empty string).
-- **`image`** — Optional. `{ "media_type": "image/png", "base64_data": "..." }`.
-- **`metadata`** — Optional. Structured data (varies by tool).
 
 ### Control Messages
 
 ```json
+// Ping (check connection)
+{"action": "ping"}
+// → {"type": "success", "output": "pong"}
+
 // Cancel a specific task
-{ "id": "req-1707500000000-abc1", "action": "cancel" }
+{"id": "req-1", "action": "cancel"}
 
-// Cancel ALL running tasks
-{ "action": "cancel_all" }
-
-// Ping (keepalive)
-{ "action": "ping" }
+// Cancel all running tasks
+{"action": "cancel_all"}
 ```
 
-### Concurrent Execution
+### Concurrency
 
-Multiple tool calls can be sent without waiting for responses. Each runs concurrently on the server. Responses arrive independently, matched by `id`. This is critical for AI agents that may want to run several operations in parallel.
+Multiple tool calls can run simultaneously on the same WebSocket. Each gets its own `id` and responds independently. The session state (working directory, background processes) is shared across all calls in the same connection.
 
 ---
 
-## REST Protocol
+## 4. All Available Tools
 
-### List Available Tools
+### File Operations
 
-```
-GET http://localhost:8000/tools/list
-```
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `Read` | `path: string` | Read file contents |
+| `Write` | `path: string, content: string` | Write/overwrite a file |
+| `Edit` | `path: string, old_text: string, new_text: string` | Find-and-replace in a file |
+| `Glob` | `pattern: string, path?: string` | Find files matching a glob pattern |
+| `Grep` | `pattern: string, path?: string, include?: string` | Search file contents with regex |
 
-Response:
+### Shell Execution
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `Bash` | `command: string, timeout?: int` | Execute a shell command (fg or bg) |
+| `BashOutput` | `shell_id: string` | Read output from a background shell |
+| `TaskStop` | `shell_id: string` | Kill a background shell process |
+
+### System
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `SystemInfo` | *(none)* | OS, CPU, memory, disk, Python version |
+| `Screenshot` | *(none)* | Capture screen, returns base64 PNG |
+| `ListDirectory` | `path?: string` | List directory contents |
+| `OpenUrl` | `url: string` | Open URL in default browser |
+| `OpenPath` | `path: string` | Open file/folder in OS default app |
+
+### Clipboard
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `ClipboardRead` | *(none)* | Read clipboard text |
+| `ClipboardWrite` | `text: string` | Write text to clipboard |
+
+### Notifications
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `Notify` | `title: string, message: string` | Send native OS notification |
+
+### Network — Simple
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `FetchUrl` | `url: string, method?: string, headers?: object, body?: string, follow_redirects?: bool, timeout?: int` | Direct HTTP request from user's IP |
+| `FetchWithBrowser` | `url: string, wait_for?: string, wait_timeout?: int, extract_text?: bool` | Playwright headless browser fetch |
+
+### Network — Scraper Engine (New)
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `Scrape` | `urls: string[], use_cache?: bool, output_mode?: string, get_links?: bool, get_overview?: bool` | Full scraper engine |
+| `Search` | `keywords: string[], country?: string, count?: int, freshness?: string` | Brave Search API |
+| `Research` | `query: string, country?: string, effort?: string, freshness?: string` | Deep research (search + scrape + compile) |
+
+### File Transfer
+
+| Tool | Parameters | Description |
+|------|-----------|-------------|
+| `DownloadFile` | `url: string, path: string` | Download file to local path |
+| `UploadFile` | `path: string, url: string` | Upload local file to URL |
+
+---
+
+## 5. Scraper Engine Tools (New)
+
+These are the most important new tools. They use a production-grade scraping engine with:
+- Multi-strategy fetching (HTTP → curl-cffi with browser impersonation → Playwright fallback)
+- Cloudflare/bot detection and automatic retry
+- Proxy rotation (datacenter + residential)
+- Content extraction for HTML, PDF, images (OCR)
+- In-memory caching (and PostgreSQL persistence when configured)
+- Domain-specific parsing rules
+
+### `Scrape`
+
+Scrape one or more URLs with the full engine.
+
+**Request:**
 ```json
 {
-  "tools": ["Bash", "BashOutput", "Edit", "Glob", "Grep", "ListDirectory", "OpenPath", "OpenUrl", "Read", "Screenshot", "SystemInfo", "TaskStop", "Write"]
+  "tool": "Scrape",
+  "input": {
+    "urls": ["https://example.com", "https://news.ycombinator.com"],
+    "use_cache": true,
+    "output_mode": "rich",
+    "get_links": false,
+    "get_overview": false
+  }
 }
 ```
 
-### Invoke a Tool
+**Parameters:**
 
-```
-POST http://localhost:8000/tools/invoke
-Content-Type: application/json
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `urls` | `string[]` | *(required)* | URLs to scrape (max 100) |
+| `use_cache` | `bool` | `true` | Use cached results if available |
+| `output_mode` | `string` | `"rich"` | `"rich"` for full content, `"research"` for AI-optimized text |
+| `get_links` | `bool` | `false` | Include extracted links in response |
+| `get_overview` | `bool` | `false` | Include page overview (title, description, etc.) |
 
-{
-  "tool": "SystemInfo",
-  "input": {}
-}
-```
-
-Response:
+**Response (single URL):**
 ```json
 {
   "type": "success",
-  "output": "platform: Darwin\nplatform_release: 25.2.0\n...",
-  "image": null,
+  "output": "URL: https://example.com\nStatus: 200\nContent-Type: html\n\n<extracted text content>",
   "metadata": {
-    "platform": "Darwin",
-    "hostname": "users-macbook"
+    "status": "success",
+    "url": "https://example.com",
+    "status_code": 200,
+    "content_type": "html",
+    "from_cache": false,
+    "cms": "wordpress",
+    "firewall": "cloudflare",
+    "elapsed_ms": 1523
   }
 }
 ```
 
-**Note:** REST calls are stateless. Each request gets a fresh session. `cd` in one request does NOT affect the next. Use WebSocket for multi-step workflows.
+**Response (multiple URLs):**
+```json
+{
+  "type": "success",
+  "output": "Scraped 3 URLs in 4521ms\nSuccess: 2/3\n\n--- Result 1/3 ---\n...",
+  "metadata": {
+    "results": [
+      { "status": "success", "url": "...", "status_code": 200, "content_type": "html" },
+      { "status": "success", "url": "...", "status_code": 200, "content_type": "html" },
+      { "status": "error", "url": "...", "error": "cloudflare_block" }
+    ],
+    "total": 3,
+    "success_count": 2,
+    "elapsed_ms": 4521
+  }
+}
+```
+
+**Metadata fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `string` | `"success"` or `"error"` |
+| `url` | `string` | Final URL (after redirects) |
+| `status_code` | `int` | HTTP status code |
+| `content_type` | `string` | `html`, `pdf`, `json`, `xml`, `txt`, `image`, `md`, `other` |
+| `from_cache` | `bool` | Whether result came from cache |
+| `cms` | `string?` | Detected CMS: `wordpress`, `shopify`, `unknown` |
+| `firewall` | `string?` | Detected WAF: `cloudflare`, `aws_waf`, `datadome`, `none` |
+| `error` | `string?` | Error description if status is `"error"` |
+| `overview` | `object?` | Page overview (if `get_overview: true`) |
+| `links` | `object?` | Extracted links (if `get_links: true`) |
+| `elapsed_ms` | `int` | Total execution time |
 
 ---
 
-## AI Agent Integration
+### `Search`
 
-### How AI Tool Calls Map to Matrx Local
+Search the web using Brave Search API.
 
-AI models (Claude, GPT, etc.) produce structured tool calls in this format:
-
+**Request:**
 ```json
 {
-  "type": "tool_use",
-  "name": "local_bash",
+  "tool": "Search",
   "input": {
-    "command": "find . -name '*.py' | head -20"
+    "keywords": ["latest AI frameworks 2026"],
+    "country": "us",
+    "count": 10,
+    "freshness": null
   }
 }
 ```
 
-**The orchestrator's job:**
+**Parameters:**
 
-1. Intercept tool calls with the `local_` prefix (or whatever namespace you define)
-2. Strip the prefix to get the Matrx Local tool name (`local_bash` → `Bash`)
-3. Forward `input` to the WebSocket connection
-4. Wait for the response
-5. Feed the `output` back to the AI model as a tool result
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `keywords` | `string[]` | *(required)* | Search queries (max 10) |
+| `country` | `string` | `"us"` | Country code for localized results |
+| `count` | `int` | `10` | Results per keyword (max 20) |
+| `freshness` | `string?` | `null` | Time filter: `"pd"` (past day), `"pw"` (past week), `"pm"` (past month), `"py"` (past year) |
 
-### Tool Definitions for AI Models
-
-When constructing the system prompt or tool definitions for the AI model, expose Matrx Local tools like this:
-
+**Response:**
 ```json
 {
-  "name": "local_bash",
-  "description": "Execute a shell command on the user's local machine. The working directory persists across calls. Use this for any CLI operation.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "command": {
-        "type": "string",
-        "description": "The shell command to execute"
-      },
-      "timeout": {
-        "type": "integer",
-        "description": "Timeout in milliseconds (default 120000, max 600000)"
-      },
-      "run_in_background": {
-        "type": "boolean",
-        "description": "If true, runs in background. Use BashOutput to check on it."
+  "type": "success",
+  "output": "Found 10 results in 832ms\n\n1. Title of First Result\n   https://example.com/page\n   Description...\n\n2. ...",
+  "metadata": {
+    "results": [
+      {
+        "keyword": "latest AI frameworks 2026",
+        "title": "Top AI Frameworks in 2026",
+        "url": "https://example.com/ai-frameworks",
+        "description": "A comprehensive guide...",
+        "age": "2 days ago"
       }
-    },
-    "required": ["command"]
+    ],
+    "total": 10,
+    "elapsed_ms": 832
   }
 }
 ```
 
+**Note:** Requires `BRAVE_API_KEY` to be configured on the Matrx Local instance. If not set, returns:
 ```json
-{
-  "name": "local_read",
-  "description": "Read a file from the user's local filesystem. Returns numbered lines. Supports images (returns base64).",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "file_path": {
-        "type": "string",
-        "description": "Absolute or relative path to the file"
-      },
-      "offset": {
-        "type": "integer",
-        "description": "Start reading from this line number (1-indexed)"
-      },
-      "limit": {
-        "type": "integer",
-        "description": "Maximum number of lines to return"
-      }
-    },
-    "required": ["file_path"]
-  }
-}
-```
-
-```json
-{
-  "name": "local_write",
-  "description": "Write content to a file on the user's local filesystem. Creates parent directories automatically.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "file_path": {
-        "type": "string",
-        "description": "Absolute or relative path to the file"
-      },
-      "content": {
-        "type": "string",
-        "description": "The content to write to the file"
-      }
-    },
-    "required": ["file_path", "content"]
-  }
-}
-```
-
-```json
-{
-  "name": "local_edit",
-  "description": "Edit a file by replacing a unique string. The old_string must appear exactly once in the file.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "file_path": { "type": "string" },
-      "old_string": { "type": "string", "description": "The exact text to find (must be unique)" },
-      "new_string": { "type": "string", "description": "The replacement text" }
-    },
-    "required": ["file_path", "old_string", "new_string"]
-  }
-}
-```
-
-```json
-{
-  "name": "local_glob",
-  "description": "Find files matching a glob pattern on the user's machine.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "pattern": { "type": "string", "description": "Glob pattern (e.g. '*.py', '**/*.ts')" },
-      "path": { "type": "string", "description": "Directory to search in (default: session cwd)" }
-    },
-    "required": ["pattern"]
-  }
-}
-```
-
-```json
-{
-  "name": "local_grep",
-  "description": "Search file contents by regex on the user's machine.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "pattern": { "type": "string", "description": "Regex pattern to search for" },
-      "path": { "type": "string", "description": "Directory to search (default: session cwd)" },
-      "include": { "type": "string", "description": "Glob to filter files (e.g. '*.py')" },
-      "max_results": { "type": "integer", "description": "Max matches (default 100)" }
-    },
-    "required": ["pattern"]
-  }
-}
-```
-
-```json
-{
-  "name": "local_screenshot",
-  "description": "Capture a screenshot of the user's screen. Returns a base64-encoded PNG.",
-  "input_schema": {
-    "type": "object",
-    "properties": {}
-  }
-}
-```
-
-```json
-{
-  "name": "local_list_directory",
-  "description": "List contents of a directory on the user's machine.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "path": { "type": "string", "description": "Directory path (default: session cwd)" },
-      "show_hidden": { "type": "boolean", "description": "Include dotfiles (default false)" }
-    }
-  }
-}
-```
-
-```json
-{
-  "name": "local_system_info",
-  "description": "Get system information about the user's machine (OS, hostname, Python version, cwd).",
-  "input_schema": {
-    "type": "object",
-    "properties": {}
-  }
-}
-```
-
-```json
-{
-  "name": "local_open_url",
-  "description": "Open a URL in the user's default browser.",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "url": { "type": "string", "description": "The URL to open" }
-    },
-    "required": ["url"]
-  }
-}
-```
-
-```json
-{
-  "name": "local_open_path",
-  "description": "Open a file or folder in the user's OS file manager (Finder, Explorer, etc.).",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "path": { "type": "string", "description": "The file or directory path to open" }
-    },
-    "required": ["path"]
-  }
-}
-```
-
-### Recommended AI System Prompt Addition
-
-When the user has `matrx_local` connected, append this to the AI model's system prompt:
-
-```
-You have access to the user's local machine via the Matrx Local tool system. The following tools execute directly on their computer:
-
-- local_bash: Run shell commands (cwd persists between calls)
-- local_read: Read files (returns numbered lines)
-- local_write: Write files (creates directories)
-- local_edit: Find-and-replace in files (old_string must be unique)
-- local_glob: Find files by pattern
-- local_grep: Search file contents by regex
-- local_screenshot: Capture the screen
-- local_list_directory: List directory contents
-- local_system_info: Get OS/platform details
-- local_open_url: Open URL in browser
-- local_open_path: Open file/folder in OS file manager
-
-Guidelines:
-- Always use local_read before editing a file to understand its contents.
-- Working directory persists in the session — use local_bash with "cd" to navigate.
-- For long-running commands, set run_in_background: true and check with BashOutput.
-- Paths can be relative (to session cwd) or absolute.
-- Ask for confirmation before destructive operations (deleting files, killing processes).
+{ "type": "error", "output": "Search not available — BRAVE_API_KEY not configured." }
 ```
 
 ---
 
-## UI Components to Build
+### `Research`
 
-### 1. Connection Manager (Global)
+Deep research: search for a query, scrape all result pages, compile findings.
 
-**Priority: HIGH — needed before anything else works**
+**Request:**
+```json
+{
+  "tool": "Research",
+  "input": {
+    "query": "how does transformer attention mechanism work",
+    "country": "us",
+    "effort": "medium",
+    "freshness": null
+  }
+}
+```
 
-- Persistent connection status in the app header/sidebar
-- Auto-connect on page load if previously connected
-- Reconnect with backoff on disconnect
-- Settings: custom URL, auto-connect toggle
-- First-time pairing flow with install instructions
+**Parameters:**
 
-### 2. Tool Dashboard (Exists — needs polish)
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `query` | `string` | *(required)* | Research query |
+| `country` | `string` | `"us"` | Country code |
+| `effort` | `string` | `"medium"` | How many pages to scrape: `"low"` (10), `"medium"` (25), `"high"` (50), `"extreme"` (100) |
+| `freshness` | `string?` | `null` | Time filter (same as Search) |
 
-**Route:** `/demos/local-tools`
+**Response:**
+```json
+{
+  "type": "success",
+  "output": "Research complete: how does transformer attention mechanism work\nPages scraped: 18 | Failed: 7\nTime: 34521ms\n\n--- https://arxiv.org/... ---\n<content>\n\n--- https://blog.example.com/... ---\n<content>\n...",
+  "metadata": {
+    "query": "how does transformer attention mechanism work",
+    "pages_scraped": 18,
+    "pages_failed": 7,
+    "elapsed_ms": 34521,
+    "content_length": 245000
+  }
+}
+```
 
-Currently built with preset quick-fire buttons, custom tool input, result panel, and message log. Needs:
-
-- Tool documentation tooltips
-- Input validation per tool (don't send Glob without a pattern)
-- Better result formatting (syntax highlighting for code, table for structured data)
-- Image display for Screenshot results
-- Persistent connection across the dashboard and terminal pages
-
-### 3. Terminal Interface (Exists — needs polish)
-
-**Route:** `/demos/local-tools/terminal`
-
-Full shell-like interface with directory navigation, command history, Ctrl+C cancellation. Needs:
-
-- ANSI color code parsing (many CLI tools output colored text)
-- Tab completion (fetch directory contents for path completion)
-- Split pane (run a command in one pane, browse files in another)
-- Scrollback buffer limit (performance — currently unbounded)
-
-### 4. File Browser (New)
-
-**Priority: HIGH**
-
-A visual file explorer for the user's local machine:
-
-- Tree view with expand/collapse
-- File preview panel (text, images, PDFs)
-- Right-click context menu (open, rename, delete, copy path)
-- Drag-and-drop upload to cloud storage
-- Breadcrumb navigation
-- Backed by `ListDirectory`, `Read`, `Write`, `Glob`
-
-### 5. System Monitor (New)
-
-**Priority: MEDIUM**
-
-- CPU/memory/disk usage (via `Bash` + `top`/`ps` parsing, or a dedicated tool later)
-- Running processes list
-- Network connections
-- Auto-refresh on interval
-
-### 6. Scraping Control Panel (New — when scraping tools are built)
-
-**Priority: HIGH (after scraping tools land)**
-
-- URL input with fetch button
-- Toggle between simple HTTP fetch and browser-rendered fetch
-- Response viewer (raw HTML, rendered preview, extracted data)
-- Cookie/session manager
-- Scraping history log
-- Extraction rule builder (CSS selector, XPath, or natural language)
-
-### 7. Audio Interface (New — when audio tools are built)
-
-**Priority: MEDIUM**
-
-- Record button with waveform visualization
-- Playback controls
-- Transcription display (real-time if streaming)
-- Device selector dropdown
-
-### 8. AI Agent Activity Feed (New)
-
-**Priority: HIGH**
-
-When AI agents are making local tool calls, the user should see:
-
-- A real-time feed of what the AI is doing on their machine
-- Each tool call shown with: tool name, parameters, status (running/done/error), output preview
-- Ability to cancel individual operations or all operations
-- Expandable details for each call
-- This is essentially a read-only version of the message log from the dashboard, but integrated into the main chat interface
+**Important:** Research can take 10-60+ seconds depending on effort level. Over WebSocket, you can cancel it mid-flight. Over REST, the HTTP request will block until completion.
 
 ---
 
-## Legacy Routes (for reference)
+## 6. Testing Checklist
 
-These existed before the tool system. Some may be deprecated in favor of tools, but they're still functional:
+### Quick Smoke Test
 
-| Endpoint | Method | What it does |
-|----------|--------|-------------|
-| `/` | GET | Health check |
-| `/trigger` | POST | Generic event handler (browser events) |
-| `/system/info` | GET | Basic OS info |
-| `/files` | GET | List files in a directory |
-| `/screenshot` | POST | Capture screenshot (returns file path) |
-| `/db-data` | GET | Query local PostgreSQL |
-| `/logs` | GET | Last 50 lines of system log |
-| `/generate-directory-structure/text` | POST | Directory tree as text |
-| `/generate-directory-structure/json` | POST | Directory tree as JSON |
-| `/generate-directory-structure/zip` | POST | Directory tree as zip |
-| `/download/small-file` | GET | Download a small generated file |
-| `/download/large-file` | GET | Download a file from disk |
-| `/download/generated-file` | GET | Download a generated JSON file |
-
-**Recommendation:** Migrate unique functionality from these into proper tools. The tool system provides a unified interface for both UI and AI agents.
-
----
-
-## Quick Start (for devs)
-
-### Start the backend
+These can be tested immediately with no configuration:
 
 ```bash
-cd /path/to/matrx_local
-uv sync
-uv run run.py
-# Server starts at http://localhost:8000
-# WebSocket at ws://localhost:8000/ws
-# API docs at http://localhost:8000/docs
-```
+# Default port is 22140 — check ~/.matrx/local.json for actual port
+PORT=22140
 
-### Test from the frontend
+# Check if running
+curl http://127.0.0.1:$PORT/tools/list
 
-1. Start `ai-matrx-admin` dev server
-2. Navigate to `/demos/local-tools` (dashboard) or `/demos/local-tools/terminal` (shell)
-3. Click "Connect" to establish WebSocket connection
-4. Use preset buttons or type commands
-
-### Test from curl
-
-```bash
 # List tools
-curl http://localhost:8000/tools/list
+curl http://127.0.0.1:$PORT/tools/list | jq
 
-# Invoke a tool
-curl -X POST http://localhost:8000/tools/invoke \
+# Simple scrape (no API key needed)
+curl -X POST http://127.0.0.1:$PORT/tools/invoke \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "Scrape", "input": {"urls": ["https://httpbin.org/html"], "use_cache": false}}'
+
+# Simple fetch
+curl -X POST http://127.0.0.1:$PORT/tools/invoke \
+  -H "Content-Type: application/json" \
+  -d '{"tool": "FetchUrl", "input": {"url": "https://httpbin.org/get"}}'
+
+# System info
+curl -X POST http://127.0.0.1:$PORT/tools/invoke \
   -H "Content-Type: application/json" \
   -d '{"tool": "SystemInfo", "input": {}}'
-
-# Bash command
-curl -X POST http://localhost:8000/tools/invoke \
-  -H "Content-Type: application/json" \
-  -d '{"tool": "Bash", "input": {"command": "echo hello world"}}'
 ```
 
-### Test WebSocket (wscat)
+### Full Scraper Test Matrix
 
-```bash
-npx wscat -c ws://localhost:8000/ws
-> {"id":"1","tool":"SystemInfo","input":{}}
-> {"id":"2","tool":"Bash","input":{"command":"ls -la"}}
-> {"action":"ping"}
+| Test | Tool | Input | Expected |
+|------|------|-------|----------|
+| Basic HTML scrape | `Scrape` | `{"urls": ["https://httpbin.org/html"]}` | Status: success, content_type: html, has text_data |
+| Multiple URLs | `Scrape` | `{"urls": ["https://httpbin.org/html", "https://example.com"]}` | Both succeed, metadata.results has 2 items |
+| Cache hit | `Scrape` | Same URL twice with `use_cache: true` | Second call returns `from_cache: true` |
+| Cache bypass | `Scrape` | Same URL with `use_cache: false` | Always fetches fresh |
+| Get links | `Scrape` | `{"urls": ["https://news.ycombinator.com"], "get_links": true}` | metadata.links populated |
+| Get overview | `Scrape` | `{"urls": ["https://en.wikipedia.org/wiki/Python_(programming_language)"], "get_overview": true}` | metadata.overview populated |
+| PDF extraction | `Scrape` | `{"urls": ["https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"]}` | content_type: pdf, has text_data |
+| Error handling | `Scrape` | `{"urls": ["https://thisdomaindoesnotexist12345.com"]}` | Status: error, has error message |
+| Cloudflare site | `Scrape` | `{"urls": ["https://www.cloudflare.com"]}` | May succeed or report firewall: cloudflare |
+| Simple fetch vs engine | `FetchUrl` vs `Scrape` | Same URL | FetchUrl returns raw HTML; Scrape returns extracted text |
+| Browser fetch | `FetchWithBrowser` | `{"url": "https://httpbin.org/html", "extract_text": true}` | Returns rendered text content |
+| Search (requires BRAVE_API_KEY) | `Search` | `{"keywords": ["AI frameworks 2026"]}` | Returns search results with titles and URLs |
+| Research (requires BRAVE_API_KEY) | `Research` | `{"query": "what is rust programming language", "effort": "low"}` | Scrapes ~10 pages, returns compiled content |
+
+### WebSocket Concurrency Test
+
+1. Open a WebSocket to `ws://127.0.0.1:22140/ws` (or the discovered port)
+2. Send 3 scrape requests simultaneously with different IDs
+3. Verify all 3 responses come back (in any order) with correct IDs
+4. Send a `{"action": "cancel_all"}` during a Research call
+5. Verify the Research is cancelled
+
+### Edge Cases to Test
+
+- **No Matrx Local running** — UI should detect and show "Matrx Local not connected" state
+- **Scrape of very large page** — Output is truncated at 500KB with `"... [truncated at 500KB]"` message
+- **Scrape timeout** — Very slow sites may timeout; error message explains what happened
+- **Invalid URL** — Returns error with `"Invalid URL"` message
+- **Empty URL list** — Pydantic validation catches this in scraper-service
+
+---
+
+## 7. UI Recommendations
+
+### Connection Status Indicator
+
+Show a persistent indicator of Matrx Local connection status. Poll `/tools/list` every 10-30 seconds, or maintain a WebSocket with periodic pings.
+
+States: **Connected** (green) | **Disconnected** (red) | **Connecting** (yellow)
+
+### Scraper Testing Panel
+
+A dedicated panel for testing the scraper engine. Suggested layout:
+
+#### URL Input Section
+- Text area for entering URLs (one per line or comma-separated)
+- Options toggles: `use_cache`, `get_links`, `get_overview`
+- Output mode selector: `rich` / `research`
+- "Scrape" button
+
+#### Results Display
+- For each URL: status badge (success/error/cached), URL, content type, CMS, firewall detected
+- Expandable text content area (the extracted text)
+- Metadata panel showing all returned metadata
+- Timing information
+
+#### Search Panel
+- Keyword input (supports multiple)
+- Country selector dropdown
+- Count slider (1-20)
+- Freshness filter (any/day/week/month/year)
+- Results displayed as a list with title, URL, description, age
+
+#### Research Panel
+- Query input (single text field)
+- Effort level selector: Low (10 pages) / Medium (25) / High (50) / Extreme (100)
+- Progress indicator showing pages scraped vs total
+- Cancel button (via WebSocket cancel)
+- Compiled research output in a scrollable, formatted text area
+
+### Comparison View
+
+Side-by-side comparison of the three fetch methods for the same URL:
+
+| Method | Response |
+|--------|----------|
+| `FetchUrl` | Raw HTTP response (headers + body) |
+| `FetchWithBrowser` | Rendered page content |
+| `Scrape` | Extracted, cleaned, structured text |
+
+This helps demonstrate the value of the scraper engine over simple fetching.
+
+### Tool Explorer
+
+A generic tool testing interface:
+
+1. Dropdown to select any tool from `/tools/list`
+2. Dynamic form that renders input fields based on the tool's parameters
+3. "Execute" button
+4. Response display with output, image (if any), and metadata
+
+This is useful for testing all 23 tools without building dedicated UI for each.
+
+### WebSocket Monitor
+
+A developer-facing panel (maybe under a "Debug" menu):
+
+- Real-time log of all WebSocket messages (sent and received)
+- Connection status and latency
+- Active request tracking (which tool calls are in flight)
+- Cancel buttons per request
+
+---
+
+## Appendix: TypeScript Types
+
+```typescript
+interface ToolRequest {
+  tool: string;
+  input: Record<string, unknown>;
+}
+
+interface ToolResponse {
+  type: 'success' | 'error';
+  output: string;
+  image?: {
+    media_type: string;
+    base64_data: string;
+  };
+  metadata?: Record<string, unknown>;
+}
+
+interface WebSocketToolCall {
+  id: string;
+  tool: string;
+  input: Record<string, unknown>;
+}
+
+interface WebSocketResponse {
+  id: string;
+  type: 'success' | 'error';
+  output: string;
+  image?: {
+    media_type: string;
+    base64_data: string;
+  };
+  metadata?: Record<string, unknown>;
+}
+
+interface WebSocketControl {
+  action: 'ping' | 'cancel' | 'cancel_all';
+  id?: string;
+}
+
+// Scrape-specific metadata
+interface ScrapeMetadata {
+  status: 'success' | 'error';
+  url: string;
+  status_code?: number;
+  content_type?: string;
+  from_cache?: boolean;
+  cms?: 'wordpress' | 'shopify' | 'unknown';
+  firewall?: 'cloudflare' | 'aws_waf' | 'datadome' | 'none';
+  error?: string;
+  overview?: Record<string, unknown>;
+  links?: Record<string, unknown>;
+  elapsed_ms?: number;
+}
+
+interface BatchScrapeMetadata {
+  results: ScrapeMetadata[];
+  total: number;
+  success_count: number;
+  elapsed_ms: number;
+}
+
+interface SearchResult {
+  keyword: string;
+  title: string;
+  url: string;
+  description: string;
+  age?: string;
+}
+
+interface SearchMetadata {
+  results: SearchResult[];
+  total: number;
+  elapsed_ms: number;
+}
+
+interface ResearchMetadata {
+  query: string;
+  pages_scraped: number;
+  pages_failed: number;
+  elapsed_ms: number;
+  content_length: number;
+}
 ```
