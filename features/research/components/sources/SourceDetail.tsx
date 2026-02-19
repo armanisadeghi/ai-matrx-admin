@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useResearchSource, useSourceContent } from '../../hooks/useResearchState';
+import { useResearchApi } from '../../hooks/useResearchApi';
+import { useResearchStream } from '../../hooks/useResearchStream';
 import { updateSource } from '../../service';
 import { StatusBadge } from '../shared/StatusBadge';
 import { SourceTypeIcon } from '../shared/SourceTypeIcon';
@@ -49,30 +51,28 @@ interface SourceDetailProps {
 
 export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     const isMobile = useIsMobile();
+    const api = useResearchApi();
 
     const { data: source, refresh: refetchSource } = useResearchSource(sourceId);
     const { data: contentData, refresh: refetchContent } = useSourceContent(sourceId);
+    const stream = useResearchStream(() => { refetchSource(); refetchContent(); });
 
     const [pasteOpen, setPasteOpen] = useState(false);
-    const [scraping, setScraping] = useState(false);
     const [showRawSearch, setShowRawSearch] = useState(false);
 
-    const contentVersions = ((contentData as Record<string, unknown>)?.content ?? contentData ?? []) as ResearchContent[];
-    const analyses = ((contentData as Record<string, unknown>)?.analyses ?? []) as ResearchAnalysis[];
+    const contentVersions = ((contentData as unknown as Record<string, unknown>)?.content ?? contentData ?? []) as ResearchContent[];
+    const analyses = ((contentData as unknown as Record<string, unknown>)?.analyses ?? []) as ResearchAnalysis[];
     const [selectedVersion, setSelectedVersion] = useState(0);
     const currentContent = contentVersions[selectedVersion] ?? null;
 
-    const hasBeenScraped = source && source.scrape_status !== 'pending';
+    const typedSource = source as ResearchSource | null | undefined;
+    const hasBeenScraped = typedSource && typedSource.scrape_status !== 'pending';
 
     const handleScrape = useCallback(async () => {
-        setScraping(true);
-        try {
-            await updateSource(sourceId, { scrape_status: 'pending' });
-            refetchSource();
-        } finally {
-            setScraping(false);
-        }
-    }, [sourceId, refetchSource]);
+        if (!typedSource || stream.isStreaming) return;
+        const response = await api.scrapeSource(topicId, sourceId);
+        stream.startStream(response);
+    }, [api, topicId, sourceId, typedSource, stream]);
 
     const handleMarkComplete = useCallback(async () => {
         await updateSource(sourceId, { scrape_status: 'complete' });
@@ -88,11 +88,9 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         refetchContent();
     }, [refetchContent]);
 
-    const typedSource = source as ResearchSource | null | undefined;
-
     return (
         <div className="flex flex-col md:flex-row h-full min-h-0">
-            {/* Left Panel — Source Metadata */}
+            {/* Left Panel — Source Info */}
             <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-b md:border-b-0 md:border-r border-border overflow-y-auto">
                 <div className="p-4 space-y-4">
                     <Link
@@ -107,7 +105,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                         <>
                             {/* Hero: thumbnail + title */}
                             <div className="space-y-3">
-                                {typedSource.thumbnail_url && (
+                                {typedSource.thumbnail_url ? (
                                     <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted">
                                         <Image
                                             src={typedSource.thumbnail_url}
@@ -118,8 +116,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                             unoptimized
                                         />
                                     </div>
-                                )}
-                                {!typedSource.thumbnail_url && (
+                                ) : (
                                     <div className="w-full h-20 rounded-lg bg-muted flex items-center justify-center">
                                         <Globe className="h-8 w-8 text-muted-foreground/30" />
                                     </div>
@@ -138,34 +135,6 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     <ExternalLink className="h-3 w-3 shrink-0 mt-0.5" />
                                 </a>
                             </div>
-
-                            {/* Description */}
-                            {typedSource.description && (
-                                <div className="rounded-lg bg-muted/50 p-3 space-y-1">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                                        <Info className="h-3 w-3" />
-                                        Description
-                                    </p>
-                                    <p className="text-xs leading-relaxed text-foreground/90">{typedSource.description}</p>
-                                </div>
-                            )}
-
-                            {/* Extra Snippets */}
-                            {typedSource.extra_snippets && typedSource.extra_snippets.length > 0 && (
-                                <div className="space-y-2">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                                        <FileText className="h-3 w-3" />
-                                        Snippets ({typedSource.extra_snippets.length})
-                                    </p>
-                                    <div className="space-y-2">
-                                        {typedSource.extra_snippets.map((snippet, i) => (
-                                            <div key={i} className="border-l-2 border-border pl-3 py-0.5">
-                                                <p className="text-xs text-foreground/80 leading-relaxed">{snippet}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Core metadata */}
                             <div className="space-y-0 rounded-lg border border-border p-3">
@@ -202,7 +171,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 )}
                             </div>
 
-                            {/* Content version selector */}
+                            {/* Content version details */}
                             {contentVersions.length > 0 && (
                                 <div className="rounded-lg border border-border p-3 space-y-2">
                                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Content Versions</p>
@@ -280,6 +249,20 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 </div>
                             )}
 
+                            {/* Description */}
+                            {typedSource.description && (
+                                <p className="text-xs leading-relaxed text-foreground/80">{typedSource.description}</p>
+                            )}
+
+                            {/* Extra snippets — plain text, no header */}
+                            {typedSource.extra_snippets && typedSource.extra_snippets.length > 0 && (
+                                <div className="space-y-2">
+                                    {typedSource.extra_snippets.map((snippet, i) => (
+                                        <p key={i} className="text-xs text-foreground/70 leading-relaxed">{snippet}</p>
+                                    ))}
+                                </div>
+                            )}
+
                             {/* Raw search result toggle */}
                             {typedSource.raw_search_result && (
                                 <div className="space-y-2">
@@ -297,41 +280,43 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     )}
                                 </div>
                             )}
-
-                            {/* Actions */}
-                            <div className="space-y-2 pt-2 border-t border-border">
-                                <Button
-                                    size="sm"
-                                    className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0"
-                                    onClick={handleScrape}
-                                    disabled={scraping}
-                                >
-                                    {scraping
-                                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                                        : hasBeenScraped ? <RefreshCw className="h-4 w-4" /> : <Download className="h-4 w-4" />
-                                    }
-                                    {scraping ? 'Queuing…' : hasBeenScraped ? 'Re-scrape' : 'Scrape'}
-                                </Button>
-                                <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={() => setPasteOpen(true)}>
-                                    <ClipboardPaste className="h-4 w-4" />
-                                    Paste Content
-                                </Button>
-                                <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={handleMarkComplete}>
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    Mark Complete
-                                </Button>
-                                <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={handleMarkStale}>
-                                    <AlertTriangle className="h-4 w-4" />
-                                    Mark Stale
-                                </Button>
-                            </div>
                         </>
                     )}
                 </div>
             </div>
 
-            {/* Right Panel — Content + Analysis */}
+            {/* Right Panel — Actions + Content + Analysis */}
             <div className="flex-1 min-w-0 overflow-y-auto p-4 space-y-6">
+                {/* Actions bar */}
+                {typedSource && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Button
+                            size="sm"
+                            className="gap-1.5 h-8"
+                            onClick={handleScrape}
+                            disabled={stream.isStreaming}
+                        >
+                            {stream.isStreaming
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : hasBeenScraped ? <RefreshCw className="h-3.5 w-3.5" /> : <Download className="h-3.5 w-3.5" />
+                            }
+                            {stream.isStreaming ? 'Scraping…' : hasBeenScraped ? 'Re-scrape' : 'Scrape'}
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setPasteOpen(true)}>
+                            <ClipboardPaste className="h-3.5 w-3.5" />
+                            Paste Content
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={handleMarkComplete}>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Mark Complete
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={handleMarkStale}>
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                            Mark Stale
+                        </Button>
+                    </div>
+                )}
+
                 {currentContent ? (
                     <ContentViewer
                         topicId={topicId}
@@ -351,16 +336,6 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                         The scraper couldn&apos;t retrieve this page. You can re-scrape or paste content manually.
                                     </p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button size="sm" onClick={handleScrape} disabled={scraping} className="gap-2">
-                                        {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                                        Re-scrape
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setPasteOpen(true)} className="gap-2">
-                                        <ClipboardPaste className="h-4 w-4" />
-                                        Paste
-                                    </Button>
-                                </div>
                             </>
                         ) : (
                             <>
@@ -372,16 +347,6 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     <p className="text-xs text-muted-foreground mt-1 max-w-xs">
                                         This source hasn&apos;t been scraped. Click Scrape to fetch its content, or paste it manually.
                                     </p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button size="sm" onClick={handleScrape} disabled={scraping} className="gap-2">
-                                        {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                                        Scrape
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setPasteOpen(true)} className="gap-2">
-                                        <ClipboardPaste className="h-4 w-4" />
-                                        Paste
-                                    </Button>
                                 </div>
                             </>
                         )}

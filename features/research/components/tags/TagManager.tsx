@@ -13,18 +13,18 @@ import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchTags } from '../../hooks/useResearchState';
-import { createTag, updateTag, deleteTag } from '../../service';
+import { createTag, updateTag, deleteTag as deleteTagService } from '../../service';
 import type { ResearchTag } from '../../types';
 
 export default function TagManager() {
     const { topicId } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: tags, refetch } = useResearchTags(topicId);
+    const { data: tags, refresh } = useResearchTags(topicId);
 
     const [createOpen, setCreateOpen] = useState(false);
     const [editTag, setEditTag] = useState<ResearchTag | null>(null);
-    const [deleteTag, setDeleteTag] = useState<ResearchTag | null>(null);
+    const [tagToDelete, setTagToDelete] = useState<ResearchTag | null>(null);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [saving, setSaving] = useState(false);
@@ -44,23 +44,23 @@ export default function TagManager() {
                 await createTag(topicId, { name, description: description || null });
             }
             setCreateOpen(false);
-            refetch();
+            refresh();
         } finally {
             setSaving(false);
         }
-    }, [topicId, editTag, name, description, refetch]);
+    }, [topicId, editTag, name, description, refresh]);
 
     const handleDelete = useCallback(async () => {
-        if (!deleteTag) return;
-        await deleteTag(deleteTag.id);
-        setDeleteTag(null);
-        refetch();
-    }, [deleteTag, refetch]);
+        if (!tagToDelete) return;
+        await deleteTagService(tagToDelete.id);
+        setTagToDelete(null);
+        refresh();
+    }, [tagToDelete, refresh]);
 
     const handleConsolidate = useCallback(async (tagId: string) => {
         await api.consolidateTag(topicId, tagId);
-        refetch();
-    }, [api, topicId, refetch]);
+        refresh();
+    }, [api, topicId, refresh]);
 
     const formContent = (
         <div className="space-y-4 p-4">
@@ -153,7 +153,7 @@ export default function TagManager() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-destructive"
-                                    onClick={() => setDeleteTag(tag)}
+                                    onClick={() => setTagToDelete(tag)}
                                 >
                                     <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -187,12 +187,12 @@ export default function TagManager() {
             )}
 
             {/* Delete Confirmation */}
-            <AlertDialog open={!!deleteTag} onOpenChange={(open) => !open && setDeleteTag(null)}>
+            <AlertDialog open={!!tagToDelete} onOpenChange={(open) => !open && setTagToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Tag</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete &ldquo;{deleteTag?.name}&rdquo;? This action cannot be undone.
+                            Are you sure you want to delete &ldquo;{tagToDelete?.name}&rdquo;? This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

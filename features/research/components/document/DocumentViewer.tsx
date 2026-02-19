@@ -20,7 +20,7 @@ export default function DocumentViewer() {
     const { topicId, refresh } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: docData, refetch: refetchDoc } = useResearchDocument(topicId);
+    const { data: docData, refresh: refetchDoc } = useResearchDocument(topicId);
     const stream = useResearchStream(() => { refetchDoc(); refresh(); });
 
     const [showHistory, setShowHistory] = useState(false);

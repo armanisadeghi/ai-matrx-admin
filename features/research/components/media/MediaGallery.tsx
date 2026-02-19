@@ -20,15 +20,15 @@ export default function MediaGallery() {
     const { topicId } = useTopicContext();
     const [filter, setFilter] = useState<string>('all');
 
-    const { data: media, refetch } = useResearchMedia(topicId);
+    const { data: media, refresh } = useResearchMedia(topicId);
 
     const mediaList = (media as ResearchMedia[]) ?? [];
     const filteredMedia = filter !== 'all' ? mediaList.filter(m => m.media_type === filter) : mediaList;
 
     const handleToggleRelevance = useCallback(async (item: ResearchMedia) => {
         await updateMedia(item.id, { is_relevant: !item.is_relevant });
-        refetch();
-    }, [refetch]);
+        refresh();
+    }, [refresh]);
 
     return (
         <div className="p-4 sm:p-6 space-y-4">

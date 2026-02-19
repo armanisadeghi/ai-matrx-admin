@@ -89,6 +89,9 @@ export async function POST(request: NextRequest) {
         // Get backend URL from single source of truth
         const BACKEND_URL = BACKEND_URLS.production;
 
+        // Forward the Authorization header from the client request
+        const authHeader = request.headers.get('Authorization');
+
         // Build scraper request with default options for content extraction
         const scraperRequest: QuickScrapeRequest = {
             urls: [url],
@@ -109,11 +112,15 @@ export async function POST(request: NextRequest) {
         };
 
         // Call the Python backend scraper API
+        const backendHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (authHeader) {
+            backendHeaders['Authorization'] = authHeader;
+        }
         const response = await fetch(`${BACKEND_URL}/api/scraper/quick-scrape`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: backendHeaders,
             body: JSON.stringify(scraperRequest),
         });
 

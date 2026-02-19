@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchSources, useResearchKeywords } from '../../hooks/useResearchState';
+import { useResearchApi } from '../../hooks/useResearchApi';
+import { useResearchStream } from '../../hooks/useResearchStream';
 import { bulkUpdateSources, updateSource } from '../../service';
 import { useSourceFilters } from '../../hooks/useSourceFilters';
 import { SourceFilters } from './SourceFilters';
@@ -77,7 +79,7 @@ interface SourceRowProps {
     anyNavigating: boolean;
     onSelect: (id: string) => void;
     onToggleInclude: (source: ResearchSource) => void;
-    onScrape: (sourceId: string, e: React.MouseEvent) => void;
+    onScrape: (source: ResearchSource, e: React.MouseEvent) => void;
     onNavigate: (id: string) => void;
 }
 
@@ -96,6 +98,7 @@ function SourceRow({
     const [expanded, setExpanded] = useState(false);
     const { display: pageAgeDisplay } = formatPageAge(source.page_age);
     const hasSnippets = source.extra_snippets && source.extra_snippets.length > 0;
+    const needsScrape = source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin';
 
     return (
         <>
@@ -110,39 +113,39 @@ function SourceRow({
                 onClick={() => !anyNavigating && onNavigate(source.id)}
             >
                 {/* Checkbox */}
-                <td className="px-3 py-2 w-10" onClick={e => e.stopPropagation()}>
+                <td className="px-3 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
                     <Checkbox
                         checked={selected}
                         onCheckedChange={() => onSelect(source.id)}
                         disabled={anyNavigating}
+                        className="mt-1"
                     />
                 </td>
 
                 {/* Include toggle */}
-                <td className="px-2 py-2 w-10" onClick={e => e.stopPropagation()}>
+                <td className="px-2 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
                     <Switch
                         checked={source.is_included}
                         onCheckedChange={() => onToggleInclude(source)}
-                        className="scale-75"
+                        className="scale-75 mt-0.5"
                         disabled={anyNavigating}
                     />
                 </td>
 
                 {/* Rank */}
-                <td className="px-2 py-2 w-10 text-center">
+                <td className="px-2 py-2.5 w-10 text-center align-top">
                     {source.rank ? (
-                        <span className="text-xs font-mono font-semibold text-muted-foreground tabular-nums">
+                        <span className="text-xs font-mono font-semibold text-muted-foreground tabular-nums mt-1 inline-block">
                             #{source.rank}
                         </span>
                     ) : (
-                        <span className="text-xs text-muted-foreground/40">—</span>
+                        <span className="text-xs text-muted-foreground/40 mt-1 inline-block">—</span>
                     )}
                 </td>
 
-                {/* Thumbnail + Title + Description */}
-                <td className="px-3 py-2">
-                    <div className="flex items-start gap-3 min-w-0">
-                        {/* Thumbnail */}
+                {/* Content: Thumbnail + Title + URL + Description + Metadata row */}
+                <td className="px-3 py-2.5 w-full max-w-0">
+                    <div className="flex items-start gap-3">
                         <div className="shrink-0 w-10 h-10 rounded overflow-hidden bg-muted flex items-center justify-center">
                             {source.thumbnail_url ? (
                                 <Image
@@ -157,24 +160,59 @@ function SourceRow({
                                 <Globe className="h-4 w-4 text-muted-foreground/50" />
                             )}
                         </div>
-                        {/* Text */}
-                        <div className="min-w-0 flex-1">
-                            <div className="font-medium text-sm leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                            <div className="font-medium text-sm leading-snug line-clamp-2 break-words group-hover:text-primary transition-colors">
                                 {source.title || source.url}
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">{source.url}</div>
+                            <div className="text-xs text-muted-foreground break-all line-clamp-1">{source.url}</div>
                             {source.description && (
-                                <div className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-2 leading-relaxed">
+                                <div className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-2 leading-relaxed break-words">
                                     {source.description}
                                 </div>
                             )}
+                            {/* Metadata row — stacked inline */}
+                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                <span className="text-xs text-muted-foreground truncate max-w-48">{source.hostname}</span>
+                                <span className="text-muted-foreground/30">·</span>
+                                <SourceTypeIcon type={source.source_type} size={13} className="text-muted-foreground" />
+                                <OriginBadge origin={source.origin} />
+                                {source.page_age && (
+                                    <>
+                                        <span className="text-muted-foreground/30">·</span>
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap">{pageAgeDisplay}</span>
+                                    </>
+                                )}
+                                <span className="text-muted-foreground/30">·</span>
+                                <StatusBadge status={source.scrape_status} />
+                                {needsScrape && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-5 px-1.5 gap-1 text-[10px] ml-1"
+                                        disabled={scraping || anyNavigating}
+                                        onClick={(e) => onScrape(source, e)}
+                                    >
+                                        {scraping ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                                        {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                                    </Button>
+                                )}
+                            </div>
+                            {/* Expanded snippets — inline within the same cell */}
+                            {expanded && hasSnippets && (
+                                <div className="mt-2 space-y-1.5">
+                                    {source.extra_snippets!.map((snippet, i) => (
+                                        <p key={i} className="text-xs text-foreground/70 leading-relaxed">
+                                            {snippet}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {/* Expand toggle */}
                         {hasSnippets && (
                             <button
                                 className="shrink-0 p-1 rounded hover:bg-muted transition-colors mt-0.5"
                                 onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
-                                title={expanded ? 'Collapse snippets' : 'Expand snippets'}
+                                title={expanded ? 'Collapse' : 'Expand'}
                             >
                                 {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
                             </button>
@@ -182,51 +220,10 @@ function SourceRow({
                     </div>
                 </td>
 
-                {/* Host */}
-                <td className="px-3 py-2 w-28">
-                    <span className="text-xs text-muted-foreground truncate block max-w-28">{source.hostname}</span>
-                </td>
-
-                {/* Type */}
-                <td className="px-3 py-2 w-10 text-center">
-                    <SourceTypeIcon type={source.source_type} />
-                </td>
-
-                {/* Origin */}
-                <td className="px-3 py-2 w-20">
-                    <OriginBadge origin={source.origin} />
-                </td>
-
-                {/* Page Age */}
-                <td className="px-3 py-2 w-20" onClick={e => e.stopPropagation()}>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">{pageAgeDisplay}</span>
-                </td>
-
-                {/* Status */}
-                <td className="px-3 py-2 w-24">
-                    <StatusBadge status={source.scrape_status} />
-                </td>
-
-                {/* Actions */}
-                <td className="px-3 py-2 w-24" onClick={e => e.stopPropagation()}>
-                    {(source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin') && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 gap-1 text-xs"
-                            disabled={scraping || anyNavigating}
-                            onClick={(e) => onScrape(source.id, e)}
-                        >
-                            {scraping ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
-                            {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
-                        </Button>
-                    )}
-                </td>
-
-                {/* More menu */}
-                <td className="px-3 py-2 w-10" onClick={e => e.stopPropagation()}>
+                {/* Actions: menu + navigation indicator */}
+                <td className="px-2 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
                     {navigating ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mx-auto" />
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mx-auto mt-1" />
                     ) : (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -245,6 +242,12 @@ function SourceRow({
                                 <DropdownMenuItem onClick={() => onToggleInclude(source)}>
                                     {source.is_included ? 'Exclude' : 'Include'}
                                 </DropdownMenuItem>
+                                {needsScrape && (
+                                    <DropdownMenuItem onClick={(e) => onScrape(source, e as unknown as React.MouseEvent)}>
+                                        <Download className="h-4 w-4 mr-2" />
+                                        {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                                    </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onClick={() => updateSource(source.id, { scrape_status: 'complete' })}>
                                     <CheckCircle2 className="h-4 w-4 mr-2" />
                                     Mark Complete
@@ -258,37 +261,21 @@ function SourceRow({
                     )}
                 </td>
             </tr>
-
-            {/* Expanded snippets row */}
-            {expanded && hasSnippets && (
-                <tr className={cn('border-b border-border bg-muted/20', !source.is_included && 'opacity-50')}>
-                    <td colSpan={11} className="px-3 py-3">
-                        <div className="pl-[calc(40px+12px+12px)] space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Additional Snippets</p>
-                            <div className="space-y-1.5">
-                                {source.extra_snippets!.map((snippet, i) => (
-                                    <p key={i} className="text-xs text-foreground/80 leading-relaxed border-l-2 border-border pl-3">
-                                        {snippet}
-                                    </p>
-                                ))}
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            )}
         </>
     );
 }
 
 export default function SourceList() {
     const { topicId, refresh } = useTopicContext();
+    const api = useResearchApi();
     const isMobile = useIsMobile();
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
     const { filters, setFilters, resetFilters, hasActiveFilters } = useSourceFilters();
-    const { data: sources, refetch: refetchSources } = useResearchSources(topicId, filters);
+    const { data: sources, refresh: refetchSources } = useResearchSources(topicId, filters);
+    const stream = useResearchStream(() => { refetchSources(); refresh(); });
     const { data: keywords } = useResearchKeywords(topicId);
 
     const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -348,22 +335,23 @@ export default function SourceList() {
         refetchSources();
     }, [refetchSources]);
 
-    const handleScrapeSource = useCallback(async (sourceId: string, e: React.MouseEvent) => {
+    const handleScrapeSource = useCallback(async (source: ResearchSource, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setScrapingIds(prev => new Set(prev).add(sourceId));
+        if (stream.isStreaming) return;
+        setScrapingIds(prev => new Set(prev).add(source.id));
         try {
-            await updateSource(sourceId, { scrape_status: 'pending' });
-            refetchSources();
+            const response = await api.scrapeSource(topicId, source.id);
+            stream.startStream(response);
         } finally {
-            setScrapingIds(prev => { const next = new Set(prev); next.delete(sourceId); return next; });
+            setScrapingIds(prev => { const next = new Set(prev); next.delete(source.id); return next; });
         }
-    }, [refetchSources]);
+    }, [api, topicId, stream]);
 
     const anyNavigating = isPending || navigatingId !== null;
 
     return (
-        <div className="p-4 sm:p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4 overflow-x-hidden">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h1 className="text-xl font-bold">Sources</h1>
@@ -382,7 +370,7 @@ export default function SourceList() {
 
             {/* Desktop Table */}
             {!isMobile ? (
-                <div className="rounded-xl border border-border overflow-hidden">
+                <div className="rounded-xl border border-border overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-muted/50 border-b border-border">
@@ -396,18 +384,16 @@ export default function SourceList() {
                                 <th className="w-10 px-2 py-2 text-center">
                                     <SortHeader label="#" field="rank" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
                                 </th>
-                                <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Title / Description</th>
-                                <th className="w-28 px-3 py-2 text-left text-xs font-medium text-muted-foreground">Host</th>
-                                <th className="w-10 px-3 py-2 text-center text-xs font-medium text-muted-foreground">Type</th>
-                                <th className="w-20 px-3 py-2 text-left text-xs font-medium text-muted-foreground">Origin</th>
-                                <th className="w-20 px-3 py-2 text-left">
-                                    <SortHeader label="Age" field="page_age" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
+                                <th className="px-3 py-2 text-left w-full">
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-xs font-medium text-muted-foreground">Title / Description</span>
+                                        <div className="flex items-center gap-3">
+                                            <SortHeader label="Age" field="page_age" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
+                                            <SortHeader label="Status" field="scrape_status" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
+                                        </div>
+                                    </div>
                                 </th>
-                                <th className="w-24 px-3 py-2 text-left">
-                                    <SortHeader label="Status" field="scrape_status" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
-                                </th>
-                                <th className="w-24 px-3 py-2" />
-                                <th className="w-10 px-3 py-2" />
+                                <th className="w-10 px-2 py-2" />
                             </tr>
                         </thead>
                         <tbody>
@@ -506,7 +492,7 @@ export default function SourceList() {
                                                     size="sm"
                                                     className="h-6 px-2 gap-1 text-xs"
                                                     disabled={scrapingIds.has(source.id) || anyNavigating}
-                                                    onClick={(e) => handleScrapeSource(source.id, e)}
+                                                    onClick={(e) => handleScrapeSource(source, e)}
                                                 >
                                                     <Download className="h-3 w-3" />
                                                     {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}

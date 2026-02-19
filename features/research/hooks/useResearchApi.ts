@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import { useBackendApi } from '@/hooks/useBackendApi';
 import { RESEARCH_ENDPOINTS } from '../service/research-endpoints';
+import { updateSource } from '../service';
 import type {
     TopicCreate,
     KeywordCreate,
@@ -56,6 +57,14 @@ export function useResearchApi() {
             api.post(endpoints(topicId).keywords.add, body),
 
         // --- Source Actions ---
+
+        // Sets the source back to pending then triggers the topic scrape endpoint,
+        // which picks up all pending sources. Returns a Response for stream consumption.
+        scrapeSource: async (topicId: string, sourceId: string): Promise<Response> => {
+            await updateSource(sourceId, { scrape_status: 'pending' });
+            return api.post(endpoints(topicId).scrape, {});
+        },
+
         analyzeSource: (topicId: string, sourceId: string, body?: AnalyzeRequest) =>
             api.post(endpoints(topicId).sources.analyze(sourceId), body ?? { agent_type: 'page_summary' }),
 

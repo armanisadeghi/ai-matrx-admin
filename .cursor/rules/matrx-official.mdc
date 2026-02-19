@@ -62,6 +62,51 @@ alwaysApply: true
 **📱 Single source of truth: `.cursor/skills/ios-mobile-first/SKILL.md`** — patterns, examples, checklist, decision tree
 </mobile_layout_essentials>
 
+<auth_in_public_routes>
+## Auth in Public Routes (`/p/...`)
+
+Public routes have no server-side session — auth lives in Redux. Use these patterns:
+
+### Client components calling the Python backend directly
+Use `useBackendApi` — it handles auth headers, backend URL, and `waitForAuth` automatically:
+```typescript
+const api = useBackendApi();
+await api.post('/api/research/topics/create', body);
+await api.get('/api/research/topics/state');
+```
+
+### Client components calling Next.js API routes (`/api/...`)
+Use `useApiAuth` to get headers, then pass them to service functions:
+```typescript
+const { getHeaders } = useApiAuth();
+await myService.doSomething(payload, getHeaders());
+// Service function signature: async function doSomething(payload, headers: Record<string, string>)
+// Inside: fetch('/api/some-route', { method: 'POST', headers, body: JSON.stringify(payload) })
+```
+
+### Next.js API routes proxying to Python backend
+Read the `Authorization` header from the incoming request and forward it — do NOT use the server-side Supabase session:
+```typescript
+export async function POST(request: NextRequest) {
+    const authHeader = request.headers.get('Authorization');
+    const backendHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authHeader) backendHeaders['Authorization'] = authHeader;
+    const response = await fetch(`${BACKEND_URL}/api/some/endpoint`, {
+        method: 'POST',
+        headers: backendHeaders,
+        body: JSON.stringify(body),
+    });
+}
+```
+
+### Data-fetching hooks (`useServiceQuery`)
+These return `{ data, isLoading, error, refresh }` — the refresh key is **`refresh`**, never `refetch`:
+```typescript
+const { data: sources, refresh } = useResearchSources(topicId, filters);
+// ❌ const { data, refetch } = ... // refetch is undefined — will crash
+```
+</auth_in_public_routes>
+
 <navigation_interactions>
 For clickable cards/routes:
 - useTransition with startTransition
