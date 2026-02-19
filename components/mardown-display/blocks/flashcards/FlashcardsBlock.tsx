@@ -11,6 +11,7 @@ import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 interface FlashcardsBlockProps {
     content: string;
     taskId?: string; // Task ID for canvas deduplication
+    className?: string;
 }
 
 type LayoutMode = "grid" | "list";
@@ -57,7 +58,7 @@ const LayoutToggle: React.FC<LayoutToggleProps> = ({ layoutMode, onLayoutChange 
     );
 };
 
-const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) => {
+const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId, className }) => {
     const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
     const [isFullscreen, setIsFullscreen] = useState(false);
     const { open: openCanvas } = useCanvas();
@@ -187,6 +188,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content, taskId }) =>
     // Normal embedded view
     return (
         <ChatCollapsibleWrapper
+            className={className}
             icon={<BookOpen className="h-4 w-4 text-primary" />}
             title={
                 <span>

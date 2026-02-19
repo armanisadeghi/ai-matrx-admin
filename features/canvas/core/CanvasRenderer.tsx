@@ -158,7 +158,7 @@ export function CanvasRenderer({ content: propContent, variant = 'default' }: Ca
       />
 
       {/* Canvas Content */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="flex-1 overflow-y-auto scrollbar-overlay">
         {viewMode === 'library' ? (
           <SavedCanvasItems />
         ) : viewMode === 'preview' ? (
@@ -357,7 +357,7 @@ function renderContent(content: CanvasContent): React.ReactNode {
     case 'flashcards':
       return (
         <div className="h-full p-0 sm:p-4">
-          <FlashcardsBlock content={data} />
+          <FlashcardsBlock content={data} className="my-0 sm:my-4 rounded-none sm:rounded-3xl border-0 sm:border-3" />
         </div>
       );
 

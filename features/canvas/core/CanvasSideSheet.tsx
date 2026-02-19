@@ -95,6 +95,7 @@ export function CanvasSideSheet() {
     <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent
         side="right"
+        hideCloseButton
         className="p-0 gap-0 overflow-hidden border-l border-zinc-200 dark:border-zinc-800"
         style={{
           width: isMobile ? '100%' : `${canvasWidth}px`,

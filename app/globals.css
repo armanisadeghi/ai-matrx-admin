@@ -1104,6 +1104,33 @@
         background-color: hsl(var(--scrollbar-thumb-active)); /* Active state for scrollbar thumb */
     }
 
+    /* Auto-hiding overlay scrollbar — invisible until scrolling, floats over content */
+    .scrollbar-overlay {
+        scrollbar-width: none; /* Firefox: hide native bar */
+        -ms-overflow-style: none; /* IE/Edge */
+        position: relative;
+    }
+    .scrollbar-overlay::-webkit-scrollbar {
+        width: 6px;
+        background: transparent;
+    }
+    .scrollbar-overlay::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .scrollbar-overlay::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+    }
+    .scrollbar-overlay:hover::-webkit-scrollbar-thumb,
+    .scrollbar-overlay:active::-webkit-scrollbar-thumb,
+    .scrollbar-overlay:focus-within::-webkit-scrollbar-thumb {
+        background-color: hsl(var(--scrollbar-thumb) / 0.5);
+    }
+    .scrollbar-overlay::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(var(--scrollbar-thumb) / 0.8);
+    }
+
     .scrollbar-none {
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;     /* Firefox */

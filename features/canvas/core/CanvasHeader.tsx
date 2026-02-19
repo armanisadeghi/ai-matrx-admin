@@ -93,10 +93,10 @@ export function CanvasHeader({
         )}
       >
         {/* Left: Title and Subtitle */}
-        <div className="flex-1 min-w-0 hidden sm:block">
+        <div className="flex-1 min-w-0">
           <div className={cn(
-            "font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 min-w-0",
-            isCompact ? "text-xs" : "text-sm"
+            "font-semibold text-foreground flex items-center gap-2 min-w-0",
+            isCompact ? "text-xs" : "text-xs sm:text-sm"
           )}>
             {typeof title === 'string' ? (
               <span className="truncate">{title}</span>
@@ -106,7 +106,7 @@ export function CanvasHeader({
           </div>
           {subtitle && (
             <div className={cn(
-              "hidden sm:flex text-zinc-500 dark:text-zinc-400 mt-0.5 items-center gap-2 min-w-0",
+              "hidden sm:flex text-muted-foreground mt-0.5 items-center gap-2 min-w-0",
               isCompact ? "text-[10px]" : "text-xs"
             )}>
               {typeof subtitle === 'string' ? (
