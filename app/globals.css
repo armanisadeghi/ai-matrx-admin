@@ -723,7 +723,6 @@
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        position: relative;
     }
 
     /* Gradient fade below the header — replaces any hard border/line */
@@ -747,7 +746,6 @@
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        position: relative;
     }
 
     /* Gradient fade above the footer — replaces any hard border/line */
