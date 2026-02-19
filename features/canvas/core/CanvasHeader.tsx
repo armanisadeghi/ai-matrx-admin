@@ -140,8 +140,8 @@ export function CanvasHeader({
                          : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                      )}
                    >
-                     <Code className={cn(iconSize, iconMargin)} />
-                     {!isCompact && "Source"}
+                     <Code className={cn(iconSize, !isCompact && "mr-0 sm:mr-1.5")} />
+                     {!isCompact && <span className="hidden sm:inline">Source</span>}
                    </Button>
                  </TooltipTrigger>
                  <TooltipContent side="bottom" sideOffset={8}>
@@ -161,8 +161,8 @@ export function CanvasHeader({
                         : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                     )}
                   >
-                    <Eye className={cn(iconSize, iconMargin)} />
-                    {!isCompact && "Preview"}
+                    <Eye className={cn(iconSize, !isCompact && "mr-0 sm:mr-1.5")} />
+                    {!isCompact && <span className="hidden sm:inline">Preview</span>}
                   </Button>
                  </TooltipTrigger>
                  <TooltipContent side="bottom" sideOffset={8}>

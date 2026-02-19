@@ -26,6 +26,7 @@ import { toast } from '@/lib/toast-service';
 import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
 import type { PromptApp } from '../types';
 import { cn } from '@/lib/utils';
+import { PromptAppHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
 const CodeBlock = lazy(() => import('@/features/code-editor/components/code-block/CodeBlock'));
@@ -378,7 +379,15 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
 
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
-      <div className="flex-1 overflow-y-auto">
+      <PromptAppHeader
+        mode={mode}
+        onModeChange={(m) => {
+          if (m === 'run') setIsIframeLoading(true);
+          setMode(m);
+        }}
+        isSaving={isSaving}
+      />
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-5">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -453,7 +462,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
 
           {/* Mode Switcher + Prompt Link */}
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="inline-flex p-1 rounded-lg bg-muted/50 border border-border/50 gap-1">
+            <div className="hidden sm:inline-flex p-1 rounded-lg bg-muted/50 border border-border/50 gap-1">
               <Button
                 variant={mode === 'view' ? 'default' : 'ghost'}
                 size="sm"
