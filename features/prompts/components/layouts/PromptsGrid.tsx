@@ -293,9 +293,9 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
 
             {/* My Prompts Section Header */}
             {prompts.length > 0 && sharedPrompts.length > 0 && (
-                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <h2 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                     My Prompts
-                    <Badge variant="secondary" className="font-normal">
+                    <Badge variant="secondary" className="font-normal py-0.25 px-1.5 text-xs">
                         {filteredPrompts.length}
                     </Badge>
                 </h2>
@@ -439,10 +439,10 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
                             )}
                             <Users className="w-5 h-5 text-secondary" />
-                            <h2 className="text-lg font-semibold text-foreground">
+                            <h2 className="text-sm font-medium text-foreground">
                                 Shared with Me
                             </h2>
-                            <Badge variant="secondary" className="font-normal">
+                            <Badge variant="secondary" className="font-normal py-0.25 px-1.5 text-xs">
                                 {filteredSharedPrompts.length}
                             </Badge>
                         </div>

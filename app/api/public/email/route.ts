@@ -1,36 +1,15 @@
 /**
  * Public Email API Route
- * 
+ *
  * Handles sending emails to unauthenticated users (e.g., public chat)
- * Rate limited and restricted to prevent abuse
+ * Rate limited via Upstash Redis (5 emails per IP per hour)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email/client';
 import { markdownToEmailHtml } from '@/lib/email/exportService';
-import { headers } from 'next/headers';
-
-// Simple in-memory rate limiting (in production, use Redis or similar)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 5; // 5 emails per window
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-
-  if (record.count >= RATE_LIMIT) {
-    return true;
-  }
-
-  record.count++;
-  return false;
-}
+import { getPublicEmailRatelimiter } from '@/lib/rate-limit/client';
+import { ipRateLimit } from '@/lib/rate-limit/helpers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,14 +21,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get client IP for rate limiting
-    const headersList = await headers();
-    const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 
-               headersList.get('x-real-ip') || 
-               'unknown';
-
-    // Check rate limit
-    if (isRateLimited(ip)) {
+    // Rate limit: 5 emails per IP per hour
+    const rateLimited = await ipRateLimit(request, getPublicEmailRatelimiter());
+    if (rateLimited) {
       return NextResponse.json(
         { success: false, msg: 'Rate limit exceeded. Please try again later.' },
         { status: 429 }

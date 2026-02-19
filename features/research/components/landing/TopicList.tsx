@@ -3,17 +3,9 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Loader2, Search, FolderOpen, ChevronDown, Trash2, FolderPlus } from 'lucide-react';
+import { Plus, Loader2, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -25,45 +17,49 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import { useUserProjects, ProjectFormSheet } from '@/features/projects';
-import { useTopicsForProject } from '../../hooks/useResearchState';
+import { HierarchyFilter, useHierarchyFilter } from '@/components/hierarchy-filter';
+import { useTopicsForProject, useTopicsForProjects } from '../../hooks/useResearchState';
 import { StatusBadge } from '../shared/StatusBadge';
 import type { ResearchTopic } from '../../types';
-import type { ProjectWithRole, Project } from '@/features/projects';
 import { supabase } from '@/utils/supabase/client';
+import { CreateOrgModal } from '@/features/organizations';
+import { ProjectFormSheet } from '@/features/projects';
+import type { Project } from '@/features/projects';
+
+function useFilteredTopics(filter: ReturnType<typeof useHierarchyFilter>) {
+    const { selectedProjectId, filteredProjects } = filter;
+    const projectIds = filteredProjects.map(p => p.id);
+
+    const singleProject = useTopicsForProject(selectedProjectId ?? undefined);
+    const allProjects = useTopicsForProjects(selectedProjectId ? [] : projectIds);
+
+    if (selectedProjectId) return singleProject;
+    return allProjects;
+}
 
 export default function TopicList() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const { projects, loading: projectsLoading, refresh: refreshProjects } = useUserProjects();
-    const [selectedProject, setSelectedProject] = useState<ProjectWithRole | null>(null);
+    const filter = useHierarchyFilter();
     const [searchQuery, setSearchQuery] = useState('');
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<ResearchTopic | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [isNewOrgOpen, setIsNewOrgOpen] = useState(false);
     const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
 
-    const activeProject = selectedProject ?? projects[0] ?? null;
-    const { data: topics, isLoading: topicsLoading, refresh } = useTopicsForProject(activeProject?.id);
+    const { data: topics, isLoading: topicsLoading, refresh } = useFilteredTopics(filter);
 
     const filteredTopics = (topics ?? []).filter(t =>
         !searchQuery || t.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     const handleNavigateToTopic = (topicId: string) => {
+        if (navigatingId) return;
         setNavigatingId(topicId);
         startTransition(() => {
             router.push(`/p/research/topics/${topicId}`);
         });
-    };
-
-    const handleNewProjectCreated = (project: Project) => {
-        refreshProjects();
-        // Auto-select the newly created project
-        setSelectedProject({
-            ...project,
-            role: 'owner',
-        } as ProjectWithRole);
     };
 
     const handleDelete = async () => {
@@ -81,148 +77,98 @@ export default function TopicList() {
         }
     };
 
-    const loading = projectsLoading || topicsLoading;
+    const loading = filter.isLoading || topicsLoading;
     const hasTopics = filteredTopics.length > 0;
+
+    const projectNameMap = new Map(
+        (filter.filteredProjects ?? []).map(p => [p.id, p.name]),
+    );
 
     return (
         <div className="h-[calc(100dvh-var(--header-height,2.5rem))] flex flex-col overflow-hidden bg-textured">
-            {/* Page Header */}
-            <div className="flex-shrink-0 px-4 sm:px-6 pt-5 pb-4 border-b border-border bg-card/80 backdrop-blur-sm">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                        {/* Project context — clearly labeled and prominent */}
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project</span>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 gap-1 px-2 text-xs font-semibold text-foreground hover:bg-accent"
-                                        disabled={projectsLoading}
-                                    >
-                                        <span className="truncate max-w-[200px]">{activeProject?.name ?? 'Select Project'}</span>
-                                        <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="max-w-[280px]">
-                                    {projects.map(p => (
-                                        <DropdownMenuItem key={p.id} onClick={() => setSelectedProject(p)} className="gap-2">
-                                            <FolderOpen className="h-3.5 w-3.5 shrink-0" />
-                                            <span className="truncate">{p.name}</span>
-                                            {p.isPersonal && <span className="text-[10px] text-muted-foreground ml-auto">Personal</span>}
-                                        </DropdownMenuItem>
-                                    ))}
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() => setIsNewProjectOpen(true)}
-                                        className="gap-2 text-primary focus:text-primary"
-                                    >
-                                        <FolderPlus className="h-3.5 w-3.5 shrink-0" />
-                                        <span>New Project</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        {/* Page title — clearly scoped to the selected project */}
-                        <h1 className="text-xl font-bold leading-tight">Research Topics</h1>
-                    </div>
-                    <Button
-                        onClick={() => router.push('/p/research/topics/new')}
-                        className="gap-2 min-h-[44px] shrink-0"
-                        disabled={isPending}
-                    >
-                        <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">New Topic</span>
-                    </Button>
-                </div>
-
-                {/* Search — inline in header to save vertical space */}
-                <div className="relative mt-3 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Search topics..."
-                        className="pl-9 text-base h-9"
-                        style={{ fontSize: '16px' }}
-                    />
-                </div>
+            <div className="flex-shrink-0 px-3 sm:px-5 pt-2.5 pb-2">
+                <HierarchyFilter
+                    filter={filter}
+                    searchValue={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    searchPlaceholder="Search topics..."
+                    onNewClick={() => router.push('/p/research/topics/new')}
+                    newLabel="New Topic"
+                    onNewOrg={() => setIsNewOrgOpen(true)}
+                    onNewProject={() => setIsNewProjectOpen(true)}
+                />
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-5 pb-4">
                 {loading ? (
-                    <div className="space-y-3">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <Skeleton key={i} className="h-20 rounded-xl" />
+                    <div className="space-y-2 pt-1">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <Skeleton key={i} className="h-16 rounded-xl" />
                         ))}
                     </div>
                 ) : hasTopics ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5 pt-1">
                         {filteredTopics.map(topic => (
                             <div
                                 key={topic.id}
                                 className={cn(
-                                    'group relative flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/30 cursor-pointer min-h-[44px]',
+                                    'group relative flex items-center gap-3 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-3 transition-all hover:border-primary/25 hover:bg-card/80 cursor-pointer min-h-[44px]',
                                     navigatingId === topic.id && 'opacity-60',
+                                    navigatingId && navigatingId !== topic.id && 'pointer-events-none opacity-30',
                                 )}
                                 onClick={() => handleNavigateToTopic(topic.id)}
                             >
                                 {navigatingId === topic.id && (
-                                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/50">
-                                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/40 backdrop-blur-sm">
+                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                     </div>
                                 )}
                                 <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <h3 className="font-semibold text-sm truncate">{topic.name}</h3>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <h3 className="font-semibold text-sm leading-tight truncate">{topic.name}</h3>
                                         <StatusBadge status={topic.status} />
                                     </div>
                                     {topic.description && (
-                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{topic.description}</p>
+                                        <p className="text-[11px] text-muted-foreground/70 mt-0.5 line-clamp-1">{topic.description}</p>
                                     )}
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                        Created {new Date(topic.created_at).toLocaleDateString()}
-                                    </p>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        {!filter.selectedProjectId && projectNameMap.get(topic.project_id) && (
+                                            <span className="text-[9px] font-medium text-primary/60 bg-primary/5 rounded-full px-1.5 py-px">
+                                                {projectNameMap.get(topic.project_id)}
+                                            </span>
+                                        )}
+                                        <span className="text-[10px] text-muted-foreground/50">
+                                            {new Date(topic.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 shrink-0"
+                                <button
+                                    className="h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all shrink-0"
                                     onClick={e => { e.stopPropagation(); setDeleteTarget(topic); }}
                                 >
-                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                </Button>
+                                    <Trash2 className="h-3 w-3 text-destructive/70" />
+                                </button>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                            <Search className="h-7 w-7 text-primary" />
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center mb-3">
+                            <Search className="h-6 w-6 text-primary/60" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No research topics yet</h3>
-                        <p className="text-muted-foreground text-sm mb-6 max-w-md mx-auto">
-                            {activeProject
-                                ? `Create a research topic inside "${activeProject.name}" to start gathering, analyzing, and synthesizing information.`
-                                : 'Select a project and create your first research topic.'}
+                        <h3 className="text-base font-semibold mb-1.5">No topics yet</h3>
+                        <p className="text-muted-foreground text-xs mb-5 max-w-sm mx-auto">
+                            Create a research topic to start gathering, analyzing, and synthesizing information.
                         </p>
-                        <Button asChild className="gap-2 min-h-[44px]">
+                        <Button asChild size="sm" className="gap-1.5 rounded-full h-8 px-4 text-xs">
                             <Link href="/p/research/topics/new">
-                                <Plus className="h-4 w-4" />
-                                Create Your First Topic
+                                <Plus className="h-3.5 w-3.5" />
+                                Create Topic
                             </Link>
                         </Button>
                     </div>
                 )}
             </div>
-
-            <ProjectFormSheet
-                open={isNewProjectOpen}
-                onOpenChange={setIsNewProjectOpen}
-                onSuccess={handleNewProjectCreated}
-            />
 
             <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
                 <AlertDialogContent>
@@ -241,6 +187,23 @@ export default function TopicList() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <CreateOrgModal
+                isOpen={isNewOrgOpen}
+                onClose={() => setIsNewOrgOpen(false)}
+                onSuccess={() => filter.refresh()}
+            />
+
+            <ProjectFormSheet
+                open={isNewProjectOpen}
+                onOpenChange={setIsNewProjectOpen}
+                organizationId={filter.selectedOrgId ?? undefined}
+                skipRedirect
+                onSuccess={(project: Project) => {
+                    filter.refresh();
+                    filter.selectProject(project.id);
+                }}
+            />
         </div>
     );
 }

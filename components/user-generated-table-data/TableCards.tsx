@@ -483,7 +483,7 @@ export default function TableCards() {
           <div className="flex items-center gap-2 mb-4">
             <TableIcon size={18} className="text-blue-600 dark:text-blue-400" />
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">My Tables</h2>
-            <Badge variant="secondary" className="font-normal">
+            <Badge variant="secondary" className="font-normal py-0.25 px-1.5 text-xs">
               {ownedTables.length}
             </Badge>
           </div>
@@ -587,7 +587,7 @@ export default function TableCards() {
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Shared With Me
               </h2>
-              <Badge variant="secondary" className="font-normal">
+              <Badge variant="secondary" className="font-normal py-0.25 px-1.5 text-xs">
                 {sharedTables.length}
               </Badge>
               <span className="text-xs text-muted-foreground ml-2">View only</span>

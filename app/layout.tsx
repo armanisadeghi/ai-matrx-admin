@@ -5,11 +5,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
+import { PostHogProvider } from "@/providers/PostHogProvider";
 
 const schemaSystem = initializeSchemaSystem();
 
@@ -58,10 +60,14 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 data-lpignore="true"
                 data-form-type="other"
             >
-                <NavigationLoader />
-                {children}
-                <Toaster />
-                <Sonner />
+                <Suspense>
+                    <PostHogProvider>
+                        <NavigationLoader />
+                        {children}
+                        <Toaster />
+                        <Sonner />
+                    </PostHogProvider>
+                </Suspense>
             </body>
         </html>
     );

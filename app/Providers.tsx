@@ -2,7 +2,8 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { identifyUser } from "@/providers/PostHogProvider";
 import { SchemaProvider } from "@/providers/SchemaProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/styles/themes";
@@ -53,6 +54,14 @@ interface ProvidersProps {
 export function Providers({ children, initialReduxState }: ProvidersProps) {
     setGlobalUserId(initialReduxState.user.id);
     const isMobile = useIsMobile();
+
+    useEffect(() => {
+        if (initialReduxState.user.id) {
+            identifyUser(initialReduxState.user.id, {
+                email: initialReduxState.user.email,
+            });
+        }
+    }, [initialReduxState.user.id, initialReduxState.user.email]);
 
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>

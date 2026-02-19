@@ -1,4 +1,5 @@
 "use client";
+import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
 
 // Terminal component for the "Fire Arman" option
@@ -61,9 +62,8 @@ const TerminalOutput = () => {
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
     const [voteOption, setVoteOption] = useState<string | null>(null);
 
-    // Log the error to an error reporting service
     useEffect(() => {
-        console.error("Global error caught:", error);
+        Sentry.captureException(error);
     }, [error]);
 
     // Function to handle refreshing the page

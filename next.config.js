@@ -1,5 +1,6 @@
 // next.config.js
 
+const { withSentryConfig } = require("@sentry/nextjs");
 const { getHeaders } = require("./utils/next-config/headers");
 // const { remotePatterns } = require("./utils/next-config/imageConfig");
 const { configureWebpack } = require("./utils/next-config/webpackConfig");
@@ -158,6 +159,17 @@ const nextConfig = {
 };
 
 // Move copyFiles after the bundle analyzer setup
-const finalConfig = withBundleAnalyzer(nextConfig);
+const analyzedConfig = withBundleAnalyzer(nextConfig);
 copyFiles();
-module.exports = finalConfig;
+module.exports = withSentryConfig(analyzedConfig, {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    silent: !process.env.CI,
+    widenClientFileUpload: true,
+    webpack: {
+        treeshake: {
+            removeDebugLogging: true,
+        },
+        automaticVercelMonitors: true,
+    },
+});

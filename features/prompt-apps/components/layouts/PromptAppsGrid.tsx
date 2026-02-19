@@ -323,7 +323,7 @@ export function PromptAppsGrid({ apps }: PromptAppsGridProps) {
                 <div className="flex items-center gap-3 mb-6">
                     <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
                         My Apps
-                        <Badge variant="secondary" className="font-normal">
+                        <Badge variant="secondary" className="font-normal py-0.25 px-1.5 text-xs">
                             {filteredApps.length}
                         </Badge>
                     </h2>

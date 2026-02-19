@@ -95,13 +95,13 @@ export function DesktopSearchBar({
     }
 
     return (
-        <div className="mb-8">
+        <div className="mb-4">
             {/* Main Search and Action Bar */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
                 {/* Search Container - Prominent and Beautiful */}
                 <div className="flex-1 relative">
-                    <div className="flex items-center gap-3 p-3 rounded-2xl glass hover:shadow-xl transition-shadow">
-                        <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex items-center gap-3 p-1 rounded-full glass hover:shadow-xl transition-shadow">
+                        <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <input
                             type="text"
                             value={localSearchValue}
@@ -129,11 +129,11 @@ export function DesktopSearchBar({
                 {/* Filter Button */}
                 <Button
                     variant="ghost"
-                    size="lg"
+                    size="sm"
                     onClick={onFilterClick}
-                    className="h-[52px] px-5 rounded-2xl glass hover:shadow-xl relative border border-border/50"
+                    className="h-8 px-3 rounded-full glass hover:shadow-xl relative border border-border/50"
                 >
-                    <SlidersHorizontal className="h-5 w-5 mr-2" />
+                    <SlidersHorizontal className="h-4 w-4" />
                     Filter
                     {showFilterBadge && (
                         <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />
@@ -142,12 +142,12 @@ export function DesktopSearchBar({
 
                 {/* New Button */}
                 <Button
-                    size="lg"
+                    size="sm"
                     onClick={onNewClick}
-                    className="h-[52px] px-5 rounded-2xl shadow-lg hover:shadow-xl bg-primary hover:bg-primary/90"
+                    className="h-8 px-3 rounded-full glass hover:shadow-xl bg-primary hover:bg-primary/90"
                 >
-                    <Plus className="h-5 w-5 mr-2" />
-                    New Prompt
+                    <Plus className="h-4 w-4" />
+                    New
                 </Button>
             </div>
         </div>

@@ -3,7 +3,8 @@ import { createClient } from '@/utils/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkGuestLimit, recordGuestExecution } from '@/lib/services/guest-limit-service';
 import { isValidFingerprint, isTempFingerprint } from '@/lib/services/fingerprint-service';
-import { checkIPRateLimit, recordIPExecution } from '@/lib/services/ip-rate-limiter';
+import { getPublicAppsRatelimiter } from '@/lib/rate-limit/client';
+import { ipRateLimit } from '@/lib/rate-limit/helpers';
 import crypto from 'crypto';
 
 /**
@@ -86,21 +87,16 @@ export async function POST(
         // Get current user (if authenticated)
         const { data: { user } } = await supabase.auth.getUser();
         
-        // Check IP-based rate limit for non-authenticated users (prevents single-source abuse)
+        // Check IP-based rate limit for non-authenticated users via Upstash
         const isPublicAccess = !user?.id;
-        if (isPublicAccess && ip_address !== 'unknown') {
-            const ipLimit = checkIPRateLimit(ip_address);
-            
-            if (!ipLimit.allowed) {
-                console.warn('⚠️ IP rate limit exceeded:', ip_address);
+        if (isPublicAccess) {
+            const rateLimited = await ipRateLimit(request, getPublicAppsRatelimiter());
+            if (rateLimited) {
                 return NextResponse.json({
                     success: false,
                     error: {
                         type: 'ip_rate_limit_exceeded',
                         message: 'Too many requests from this network. Please try again later or sign up for unlimited access.',
-                        details: {
-                            resetAt: new Date(ipLimit.resetAt).toISOString()
-                        }
                     }
                 }, { status: 429 });
             }
@@ -252,10 +248,7 @@ export async function POST(
                 // Continue anyway - tracking failure shouldn't break the execution
             });
             
-            // Record IP execution for rate limiting
-            if (ip_address !== 'unknown') {
-                recordIPExecution(ip_address);
-            }
+            // IP rate limiting is now handled by Upstash (atomic, distributed)
         }
 
         // OPTIMIZATION: Return task ID IMMEDIATELY (client already has socket_config built)

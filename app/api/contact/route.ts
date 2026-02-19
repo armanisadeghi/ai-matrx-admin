@@ -1,15 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { sendEmail } from "@/lib/email/client";
 import { emailTemplates } from "@/lib/email/client";
+import { getContactRatelimiter } from "@/lib/rate-limit/client";
+import { ipRateLimit } from "@/lib/rate-limit/helpers";
 
 /**
  * POST /api/contact
  * Handle contact form submissions
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 3 contact submissions per IP per hour
+    const rateLimited = await ipRateLimit(request, getContactRatelimiter());
+    if (rateLimited) {
+      return NextResponse.json(
+        { success: false, msg: "Too many submissions. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -107,7 +118,7 @@ export async function POST(request: Request) {
  * GET /api/contact
  * Get contact form submissions (admin only)
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const {

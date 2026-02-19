@@ -206,7 +206,7 @@ export function PromptCard({
             
             {/* Chat Icon */}
             <div className="absolute top-3 left-3 z-10">
-                <div className={`w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm transition-all duration-200 ${
+                <div className={`w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm transition-all duration-200 ${
                     !isDisabled && 'group-hover:bg-primary/90 group-hover:shadow-md group-hover:scale-105'
                 }`}>
                     <FaBars className={`w-4 h-4 text-primary-foreground transition-transform duration-200 ${
@@ -215,7 +215,7 @@ export function PromptCard({
                 </div>
             </div>
             <div className="p-4 pl-12 flex-1 flex items-center justify-center">
-                <h3 className={`text-lg font-semibold text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${
+                <h3 className={`text-md font-medium text-foreground text-center line-clamp-3 break-words transition-colors duration-200 ${
                     !isDisabled && 'group-hover:text-primary'
                 }`}>
                     {name || "Untitled Prompt"}

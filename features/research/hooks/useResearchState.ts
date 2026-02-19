@@ -77,6 +77,15 @@ export function useTopicsForProject(projectId: string | undefined) {
     );
 }
 
+export function useTopicsForProjects(projectIds: string[]) {
+    const key = projectIds.join(',');
+    return useServiceQuery<ResearchTopic[]>(
+        () => service.getTopicsForProjects(projectIds),
+        [key],
+        projectIds.length > 0,
+    );
+}
+
 export function useTopic(topicId: string | undefined) {
     return useServiceQuery<ResearchTopic | null>(
         () => service.getTopic(topicId!),

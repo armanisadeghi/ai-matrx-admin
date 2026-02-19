@@ -34,6 +34,17 @@ export async function getTopicsForProject(projectId: string): Promise<ResearchTo
     return data ?? [];
 }
 
+export async function getTopicsForProjects(projectIds: string[]): Promise<ResearchTopic[]> {
+    if (projectIds.length === 0) return [];
+    const { data, error } = await supabase
+        .from('rs_topic')
+        .select('*')
+        .in('project_id', projectIds)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+}
+
 export async function getTopic(topicId: string): Promise<ResearchTopic | null> {
     const { data, error } = await supabase
         .from('rs_topic')

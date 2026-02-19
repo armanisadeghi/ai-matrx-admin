@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { Play, Search, Download, Brain, FileText, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface ActionBarProps {
     onRun: () => Promise<void> | void;
@@ -16,23 +15,18 @@ interface ActionBarProps {
 }
 
 const ACTIONS = [
-    { key: 'run', label: 'Run Research', icon: Play, variant: 'default' as const, tooltip: 'Run the full pipeline: search, scrape, analyze, and generate report' },
-    { key: 'search', label: 'Search', icon: Search, variant: 'outline' as const, tooltip: 'Search all keywords' },
-    { key: 'scrape', label: 'Scrape', icon: Download, variant: 'outline' as const, tooltip: 'Scrape pending sources' },
-    { key: 'analyze', label: 'Analyze', icon: Brain, variant: 'outline' as const, tooltip: 'Analyze all unprocessed sources' },
-    { key: 'report', label: 'Report', icon: FileText, variant: 'outline' as const, tooltip: 'Generate research report' },
+    { key: 'run', label: 'Run', icon: Play, primary: true, tooltip: 'Run the full pipeline: search, scrape, analyze, and generate report' },
+    { key: 'search', label: 'Search', icon: Search, primary: false, tooltip: 'Search all keywords' },
+    { key: 'scrape', label: 'Scrape', icon: Download, primary: false, tooltip: 'Scrape pending sources' },
+    { key: 'analyze', label: 'Analyze', icon: Brain, primary: false, tooltip: 'Analyze all unprocessed sources' },
+    { key: 'report', label: 'Report', icon: FileText, primary: false, tooltip: 'Generate research report' },
 ] as const;
 
 export function ActionBar({ onRun, onSearch, onScrape, onAnalyze, onReport, isStreaming }: ActionBarProps) {
-    const isMobile = useIsMobile();
     const [loadingKey, setLoadingKey] = useState<string | null>(null);
 
     const handlers: Record<string, () => Promise<void> | void> = {
-        run: onRun,
-        search: onSearch,
-        scrape: onScrape,
-        analyze: onAnalyze,
-        report: onReport,
+        run: onRun, search: onSearch, scrape: onScrape, analyze: onAnalyze, report: onReport,
     };
 
     const handleClick = async (key: string) => {
@@ -50,30 +44,34 @@ export function ActionBar({ onRun, onSearch, onScrape, onAnalyze, onReport, isSt
     const isDisabled = isStreaming || loadingKey !== null;
 
     return (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-1.5 p-1 rounded-full glass">
             {ACTIONS.map(action => {
                 const isThisLoading = loadingKey === action.key;
+                const Icon = action.icon;
 
                 return (
                     <Tooltip key={action.key}>
                         <TooltipTrigger asChild>
-                            <Button
-                                variant={action.variant}
-                                size={isMobile ? 'sm' : 'default'}
+                            <button
                                 onClick={() => handleClick(action.key)}
                                 disabled={isDisabled}
-                                className="gap-2 min-h-[44px] sm:min-h-0"
+                                className={cn(
+                                    'inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium transition-all',
+                                    'disabled:opacity-40 disabled:pointer-events-none',
+                                    action.primary
+                                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                        : 'glass-subtle text-muted-foreground hover:text-foreground',
+                                )}
                             >
                                 {isThisLoading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-3 w-3 animate-spin" />
                                 ) : (
-                                    <action.icon className="h-4 w-4" />
+                                    <Icon className="h-3 w-3" />
                                 )}
-                                {isMobile ? null : action.label}
-                                {isMobile && <span className="sr-only">{action.label}</span>}
-                            </Button>
+                                <span className="hidden sm:inline">{action.label}</span>
+                            </button>
                         </TooltipTrigger>
-                        <TooltipContent>{isDisabled ? 'Please wait...' : action.tooltip}</TooltipContent>
+                        <TooltipContent className="max-w-xs text-xs">{isDisabled ? 'Please wait...' : action.tooltip}</TooltipContent>
                     </Tooltip>
                 );
             })}

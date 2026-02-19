@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import * as Sentry from "@sentry/nextjs";
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { AlertCircle, Loader2, RefreshCcw, Home } from 'lucide-react';
@@ -55,6 +56,10 @@ export function Error({
     reset: () => void;
 }) {
     const router = useRouter();
+
+    useEffect(() => {
+        Sentry.captureException(error);
+    }, [error]);
 
     return (
         <div className="w-full h-full flex items-center justify-center p-4">

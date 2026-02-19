@@ -1,5 +1,12 @@
+import * as React from 'react';
 import { sendEmail } from './client';
-import { notificationTemplates } from './exportService';
+import { renderTemplate } from './render';
+import {
+  TaskAssignedEmail,
+  CommentAddedEmail,
+  MessageReceivedEmail,
+  DueDateReminderEmail,
+} from './templates';
 import { createAdminClient } from '@/utils/supabase/adminClient';
 
 /**
@@ -118,19 +125,21 @@ export async function sendTaskAssignmentEmail(options: {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aimatrx.com';
   const taskUrl = `${baseUrl}/tasks?task=${taskId}`;
 
-  // Get email content
-  const emailContent = notificationTemplates.taskAssigned({
-    taskTitle,
-    assignerName,
-    taskUrl,
-    description: taskDescription,
-  });
+  // Render React Email template
+  const html = await renderTemplate(
+    React.createElement(TaskAssignedEmail, {
+      taskTitle,
+      assignerName,
+      taskUrl,
+      description: taskDescription,
+    })
+  );
 
   // Send email
   const result = await sendEmail({
     to: assignee.email,
-    subject: emailContent.subject,
-    html: emailContent.html,
+    subject: `Task assigned: ${taskTitle}`,
+    html,
   });
 
   if (result.success) {
@@ -178,20 +187,22 @@ export async function sendCommentNotificationEmail(options: {
   };
   const resourceUrl = resourceUrls[resourceType] || `${baseUrl}/${resourceType}/${resourceId}`;
 
-  // Get email content
-  const emailContent = notificationTemplates.commentAdded({
-    resourceTitle,
-    commenterName,
-    commentText: commentText.length > 200 ? commentText.substring(0, 200) + '...' : commentText,
-    resourceUrl,
-    resourceType,
-  });
+  // Render React Email template
+  const html = await renderTemplate(
+    React.createElement(CommentAddedEmail, {
+      resourceTitle,
+      commenterName,
+      commentText: commentText.length > 200 ? commentText.substring(0, 200) + '...' : commentText,
+      resourceUrl,
+      resourceType,
+    })
+  );
 
   // Send email
   const result = await sendEmail({
     to: owner.email,
-    subject: emailContent.subject,
-    html: emailContent.html,
+    subject: `New comment on ${resourceType}: ${resourceTitle}`,
+    html,
   });
 
   if (result.success) {
@@ -232,18 +243,20 @@ export async function sendMessageNotificationEmail(options: {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aimatrx.com';
   const conversationUrl = `${baseUrl}/messages/${conversationId}`;
 
-  // Get email content
-  const emailContent = notificationTemplates.messageReceived({
-    senderName,
-    messagePreview: messagePreview.length > 150 ? messagePreview.substring(0, 150) + '...' : messagePreview,
-    conversationUrl,
-  });
+  // Render React Email template
+  const html = await renderTemplate(
+    React.createElement(MessageReceivedEmail, {
+      senderName,
+      messagePreview: messagePreview.length > 150 ? messagePreview.substring(0, 150) + '...' : messagePreview,
+      conversationUrl,
+    })
+  );
 
   // Send email
   const result = await sendEmail({
     to: recipient.email,
-    subject: emailContent.subject,
-    html: emailContent.html,
+    subject: `New message from ${senderName}`,
+    html,
   });
 
   if (result.success) {
@@ -285,24 +298,34 @@ export async function sendDueDateReminderEmail(options: {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aimatrx.com';
   const taskUrl = `${baseUrl}/tasks?task=${taskId}`;
 
-  // Get email content
-  const emailContent = notificationTemplates.dueDateReminder({
-    taskTitle,
-    dueDate: dueDate.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }),
-    taskUrl,
-    urgency,
+  // Render React Email template
+  const dueDateFormatted = dueDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
+
+  const html = await renderTemplate(
+    React.createElement(DueDateReminderEmail, {
+      taskTitle,
+      dueDate: dueDateFormatted,
+      taskUrl,
+      urgency,
+    })
+  );
+
+  const urgencySubjects = {
+    upcoming: `Due soon: ${taskTitle}`,
+    due_today: `Due today: ${taskTitle}`,
+    overdue: `Overdue: ${taskTitle}`,
+  };
 
   // Send email
   const result = await sendEmail({
     to: user.email,
-    subject: emailContent.subject,
-    html: emailContent.html,
+    subject: urgencySubjects[urgency],
+    html,
   });
 
   if (result.success) {

@@ -133,11 +133,11 @@ export function PromptAppCard({
                 </div>
             )}
 
-            {/* Status Badge & Icon */}
+            {/* App Icon */}
             <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
                 <div
                     className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center shadow-sm transition-all duration-200",
+                        "w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-all duration-200",
                         isPublished
                             ? "bg-green-500"
                             : "bg-primary",
@@ -154,23 +154,11 @@ export function PromptAppCard({
                 </div>
             </div>
 
-            <div className="absolute top-3 right-3 z-10">
-                <Badge
-                    variant={isPublished ? "default" : "secondary"}
-                    className={cn(
-                        "text-xs",
-                        isPublished && "bg-green-500/90 hover:bg-green-500"
-                    )}
-                >
-                    {app.status}
-                </Badge>
-            </div>
-
             {/* App Name & Tagline */}
             <div className="p-4 pl-12 flex-1 flex flex-col items-center justify-center text-center min-h-[100px]">
                 <h3
                     className={cn(
-                        "text-lg font-semibold text-foreground line-clamp-3 break-words transition-colors duration-200",
+                        "text-md font-medium text-foreground line-clamp-3 break-words transition-colors duration-200",
                         !isDisabled && "group-hover:text-primary"
                     )}
                 >
@@ -183,6 +171,13 @@ export function PromptAppCard({
                 )}
                 {/* Stats Row */}
                 <div className="flex items-center justify-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                    <span className={cn(
+                        "flex items-center gap-1",
+                        isPublished ? "text-green-600 dark:text-green-400" : "text-muted-foreground"
+                    )}>
+                        <Globe className="w-3 h-3" />
+                        {isPublished ? "Live" : "Draft"}
+                    </span>
                     <span className="flex items-center gap-1">
                         <BarChart3 className="w-3 h-3" />
                         {app.total_executions} runs
