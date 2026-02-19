@@ -1132,6 +1132,55 @@
         }
       }
     },
+    "/research/topics/{topic_id}/sources/{source_id}/rescrape": {
+      "post": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "Rescrape Source",
+        "operationId": "rescrape_source_research_topics__topic_id__sources__source_id__rescrape_post",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/research/topics/{topic_id}/sources": {
       "get": {
         "tags": [

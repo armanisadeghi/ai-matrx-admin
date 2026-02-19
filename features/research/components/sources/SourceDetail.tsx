@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertTriangle, ClipboardPaste, ChevronLeft, Download, Loader2, Globe, Hash, Clock, Calendar, FileText, Tag, Info, Link2 } from 'lucide-react';
+import { useState, useCallback, useMemo, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { ExternalLink, RefreshCw, CheckCircle2, AlertTriangle, ClipboardPaste, ChevronLeft, ChevronRight, Download, Loader2, Globe, Hash, Clock, Calendar, FileText, Tag, Info, Link2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchSource, useSourceContent } from '../../hooks/useResearchState';
+import { useResearchSource, useResearchSources, useSourceContent } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
 import { updateSource } from '../../service';
@@ -51,14 +52,29 @@ interface SourceDetailProps {
 
 export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     const isMobile = useIsMobile();
+    const router = useRouter();
     const api = useResearchApi();
+    const [isNavigating, startNavTransition] = useTransition();
 
     const { data: source, refresh: refetchSource } = useResearchSource(sourceId);
     const { data: contentData, refresh: refetchContent } = useSourceContent(sourceId);
+    const { data: allSources } = useResearchSources(topicId);
     const stream = useResearchStream(() => { refetchSource(); refetchContent(); });
 
     const [pasteOpen, setPasteOpen] = useState(false);
     const [showRawSearch, setShowRawSearch] = useState(false);
+
+    const sourceIds = useMemo(() => (allSources as ResearchSource[] | null)?.map(s => s.id) ?? [], [allSources]);
+    const currentIndex = sourceIds.indexOf(sourceId);
+    const prevSourceId = currentIndex > 0 ? sourceIds[currentIndex - 1] : null;
+    const nextSourceId = currentIndex >= 0 && currentIndex < sourceIds.length - 1 ? sourceIds[currentIndex + 1] : null;
+
+    const navigateToSource = useCallback((id: string) => {
+        if (isNavigating) return;
+        startNavTransition(() => {
+            router.push(`/p/research/topics/${topicId}/sources/${id}`);
+        });
+    }, [isNavigating, router, topicId]);
 
     const contentVersions = ((contentData as unknown as Record<string, unknown>)?.content ?? contentData ?? []) as ResearchContent[];
     const analyses = ((contentData as unknown as Record<string, unknown>)?.analyses ?? []) as ResearchAnalysis[];
@@ -93,13 +109,40 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
             {/* Left Panel — Source Info */}
             <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-b md:border-b-0 md:border-r border-border overflow-y-auto">
                 <div className="p-4 space-y-4">
-                    <Link
-                        href={`/p/research/topics/${topicId}/sources`}
-                        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                        Back to Sources
-                    </Link>
+                    <div className="flex items-center justify-between gap-2">
+                        <Link
+                            href={`/p/research/topics/${topicId}/sources`}
+                            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            Sources
+                        </Link>
+                        {sourceIds.length > 1 && (
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground tabular-nums">
+                                    {currentIndex + 1}/{sourceIds.length}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    disabled={!prevSourceId || isNavigating}
+                                    onClick={() => prevSourceId && navigateToSource(prevSourceId)}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    disabled={!nextSourceId || isNavigating}
+                                    onClick={() => nextSourceId && navigateToSource(nextSourceId)}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
 
                     {typedSource && (
                         <>

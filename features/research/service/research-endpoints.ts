@@ -33,6 +33,7 @@ export const RESEARCH_ENDPOINTS = {
         },
 
         sources: {
+            rescrape: (sourceId: string) => `${BASE}/topics/${topicId}/sources/${sourceId}/rescrape`,
             content: (sourceId: string) => `${BASE}/topics/${topicId}/sources/${sourceId}/content`,
             analyze: (sourceId: string) => `${BASE}/topics/${topicId}/sources/${sourceId}/analyze`,
             suggestTags: (sourceId: string) => `${BASE}/topics/${topicId}/sources/${sourceId}/suggest-tags`,
