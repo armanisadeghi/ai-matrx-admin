@@ -27,7 +27,7 @@ export default function ResearchInitForm() {
     const [step, setStep] = useState(0);
     const [selectedProject, setSelectedProject] = useState<ProjectWithRole | null>(null);
     const [topicName, setTopicName] = useState('');
-    const [subjectName, setSubjectName] = useState('');
+    const [description, setDescription] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<ResearchTemplate | null>(null);
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
     const [customKeyword, setCustomKeyword] = useState('');
@@ -75,9 +75,9 @@ export default function ResearchInitForm() {
             try {
                 const response = await api.createTopic(selectedProject.id, {
                     name: topicName.trim(),
+                    description: description.trim() || null,
                     autonomy_level: autonomyLevel,
                     template_id: selectedTemplate?.id ?? null,
-                    subject_name: subjectName.trim() || null,
                 });
                 const topic = await response.json();
 
@@ -206,14 +206,15 @@ export default function ResearchInitForm() {
                         </div>
 
                         <div className="space-y-3">
-                            <label className="text-sm font-medium">Subject Name (optional)</label>
-                            <p className="text-xs text-muted-foreground">The entity being researched. Used for AI context and template substitution.</p>
-                            <Input
-                                value={subjectName}
-                                onChange={e => setSubjectName(e.target.value)}
-                                placeholder="e.g., All Green Electronics, Cardiac Surgery..."
-                                className="text-base"
+                            <label className="text-sm font-medium">Description (optional)</label>
+                            <p className="text-xs text-muted-foreground">A brief description of what this research covers. Helps AI agents understand scope and focus.</p>
+                            <Textarea
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
+                                placeholder="e.g., Current brand identity, positioning, messaging, and visual language. Covers tone, target audience, and competitive differentiation."
+                                className="text-base resize-none"
                                 style={{ fontSize: '16px' }}
+                                rows={3}
                             />
                         </div>
                     </div>

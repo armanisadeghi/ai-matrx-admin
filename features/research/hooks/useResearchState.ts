@@ -101,6 +101,14 @@ export function useResearchKeywords(topicId: string) {
 // Source hooks
 // ============================================================================
 
+export function useResearchSource(sourceId: string | undefined) {
+    return useServiceQuery<ResearchSource | null>(
+        () => service.getSource(sourceId!),
+        [sourceId],
+        !!sourceId,
+    );
+}
+
 export function useResearchSources(topicId: string, filters?: Partial<SourceFilters>) {
     const filterKey = filters ? JSON.stringify(filters) : 'all';
     return useServiceQuery<ResearchSource[]>(

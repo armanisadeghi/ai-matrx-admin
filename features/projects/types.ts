@@ -69,7 +69,8 @@ export interface ProjectInvitationWithProject extends ProjectInvitation {
 export interface CreateProjectOptions {
   name: string;
   slug: string;
-  organizationId: string;
+  /** Undefined or null = personal project (no org) */
+  organizationId?: string | null;
   description?: string;
   settings?: Record<string, unknown>;
 }

@@ -84,6 +84,19 @@ export async function deleteKeyword(keywordId: string): Promise<void> {
 // Sources
 // ============================================================================
 
+export async function getSource(sourceId: string): Promise<ResearchSource | null> {
+    const { data, error } = await supabase
+        .from('rs_source')
+        .select('*')
+        .eq('id', sourceId)
+        .single();
+    if (error) {
+        if (error.code === 'PGRST116') return null;
+        throw error;
+    }
+    return data;
+}
+
 export async function getSources(topicId: string, filters?: Partial<SourceFilters>): Promise<ResearchSource[]> {
     let query = supabase
         .from('rs_source')

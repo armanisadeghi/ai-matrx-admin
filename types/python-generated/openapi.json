@@ -700,18 +700,18 @@
         }
       }
     },
-    "/research/init": {
+    "/research/suggest": {
       "post": {
         "tags": [
           "Research"
         ],
-        "summary": "Init Research",
-        "operationId": "init_research_research_init_post",
+        "summary": "Suggest Setup",
+        "operationId": "suggest_setup_research_suggest_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ResearchConfigCreate"
+                "$ref": "#/components/schemas/SuggestRequest"
               }
             }
           },
@@ -739,13 +739,13 @@
         }
       }
     },
-    "/research/{project_id}": {
-      "get": {
+    "/research/projects/{project_id}/topics": {
+      "post": {
         "tags": [
           "Research"
         ],
-        "summary": "Get Research State",
-        "operationId": "get_research_state_research__project_id__get",
+        "summary": "Create Topic",
+        "operationId": "create_topic_research_projects__project_id__topics_post",
         "parameters": [
           {
             "name": "project_id",
@@ -754,6 +754,94 @@
             "schema": {
               "type": "string",
               "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "List Topics",
+        "operationId": "list_topics_research_projects__project_id__topics_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/research/topics/{topic_id}": {
+      "get": {
+        "tags": [
+          "Research"
+        ],
+        "summary": "Get Topic",
+        "operationId": "get_topic_research_topics__topic_id__get",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
             }
           }
         ],
@@ -782,16 +870,16 @@
         "tags": [
           "Research"
         ],
-        "summary": "Update Research Config",
-        "operationId": "update_research_config_research__project_id__patch",
+        "summary": "Update Topic",
+        "operationId": "update_topic_research_topics__topic_id__patch",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -800,7 +888,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ResearchConfigUpdate"
+                "$ref": "#/components/schemas/TopicUpdate"
               }
             }
           }
@@ -827,21 +915,21 @@
         }
       }
     },
-    "/research/{project_id}/keywords": {
+    "/research/topics/{topic_id}/keywords": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Add Keywords",
-        "operationId": "add_keywords_research__project_id__keywords_post",
+        "operationId": "add_keywords_research_topics__topic_id__keywords_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -881,15 +969,15 @@
           "Research"
         ],
         "summary": "Get Keywords",
-        "operationId": "get_keywords_research__project_id__keywords_get",
+        "operationId": "get_keywords_research_topics__topic_id__keywords_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -915,21 +1003,21 @@
         }
       }
     },
-    "/research/{project_id}/keywords/{keyword_id}": {
+    "/research/topics/{topic_id}/keywords/{keyword_id}": {
       "delete": {
         "tags": [
           "Research"
         ],
         "summary": "Delete Keyword",
-        "operationId": "delete_keyword_research__project_id__keywords__keyword_id__delete",
+        "operationId": "delete_keyword_research_topics__topic_id__keywords__keyword_id__delete",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -964,21 +1052,21 @@
         }
       }
     },
-    "/research/{project_id}/search": {
+    "/research/topics/{topic_id}/search": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Trigger Search",
-        "operationId": "trigger_search_research__project_id__search_post",
+        "operationId": "trigger_search_research_topics__topic_id__search_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1004,21 +1092,21 @@
         }
       }
     },
-    "/research/{project_id}/scrape": {
+    "/research/topics/{topic_id}/scrape": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Trigger Scrape",
-        "operationId": "trigger_scrape_research__project_id__scrape_post",
+        "operationId": "trigger_scrape_research_topics__topic_id__scrape_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1044,21 +1132,21 @@
         }
       }
     },
-    "/research/{project_id}/sources": {
+    "/research/topics/{topic_id}/sources": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Sources",
-        "operationId": "get_sources_research__project_id__sources_get",
+        "operationId": "get_sources_research_topics__topic_id__sources_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1203,21 +1291,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}": {
+    "/research/topics/{topic_id}/sources/{source_id}": {
       "patch": {
         "tags": [
           "Research"
         ],
         "summary": "Update Source",
-        "operationId": "update_source_research__project_id__sources__source_id__patch",
+        "operationId": "update_source_research_topics__topic_id__sources__source_id__patch",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1262,21 +1350,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/bulk": {
+    "/research/topics/{topic_id}/sources/bulk": {
       "patch": {
         "tags": [
           "Research"
         ],
         "summary": "Bulk Update Sources",
-        "operationId": "bulk_update_sources_research__project_id__sources_bulk_patch",
+        "operationId": "bulk_update_sources_research_topics__topic_id__sources_bulk_patch",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1312,21 +1400,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}/content": {
+    "/research/topics/{topic_id}/sources/{source_id}/content": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Source Content",
-        "operationId": "get_source_content_research__project_id__sources__source_id__content_get",
+        "operationId": "get_source_content_research_topics__topic_id__sources__source_id__content_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1365,15 +1453,15 @@
           "Research"
         ],
         "summary": "Paste Content",
-        "operationId": "paste_content_research__project_id__sources__source_id__content_post",
+        "operationId": "paste_content_research_topics__topic_id__sources__source_id__content_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1418,21 +1506,21 @@
         }
       }
     },
-    "/research/{project_id}/content/{content_id}": {
+    "/research/topics/{topic_id}/content/{content_id}": {
       "patch": {
         "tags": [
           "Research"
         ],
         "summary": "Edit Content",
-        "operationId": "edit_content_research__project_id__content__content_id__patch",
+        "operationId": "edit_content_research_topics__topic_id__content__content_id__patch",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1477,21 +1565,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}/analyze": {
+    "/research/topics/{topic_id}/sources/{source_id}/analyze": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Analyze Source",
-        "operationId": "analyze_source_research__project_id__sources__source_id__analyze_post",
+        "operationId": "analyze_source_research_topics__topic_id__sources__source_id__analyze_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1536,21 +1624,21 @@
         }
       }
     },
-    "/research/{project_id}/analyze-all": {
+    "/research/topics/{topic_id}/analyze-all": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Analyze All",
-        "operationId": "analyze_all_research__project_id__analyze_all_post",
+        "operationId": "analyze_all_research_topics__topic_id__analyze_all_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1586,21 +1674,21 @@
         }
       }
     },
-    "/research/{project_id}/synthesize": {
+    "/research/topics/{topic_id}/synthesize": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Synthesize",
-        "operationId": "synthesize_research__project_id__synthesize_post",
+        "operationId": "synthesize_research_topics__topic_id__synthesize_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1636,21 +1724,21 @@
         }
       }
     },
-    "/research/{project_id}/synthesis": {
+    "/research/topics/{topic_id}/synthesis": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Synthesis",
-        "operationId": "get_synthesis_research__project_id__synthesis_get",
+        "operationId": "get_synthesis_research_topics__topic_id__synthesis_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1702,21 +1790,21 @@
         }
       }
     },
-    "/research/{project_id}/run": {
+    "/research/topics/{topic_id}/run": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Run Pipeline",
-        "operationId": "run_pipeline_research__project_id__run_post",
+        "operationId": "run_pipeline_research_topics__topic_id__run_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1752,71 +1840,21 @@
         }
       }
     },
-    "/research/{project_id}/suggest": {
-      "post": {
-        "tags": [
-          "Research"
-        ],
-        "summary": "Suggest Setup",
-        "operationId": "suggest_setup_research__project_id__suggest_post",
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Project Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SuggestRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/research/{project_id}/tags": {
+    "/research/topics/{topic_id}/tags": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Tags",
-        "operationId": "get_tags_research__project_id__tags_get",
+        "operationId": "get_tags_research_topics__topic_id__tags_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1846,15 +1884,15 @@
           "Research"
         ],
         "summary": "Create Tag",
-        "operationId": "create_tag_research__project_id__tags_post",
+        "operationId": "create_tag_research_topics__topic_id__tags_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -1890,21 +1928,21 @@
         }
       }
     },
-    "/research/{project_id}/tags/{tag_id}": {
+    "/research/topics/{topic_id}/tags/{tag_id}": {
       "patch": {
         "tags": [
           "Research"
         ],
         "summary": "Update Tag",
-        "operationId": "update_tag_research__project_id__tags__tag_id__patch",
+        "operationId": "update_tag_research_topics__topic_id__tags__tag_id__patch",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1953,15 +1991,15 @@
           "Research"
         ],
         "summary": "Delete Tag",
-        "operationId": "delete_tag_research__project_id__tags__tag_id__delete",
+        "operationId": "delete_tag_research_topics__topic_id__tags__tag_id__delete",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -1996,21 +2034,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}/tags": {
+    "/research/topics/{topic_id}/sources/{source_id}/tags": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Assign Tags To Source",
-        "operationId": "assign_tags_to_source_research__project_id__sources__source_id__tags_post",
+        "operationId": "assign_tags_to_source_research_topics__topic_id__sources__source_id__tags_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2055,21 +2093,21 @@
         }
       }
     },
-    "/research/{project_id}/tags/{tag_id}/consolidate": {
+    "/research/topics/{topic_id}/tags/{tag_id}/consolidate": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Consolidate Tag",
-        "operationId": "consolidate_tag_research__project_id__tags__tag_id__consolidate_post",
+        "operationId": "consolidate_tag_research_topics__topic_id__tags__tag_id__consolidate_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2104,21 +2142,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}/suggest-tags": {
+    "/research/topics/{topic_id}/sources/{source_id}/suggest-tags": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Suggest Tags",
-        "operationId": "suggest_tags_research__project_id__sources__source_id__suggest_tags_post",
+        "operationId": "suggest_tags_research_topics__topic_id__sources__source_id__suggest_tags_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2153,21 +2191,21 @@
         }
       }
     },
-    "/research/{project_id}/document": {
+    "/research/topics/{topic_id}/document": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Generate Document",
-        "operationId": "generate_document_research__project_id__document_post",
+        "operationId": "generate_document_research_topics__topic_id__document_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2197,15 +2235,15 @@
           "Research"
         ],
         "summary": "Get Document",
-        "operationId": "get_document_research__project_id__document_get",
+        "operationId": "get_document_research_topics__topic_id__document_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2231,21 +2269,21 @@
         }
       }
     },
-    "/research/{project_id}/document/versions": {
+    "/research/topics/{topic_id}/document/versions": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Document Versions",
-        "operationId": "get_document_versions_research__project_id__document_versions_get",
+        "operationId": "get_document_versions_research_topics__topic_id__document_versions_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2271,21 +2309,21 @@
         }
       }
     },
-    "/research/{project_id}/links": {
+    "/research/topics/{topic_id}/links": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Extracted Links",
-        "operationId": "get_extracted_links_research__project_id__links_get",
+        "operationId": "get_extracted_links_research_topics__topic_id__links_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2311,21 +2349,21 @@
         }
       }
     },
-    "/research/{project_id}/links/add-to-scope": {
+    "/research/topics/{topic_id}/links/add-to-scope": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Add Links To Scope",
-        "operationId": "add_links_to_scope_research__project_id__links_add_to_scope_post",
+        "operationId": "add_links_to_scope_research_topics__topic_id__links_add_to_scope_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2361,21 +2399,21 @@
         }
       }
     },
-    "/research/{project_id}/media": {
+    "/research/topics/{topic_id}/media": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Media",
-        "operationId": "get_media_research__project_id__media_get",
+        "operationId": "get_media_research_topics__topic_id__media_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2433,21 +2471,21 @@
         }
       }
     },
-    "/research/{project_id}/media/{media_id}": {
+    "/research/topics/{topic_id}/media/{media_id}": {
       "patch": {
         "tags": [
           "Research"
         ],
         "summary": "Update Media",
-        "operationId": "update_media_research__project_id__media__media_id__patch",
+        "operationId": "update_media_research_topics__topic_id__media__media_id__patch",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2492,21 +2530,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}/transcribe": {
+    "/research/topics/{topic_id}/sources/{source_id}/transcribe": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Transcribe Source",
-        "operationId": "transcribe_source_research__project_id__sources__source_id__transcribe_post",
+        "operationId": "transcribe_source_research_topics__topic_id__sources__source_id__transcribe_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2541,21 +2579,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/upload": {
+    "/research/topics/{topic_id}/sources/upload": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Upload File Source",
-        "operationId": "upload_file_source_research__project_id__sources_upload_post",
+        "operationId": "upload_file_source_research_topics__topic_id__sources_upload_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2581,21 +2619,21 @@
         }
       }
     },
-    "/research/{project_id}/sources/{source_id}/extension-content": {
+    "/research/topics/{topic_id}/sources/{source_id}/extension-content": {
       "post": {
         "tags": [
           "Research"
         ],
         "summary": "Submit Extension Content",
-        "operationId": "submit_extension_content_research__project_id__sources__source_id__extension_content_post",
+        "operationId": "submit_extension_content_research_topics__topic_id__sources__source_id__extension_content_post",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -2640,21 +2678,21 @@
         }
       }
     },
-    "/research/{project_id}/costs": {
+    "/research/topics/{topic_id}/costs": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Get Costs",
-        "operationId": "get_costs_research__project_id__costs_get",
+        "operationId": "get_costs_research_topics__topic_id__costs_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           }
         ],
@@ -2680,21 +2718,21 @@
         }
       }
     },
-    "/research/{project_id}/document/export": {
+    "/research/topics/{topic_id}/document/export": {
       "get": {
         "tags": [
           "Research"
         ],
         "summary": "Export Document",
-        "operationId": "export_document_research__project_id__document_export_get",
+        "operationId": "export_document_research_topics__topic_id__document_export_get",
         "parameters": [
           {
-            "name": "project_id",
+            "name": "topic_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Project Id"
+              "title": "Topic Id"
             }
           },
           {
@@ -3481,170 +3519,6 @@
         ],
         "title": "QuickScrapeRequest"
       },
-      "ResearchConfigCreate": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "autonomy_level": {
-            "type": "string",
-            "enum": [
-              "auto",
-              "semi",
-              "manual"
-            ],
-            "title": "Autonomy Level",
-            "default": "semi"
-          },
-          "template_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Template Id"
-          },
-          "subject_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Subject Name"
-          },
-          "default_search_provider": {
-            "type": "string",
-            "enum": [
-              "brave",
-              "google"
-            ],
-            "title": "Default Search Provider",
-            "default": "brave"
-          },
-          "default_search_params": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Default Search Params"
-          },
-          "good_scrape_threshold": {
-            "type": "integer",
-            "title": "Good Scrape Threshold",
-            "default": 1000
-          },
-          "scrapes_per_keyword": {
-            "type": "integer",
-            "title": "Scrapes Per Keyword",
-            "default": 5
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id"
-        ],
-        "title": "ResearchConfigCreate"
-      },
-      "ResearchConfigUpdate": {
-        "properties": {
-          "autonomy_level": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "auto",
-                  "semi",
-                  "manual"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Autonomy Level"
-          },
-          "default_search_provider": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "brave",
-                  "google"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Default Search Provider"
-          },
-          "default_search_params": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Default Search Params"
-          },
-          "good_scrape_threshold": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Good Scrape Threshold"
-          },
-          "scrapes_per_keyword": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scrapes Per Keyword"
-          },
-          "agent_config": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Agent Config"
-          },
-          "metadata": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Metadata"
-          }
-        },
-        "type": "object",
-        "title": "ResearchConfigUpdate"
-      },
       "RunPipelineRequest": {
         "properties": {},
         "type": "object",
@@ -3979,14 +3853,25 @@
       },
       "SuggestRequest": {
         "properties": {
-          "subject_name": {
+          "topic_name": {
             "type": "string",
-            "title": "Subject Name"
+            "title": "Topic Name"
+          },
+          "topic_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic Description"
           }
         },
         "type": "object",
         "required": [
-          "subject_name"
+          "topic_name"
         ],
         "title": "SuggestRequest"
       },
@@ -4194,6 +4079,208 @@
           "arguments"
         ],
         "title": "ToolTestExecuteRequest"
+      },
+      "TopicCreate": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": "Untitled Research"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "autonomy_level": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "semi",
+              "manual"
+            ],
+            "title": "Autonomy Level",
+            "default": "semi"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "default_search_provider": {
+            "type": "string",
+            "enum": [
+              "brave",
+              "google"
+            ],
+            "title": "Default Search Provider",
+            "default": "brave"
+          },
+          "default_search_params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Default Search Params"
+          },
+          "good_scrape_threshold": {
+            "type": "integer",
+            "title": "Good Scrape Threshold",
+            "default": 1000
+          },
+          "scrapes_per_keyword": {
+            "type": "integer",
+            "title": "Scrapes Per Keyword",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "title": "TopicCreate"
+      },
+      "TopicUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "autonomy_level": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "semi",
+                  "manual"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autonomy Level"
+          },
+          "default_search_provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "brave",
+                  "google"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Search Provider"
+          },
+          "default_search_params": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Search Params"
+          },
+          "good_scrape_threshold": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Good Scrape Threshold"
+          },
+          "scrapes_per_keyword": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scrapes Per Keyword"
+          },
+          "agent_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Config"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "title": "TopicUpdate"
       },
       "UnifiedChatRequest": {
         "properties": {

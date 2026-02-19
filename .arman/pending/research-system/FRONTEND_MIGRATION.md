@@ -29,7 +29,7 @@ Project (existing)
 
 ## Suggested Proper Next.js Routes
 
-app/
+/
 └── research/
     ├── page.tsx                          # Marketing/landing (no auth)
     ├── layout.tsx                        # Shared layout (minimal, no auth guard)

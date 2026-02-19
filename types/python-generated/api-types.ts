@@ -344,7 +344,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/init": {
+    "/research/suggest": {
         parameters: {
             query?: never;
             header?: never;
@@ -353,33 +353,51 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Init Research */
-        post: operations["init_research_research_init_post"];
+        /** Suggest Setup */
+        post: operations["suggest_setup_research_suggest_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}": {
+    "/research/projects/{project_id}/topics": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Research State */
-        get: operations["get_research_state_research__project_id__get"];
+        /** List Topics */
+        get: operations["list_topics_research_projects__project_id__topics_get"];
+        put?: never;
+        /** Create Topic */
+        post: operations["create_topic_research_projects__project_id__topics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/research/topics/{topic_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Topic */
+        get: operations["get_topic_research_topics__topic_id__get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update Research Config */
-        patch: operations["update_research_config_research__project_id__patch"];
+        /** Update Topic */
+        patch: operations["update_topic_research_topics__topic_id__patch"];
         trace?: never;
     };
-    "/research/{project_id}/keywords": {
+    "/research/topics/{topic_id}/keywords": {
         parameters: {
             query?: never;
             header?: never;
@@ -387,17 +405,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Keywords */
-        get: operations["get_keywords_research__project_id__keywords_get"];
+        get: operations["get_keywords_research_topics__topic_id__keywords_get"];
         put?: never;
         /** Add Keywords */
-        post: operations["add_keywords_research__project_id__keywords_post"];
+        post: operations["add_keywords_research_topics__topic_id__keywords_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/keywords/{keyword_id}": {
+    "/research/topics/{topic_id}/keywords/{keyword_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -408,13 +426,13 @@ export interface paths {
         put?: never;
         post?: never;
         /** Delete Keyword */
-        delete: operations["delete_keyword_research__project_id__keywords__keyword_id__delete"];
+        delete: operations["delete_keyword_research_topics__topic_id__keywords__keyword_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/search": {
+    "/research/topics/{topic_id}/search": {
         parameters: {
             query?: never;
             header?: never;
@@ -424,14 +442,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Trigger Search */
-        post: operations["trigger_search_research__project_id__search_post"];
+        post: operations["trigger_search_research_topics__topic_id__search_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/scrape": {
+    "/research/topics/{topic_id}/scrape": {
         parameters: {
             query?: never;
             header?: never;
@@ -441,14 +459,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Trigger Scrape */
-        post: operations["trigger_scrape_research__project_id__scrape_post"];
+        post: operations["trigger_scrape_research_topics__topic_id__scrape_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/sources": {
+    "/research/topics/{topic_id}/sources": {
         parameters: {
             query?: never;
             header?: never;
@@ -456,7 +474,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Sources */
-        get: operations["get_sources_research__project_id__sources_get"];
+        get: operations["get_sources_research_topics__topic_id__sources_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -465,7 +483,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}": {
+    "/research/topics/{topic_id}/sources/{source_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -479,10 +497,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update Source */
-        patch: operations["update_source_research__project_id__sources__source_id__patch"];
+        patch: operations["update_source_research_topics__topic_id__sources__source_id__patch"];
         trace?: never;
     };
-    "/research/{project_id}/sources/bulk": {
+    "/research/topics/{topic_id}/sources/bulk": {
         parameters: {
             query?: never;
             header?: never;
@@ -496,10 +514,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Bulk Update Sources */
-        patch: operations["bulk_update_sources_research__project_id__sources_bulk_patch"];
+        patch: operations["bulk_update_sources_research_topics__topic_id__sources_bulk_patch"];
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}/content": {
+    "/research/topics/{topic_id}/sources/{source_id}/content": {
         parameters: {
             query?: never;
             header?: never;
@@ -507,17 +525,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Source Content */
-        get: operations["get_source_content_research__project_id__sources__source_id__content_get"];
+        get: operations["get_source_content_research_topics__topic_id__sources__source_id__content_get"];
         put?: never;
         /** Paste Content */
-        post: operations["paste_content_research__project_id__sources__source_id__content_post"];
+        post: operations["paste_content_research_topics__topic_id__sources__source_id__content_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/content/{content_id}": {
+    "/research/topics/{topic_id}/content/{content_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -531,10 +549,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Edit Content */
-        patch: operations["edit_content_research__project_id__content__content_id__patch"];
+        patch: operations["edit_content_research_topics__topic_id__content__content_id__patch"];
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}/analyze": {
+    "/research/topics/{topic_id}/sources/{source_id}/analyze": {
         parameters: {
             query?: never;
             header?: never;
@@ -544,14 +562,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Analyze Source */
-        post: operations["analyze_source_research__project_id__sources__source_id__analyze_post"];
+        post: operations["analyze_source_research_topics__topic_id__sources__source_id__analyze_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/analyze-all": {
+    "/research/topics/{topic_id}/analyze-all": {
         parameters: {
             query?: never;
             header?: never;
@@ -561,14 +579,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Analyze All */
-        post: operations["analyze_all_research__project_id__analyze_all_post"];
+        post: operations["analyze_all_research_topics__topic_id__analyze_all_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/synthesize": {
+    "/research/topics/{topic_id}/synthesize": {
         parameters: {
             query?: never;
             header?: never;
@@ -578,14 +596,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Synthesize */
-        post: operations["synthesize_research__project_id__synthesize_post"];
+        post: operations["synthesize_research_topics__topic_id__synthesize_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/synthesis": {
+    "/research/topics/{topic_id}/synthesis": {
         parameters: {
             query?: never;
             header?: never;
@@ -593,7 +611,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Synthesis */
-        get: operations["get_synthesis_research__project_id__synthesis_get"];
+        get: operations["get_synthesis_research_topics__topic_id__synthesis_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -602,7 +620,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/run": {
+    "/research/topics/{topic_id}/run": {
         parameters: {
             query?: never;
             header?: never;
@@ -612,31 +630,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Run Pipeline */
-        post: operations["run_pipeline_research__project_id__run_post"];
+        post: operations["run_pipeline_research_topics__topic_id__run_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/suggest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Suggest Setup */
-        post: operations["suggest_setup_research__project_id__suggest_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/research/{project_id}/tags": {
+    "/research/topics/{topic_id}/tags": {
         parameters: {
             query?: never;
             header?: never;
@@ -644,17 +645,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Tags */
-        get: operations["get_tags_research__project_id__tags_get"];
+        get: operations["get_tags_research_topics__topic_id__tags_get"];
         put?: never;
         /** Create Tag */
-        post: operations["create_tag_research__project_id__tags_post"];
+        post: operations["create_tag_research_topics__topic_id__tags_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/tags/{tag_id}": {
+    "/research/topics/{topic_id}/tags/{tag_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -665,14 +666,14 @@ export interface paths {
         put?: never;
         post?: never;
         /** Delete Tag */
-        delete: operations["delete_tag_research__project_id__tags__tag_id__delete"];
+        delete: operations["delete_tag_research_topics__topic_id__tags__tag_id__delete"];
         options?: never;
         head?: never;
         /** Update Tag */
-        patch: operations["update_tag_research__project_id__tags__tag_id__patch"];
+        patch: operations["update_tag_research_topics__topic_id__tags__tag_id__patch"];
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}/tags": {
+    "/research/topics/{topic_id}/sources/{source_id}/tags": {
         parameters: {
             query?: never;
             header?: never;
@@ -682,14 +683,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Assign Tags To Source */
-        post: operations["assign_tags_to_source_research__project_id__sources__source_id__tags_post"];
+        post: operations["assign_tags_to_source_research_topics__topic_id__sources__source_id__tags_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/tags/{tag_id}/consolidate": {
+    "/research/topics/{topic_id}/tags/{tag_id}/consolidate": {
         parameters: {
             query?: never;
             header?: never;
@@ -699,14 +700,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Consolidate Tag */
-        post: operations["consolidate_tag_research__project_id__tags__tag_id__consolidate_post"];
+        post: operations["consolidate_tag_research_topics__topic_id__tags__tag_id__consolidate_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}/suggest-tags": {
+    "/research/topics/{topic_id}/sources/{source_id}/suggest-tags": {
         parameters: {
             query?: never;
             header?: never;
@@ -716,14 +717,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Suggest Tags */
-        post: operations["suggest_tags_research__project_id__sources__source_id__suggest_tags_post"];
+        post: operations["suggest_tags_research_topics__topic_id__sources__source_id__suggest_tags_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/document": {
+    "/research/topics/{topic_id}/document": {
         parameters: {
             query?: never;
             header?: never;
@@ -731,17 +732,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Document */
-        get: operations["get_document_research__project_id__document_get"];
+        get: operations["get_document_research_topics__topic_id__document_get"];
         put?: never;
         /** Generate Document */
-        post: operations["generate_document_research__project_id__document_post"];
+        post: operations["generate_document_research_topics__topic_id__document_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/document/versions": {
+    "/research/topics/{topic_id}/document/versions": {
         parameters: {
             query?: never;
             header?: never;
@@ -749,7 +750,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Document Versions */
-        get: operations["get_document_versions_research__project_id__document_versions_get"];
+        get: operations["get_document_versions_research_topics__topic_id__document_versions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -758,7 +759,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/links": {
+    "/research/topics/{topic_id}/links": {
         parameters: {
             query?: never;
             header?: never;
@@ -766,7 +767,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Extracted Links */
-        get: operations["get_extracted_links_research__project_id__links_get"];
+        get: operations["get_extracted_links_research_topics__topic_id__links_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -775,7 +776,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/links/add-to-scope": {
+    "/research/topics/{topic_id}/links/add-to-scope": {
         parameters: {
             query?: never;
             header?: never;
@@ -785,14 +786,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Add Links To Scope */
-        post: operations["add_links_to_scope_research__project_id__links_add_to_scope_post"];
+        post: operations["add_links_to_scope_research_topics__topic_id__links_add_to_scope_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/media": {
+    "/research/topics/{topic_id}/media": {
         parameters: {
             query?: never;
             header?: never;
@@ -800,7 +801,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Media */
-        get: operations["get_media_research__project_id__media_get"];
+        get: operations["get_media_research_topics__topic_id__media_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -809,7 +810,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/media/{media_id}": {
+    "/research/topics/{topic_id}/media/{media_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -823,10 +824,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update Media */
-        patch: operations["update_media_research__project_id__media__media_id__patch"];
+        patch: operations["update_media_research_topics__topic_id__media__media_id__patch"];
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}/transcribe": {
+    "/research/topics/{topic_id}/sources/{source_id}/transcribe": {
         parameters: {
             query?: never;
             header?: never;
@@ -836,14 +837,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Transcribe Source */
-        post: operations["transcribe_source_research__project_id__sources__source_id__transcribe_post"];
+        post: operations["transcribe_source_research_topics__topic_id__sources__source_id__transcribe_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/sources/upload": {
+    "/research/topics/{topic_id}/sources/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -853,14 +854,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Upload File Source */
-        post: operations["upload_file_source_research__project_id__sources_upload_post"];
+        post: operations["upload_file_source_research_topics__topic_id__sources_upload_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/sources/{source_id}/extension-content": {
+    "/research/topics/{topic_id}/sources/{source_id}/extension-content": {
         parameters: {
             query?: never;
             header?: never;
@@ -870,14 +871,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Submit Extension Content */
-        post: operations["submit_extension_content_research__project_id__sources__source_id__extension_content_post"];
+        post: operations["submit_extension_content_research_topics__topic_id__sources__source_id__extension_content_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/costs": {
+    "/research/topics/{topic_id}/costs": {
         parameters: {
             query?: never;
             header?: never;
@@ -885,7 +886,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Costs */
-        get: operations["get_costs_research__project_id__costs_get"];
+        get: operations["get_costs_research_topics__topic_id__costs_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -894,7 +895,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/research/{project_id}/document/export": {
+    "/research/topics/{topic_id}/document/export": {
         parameters: {
             query?: never;
             header?: never;
@@ -902,7 +903,7 @@ export interface paths {
             cookie?: never;
         };
         /** Export Document */
-        get: operations["export_document_research__project_id__document_export_get"];
+        get: operations["export_document_research_topics__topic_id__document_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1212,64 +1213,6 @@ export interface components {
              */
             stream: boolean;
         };
-        /** ResearchConfigCreate */
-        ResearchConfigCreate: {
-            /** Project Id */
-            project_id: string;
-            /**
-             * Autonomy Level
-             * @default semi
-             * @enum {string}
-             */
-            autonomy_level: "auto" | "semi" | "manual";
-            /** Template Id */
-            template_id?: string | null;
-            /** Subject Name */
-            subject_name?: string | null;
-            /**
-             * Default Search Provider
-             * @default brave
-             * @enum {string}
-             */
-            default_search_provider: "brave" | "google";
-            /** Default Search Params */
-            default_search_params?: {
-                [key: string]: unknown;
-            };
-            /**
-             * Good Scrape Threshold
-             * @default 1000
-             */
-            good_scrape_threshold: number;
-            /**
-             * Scrapes Per Keyword
-             * @default 5
-             */
-            scrapes_per_keyword: number;
-        };
-        /** ResearchConfigUpdate */
-        ResearchConfigUpdate: {
-            /** Autonomy Level */
-            autonomy_level?: ("auto" | "semi" | "manual") | null;
-            /** Default Search Provider */
-            default_search_provider?: ("brave" | "google") | null;
-            /** Default Search Params */
-            default_search_params?: {
-                [key: string]: unknown;
-            } | null;
-            /** Good Scrape Threshold */
-            good_scrape_threshold?: number | null;
-            /** Scrapes Per Keyword */
-            scrapes_per_keyword?: number | null;
-            /** Agent Config */
-            agent_config?: {
-                [key: string]: unknown;
-            } | null;
-            /** Metadata */
-            metadata?: {
-                [key: string]: unknown;
-            } | null;
-        };
         /** RunPipelineRequest */
         RunPipelineRequest: Record<string, never>;
         /** SearchAndScrapeLimitedRequest */
@@ -1493,8 +1436,10 @@ export interface components {
         };
         /** SuggestRequest */
         SuggestRequest: {
-            /** Subject Name */
-            subject_name: string;
+            /** Topic Name */
+            topic_name: string;
+            /** Topic Description */
+            topic_description?: string | null;
         };
         /** SynthesisRequest */
         SynthesisRequest: {
@@ -1569,6 +1514,75 @@ export interface components {
             };
             /** Conversation Id */
             conversation_id?: string | null;
+        };
+        /** TopicCreate */
+        TopicCreate: {
+            /** Project Id */
+            project_id: string;
+            /** Created By */
+            created_by?: string | null;
+            /**
+             * Name
+             * @default Untitled Research
+             */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Autonomy Level
+             * @default semi
+             * @enum {string}
+             */
+            autonomy_level: "auto" | "semi" | "manual";
+            /** Template Id */
+            template_id?: string | null;
+            /**
+             * Default Search Provider
+             * @default brave
+             * @enum {string}
+             */
+            default_search_provider: "brave" | "google";
+            /** Default Search Params */
+            default_search_params?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Good Scrape Threshold
+             * @default 1000
+             */
+            good_scrape_threshold: number;
+            /**
+             * Scrapes Per Keyword
+             * @default 5
+             */
+            scrapes_per_keyword: number;
+        };
+        /** TopicUpdate */
+        TopicUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Autonomy Level */
+            autonomy_level?: ("auto" | "semi" | "manual") | null;
+            /** Default Search Provider */
+            default_search_provider?: ("brave" | "google") | null;
+            /** Default Search Params */
+            default_search_params?: {
+                [key: string]: unknown;
+            } | null;
+            /** Good Scrape Threshold */
+            good_scrape_threshold?: number | null;
+            /** Scrapes Per Keyword */
+            scrapes_per_keyword?: number | null;
+            /** Agent Config */
+            agent_config?: {
+                [key: string]: unknown;
+            } | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** UnifiedChatRequest */
         UnifiedChatRequest: {
@@ -2295,7 +2309,7 @@ export interface operations {
             };
         };
     };
-    init_research_research_init_post: {
+    suggest_setup_research_suggest_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2304,7 +2318,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ResearchConfigCreate"];
+                "application/json": components["schemas"]["SuggestRequest"];
             };
         };
         responses: {
@@ -2328,7 +2342,7 @@ export interface operations {
             };
         };
     };
-    get_research_state_research__project_id__get: {
+    list_topics_research_projects__project_id__topics_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2359,7 +2373,7 @@ export interface operations {
             };
         };
     };
-    update_research_config_research__project_id__patch: {
+    create_topic_research_projects__project_id__topics_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2370,7 +2384,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ResearchConfigUpdate"];
+                "application/json": components["schemas"]["TopicCreate"];
             };
         };
         responses: {
@@ -2394,12 +2408,12 @@ export interface operations {
             };
         };
     };
-    get_keywords_research__project_id__keywords_get: {
+    get_topic_research_topics__topic_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2425,12 +2439,78 @@ export interface operations {
             };
         };
     };
-    add_keywords_research__project_id__keywords_post: {
+    update_topic_research_topics__topic_id__patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TopicUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_keywords_research_topics__topic_id__keywords_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_keywords_research_topics__topic_id__keywords_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2460,12 +2540,12 @@ export interface operations {
             };
         };
     };
-    delete_keyword_research__project_id__keywords__keyword_id__delete: {
+    delete_keyword_research_topics__topic_id__keywords__keyword_id__delete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 keyword_id: string;
             };
             cookie?: never;
@@ -2492,12 +2572,12 @@ export interface operations {
             };
         };
     };
-    trigger_search_research__project_id__search_post: {
+    trigger_search_research_topics__topic_id__search_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2523,12 +2603,12 @@ export interface operations {
             };
         };
     };
-    trigger_scrape_research__project_id__scrape_post: {
+    trigger_scrape_research_topics__topic_id__scrape_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2554,7 +2634,7 @@ export interface operations {
             };
         };
     };
-    get_sources_research__project_id__sources_get: {
+    get_sources_research_topics__topic_id__sources_get: {
         parameters: {
             query?: {
                 keyword_id?: string | null;
@@ -2568,7 +2648,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2594,12 +2674,12 @@ export interface operations {
             };
         };
     };
-    update_source_research__project_id__sources__source_id__patch: {
+    update_source_research_topics__topic_id__sources__source_id__patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -2630,12 +2710,12 @@ export interface operations {
             };
         };
     };
-    bulk_update_sources_research__project_id__sources_bulk_patch: {
+    bulk_update_sources_research_topics__topic_id__sources_bulk_patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2665,12 +2745,12 @@ export interface operations {
             };
         };
     };
-    get_source_content_research__project_id__sources__source_id__content_get: {
+    get_source_content_research_topics__topic_id__sources__source_id__content_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -2697,12 +2777,12 @@ export interface operations {
             };
         };
     };
-    paste_content_research__project_id__sources__source_id__content_post: {
+    paste_content_research_topics__topic_id__sources__source_id__content_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -2733,12 +2813,12 @@ export interface operations {
             };
         };
     };
-    edit_content_research__project_id__content__content_id__patch: {
+    edit_content_research_topics__topic_id__content__content_id__patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 content_id: string;
             };
             cookie?: never;
@@ -2769,12 +2849,12 @@ export interface operations {
             };
         };
     };
-    analyze_source_research__project_id__sources__source_id__analyze_post: {
+    analyze_source_research_topics__topic_id__sources__source_id__analyze_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -2805,12 +2885,12 @@ export interface operations {
             };
         };
     };
-    analyze_all_research__project_id__analyze_all_post: {
+    analyze_all_research_topics__topic_id__analyze_all_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2840,12 +2920,12 @@ export interface operations {
             };
         };
     };
-    synthesize_research__project_id__synthesize_post: {
+    synthesize_research_topics__topic_id__synthesize_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2875,7 +2955,7 @@ export interface operations {
             };
         };
     };
-    get_synthesis_research__project_id__synthesis_get: {
+    get_synthesis_research_topics__topic_id__synthesis_get: {
         parameters: {
             query?: {
                 scope?: string;
@@ -2883,7 +2963,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2909,12 +2989,12 @@ export interface operations {
             };
         };
     };
-    run_pipeline_research__project_id__run_post: {
+    run_pipeline_research_topics__topic_id__run_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -2944,47 +3024,12 @@ export interface operations {
             };
         };
     };
-    suggest_setup_research__project_id__suggest_post: {
+    get_tags_research_topics__topic_id__tags_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SuggestRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_tags_research__project_id__tags_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3010,12 +3055,12 @@ export interface operations {
             };
         };
     };
-    create_tag_research__project_id__tags_post: {
+    create_tag_research_topics__topic_id__tags_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3045,12 +3090,12 @@ export interface operations {
             };
         };
     };
-    delete_tag_research__project_id__tags__tag_id__delete: {
+    delete_tag_research_topics__topic_id__tags__tag_id__delete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 tag_id: string;
             };
             cookie?: never;
@@ -3077,12 +3122,12 @@ export interface operations {
             };
         };
     };
-    update_tag_research__project_id__tags__tag_id__patch: {
+    update_tag_research_topics__topic_id__tags__tag_id__patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 tag_id: string;
             };
             cookie?: never;
@@ -3113,12 +3158,12 @@ export interface operations {
             };
         };
     };
-    assign_tags_to_source_research__project_id__sources__source_id__tags_post: {
+    assign_tags_to_source_research_topics__topic_id__sources__source_id__tags_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -3149,12 +3194,12 @@ export interface operations {
             };
         };
     };
-    consolidate_tag_research__project_id__tags__tag_id__consolidate_post: {
+    consolidate_tag_research_topics__topic_id__tags__tag_id__consolidate_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 tag_id: string;
             };
             cookie?: never;
@@ -3181,12 +3226,12 @@ export interface operations {
             };
         };
     };
-    suggest_tags_research__project_id__sources__source_id__suggest_tags_post: {
+    suggest_tags_research_topics__topic_id__sources__source_id__suggest_tags_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -3213,12 +3258,12 @@ export interface operations {
             };
         };
     };
-    get_document_research__project_id__document_get: {
+    get_document_research_topics__topic_id__document_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3244,12 +3289,12 @@ export interface operations {
             };
         };
     };
-    generate_document_research__project_id__document_post: {
+    generate_document_research_topics__topic_id__document_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3275,12 +3320,12 @@ export interface operations {
             };
         };
     };
-    get_document_versions_research__project_id__document_versions_get: {
+    get_document_versions_research_topics__topic_id__document_versions_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3306,12 +3351,12 @@ export interface operations {
             };
         };
     };
-    get_extracted_links_research__project_id__links_get: {
+    get_extracted_links_research_topics__topic_id__links_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3337,12 +3382,12 @@ export interface operations {
             };
         };
     };
-    add_links_to_scope_research__project_id__links_add_to_scope_post: {
+    add_links_to_scope_research_topics__topic_id__links_add_to_scope_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3372,7 +3417,7 @@ export interface operations {
             };
         };
     };
-    get_media_research__project_id__media_get: {
+    get_media_research_topics__topic_id__media_get: {
         parameters: {
             query?: {
                 media_type?: string | null;
@@ -3380,7 +3425,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3406,12 +3451,12 @@ export interface operations {
             };
         };
     };
-    update_media_research__project_id__media__media_id__patch: {
+    update_media_research_topics__topic_id__media__media_id__patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 media_id: string;
             };
             cookie?: never;
@@ -3442,12 +3487,12 @@ export interface operations {
             };
         };
     };
-    transcribe_source_research__project_id__sources__source_id__transcribe_post: {
+    transcribe_source_research_topics__topic_id__sources__source_id__transcribe_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -3474,12 +3519,12 @@ export interface operations {
             };
         };
     };
-    upload_file_source_research__project_id__sources_upload_post: {
+    upload_file_source_research_topics__topic_id__sources_upload_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3505,12 +3550,12 @@ export interface operations {
             };
         };
     };
-    submit_extension_content_research__project_id__sources__source_id__extension_content_post: {
+    submit_extension_content_research_topics__topic_id__sources__source_id__extension_content_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
                 source_id: string;
             };
             cookie?: never;
@@ -3541,12 +3586,12 @@ export interface operations {
             };
         };
     };
-    get_costs_research__project_id__costs_get: {
+    get_costs_research_topics__topic_id__costs_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };
@@ -3572,14 +3617,14 @@ export interface operations {
             };
         };
     };
-    export_document_research__project_id__document_export_get: {
+    export_document_research_topics__topic_id__document_export_get: {
         parameters: {
             query?: {
                 format?: string;
             };
             header?: never;
             path: {
-                project_id: string;
+                topic_id: string;
             };
             cookie?: never;
         };

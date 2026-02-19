@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { ExternalLink, MoreVertical, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ExternalLink, MoreVertical, RefreshCw, CheckCircle2, AlertTriangle, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,6 +28,7 @@ export default function SourceList() {
     const { data: keywords } = useResearchKeywords(topicId);
 
     const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [scrapingIds, setScrapingIds] = useState<Set<string>>(new Set());
 
     const sourceList = (sources as ResearchSource[]) ?? [];
     const hostnames = useMemo(() =>
@@ -61,6 +62,18 @@ export default function SourceList() {
     const handleToggleInclude = useCallback(async (source: ResearchSource) => {
         await updateSource(source.id, { is_included: !source.is_included });
         refetchSources();
+    }, [refetchSources]);
+
+    const handleScrapeSource = useCallback(async (sourceId: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setScrapingIds(prev => new Set(prev).add(sourceId));
+        try {
+            await updateSource(sourceId, { scrape_status: 'pending' });
+            refetchSources();
+        } finally {
+            setScrapingIds(prev => { const next = new Set(prev); next.delete(sourceId); return next; });
+        }
     }, [refetchSources]);
 
     return (
@@ -99,6 +112,7 @@ export default function SourceList() {
                                 <th className="w-12 px-3 py-2 text-center text-xs font-medium text-muted-foreground">Type</th>
                                 <th className="w-20 px-3 py-2 text-left text-xs font-medium text-muted-foreground">Origin</th>
                                 <th className="w-24 px-3 py-2 text-left text-xs font-medium text-muted-foreground">Status</th>
+                                <th className="w-16 px-3 py-2" />
                                 <th className="w-10 px-3 py-2" />
                             </tr>
                         </thead>
@@ -144,6 +158,20 @@ export default function SourceList() {
                                     </td>
                                     <td className="px-3 py-2">
                                         <StatusBadge status={source.scrape_status} />
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {(source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin') && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 px-2 gap-1 text-xs"
+                                                disabled={scrapingIds.has(source.id)}
+                                                onClick={(e) => handleScrapeSource(source.id, e)}
+                                            >
+                                                <Download className="h-3 w-3" />
+                                                {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                                            </Button>
+                                        )}
                                     </td>
                                     <td className="px-3 py-2">
                                         <DropdownMenu>
@@ -211,9 +239,21 @@ export default function SourceList() {
                                         <span className="font-medium text-sm truncate">{source.title || source.url}</span>
                                     </div>
                                     <div className="text-xs text-muted-foreground truncate mt-0.5">{source.hostname}</div>
-                                    <div className="flex items-center gap-2 mt-2">
+                                    <div className="flex items-center gap-2 mt-2 flex-wrap">
                                         <StatusBadge status={source.scrape_status} />
                                         <OriginBadge origin={source.origin} />
+                                        {(source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin') && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-6 px-2 gap-1 text-xs"
+                                                disabled={scrapingIds.has(source.id)}
+                                                onClick={(e) => handleScrapeSource(source.id, e)}
+                                            >
+                                                <Download className="h-3 w-3" />
+                                                {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                                 <Switch

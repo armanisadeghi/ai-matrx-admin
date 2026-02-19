@@ -6,18 +6,20 @@ import type { components } from '@/types/python-generated/api-types';
 
 export type TopicCreate = {
     name: string;
+    description?: string | null;
     autonomy_level?: AutonomyLevel;
     template_id?: string | null;
-    subject_name?: string | null;
 };
 
 export type TopicUpdate = {
+    name?: string | null;
+    description?: string | null;
+    status?: TopicStatus | null;
     autonomy_level?: AutonomyLevel | null;
     default_search_provider?: SearchProvider | null;
     default_search_params?: Record<string, unknown> | null;
     good_scrape_threshold?: number | null;
     scrapes_per_keyword?: number | null;
-    name?: string | null;
 };
 
 export type KeywordCreate = components['schemas']['KeywordCreate'];
@@ -30,7 +32,10 @@ export type ExtensionContentSubmit = components['schemas']['ExtensionContentSubm
 export type AnalyzeRequest = components['schemas']['AnalyzeRequest'];
 export type AnalyzeBulkRequest = components['schemas']['AnalyzeBulkRequest'];
 export type SynthesisRequest = components['schemas']['SynthesisRequest'];
-export type SuggestRequest = components['schemas']['SuggestRequest'];
+export type SuggestRequest = {
+    topic_name: string;
+    topic_description?: string | null;
+};
 export type TagCreate = components['schemas']['TagCreate'];
 export type TagUpdate = components['schemas']['TagUpdate'];
 export type TemplateCreate = components['schemas']['TemplateCreate'];
@@ -62,7 +67,7 @@ export interface ResearchTopic {
     id: string;
     project_id: string;
     name: string;
-    subject_name: string | null;
+    description: string | null;
     autonomy_level: AutonomyLevel;
     default_search_provider: SearchProvider;
     default_search_params: Record<string, unknown>;

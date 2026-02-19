@@ -1,6 +1,8 @@
 export { ProjectCard } from './ProjectCard';
 export { ProjectList } from './ProjectList';
 export { CreateProjectModal } from './CreateProjectModal';
+export { ProjectFormSheet } from './ProjectFormSheet';
+export type { ProjectFormSheetProps } from './ProjectFormSheet';
 export { ProjectSettings } from './ProjectSettings';
 export { ProjectSidebar } from './ProjectSidebar';
 export { GeneralSettings } from './GeneralSettings';

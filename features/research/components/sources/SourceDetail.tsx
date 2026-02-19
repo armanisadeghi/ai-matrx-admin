@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertTriangle, ClipboardPaste, ChevronLeft } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, AlertTriangle, ClipboardPaste, ChevronLeft, Download, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchApi } from '../../hooks/useResearchApi';
-import { useResearchSources, useSourceContent } from '../../hooks/useResearchState';
+import { useResearchSource, useSourceContent } from '../../hooks/useResearchState';
 import { updateSource } from '../../service';
 import { StatusBadge } from '../shared/StatusBadge';
 import { SourceTypeIcon } from '../shared/SourceTypeIcon';
@@ -23,33 +22,41 @@ interface SourceDetailProps {
 }
 
 export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
-    const api = useResearchApi();
     const isMobile = useIsMobile();
-    const { data: sources, refetch: refetchSources } = useResearchSources(topicId, { limit: 1, offset: 0 });
-    const { data: contentData, refetch: refetchContent } = useSourceContent(sourceId);
+
+    const { data: source, refresh: refetchSource } = useResearchSource(sourceId);
+
+    const { data: contentData, refresh: refetchContent } = useSourceContent(sourceId);
 
     const [pasteOpen, setPasteOpen] = useState(false);
+    const [scraping, setScraping] = useState(false);
 
-    const source = (sources as ResearchSource[])?.find(s => s.id === sourceId) ?? null;
     const contentVersions = ((contentData as Record<string, unknown>)?.content ?? contentData ?? []) as ResearchContent[];
     const analyses = ((contentData as Record<string, unknown>)?.analyses ?? []) as ResearchAnalysis[];
     const [selectedVersion, setSelectedVersion] = useState(0);
     const currentContent = contentVersions[selectedVersion] ?? null;
 
+    const hasBeenScraped = source && source.scrape_status !== 'pending';
+
+    const handleScrape = useCallback(async () => {
+        setScraping(true);
+        try {
+            await updateSource(sourceId, { scrape_status: 'pending' });
+            refetchSource();
+        } finally {
+            setScraping(false);
+        }
+    }, [sourceId, refetchSource]);
+
     const handleMarkComplete = useCallback(async () => {
         await updateSource(sourceId, { scrape_status: 'complete' });
-        refetchSources();
-    }, [sourceId, refetchSources]);
+        refetchSource();
+    }, [sourceId, refetchSource]);
 
     const handleMarkStale = useCallback(async () => {
         await updateSource(sourceId, { is_stale: true });
-        refetchSources();
-    }, [sourceId, refetchSources]);
-
-    const handleRescrape = useCallback(async () => {
-        await updateSource(sourceId, { scrape_status: 'pending' });
-        refetchSources();
-    }, [sourceId, refetchSources]);
+        refetchSource();
+    }, [sourceId, refetchSource]);
 
     const handleContentSaved = useCallback(() => {
         refetchContent();
@@ -143,9 +150,22 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
 
                         {/* Actions */}
                         <div className="space-y-2 pt-2 border-t border-border">
-                            <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={handleRescrape}>
-                                <RefreshCw className="h-4 w-4" />
-                                Re-scrape
+                            {/* Primary scrape action — context-aware label */}
+                            <Button
+                                size="sm"
+                                className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0"
+                                onClick={handleScrape}
+                                disabled={scraping}
+                            >
+                                {scraping
+                                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                                    : hasBeenScraped ? <RefreshCw className="h-4 w-4" /> : <Download className="h-4 w-4" />
+                                }
+                                {scraping ? 'Queuing…' : hasBeenScraped ? 'Re-scrape' : 'Scrape'}
+                            </Button>
+                            <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={() => setPasteOpen(true)}>
+                                <ClipboardPaste className="h-4 w-4" />
+                                Paste Content
                             </Button>
                             <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={handleMarkComplete}>
                                 <CheckCircle2 className="h-4 w-4" />
@@ -154,10 +174,6 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                             <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={handleMarkStale}>
                                 <AlertTriangle className="h-4 w-4" />
                                 Mark Stale
-                            </Button>
-                            <Button variant="outline" size="sm" className="w-full justify-start gap-2 min-h-[44px] sm:min-h-0" onClick={() => setPasteOpen(true)}>
-                                <ClipboardPaste className="h-4 w-4" />
-                                Paste Content
                             </Button>
                         </div>
                     </>
@@ -172,9 +188,57 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                         content={currentContent}
                         onSaved={handleContentSaved}
                     />
+                ) : source ? (
+                    <div className="flex flex-col items-center justify-center h-48 gap-4 text-center px-4">
+                        {source.scrape_status === 'failed' ? (
+                            <>
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+                                    <AlertTriangle className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-sm">Scrape failed</p>
+                                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                                        {source.scrape_status === 'failed' ? 'The scraper couldn\'t retrieve this page.' : 'No content was captured.'} You can re-scrape or paste content manually.
+                                    </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button size="sm" onClick={handleScrape} disabled={scraping} className="gap-2">
+                                        {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                                        Re-scrape
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => setPasteOpen(true)} className="gap-2">
+                                        <ClipboardPaste className="h-4 w-4" />
+                                        Paste
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                                    <Download className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-sm">Not scraped yet</p>
+                                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                                        This source hasn&apos;t been scraped. Click Scrape to fetch its content, or paste it manually.
+                                    </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button size="sm" onClick={handleScrape} disabled={scraping} className="gap-2">
+                                        {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                        Scrape
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => setPasteOpen(true)} className="gap-2">
+                                        <ClipboardPaste className="h-4 w-4" />
+                                        Paste
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 ) : (
                     <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
-                        No content available. Scrape the source or paste content manually.
+                        Loading source…
                     </div>
                 )}
 

@@ -69,8 +69,8 @@ export interface ResearchNavItem {
 
 export const RESEARCH_NAV_ITEMS: ResearchNavItem[] = [
     { key: 'overview', label: 'Overview', icon: 'LayoutDashboard', href: (id) => `/p/research/topics/${id}`, mobileVisible: true },
-    { key: 'sources', label: 'Sources', icon: 'Globe', href: (id) => `/p/research/topics/${id}/sources`, mobileVisible: true },
     { key: 'keywords', label: 'Keywords', icon: 'Search', href: (id) => `/p/research/topics/${id}/keywords`, mobileVisible: true },
+    { key: 'sources', label: 'Sources', icon: 'Globe', href: (id) => `/p/research/topics/${id}/sources`, mobileVisible: true },
     { key: 'documents', label: 'Documents', icon: 'FileText', href: (id) => `/p/research/topics/${id}/documents`, mobileVisible: true },
     { key: 'tags', label: 'Tags', icon: 'Tags', href: (id) => `/p/research/topics/${id}/tags`, mobileVisible: false },
     { key: 'media', label: 'Media', icon: 'Image', href: (id) => `/p/research/topics/${id}/media`, mobileVisible: false },

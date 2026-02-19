@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { useUserProjects } from '@/features/projects';
 import { ProjectList } from '@/features/projects/components/ProjectList';
 import { ProjectCard } from '@/features/projects/components/ProjectCard';
-import { CreateProjectModal } from '@/features/projects/components/CreateProjectModal';
+import { ProjectFormSheet } from '@/features/projects/components/ProjectFormSheet';
 
 /**
  * Standalone Projects Hub
@@ -86,9 +86,9 @@ export default function ProjectsPage() {
         )}
       </div>
 
-      <CreateProjectModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+      <ProjectFormSheet
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
         onSuccess={refresh}
       />
     </div>
