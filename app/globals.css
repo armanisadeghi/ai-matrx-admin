@@ -314,11 +314,11 @@
         --header-height: 2.5rem;
 
         /* Glass Effect — iOS-inspired frosted glass */
-        --glass-bg: rgba(255, 255, 255, 0.55);
-        --glass-bg-hover: rgba(255, 255, 255, 0.7);
-        --glass-bg-strong: rgba(255, 255, 255, 0.75);
-        --glass-bg-subtle: rgba(255, 255, 255, 0.35);
-        --glass-border: rgba(255, 255, 255, 0.45);
+        --glass-bg: rgba(255, 255, 255, 0.65);
+        --glass-bg-hover: rgba(255, 255, 255, 0.78);
+        --glass-bg-strong: rgba(255, 255, 255, 0.82);
+        --glass-bg-subtle: rgba(255, 255, 255, 0.5);
+        --glass-border: rgba(255, 255, 255, 0.5);
         --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
         --glass-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
 
@@ -450,11 +450,11 @@
 
     .dark {
         /* Glass Effect — Dark mode */
-        --glass-bg: rgba(39, 39, 42, 0.55);
-        --glass-bg-hover: rgba(39, 39, 42, 0.7);
-        --glass-bg-strong: rgba(39, 39, 42, 0.75);
-        --glass-bg-subtle: rgba(39, 39, 42, 0.35);
-        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-bg: rgba(39, 39, 42, 0.65);
+        --glass-bg-hover: rgba(39, 39, 42, 0.78);
+        --glass-bg-strong: rgba(39, 39, 42, 0.82);
+        --glass-bg-subtle: rgba(39, 39, 42, 0.5);
+        --glass-border: rgba(255, 255, 255, 0.12);
         --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
         --glass-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
 
@@ -725,19 +725,19 @@
         -webkit-backdrop-filter: blur(20px) saturate(180%);
     }
 
-    /* Gradient fade below the header — replaces any hard border/line */
+    /* Gradient fade below the header — replaces any hard border/line.
+       Uses only a tinted gradient (no backdrop-filter) since nested
+       backdrop-filter inside a parent stacking-context is unreliable. */
     .glass-header::after {
         content: '';
         position: absolute;
         left: 0;
         right: 0;
         top: 100%;
-        height: 2rem;
+        height: 3.5rem;
         background: linear-gradient(to bottom, var(--glass-bg-subtle), transparent);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        mask-image: linear-gradient(to bottom, black, transparent);
-        -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+        mask-image: linear-gradient(to bottom, black 10%, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, black 10%, transparent);
         pointer-events: none;
         z-index: -1;
     }
@@ -755,12 +755,10 @@
         left: 0;
         right: 0;
         bottom: 100%;
-        height: 2rem;
+        height: 3.5rem;
         background: linear-gradient(to top, var(--glass-bg-subtle), transparent);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        mask-image: linear-gradient(to top, black, transparent);
-        -webkit-mask-image: linear-gradient(to top, black, transparent);
+        mask-image: linear-gradient(to top, black 10%, transparent);
+        -webkit-mask-image: linear-gradient(to top, black 10%, transparent);
         pointer-events: none;
         z-index: -1;
     }

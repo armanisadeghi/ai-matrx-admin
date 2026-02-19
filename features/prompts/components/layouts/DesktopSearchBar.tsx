@@ -100,7 +100,7 @@ export function DesktopSearchBar({
             <div className="flex items-center gap-3">
                 {/* Search Container - Prominent and Beautiful */}
                 <div className="flex-1 relative">
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="flex items-center gap-3 p-3 rounded-2xl glass hover:shadow-xl transition-shadow">
                         <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                         <input
                             type="text"
@@ -131,7 +131,7 @@ export function DesktopSearchBar({
                     variant="outline"
                     size="lg"
                     onClick={onFilterClick}
-                    className="h-[52px] px-5 rounded-2xl border-border/50 shadow-lg hover:shadow-xl backdrop-blur-xl bg-background/80 relative"
+                    className="h-[52px] px-5 rounded-2xl glass hover:shadow-xl relative"
                 >
                     <SlidersHorizontal className="h-5 w-5 mr-2" />
                     Filter

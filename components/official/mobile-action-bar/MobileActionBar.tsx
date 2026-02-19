@@ -141,7 +141,7 @@ export function MobileActionBar({
         return (
             <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                    <div className="flex items-center gap-2 p-2 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-lg">
+                    <div className="flex items-center gap-2 p-2 rounded-full glass">
                         {/* Filter Button */}
                         {showFilterButton && (
                             <Button
@@ -200,9 +200,9 @@ export function MobileActionBar({
     // Search Active State - MOVED TO TOP for mobile keyboard visibility
     // KEY UX FIX: Fixed to top instead of bottom so keyboard doesn't cover it
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
+        <div className="fixed top-0 left-0 right-0 z-50 glass-header">
             <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] py-3">
-                <div className="flex items-center gap-2 p-2 rounded-full bg-background/95 backdrop-blur-xl border border-border shadow-lg">
+                <div className="flex items-center gap-2 p-2 rounded-full glass">
                     {/* Search Input Container */}
                     <div className="flex-1 flex items-center gap-2 h-10 px-3">
                         <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
