@@ -61,7 +61,7 @@ const initialState: CanvasState = {
   items: [],
   currentItemId: null,
   isAvailable: false, // Default to false, layouts enable it
-  canvasWidth: 800, // Default width - canvas gets priority (750px when there's enough room)
+  canvasWidth: 768, // Default width matches max-w-3xl so content fills perfectly
   renderMode: 'auto', // Auto-detect best render mode
 };
 

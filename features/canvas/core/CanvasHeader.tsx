@@ -86,45 +86,37 @@ export function CanvasHeader({
     <TooltipProvider delayDuration={300}>
       <div 
         className={cn(
-          "flex-shrink-0 flex items-center justify-between gap-2",
+          "flex-shrink-0 grid items-center",
           "glass border-b border-border/50",
-          isCompact ? "px-2 py-1" : isMinimal ? "px-3 py-1.5" : "px-2 py-1.5 sm:px-4 sm:py-2",
+          isCompact ? "px-2 py-1" : isMinimal ? "px-3 py-1.5" : "px-2 py-1 sm:px-3 sm:py-1.5",
+          /* 3-column grid: left | center | right — center is truly centered */
+          "grid-cols-[1fr_auto_1fr]",
           className
         )}
       >
-        {/* Left: Title and Subtitle */}
-        <div className="flex-1 min-w-0">
+        {/* LEFT: Title */}
+        <div className="min-w-0 flex items-center gap-2">
           <div className={cn(
-            "font-semibold text-foreground flex items-center gap-2 min-w-0",
+            "font-semibold text-foreground truncate",
             isCompact ? "text-xs" : "text-xs sm:text-sm"
           )}>
-            {typeof title === 'string' ? (
-              <span className="truncate">{title}</span>
-            ) : (
-              title
-            )}
+            {typeof title === 'string' ? title : title}
           </div>
           {subtitle && (
-            <div className={cn(
-              "hidden sm:flex text-muted-foreground mt-0.5 items-center gap-2 min-w-0",
+            <span className={cn(
+              "hidden sm:inline text-muted-foreground shrink-0",
               isCompact ? "text-[10px]" : "text-xs"
             )}>
-              {typeof subtitle === 'string' ? (
-                <span className="truncate">{subtitle}</span>
-              ) : (
-                subtitle
-              )}
-            </div>
+              {typeof subtitle === 'string' ? subtitle : subtitle}
+            </span>
           )}
         </div>
 
-        {/* Right: Controls */}
-        <div className="flex items-center gap-1">
+        {/* CENTER: View Mode Toggle + Navigation (customActions) */}
+        <div className="flex items-center gap-1 justify-center">
           {/* View Mode Toggle */}
           {!hideViewToggle && onViewModeChange && (
-            <div className={cn(
-              "flex items-center gap-0.5 bg-muted/60 rounded-lg p-0.5"
-            )}>
+            <div className="flex items-center gap-0.5 bg-muted/60 rounded-lg p-0.5">
                <Tooltip>
                  <TooltipTrigger asChild>
                    <Button
@@ -142,9 +134,7 @@ export function CanvasHeader({
                      {!isCompact && <span className="hidden sm:inline">Source</span>}
                    </Button>
                  </TooltipTrigger>
-                 <TooltipContent side="bottom" sideOffset={8}>
-                   View source data
-                 </TooltipContent>
+                 <TooltipContent side="bottom" sideOffset={8}>View source data</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -162,121 +152,110 @@ export function CanvasHeader({
                     <Eye className={cn(iconSize, !isCompact && "mr-0 sm:mr-1.5")} />
                     {!isCompact && <span className="hidden sm:inline">Preview</span>}
                   </Button>
-                 </TooltipTrigger>
-                 <TooltipContent side="bottom" sideOffset={8}>
-                   Preview mode
-                 </TooltipContent>
-               </Tooltip>
-
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={8}>Preview mode</TooltipContent>
+              </Tooltip>
             </div>
           )}
 
-          {/* Divider */}
-          {(!hideViewToggle || customActions) && !hideSync && (
-            <div className="w-px h-5 bg-border/60 mx-0.5 sm:mx-1 hidden sm:block" />
+          {/* Custom Actions Slot (CanvasNavigation — ‹ N/M ›) */}
+          {customActions && (
+            <>
+              {!hideViewToggle && onViewModeChange && (
+                <div className="w-px h-5 bg-border/60 mx-0.5" />
+              )}
+              {customActions}
+            </>
           )}
+        </div>
 
-          {/* Custom Actions Slot */}
-          {customActions}
-
+        {/* RIGHT: Utility icons — library, sync, share, close */}
+        <div className="flex items-center gap-0.5 justify-end">
           {/* Library Toggle */}
           {showLibraryToggle && onViewModeChange && (
-            <>
-              {(customActions || !hideViewToggle) && (
-                <div className="w-px h-5 bg-border/60 mx-0.5 sm:mx-1" />
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewModeChange(isLibraryMode ? 'preview' : 'library')}
-                    className={cn(
-                      iconOnlySize, "p-0",
-                      isLibraryMode 
-                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20" 
-                        : "text-zinc-500 dark:text-zinc-400"
-                    )}
-                  >
-                    <Library className={iconSize} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={8}>
-                  {isLibraryMode ? 'Back to canvas' : 'View saved items'}
-                </TooltipContent>
-              </Tooltip>
-            </>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewModeChange(isLibraryMode ? 'preview' : 'library')}
+                  className={cn(
+                    iconOnlySize, "p-0",
+                    isLibraryMode
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Library className={iconSize} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>
+                {isLibraryMode ? 'Back to canvas' : 'View saved items'}
+              </TooltipContent>
+            </Tooltip>
           )}
 
           {/* Cloud Sync */}
           {!hideSync && onSync && !isLibraryMode && (
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onSync}
-                    disabled={isSyncing}
-                    className={cn(
-                      iconOnlySize, "p-0",
-                      isSynced && !isSyncing && "text-green-600 dark:text-green-500",
-                      !isSynced && !isSyncing && "text-zinc-500 dark:text-zinc-400",
-                      isSyncing && "text-blue-600 dark:text-blue-500"
-                    )}
-                  >
-                    {isSynced && !isSyncing ? (
-                      <Cloud className={cn(iconSize, isSyncing && "animate-pulse")} />
-                    ) : (
-                      <CloudOff className={cn(iconSize, isSyncing && "animate-pulse")} />
-                    )}
-                  </Button>
-                 </TooltipTrigger>
-                 <TooltipContent side="bottom" sideOffset={8}>
-                   {isSyncing ? 'Syncing...' : isSynced ? 'Synced to cloud' : 'Not synced - Click to sync'}
-                 </TooltipContent>
-               </Tooltip>
-             </>
-           )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSync}
+                  disabled={isSyncing}
+                  className={cn(
+                    iconOnlySize, "p-0",
+                    isSynced && !isSyncing && "text-green-600 dark:text-green-500",
+                    !isSynced && !isSyncing && "text-muted-foreground",
+                    isSyncing && "text-blue-500"
+                  )}
+                >
+                  {isSynced && !isSyncing ? (
+                    <Cloud className={cn(iconSize, isSyncing && "animate-pulse")} />
+                  ) : (
+                    <CloudOff className={cn(iconSize, isSyncing && "animate-pulse")} />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>
+                {isSyncing ? 'Syncing...' : isSynced ? 'Synced to cloud' : 'Not synced — click to sync'}
+              </TooltipContent>
+            </Tooltip>
+          )}
 
-           {/* Share */}
-           {!hideShare && onShare && (
-             <Tooltip>
-               <TooltipTrigger asChild>
-                 <Button
-                   variant="ghost"
-                   size="sm"
-                   onClick={onShare}
-                   className={cn(iconOnlySize, "p-0 text-muted-foreground hover:text-foreground")}
-                 >
-                   <Share2 className={iconSize} />
-                 </Button>
-               </TooltipTrigger>
-               <TooltipContent side="bottom" sideOffset={8}>
-                 Share
-               </TooltipContent>
-             </Tooltip>
-           )}
+          {/* Share */}
+          {!hideShare && onShare && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onShare}
+                  className={cn(iconOnlySize, "p-0 text-muted-foreground hover:text-foreground")}
+                >
+                  <Share2 className={iconSize} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>Share</TooltipContent>
+            </Tooltip>
+          )}
 
-           {/* Divider before close */}
-           <div className={cn("w-px bg-border/60", isCompact ? "h-4 mx-0.5" : "h-5 mx-0.5 sm:mx-1")} />
-
-           {/* Close Button */}
-           <Tooltip>
-             <TooltipTrigger asChild>
-               <Button
-                 variant="ghost"
-                 size="sm"
-                 onClick={onClose}
-                 className={cn(iconOnlySize, "p-0 text-muted-foreground hover:text-foreground hover:bg-muted")}
-               >
-                 <X className={iconSize} />
-               </Button>
-             </TooltipTrigger>
-             <TooltipContent side="bottom" sideOffset={8}>
-               Close canvas
-             </TooltipContent>
-           </Tooltip>
+          {/* Divider + Close */}
+          <div className={cn("w-px bg-border/60 mx-0.5", isCompact ? "h-4" : "h-5")} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className={cn(iconOnlySize, "p-0 text-muted-foreground hover:text-foreground hover:bg-muted")}
+              >
+                <X className={iconSize} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={8}>Close canvas</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </TooltipProvider>
