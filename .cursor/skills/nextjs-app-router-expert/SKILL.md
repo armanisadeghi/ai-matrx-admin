@@ -5,6 +5,10 @@ description: Enforces proper server/client component boundaries, shared service 
 
 # Next.js 15/16 App Router Expert
 
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md`
+> Sections 5, 10, 12, and 16 cover "use client" enforcement, async APIs, API route patterns, and performance.
+> This skill provides the enforcement audit workflow. Use the official guide for reference patterns.
+
 **Your job:** Enforce proper component boundaries, shared service patterns, and Next.js 15/16 patterns.
 
 ---

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, GripVertical, Pencil, Trash2, Loader2, Layers, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,9 @@ export default function TagManager() {
     const { topicId } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
+    const routerForSearch = useRouter();
+    const pathnameForSearch = usePathname();
+    const searchParamsForSearch = useSearchParams();
     const { data: tags, refresh } = useResearchTags(topicId);
 
     const [createOpen, setCreateOpen] = useState(false);
@@ -29,7 +33,16 @@ export default function TagManager() {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [saving, setSaving] = useState(false);
-    const [search, setSearch] = useState('');
+    const search = searchParamsForSearch.get('q') ?? '';
+    const setSearch = (value: string) => {
+        const params = new URLSearchParams(searchParamsForSearch.toString());
+        if (value) {
+            params.set('q', value);
+        } else {
+            params.delete('q');
+        }
+        routerForSearch.replace(`${pathnameForSearch}?${params.toString()}`, { scroll: false });
+    };
 
     const tagList = (tags as ResearchTag[]) ?? [];
 

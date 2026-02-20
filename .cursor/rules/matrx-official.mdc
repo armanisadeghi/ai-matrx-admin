@@ -1,13 +1,11 @@
 ---
-description: 
-alwaysApply: true
----
-
----
+description: AI Matrx project-specific conventions. For Next.js/React/TypeScript best practices, see ~/.arman/rules/nextjs-best-practices/nextjs-guide.md
 alwaysApply: true
 ---
 
 # AI Matrx Development Guidelines
+
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — rendering, caching, performance, mobile, Tailwind, APIs, components. This file covers project-specific conventions only.
 
 **Stack:** React 19, Next.js 16, Tailwind CSS, TypeScript, Redux (@/lib/redux/store.ts), Supabase (@/utils/supabase/client.ts)
 **Lead Developer:** Arman (Expert in React 19, Next.js 15/16, Tailwind CSS, TypeScript, PostgreSQL and Python)

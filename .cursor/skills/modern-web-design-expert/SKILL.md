@@ -5,7 +5,9 @@ description: Project-specific web design patterns for AI Matrx Admin. Extends th
 
 # Modern Web Design Expert — AI Matrx Admin
 
-This skill extends the **global modern-web-design-expert skill**. Read that first for best practices. This document covers:
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — Sections 14 (Tailwind 4.1) and 15 (Component Contracts & Accessibility) cover design system patterns. This skill covers project-specific migration state and priorities.
+
+This skill extends the **official Next.js best practices guide**. Read that first for best practices. This document covers:
 
 1. What AI Matrx Admin already does correctly
 2. What needs migration to best practices

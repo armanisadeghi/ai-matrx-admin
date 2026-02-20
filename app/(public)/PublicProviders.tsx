@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
-import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import LiteStoreProvider from '@/providers/LiteStoreProvider';
@@ -23,7 +22,7 @@ interface PublicProvidersProps {
  * - AuthSyncWrapper: Syncs Supabase auth to Redux (delayed, non-blocking)
  * - NextThemesProvider: Theme management
  * - TooltipProvider: Tooltip support
- * - Toaster: Toast notifications
+ * (Toaster/Sonner live in root layout — shared across all routes)
  * 
  * Auth flow:
  * 1. Page renders immediately with empty Redux user state
@@ -47,7 +46,6 @@ export function PublicProviders({ children, initialState }: PublicProvidersProps
                     >
                         <TooltipProvider delayDuration={200}>
                             {children}
-                            <Toaster />
                         </TooltipProvider>
                     </NextThemesProvider>
                 </AuthSyncWrapper>

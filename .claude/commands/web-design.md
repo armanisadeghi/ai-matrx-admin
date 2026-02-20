@@ -1,5 +1,7 @@
 # Modern Web Design Expert — AI Matrx Admin
 
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — Sections 13-15 cover mobile, Tailwind 4.1, and component contracts.
+
 Review and apply modern web design patterns to the code at `$ARGUMENTS`.
 
 ## Project Context

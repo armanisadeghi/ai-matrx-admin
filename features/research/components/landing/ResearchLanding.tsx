@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Search, Brain, FileText, Tags, Layers, Shield, Zap, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

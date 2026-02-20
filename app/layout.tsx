@@ -4,34 +4,17 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { cookies } from "next/headers";
-import { Metadata } from "next";
 import { Suspense } from "react";
 import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes";
-import NavigationLoader from "@/components/loaders/NavigationLoader";
-import { initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
 import { PostHogProvider } from "@/providers/PostHogProvider";
-
-const schemaSystem = initializeSchemaSystem();
 
 export { metadata, viewport };
 
 interface RootLayoutProps {
     children: React.ReactNode;
 }
-
-// Extend metadata to include autofill prevention
-const extendedMetadata: Metadata = {
-    ...metadata,
-    other: {
-        ...metadata.other,
-        google: "notranslate", // Prevent Google Translate popup
-        "format-detection": "telephone=no", // Prevent phone number detection
-        "autofill-off": "true", // Disable browser autofill
-        "password-manager-off": "true", // Signal to password managers
-    },
-};
 
 export default async function RootLayout({ children }: RootLayoutProps) {
     const cookieStore = await cookies();
@@ -62,7 +45,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             >
                 <Suspense>
                     <PostHogProvider>
-                        <NavigationLoader />
                         {children}
                         <Toaster />
                         <Sonner />

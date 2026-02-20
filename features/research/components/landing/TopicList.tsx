@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Loader2, Search, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,20 @@ function useFilteredTopics(filter: ReturnType<typeof useHierarchyFilter>) {
 
 export default function TopicList() {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
     const filter = useHierarchyFilter();
-    const [searchQuery, setSearchQuery] = useState('');
+    const searchQuery = searchParams.get('q') ?? '';
+    const setSearchQuery = (value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set('q', value);
+        } else {
+            params.delete('q');
+        }
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<ResearchTopic | null>(null);
     const [deleting, setDeleting] = useState(false);

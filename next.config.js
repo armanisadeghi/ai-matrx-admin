@@ -34,13 +34,14 @@ const nextConfig = {
         ],
     },
     
+    reactCompiler: true,
     experimental: {
         serverActions: {
             bodySizeLimit: "10mb",
         },
-        // Only essential optimizations
         optimizePackageImports: [
             'lucide-react',
+            'zustand',
         ],
     },
     // Turbopack configuration (Next.js 16 default bundler)

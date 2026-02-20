@@ -14,7 +14,7 @@ export {
     useResearchSynthesis,
 } from './hooks/useResearchState';
 export { useSourceFilters } from './hooks/useSourceFilters';
-export { TopicProvider, useTopicContext, ResearchProvider, useResearchContext } from './context/ResearchContext';
+export { TopicProvider, useTopicContext, useTopicId, useTopicData, useTopicProgress, useStreamDebug, ResearchProvider, useResearchContext } from './context/ResearchContext';
 export { RESEARCH_ENDPOINTS } from './service/research-endpoints';
 export * from './service';
 export * from './types';

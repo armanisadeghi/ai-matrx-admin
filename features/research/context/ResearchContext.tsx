@@ -1,34 +1,72 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
+import { useStore } from 'zustand';
 import { useResearchApi } from '../hooks/useResearchApi';
 import * as service from '../service';
+import { createTopicStore, type TopicStore } from '../state/topicStore';
 import type { ResearchTopic, ResearchProgress } from '../types';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 
+type TopicStoreInstance = ReturnType<typeof createTopicStore>;
+
+const TopicStoreContext = createContext<TopicStoreInstance | null>(null);
+
+function useTopicStore<T>(selector: (state: TopicStore) => T): T {
+    const store = useContext(TopicStoreContext);
+    if (!store) throw new Error('useTopicStore must be used within a TopicProvider');
+    return useStore(store, selector);
+}
+
 // ============================================================================
-// Stream Debug Bus
-// Context-level raw event bus so StreamDebugOverlay can receive events from
-// any stream running anywhere in the research feature tree.
+// Selector hooks — components subscribe to exactly what they need
 // ============================================================================
 
-interface StreamDebugBus {
+export function useTopicId(): string {
+    return useTopicStore((s) => s.topicId);
+}
+
+export function useTopicData(): { topic: ResearchTopic | null; isLoading: boolean; error: string | null } {
+    return useTopicStore((s) => ({ topic: s.topic, isLoading: s.isLoading, error: s.error }));
+}
+
+export function useTopicProgress(): ResearchProgress | null {
+    return useTopicStore((s) => s.progress);
+}
+
+// ============================================================================
+// Stream Debug — selector hooks
+// ============================================================================
+
+export interface StreamDebugBus {
     events: StreamEvent[];
     activeStreamName: string | null;
     pushEvents: (events: StreamEvent[], streamName: string) => void;
     clearEvents: () => void;
 }
 
-const StreamDebugContext = createContext<StreamDebugBus | null>(null);
-
 export function useStreamDebug(): StreamDebugBus {
-    const ctx = useContext(StreamDebugContext);
-    if (!ctx) throw new Error('useStreamDebug must be used within a TopicProvider');
+    const events = useTopicStore((s) => s.debugEvents);
+    const activeStreamName = useTopicStore((s) => s.activeStreamName);
+    const pushEvents = useTopicStore((s) => s.pushDebugEvents);
+    const clearEvents = useTopicStore((s) => s.clearDebugEvents);
+    return { events, activeStreamName, pushEvents, clearEvents };
+}
+
+// ============================================================================
+// Refresh function — needs access to the store and the API hook
+// ============================================================================
+
+const RefreshContext = createContext<(() => Promise<void>) | null>(null);
+
+function useRefresh(): () => Promise<void> {
+    const ctx = useContext(RefreshContext);
+    if (!ctx) throw new Error('useRefresh must be used within a TopicProvider');
     return ctx;
 }
 
 // ============================================================================
-// Topic Context
+// Backward-compatible hook — returns the same shape as the old Context
 // ============================================================================
 
 interface TopicContextValue {
@@ -40,7 +78,19 @@ interface TopicContextValue {
     refresh: () => Promise<void>;
 }
 
-const TopicContext = createContext<TopicContextValue | null>(null);
+export function useTopicContext(): TopicContextValue {
+    const topicId = useTopicStore((s) => s.topicId);
+    const topic = useTopicStore((s) => s.topic);
+    const progress = useTopicStore((s) => s.progress);
+    const isLoading = useTopicStore((s) => s.isLoading);
+    const error = useTopicStore((s) => s.error);
+    const refresh = useRefresh();
+    return { topicId, topic, progress, isLoading, error, refresh };
+}
+
+// ============================================================================
+// Provider — thin wrapper that initializes the store and triggers the fetch
+// ============================================================================
 
 interface TopicProviderProps {
     topicId: string;
@@ -48,81 +98,52 @@ interface TopicProviderProps {
 }
 
 export function TopicProvider({ topicId, children }: TopicProviderProps) {
+    const storeRef = useRef<TopicStoreInstance | null>(null);
+    if (!storeRef.current) {
+        storeRef.current = createTopicStore(topicId);
+    }
+    const store = storeRef.current;
+
     const api = useResearchApi();
     const apiRef = useRef(api);
     apiRef.current = api;
 
-    const [topic, setTopic] = useState<ResearchTopic | null>(null);
-    const [progress, setProgress] = useState<ResearchProgress | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Stream debug bus state
-    const [debugEvents, setDebugEvents] = useState<StreamEvent[]>([]);
-    const [activeStreamName, setActiveStreamName] = useState<string | null>(null);
-
-    const pushEvents = useCallback((events: StreamEvent[], streamName: string) => {
-        setActiveStreamName(streamName);
-        setDebugEvents(prev => [...prev, ...events]);
-    }, []);
-
-    const clearEvents = useCallback(() => {
-        setDebugEvents([]);
-        setActiveStreamName(null);
-    }, []);
-
-    const refresh = useCallback(async () => {
+    const refreshRef = useRef(async () => {
+        const s = store.getState();
         try {
-            setError(null);
-
-            const topicData = await service.getTopic(topicId);
-            setTopic(topicData);
+            s.setError(null);
+            const topicData = await service.getTopic(s.topicId);
+            s.setTopic(topicData);
 
             if (topicData) {
                 try {
-                    const response = await apiRef.current.getTopicState(topicId);
+                    const response = await apiRef.current.getTopicState(s.topicId);
                     const stateData = await response.json();
                     if (stateData?.progress) {
-                        setProgress(stateData.progress);
+                        s.setProgress(stateData.progress);
                     }
                 } catch {
-                    // Progress from Python is optional; topic data from Supabase is primary
+                    // Progress from Python is optional
                 }
             }
         } catch (err) {
-            const msg = (err as Error).message ?? '';
-            setError(msg);
+            s.setError((err as Error).message ?? '');
         } finally {
-            setIsLoading(false);
+            s.setIsLoading(false);
         }
-    }, [topicId]);
+    });
 
     useEffect(() => {
-        refresh();
-    }, [refresh]);
+        refreshRef.current();
+    }, [topicId]);
 
     return (
-        <StreamDebugContext.Provider value={{ events: debugEvents, activeStreamName, pushEvents, clearEvents }}>
-        <TopicContext.Provider value={{
-            topicId,
-            topic,
-            progress,
-            isLoading,
-            error,
-            refresh,
-        }}>
+        <TopicStoreContext.Provider value={store}>
+            <RefreshContext.Provider value={refreshRef.current}>
                 {children}
-            </TopicContext.Provider>
-        </StreamDebugContext.Provider>
+            </RefreshContext.Provider>
+        </TopicStoreContext.Provider>
     );
-}
-
-export function useTopicContext() {
-    const ctx = useContext(TopicContext);
-    if (!ctx) {
-        throw new Error('useTopicContext must be used within a TopicProvider');
-    }
-    return ctx;
 }
 
 /** @deprecated Use TopicProvider and useTopicContext instead */

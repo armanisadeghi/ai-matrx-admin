@@ -5,6 +5,8 @@ description: Single source of truth for iOS-native mobile web UX. Covers viewpor
 
 # iOS Mobile-First Design
 
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — Section 13 covers mobile-first golden rules, Dialog→Drawer, Tabs→stacking, safe areas, and responsive typography. This skill provides project-specific patterns and reference implementations.
+
 Single source of truth for mobile UX. Desktop stays unchanged; mobile gets iOS-native treatment.
 
 **Reference implementations:** `components/layout/FeedbackButton.tsx`, `components/admin/McpToolsManager.tsx`, `components/admin/ToolUiComponentEditor.tsx`

@@ -1,5 +1,7 @@
 # Next.js 15/16 Patterns Reference
 
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — covers all patterns below and more. This file provides project-specific copy-paste templates for AI Matrx.
+
 Detailed code patterns and templates for AI Matrx Next.js 15/16 implementation.
 
 ---
