@@ -17,7 +17,9 @@ export type CardColor =
   | "teal"
   | "cyan"
   | "lime"
-  | "rose";
+  | "rose"
+  | "violet"
+  | "slate";
 
 export type CardSize = "xs" | "sm" | "md" | "lg" | "xl";
 
@@ -140,6 +142,18 @@ const colorClasses: Record<CardColor, {
     iconBg: "bg-rose-100 dark:bg-rose-900/70",
     iconColor: "text-rose-500 dark:text-rose-400",
   },
+  violet: {
+    bg: "bg-white dark:bg-zinc-800 hover:bg-violet-50 dark:hover:bg-violet-900/30",
+    hover: "hover:bg-violet-50 dark:hover:bg-violet-900/30",
+    iconBg: "bg-violet-100 dark:bg-violet-900/70",
+    iconColor: "text-violet-500 dark:text-violet-400",
+  },
+  slate: {
+    bg: "bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-slate-700/30",
+    hover: "hover:bg-slate-50 dark:hover:bg-slate-700/30",
+    iconBg: "bg-slate-100 dark:bg-slate-700",
+    iconColor: "text-slate-500 dark:text-slate-400",
+  },
 };
 
 export const Card = ({
@@ -153,7 +167,7 @@ export const Card = ({
   className,
   onClick,
 }: CardProps) => {
-  const colorClass = colorClasses[color];
+  const colorClass = colorClasses[color] ?? colorClasses.gray;
   const sizeClass = sizeClasses[size];
   
   const cardContent = (
