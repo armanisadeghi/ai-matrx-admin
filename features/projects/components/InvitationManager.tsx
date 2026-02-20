@@ -191,22 +191,22 @@ export function InvitationManager({ projectId, projectName, userRole }: Invitati
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-6 w-6 rounded-full"
                     title="Resend invitation"
                     onClick={() => handleResend(inv.id, inv.email)}
                     disabled={operationLoading}
                   >
-                    <RefreshCw className="h-3.5 w-3.5" />
+                    <RefreshCw className="h-3 w-3" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-red-600 dark:text-red-400"
+                    className="h-6 w-6 rounded-full text-red-600 dark:text-red-400"
                     title="Cancel invitation"
                     onClick={() => setInvitationToCancel(inv.id)}
                     disabled={operationLoading}
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
               )}

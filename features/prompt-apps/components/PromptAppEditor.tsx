@@ -328,8 +328,8 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
               <Link href="/prompt-apps">
-                <Button variant="ghost" size="icon" className="shrink-0 hover:bg-primary/10 transition-colors">
-                  <ArrowLeft className="w-4 h-4" />
+                <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7 rounded-full hover:bg-primary/10 transition-colors">
+                  <ArrowLeft className="w-3.5 h-3.5" />
                 </Button>
               </Link>
               <div className="min-w-0 flex-1">
@@ -387,8 +387,8 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       Publish
                     </Button>
                   )}
-                  <Button variant="destructive" onClick={handleDeleteClick} disabled={isDeleting} size="icon" className="shrink-0">
-                    <Trash2 className="w-4 h-4" />
+                  <Button variant="destructive" onClick={handleDeleteClick} disabled={isDeleting} size="icon" className="shrink-0 h-8 w-8 rounded-full">
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </>
               )}

@@ -189,10 +189,10 @@ export function MemberManagement({ projectId, userRole, isOwner }: MemberManagem
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-7 w-7 rounded-full"
                       disabled={operationLoading}
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

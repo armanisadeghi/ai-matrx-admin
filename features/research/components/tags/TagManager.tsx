@@ -145,11 +145,29 @@ export default function TagManager() {
             </div>
 
             {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                    <Layers className="h-10 w-10 mb-3 opacity-30" />
-                    <p className="text-xs">
-                        {tagList.length === 0 ? 'No tags yet. Create tags to categorize your sources.' : 'No tags match your search.'}
-                    </p>
+                <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
+                    <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                        <Layers className="h-6 w-6 text-primary/40" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-foreground/70">
+                            {tagList.length === 0 ? 'No tags yet' : 'No matches'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                            {tagList.length === 0
+                                ? 'Create tags to categorize and organize your research sources into themes.'
+                                : 'Try adjusting your search to find what you\'re looking for.'}
+                        </p>
+                    </div>
+                    {tagList.length === 0 && (
+                        <button
+                            onClick={() => setCreateOpen(true)}
+                            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all min-h-[44px]"
+                        >
+                            <Plus className="h-3 w-3" />
+                            Create Tag
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-1.5">
@@ -172,11 +190,11 @@ export default function TagManager() {
                                     {tag.source_count} sources
                                 </span>
                             )}
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity sm:opacity-100">
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity sm:opacity-100">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8"
+                                    className="h-7 w-7 rounded-full"
                                     onClick={() => handleConsolidate(tag.id)}
                                 >
                                     <Layers className="h-3.5 w-3.5" />
@@ -184,7 +202,7 @@ export default function TagManager() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8"
+                                    className="h-7 w-7 rounded-full"
                                     onClick={() => openEdit(tag)}
                                 >
                                     <Pencil className="h-3.5 w-3.5" />
@@ -192,7 +210,7 @@ export default function TagManager() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-destructive"
+                                    className="h-7 w-7 rounded-full text-destructive"
                                     onClick={() => setTagToDelete(tag)}
                                 >
                                     <Trash2 className="h-3.5 w-3.5" />

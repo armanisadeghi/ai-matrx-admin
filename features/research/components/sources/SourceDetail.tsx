@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertTriangle, ClipboardPaste, ChevronLeft, ChevronRight, Download, Loader2, Globe, Hash, Clock, Calendar, FileText, Tag, Info, Link2 } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, AlertTriangle, ClipboardPaste, ChevronLeft, ChevronRight, Download, Loader2, Globe, Hash, Clock, Calendar, FileText, Tag, Info, Link2, Brain } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -125,20 +125,20 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7"
+                                    className="h-6 w-6 rounded-full"
                                     disabled={!prevSourceId || isNavigating}
                                     onClick={() => prevSourceId && navigateToSource(prevSourceId)}
                                 >
-                                    <ChevronLeft className="h-4 w-4" />
+                                    <ChevronLeft className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7"
+                                    className="h-6 w-6 rounded-full"
                                     disabled={!nextSourceId || isNavigating}
                                     onClick={() => nextSourceId && navigateToSource(nextSourceId)}
                                 >
-                                    <ChevronRight className="h-4 w-4" />
+                                    <ChevronRight className="h-3.5 w-3.5" />
                                 </Button>
                             </div>
                         )}
@@ -360,54 +360,94 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                     </div>
                 )}
 
-                {currentContent ? (
-                    <ContentViewer
-                        topicId={topicId}
-                        content={currentContent}
-                        onSaved={handleContentSaved}
-                    />
-                ) : typedSource ? (
-                    <div className="flex flex-col items-center justify-center h-48 gap-4 text-center px-4">
-                        {typedSource.scrape_status === 'failed' ? (
-                            <>
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
-                                    <AlertTriangle className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-sm">Scrape failed</p>
-                                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                                        The scraper couldn&apos;t retrieve this page. You can re-scrape or paste content manually.
-                                    </p>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                                    <Download className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-sm">Not scraped yet</p>
-                                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                                        This source hasn&apos;t been scraped. Click Scrape to fetch its content, or paste it manually.
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
-                        Loading source…
-                    </div>
-                )}
+                {/* Content Section */}
+                <div className="min-h-[220px]">
+                    {currentContent ? (
+                        <ContentViewer
+                            topicId={topicId}
+                            content={currentContent}
+                            onSaved={handleContentSaved}
+                        />
+                    ) : typedSource ? (
+                        <div className="rounded-xl border border-dashed border-border/50 bg-card/30 backdrop-blur-sm min-h-[220px] flex flex-col items-center justify-center gap-3 p-6 text-center">
+                            {typedSource.scrape_status === 'failed' ? (
+                                <>
+                                    <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                                        <AlertTriangle className="h-5 w-5 text-destructive/60" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-foreground/70">Scrape failed</p>
+                                        <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-[240px]">
+                                            The scraper couldn&apos;t retrieve this page. Try re-scraping or paste content manually.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleScrape}
+                                            disabled={stream.isStreaming}
+                                            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
+                                        >
+                                            <RefreshCw className="h-3 w-3" />
+                                            Re-scrape
+                                        </button>
+                                        <button
+                                            onClick={() => setPasteOpen(true)}
+                                            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                                        >
+                                            <ClipboardPaste className="h-3 w-3" />
+                                            Paste
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center">
+                                        <Download className="h-5 w-5 text-primary/60" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-foreground/70">No content yet</p>
+                                        <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-[240px]">
+                                            Scrape this source to fetch its page content, or paste content manually.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleScrape}
+                                            disabled={stream.isStreaming}
+                                            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
+                                        >
+                                            {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                                            Scrape
+                                        </button>
+                                        <button
+                                            onClick={() => setPasteOpen(true)}
+                                            className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                                        >
+                                            <ClipboardPaste className="h-3 w-3" />
+                                            Paste
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="rounded-xl border border-dashed border-border/50 bg-card/30 min-h-[220px] flex items-center justify-center text-muted-foreground/50 text-xs">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Loading source...
+                        </div>
+                    )}
+                </div>
 
                 {/* Analysis Section */}
-                {currentContent && (
-                    <div className="space-y-3">
-                        <h3 className="text-sm font-semibold">Analysis</h3>
-                        {analyses.length > 0 ? (
-                            analyses.map(analysis => (
-                                <AnalysisCard key={analysis.id} analysis={analysis} />
-                            ))
+                <div className="space-y-2 min-h-[180px]">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 px-0.5">Analysis</span>
+                    {currentContent ? (
+                        analyses.length > 0 ? (
+                            <div className="space-y-2">
+                                {analyses.map(analysis => (
+                                    <AnalysisCard key={analysis.id} analysis={analysis} />
+                                ))}
+                            </div>
                         ) : (
                             <AnalysisCard
                                 analysis={null}
@@ -415,9 +455,18 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 sourceId={sourceId}
                                 onAnalyzed={refetchContent}
                             />
-                        )}
-                    </div>
-                )}
+                        )
+                    ) : (
+                        <div className="rounded-xl border border-dashed border-border/50 bg-card/30 backdrop-blur-sm min-h-[160px] flex flex-col items-center justify-center gap-2 p-6 text-center">
+                            <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center">
+                                <Brain className="h-5 w-5 text-muted-foreground/30" />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground/40 max-w-[200px]">
+                                Scrape content first, then run analysis to extract insights.
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Paste Content Modal */}

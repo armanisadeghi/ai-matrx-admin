@@ -86,11 +86,20 @@ export default function MediaGallery() {
             </div>
 
             {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                    <ImageIcon className="h-10 w-10 mb-3 opacity-30" />
-                    <p className="text-xs">
-                        {mediaList.length === 0 ? 'No media found. Media is extracted during scraping.' : 'No media matches your filters.'}
-                    </p>
+                <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
+                    <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                        <ImageIcon className="h-6 w-6 text-primary/40" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-foreground/70">
+                            {mediaList.length === 0 ? 'No media yet' : 'No matches'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                            {mediaList.length === 0
+                                ? 'Images, videos, and other media are automatically extracted when you scrape sources.'
+                                : 'Try adjusting your search or filters to find what you\'re looking for.'}
+                        </p>
+                    </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">

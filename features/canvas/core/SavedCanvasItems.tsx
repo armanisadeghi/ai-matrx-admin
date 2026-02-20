@@ -278,11 +278,11 @@ export function SavedCanvasItems({ showArchived = false }: SavedCanvasItemsProps
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleFavorite(item.id, !item.is_favorited)}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 p-0 rounded-full"
                   >
                     <Star 
                       className={cn(
-                        "w-4 h-4", 
+                        "w-3.5 h-3.5", 
                         item.is_favorited 
                           ? "fill-yellow-400 text-yellow-400" 
                           : "text-gray-400 dark:text-gray-600"
@@ -294,20 +294,20 @@ export function SavedCanvasItems({ showArchived = false }: SavedCanvasItemsProps
                     variant="ghost"
                     size="sm"
                     onClick={() => share(item.id)}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 p-0 rounded-full"
                   >
-                    <Share2 className="w-4 h-4 text-gray-400 dark:text-gray-600" />
+                    <Share2 className="w-3.5 h-3.5 text-gray-400 dark:text-gray-600" />
                   </Button>
 
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleArchive(item.id, !item.is_archived)}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 p-0 rounded-full"
                   >
                     <Archive 
                       className={cn(
-                        "w-4 h-4",
+                        "w-3.5 h-3.5",
                         item.is_archived 
                           ? "text-orange-500 dark:text-orange-400" 
                           : "text-gray-400 dark:text-gray-600"
@@ -323,9 +323,9 @@ export function SavedCanvasItems({ showArchived = false }: SavedCanvasItemsProps
                         remove(item.id);
                       }
                     }}
-                    className="h-8 w-8 p-0 hover:text-red-600 dark:hover:text-red-400"
+                    className="h-7 w-7 p-0 rounded-full hover:text-red-600 dark:hover:text-red-400"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
 

@@ -205,13 +205,20 @@ export default function KeywordManager() {
 
             {/* Keyword list */}
             {filtered.length === 0 ? (
-                <div className="flex flex-col items-center py-12 text-center">
-                    <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center mb-3">
-                        <Search className="h-5 w-5 text-primary/60" />
+                <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
+                    <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                        <Search className="h-6 w-6 text-primary/40" />
                     </div>
-                    <p className="text-xs text-muted-foreground/70">
-                        {items.length === 0 ? 'No keywords yet. Add keywords to drive your research pipeline.' : 'No keywords match your filters.'}
-                    </p>
+                    <div>
+                        <p className="text-xs font-medium text-foreground/70">
+                            {items.length === 0 ? 'No keywords yet' : 'No matches'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                            {items.length === 0
+                                ? 'Add keywords to define what topics to research. Each keyword drives source discovery.'
+                                : 'Try adjusting your search or filters to find what you\'re looking for.'}
+                        </p>
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-1.5">

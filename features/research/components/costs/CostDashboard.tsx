@@ -42,9 +42,16 @@ export default function CostDashboard() {
 
     if (!costs) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 p-6 text-muted-foreground">
-                <DollarSign className="h-10 w-10 mb-3 opacity-30" />
-                <p className="text-sm">No cost data available yet.</p>
+            <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 p-6 text-center">
+                <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-primary/40" />
+                </div>
+                <div>
+                    <p className="text-xs font-medium text-foreground/70">No cost data yet</p>
+                    <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                        Costs are tracked automatically as you run scraping, analysis, synthesis, and document generation.
+                    </p>
+                </div>
             </div>
         );
     }

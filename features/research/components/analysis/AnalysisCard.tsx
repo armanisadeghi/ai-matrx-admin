@@ -45,15 +45,30 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
         }
     }, [api, topicId, analysis, onAnalyzed]);
 
-    // No analysis yet — prompt to run one
     if (!analysis) {
         return (
-            <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">No analysis yet</div>
-                <Button size="sm" variant="outline" onClick={handleAnalyze} disabled={analyzing} className="gap-2 min-h-[44px] sm:min-h-0">
-                    {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+            <div className="rounded-xl border border-dashed border-border/50 bg-card/30 backdrop-blur-sm min-h-[180px] flex flex-col items-center justify-center gap-3 p-6 text-center">
+                <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center">
+                    <Brain className="h-5 w-5 text-primary/60" />
+                </div>
+                <div>
+                    <p className="text-xs font-medium text-foreground/70">No analysis yet</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-[200px]">
+                        Run AI analysis to extract insights, key topics, and a summary from this content.
+                    </p>
+                </div>
+                <button
+                    onClick={handleAnalyze}
+                    disabled={analyzing}
+                    className={cn(
+                        'inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium transition-all min-h-[44px]',
+                        'bg-primary text-primary-foreground hover:bg-primary/90',
+                        'disabled:opacity-40 disabled:pointer-events-none',
+                    )}
+                >
+                    {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3" />}
                     Analyze
-                </Button>
+                </button>
             </div>
         );
     }

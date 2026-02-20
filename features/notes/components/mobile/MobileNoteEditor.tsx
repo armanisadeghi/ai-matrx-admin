@@ -151,8 +151,8 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border bg-card">
         <div className="flex items-center justify-between px-3 py-2">
-          <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-9 w-9">
-            <ChevronLeft size={22} />
+          <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-7 w-7 rounded-full">
+            <ChevronLeft size={18} />
           </Button>
 
           <div className="flex-1 px-2 min-w-0">
@@ -171,8 +171,8 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0 h-9 w-9">
-                <MoreVertical size={20} />
+              <Button variant="ghost" size="icon" className="flex-shrink-0 h-7 w-7 rounded-full">
+                <MoreVertical size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

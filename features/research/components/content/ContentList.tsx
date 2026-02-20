@@ -195,15 +195,20 @@ export default function ContentList() {
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center mb-3">
-                            <FileText className="h-5 w-5 text-primary/60" />
+                    <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                            <FileText className="h-6 w-6 text-primary/40" />
                         </div>
-                        <p className="text-xs text-muted-foreground/70 max-w-xs">
-                            {scraped.length === 0
-                                ? 'Run the pipeline to scrape sources and collect page content.'
-                                : 'No results match your filters.'}
-                        </p>
+                        <div>
+                            <p className="text-xs font-medium text-foreground/70">
+                                {scraped.length === 0 ? 'No content yet' : 'No matches'}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                                {scraped.length === 0
+                                    ? 'Scrape your sources to collect page content for analysis and synthesis.'
+                                    : 'Try adjusting your search or filters to find what you\'re looking for.'}
+                            </p>
+                        </div>
                     </div>
                 ) : (
                     <div className="space-y-1.5">

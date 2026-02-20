@@ -67,7 +67,10 @@ function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; lab
                             </ReactMarkdown>
                         </div>
                     ) : (
-                        <p className="text-xs text-muted-foreground">No result yet.</p>
+                        <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground/50">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Processing...
+                        </div>
                     )}
                 </div>
             )}
@@ -232,15 +235,30 @@ export default function SynthesisList() {
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center mb-3">
-                            <Layers className="h-5 w-5 text-primary/60" />
+                    <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                            <Layers className="h-6 w-6 text-primary/40" />
                         </div>
-                        <p className="text-xs text-muted-foreground/70 max-w-xs">
-                            {synthList.length === 0
-                                ? 'No synthesis yet. Run the pipeline or click "Run" above.'
-                                : 'No syntheses match your filters.'}
-                        </p>
+                        <div>
+                            <p className="text-xs font-medium text-foreground/70">
+                                {synthList.length === 0 ? 'No syntheses yet' : 'No matches'}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                                {synthList.length === 0
+                                    ? 'Synthesize your scraped content and analyses into cohesive research summaries.'
+                                    : 'Try adjusting your search or filters to find what you\'re looking for.'}
+                            </p>
+                        </div>
+                        {synthList.length === 0 && (
+                            <button
+                                onClick={handleRunProjectSynthesis}
+                                disabled={stream.isStreaming}
+                                className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
+                            >
+                                {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <Layers className="h-3 w-3" />}
+                                Run Synthesis
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <>

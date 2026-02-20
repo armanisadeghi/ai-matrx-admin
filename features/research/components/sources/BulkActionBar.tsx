@@ -35,8 +35,8 @@ export function BulkActionBar({ selectedCount, onInclude, onExclude, onMarkStale
                 <AlertTriangle className="h-3.5 w-3.5" />
                 Stale
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClear} className="h-7 w-7 ml-1">
-                <X className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon" onClick={onClear} className="h-6 w-6 rounded-full ml-1">
+                <X className="h-3 w-3" />
             </Button>
         </div>
     );

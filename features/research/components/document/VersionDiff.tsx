@@ -19,8 +19,8 @@ export function VersionDiff({ oldDoc, newDoc, onClose }: VersionDiffProps) {
     return (
         <div className="flex flex-col h-full min-h-0 p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-4">
-                <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9">
-                    <ArrowLeft className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7 rounded-full">
+                    <ArrowLeft className="h-3.5 w-3.5" />
                 </Button>
                 <h2 className="text-lg font-bold">Version Comparison</h2>
                 <div className="flex items-center gap-2">

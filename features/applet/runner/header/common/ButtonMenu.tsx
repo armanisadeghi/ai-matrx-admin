@@ -57,12 +57,12 @@ export function ButtonMenu({ className, buttons }: ButtonMenuProps) {
       <DropdownMenuTrigger asChild>
         <button 
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100", 
+            "flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100", 
             className
           )}
           aria-label="Menu Options"
         >
-          <MoreHorizontal size={18} />
+          <MoreHorizontal size={16} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[180px]">

@@ -63,8 +63,8 @@ export default function ProjectSettingsLayout({ children }: { children: React.Re
           {isMobile && orgId && (
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+                  <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72">

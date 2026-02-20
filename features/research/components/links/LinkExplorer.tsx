@@ -110,11 +110,20 @@ export default function LinkExplorer() {
                     <span className="text-xs">Loading links...</span>
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                    <Link2 className="h-10 w-10 mb-3 opacity-30" />
-                    <p className="text-xs">
-                        {linkList.length === 0 ? 'No extracted links yet. Links appear after scraping sources.' : 'No links match your search.'}
-                    </p>
+                <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
+                    <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                        <Link2 className="h-6 w-6 text-primary/40" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-foreground/70">
+                            {linkList.length === 0 ? 'No links yet' : 'No matches'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                            {linkList.length === 0
+                                ? 'Links are automatically extracted from pages when you scrape your sources.'
+                                : 'Try adjusting your search to find what you\'re looking for.'}
+                        </p>
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-1.5">

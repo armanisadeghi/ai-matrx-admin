@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { RefreshCw, Download, History, Loader2, FileText, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import ReactMarkdown from 'react-markdown';
@@ -73,31 +72,48 @@ export default function DocumentViewer() {
 
     if (!document) {
         return (
-            <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-                <FileText className="h-12 w-12 text-muted-foreground/30" />
-                <p className="text-muted-foreground text-sm">No document generated yet.</p>
-                <Button onClick={handleRegenerate} disabled={stream.isStreaming} className="gap-2">
-                    {stream.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            <div className="flex flex-col items-center justify-center h-full min-h-[320px] gap-3 p-6 text-center">
+                <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-primary/40" />
+                </div>
+                <div>
+                    <p className="text-xs font-medium text-foreground/70">No document yet</p>
+                    <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[260px]">
+                        Generate a comprehensive research document from your sources, content, and syntheses.
+                    </p>
+                </div>
+                <button
+                    onClick={handleRegenerate}
+                    disabled={stream.isStreaming}
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
+                >
+                    {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
                     Generate Document
-                </Button>
+                </button>
             </div>
         );
     }
 
     if (document.status === 'failed') {
         return (
-            <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-                <AlertTriangle className="h-12 w-12 text-destructive/60" />
-                <div className="text-center space-y-1">
-                    <p className="font-medium text-destructive">Document generation failed</p>
+            <div className="flex flex-col items-center justify-center h-full min-h-[320px] gap-3 p-6 text-center">
+                <div className="h-12 w-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
+                    <AlertTriangle className="h-6 w-6 text-destructive/50" />
+                </div>
+                <div>
+                    <p className="text-xs font-medium text-destructive/80">Generation failed</p>
                     {document.error && (
-                        <p className="text-sm text-muted-foreground max-w-md">{document.error}</p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[280px]">{document.error}</p>
                     )}
                 </div>
-                <Button onClick={handleRegenerate} disabled={stream.isStreaming} variant="outline" className="gap-2">
-                    {stream.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                    Retry Generation
-                </Button>
+                <button
+                    onClick={handleRegenerate}
+                    disabled={stream.isStreaming}
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
+                >
+                    {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Retry
+                </button>
             </div>
         );
     }

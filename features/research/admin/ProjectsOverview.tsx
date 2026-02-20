@@ -160,7 +160,7 @@ export function ProjectsOverview() {
                                     </span>
                                 </TableCell>
                                 <TableCell>
-                                    <Button size="icon" variant="ghost" className="h-7 w-7" asChild>
+                                    <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" asChild>
                                         <a href={`/p/research/topics/${config.id}`} target="_blank" rel="noreferrer">
                                             <ExternalLink className="h-3.5 w-3.5" />
                                         </a>
