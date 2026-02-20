@@ -24,7 +24,7 @@ const AUTONOMY_ICONS = { auto: Zap, semi: SlidersHorizontal, manual: Hand } as c
 const AUTONOMY_LABELS = { auto: 'Auto', semi: 'Semi', manual: 'Manual' } as const;
 
 export default function ResearchOverview() {
-    const { topicId, progress, topic, refresh, isLoading, error, addOptimisticSource, clearOptimisticSources } = useTopicContext();
+    const { topicId, progress, topic, refresh, isLoading, error } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
     const debug = useStreamDebug();
@@ -36,45 +36,88 @@ export default function ResearchOverview() {
     const [addingKeyword, setAddingKeyword] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
-    // Shared data callback: inject sources as they arrive from search
-    const handleStreamData = useCallback((payload: import('../../types').ResearchStreamDataPayload) => {
-        if (payload.type === 'source_found') {
-            addOptimisticSource(payload.source);
-        }
-    }, [addOptimisticSource]);
+    // Live counters derived from stream data events — shown in ProgressPanel
+    const [liveStats, setLiveStats] = useState<{
+        sourcesFound: number;
+        scraped: number;
+        scrapeGood: number;
+        analyzed: number;
+        analysisFailed: number;
+    }>({ sourcesFound: 0, scraped: 0, scrapeGood: 0, analyzed: 0, analysisFailed: 0 });
 
-    const handleStreamEnd = useCallback(() => {
-        refresh();
-        // After a full pipeline run, clear optimistic sources — DB refresh will show real data
-        clearOptimisticSources();
-    }, [refresh, clearOptimisticSources]);
+    // When sources are stored (search_sources_stored) or a phase completes, refresh topic state.
+    // The stream doesn't carry full row data — events like search_sources_stored tell us
+    // how many rows were stored, then we refetch from Supabase.
+    const handleStreamData = useCallback((payload: import('../../types').ResearchDataEvent) => {
+        // Update live counters from real data events
+        if (payload.event === 'search_sources_stored') {
+            setLiveStats(s => ({ ...s, sourcesFound: s.sourcesFound + payload.stored_count }));
+        }
+        if (payload.event === 'search_page_complete') {
+            setLiveStats(s => ({ ...s, sourcesFound: Math.max(s.sourcesFound, payload.total_so_far) }));
+        }
+        if (payload.event === 'scrape_complete') {
+            setLiveStats(s => ({
+                ...s,
+                scraped: s.scraped + 1,
+                scrapeGood: payload.is_good_scrape ? s.scrapeGood + 1 : s.scrapeGood,
+            }));
+        }
+        if (payload.event === 'analysis_complete') {
+            setLiveStats(s => ({ ...s, analyzed: s.analyzed + 1 }));
+        }
+        if (payload.event === 'analysis_failed') {
+            setLiveStats(s => ({ ...s, analysisFailed: s.analysisFailed + 1 }));
+        }
+        // Refresh source list when the backend confirms sources were persisted
+        if (payload.event === 'search_sources_stored' || payload.event === 'search_complete') {
+            refresh();
+        }
+    }, [refresh]);
+
+    const resetStats = useCallback(() => {
+        setLiveStats({ sourcesFound: 0, scraped: 0, scrapeGood: 0, analyzed: 0, analysisFailed: 0 });
+    }, []);
 
     const handleRun = useCallback(async () => {
+        resetStats();
         const response = await api.runPipeline(topicId);
-        stream.startStream(response, { onData: handleStreamData, onEnd: handleStreamEnd });
+        stream.startStream(response, {
+            onData: handleStreamData,
+            onEnd: () => refresh(),
+        });
         debug.pushEvents(stream.rawEvents, 'pipeline');
-    }, [api, topicId, stream, handleStreamData, handleStreamEnd, debug]);
+    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
 
     const handleSearch = useCallback(async () => {
+        resetStats();
         const response = await api.triggerSearch(topicId);
         stream.startStream(response, {
             onData: handleStreamData,
             onEnd: () => refresh(),
         });
         debug.pushEvents(stream.rawEvents, 'search');
-    }, [api, topicId, stream, handleStreamData, refresh, debug]);
+    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
 
     const handleScrape = useCallback(async () => {
+        resetStats();
         const response = await api.triggerScrape(topicId);
-        stream.startStream(response, { onEnd: () => refresh() });
+        stream.startStream(response, {
+            onData: handleStreamData,
+            onEnd: () => refresh(),
+        });
         debug.pushEvents(stream.rawEvents, 'scrape');
-    }, [api, topicId, stream, refresh, debug]);
+    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
 
     const handleAnalyze = useCallback(async () => {
+        resetStats();
         const response = await api.analyzeAll(topicId);
-        stream.startStream(response, { onEnd: () => refresh() });
+        stream.startStream(response, {
+            onData: handleStreamData,
+            onEnd: () => refresh(),
+        });
         debug.pushEvents(stream.rawEvents, 'analyze-all');
-    }, [api, topicId, stream, refresh, debug]);
+    }, [api, topicId, stream, handleStreamData, refresh, debug, resetStats]);
 
     const handleReport = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'initial' });
@@ -235,6 +278,7 @@ export default function ResearchOverview() {
                 currentStep={stream.currentStep}
                 messages={stream.messages}
                 error={stream.error}
+                liveStats={liveStats}
                 onClose={stream.clearMessages}
                 onCancel={stream.cancel}
             />

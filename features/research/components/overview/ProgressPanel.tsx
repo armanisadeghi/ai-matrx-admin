@@ -6,6 +6,15 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { PIPELINE_STEPS } from '../../constants';
 import type { ResearchStreamStep } from '../../types';
+import type { StreamMessage } from '../../hooks/useResearchStream';
+
+export interface LiveStats {
+    sourcesFound: number;
+    scraped: number;
+    scrapeGood: number;
+    analyzed: number;
+    analysisFailed: number;
+}
 
 const STEP_ICONS: Record<string, typeof Search> = {
     searching: Search,
@@ -15,23 +24,17 @@ const STEP_ICONS: Record<string, typeof Search> = {
     reporting: FileText,
 };
 
-interface StreamMessage {
-    id: string;
-    timestamp: number;
-    status: ResearchStreamStep;
-    message: string;
-}
-
 interface ProgressPanelProps {
     isStreaming: boolean;
     currentStep: ResearchStreamStep | null;
     messages: StreamMessage[];
     error: string | null;
+    liveStats?: LiveStats;
     onClose: () => void;
     onCancel: () => void;
 }
 
-export function ProgressPanel({ isStreaming, currentStep, messages, error, onClose, onCancel }: ProgressPanelProps) {
+export function ProgressPanel({ isStreaming, currentStep, messages, error, liveStats, onClose, onCancel }: ProgressPanelProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -44,6 +47,11 @@ export function ProgressPanel({ isStreaming, currentStep, messages, error, onClo
 
     const isComplete = currentStep === 'complete';
     const isError = currentStep === 'error';
+    const hasLiveStats = liveStats && (
+        liveStats.sourcesFound > 0 ||
+        liveStats.scraped > 0 ||
+        liveStats.analyzed > 0
+    );
 
     return (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -98,6 +106,33 @@ export function ProgressPanel({ isStreaming, currentStep, messages, error, onClo
                     );
                 })}
             </div>
+
+            {/* Live Stats Bar — real-time counters from data events */}
+            {hasLiveStats && (
+                <div className="flex items-center gap-4 px-4 py-2 border-b border-border/50 bg-muted/20 text-[10px] text-muted-foreground flex-wrap">
+                    {liveStats!.sourcesFound > 0 && (
+                        <span className="flex items-center gap-1">
+                            <Search className="h-3 w-3 text-blue-400" />
+                            <span className="tabular-nums font-medium text-foreground">{liveStats!.sourcesFound}</span> sources found
+                        </span>
+                    )}
+                    {liveStats!.scraped > 0 && (
+                        <span className="flex items-center gap-1">
+                            <Download className="h-3 w-3 text-green-400" />
+                            <span className="tabular-nums font-medium text-foreground">{liveStats!.scrapeGood}/{liveStats!.scraped}</span> scraped
+                        </span>
+                    )}
+                    {liveStats!.analyzed > 0 && (
+                        <span className="flex items-center gap-1">
+                            <Brain className="h-3 w-3 text-purple-400" />
+                            <span className="tabular-nums font-medium text-foreground">{liveStats!.analyzed}</span> analyzed
+                            {liveStats!.analysisFailed > 0 && (
+                                <span className="text-destructive/70">({liveStats!.analysisFailed} failed)</span>
+                            )}
+                        </span>
+                    )}
+                </div>
+            )}
 
             {/* Messages Log */}
             <div ref={scrollRef} className="max-h-48 overflow-y-auto p-3 space-y-1.5">

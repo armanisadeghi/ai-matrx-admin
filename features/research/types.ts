@@ -347,7 +347,7 @@ export interface TagSuggestion {
 // STREAMING TYPES
 // ============================================================================
 
-export type ResearchStreamStep = 'searching' | 'scraping' | 'analyzing' | 'synthesizing' | 'reporting' | 'complete' | 'error';
+export type ResearchStreamStep = 'searching' | 'scraping' | 'analyzing' | 'synthesizing' | 'retrying' | 'reporting' | 'complete' | 'error';
 
 export interface ResearchStreamStatus {
     status: ResearchStreamStep;
@@ -356,22 +356,196 @@ export interface ResearchStreamStatus {
     total_steps?: number;
 }
 
+// ── Research Data Events ─────────────────────────────────────────────────────
+// When top-level `event === "data"`, the `data` object is a research event.
+// The `data.event` field discriminates the specific research event type.
+// Source: research/stream_events.py (Python backend Pydantic models)
+
+export interface SearchPageStart {
+    event: 'search_page_start';
+    keyword: string;
+    keyword_id: string;
+    page: number;
+    total_pages: number;
+}
+
+export interface SearchPageComplete {
+    event: 'search_page_complete';
+    keyword: string;
+    keyword_id: string;
+    page: number;
+    page_count: number;
+    total_so_far: number;
+}
+
+export interface SearchSourcesStored {
+    event: 'search_sources_stored';
+    keyword_id: string;
+    stored_count: number;
+}
+
+export interface SearchComplete {
+    event: 'search_complete';
+    total_sources: number;
+}
+
+export interface ScrapeStart {
+    event: 'scrape_start';
+    source_id: string;
+    url: string;
+}
+
+export interface ScrapeComplete {
+    event: 'scrape_complete';
+    source_id: string;
+    url: string;
+    status: 'success' | 'thin' | 'failed';
+    char_count: number;
+    is_good_scrape: boolean;
+}
+
+export interface ScrapeFailed {
+    event: 'scrape_failed';
+    source_id: string;
+    url: string;
+    reason: string;
+}
+
+export interface RescrapeComplete {
+    event: 'rescrape_complete';
+    source_id: string;
+    is_good_scrape: boolean;
+    char_count: number;
+}
+
+export interface AnalysisStart {
+    event: 'analysis_start';
+    source_id: string;
+    total: number;
+}
+
+export interface AnalysisComplete {
+    event: 'analysis_complete';
+    source_id: string;
+    agent_type: string;
+    model_id: string | null;
+    result_length: number;
+}
+
+export interface AnalysisFailed {
+    event: 'analysis_failed';
+    source_id: string;
+    error: string;
+}
+
+export interface AnalyzeAllComplete {
+    event: 'analyze_all_complete';
+    count: number;
+}
+
+export interface RetryComplete {
+    event: 'retry_complete';
+    analysis_id: string;
+    result: Record<string, unknown>;
+}
+
+export interface RetryAllComplete {
+    event: 'retry_all_complete';
+    retried: number;
+    succeeded: number;
+}
+
+export interface SynthesisStart {
+    event: 'synthesis_start';
+    scope: 'keyword' | 'project';
+    keyword_id?: string | null;
+    keyword?: string | null;
+}
+
+export interface SynthesisComplete {
+    event: 'synthesis_complete';
+    scope: 'keyword' | 'project';
+    keyword_id?: string | null;
+    keyword?: string | null;
+    result_length: number;
+    model_id: string | null;
+    version: number;
+}
+
+export interface SynthesisFailed {
+    event: 'synthesis_failed';
+    scope: 'keyword' | 'project';
+    keyword_id?: string | null;
+    error: string;
+}
+
+export interface SuggestSetupComplete {
+    event: 'suggest_complete';
+    title: string;
+    description: string;
+    suggested_keywords: string[];
+    initial_insights?: string | null;
+}
+
+export interface ConsolidateComplete {
+    event: 'consolidate_complete';
+    tag_id: string;
+    result: Record<string, unknown>;
+}
+
+export interface SuggestTagsComplete {
+    event: 'suggest_tags_complete';
+    source_id: string;
+    result: Record<string, unknown>;
+}
+
+export interface DocumentComplete {
+    event: 'document_complete';
+    result: Record<string, unknown>;
+}
+
+export interface PipelineComplete {
+    event: 'pipeline_complete';
+    topic_id: string;
+}
+
 /**
- * Discriminated union of all domain objects the backend emits via `data` events.
- * Each member corresponds to a row saved to the database — the frontend merges
- * it into local state immediately so there is no need to refetch from Supabase.
+ * Discriminated union of all research domain events.
+ * Arrives when top-level `event === "data"` — discriminated by `data.event`.
+ * Typed from research/stream_events.py (backend Pydantic models).
  */
-export type ResearchStreamDataPayload =
-    | { type: 'source_scraped'; source_id: string; content: ResearchContent }
-    | { type: 'analysis_result'; source_id: string; content_id: string; analysis: ResearchAnalysis }
-    | { type: 'source_found'; source: ResearchSource }
-    | { type: 'synthesis_result'; synthesis: ResearchSynthesis }
-    | { type: 'progress'; current: number; total: number; label: string };
+export type ResearchDataEvent =
+    | SearchPageStart
+    | SearchPageComplete
+    | SearchSourcesStored
+    | SearchComplete
+    | ScrapeStart
+    | ScrapeComplete
+    | ScrapeFailed
+    | RescrapeComplete
+    | AnalysisStart
+    | AnalysisComplete
+    | AnalysisFailed
+    | AnalyzeAllComplete
+    | RetryComplete
+    | RetryAllComplete
+    | SynthesisStart
+    | SynthesisComplete
+    | SynthesisFailed
+    | SuggestSetupComplete
+    | ConsolidateComplete
+    | SuggestTagsComplete
+    | DocumentComplete
+    | PipelineComplete;
+
+/** @deprecated Use ResearchDataEvent instead — matches real backend contract */
+export type ResearchStreamDataPayload = ResearchDataEvent;
 
 export interface ResearchStreamCallbacks {
     onChunk?: (text: string) => void;
     onStatusUpdate?: (step: ResearchStreamStep, message: string, metadata?: Record<string, unknown>) => void;
-    onData?: (payload: ResearchStreamDataPayload) => void;
+    /** Typed research data event — discriminate on `payload.event` */
+    onData?: (payload: ResearchDataEvent) => void;
     onCompletion?: (payload: Record<string, unknown>) => void;
     onToolEvent?: (event: Record<string, unknown>) => void;
     onError?: (message: string) => void;

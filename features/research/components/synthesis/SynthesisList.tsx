@@ -14,7 +14,7 @@ import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchSynthesis, useResearchKeywords } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
-import type { ResearchSynthesis, ResearchStreamDataPayload } from '../../types';
+import type { ResearchSynthesis, ResearchDataEvent } from '../../types';
 
 function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
     const [expanded, setExpanded] = useState(false);
@@ -88,10 +88,10 @@ export default function SynthesisList() {
     const { data: allSyntheses, isLoading: synthLoading, refresh: refetchSyntheses } = useResearchSynthesis(topicId);
     const { data: keywords } = useResearchKeywords(topicId);
 
-    // Optimistic synthesis results — merged from stream without DB round-trip
-    const [optimisticSyntheses, setOptimisticSyntheses] = useState<ResearchSynthesis[]>([]);
-    // Live token text while synthesis LLM is streaming
+    // Live token text while a synthesis LLM is streaming
     const [streamingText, setStreamingText] = useState('');
+    // Label for the currently streaming synthesis (e.g. "Project Report" or keyword name)
+    const [streamingLabel, setStreamingLabel] = useState('');
 
     const [search, setSearch] = useState('');
     const [scopeFilter, setScopeFilter] = useState<string>('all');
@@ -99,15 +99,7 @@ export default function SynthesisList() {
     const [keywordFilter, setKeywordFilter] = useState<string>('all');
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    // Merge DB syntheses + optimistic (deduplicated by id)
-    const allMerged = useMemo(() => {
-        const db = (allSyntheses ?? []) as ResearchSynthesis[];
-        const existingIds = new Set(db.map(s => s.id));
-        const fresh = optimisticSyntheses.filter(s => !existingIds.has(s.id));
-        return [...fresh, ...db];
-    }, [allSyntheses, optimisticSyntheses]);
-
-    const synthList = allMerged;
+    const synthList = (allSyntheses ?? []) as ResearchSynthesis[];
     const kwList = keywords ?? [];
 
     const getKeywordLabel = (kwId: string | null) => {
@@ -140,18 +132,35 @@ export default function SynthesisList() {
 
     const handleRunProjectSynthesis = async () => {
         setStreamingText('');
+        setStreamingLabel('');
         const res = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'initial' });
         stream.startStream(res, {
-            onChunk: (text) => setStreamingText(prev => prev + text),
-            onData: (payload: ResearchStreamDataPayload) => {
-                if (payload.type === 'synthesis_result') {
-                    setOptimisticSyntheses(prev => [payload.synthesis, ...prev]);
+            onData: (payload: ResearchDataEvent) => {
+                if (payload.event === 'synthesis_start') {
+                    // New LLM call starting — reset streaming buffer and label
                     setStreamingText('');
+                    setStreamingLabel(
+                        payload.scope === 'keyword' && payload.keyword
+                            ? `Keyword: ${payload.keyword}`
+                            : 'Project Report',
+                    );
+                }
+                if (payload.event === 'synthesis_complete') {
+                    // Synthesis done — clear streaming state, refetch from DB for the full row
+                    setStreamingText('');
+                    setStreamingLabel('');
+                    refetchSyntheses();
+                }
+                if (payload.event === 'synthesis_failed') {
+                    setStreamingText('');
+                    setStreamingLabel('');
                 }
             },
+            onChunk: (text) => setStreamingText(prev => prev + text),
             onEnd: () => {
                 setStreamingText('');
-                // Light refresh to sync any rows not emitted via stream
+                setStreamingLabel('');
+                // Final sync
                 refetchSyntheses();
             },
         });
@@ -257,17 +266,21 @@ export default function SynthesisList() {
             )}
 
             <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
-                {/* Live streaming synthesis card */}
-                {stream.isStreaming && streamingText && (
+                {/* Live streaming synthesis card — shown while LLM is writing */}
+                {stream.isStreaming && (streamingText || streamingLabel) && (
                     <div className="rounded-xl border border-primary/30 bg-card/60 overflow-hidden">
                         <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                             <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
-                            <span className="text-xs font-medium text-primary">Synthesizing…</span>
+                            <span className="text-xs font-medium text-primary">
+                                {streamingLabel ? `Synthesizing ${streamingLabel}…` : 'Synthesizing…'}
+                            </span>
                         </div>
-                        <div className="px-3 py-3 prose prose-sm dark:prose-invert max-w-none prose-p:text-xs">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
-                            <span className="inline-block w-0.5 h-3.5 bg-primary animate-pulse ml-0.5 align-middle" />
-                        </div>
+                        {streamingText && (
+                            <div className="px-3 py-3 prose prose-sm dark:prose-invert max-w-none prose-p:text-xs">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
+                                <span className="inline-block w-0.5 h-3.5 bg-primary animate-pulse ml-0.5 align-middle" />
+                            </div>
+                        )}
                     </div>
                 )}
                 {synthLoading ? (

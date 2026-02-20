@@ -50,7 +50,16 @@ export default function DocumentViewer() {
         const response = await api.generateDocument(topicId);
         stream.startStream(response, {
             onChunk: (text) => setStreamingDocText(prev => prev + text),
+            onData: (payload: import('../../types').ResearchDataEvent) => {
+                if (payload.event === 'document_complete') {
+                    // Document assembled — clear streaming text, refetch the saved doc from DB
+                    setStreamingDocText('');
+                    refetchDoc();
+                    refresh();
+                }
+            },
             onEnd: () => {
+                // Safety fallback: if document_complete wasn't caught, still refetch
                 setStreamingDocText('');
                 refetchDoc();
                 refresh();

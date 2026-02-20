@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { consumeStream } from '@/lib/api/stream-parser';
 import type { StatusUpdatePayload, EndPayload, CompletionPayload, ToolEventPayload } from '@/lib/api/types';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
-import type { ResearchStreamStep, ResearchStreamDataPayload, ResearchStreamCallbacks } from '../types';
+import type { ResearchStreamStep, ResearchDataEvent, ResearchStreamCallbacks } from '../types';
 
 export interface StreamMessage {
     id: string;
@@ -91,13 +91,10 @@ export function useResearchStream(
                 },
 
                 onData: (data: Record<string, unknown>) => {
-                    // If it has a `type` field, it's a typed domain payload — forward to caller
-                    if (data.type && typeof data.type === 'string') {
-                        callbacks?.onData?.(data as unknown as ResearchStreamDataPayload);
-                    } else {
-                        // Legacy: surface any `event` string as a progress message
-                        const eventStr = data.event as string | undefined;
-                        if (eventStr) addMessage('searching', eventStr);
+                    // Backend uses `data.event` as the discriminator (not `data.type`)
+                    // e.g. {"event":"data","data":{"event":"scrape_complete","source_id":"...",...}}
+                    if (data.event && typeof data.event === 'string') {
+                        callbacks?.onData?.(data as unknown as ResearchDataEvent);
                     }
                 },
 

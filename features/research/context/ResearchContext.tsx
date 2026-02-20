@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useResearchApi } from '../hooks/useResearchApi';
 import * as service from '../service';
-import type { ResearchTopic, ResearchProgress, ResearchSource } from '../types';
+import type { ResearchTopic, ResearchProgress } from '../types';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 
 // ============================================================================
@@ -38,10 +38,6 @@ interface TopicContextValue {
     isLoading: boolean;
     error: string | null;
     refresh: () => Promise<void>;
-    /** Sources that arrived via stream — merged into SourceList without DB round-trip */
-    optimisticSources: ResearchSource[];
-    addOptimisticSource: (source: ResearchSource) => void;
-    clearOptimisticSources: () => void;
 }
 
 const TopicContext = createContext<TopicContextValue | null>(null);
@@ -60,18 +56,6 @@ export function TopicProvider({ topicId, children }: TopicProviderProps) {
     const [progress, setProgress] = useState<ResearchProgress | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [optimisticSources, setOptimisticSources] = useState<ResearchSource[]>([]);
-
-    const addOptimisticSource = useCallback((source: ResearchSource) => {
-        setOptimisticSources(prev => {
-            if (prev.some(s => s.id === source.id)) return prev;
-            return [source, ...prev];
-        });
-    }, []);
-
-    const clearOptimisticSources = useCallback(() => {
-        setOptimisticSources([]);
-    }, []);
 
     // Stream debug bus state
     const [debugEvents, setDebugEvents] = useState<StreamEvent[]>([]);
@@ -126,9 +110,6 @@ export function TopicProvider({ topicId, children }: TopicProviderProps) {
             isLoading,
             error,
             refresh,
-            optimisticSources,
-            addOptimisticSource,
-            clearOptimisticSources,
         }}>
                 {children}
             </TopicContext.Provider>

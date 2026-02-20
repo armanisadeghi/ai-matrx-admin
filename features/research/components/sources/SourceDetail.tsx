@@ -18,7 +18,7 @@ import { OriginBadge } from '../shared/OriginBadge';
 import { ContentViewer } from './ContentViewer';
 import { PasteContentModal } from './PasteContentModal';
 import { AnalysisCard } from '../analysis/AnalysisCard';
-import type { ResearchSource, ResearchContent, ResearchAnalysis, ResearchStreamDataPayload } from '../../types';
+import type { ResearchSource, ResearchContent, ResearchAnalysis, ResearchDataEvent } from '../../types';
 
 function formatPageAge(pageAge: string | null): string {
     if (!pageAge) return '—';
@@ -59,12 +59,10 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     const { data: source, refresh: refetchSource } = useResearchSource(sourceId);
     const { data: contentData, refresh: refetchContent } = useSourceContent(sourceId);
     const { data: allSources } = useResearchSources(topicId);
-    const { data: storedAnalyses, refresh: refetchAnalyses } = useAnalysisForSource(sourceId);
+    const { data: allAnalyses, refresh: refetchAnalyses } = useAnalysisForSource(sourceId);
 
-    // Optimistic analysis results — merged from stream without DB round-trip
-    const [optimisticAnalyses, setOptimisticAnalyses] = useState<ResearchAnalysis[]>([]);
-    // Optimistic content versions — merged from scrape stream
-    const [optimisticContent, setOptimisticContent] = useState<ResearchContent[]>([]);
+    // No optimistic state needed — the backend stream sends metadata only (not full rows).
+    // We refetch from Supabase after each analysis_complete / rescrape_complete event.
     // Live token text while analysis LLM is streaming
     const [streamingAnalysisText, setStreamingAnalysisText] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -84,27 +82,21 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         });
     }, [isNavigating, router, topicId]);
 
-    // Merge DB content + optimistic content from stream (deduplicated by id)
+    // Content versions from DB, newest first
     const contentVersions = useMemo(() => {
         const db = (contentData ?? []) as ResearchContent[];
-        const existingIds = new Set(db.map(c => c.id));
-        const fresh = optimisticContent.filter(c => !existingIds.has(c.id));
-        // Most recent version first
-        return [...fresh, ...db].sort((a, b) => b.version - a.version);
-    }, [contentData, optimisticContent]);
+        return [...db].sort((a, b) => b.version - a.version);
+    }, [contentData]);
 
     const [selectedVersion, setSelectedVersion] = useState(0);
     const currentContent = contentVersions[selectedVersion] ?? null;
 
-    // Merge DB analyses + optimistic analyses (deduplicated by id), filtered to current content
+    // Analyses from DB filtered to current content version
     const currentAnalyses = useMemo(() => {
-        const db = (storedAnalyses ?? []) as ResearchAnalysis[];
-        const existingIds = new Set(db.map(a => a.id));
-        const fresh = optimisticAnalyses.filter(a => !existingIds.has(a.id));
-        const all = [...fresh, ...db];
-        if (!currentContent) return all;
-        return all.filter(a => a.content_id === currentContent.id);
-    }, [storedAnalyses, optimisticAnalyses, currentContent]);
+        const db = (allAnalyses ?? []) as ResearchAnalysis[];
+        if (!currentContent) return db;
+        return db.filter(a => a.content_id === currentContent.id);
+    }, [allAnalyses, currentContent]);
 
     // ── Scrape stream ────────────────────────────────────────────────────────
     const scrapeStream = useResearchStream();
@@ -113,21 +105,30 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         if (!typedSource || scrapeStream.isStreaming) return;
         const response = await api.scrapeSource(topicId, sourceId);
         scrapeStream.startStream(response, {
-            onData: (payload: ResearchStreamDataPayload) => {
-                if (payload.type === 'source_scraped' && payload.source_id === sourceId) {
-                    // Merge new content version immediately — no DB round-trip
-                    setOptimisticContent(prev => [payload.content, ...prev]);
-                    // Jump to the newest version
+            onData: (payload: ResearchDataEvent) => {
+                // rescrape_complete = single-source rescrape endpoint result
+                // scrape_complete = bulk scrape (also fires for single source)
+                if (
+                    (payload.event === 'rescrape_complete' || payload.event === 'scrape_complete') &&
+                    payload.source_id === sourceId
+                ) {
+                    // Fetch the new content version from DB — the stream only has metadata (char_count),
+                    // not the full content row, so a targeted refetch is needed here
+                    refetchContent();
                     setSelectedVersion(0);
+                }
+                if (payload.event === 'scrape_failed' && payload.source_id === sourceId) {
+                    // Still refresh source to update scrape_status to 'failed'
+                    refetchSource();
                 }
             },
             onEnd: () => {
-                // Light refresh to sync source scrape_status field
+                // Sync the source scrape_status field
                 refetchSource();
             },
         });
         debug.pushEvents(scrapeStream.rawEvents, 'scrape');
-    }, [api, topicId, sourceId, scrapeStream, refetchSource, debug]);
+    }, [api, topicId, sourceId, scrapeStream, refetchSource, refetchContent, debug]);
 
     // ── Analyze stream ───────────────────────────────────────────────────────
     const analyzeStream = useResearchStream();
@@ -139,19 +140,29 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         const response = await api.analyzeSource(topicId, sourceId);
         analyzeStream.startStream(response, {
             onChunk: (text) => {
+                // Live LLM token streaming — shows the analysis being written in real time
                 setStreamingAnalysisText(prev => prev + text);
             },
-            onData: (payload: ResearchStreamDataPayload) => {
-                if (payload.type === 'analysis_result' && payload.source_id === sourceId) {
-                    // Merge into local state immediately
-                    setOptimisticAnalyses(prev => [payload.analysis, ...prev]);
+            onData: (payload: ResearchDataEvent) => {
+                if (payload.event === 'analysis_complete' && payload.source_id === sourceId) {
+                    // Stream only sends metadata (result_length, model_id) — not the full row.
+                    // Refetch from DB to get the complete analysis object.
                     setStreamingAnalysisText('');
+                    refetchAnalyses();
+                }
+                if (payload.event === 'analysis_failed' && payload.source_id === sourceId) {
+                    setStreamingAnalysisText('');
+                    setIsAnalyzing(false);
+                }
+                if (payload.event === 'retry_complete') {
+                    setStreamingAnalysisText('');
+                    refetchAnalyses();
                 }
             },
             onEnd: () => {
                 setIsAnalyzing(false);
                 setStreamingAnalysisText('');
-                // Light refresh to catch any rows the stream didn't emit
+                // Final sync in case analysis_complete wasn't caught (e.g. single-source endpoint)
                 refetchAnalyses();
             },
             onError: () => {
