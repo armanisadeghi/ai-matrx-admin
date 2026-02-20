@@ -25,6 +25,7 @@ import {
     FolderOpen,
     Mic,
     Container,
+    FlaskConical,
 } from "lucide-react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
@@ -86,10 +87,21 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <IconNewSection className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: false,
+        dashboard: true,
         description: "Browse and run interactive apps built from prompts",
         color: "emerald",
         favicon: { color: "#10b981", letter: "PA" }, // Emerald
+    },
+    {
+        label: "Research",
+        href: "/p/research",
+        icon: <FlaskConical className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        description: "Deep-dive research with AI-powered topic analysis and synthesis",
+        color: "violet",
+        favicon: { color: "#7c3aed", letter: "R" }, // Violet
     },
     {
         label: "Chat",
@@ -220,7 +232,7 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <IoChatboxOutline className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
         profileMenu: true,
-        dashboard: false,
+        dashboard: true,
         description: "Direct messages and conversations",
         color: "rose",
         favicon: { color: "#ec4899", letter: "M" }, // Pink

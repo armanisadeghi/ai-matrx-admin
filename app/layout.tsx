@@ -9,6 +9,8 @@ import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes";
 import { PostHogProvider } from "@/providers/PostHogProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next"
+
 
 export { metadata, viewport };
 
@@ -50,6 +52,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                         <Sonner />
                     </PostHogProvider>
                 </Suspense>
+                <SpeedInsights />
             </body>
         </html>
     );
