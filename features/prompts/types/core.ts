@@ -1,7 +1,19 @@
 export type PromptMessageRole = "system" | "user" | "assistant";
 
+export type ResponseFormatType = 'text' | 'json_object' | 'json_schema';
+
+/**
+ * Proper response_format shape the backend expects: { type: "json_object" }.
+ * "text" is the default — omit the field entirely instead of sending { type: "text" }.
+ */
+export interface ResponseFormatDict {
+    type: ResponseFormatType;
+    [key: string]: unknown;
+}
+
 export interface PromptSettings {
     model_id?: string;
+    /** @deprecated Legacy field — may exist in DB records. Use response_format instead. */
     output_format?: string;
     tool_choice?: string;
     temperature?: number;
@@ -13,7 +25,7 @@ export interface PromptSettings {
     stream?: boolean;
     parallel_tool_calls?: boolean;
     include_thoughts?: boolean;
-    tools?: string[]; // Array of selected tool names
+    tools?: string[];
     image_urls?: boolean;
     file_urls?: boolean;
     internal_web_search?: boolean;
@@ -24,15 +36,15 @@ export interface PromptSettings {
     reasoning_summary?: string;
     
     // Image/Video model settings
-    n?: number; // Number of outputs
+    n?: number;
     seed?: number;
     steps?: number;
     width?: number;
     height?: number;
     guidance_scale?: number;
     negative_prompt?: string;
-    response_format?: string;
-    fps?: number; // Video: frames per second
+    response_format?: ResponseFormatDict | string;
+    fps?: number;
     seconds?: string; // Video: duration
     output_quality?: number;
     image_loras?: any[]; // Object array for image LoRAs

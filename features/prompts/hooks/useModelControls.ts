@@ -26,6 +26,7 @@ export interface NormalizedControls {
     verbosity?: ControlDefinition;
     reasoning_summary?: ControlDefinition;
     stop_sequences?: ControlDefinition;
+    /** @deprecated DB models may still have output_format — remapped to response_format at parse time */
     output_format?: ControlDefinition;
     tool_choice?: ControlDefinition;
 
@@ -138,8 +139,8 @@ export function useModelControls(models: any[], selectedModelId: string) {
             return;
         }
 
-        // Keep the key as-is - max_tokens and max_output_tokens are separate settings
-        const normalizedKey = key;
+        // Remap output_format -> response_format (backend uses response_format)
+        const normalizedKey = key === 'output_format' ? 'response_format' : key;
 
         // Parse the control definition based on its structure
         const controlDef: ControlDefinition = {
@@ -203,15 +204,12 @@ export function getModelDefaults(model: any) {
     const uiOnlyKeys = new Set(['tools']);
 
     Object.entries(controls).forEach(([key, value]: [string, any]) => {
-        // Don't normalize keys here - keep them as the API expects them
-        // PromptSettings uses max_output_tokens to match the API
-        const normalizedKey = key;
+        // Remap output_format -> response_format
+        const normalizedKey = key === 'output_format' ? 'response_format' : key;
 
-        // Skip UI-only capability flags - these should be managed separately
-        // Tools should be initialized as empty array, not boolean
+        // Skip UI-only capability flags
         if (uiOnlyKeys.has(normalizedKey)) {
             if (normalizedKey === 'tools' && value.allowed) {
-                // Initialize tools as empty array if allowed
                 defaults[normalizedKey] = [];
             }
             return;
@@ -219,14 +217,25 @@ export function getModelDefaults(model: any) {
 
         // Extract default value for actual submission parameters
         // SKIP if default is null - these are opt-in only controls
+        let defaultValue: unknown = undefined;
         if (value.default !== undefined && value.default !== null) {
-            defaults[normalizedKey] = value.default;
+            defaultValue = value.default;
         } else if ('allowed' in value && !uiOnlyKeys.has(normalizedKey)) {
-            // Only use 'allowed' for non-UI flags
-            defaults[normalizedKey] = value.allowed;
+            defaultValue = value.allowed;
         } else if (value.enum && Array.isArray(value.enum) && value.enum.length > 0) {
-            defaults[normalizedKey] = value.enum[0];
+            defaultValue = value.enum[0];
         }
+
+        if (defaultValue === undefined) return;
+
+        // For response_format: convert string -> dict, skip "text" (default behavior)
+        if (normalizedKey === 'response_format' && typeof defaultValue === 'string') {
+            if (defaultValue === 'text' || defaultValue === '') return;
+            defaults[normalizedKey] = { type: defaultValue };
+            return;
+        }
+
+        defaults[normalizedKey] = defaultValue;
     });
 
     return defaults;

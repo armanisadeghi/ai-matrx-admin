@@ -43,13 +43,7 @@ import {
 
 import { brokerActions } from '../../brokerSlice/slice';
 import { selectAccessToken, selectIsAdmin } from '../../slices/userSlice';
-
-function selectIsUsingLocalhostSafe(state: RootState): boolean {
-  const adminPrefs = (state as Record<string, unknown>).adminPreferences as
-    | { serverOverride: string | null }
-    | undefined;
-  return adminPrefs?.serverOverride === 'localhost';
-}
+import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
 
 interface ExecuteMessageFastAPIPayload {
   chatConfig: {
@@ -71,12 +65,16 @@ export const executeMessageFastAPI = createAsyncThunk<
   async ({ chatConfig, taskId, runId }, { dispatch, getState }) => {
     const state = getState();
     const accessToken = selectAccessToken(state);
-    const isLocalhost = selectIsUsingLocalhostSafe(state);
+    const isLocalhost = selectIsUsingLocalhost(state);
     const isAdmin = selectIsAdmin(state);
 
     const BACKEND_URL = (isAdmin && isLocalhost)
       ? BACKEND_URLS.localhost
       : BACKEND_URLS.production;
+
+    console.log(
+      `[executeMessageFastAPI] isAdmin=${isAdmin}, isLocalhost=${isLocalhost}, BACKEND_URL=${BACKEND_URL}`,
+    );
 
     const listenerId = taskId;
 
@@ -89,42 +87,82 @@ export const executeMessageFastAPI = createAsyncThunk<
     dispatch(addResponse({ listenerId, taskId }));
     dispatch(setTaskListenerIds({ taskId, listenerIds: [listenerId] }));
 
-    const { model_id, messages, stream, max_tokens, output_format, ...restConfig } = chatConfig;
-
-    if (model_id !== undefined) {
-      console.warn(
-        '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "model_id" — the calling code (executeMessageThunk / promptExecution slice) should be updated to pass "ai_model_id".',
-        'font-weight: bold; color: orange; font-size: 14px;',
-      );
-    }
-    if (max_tokens !== undefined) {
-      console.warn(
-        '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "max_tokens" — rename to "max_output_tokens" in the prompt settings source.',
-        'font-weight: bold; color: orange; font-size: 14px;',
-      );
-    }
-    if (output_format !== undefined) {
-      console.warn(
-        '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "output_format" — rename to "response_format" in the prompt settings source.',
-        'font-weight: bold; color: orange; font-size: 14px;',
-      );
-    }
+    // Fields accepted by /api/ai/chat/unified — anything else gets stripped
+    const ALLOWED_FIELDS = new Set([
+      'ai_model_id', 'messages', 'stream', 'debug', 'max_iterations',
+      'max_retries_per_iteration', 'system_instruction', 'max_output_tokens',
+      'temperature', 'top_p', 'top_k', 'tools', 'tool_choice',
+      'parallel_tool_calls', 'reasoning_effort', 'reasoning_summary',
+      'thinking_level', 'include_thoughts', 'thinking_budget',
+      'response_format', 'stop_sequences', 'internal_web_search',
+      'internal_url_context', 'conversation_id', 'is_new_conversation',
+      'store', 'metadata',
+    ]);
 
     const requestBody: Record<string, unknown> = {
-      messages,
-      ai_model_id: model_id,
       stream: true,
       is_new_conversation: false,
-      ...restConfig,
     };
 
-    if (max_tokens !== undefined) {
-      requestBody.max_output_tokens = max_tokens;
-      delete requestBody.max_tokens;
+    // Rename model_id -> ai_model_id
+    if (chatConfig.model_id !== undefined) {
+      console.warn(
+        '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "model_id" — the calling code should pass "ai_model_id".',
+        'font-weight: bold; color: orange; font-size: 14px;',
+      );
+      requestBody.ai_model_id = chatConfig.model_id;
+    } else if (chatConfig.ai_model_id !== undefined) {
+      requestBody.ai_model_id = chatConfig.ai_model_id;
     }
-    if (output_format !== undefined) {
-      requestBody.response_format = output_format;
-      delete requestBody.output_format;
+
+    // Rename max_tokens -> max_output_tokens
+    if (chatConfig.max_tokens !== undefined) {
+      console.warn(
+        '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "max_tokens" — rename to "max_output_tokens".',
+        'font-weight: bold; color: orange; font-size: 14px;',
+      );
+      requestBody.max_output_tokens = chatConfig.max_tokens;
+    }
+
+    // Rename output_format -> response_format AND normalize string -> dict
+    const rawFormat = chatConfig.output_format ?? chatConfig.response_format;
+    if (rawFormat !== undefined) {
+      if (chatConfig.output_format !== undefined) {
+        console.warn(
+          '%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: chatConfig uses "output_format" — rename to "response_format".',
+          'font-weight: bold; color: orange; font-size: 14px;',
+        );
+      }
+      // Backend expects Dict[str, Any] | null, not a bare string
+      if (typeof rawFormat === 'string') {
+        if (rawFormat !== 'text' && rawFormat !== '') {
+          requestBody.response_format = { type: rawFormat };
+        }
+        // "text" is the default — omit entirely
+      } else if (rawFormat !== null && typeof rawFormat === 'object') {
+        requestBody.response_format = rawFormat;
+      }
+    }
+
+    // Copy remaining allowed fields, strip everything else
+    const skipFields = new Set(['model_id', 'ai_model_id', 'max_tokens', 'output_format', 'response_format', 'stream', 'is_new_conversation']);
+    const droppedFields: string[] = [];
+
+    for (const [key, value] of Object.entries(chatConfig)) {
+      if (skipFields.has(key)) continue;
+      if (value === undefined || value === null) continue;
+      if (ALLOWED_FIELDS.has(key)) {
+        requestBody[key] = value;
+      } else {
+        droppedFields.push(key);
+      }
+    }
+
+    if (droppedFields.length > 0) {
+      console.warn(
+        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat/unified: ${droppedFields.join(', ')}`,
+        'font-weight: bold; color: #ff9800; font-size: 12px;',
+      );
     }
 
     const headers: Record<string, string> = {

@@ -50,7 +50,7 @@ import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import messagingReducer from "../../features/messaging/redux/messagingSlice";
 import smsReducer from "../../features/sms/redux/smsSlice";
-
+import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
@@ -171,6 +171,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         // SMS integration
         sms: smsReducer,
+
+        // Admin preferences (server override, etc.)
+        adminPreferences: adminPreferencesReducer,
     });
 };
 

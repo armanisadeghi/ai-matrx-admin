@@ -46,13 +46,7 @@ import {
 } from '../slices/socketTasksSlice';
 
 import { selectAccessToken, selectIsAdmin } from '../../slices/userSlice';
-
-function selectIsUsingLocalhostSafe(state: RootState): boolean {
-  const adminPrefs = (state as Record<string, unknown>).adminPreferences as
-    | { serverOverride: string | null }
-    | undefined;
-  return adminPrefs?.serverOverride === 'localhost';
-}
+import { selectIsUsingLocalhost } from '../../slices/adminPreferencesSlice';
 
 interface SubmitChatPayload {
   service: string;
@@ -63,49 +57,138 @@ interface SubmitChatPayload {
 }
 
 /**
+ * Fields the /api/ai/chat/unified endpoint actually accepts.
+ * Anything NOT in this set is stripped from the request to prevent 422 errors.
+ */
+const UNIFIED_API_ALLOWED_FIELDS = new Set([
+  'ai_model_id',
+  'messages',
+  'stream',
+  'debug',
+  'max_iterations',
+  'max_retries_per_iteration',
+  'system_instruction',
+  'max_output_tokens',
+  'temperature',
+  'top_p',
+  'top_k',
+  'tools',
+  'tool_choice',
+  'parallel_tool_calls',
+  'reasoning_effort',
+  'reasoning_summary',
+  'thinking_level',
+  'include_thoughts',
+  'thinking_budget',
+  'response_format',
+  'stop_sequences',
+  'internal_web_search',
+  'internal_url_context',
+  'conversation_id',
+  'is_new_conversation',
+  'store',
+  'metadata',
+]);
+
+/**
+ * The backend expects response_format as Dict[str, Any] | null.
+ * The old frontend sends it as a bare string like "text" or "json_object".
+ * This converts string values to the proper dict format or strips them if
+ * they represent the default behavior (no need to send "text").
+ */
+function normalizeResponseFormat(value: unknown): Record<string, unknown> | null {
+  if (value === undefined || value === null) return null;
+
+  // Already a dict — pass through
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  if (typeof value === 'string') {
+    // "text" is the default — no need to send it at all
+    if (value === 'text' || value === '') return null;
+    // Convert known string shorthand to proper dict
+    return { type: value };
+  }
+
+  return null;
+}
+
+/**
  * Transforms a legacy socket-era chatConfig into the new /api/ai/chat/unified body.
  *
- * Renames:
- *   model_id      -> ai_model_id
- *   max_tokens    -> max_output_tokens
- *   output_format -> response_format
- *
- * Logs deprecation warnings for callers still passing old field names.
+ * 1. Renames old fields to new names
+ * 2. Strips frontend-only fields the backend doesn't accept (image_urls, file_urls, etc.)
+ * 3. Normalizes response_format from string -> dict
+ * 4. Logs deprecation warnings for old field names
  */
 function transformChatConfigToUnifiedBody(
   chatConfig: Record<string, unknown>,
   callerContext: string,
 ): Record<string, unknown> {
-  const { model_id, max_tokens, output_format, messages, stream, ...rest } = chatConfig;
+  const body: Record<string, unknown> = {};
 
-  const body: Record<string, unknown> = {
-    messages,
-    stream: stream ?? true,
-    ...rest,
-  };
+  body.messages = chatConfig.messages;
+  body.stream = chatConfig.stream ?? true;
 
-  if (model_id !== undefined) {
+  // Rename model_id -> ai_model_id
+  if (chatConfig.model_id !== undefined) {
     console.warn(
       `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "model_id" — rename to "ai_model_id" at the source.`,
       'font-weight: bold; color: orange; font-size: 14px;',
     );
-    body.ai_model_id = model_id;
+    body.ai_model_id = chatConfig.model_id;
+  } else if (chatConfig.ai_model_id !== undefined) {
+    body.ai_model_id = chatConfig.ai_model_id;
   }
 
-  if (max_tokens !== undefined) {
+  // Rename max_tokens -> max_output_tokens
+  if (chatConfig.max_tokens !== undefined) {
     console.warn(
       `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "max_tokens" — rename to "max_output_tokens" at the source.`,
       'font-weight: bold; color: orange; font-size: 14px;',
     );
-    body.max_output_tokens = max_tokens;
+    body.max_output_tokens = chatConfig.max_tokens;
   }
 
-  if (output_format !== undefined) {
+  // Rename output_format -> response_format AND normalize string -> dict
+  const rawFormat = chatConfig.output_format ?? chatConfig.response_format;
+  if (rawFormat !== undefined) {
+    if (chatConfig.output_format !== undefined) {
+      console.warn(
+        `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "output_format" — rename to "response_format" at the source.`,
+        'font-weight: bold; color: orange; font-size: 14px;',
+      );
+    }
+    const normalized = normalizeResponseFormat(rawFormat);
+    if (normalized !== null) {
+      body.response_format = normalized;
+    }
+  }
+
+  // Copy all other allowed fields directly
+  const skipFields = new Set([
+    'messages', 'stream', 'model_id', 'ai_model_id', 'max_tokens',
+    'output_format', 'response_format',
+  ]);
+  const droppedFields: string[] = [];
+
+  for (const [key, value] of Object.entries(chatConfig)) {
+    if (skipFields.has(key)) continue;
+    if (value === undefined || value === null) continue;
+
+    if (UNIFIED_API_ALLOWED_FIELDS.has(key)) {
+      body[key] = value;
+    } else {
+      droppedFields.push(key);
+    }
+  }
+
+  if (droppedFields.length > 0) {
     console.warn(
-      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Caller is passing "output_format" — rename to "response_format" at the source.`,
-      'font-weight: bold; color: orange; font-size: 14px;',
+      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat/unified: ${droppedFields.join(', ')}`,
+      'font-weight: bold; color: #ff9800; font-size: 12px;',
     );
-    body.response_format = output_format;
   }
 
   return body;
@@ -120,7 +203,7 @@ export const submitChatFastAPI = createAsyncThunk<
   async ({ service, taskName, taskData, customTaskId }, { dispatch, getState }) => {
     const state = getState();
     const accessToken = selectAccessToken(state);
-    const isLocalhost = selectIsUsingLocalhostSafe(state);
+    const isLocalhost = selectIsUsingLocalhost(state);
     const isAdmin = selectIsAdmin(state);
 
     const BACKEND_URL = (isAdmin && isLocalhost)
@@ -130,6 +213,10 @@ export const submitChatFastAPI = createAsyncThunk<
     const taskId = customTaskId || uuidv4();
     const listenerId = taskId;
     const callerContext = `${service}.${taskName}`;
+
+    console.log(
+      `[submitChatFastAPI] isAdmin=${isAdmin}, isLocalhost=${isLocalhost}, BACKEND_URL=${BACKEND_URL}`,
+    );
 
     console.warn(
       `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → /api/ai/chat/unified. ` +
@@ -160,6 +247,11 @@ export const submitChatFastAPI = createAsyncThunk<
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
+    console.log(
+      '[submitChatFastAPI] Final request body keys:', Object.keys(requestBody),
+      '\n[submitChatFastAPI] Full body:', JSON.stringify(requestBody, null, 2),
+    );
+
     let response: Response;
     try {
       response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`, {
@@ -179,6 +271,15 @@ export const submitChatFastAPI = createAsyncThunk<
     }
 
     if (!response.ok) {
+      let rawErrorBody: string | undefined;
+      try {
+        rawErrorBody = await response.clone().text();
+      } catch { /* ignore */ }
+      console.error(
+        `[submitChatFastAPI] HTTP ${response.status} from ${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`,
+        '\nResponse body:', rawErrorBody,
+      );
+
       const apiError = await parseHttpError(response);
       dispatch(updateErrorResponse({
         listenerId,

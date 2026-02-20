@@ -18,7 +18,6 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
     const [selectedModelId, setSelectedModelId] = useState(modelPreferences.defaultModel || models[0]?.id || '');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [modelConfig, setModelConfig] = useState<PromptSettings>({
-        output_format: "text",
         tool_choice: "auto",
         temperature: 0.5,
         max_output_tokens: 16000,

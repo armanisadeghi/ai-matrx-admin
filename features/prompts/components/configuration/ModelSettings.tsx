@@ -87,6 +87,21 @@ export function ModelSettings({
             setEnabledSettings(new Set(enabledSettings).add(key));
         }
 
+        // response_format: convert string enum values to dict format
+        // "text" -> undefined (default, omit), "json_object" -> { type: "json_object" }
+        if (key === 'response_format' && typeof value === 'string') {
+            if (value === 'text' || value === '') {
+                const { response_format: _removed, output_format: _legacy, ...rest } = settings;
+                onSettingsChange(rest as PromptSettings);
+                return;
+            }
+            onSettingsChange({
+                ...settings,
+                response_format: { type: value } as any,
+            });
+            return;
+        }
+
         // Special handling for include_thoughts
         if (key === "include_thoughts") {
             if (value === false) {
@@ -135,7 +150,17 @@ export function ModelSettings({
                         defaultValue = [];
                     }
                 }
-                onSettingsChange({ ...settings, [key]: defaultValue });
+                // response_format: convert string enum default to dict
+                if (key === 'response_format' && typeof defaultValue === 'string') {
+                    if (defaultValue === 'text' || defaultValue === '') {
+                        defaultValue = undefined;
+                    } else {
+                        defaultValue = { type: defaultValue };
+                    }
+                }
+                if (defaultValue !== undefined) {
+                    onSettingsChange({ ...settings, [key]: defaultValue });
+                }
             }
         } else {
             newEnabled.delete(key);
@@ -200,7 +225,11 @@ export function ModelSettings({
         value: any,
         isEnabled: boolean
     ) => {
-        const actualValue = value ?? control.default ?? (control.type === 'number' || control.type === 'integer' ? control.min ?? 0 : '');
+        // For response_format, extract string type from dict for display
+        let actualValue = value ?? control.default ?? (control.type === 'number' || control.type === 'integer' ? control.min ?? 0 : '');
+        if (key === 'response_format' && typeof actualValue === 'object' && actualValue?.type) {
+            actualValue = actualValue.type;
+        }
 
         // Enum / Select
         if (control.type === 'enum' && control.enum) {
@@ -320,7 +349,7 @@ export function ModelSettings({
 
     // Define setting groups and order
     const textModelSettings = [
-        { key: 'output_format', label: 'Output Format' },
+        { key: 'response_format', label: 'Response Format' },
         { key: 'temperature', label: 'Temperature' },
         { key: 'max_output_tokens', label: 'Max Output Tokens' },
         { key: 'max_tokens', label: 'Max Tokens (Legacy)' },

@@ -113,7 +113,6 @@ export const PersistentComponentProvider: React.FC<{ children: React.ReactNode }
 
     return (
         <PersistentComponentContext.Provider value={contextValue}>
-            {/* Top-level container for all persistent components */}
             <div className="persistent-components-container">
                 {Object.entries(components).map(([id, { Component, props, isVisible }]) => (
                     <div

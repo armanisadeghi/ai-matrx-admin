@@ -663,7 +663,7 @@ export function PromptSettingsModal({
                                         store: localSettings?.store,
                                         tool_choice: localSettings?.tool_choice,
                                         parallel_tool_calls: localSettings?.parallel_tool_calls,
-                                        output_format: localSettings?.output_format,
+                                        response_format: localSettings?.response_format,
                                         image_urls: localSettings?.image_urls,
                                         file_urls: localSettings?.file_urls,
                                         internal_web_search: localSettings?.internal_web_search,

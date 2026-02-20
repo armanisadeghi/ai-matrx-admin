@@ -36,6 +36,7 @@ import {
     changeConnectionUrl,
     changeNamespace,
 } from "@/lib/redux/socket-io/slices/socketConnectionsSlice";
+import { setServerOverride } from "@/lib/redux/slices/adminPreferencesSlice";
 import {
     selectPrimaryConnection,
     selectAllConnectionsHealth,
@@ -180,7 +181,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
         }
     };
 
-    // Handle server change
+    // Handle server change — updates BOTH socket.io connection AND FastAPI backend URL
     const handleServerChange = async (url: string) => {
         if (!primaryConnection) return;
 
@@ -189,6 +190,10 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
             setShowServerDropdown(false);
             return;
         }
+
+        // Sync adminPreferences so FastAPI thunks also use the correct server
+        const isLocalhostUrl = url.includes('localhost') || url.includes('127.0.0.1');
+        dispatch(setServerOverride(isLocalhostUrl ? 'localhost' : null));
 
         // Disconnect current connection
         socketManager.disconnect(primaryConnection.connectionId);
@@ -276,6 +281,9 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
         // triggering the browser's local network permission prompt.
         const defaultUrl = SocketConnectionManager.DEFAULT_URL;
         const defaultNamespace = SocketConnectionManager.DEFAULT_NAMESPACE;
+
+        // Reset FastAPI backend URL to production
+        dispatch(setServerOverride(null));
 
         if (primaryConnection.url === defaultUrl && primaryConnection.namespace === defaultNamespace) {
             return; // Already at defaults

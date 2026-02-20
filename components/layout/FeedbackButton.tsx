@@ -352,14 +352,14 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
 
     // Show new feature highlight for first 5 views
     useEffect(() => {
-        console.log(
-            `[FeedbackButton] New Feature Badge Check:\n` +
-            `  userId: ${userId ? `"${userId}"` : 'null (no user)'}\n` +
-            `  preferencesLoadedFromDb: ${preferencesLoadedFromDb}\n` +
-            `  feedbackFeatureViewCount: ${feedbackFeatureViewCount}\n` +
-            `  threshold: < 5\n` +
-            `  shouldShow: ${!!userId && preferencesLoadedFromDb && feedbackFeatureViewCount < 5}`
-        );
+        // console.log(
+        //     `[FeedbackButton] New Feature Badge Check:\n` +
+        //     `  userId: ${userId ? `"${userId}"` : 'null (no user)'}\n` +
+        //     `  preferencesLoadedFromDb: ${preferencesLoadedFromDb}\n` +
+        //     `  feedbackFeatureViewCount: ${feedbackFeatureViewCount}\n` +
+        //     `  threshold: < 5\n` +
+        //     `  shouldShow: ${!!userId && preferencesLoadedFromDb && feedbackFeatureViewCount < 5}`
+        // );
 
         if (!userId || !preferencesLoadedFromDb) {
             return;

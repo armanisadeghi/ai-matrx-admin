@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ModelSettings } from "./ModelSettings";
 
 interface ModelSettingsType {
+    /** @deprecated Use response_format */
     output_format?: string;
+    response_format?: { type: string; [key: string]: unknown };
     tool_choice?: string;
     temperature?: number;
     max_tokens?: number;

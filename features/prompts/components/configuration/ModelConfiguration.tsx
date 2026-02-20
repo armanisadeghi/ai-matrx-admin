@@ -49,10 +49,10 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
             {/* Settings details badges - conditionally shown */}
             {showSettingsDetails && (
             <div className="flex flex-wrap gap-1.5 text-xs">
-                {/* Output Format */}
-                {modelConfig.output_format && (
+                {/* Response Format */}
+                {modelConfig.response_format && (
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded font-mono">
-                        format: <span className="text-green-600 dark:text-green-400">{modelConfig.output_format}</span>
+                        format: <span className="text-green-600 dark:text-green-400">{typeof modelConfig.response_format === 'object' ? (modelConfig.response_format as any).type : modelConfig.response_format}</span>
                     </span>
                 )}
                 

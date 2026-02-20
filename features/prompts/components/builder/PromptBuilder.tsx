@@ -87,12 +87,16 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
         const defaults = getModelDefaults(initialModel);
         
         if (initialData?.settings && typeof initialData.settings === 'object') {
-            const { model_id, ...config } = initialData.settings as Record<string, any>;
-            // Merge: saved settings take precedence, but add any new defaults that don't exist
+            const { model_id, output_format, ...config } = initialData.settings as Record<string, any>;
+            // Migrate legacy output_format from DB -> response_format dict
+            if (output_format && typeof output_format === 'string' && output_format !== 'text') {
+                if (!config.response_format) {
+                    config.response_format = { type: output_format };
+                }
+            }
             return { ...defaults, ...config };
         }
         
-        // Default for new prompts
         return defaults;
     };
     
@@ -434,10 +438,19 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             const allMessages: PromptMessage[] = [{ role: "system", content: developerMessage }, ...messages];
 
             // Create a flat settings object that includes model_id and all model config
-            const settings = {
-                model_id: model, // The model UUID
-                ...modelConfig,  // All the config options (temperature, max_tokens, tools, etc.)
+            const settings: Record<string, unknown> = {
+                model_id: model,
+                ...modelConfig,
             };
+
+            // Migrate output_format -> response_format (proper dict format)
+            if (settings.output_format !== undefined) {
+                const fmt = settings.output_format;
+                delete settings.output_format;
+                if (typeof fmt === 'string' && fmt !== 'text' && fmt !== '') {
+                    settings.response_format = { type: fmt };
+                }
+            }
 
             // What gets saved to the database:
             // - name: string
@@ -689,6 +702,15 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
                 stream: true,
                 ...modelConfig,
             };
+
+            // Migrate any legacy output_format -> response_format (dict format)
+            if (chatConfig.output_format !== undefined) {
+                const fmt = chatConfig.output_format;
+                delete chatConfig.output_format;
+                if (typeof fmt === 'string' && fmt !== 'text' && fmt !== '') {
+                    chatConfig.response_format = { type: fmt };
+                }
+            }
 
             // NOTE: We do NOT add an empty assistant placeholder here.
             // The right panel will display the streaming text using the taskId.

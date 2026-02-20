@@ -243,8 +243,11 @@ export const PromptSettingsPanel: React.FC = () => {
                                         <Label htmlFor="json-mode" className="cursor-pointer">JSON Mode</Label>
                                         <Switch
                                             id="json-mode"
-                                            checked={settings.output_format === 'json_object'}
-                                            onCheckedChange={(checked) => handleSettingChange('output_format', checked ? 'json_object' : undefined)}
+                                            checked={
+                                                (typeof settings.response_format === 'object' && (settings.response_format as any)?.type === 'json_object')
+                                                || settings.output_format === 'json_object'
+                                            }
+                                            onCheckedChange={(checked) => handleSettingChange('response_format', checked ? { type: 'json_object' } : undefined)}
                                         />
                                     </div>
                                 )}

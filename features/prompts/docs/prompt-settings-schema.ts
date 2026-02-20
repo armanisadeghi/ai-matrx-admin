@@ -12,8 +12,8 @@ export const COMPREHENSIVE_PROMPT_SETTINGS = {
     // Required: Model identifier (UUID)
     model_id: "548126f2-714a-4562-9001-0c31cbeea375", // Example UUID
     
-    // Output formatting
-    output_format: "text", // Possible values: "text" | "json_object" | "json_schema"
+    // Response format — backend expects { type: "json_object" } dict or omitted for "text" (default)
+    // response_format: { type: "json_object" }, // Only set when non-default
     
     // Tool configuration
     tool_choice: "auto", // Possible values: "auto" | "required" | "none"
@@ -58,12 +58,12 @@ export const SETTINGS_SCHEMA = {
         example: "548126f2-714a-4562-9001-0c31cbeea375",
     },
     
-    output_format: {
-        type: "string",
-        enum: ["text", "json_object", "json_schema"],
-        description: "Controls the response format. 'text' is standard, 'json_object' enforces JSON, 'json_schema' validates against a schema",
-        default: "text",
+    response_format: {
+        type: "object",
+        description: "Controls the response format. Omit for text (default). Send { type: 'json_object' } for JSON mode.",
+        default: null,
         required: false,
+        example: { type: "json_object" },
     },
     
     tool_choice: {
@@ -224,7 +224,7 @@ export const SETTINGS_PRESETS = {
         model_id: "548126f2-714a-4562-9001-0c31cbeea375",
         stream: true,
         store: true,
-        output_format: "json_object",
+        response_format: { type: "json_object" },
         temperature: 0.7,
         max_tokens: 4096,
     },
@@ -270,7 +270,7 @@ export type PromptSettings = {
     model_id: string;
     
     // Optional string enums
-    output_format?: "text" | "json_object" | "json_schema";
+    response_format?: { type: "text" | "json_object" | "json_schema"; [key: string]: unknown };
     tool_choice?: "auto" | "required" | "none";
     reasoning_effort?: "none" | "low" | "medium" | "high";
     verbosity?: "low" | "medium" | "high";

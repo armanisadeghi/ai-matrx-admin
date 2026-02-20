@@ -416,6 +416,15 @@ export const executePromptById = createAsyncThunk<
         ...modelOverrides,
       };
 
+      // Migrate legacy output_format -> response_format (dict format)
+      if (chatConfig.output_format !== undefined) {
+        const fmt = chatConfig.output_format;
+        delete chatConfig.output_format;
+        if (typeof fmt === 'string' && fmt !== 'text' && fmt !== '') {
+          chatConfig.response_format = { type: fmt };
+        }
+      }
+
       // Step 5: Submit task via Socket.IO
       const result = await dispatch(
         createAndSubmitTask({

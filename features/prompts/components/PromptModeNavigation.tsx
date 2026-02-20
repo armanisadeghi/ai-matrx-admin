@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Edit3, Play, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PromptSwitcherButton } from "./PromptSwitcherSheet";
 
 interface PromptModeNavigationProps {
     promptId: string;
@@ -27,7 +28,7 @@ export function PromptModeNavigation({ promptId, promptName, currentMode, onProm
 
     return (
         <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-            {/* 3-icon navigation group */}
+            {/* Navigation group */}
             <div className="flex items-center gap-0.5 flex-shrink-0">
                 {/* Back to list */}
                 <Button
@@ -74,6 +75,9 @@ export function PromptModeNavigation({ promptId, promptName, currentMode, onProm
                 >
                     <Play className="w-4 h-4" />
                 </Button>
+
+                {/* Prompt switcher */}
+                <PromptSwitcherButton promptId={promptId} mode={currentMode} />
             </div>
 
             {/* Divider */}
