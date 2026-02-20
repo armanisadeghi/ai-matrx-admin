@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Settings, AlertCircle, ArrowRight, Zap, SlidersHorizontal, Hand, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
@@ -150,25 +149,7 @@ export default function ResearchOverview() {
         }
     }, [api, topicId, newKeyword, refresh]);
 
-    if (isLoading) {
-        return (
-            <div className="p-3 sm:p-4 space-y-3">
-                <Skeleton className="h-7 w-48 rounded-full" />
-                <div className="flex gap-1.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <Skeleton key={i} className="h-7 w-16 rounded-full" />
-                    ))}
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <Skeleton key={i} className="h-20 rounded-xl" />
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    if (!topic || error) {
+    if (!topic && !isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60dvh] p-4 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-3">

@@ -30,12 +30,41 @@ All routes live under `app/(public)/p/research/`.
 
 ## Architecture — Next.js Best Practices
 
+### Server-First Data Architecture
+
+The topic layout (`[topicId]/layout.tsx`) server-fetches all critical data before rendering any client components:
+
+1. **`getTopicServer(topicId)`** — fetches the topic row server-side
+2. **`getTopicOverviewServer(topicId)`** — calls the `get_topic_overview` Supabase RPC (lightweight counts)
+3. Data is passed as `initialData` to `ResearchTopicShell` → `TopicProvider` → Zustand store
+4. Store starts with `isLoading: false` and pre-populated data — no skeleton flash
+
+```
+Server Layout → fetches topic + counts
+  └→ ResearchTopicShell (client) → TopicProvider(initialData)
+      └→ Zustand store starts populated
+          └→ All child pages render with data on first frame
+```
+
+### Why This Matters
+- **Direct URL navigation works** — server has cookies, fetches data server-side
+- **Client-side navigation works** — Next.js re-runs the layout server-side for the RSC payload
+- **No full-page skeletons** — only dynamic data regions (lists, counts) show loading if needed
+- **Background refresh** — client-side refresh runs silently after mount, never flashes loading UI
+
 ### Rendering Strategy
-- **Server Components** for all `page.tsx` and `layout.tsx` files — static shells with `<Suspense>` boundaries
+- **Server Components** for `page.tsx` and `layout.tsx` — fetch data, render static shell
 - **Client Components** only at leaf nodes (interactive panels, forms, stream consumers)
 - **`loading.tsx`** at every route segment — enables instant perceived navigation via skeleton prefetching
-- **`error.tsx`** at research root and topic level — graceful error recovery without destroying layout
+- **`error.tsx`** at research root and topic level — graceful error recovery
 - **`not-found.tsx`** for invalid topic UUIDs — proper 404 with back navigation
+- **No `<Suspense>` wrapping client components** — data is pre-populated from server, no async boundary needed
+
+### Skeleton Strategy
+- **Never skeleton the entire page** — skeleton only the dynamic data regions
+- Toolbars, sidebars, headers, card frames render instantly from static markup or server data
+- Only list areas (keywords, sources, topics) show loading skeletons
+- Card counts render with real data from the server-fetched RPC
 
 ### SEO
 - **Static metadata** on research layout with `title.template` for child pages
@@ -44,14 +73,15 @@ All routes live under `app/(public)/p/research/`.
 - **Canonical URLs** and proper `robots` directives
 
 ### State Management
-- **Zustand store** (`state/topicStore.ts`) replaces React Context for topic/progress/stream state
+- **Zustand store** (`state/topicStore.ts`) with server-provided initial data
+- Store accepts `TopicStoreInitialData` — pre-populates `topic` and `progress`, sets `isLoading: false`
 - Components subscribe to specific slices via selector hooks — only re-render when their data changes
-- **URL search params** for all filter, sort, search, and pagination state (shareable, bookmarkable, SSR-compatible)
+- **URL search params** for all filter, sort, search, and pagination state
 - Backward-compatible `useTopicContext()` hook wraps Zustand selectors
 
 ### Performance
-- **React Compiler** enabled — automatic memoization, no manual `useMemo`/`useCallback` needed
-- **Preconnect hints** for Supabase and Python backend in research layout
+- **`get_topic_overview` RPC** — single SQL function returns all overview counts (replaces heavy Python aggregation)
+- **React Compiler** enabled — automatic memoization
 - **`ResearchLanding`** is a Server Component (zero client JS for the landing page)
 - **`PublicHeader`** uses `dynamic()` with `ssr: false` for auth/theme — non-blocking initial render
 - **Root layout** isolated from schema system (only loaded in authenticated routes)
@@ -60,8 +90,18 @@ All routes live under `app/(public)/p/research/`.
 
 | Source | Used For |
 |--------|----------|
-| **Supabase (direct)** | Topic CRUD, keyword reads/deletes, source reads/updates, content reads, synthesis reads, tag CRUD, document reads, media reads, template reads |
-| **Python API** | Suggest (LLM), create topic (template logic), add keywords (validation), search/scrape/analyze/synthesize (SSE streams), run pipeline, document generation, tag consolidation/suggestion, content versioning, links aggregation, costs aggregation |
+| **Supabase (server, in layout)** | Topic row + overview counts (RPC) — pre-populates client store |
+| **Supabase (client, in hooks)** | List data (keywords, sources, tags, etc.) — fetched after hydration |
+| **Python API** | Suggest (LLM), create topic, add keywords, search/scrape/analyze/synthesize (SSE streams), run pipeline, document generation, tag consolidation/suggestion, content versioning, links/costs aggregation |
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `service/server.ts` | Server-side Supabase functions (`createClient()`) for layouts |
+| `service.ts` | Client-side Supabase functions for hooks |
+| `state/topicStore.ts` | Zustand store with `TopicStoreInitialData` support |
+| `context/ResearchContext.tsx` | `TopicProvider` accepts `initialData`, silent background refresh |
 
 ### Key Hooks
 

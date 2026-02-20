@@ -24,12 +24,19 @@ export interface TopicStoreActions {
 
 export type TopicStore = TopicStoreState & TopicStoreActions;
 
-export function createTopicStore(topicId: string) {
+export interface TopicStoreInitialData {
+    topic?: ResearchTopic | null;
+    progress?: ResearchProgress | null;
+}
+
+export function createTopicStore(topicId: string, initialData?: TopicStoreInitialData) {
+    const hasInitialData = initialData?.topic != null;
+
     return createStore<TopicStore>()((set) => ({
         topicId,
-        topic: null,
-        progress: null,
-        isLoading: true,
+        topic: initialData?.topic ?? null,
+        progress: initialData?.progress ?? null,
+        isLoading: !hasInitialData,
         error: null,
         debugEvents: [],
         activeStreamName: null,

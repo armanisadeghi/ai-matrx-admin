@@ -5,7 +5,7 @@ description: Single source of truth for iOS-native mobile web UX. Covers viewpor
 
 # iOS Mobile-First Design
 
-> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — Section 13 covers mobile-first golden rules, Dialog→Drawer, Tabs→stacking, safe areas, and responsive typography. This skill provides project-specific patterns and reference implementations.
+> **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — See the official guide for core architecture. The old §13 (Mobile-First) was removed; mobile-first patterns in this file will move to a dedicated *Mobile & Responsive UX* guide.
 
 Single source of truth for mobile UX. Desktop stays unchanged; mobile gets iOS-native treatment.
 

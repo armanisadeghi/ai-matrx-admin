@@ -1,6 +1,7 @@
 import { supabase } from '@/utils/supabase/client';
 import type {
     ResearchTopic,
+    ResearchProgress,
     ResearchKeyword,
     ResearchSource,
     ResearchContent,
@@ -20,6 +21,16 @@ import type {
     SourceTagRequest,
     MediaUpdate,
 } from './types';
+
+// ============================================================================
+// Topic Overview (lightweight RPC for counts)
+// ============================================================================
+
+export async function getTopicOverview(topicId: string): Promise<ResearchProgress | null> {
+    const { data, error } = await supabase.rpc('get_topic_overview', { p_topic_id: topicId });
+    if (error) throw error;
+    return (data as ResearchProgress) ?? null;
+}
 
 // ============================================================================
 // Topics

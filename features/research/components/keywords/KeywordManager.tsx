@@ -109,20 +109,9 @@ export default function KeywordManager() {
         </>
     );
 
-    if (isLoading) {
-        return (
-            <div className="p-3 sm:p-4 space-y-2">
-                <Skeleton className="h-8 w-full rounded-full" />
-                {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 rounded-xl" />
-                ))}
-            </div>
-        );
-    }
-
     return (
         <div className="p-3 sm:p-4 space-y-3">
-            {/* Add keyword — glass toolbar */}
+            {/* Add keyword — glass toolbar (renders instantly) */}
             <div className="flex items-center gap-1.5 p-1 rounded-full glass">
                 <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full glass-subtle">
                     <Search className="h-3 w-3 text-muted-foreground/50 shrink-0" />
@@ -203,8 +192,14 @@ export default function KeywordManager() {
                 </Drawer>
             )}
 
-            {/* Keyword list */}
-            {filtered.length === 0 ? (
+            {/* Keyword list — only this section shows loading */}
+            {isLoading ? (
+                <div className="space-y-1.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <Skeleton key={i} className="h-12 rounded-xl" />
+                    ))}
+                </div>
+            ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
                     <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
                         <Search className="h-6 w-6 text-primary/40" />

@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { useStore } from 'zustand';
-import { useResearchApi } from '../hooks/useResearchApi';
 import * as service from '../service';
-import { createTopicStore, type TopicStore } from '../state/topicStore';
+import { createTopicStore, type TopicStore, type TopicStoreInitialData } from '../state/topicStore';
 import type { ResearchTopic, ResearchProgress } from '../types';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 
@@ -94,40 +93,33 @@ export function useTopicContext(): TopicContextValue {
 
 interface TopicProviderProps {
     topicId: string;
+    initialData?: TopicStoreInitialData;
     children: ReactNode;
 }
 
-export function TopicProvider({ topicId, children }: TopicProviderProps) {
+export function TopicProvider({ topicId, initialData, children }: TopicProviderProps) {
     const storeRef = useRef<TopicStoreInstance | null>(null);
     if (!storeRef.current) {
-        storeRef.current = createTopicStore(topicId);
+        storeRef.current = createTopicStore(topicId, initialData);
     }
     const store = storeRef.current;
 
-    const api = useResearchApi();
-    const apiRef = useRef(api);
-    apiRef.current = api;
-
     const refreshRef = useRef(async () => {
         const s = store.getState();
+        const hadInitialData = s.topic != null;
         try {
-            s.setError(null);
+            if (!hadInitialData) s.setError(null);
             const topicData = await service.getTopic(s.topicId);
             s.setTopic(topicData);
 
-            if (topicData) {
-                try {
-                    const response = await apiRef.current.getTopicState(s.topicId);
-                    const stateData = await response.json();
-                    if (stateData?.progress) {
-                        s.setProgress(stateData.progress);
-                    }
-                } catch {
-                    // Progress from Python is optional
-                }
+            const overview = await service.getTopicOverview(s.topicId);
+            if (overview) {
+                s.setProgress(overview);
             }
         } catch (err) {
-            s.setError((err as Error).message ?? '');
+            if (!hadInitialData) {
+                s.setError((err as Error).message ?? '');
+            }
         } finally {
             s.setIsLoading(false);
         }

@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Loader2, Search, Trash2, ArrowRight } from 'lucide-react';
+import { Plus, Loader2, Trash2, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -64,7 +64,6 @@ export default function TopicList() {
 
     const { data: topics, isLoading: topicsLoading, refresh } = useFilteredTopics(filter);
 
-    // Auto-focus quick input when there are no topics
     useEffect(() => {
         if (!topicsLoading && (topics ?? []).length === 0) {
             quickInputRef.current?.focus();
@@ -109,7 +108,7 @@ export default function TopicList() {
         }
     };
 
-    const loading = filter.isLoading || topicsLoading;
+    const topicsLoaded = !filter.isLoading && !topicsLoading;
     const hasTopics = filteredTopics.length > 0;
 
     const projectNameMap = new Map(
@@ -118,6 +117,7 @@ export default function TopicList() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height,2.5rem))] flex flex-col overflow-hidden bg-textured">
+            {/* Static toolbar — renders instantly */}
             <div className="flex-shrink-0 px-3 sm:px-5 pt-2.5 pb-0">
                 <HierarchyFilter
                     filter={filter}
@@ -131,18 +131,18 @@ export default function TopicList() {
                 />
             </div>
 
-            {/* Quick-start topic input */}
+            {/* Quick-start CTA — visually distinct from search */}
             <div className="flex-shrink-0 px-3 sm:px-5 py-2 border-b border-border/50">
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                        <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary/50 pointer-events-none" />
                         <Input
                             ref={quickInputRef}
                             value={quickTopicName}
                             onChange={e => setQuickTopicName(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleQuickStart()}
-                            placeholder="Type a topic to research..."
-                            className="pl-9 h-9 text-sm bg-muted/40 border-border/60"
+                            placeholder="Start a new research topic..."
+                            className="pl-9 h-9 text-sm bg-primary/[0.03] border-primary/20 focus:border-primary/40 placeholder:text-primary/40"
                             style={{ fontSize: '16px' }}
                         />
                     </div>
@@ -164,8 +164,9 @@ export default function TopicList() {
                 </div>
             </div>
 
+            {/* Dynamic content — only this region shows loading */}
             <div className="flex-1 overflow-y-auto px-3 sm:px-5 pb-4">
-                {loading ? (
+                {!topicsLoaded ? (
                     <div className="space-y-2 pt-1">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <Skeleton key={i} className="h-16 rounded-xl" />
@@ -219,7 +220,7 @@ export default function TopicList() {
                 ) : (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center mb-3">
-                            <Search className="h-6 w-6 text-primary/60" />
+                            <Sparkles className="h-6 w-6 text-primary/60" />
                         </div>
                         <h3 className="text-base font-semibold mb-1.5">No topics yet</h3>
                         <p className="text-muted-foreground text-xs mb-5 max-w-sm mx-auto">

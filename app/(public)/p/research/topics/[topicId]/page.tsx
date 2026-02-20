@@ -1,16 +1,8 @@
-import { Suspense } from 'react';
-import { OverviewSkeleton } from '@/features/research/components/shared/Skeletons';
 import ResearchOverview from '@/features/research/components/overview/ResearchOverview';
-import { createClient } from '@/utils/supabase/server';
+import { getTopicServer } from '@/features/research/service/server';
 
 async function TopicJsonLd({ topicId }: { topicId: string }) {
-    const supabase = await createClient();
-    const { data: topic } = await supabase
-        .from('rs_topic')
-        .select('name, description, created_at, updated_at')
-        .eq('id', topicId)
-        .single();
-
+    const topic = await getTopicServer(topicId);
     if (!topic) return null;
 
     const jsonLd = {
@@ -39,12 +31,8 @@ export default async function TopicOverviewPage({
 
     return (
         <>
-            <Suspense>
-                <TopicJsonLd topicId={topicId} />
-            </Suspense>
-            <Suspense fallback={<OverviewSkeleton />}>
-                <ResearchOverview />
-            </Suspense>
+            <TopicJsonLd topicId={topicId} />
+            <ResearchOverview />
         </>
     );
 }

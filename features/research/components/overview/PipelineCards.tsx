@@ -7,6 +7,24 @@ import { Progress } from '@/components/ui/progress';
 import { SCRAPE_STATUS_CONFIG } from '../../constants';
 import type { ResearchProgress, ScrapeStatus } from '../../types';
 
+const EMPTY_PROGRESS: ResearchProgress = {
+    total_keywords: 0,
+    stale_keywords: 0,
+    total_sources: 0,
+    included_sources: 0,
+    sources_by_status: {} as Record<ScrapeStatus, number>,
+    total_content: 0,
+    total_analyses: 0,
+    total_eligible_for_analysis: 0,
+    failed_analyses: 0,
+    keyword_syntheses: 0,
+    failed_keyword_syntheses: 0,
+    project_syntheses: 0,
+    failed_project_syntheses: 0,
+    total_tags: 0,
+    total_documents: 0,
+};
+
 interface PipelineCardsProps {
     topicId: string;
     progress: ResearchProgress | null;
@@ -42,9 +60,8 @@ function StatCard({ icon: Icon, label, href, children, highlight }: StatCardProp
     );
 }
 
-export function PipelineCards({ topicId, progress }: PipelineCardsProps) {
-    if (!progress) return null;
-
+export function PipelineCards({ topicId, progress: progressProp }: PipelineCardsProps) {
+    const progress = progressProp ?? EMPTY_PROGRESS;
     const base = `/p/research/topics/${topicId}`;
 
     const analysisPercent = progress.total_eligible_for_analysis > 0
