@@ -48,6 +48,10 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
     const [isSocketReady, setIsSocketReady] = useState(false);
     const socketRef = useRef<any>(null);
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    // Track last variables for retry
+    const lastVariablesRef = useRef<Record<string, any> | null>(null);
+    const retryCountRef = useRef(0);
+    const handleExecuteRef = useRef<((variables: Record<string, any>) => Promise<void>) | null>(null);
     
     // Use guest limit hook for tracking and UI
     const guestLimit = useGuestLimit();
@@ -245,6 +249,9 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
     
     // Execute handler
     const handleExecute = useCallback(async (variables: Record<string, any>) => {
+        // Store variables for potential retry
+        lastVariablesRef.current = variables;
+
         // Check if socket is ready
         if (!isSocketReady || !socketRef.current) {
             setError({
@@ -382,6 +389,7 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                             } else if (data?.end) {
                                 // Stream ended
                                 console.log('✅ Stream complete');
+                                retryCountRef.current = 0;
                                 setIsExecuting(false);
                                 setIsStreamComplete(true);
                                 // Clear timeout on completion
@@ -391,19 +399,39 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                                 }
                                 socket.off(eventName);
                             } else if (data?.error) {
-                                // Error received
-                                setError({
-                                    type: 'execution_error',
-                                    message: data.error.message || 'Error during execution'
-                                });
-                                setIsExecuting(false);
-                                setIsStreamComplete(true);
-                                // Clear timeout on error
-                                if (executionTimeoutRef.current) {
-                                    clearTimeout(executionTimeoutRef.current);
-                                    executionTimeoutRef.current = null;
+                                // Error received — auto-retry once on transient stream errors
+                                const errorType = data.error?.type || 'execution_error';
+                                const errorMsg = data.error?.message || 'Error during execution';
+                                const isTransient = ['stream_error', 'timeout', 'connection_error'].includes(errorType);
+
+                                if (isTransient && retryCountRef.current === 0 && lastVariablesRef.current) {
+                                    console.log('🔄 Transient stream error — auto-retrying once...');
+                                    retryCountRef.current = 1;
+                                    socket.off(eventName);
+                                    if (executionTimeoutRef.current) {
+                                        clearTimeout(executionTimeoutRef.current);
+                                        executionTimeoutRef.current = null;
+                                    }
+                                    // Brief pause then retry using ref to avoid stale closure
+                                    setTimeout(() => {
+                                        if (handleExecuteRef.current && lastVariablesRef.current) {
+                                            handleExecuteRef.current(lastVariablesRef.current);
+                                        }
+                                    }, 1500);
+                                } else {
+                                    retryCountRef.current = 0;
+                                    setError({
+                                        type: errorType,
+                                        message: errorMsg
+                                    });
+                                    setIsExecuting(false);
+                                    setIsStreamComplete(true);
+                                    if (executionTimeoutRef.current) {
+                                        clearTimeout(executionTimeoutRef.current);
+                                        executionTimeoutRef.current = null;
+                                    }
+                                    socket.off(eventName);
                                 }
-                                socket.off(eventName);
                             }
                         });
                     });
@@ -430,6 +458,9 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             setIsExecuting(false);
         }
     }, [slug, app, fingerprint, isSocketReady, guestLimit, validateVariables, resolveVariablesInMessages, buildChatConfig]);
+
+    // Keep ref updated for use in retry timeouts (avoids stale closure)
+    handleExecuteRef.current = handleExecute;
     
     // Dynamically load custom component
     const CustomComponent = useMemo(() => {
