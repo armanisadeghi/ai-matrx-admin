@@ -78,7 +78,7 @@ export function CanvasHeader({
   // Compact mode: VS Code-style tiny buttons
   const buttonSize = isCompact ? "h-6 px-1.5" : "h-7 px-2.5";
   const iconSize = isCompact ? "w-3 h-3" : "w-3.5 h-3.5";
-  const iconOnlySize = isCompact ? "h-6 w-6" : "h-7 w-7";
+  const iconOnlySize = isCompact ? "h-5 w-5 rounded-full" : "h-6 w-6 rounded-full";
   const textSize = isCompact ? "text-[10px]" : "text-xs";
   const iconMargin = isCompact ? "mr-1" : "mr-1.5";
   

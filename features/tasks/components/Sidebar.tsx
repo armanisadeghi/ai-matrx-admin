@@ -145,7 +145,7 @@ export default function Sidebar(): JSX.Element {
                   disabled={!newProjectName.trim() || isCreatingProject}
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 flex-shrink-0"
+                  className="h-7 w-7 flex-shrink-0 rounded-full"
                 >
                   {isCreatingProject ? (
                     <Loader2 size={16} className="animate-spin" />

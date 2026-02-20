@@ -164,8 +164,8 @@ export function CanvasRenderer({ content: propContent, variant = 'default' }: Ca
         ) : viewMode === 'preview' ? (
           renderContent(content)
         ) : (
-          <div className="h-full p-0 sm:p-4">
-            <pre className="text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900 p-4 rounded-lg overflow-auto h-full border border-zinc-200 dark:border-zinc-800 scrollbar-thin">
+          <div className="h-full p-0 sm:p-2">
+            <pre className="text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900 p-2 rounded-lg overflow-auto h-full border border-zinc-200 dark:border-zinc-800 scrollbar-thin">
               {JSON.stringify(content, null, 2)}
             </pre>
           </div>
@@ -273,7 +273,7 @@ function renderContent(content: CanvasContent): React.ReactNode {
     // ✅ FULLY IMPLEMENTED BLOCKS
     case 'quiz':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <MultipleChoiceQuiz quizData={data} />
         </div>
       );
@@ -293,77 +293,77 @@ function renderContent(content: CanvasContent): React.ReactNode {
 
     case 'recipe':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <RecipeViewer recipe={data} />
         </div>
       );
 
     case 'timeline':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <TimelineBlock timeline={data} />
         </div>
       );
 
     case 'research':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <ResearchBlock research={data} />
         </div>
       );
 
     case 'resources':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <ResourceCollectionBlock collection={data} />
         </div>
       );
 
     case 'progress':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <ProgressTrackerBlock tracker={data} />
         </div>
       );
 
     case 'comparison':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <ComparisonTableBlock comparison={data} />
         </div>
       );
 
     case 'troubleshooting':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <TroubleshootingBlock troubleshooting={data} />
         </div>
       );
 
     case 'decision-tree':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <DecisionTreeBlock decisionTree={data} />
         </div>
       );
 
     case 'diagram':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <InteractiveDiagramBlock diagram={data} />
         </div>
       );
 
     case 'flashcards':
       return (
-        <div className="h-full p-0 sm:p-4">
-          <FlashcardsBlock content={data} className="my-0 sm:my-4 rounded-none sm:rounded-3xl border-0 sm:border-3" />
+        <div className="h-full">
+          <FlashcardsBlock content={data} className="my-0 sm:my-0 rounded-none sm:rounded-3xl border-0 sm:border-2" />
         </div>
       );
 
     case 'math_problem':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <MathProblem 
             id="canvas-preview"
             {...data.math_problem}
@@ -373,7 +373,7 @@ function renderContent(content: CanvasContent): React.ReactNode {
 
     case 'code':
       return (
-        <div className="h-full p-0 sm:p-4">
+        <div className="h-full p-0">
           <CodeBlock
             code={data.code || data}
             language={data.language || 'javascript'}

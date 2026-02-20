@@ -44,35 +44,35 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
     
     return (
         <>
-            <div className={`flex items-center ${isMobile ? 'pr-10 -pt-2 space-x-3' : 'space-x-3'}`}>
+            <div className={`flex items-center ${isMobile ? 'pr-10 gap-1' : 'gap-1'}`}>
                 {/* New Chat Button */}
                 <Link href={`${baseRoute}`}>
-                    <button className={`rounded-full text-foreground hover:bg-accent ${
-                        isMobile ? 'p-3' : 'p-1.5'
+                    <button className={`rounded-full text-foreground hover:bg-accent transition-colors ${
+                        isMobile ? 'p-2' : 'p-1.5'
                     }`}>
-                        <IoCreateOutline size={24} />
+                        <IoCreateOutline size={isMobile ? 18 : 16} />
                     </button>
                 </Link>
                 
                 {/* Search Button - Opens the Search Overlay */}
                 <button 
-                    className={`rounded-full text-foreground hover:bg-accent ${
-                        isMobile ? 'p-3' : 'p-1.5'
+                    className={`rounded-full text-foreground hover:bg-accent transition-colors ${
+                        isMobile ? 'p-2' : 'p-1.5'
                     }`}
                     onClick={handleOpenSearch}
                     aria-label="Search conversations"
                 >
-                    <TbListSearch size={24} />
+                    <TbListSearch size={isMobile ? 18 : 16} />
                 </button>
                 
                 {/* Theme Switcher */}
-                <div className={`${isMobile ? 'p-1.5' : 'p-0'}`}>
-                    <ThemeSwitcherIcon className={`${isMobile ? 'p-1.5' : 'p-0.5'}`} />
+                <div className="p-0">
+                    <ThemeSwitcherIcon className="p-0.5" />
                 </div>
                 
                 {/* Profile */}
                 <button className={`rounded-full bg-accent ${
-                    isMobile ? 'p-3' : 'p-1.5'
+                    isMobile ? 'p-1.5' : 'p-1'
                 }`}>
                     {profilePhoto ? (
                         <Image

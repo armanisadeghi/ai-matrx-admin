@@ -77,9 +77,9 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
               variant="ghost"
               size="icon"
               onClick={() => setShowQuickAdd(!showQuickAdd)}
-              className="h-9 w-9"
+              className="h-7 w-7 rounded-full"
             >
-              <Plus size={20} />
+              <Plus size={16} />
             </Button>
             <MobileFilterMenu />
           </div>

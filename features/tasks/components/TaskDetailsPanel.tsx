@@ -254,9 +254,9 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="flex-shrink-0 h-9 w-9"
+            className="flex-shrink-0 h-7 w-7 rounded-full"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={18} />
           </Button>
           
           {/* Complete/Incomplete Checkbox */}
@@ -325,9 +325,9 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-7 w-7 rounded-full"
                 >
-                  <MoreVertical size={16} />
+                  <MoreVertical size={14} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -503,7 +503,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                 variant="ghost"
                 onClick={handleAddSubtask}
                 disabled={isAddingSubtask}
-                className="h-9 w-9"
+                className="h-7 w-7 rounded-full"
               >
                 {isAddingSubtask ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -574,7 +574,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
               size="icon"
               onClick={handleAddComment}
               disabled={!newComment.trim() || isAddingComment}
-              className="h-9 w-9"
+              className="h-7 w-7 rounded-full"
             >
               {isAddingComment ? (
                 <Loader2 size={16} className="animate-spin" />

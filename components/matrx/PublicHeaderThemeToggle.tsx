@@ -28,7 +28,7 @@ export function PublicHeaderThemeToggle() {
             size="sm"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className={cn(
-                "w-7 h-7 p-0",
+                "w-7 h-7 p-0 rounded-full",
                 "hover:bg-zinc-100 dark:hover:bg-zinc-800",
                 "transition-all duration-200"
             )}

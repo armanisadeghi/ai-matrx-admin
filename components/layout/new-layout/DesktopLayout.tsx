@@ -108,9 +108,9 @@ export default function DesktopLayout({
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={toggleSidebar}
-                                    className="p-2 rounded-lg glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
+                                    className="p-1.5 rounded-full glass transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
                                 >
-                                    <Menu className="w-5 h-5 text-foreground transition-all duration-200 ease-in-out" />
+                                    <Menu className="w-4 h-4 text-foreground transition-all duration-200 ease-in-out" />
                                 </button>
                             </TooltipTrigger>
                             <TooltipContent
@@ -125,7 +125,7 @@ export default function DesktopLayout({
                         <div id="page-specific-header-content" className="flex-1 min-w-0" />
                     </div>
                     {/* Right side - Actions */}
-                    <div className="flex items-center gap-1 overflow-visible">
+                    <div className="flex items-center gap-0.5 overflow-visible">
                         <QuickActionsMenu className="glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <FeedbackButton className="glass text-foreground transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <MessageIcon />

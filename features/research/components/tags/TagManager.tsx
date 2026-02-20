@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { Plus, GripVertical, Pencil, Trash2, Loader2, Layers } from 'lucide-react';
+import { Plus, GripVertical, Pencil, Trash2, Loader2, Layers, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useTopicContext } from '../../context/ResearchContext';
@@ -28,8 +29,18 @@ export default function TagManager() {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [saving, setSaving] = useState(false);
+    const [search, setSearch] = useState('');
 
     const tagList = (tags as ResearchTag[]) ?? [];
+
+    const filtered = useMemo(() => {
+        if (!search) return tagList;
+        const q = search.toLowerCase();
+        return tagList.filter(t =>
+            t.name.toLowerCase().includes(q) ||
+            (t.description ?? '').toLowerCase().includes(q),
+        );
+    }, [tagList, search]);
 
     const openCreate = () => { setName(''); setDescription(''); setEditTag(null); setCreateOpen(true); };
     const openEdit = (tag: ResearchTag) => { setName(tag.name); setDescription(tag.description || ''); setEditTag(tag); setCreateOpen(true); };
@@ -63,58 +74,87 @@ export default function TagManager() {
     }, [api, topicId, refresh]);
 
     const formContent = (
-        <div className="space-y-4 p-4">
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
+        <div className="space-y-3 p-4">
+            <div className="space-y-1">
+                <label className="text-[11px] font-medium text-muted-foreground">Name</label>
                 <Input
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="Tag name..."
-                    className="text-base"
+                    className="h-9 text-xs rounded-lg"
                     style={{ fontSize: '16px' }}
                     autoFocus
                 />
             </div>
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
+            <div className="space-y-1">
+                <label className="text-[11px] font-medium text-muted-foreground">Description</label>
                 <Textarea
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     placeholder="Optional description..."
-                    rows={3}
-                    className="text-base resize-none"
+                    rows={2}
+                    className="resize-none text-xs rounded-lg min-h-[50px]"
                     style={{ fontSize: '16px' }}
                 />
             </div>
             <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-                <Button onClick={handleSave} disabled={!name.trim() || saving}>
-                    {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                <button
+                    onClick={() => setCreateOpen(false)}
+                    className="inline-flex items-center h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={handleSave}
+                    disabled={!name.trim() || saving}
+                    className={cn(
+                        'inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium transition-all min-h-[44px]',
+                        'bg-primary text-primary-foreground hover:bg-primary/90',
+                        'disabled:opacity-40 disabled:pointer-events-none',
+                    )}
+                >
+                    {saving && <Loader2 className="h-3 w-3 animate-spin" />}
                     {editTag ? 'Update' : 'Create'}
-                </Button>
+                </button>
             </div>
         </div>
     );
 
     return (
-        <div className="p-4 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold">Tags</h1>
-                <Button size="sm" onClick={openCreate} className="gap-2 min-h-[44px] sm:min-h-0">
-                    <Plus className="h-4 w-4" />
-                    Add Tag
-                </Button>
+        <div className="p-3 sm:p-4 space-y-3">
+            <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5">
+                <span className="text-xs font-medium text-foreground/80">Tags</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{tagList.length}</span>
+                <div className="flex-1 relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+                    <input
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search tags..."
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
+                        style={{ fontSize: '16px' }}
+                    />
+                </div>
+                <button
+                    onClick={openCreate}
+                    className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full glass-subtle text-[11px] font-medium text-primary hover:text-primary/80 transition-colors min-h-[44px] sm:min-h-0"
+                >
+                    <Plus className="h-3 w-3" />
+                    <span className="hidden sm:inline">Add Tag</span>
+                </button>
             </div>
 
-            {tagList.length === 0 ? (
+            {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                     <Layers className="h-10 w-10 mb-3 opacity-30" />
-                    <p className="text-sm">No tags yet. Create tags to categorize your sources.</p>
+                    <p className="text-xs">
+                        {tagList.length === 0 ? 'No tags yet. Create tags to categorize your sources.' : 'No tags match your search.'}
+                    </p>
                 </div>
             ) : (
-                <div className="space-y-2">
-                    {tagList.map(tag => (
-                        <div key={tag.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 sm:p-4 group">
+                <div className="space-y-1.5">
+                    {filtered.map(tag => (
+                        <div key={tag.id} className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5 sm:p-3 group">
                             <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0 cursor-grab hidden sm:block" />
                             <div className="flex-1 min-w-0">
                                 <Link
@@ -167,7 +207,7 @@ export default function TagManager() {
             {isMobile ? (
                 <Drawer open={createOpen} onOpenChange={setCreateOpen}>
                     <DrawerContent className="max-h-[75dvh]">
-                        <DrawerTitle className="px-4 pt-4 text-base font-semibold">
+                        <DrawerTitle className="px-4 pt-3 text-sm font-semibold">
                             {editTag ? 'Edit Tag' : 'Create Tag'}
                         </DrawerTitle>
                         <div className="pb-safe">
@@ -177,9 +217,9 @@ export default function TagManager() {
                 </Drawer>
             ) : (
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-sm">
                         <DialogHeader>
-                            <DialogTitle>{editTag ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
+                            <DialogTitle className="text-sm">{editTag ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
                         </DialogHeader>
                         {formContent}
                     </DialogContent>

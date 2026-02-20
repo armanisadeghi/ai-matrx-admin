@@ -38,10 +38,10 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                className={className}
+                                size="sm"
+                                className={`p-2 rounded-full ${className}`}
                             >
-                                <Zap className="h-5 w-5" />
+                                <Zap className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                     </TooltipTrigger>

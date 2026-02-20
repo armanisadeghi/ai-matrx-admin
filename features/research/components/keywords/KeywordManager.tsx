@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Trash2, Loader2, Search, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useMemo } from 'react';
+import { Plus, Trash2, Loader2, Search, RefreshCw, X, SlidersHorizontal } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchKeywords } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
@@ -15,10 +17,37 @@ export default function KeywordManager() {
     const { topicId } = useTopicContext();
     const { data: keywords, isLoading, refresh } = useResearchKeywords(topicId);
     const api = useResearchApi();
+    const isMobile = useIsMobile();
 
     const [newKeyword, setNewKeyword] = useState('');
     const [adding, setAdding] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [search, setSearch] = useState('');
+    const [staleFilter, setStaleFilter] = useState<string>('all');
+    const [providerFilter, setProviderFilter] = useState<string>('all');
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const items = keywords ?? [];
+
+    const providers = useMemo(() =>
+        [...new Set(items.map(k => k.search_provider))].sort(),
+        [items],
+    );
+
+    const filtered = useMemo(() => {
+        let list = items;
+        if (staleFilter === 'stale') list = list.filter(k => k.is_stale);
+        else if (staleFilter === 'fresh') list = list.filter(k => !k.is_stale);
+        if (providerFilter !== 'all') list = list.filter(k => k.search_provider === providerFilter);
+        if (search) {
+            const q = search.toLowerCase();
+            list = list.filter(k => k.keyword.toLowerCase().includes(q));
+        }
+        return list;
+    }, [items, staleFilter, providerFilter, search]);
+
+    const hasActiveFilters = staleFilter !== 'all' || providerFilter !== 'all';
+    const resetFilters = () => { setStaleFilter('all'); setProviderFilter('all'); };
 
     const handleAdd = async () => {
         const kw = newKeyword.trim();
@@ -29,7 +58,7 @@ export default function KeywordManager() {
             setNewKeyword('');
             refresh();
         } catch {
-            // error handled silently for now
+            // silent
         } finally {
             setAdding(false);
         }
@@ -41,86 +70,176 @@ export default function KeywordManager() {
             await deleteKeywordService(keyword.id);
             refresh();
         } catch {
-            // error handled silently for now
+            // silent
         } finally {
             setDeletingId(null);
         }
     };
 
+    const filterSelects = (
+        <>
+            <Select value={staleFilter} onValueChange={setStaleFilter}>
+                <SelectTrigger className="w-full sm:w-24 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
+                    <SelectValue placeholder="Freshness" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="fresh">Fresh</SelectItem>
+                    <SelectItem value="stale">Stale</SelectItem>
+                </SelectContent>
+            </Select>
+            {providers.length > 1 && (
+                <Select value={providerFilter} onValueChange={setProviderFilter}>
+                    <SelectTrigger className="w-full sm:w-24 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
+                        <SelectValue placeholder="Provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        {providers.map(p => (
+                            <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
+            {hasActiveFilters && (
+                <button onClick={resetFilters} className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors shrink-0">
+                    <X className="h-2.5 w-2.5" />
+                </button>
+            )}
+        </>
+    );
+
     if (isLoading) {
         return (
-            <div className="p-4 sm:p-6 space-y-3">
-                <Skeleton className="h-8 w-48" />
+            <div className="p-3 sm:p-4 space-y-2">
+                <Skeleton className="h-8 w-full rounded-full" />
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-14 rounded-xl" />
+                    <Skeleton key={i} className="h-12 rounded-xl" />
                 ))}
             </div>
         );
     }
 
-    const items = keywords ?? [];
-
     return (
-        <div className="p-4 sm:p-6 space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-bold">Keywords</h2>
-                    <p className="text-sm text-muted-foreground mt-1">{items.length} keyword{items.length !== 1 ? 's' : ''}</p>
+        <div className="p-3 sm:p-4 space-y-3">
+            {/* Add keyword — glass toolbar */}
+            <div className="flex items-center gap-1.5 p-1 rounded-full glass">
+                <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full glass-subtle">
+                    <Search className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+                    <input
+                        value={newKeyword}
+                        onChange={e => setNewKeyword(e.target.value)}
+                        placeholder="Add a keyword..."
+                        className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground/40"
+                        style={{ fontSize: '16px' }}
+                        onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                        disabled={adding}
+                    />
+                    {newKeyword && (
+                        <button onClick={() => setNewKeyword('')} className="shrink-0 p-0.5 rounded-full hover:bg-muted/50 transition-colors">
+                            <X className="h-2.5 w-2.5 text-muted-foreground/60" />
+                        </button>
+                    )}
                 </div>
-                <Button variant="ghost" size="icon" onClick={refresh} className="h-9 w-9">
-                    <RefreshCw className="h-4 w-4" />
-                </Button>
+                <button
+                    onClick={handleAdd}
+                    disabled={adding || !newKeyword.trim()}
+                    className={cn(
+                        'inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[11px] font-medium transition-all shrink-0',
+                        'bg-primary text-primary-foreground hover:bg-primary/90',
+                        'disabled:opacity-40 disabled:pointer-events-none',
+                    )}
+                >
+                    {adding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                    <span className="hidden sm:inline">Add</span>
+                </button>
+                <button
+                    onClick={refresh}
+                    className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+                >
+                    <RefreshCw className="h-2.5 w-2.5" />
+                </button>
             </div>
 
-            {/* Add keyword */}
-            <div className="flex gap-2">
-                <Input
-                    value={newKeyword}
-                    onChange={e => setNewKeyword(e.target.value)}
-                    placeholder="Add a keyword..."
-                    className="text-base flex-1"
-                    style={{ fontSize: '16px' }}
-                    onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                    disabled={adding}
-                />
-                <Button onClick={handleAdd} disabled={adding || !newKeyword.trim()} className="gap-2 min-h-[44px]">
-                    {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                    Add
-                </Button>
+            {/* Search + filters row */}
+            <div className="flex items-center gap-1.5">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+                    <input
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Filter keywords..."
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
+                        style={{ fontSize: '16px' }}
+                    />
+                </div>
+                <span className="text-[10px] text-muted-foreground/50 tabular-nums shrink-0">
+                    {filtered.length}/{items.length}
+                </span>
+                {isMobile ? (
+                    <button
+                        onClick={() => setDrawerOpen(true)}
+                        className={cn(
+                            'inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle transition-colors relative shrink-0',
+                            hasActiveFilters ? 'text-primary' : 'text-muted-foreground/60',
+                        )}
+                    >
+                        <SlidersHorizontal className="h-3 w-3" />
+                        {hasActiveFilters && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+                    </button>
+                ) : (
+                    <>{filterSelects}</>
+                )}
             </div>
+
+            {isMobile && (
+                <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+                    <DrawerContent className="max-h-[75dvh]">
+                        <DrawerTitle className="px-4 pt-3 text-xs font-semibold">Filter Keywords</DrawerTitle>
+                        <div className="p-4 space-y-3 pb-safe">
+                            <div className="flex flex-col gap-2">{filterSelects}</div>
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            )}
 
             {/* Keyword list */}
-            {items.length === 0 ? (
+            {filtered.length === 0 ? (
                 <div className="flex flex-col items-center py-12 text-center">
-                    <Search className="h-10 w-10 text-muted-foreground mb-3" />
-                    <p className="text-sm text-muted-foreground">No keywords yet. Add keywords to drive your research pipeline.</p>
+                    <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center mb-3">
+                        <Search className="h-5 w-5 text-primary/60" />
+                    </div>
+                    <p className="text-xs text-muted-foreground/70">
+                        {items.length === 0 ? 'No keywords yet. Add keywords to drive your research pipeline.' : 'No keywords match your filters.'}
+                    </p>
                 </div>
             ) : (
-                <div className="space-y-2">
-                    {items.map(kw => (
-                        <div key={kw.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 min-h-[44px]">
+                <div className="space-y-1.5">
+                    {filtered.map(kw => (
+                        <div
+                            key={kw.id}
+                            className="group flex items-center gap-2 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5 min-h-[44px] transition-all hover:border-primary/25 hover:bg-card/80"
+                        >
                             <div className="min-w-0 flex-1">
-                                <div className="font-medium text-sm">{kw.keyword}</div>
-                                <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3">
-                                    <span>Provider: {kw.search_provider}</span>
+                                <div className="font-medium text-sm leading-tight">{kw.keyword}</div>
+                                <div className="text-[10px] text-muted-foreground/50 mt-0.5 flex items-center gap-2 flex-wrap">
+                                    <span>{kw.search_provider}</span>
                                     {kw.result_count !== null && <span>{kw.result_count} results</span>}
-                                    {kw.last_searched_at && <span>Last searched {new Date(kw.last_searched_at).toLocaleDateString()}</span>}
-                                    {kw.is_stale && <span className="text-yellow-600 dark:text-yellow-400">Stale</span>}
+                                    {kw.last_searched_at && <span>{new Date(kw.last_searched_at).toLocaleDateString()}</span>}
+                                    {kw.is_stale && <span className="text-yellow-600 dark:text-yellow-400 font-medium">Stale</span>}
                                 </div>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 shrink-0"
+                            <button
+                                className="h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all shrink-0"
                                 disabled={deletingId === kw.id}
                                 onClick={() => handleDelete(kw)}
                             >
                                 {deletingId === kw.id ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
                                 ) : (
-                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                    <Trash2 className="h-3 w-3 text-destructive/70" />
                                 )}
-                            </Button>
+                            </button>
                         </div>
                     ))}
                 </div>

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Edit3, Play, LayoutGrid } from "lucide-react";
+import { Edit3, Play, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PromptModeNavigationProps {
@@ -40,7 +40,7 @@ export function PromptModeNavigation({ promptId, promptName, currentMode, onProm
                     )}
                     title="Back to prompts"
                 >
-                    <LayoutGrid className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4" />
                 </Button>
 
                 {/* Edit mode */}

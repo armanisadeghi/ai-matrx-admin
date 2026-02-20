@@ -41,8 +41,8 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
         <div className="md:hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-full">
+                <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -67,10 +67,10 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="h-6 w-6 p-0 rounded-full hover:bg-accent"
               title="New Chat"
             >
-              <IoCreateOutline className="h-3 w-3" />
+              <IoCreateOutline className="h-3.5 w-3.5" />
             </Button>
           </Link>
 
@@ -78,11 +78,11 @@ export function ChatHeaderCompact({ baseRoute = "/chat" }: ChatHeaderCompactProp
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 rounded-full hover:bg-accent"
             onClick={handleOpenSearch}
             title="Search Conversations"
           >
-            <TbListSearch className="h-3 w-3" />
+            <TbListSearch className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>

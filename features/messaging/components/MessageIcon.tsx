@@ -37,16 +37,16 @@ export function MessageIcon({ className }: MessageIconProps) {
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={handleClick}
             className={cn(
-              "relative h-9 w-9 overflow-visible",
+              "relative p-2 rounded-full glass overflow-visible transition-all duration-200 ease-in-out hover:scale-105 active:scale-95",
               isOpen && "glass-strong",
               className
             )}
             aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-4 w-4" />
 
             {/* Unread Badge - positioned at top-right corner, slightly inset to avoid header clipping */}
             {unreadCount > 0 && (

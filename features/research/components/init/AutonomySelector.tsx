@@ -14,7 +14,7 @@ interface AutonomySelectorProps {
 
 export function AutonomySelector({ value, onChange }: AutonomySelectorProps) {
     return (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
             {(Object.entries(AUTONOMY_CONFIG) as [AutonomyLevel, typeof AUTONOMY_CONFIG[AutonomyLevel]][]).map(([level, config]) => {
                 const Icon = ICON_MAP[config.icon as keyof typeof ICON_MAP];
                 const isSelected = value === level;
@@ -24,22 +24,22 @@ export function AutonomySelector({ value, onChange }: AutonomySelectorProps) {
                         key={level}
                         onClick={() => onChange(level)}
                         className={cn(
-                            'w-full rounded-xl border-2 p-4 text-left transition-colors min-h-[44px]',
+                            'w-full rounded-xl border p-2.5 text-left transition-all min-h-[44px]',
                             isSelected
-                                ? 'border-primary bg-primary/5'
-                                : 'border-border hover:border-primary/30',
+                                ? 'border-primary/40 bg-primary/5'
+                                : 'border-border/50 hover:border-primary/20 bg-card/40',
                         )}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5">
                             <div className={cn(
-                                'h-10 w-10 rounded-xl flex items-center justify-center shrink-0',
-                                isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                'h-7 w-7 rounded-lg flex items-center justify-center shrink-0',
+                                isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground/60',
                             )}>
-                                {Icon && <Icon className="h-5 w-5" />}
+                                {Icon && <Icon className="h-3.5 w-3.5" />}
                             </div>
-                            <div>
-                                <div className="font-semibold text-sm">{config.label}</div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{config.description}</div>
+                            <div className="min-w-0">
+                                <div className="font-medium text-xs">{config.label}</div>
+                                <div className="text-[10px] text-muted-foreground/60 mt-px leading-snug line-clamp-1">{config.description}</div>
                             </div>
                         </div>
                     </button>

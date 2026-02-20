@@ -25,17 +25,17 @@ function StatCard({ icon: Icon, label, href, children, highlight }: StatCardProp
         <Link
             href={href}
             className={cn(
-                'group relative rounded-xl border border-border bg-card p-4 space-y-2 transition-colors block',
-                'hover:border-primary/40 hover:bg-accent/30',
-                highlight && 'ring-1 ring-primary/20',
+                'group relative rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-3 space-y-1.5 transition-all block',
+                'hover:border-primary/30 hover:bg-card/80',
+                highlight && 'ring-1 ring-primary/15',
             )}
         >
-            <div className="flex items-center justify-between text-muted-foreground">
-                <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
+            <div className="flex items-center justify-between text-muted-foreground/70">
+                <div className="flex items-center gap-1.5">
+                    <Icon className="h-3 w-3" />
+                    <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
                 </div>
-                <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-60 transition-opacity" />
             </div>
             {children}
         </Link>
@@ -56,25 +56,23 @@ export function PipelineCards({ topicId, progress }: PipelineCardsProps) {
         : 0;
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {/* Keywords → /keywords */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
             <StatCard icon={Search} label="Keywords" href={`${base}/keywords`}>
-                <div className="text-2xl font-bold">{progress.total_keywords}</div>
+                <div className="text-lg font-bold leading-none">{progress.total_keywords}</div>
                 {progress.stale_keywords > 0 ? (
-                    <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+                    <span className="text-[10px] text-yellow-600 dark:text-yellow-400 font-medium">
                         {progress.stale_keywords} stale
                     </span>
                 ) : (
-                    <span className="text-xs text-muted-foreground">search keywords</span>
+                    <span className="text-[10px] text-muted-foreground/60">search keywords</span>
                 )}
             </StatCard>
 
-            {/* Sources → /sources */}
             <StatCard icon={Globe} label="Sources" href={`${base}/sources`}>
-                <div className="text-2xl font-bold">{progress.total_sources}</div>
-                <div className="text-xs text-muted-foreground">{progress.included_sources} included</div>
+                <div className="text-lg font-bold leading-none">{progress.total_sources}</div>
+                <div className="text-[10px] text-muted-foreground/60">{progress.included_sources} included</div>
                 {progress.sources_by_status && progress.total_sources > 0 && (
-                    <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted mt-1">
+                    <div className="flex h-1 w-full overflow-hidden rounded-full bg-muted/50 mt-0.5">
                         {(Object.entries(progress.sources_by_status) as [ScrapeStatus, number][])
                             .filter(([, count]) => count > 0)
                             .map(([status, count]) => (
@@ -91,84 +89,75 @@ export function PipelineCards({ topicId, progress }: PipelineCardsProps) {
                 )}
             </StatCard>
 
-            {/* Content → /sources?scrape_status=success  (scraped pages live inside sources) */}
-            <StatCard icon={FileText} label="Scraped Content" href={`${base}/sources?scrape_status=success`}>
-                <div className="text-2xl font-bold">{progress.total_content}</div>
-                <div className="text-xs text-muted-foreground">
+            <StatCard icon={FileText} label="Content" href={`${base}/sources?scrape_status=success`}>
+                <div className="text-lg font-bold leading-none">{progress.total_content}</div>
+                <div className="text-[10px] text-muted-foreground/60">
                     {progress.total_sources > 0
-                        ? `${Math.round((progress.total_content / progress.total_sources) * 100)}% of sources`
+                        ? `${Math.round((progress.total_content / progress.total_sources) * 100)}% scraped`
                         : 'pages scraped'}
                 </div>
             </StatCard>
 
-            {/* Analyses → /sources?scrape_status=success (analyses are per-source, viewed inside source detail) */}
             <StatCard
                 icon={Brain}
                 label="Analyses"
                 href={`${base}/sources?scrape_status=success`}
                 highlight={progress.total_eligible_for_analysis > 0 && progress.total_analyses < progress.total_eligible_for_analysis}
             >
-                <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{progress.total_analyses}</span>
-                    <span className="text-sm text-muted-foreground">/ {progress.total_eligible_for_analysis}</span>
+                <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-bold leading-none">{progress.total_analyses}</span>
+                    <span className="text-[10px] text-muted-foreground/50">/ {progress.total_eligible_for_analysis}</span>
                 </div>
-                <Progress value={analysisPercent} className="h-1.5" />
+                <Progress value={analysisPercent} className="h-1" />
                 {(progress.failed_analyses ?? 0) > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-destructive font-medium">
-                        <AlertTriangle className="h-3 w-3" />
+                    <div className="flex items-center gap-0.5 text-[10px] text-destructive/80 font-medium">
+                        <AlertTriangle className="h-2.5 w-2.5" />
                         {progress.failed_analyses} failed
                     </div>
                 )}
             </StatCard>
 
-            {/* Keyword Syntheses → /keywords */}
-            <StatCard icon={Layers} label="Keyword Syntheses" href={`${base}/keywords`}>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{progress.keyword_syntheses}</span>
-                    <span className="text-sm text-muted-foreground">/ {progress.total_keywords}</span>
+            <StatCard icon={Layers} label="Kw Syntheses" href={`${base}/keywords`}>
+                <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-bold leading-none">{progress.keyword_syntheses}</span>
+                    <span className="text-[10px] text-muted-foreground/50">/ {progress.total_keywords}</span>
                 </div>
-                <Progress value={synthPercent} className="h-1.5" />
+                <Progress value={synthPercent} className="h-1" />
                 {(progress.failed_keyword_syntheses ?? 0) > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-destructive font-medium">
-                        <AlertTriangle className="h-3 w-3" />
+                    <div className="flex items-center gap-0.5 text-[10px] text-destructive/80 font-medium">
+                        <AlertTriangle className="h-2.5 w-2.5" />
                         {progress.failed_keyword_syntheses} failed
                     </div>
                 )}
             </StatCard>
 
-            {/* Research Report → /synthesis */}
-            <StatCard icon={File} label="Research Report" href={`${base}/synthesis`}>
+            <StatCard icon={File} label="Report" href={`${base}/synthesis`}>
                 <div className={cn(
-                    'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold',
+                    'inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-semibold',
                     progress.project_syntheses > 0
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-muted text-muted-foreground',
+                        ? 'bg-green-100/60 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                        : 'bg-muted/50 text-muted-foreground/70',
                 )}>
                     {progress.project_syntheses > 0 ? 'Generated' : 'Not yet'}
                 </div>
                 {(progress.failed_project_syntheses ?? 0) > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-destructive font-medium">
-                        <AlertTriangle className="h-3 w-3" />
-                        {progress.failed_project_syntheses} synthesis failed
+                    <div className="flex items-center gap-0.5 text-[10px] text-destructive/80 font-medium">
+                        <AlertTriangle className="h-2.5 w-2.5" />
+                        failed
                     </div>
                 )}
-                {progress.project_syntheses > 0 && !progress.failed_project_syntheses && (
-                    <div className="text-xs text-muted-foreground">click to view</div>
-                )}
             </StatCard>
 
-            {/* Tags → /tags */}
             <StatCard icon={Tags} label="Tags" href={`${base}/tags`}>
-                <div className="text-2xl font-bold">{progress.total_tags}</div>
-                <div className="text-xs text-muted-foreground">organize sources</div>
+                <div className="text-lg font-bold leading-none">{progress.total_tags}</div>
+                <span className="text-[10px] text-muted-foreground/60">organize sources</span>
             </StatCard>
 
-            {/* Documents → /document */}
             <StatCard icon={DollarSign} label="Documents" href={`${base}/document`}>
-                <div className="text-2xl font-bold">{progress.total_documents}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-lg font-bold leading-none">{progress.total_documents}</div>
+                <span className="text-[10px] text-muted-foreground/60">
                     {progress.total_documents > 0 ? `${progress.total_documents} version${progress.total_documents !== 1 ? 's' : ''}` : 'none yet'}
-                </div>
+                </span>
             </StatCard>
         </div>
     );

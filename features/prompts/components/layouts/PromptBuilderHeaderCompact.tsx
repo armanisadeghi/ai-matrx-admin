@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, LayoutGrid } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
@@ -53,18 +53,18 @@ export function PromptBuilderHeaderCompact({
 
     return (
         <>
-        <div className="flex items-center justify-between gap-2 h-full bg-textured w-full overflow-hidden">
+        <div className="flex items-center justify-between gap-2 h-full w-full overflow-hidden">
             {/* Mobile - Left: Menu + Status */}
             <div className="md:hidden flex items-center gap-1 flex-shrink-0">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-full">
+                            <MoreHorizontal className="h-3.5 w-3.5" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-56">
                         <DropdownMenuItem onClick={() => router.push('/ai/prompts')}>
-                            <LayoutGrid className="h-4 w-4 mr-2" />
+                            <ChevronLeft className="h-4 w-4 mr-2" />
                             Back to Prompts
                         </DropdownMenuItem>
                         {promptId && (
@@ -217,11 +217,11 @@ export function PromptBuilderHeaderCompact({
                         <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-9 w-9 p-0 hover:bg-muted text-muted-foreground hover:text-foreground flex-shrink-0"
+                            className="h-7 w-7 p-0 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex-shrink-0"
                             title="Back to Prompts"
                             onClick={() => router.push('/ai/prompts')}
                         >
-                            <LayoutGrid className="h-4 w-4" />
+                            <ChevronLeft className="h-3.5 w-3.5" />
                         </Button>
                         <div className="h-6 w-px bg-border flex-shrink-0 mx-1" />
                         {/* Prompt name input - compact */}
@@ -253,7 +253,7 @@ export function PromptBuilderHeaderCompact({
                         <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="h-6 w-6 p-0 rounded-full hover:bg-accent"
                             onClick={onOpenSettings}
                             title="Settings"
                         >
@@ -264,7 +264,7 @@ export function PromptBuilderHeaderCompact({
                         <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="h-6 w-6 p-0 rounded-full hover:bg-accent"
                             onClick={onOpenFullScreenEditor}
                             title="Full Editor"
                         >
@@ -277,7 +277,7 @@ export function PromptBuilderHeaderCompact({
                         <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="h-6 w-6 p-0 rounded-full hover:bg-accent"
                             onClick={() => setIsOptimizerOpen(true)}
                             title="Optimize System Message"
                         >
@@ -288,7 +288,7 @@ export function PromptBuilderHeaderCompact({
                                 <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-7 w-7 p-0 hover:bg-amber-50 dark:hover:bg-amber-950"
+                                    className="h-6 w-6 p-0 rounded-full hover:bg-amber-50 dark:hover:bg-amber-950"
                                     title="Compare (Admin Only)"
                                 >
                                     <GitCompare className="h-3 w-3 text-amber-600 dark:text-amber-400" />
@@ -296,7 +296,7 @@ export function PromptBuilderHeaderCompact({
                                 <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-7 w-7 p-0 hover:bg-amber-50 dark:hover:bg-amber-950"
+                                    className="h-6 w-6 p-0 rounded-full hover:bg-amber-50 dark:hover:bg-amber-950"
                                     title="Evaluate (Admin Only)"
                                 >
                                     <BarChart className="h-3 w-3 text-amber-600 dark:text-amber-400" />

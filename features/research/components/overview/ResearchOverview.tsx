@@ -2,10 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Settings, AlertCircle, ArrowRight, Zap, SlidersHorizontal, Hand, Search } from 'lucide-react';
+import { Settings, AlertCircle, ArrowRight, Zap, SlidersHorizontal, Hand, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
@@ -19,9 +18,10 @@ import { StatusBadge } from '../shared/StatusBadge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const AUTONOMY_ICONS = { auto: Zap, semi: SlidersHorizontal, manual: Hand } as const;
-const AUTONOMY_LABELS = { auto: 'Automatic', semi: 'Semi-Auto', manual: 'Manual' } as const;
+const AUTONOMY_LABELS = { auto: 'Auto', semi: 'Semi', manual: 'Manual' } as const;
 
 export default function ResearchOverview() {
     const { topicId, progress, topic, refresh, isLoading, error } = useTopicContext();
@@ -58,26 +58,17 @@ export default function ResearchOverview() {
     }, [api, topicId, stream]);
 
     const handleReport = useCallback(async () => {
-        const response = await api.synthesize(topicId, {
-            scope: 'project',
-            iteration_mode: 'initial',
-        });
+        const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'initial' });
         stream.startStream(response);
     }, [api, topicId, stream]);
 
     const handleRebuild = useCallback(async () => {
-        const response = await api.synthesize(topicId, {
-            scope: 'project',
-            iteration_mode: 'rebuild',
-        });
+        const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'rebuild' });
         stream.startStream(response);
     }, [api, topicId, stream]);
 
     const handleUpdate = useCallback(async () => {
-        const response = await api.synthesize(topicId, {
-            scope: 'project',
-            iteration_mode: 'update',
-        });
+        const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'update' });
         stream.startStream(response);
     }, [api, topicId, stream]);
 
@@ -96,16 +87,16 @@ export default function ResearchOverview() {
 
     if (isLoading) {
         return (
-            <div className="p-4 sm:p-6 space-y-6">
-                <Skeleton className="h-8 w-64" />
-                <div className="flex gap-2">
+            <div className="p-3 sm:p-4 space-y-3">
+                <Skeleton className="h-7 w-48 rounded-full" />
+                <div className="flex gap-1.5">
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <Skeleton key={i} className="h-10 w-24 rounded-lg" />
+                        <Skeleton key={i} className="h-7 w-16 rounded-full" />
                     ))}
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <Skeleton key={i} className="h-24 rounded-xl" />
+                        <Skeleton key={i} className="h-20 rounded-xl" />
                     ))}
                 </div>
             </div>
@@ -114,18 +105,18 @@ export default function ResearchOverview() {
 
     if (!topic || error) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">
-                    <AlertCircle className="h-7 w-7" />
+            <div className="flex flex-col items-center justify-center min-h-[60dvh] p-4 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-3">
+                    <AlertCircle className="h-6 w-6" />
                 </div>
-                <h2 className="text-xl font-bold mb-2">Project Not Initialized</h2>
-                <p className="text-muted-foreground text-sm max-w-md mb-6">
-                    This project hasn&apos;t been set up yet. Complete the setup wizard to configure your research topic, keywords, and settings.
+                <h2 className="text-base font-bold mb-1.5">Not Initialized</h2>
+                <p className="text-muted-foreground text-xs max-w-sm mb-5">
+                    Complete the setup wizard to configure your research topic, keywords, and settings.
                 </p>
-                <Button asChild className="gap-2 min-h-[44px]">
+                <Button asChild size="sm" className="gap-1.5 rounded-full h-8 px-4 text-xs">
                     <Link href="/p/research/topics/new">
                         Set Up Research
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                 </Button>
             </div>
@@ -136,62 +127,75 @@ export default function ResearchOverview() {
     const AutonomyIcon = AUTONOMY_ICONS[topic.autonomy_level];
 
     const keywordModalContent = (
-        <div className="space-y-4 p-4">
+        <div className="space-y-3 p-4">
             <Input
                 value={newKeyword}
                 onChange={e => setNewKeyword(e.target.value)}
                 placeholder="Enter a keyword..."
-                className="text-base"
+                className="h-9 text-xs rounded-lg"
                 style={{ fontSize: '16px' }}
                 onKeyDown={e => e.key === 'Enter' && handleAddKeyword()}
                 autoFocus
             />
             <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setKeywordModalOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddKeyword} disabled={!newKeyword.trim() || addingKeyword}>
+                <button
+                    onClick={() => setKeywordModalOpen(false)}
+                    className="inline-flex items-center h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={handleAddKeyword}
+                    disabled={!newKeyword.trim() || addingKeyword}
+                    className={cn(
+                        'inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium transition-all min-h-[44px]',
+                        'bg-primary text-primary-foreground hover:bg-primary/90',
+                        'disabled:opacity-40 disabled:pointer-events-none',
+                    )}
+                >
+                    {addingKeyword && <Loader2 className="h-3 w-3 animate-spin" />}
                     Add Keyword
-                </Button>
+                </button>
             </div>
         </div>
     );
 
     return (
-        <div className="p-4 sm:p-6 space-y-6">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-xl sm:text-2xl font-bold truncate">{topic.name}</h1>
-                        <StatusBadge status={topic.status} />
-                    </div>
-                    {topic.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{topic.description}</p>
-                    )}
-                    {/* Key settings pills — give the user visibility */}
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <Badge variant="secondary" className="gap-1 text-xs font-normal">
-                            <AutonomyIcon className="h-3 w-3" />
-                            {AUTONOMY_LABELS[topic.autonomy_level]}
-                        </Badge>
-                        <Badge variant="secondary" className="gap-1 text-xs font-normal">
-                            <Search className="h-3 w-3" />
-                            {topic.default_search_provider === 'brave' ? 'Brave Search' : 'Google'}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs font-normal">
-                            {topic.scrapes_per_keyword} scrapes / keyword
-                        </Badge>
-                    </div>
+        <div className="p-3 sm:p-4 space-y-3">
+            {/* Header — compact glass bar */}
+            <div className="flex items-center gap-2 p-1.5 rounded-full glass">
+                <div className="min-w-0 flex-1 flex items-center gap-1.5 px-1 overflow-hidden">
+                    <h1 className="text-sm font-semibold truncate">{topic.name}</h1>
+                    <StatusBadge status={topic.status} />
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 shrink-0 min-h-[36px]"
-                    onClick={() => setSettingsOpen(true)}
-                >
-                    <Settings className="h-4 w-4" />
-                    <span className="hidden sm:inline">Settings</span>
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                    <span className={cn(
+                        'inline-flex items-center gap-0.5 h-5 px-1.5 rounded-full text-[9px] font-medium',
+                        'glass-subtle text-muted-foreground/70',
+                    )}>
+                        <AutonomyIcon className="h-2.5 w-2.5" />
+                        {AUTONOMY_LABELS[topic.autonomy_level]}
+                    </span>
+                    <span className={cn(
+                        'hidden sm:inline-flex items-center gap-0.5 h-5 px-1.5 rounded-full text-[9px] font-medium',
+                        'glass-subtle text-muted-foreground/70',
+                    )}>
+                        <Search className="h-2.5 w-2.5" />
+                        {topic.default_search_provider === 'brave' ? 'Brave' : 'Google'}
+                    </span>
+                    <button
+                        onClick={() => setSettingsOpen(true)}
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors"
+                    >
+                        <Settings className="h-3 w-3" />
+                    </button>
+                </div>
             </div>
+
+            {/* Description — only if present, subtle */}
+            {topic.description && (
+                <p className="text-[11px] text-muted-foreground/60 px-1 line-clamp-1">{topic.description}</p>
+            )}
 
             {/* Action Buttons */}
             <ActionBar
@@ -213,13 +217,13 @@ export default function ResearchOverview() {
                 onCancel={stream.cancel}
             />
 
-            {/* Pipeline Cards — all clickable, navigate to the relevant section */}
+            {/* Pipeline Cards */}
             <PipelineCards topicId={topicId} progress={progress} />
 
             {/* Iteration Controls */}
             {hasReport && (
-                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                    <h2 className="text-sm font-semibold">Iterate on Research</h2>
+                <div className="space-y-2">
+                    <span className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider px-1">Iterate</span>
                     <IterationControls
                         onRebuild={handleRebuild}
                         onUpdate={handleUpdate}
@@ -241,15 +245,15 @@ export default function ResearchOverview() {
             {isMobile ? (
                 <Drawer open={keywordModalOpen} onOpenChange={setKeywordModalOpen}>
                     <DrawerContent className="max-h-[50dvh]">
-                        <DrawerTitle className="px-4 pt-4 text-base font-semibold">Add Keyword</DrawerTitle>
+                        <DrawerTitle className="px-4 pt-3 text-sm font-semibold">Add Keyword</DrawerTitle>
                         {keywordModalContent}
                     </DrawerContent>
                 </Drawer>
             ) : (
                 <Dialog open={keywordModalOpen} onOpenChange={setKeywordModalOpen}>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-sm">
                         <DialogHeader>
-                            <DialogTitle>Add Keyword</DialogTitle>
+                            <DialogTitle className="text-sm">Add Keyword</DialogTitle>
                         </DialogHeader>
                         {keywordModalContent}
                     </DialogContent>

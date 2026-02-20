@@ -35,10 +35,10 @@ const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
         <Collapsible
             open={isOpen}
             onOpenChange={handleOpenChange}
-            className={`border-3 border-zinc-200 dark:border-zinc-700 rounded-3xl shadow-sm my-4 w-full max-w-3xl ${className}`}
+            className={`border-2 border-zinc-200 dark:border-zinc-700 rounded-3xl shadow-sm my-1 w-full max-w-3xl hover:bg-accent/50 hover:shadow-sm ${className}`}
         >
-            <div className="relative flex w-full items-center justify-between rounded-t-lg">
-                <CollapsibleTrigger className="flex-1 flex items-center gap-2 py-3 pl-4 pr-2 font-medium hover:bg-accent/50 hover:shadow-sm">
+            <div className="relative flex w-full items-center justify-between rounded-t-lg hover:bg-accent/50 hover:shadow-sm">
+                <CollapsibleTrigger className="flex-1 flex items-center gap-2 py-1 pl-4 pr-1 font-medium hover:bg-accent/50 hover:shadow-sm">
                     {icon}
                     {typeof title === 'string' ? <span>{title}</span> : title}
                     <ChevronDown
@@ -52,7 +52,7 @@ const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
                 )}
             </div>
             <CollapsibleContent className="bg-transparent dark:bg-transparent overflow-hidden data-[state=open]:animate-slide-down data-[state=closed]:animate-slide-up border-none">
-                <div className="relative p-1 border-none">
+                <div className="relative p-0 border-none">
                     <div className="absolute top-0 left-8 right-8 h-px bg-zinc-200 dark:bg-zinc-700"></div>
                     {children}
                 </div>

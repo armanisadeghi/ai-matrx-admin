@@ -1,11 +1,11 @@
 'use client';
 
-import { X, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { X, SlidersHorizontal } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { SCRAPE_STATUS_CONFIG, SOURCE_TYPE_CONFIG, ORIGIN_CONFIG } from '../../constants';
 import type { ResearchKeyword, SourceFilters as Filters } from '../../types';
 
@@ -23,9 +23,9 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const filterContent = (
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-1.5">
             <Select value={filters.keyword_id ?? 'all'} onValueChange={v => onFilterChange({ keyword_id: v === 'all' ? undefined : v })}>
-                <SelectTrigger className="w-full sm:w-40 text-base sm:text-sm" style={{ fontSize: '16px' }}>
+                <SelectTrigger className="w-full sm:w-36 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
                     <SelectValue placeholder="Keyword" />
                 </SelectTrigger>
                 <SelectContent>
@@ -37,7 +37,7 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
             </Select>
 
             <Select value={filters.scrape_status ?? 'all'} onValueChange={v => onFilterChange({ scrape_status: v === 'all' ? undefined : v as Filters['scrape_status'] })}>
-                <SelectTrigger className="w-full sm:w-36 text-base sm:text-sm" style={{ fontSize: '16px' }}>
+                <SelectTrigger className="w-full sm:w-32 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -49,7 +49,7 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
             </Select>
 
             <Select value={filters.source_type ?? 'all'} onValueChange={v => onFilterChange({ source_type: v === 'all' ? undefined : v as Filters['source_type'] })}>
-                <SelectTrigger className="w-full sm:w-32 text-base sm:text-sm" style={{ fontSize: '16px' }}>
+                <SelectTrigger className="w-full sm:w-28 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
                     <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -61,7 +61,7 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
             </Select>
 
             <Select value={filters.origin ?? 'all'} onValueChange={v => onFilterChange({ origin: v === 'all' ? undefined : v as Filters['origin'] })}>
-                <SelectTrigger className="w-full sm:w-32 text-base sm:text-sm" style={{ fontSize: '16px' }}>
+                <SelectTrigger className="w-full sm:w-28 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
                     <SelectValue placeholder="Origin" />
                 </SelectTrigger>
                 <SelectContent>
@@ -74,8 +74,8 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
 
             {hostnames.length > 0 && (
                 <Select value={filters.hostname ?? 'all'} onValueChange={v => onFilterChange({ hostname: v === 'all' ? undefined : v })}>
-                    <SelectTrigger className="w-full sm:w-40 text-base sm:text-sm" style={{ fontSize: '16px' }}>
-                        <SelectValue placeholder="Hostname" />
+                    <SelectTrigger className="w-full sm:w-36 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
+                        <SelectValue placeholder="Host" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Hosts</SelectItem>
@@ -87,10 +87,12 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
             )}
 
             {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={onReset} className="gap-1 min-h-[44px] sm:min-h-0">
-                    <X className="h-3.5 w-3.5" />
-                    Clear
-                </Button>
+                <button
+                    onClick={onReset}
+                    className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors"
+                >
+                    <X className="h-2.5 w-2.5" />
+                </button>
             )}
         </div>
     );
@@ -98,14 +100,21 @@ export function SourceFilters({ filters, onFilterChange, onReset, hasActiveFilte
     if (isMobile) {
         return (
             <>
-                <Button variant="outline" size="sm" onClick={() => setDrawerOpen(true)} className="gap-2 min-h-[44px]">
-                    <Filter className="h-4 w-4" />
-                    Filters
-                    {hasActiveFilters && <span className="h-2 w-2 rounded-full bg-primary" />}
-                </Button>
+                <button
+                    onClick={() => setDrawerOpen(true)}
+                    className={cn(
+                        'inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle transition-colors relative',
+                        hasActiveFilters ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground',
+                    )}
+                >
+                    <SlidersHorizontal className="h-3 w-3" />
+                    {hasActiveFilters && (
+                        <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                    )}
+                </button>
                 <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
                     <DrawerContent className="max-h-[75dvh]">
-                        <DrawerTitle className="px-4 pt-4 text-base font-semibold">Filter Sources</DrawerTitle>
+                        <DrawerTitle className="px-4 pt-3 text-xs font-semibold">Filter Sources</DrawerTitle>
                         <div className="p-4 space-y-3 pb-safe">
                             {filterContent}
                         </div>

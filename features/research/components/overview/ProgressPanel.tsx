@@ -64,8 +64,8 @@ export function ProgressPanel({ isStreaming, currentStep, messages, error, onClo
                         </Button>
                     )}
                     {!isStreaming && (
-                        <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-                            <X className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7 rounded-full">
+                            <X className="h-3.5 w-3.5" />
                         </Button>
                     )}
                 </div>

@@ -180,8 +180,8 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
       <div className="flex-shrink-0 border-b border-border bg-card">
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-9 w-9">
-              <ChevronLeft size={22} />
+            <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-7 w-7 rounded-full">
+              <ChevronLeft size={18} />
             </Button>
             <Checkbox
               checked={task.completed}
@@ -198,8 +198,8 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0 h-9 w-9">
-                <MoreVertical size={20} />
+              <Button variant="ghost" size="icon" className="flex-shrink-0 h-7 w-7 rounded-full">
+                <MoreVertical size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -394,7 +394,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
                     size="icon"
                     variant="ghost"
                     onClick={() => handleDeleteSubtask(subtask.id)}
-                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X size={14} />
                   </Button>
@@ -419,9 +419,9 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
                   variant="ghost"
                   onClick={handleAddSubtask}
                   disabled={isAddingSubtask || !newSubtask.trim()}
-                  className="h-10 w-10 flex-shrink-0"
+                  className="h-8 w-8 flex-shrink-0 rounded-full"
                 >
-                  {isAddingSubtask ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                  {isAddingSubtask ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                 </Button>
               </div>
             </div>

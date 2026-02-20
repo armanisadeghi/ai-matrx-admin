@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw, AlertCircle } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw, AlertCircle, ArrowDownToLine } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import {
@@ -27,6 +27,7 @@ import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEdito
 import type { PromptApp } from '../types';
 import { cn } from '@/lib/utils';
 import { PromptAppHeader } from '@/components/layout/new-layout/PageSpecificHeader';
+import { UpdatePromptAppModal } from './UpdatePromptAppModal';
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
 const CodeBlock = lazy(() => import('@/features/code-editor/components/code-block/CodeBlock'));
@@ -109,7 +110,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [promptName, setPromptName] = useState<string | null>(null);
   const [promptUpdatedAt, setPromptUpdatedAt] = useState<string | null>(null);
   const [isPromptStale, setIsPromptStale] = useState(false);
-  const [isSyncingFromPrompt, setIsSyncingFromPrompt] = useState(false);
+  const [isUpdatePromptModalOpen, setIsUpdatePromptModalOpen] = useState(false);
 
   // Regenerate favicon from app name
   const handleRegenerateFavicon = async () => {
@@ -135,72 +136,6 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
       toast.error('Failed to generate favicon');
     } finally {
       setIsRegeneratingFavicon(false);
-    }
-  };
-
-  // Sync variable schema from the latest prompt data
-  const handleSyncFromPrompt = async () => {
-    if (!app.prompt_id) return;
-    setIsSyncingFromPrompt(true);
-    try {
-      // Fetch the latest prompt data
-      const { data: prompt, error: promptError } = await supabase
-        .from('prompts')
-        .select('variable_defaults, updated_at, name')
-        .eq('id', app.prompt_id)
-        .single();
-
-      if (promptError || !prompt) {
-        toast.error('Failed to fetch latest prompt data');
-        return;
-      }
-
-      // Build updated variable schema from prompt's variable_defaults
-      let updatedSchema = app.variable_schema;
-      if (prompt.variable_defaults && Array.isArray(prompt.variable_defaults)) {
-        updatedSchema = prompt.variable_defaults.map((v: { name: string; defaultValue?: string }) => ({
-          name: v.name,
-          type: 'string',
-          label: v.name.split('_').map((w: string) =>
-            w.charAt(0).toUpperCase() + w.slice(1)
-          ).join(' '),
-          default: v.defaultValue || '',
-          required: false,
-        }));
-      }
-
-      const now = new Date().toISOString();
-
-      // Update the app in the database
-      const { error: updateError } = await supabase
-        .from('prompt_apps')
-        .update({
-          variable_schema: updatedSchema,
-          updated_at: now,
-        })
-        .eq('id', app.id);
-
-      if (updateError) {
-        toast.error('Failed to sync: ' + updateError.message);
-        return;
-      }
-
-      // Update local state
-      setApp(prev => ({
-        ...prev,
-        variable_schema: updatedSchema,
-        updated_at: now,
-      }));
-      setIsPromptStale(false);
-      setPromptUpdatedAt(prompt.updated_at);
-      if (prompt.name) setPromptName(prompt.name);
-
-      toast.success('App synced with latest prompt changes');
-    } catch (err) {
-      toast.error('Failed to sync from prompt');
-      console.error('Sync from prompt error:', err);
-    } finally {
-      setIsSyncingFromPrompt(false);
     }
   };
 
@@ -537,16 +472,26 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={handleSyncFromPrompt}
-                disabled={isSyncingFromPrompt}
+                onClick={() => setIsUpdatePromptModalOpen(true)}
                 className="shrink-0 border-amber-400 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-900/40"
               >
-                {isSyncingFromPrompt ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                )}
-                Sync Variables
+                <ArrowDownToLine className="w-4 h-4 mr-2" />
+                Update from Prompt
+              </Button>
+            </div>
+          )}
+
+          {/* Update from Prompt — also available when not stale */}
+          {!isPromptStale && app.prompt_id && (
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsUpdatePromptModalOpen(true)}
+                className="text-muted-foreground hover:text-primary"
+              >
+                <ArrowDownToLine className="w-4 h-4 mr-1.5" />
+                Sync from Prompt
               </Button>
             </div>
           )}
@@ -1015,6 +960,23 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           )}
         </div>
       </div>
+
+      {/* Update from Prompt Modal */}
+      {app.prompt_id && (
+        <UpdatePromptAppModal
+          isOpen={isUpdatePromptModalOpen}
+          onClose={() => setIsUpdatePromptModalOpen(false)}
+          promptId={app.prompt_id}
+          promptName={promptName || app.name}
+          mode="from-app"
+          app={app}
+          onSuccess={() => {
+            setIsUpdatePromptModalOpen(false);
+            setIsPromptStale(false);
+            router.refresh();
+          }}
+        />
+      )}
 
       {/* AI Code Editor Modal */}
       <AICodeEditorModal

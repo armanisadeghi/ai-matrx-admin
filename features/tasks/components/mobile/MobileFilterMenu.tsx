@@ -96,8 +96,8 @@ export default function MobileFilterMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9">
-            <MoreVertical size={20} />
+          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+            <MoreVertical size={16} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

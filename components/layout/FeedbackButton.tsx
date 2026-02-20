@@ -529,7 +529,7 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
     const triggerButton = (
         <div className="relative">
             <button
-                className={`p-2 rounded-lg transition-all duration-200 ease-in-out ${className}`}
+                className={`p-2 rounded-full transition-all duration-200 ease-in-out ${className}`}
                 aria-label="Submit Feedback"
                 onClick={() => {
                     if (showNewFeatureHighlight) {
@@ -540,7 +540,7 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
                     }
                 }}
             >
-                <Bug className="w-5 h-5" />
+                <Bug className="w-4 h-4" />
             </button>
 
             {/* New Feature Highlight */}

@@ -35,6 +35,7 @@ import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { useUser } from "@/lib/hooks/useUser";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
+import { UpdatePromptAppModal } from "@/features/prompt-apps/components/UpdatePromptAppModal";
 import type { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 
 export interface PromptActionsMenuProps {
@@ -112,6 +113,7 @@ export function PromptActionsMenu({
     
     // Modal states
     const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] = useState(false);
+    const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
     
@@ -188,10 +190,10 @@ export function PromptActionsMenu({
         });
     };
     
-    // Create App - Navigate to create app page with pre-selected prompt
+    // Create App - Open modal to check for existing apps first
     const handleCreateApp = () => {
         setIsOpen(false);
-        router.push(`/prompt-apps/new?promptId=${promptId}`);
+        setIsCreateAppModalOpen(true);
     };
     
     // Convert to Template (Admin only) - with loading modal
@@ -241,7 +243,7 @@ export function PromptActionsMenu({
         <Button
             variant="ghost"
             size="sm"
-            className={`h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 ${triggerClassName}`}
+            className={`h-6 w-6 p-0 rounded-full hover:bg-accent ${triggerClassName}`}
             disabled={isLoading}
         >
             {isLoading ? (
@@ -467,6 +469,17 @@ export function PromptActionsMenu({
                 }}
             />
         )}
+
+        {/* Create / Update App Modal */}
+        <UpdatePromptAppModal
+            isOpen={isCreateAppModalOpen}
+            onClose={() => setIsCreateAppModalOpen(false)}
+            promptId={promptId}
+            promptName={promptData?.name || 'Untitled'}
+            mode="from-prompt"
+            onSuccess={() => setIsCreateAppModalOpen(false)}
+            onCreateNew={() => router.push(`/prompt-apps/new?promptId=${promptId}`)}
+        />
     </>
     );
 }

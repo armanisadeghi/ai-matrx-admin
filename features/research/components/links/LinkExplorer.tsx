@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { ExternalLink, Plus, Loader2, Link2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { ExternalLink, Plus, Loader2, Link2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import type { ExtractedLink } from '../../types';
@@ -12,9 +11,9 @@ import type { ExtractedLink } from '../../types';
 export default function LinkExplorer() {
     const { topicId, refresh } = useTopicContext();
     const api = useResearchApi();
-    const isMobile = useIsMobile();
     const [links, setLinks] = useState<ExtractedLink[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         let cancelled = false;
@@ -45,6 +44,17 @@ export default function LinkExplorer() {
 
     const linkList = (links as ExtractedLink[]) ?? [];
 
+    const filtered = useMemo(() => {
+        if (!search) return linkList;
+        const q = search.toLowerCase();
+        return linkList.filter(l =>
+            l.url.toLowerCase().includes(q) ||
+            (l.link_text ?? '').toLowerCase().includes(q) ||
+            (l.found_on_title ?? '').toLowerCase().includes(q) ||
+            (l.found_on_url ?? '').toLowerCase().includes(q),
+        );
+    }, [linkList, search]);
+
     const toggleSelect = useCallback((url: string) => {
         setSelected(prev => {
             const next = new Set(prev);
@@ -68,26 +78,48 @@ export default function LinkExplorer() {
     }, [api, topicId, selected, refetch, refresh]);
 
     return (
-        <div className="p-4 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold">Extracted Links</h1>
+        <div className="p-3 sm:p-4 space-y-3">
+            <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5">
+                <span className="text-xs font-medium text-foreground/80">Links</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{linkList.length}</span>
+                <div className="flex-1 relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+                    <input
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search url, text, source..."
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
+                        style={{ fontSize: '16px' }}
+                    />
+                </div>
                 {selected.size > 0 && (
-                    <Button size="sm" onClick={() => handleAddToScope()} disabled={adding} className="gap-2 min-h-[44px] sm:min-h-0">
-                        {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                        Add {selected.size} to Scope
-                    </Button>
+                    <button
+                        onClick={() => handleAddToScope()}
+                        disabled={adding}
+                        className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full glass-subtle text-[11px] font-medium text-primary disabled:opacity-50 transition-colors shrink-0"
+                    >
+                        {adding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                        Add {selected.size}
+                    </button>
                 )}
             </div>
 
-            {linkList.length === 0 ? (
+            {isLoading ? (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-xs">Loading links...</span>
+                </div>
+            ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                     <Link2 className="h-10 w-10 mb-3 opacity-30" />
-                    <p className="text-sm">No extracted links yet. Links appear after scraping sources.</p>
+                    <p className="text-xs">
+                        {linkList.length === 0 ? 'No extracted links yet. Links appear after scraping sources.' : 'No links match your search.'}
+                    </p>
                 </div>
             ) : (
-                <div className="space-y-2">
-                    {linkList.map((link, i) => (
-                        <div key={`${link.url}-${i}`} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
+                <div className="space-y-1.5">
+                    {filtered.map((link, i) => (
+                        <div key={`${link.url}-${i}`} className="flex items-start gap-2.5 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5">
                             <Checkbox
                                 checked={selected.has(link.url)}
                                 onCheckedChange={() => toggleSelect(link.url)}
@@ -98,17 +130,18 @@ export default function LinkExplorer() {
                                     href={link.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-sm font-medium text-primary hover:underline flex items-center gap-1 break-all"
+                                    className="text-xs font-medium text-primary hover:underline flex items-center gap-1 break-all"
+                                    onClick={e => e.stopPropagation()}
                                 >
                                     {link.link_text || link.url}
-                                    <ExternalLink className="h-3 w-3 shrink-0" />
+                                    <ExternalLink className="h-2.5 w-2.5 shrink-0" />
                                 </a>
                                 {link.link_text && (
-                                    <div className="text-xs text-muted-foreground truncate mt-0.5">{link.url}</div>
+                                    <div className="text-[10px] text-muted-foreground/60 truncate mt-px">{link.url}</div>
                                 )}
                                 {link.found_on_title && (
-                                    <div className="text-[10px] text-muted-foreground mt-1">
-                                        Found on: {link.found_on_title}
+                                    <div className="text-[10px] text-muted-foreground/50 mt-0.5">
+                                        from: {link.found_on_title}
                                     </div>
                                 )}
                             </div>
@@ -117,9 +150,9 @@ export default function LinkExplorer() {
                                 size="sm"
                                 onClick={() => handleAddToScope([link.url])}
                                 disabled={adding}
-                                className="shrink-0 min-h-[44px] sm:min-h-0"
+                                className="shrink-0 h-7 w-7 p-0"
                             >
-                                <Plus className="h-4 w-4" />
+                                <Plus className="h-3.5 w-3.5" />
                             </Button>
                         </div>
                     ))}

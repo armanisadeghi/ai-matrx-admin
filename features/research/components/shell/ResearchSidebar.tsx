@@ -8,7 +8,6 @@ import {
     ChevronLeft, BookOpen, FlaskConical, Bot, Settings2,
 } from 'lucide-react';
 import { RESEARCH_NAV_ITEMS } from '../../constants';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -38,11 +37,11 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
             return (
                 <div
                     key={item.key}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground/50 cursor-default select-none"
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground/40 cursor-default select-none"
                 >
-                    {Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5" />}
+                    {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
                     <span className="truncate flex-1">{item.label}</span>
-                    <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 font-normal shrink-0">
+                    <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 font-normal shrink-0">
                         Soon
                     </Badge>
                 </div>
@@ -55,13 +54,13 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
                     <Link
                         href={href}
                         className={cn(
-                            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                            'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors',
                             isActive
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                                ? 'bg-primary/8 text-primary'
+                                : 'text-muted-foreground/70 hover:bg-accent/50 hover:text-foreground',
                         )}
                     >
-                        {Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5" />}
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
                         <span className="truncate">{item.label}</span>
                     </Link>
                 </TooltipTrigger>
@@ -73,26 +72,24 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
     };
 
     return (
-        <aside className="hidden md:flex w-48 flex-col border-r border-border bg-card/50 shrink-0">
-            <div className="flex items-center gap-2 px-3 h-12 border-b border-border">
-                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                    <Link href="/p/research/topics">
-                        <ChevronLeft className="h-4 w-4" />
-                    </Link>
-                </Button>
-                <span className="text-sm font-semibold truncate">Research</span>
+        <aside className="hidden md:flex w-44 flex-col border-r border-border/50 bg-card/30 backdrop-blur-sm shrink-0">
+            <div className="flex items-center gap-1.5 px-2.5 h-10 border-b border-border/50">
+                <Link
+                    href="/p/research/topics"
+                    className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors"
+                >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                </Link>
+                <span className="text-xs font-semibold truncate">Research</span>
             </div>
-            <nav className="flex-1 py-2 px-2 overflow-y-auto">
-                {/* Primary pipeline steps */}
-                <div className="space-y-0.5">
+            <nav className="flex-1 py-1.5 px-1.5 overflow-y-auto">
+                <div className="space-y-px">
                     {primaryItems.map(renderItem)}
                 </div>
 
-                {/* Divider */}
-                <div className="mx-1 my-2 h-px bg-border" />
+                <div className="mx-1 my-1.5 h-px bg-border/30" />
 
-                {/* Secondary utility tabs */}
-                <div className="space-y-0.5">
+                <div className="space-y-px">
                     {secondaryItems.map(renderItem)}
                 </div>
             </nav>

@@ -134,29 +134,25 @@ export default function DocumentViewer() {
             )}
 
             {/* Main Content */}
-            <div className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                    <div>
-                        <h1 className="text-lg sm:text-xl font-bold">{document.title ?? 'Research Document'}</h1>
-                        <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-[10px]">v{document.version}</Badge>
-                            <span className="text-xs text-muted-foreground">
-                                {new Date(document.created_at).toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <Button variant="outline" size="sm" onClick={handleRegenerate} disabled={stream.isStreaming} className="gap-1.5 min-h-[44px] sm:min-h-0">
-                            {stream.isStreaming ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                            Regenerate
-                        </Button>
+            <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
+                <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5 mb-4">
+                    <span className="text-xs font-medium text-foreground/80 truncate">{document.title ?? 'Document'}</span>
+                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5">v{document.version}</Badge>
+                    <span className="text-[10px] text-muted-foreground/60">
+                        {new Date(document.created_at).toLocaleDateString()}
+                    </span>
+                    <div className="flex-1" />
+                    <div className="flex items-center gap-1">
+                        <button onClick={handleRegenerate} disabled={stream.isStreaming} className="inline-flex items-center gap-1 h-6 px-2 rounded-full glass-subtle text-[11px] font-medium text-primary disabled:opacity-50 transition-colors">
+                            {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                            <span className="hidden sm:inline">Regen</span>
+                        </button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="gap-1.5 min-h-[44px] sm:min-h-0">
-                                    <Download className="h-3.5 w-3.5" />
-                                    Export
-                                </Button>
+                                <button className="inline-flex items-center gap-1 h-6 px-2 rounded-full glass-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    <Download className="h-3 w-3" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuItem onClick={() => handleExport('json')}>Export as JSON</DropdownMenuItem>
@@ -164,10 +160,10 @@ export default function DocumentViewer() {
                                 <DropdownMenuItem disabled>Export as DOCX (coming soon)</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button variant="outline" size="sm" onClick={() => setShowHistory(true)} className="gap-1.5 min-h-[44px] sm:min-h-0">
-                            <History className="h-3.5 w-3.5" />
-                            History
-                        </Button>
+                        <button onClick={() => setShowHistory(true)} className="inline-flex items-center gap-1 h-6 px-2 rounded-full glass-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                            <History className="h-3 w-3" />
+                            <span className="hidden sm:inline">History</span>
+                        </button>
                     </div>
                 </div>
 

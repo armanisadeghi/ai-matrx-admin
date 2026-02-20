@@ -26,7 +26,7 @@ export function PublicHeaderFeedback() {
 
   return (
     <Suspense fallback={<FeedbackButtonPlaceholder />}>
-      <FeedbackButton className="text-foreground hover:bg-accent rounded-lg transition-colors" />
+      <FeedbackButton className="text-foreground hover:bg-accent rounded-full transition-colors" />
     </Suspense>
   );
 }
@@ -38,11 +38,11 @@ export function PublicHeaderFeedback() {
 function FeedbackButtonPlaceholder() {
   return (
     <button
-      className="p-2 rounded-lg opacity-50 cursor-default"
+      className="p-2 rounded-full opacity-50 cursor-default"
       aria-hidden="true"
       disabled
     >
-      <Bug className="w-5 h-5" />
+      <Bug className="w-4 h-4" />
     </button>
   );
 }

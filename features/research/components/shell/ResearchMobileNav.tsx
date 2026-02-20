@@ -30,8 +30,8 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
 
     return (
         <>
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-4">
-                <div className="flex items-center justify-around h-14 glass rounded-2xl shadow-lg border border-border/50 mb-2">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-4 pointer-events-none">
+                <div className="flex items-center justify-around h-11 glass rounded-[22px] shadow-lg border border-white/[0.06] mb-1.5 pointer-events-auto">
                     {visibleItems.map((item) => {
                         const Icon = ICON_MAP[item.icon];
                         const href = item.href(topicId);
@@ -44,21 +44,21 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
                                 key={item.key}
                                 href={href}
                                 className={cn(
-                                    'flex flex-col items-center gap-0.5 px-2 py-1.5 min-w-[44px] min-h-[44px] justify-center',
-                                    isActive ? 'text-primary' : 'text-muted-foreground',
+                                    'flex flex-col items-center gap-px px-2.5 py-1 min-w-[44px] min-h-[44px] justify-center transition-colors',
+                                    isActive ? 'text-primary' : 'text-muted-foreground/50',
                                 )}
                             >
-                                {Icon && <Icon className="h-5 w-5" />}
-                                <span className="text-[10px] font-medium">{item.label}</span>
+                                {Icon && <Icon className={cn('h-[18px] w-[18px]', isActive && 'drop-shadow-[0_0_4px_hsl(var(--primary)/0.4)]')} />}
+                                <span className="text-[9px] font-medium leading-none">{item.label}</span>
                             </Link>
                         );
                     })}
                     <button
                         onClick={() => setMoreOpen(true)}
-                        className="flex flex-col items-center gap-0.5 px-2 py-1.5 min-w-[44px] min-h-[44px] justify-center text-muted-foreground"
+                        className="flex flex-col items-center gap-px px-2.5 py-1 min-w-[44px] min-h-[44px] justify-center text-muted-foreground/50 transition-colors"
                     >
-                        <MoreHorizontal className="h-5 w-5" />
-                        <span className="text-[10px] font-medium">More</span>
+                        <MoreHorizontal className="h-[18px] w-[18px]" />
+                        <span className="text-[9px] font-medium leading-none">More</span>
                     </button>
                 </div>
             </nav>
@@ -66,7 +66,7 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
             <Drawer open={moreOpen} onOpenChange={setMoreOpen}>
                 <DrawerContent className="max-h-[60dvh]">
                     <DrawerTitle className="sr-only">More options</DrawerTitle>
-                    <div className="p-4 space-y-1 overflow-y-auto overscroll-contain pb-safe">
+                    <div className="p-3 space-y-0.5 overflow-y-auto overscroll-contain pb-safe">
                         {hiddenItems.map((item) => {
                             const Icon = ICON_MAP[item.icon];
                             const href = item.href(topicId);
@@ -78,11 +78,11 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
                                 return (
                                     <div
                                         key={item.key}
-                                        className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-muted-foreground/50 cursor-default"
+                                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground/40 cursor-default"
                                     >
-                                        {Icon && <Icon className="h-5 w-5 shrink-0" />}
+                                        {Icon && <Icon className="h-4 w-4 shrink-0" />}
                                         <span className="flex-1">{item.label}</span>
-                                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-normal">
+                                        <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 font-normal">
                                             Soon
                                         </Badge>
                                     </div>
@@ -95,13 +95,13 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
                                     href={href}
                                     onClick={() => setMoreOpen(false)}
                                     className={cn(
-                                        'flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors min-h-[44px]',
+                                        'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-colors min-h-[44px]',
                                         isActive
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-muted-foreground hover:bg-accent',
+                                            ? 'bg-primary/8 text-primary'
+                                            : 'text-muted-foreground hover:bg-accent/50',
                                     )}
                                 >
-                                    {Icon && <Icon className="h-5 w-5 shrink-0" />}
+                                    {Icon && <Icon className="h-4 w-4 shrink-0" />}
                                     {item.label}
                                 </Link>
                             );

@@ -57,10 +57,10 @@ export default function MobileLayout({
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               onClick={toggleSidebar}
-              className="p-1.5 rounded-lg glass transition-colors flex-shrink-0"
+              className="p-1.5 rounded-full glass transition-colors flex-shrink-0"
               aria-label="Open menu"
             >
-              <Menu className="w-5 h-5 text-foreground" />
+              <Menu className="w-4 h-4 text-foreground" />
             </button>
 
             {/* Page-specific controls will be inserted here */}
@@ -91,10 +91,10 @@ export default function MobileLayout({
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Menu</h2>
           <button
             onClick={toggleSidebar}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Close menu"
           >
-            <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <X className="w-4 h-4 text-gray-700 dark:text-gray-300" />
           </button>
         </div>
 

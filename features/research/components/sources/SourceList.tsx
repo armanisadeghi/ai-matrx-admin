@@ -112,153 +112,146 @@ function SourceRow({
                 )}
                 onClick={() => !anyNavigating && onNavigate(source.id)}
             >
-                {/* Checkbox */}
-                <td className="px-3 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
-                    <Checkbox
-                        checked={selected}
-                        onCheckedChange={() => onSelect(source.id)}
-                        disabled={anyNavigating}
-                        className="mt-1"
-                    />
+                {/* Checkbox + Include + Rank stacked vertically */}
+                <td className="px-2 py-2.5 w-12 align-top" onClick={e => e.stopPropagation()}>
+                    <div className="flex flex-col items-center gap-1.5">
+                        <Checkbox
+                            checked={selected}
+                            onCheckedChange={() => onSelect(source.id)}
+                            disabled={anyNavigating}
+                        />
+                        <Switch
+                            checked={source.is_included}
+                            onCheckedChange={() => onToggleInclude(source)}
+                            className="scale-[0.6]"
+                            disabled={anyNavigating}
+                        />
+                        {source.rank ? (
+                            <span className="text-[10px] font-mono font-semibold text-muted-foreground/60 tabular-nums">
+                                #{source.rank}
+                            </span>
+                        ) : null}
+                    </div>
                 </td>
 
-                {/* Include toggle */}
-                <td className="px-2 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
-                    <Switch
-                        checked={source.is_included}
-                        onCheckedChange={() => onToggleInclude(source)}
-                        className="scale-75 mt-0.5"
-                        disabled={anyNavigating}
-                    />
-                </td>
-
-                {/* Rank */}
-                <td className="px-2 py-2.5 w-10 text-center align-top">
-                    {source.rank ? (
-                        <span className="text-xs font-mono font-semibold text-muted-foreground tabular-nums mt-1 inline-block">
-                            #{source.rank}
-                        </span>
-                    ) : (
-                        <span className="text-xs text-muted-foreground/40 mt-1 inline-block">—</span>
-                    )}
-                </td>
-
-                {/* Content: Thumbnail + Title + URL + Description + Metadata row */}
-                <td className="px-3 py-2.5 w-full max-w-0">
-                    <div className="flex items-start gap-3">
-                        <div className="shrink-0 w-10 h-10 rounded overflow-hidden bg-muted flex items-center justify-center">
-                            {source.thumbnail_url ? (
-                                <Image
-                                    src={source.thumbnail_url}
-                                    alt=""
-                                    width={40}
-                                    height={40}
-                                    className="w-full h-full object-cover"
-                                    unoptimized
-                                />
-                            ) : (
-                                <Globe className="h-4 w-4 text-muted-foreground/50" />
-                            )}
-                        </div>
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                            <div className="font-medium text-sm leading-snug line-clamp-2 break-words group-hover:text-primary transition-colors">
-                                {source.title || source.url}
-                            </div>
-                            <div className="text-xs text-muted-foreground break-all line-clamp-1">{source.url}</div>
-                            {source.description && (
-                                <div className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-2 leading-relaxed break-words">
-                                    {source.description}
-                                </div>
-                            )}
-                            {/* Metadata row — stacked inline */}
-                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                <span className="text-xs text-muted-foreground truncate max-w-48">{source.hostname}</span>
-                                <span className="text-muted-foreground/30">·</span>
-                                <SourceTypeIcon type={source.source_type} size={13} className="text-muted-foreground" />
-                                <OriginBadge origin={source.origin} />
-                                {source.page_age && (
-                                    <>
-                                        <span className="text-muted-foreground/30">·</span>
-                                        <span className="text-xs text-muted-foreground whitespace-nowrap">{pageAgeDisplay}</span>
-                                    </>
-                                )}
-                                <span className="text-muted-foreground/30">·</span>
-                                <StatusBadge status={source.scrape_status} />
-                                {needsScrape && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-5 px-1.5 gap-1 text-[10px] ml-1"
-                                        disabled={scraping || anyNavigating}
-                                        onClick={(e) => onScrape(source, e)}
-                                    >
-                                        {scraping ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
-                                        {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
-                                    </Button>
-                                )}
-                            </div>
-                            {/* Expanded snippets — inline within the same cell */}
-                            {expanded && hasSnippets && (
-                                <div className="mt-2 space-y-1.5">
-                                    {source.extra_snippets!.map((snippet, i) => (
-                                        <p key={i} className="text-xs text-foreground/70 leading-relaxed">
-                                            {snippet}
-                                        </p>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        {hasSnippets && (
-                            <button
-                                className="shrink-0 p-1 rounded hover:bg-muted transition-colors mt-0.5"
-                                onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
-                                title={expanded ? 'Collapse' : 'Expand'}
-                            >
-                                {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
-                            </button>
+                {/* Thumbnail — larger */}
+                <td className="py-2.5 pr-3 w-16 align-top">
+                    <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                        {source.thumbnail_url ? (
+                            <Image
+                                src={source.thumbnail_url}
+                                alt=""
+                                width={56}
+                                height={56}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                            />
+                        ) : (
+                            <Globe className="h-5 w-5 text-muted-foreground/40" />
                         )}
                     </div>
                 </td>
 
-                {/* Actions: menu + navigation indicator */}
-                <td className="px-2 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
-                    {navigating ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mx-auto mt-1" />
-                    ) : (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={anyNavigating}>
-                                    <MoreVertical className="h-4 w-4" />
+                {/* Content: Title + URL + Description + Metadata */}
+                <td className="px-2 py-2.5 w-full max-w-0">
+                    <div className="min-w-0 overflow-hidden">
+                        <div className="font-medium text-sm leading-snug line-clamp-2 break-words group-hover:text-primary transition-colors">
+                            {source.title || source.url}
+                        </div>
+                        <div className="text-xs text-muted-foreground break-all line-clamp-1 mt-0.5">{source.url}</div>
+                        {source.description && (
+                            <div className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-2 leading-relaxed break-words">
+                                {source.description}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            <span className="text-[11px] text-muted-foreground truncate max-w-48">{source.hostname}</span>
+                            <span className="text-muted-foreground/30">·</span>
+                            <SourceTypeIcon type={source.source_type} size={13} className="text-muted-foreground" />
+                            <OriginBadge origin={source.origin} />
+                            {source.page_age && (
+                                <>
+                                    <span className="text-muted-foreground/30">·</span>
+                                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">{pageAgeDisplay}</span>
+                                </>
+                            )}
+                            <span className="text-muted-foreground/30">·</span>
+                            <StatusBadge status={source.scrape_status} />
+                            {needsScrape && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-5 px-1.5 gap-1 text-[10px] ml-1"
+                                    disabled={scraping || anyNavigating}
+                                    onClick={(e) => onScrape(source, e)}
+                                >
+                                    {scraping ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                                    {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => onNavigate(source.id)}>
-                                    View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => window.open(source.url, '_blank')}>
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    Open URL
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onToggleInclude(source)}>
-                                    {source.is_included ? 'Exclude' : 'Include'}
-                                </DropdownMenuItem>
-                                {needsScrape && (
-                                    <DropdownMenuItem onClick={(e) => onScrape(source, e as unknown as React.MouseEvent)}>
-                                        <Download className="h-4 w-4 mr-2" />
-                                        {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                            )}
+                        </div>
+                        {expanded && hasSnippets && (
+                            <div className="mt-2 space-y-1.5">
+                                {source.extra_snippets!.map((snippet, i) => (
+                                    <p key={i} className="text-xs text-foreground/70 leading-relaxed">
+                                        {snippet}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </td>
+
+                {/* Actions */}
+                <td className="px-2 py-2.5 w-10 align-top" onClick={e => e.stopPropagation()}>
+                    <div className="flex flex-col items-center gap-1">
+                        {navigating ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" disabled={anyNavigating}>
+                                        <MoreVertical className="h-3.5 w-3.5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => onNavigate(source.id)}>
+                                        View Details
                                     </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => updateSource(source.id, { scrape_status: 'complete' })}>
-                                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                                    Mark Complete
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => updateSource(source.id, { is_stale: true })}>
-                                    <AlertTriangle className="h-4 w-4 mr-2" />
-                                    Mark Stale
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+                                    <DropdownMenuItem onClick={() => window.open(source.url, '_blank')}>
+                                        <ExternalLink className="h-4 w-4 mr-2" />
+                                        Open URL
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onToggleInclude(source)}>
+                                        {source.is_included ? 'Exclude' : 'Include'}
+                                    </DropdownMenuItem>
+                                    {needsScrape && (
+                                        <DropdownMenuItem onClick={(e) => onScrape(source, e as unknown as React.MouseEvent)}>
+                                            <Download className="h-4 w-4 mr-2" />
+                                            {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                                        </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem onClick={() => updateSource(source.id, { scrape_status: 'complete' })}>
+                                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                                        Mark Complete
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => updateSource(source.id, { is_stale: true })}>
+                                        <AlertTriangle className="h-4 w-4 mr-2" />
+                                        Mark Stale
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                        {hasSnippets && (
+                            <button
+                                className="p-0.5 rounded hover:bg-muted transition-colors"
+                                onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
+                                title={expanded ? 'Collapse' : 'Expand'}
+                            >
+                                {expanded ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                            </button>
+                        )}
+                    </div>
                 </td>
             </tr>
         </>
@@ -351,43 +344,40 @@ export default function SourceList() {
     const anyNavigating = isPending || navigatingId !== null;
 
     return (
-        <div className="p-4 sm:p-6 space-y-4 overflow-x-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold">Sources</h1>
-                <span className="text-sm text-muted-foreground">{sourceList.length} results</span>
+        <div className="p-3 sm:p-4 space-y-3 overflow-x-hidden">
+            {/* Header — compact glass bar */}
+            <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5">
+                <span className="text-xs font-medium text-foreground/80">Sources</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums">{sourceList.length}</span>
+                <div className="flex-1" />
+                <SourceFilters
+                    filters={filters}
+                    onFilterChange={setFilters}
+                    onReset={resetFilters}
+                    hasActiveFilters={hasActiveFilters}
+                    keywords={(keywords as import('../../types').ResearchKeyword[]) ?? []}
+                    hostnames={hostnames}
+                />
             </div>
-
-            {/* Filters */}
-            <SourceFilters
-                filters={filters}
-                onFilterChange={setFilters}
-                onReset={resetFilters}
-                hasActiveFilters={hasActiveFilters}
-                keywords={(keywords as import('../../types').ResearchKeyword[]) ?? []}
-                hostnames={hostnames}
-            />
 
             {/* Desktop Table */}
             {!isMobile ? (
-                <div className="rounded-xl border border-border overflow-x-auto">
+                <div className="rounded-xl border border-border/50 bg-card/40 backdrop-blur-sm overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="bg-muted/50 border-b border-border">
-                                <th className="w-10 px-3 py-2">
+                            <tr className="bg-muted/30 border-b border-border/50">
+                                <th className="w-12 px-2 py-2">
                                     <Checkbox
                                         checked={selected.size === sourceList.length && sourceList.length > 0}
                                         onCheckedChange={toggleAll}
                                     />
                                 </th>
-                                <th className="w-10 px-2 py-2 text-left text-xs font-medium text-muted-foreground">Inc</th>
-                                <th className="w-10 px-2 py-2 text-center">
-                                    <SortHeader label="#" field="rank" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
-                                </th>
-                                <th className="px-3 py-2 text-left w-full">
+                                <th className="w-16 py-2 pr-3" />
+                                <th className="px-2 py-2 text-left w-full">
                                     <div className="flex items-center gap-4">
                                         <span className="text-xs font-medium text-muted-foreground">Title / Description</span>
                                         <div className="flex items-center gap-3">
+                                            <SortHeader label="#" field="rank" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
                                             <SortHeader label="Age" field="page_age" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
                                             <SortHeader label="Status" field="scrape_status" currentSort={filters.sort_by} currentDir={filters.sort_dir} onSort={handleSort} />
                                         </div>
@@ -426,12 +416,13 @@ export default function SourceList() {
                     {sourceList.map(source => {
                         const { display: pageAgeDisplay } = formatPageAge(source.page_age);
                         const isNavigating = navigatingId === source.id;
+                        const needsScrape = source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin';
                         return (
                             <div
                                 key={source.id}
                                 onClick={() => !anyNavigating && handleNavigate(source.id)}
                                 className={cn(
-                                    'rounded-xl border border-border bg-card p-3 transition-colors relative',
+                                    'rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden transition-colors relative',
                                     !source.is_included && 'opacity-50',
                                     isNavigating && 'bg-muted/60',
                                     !anyNavigating && 'active:bg-muted/50 cursor-pointer',
@@ -443,70 +434,80 @@ export default function SourceList() {
                                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
                                     </div>
                                 )}
-                                <div className="flex items-start gap-3">
-                                    <Checkbox
-                                        checked={selected.has(source.id)}
-                                        onCheckedChange={() => toggleSelect(source.id)}
-                                        onClick={e => e.stopPropagation()}
-                                        className="mt-1"
-                                        disabled={anyNavigating}
-                                    />
-                                    {/* Thumbnail */}
-                                    <div className="shrink-0 w-10 h-10 rounded overflow-hidden bg-muted flex items-center justify-center">
-                                        {source.thumbnail_url ? (
-                                            <Image
-                                                src={source.thumbnail_url}
-                                                alt=""
-                                                width={40}
-                                                height={40}
-                                                className="w-full h-full object-cover"
-                                                unoptimized
-                                            />
-                                        ) : (
-                                            <Globe className="h-4 w-4 text-muted-foreground/50" />
-                                        )}
+
+                                {/* Thumbnail banner */}
+                                <div className="w-full h-28 bg-muted/50 flex items-center justify-center relative">
+                                    {source.thumbnail_url ? (
+                                        <Image
+                                            src={source.thumbnail_url}
+                                            alt=""
+                                            width={400}
+                                            height={112}
+                                            className="w-full h-full object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <Globe className="h-8 w-8 text-muted-foreground/30" />
+                                    )}
+                                    {/* Rank badge overlay */}
+                                    {source.rank && (
+                                        <span className="absolute top-1.5 left-1.5 text-[10px] font-mono font-bold bg-black/60 text-white px-1.5 py-0.5 rounded-md tabular-nums">
+                                            #{source.rank}
+                                        </span>
+                                    )}
+                                    {/* Checkbox overlay */}
+                                    <div className="absolute top-1.5 right-1.5" onClick={e => e.stopPropagation()}>
+                                        <Checkbox
+                                            checked={selected.has(source.id)}
+                                            onCheckedChange={() => toggleSelect(source.id)}
+                                            disabled={anyNavigating}
+                                            className="h-5 w-5 bg-black/40 border-white/60 data-[state=checked]:bg-primary"
+                                        />
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-start gap-2">
-                                            {source.rank && (
-                                                <span className="text-xs font-mono font-semibold text-muted-foreground shrink-0">#{source.rank}</span>
-                                            )}
-                                            <div className="flex items-center gap-1.5 min-w-0">
-                                                <SourceTypeIcon type={source.source_type} size={14} />
-                                                <span className="font-medium text-sm line-clamp-1">{source.title || source.url}</span>
+                                </div>
+
+                                {/* Content below thumbnail */}
+                                <div className="p-2.5 space-y-1.5">
+                                    {/* Title + toggle row */}
+                                    <div className="flex items-start gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-medium text-sm leading-snug line-clamp-2 break-words">
+                                                {source.title || source.url}
                                             </div>
+                                            <div className="text-[11px] text-muted-foreground/60 truncate mt-0.5">{source.hostname}</div>
                                         </div>
-                                        <div className="text-xs text-muted-foreground truncate mt-0.5">{source.hostname}</div>
-                                        {source.description && (
-                                            <div className="text-xs text-muted-foreground/80 mt-1 line-clamp-2 leading-relaxed">{source.description}</div>
-                                        )}
-                                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                            <StatusBadge status={source.scrape_status} />
-                                            <OriginBadge origin={source.origin} />
-                                            {source.page_age && (
-                                                <span className="text-xs text-muted-foreground">{pageAgeDisplay}</span>
-                                            )}
-                                            {(source.scrape_status === 'pending' || source.scrape_status === 'failed' || source.scrape_status === 'thin') && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-6 px-2 gap-1 text-xs"
-                                                    disabled={scrapingIds.has(source.id) || anyNavigating}
-                                                    onClick={(e) => handleScrapeSource(source, e)}
-                                                >
-                                                    <Download className="h-3 w-3" />
-                                                    {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
-                                                </Button>
-                                            )}
-                                        </div>
+                                        <Switch
+                                            checked={source.is_included}
+                                            onCheckedChange={() => handleToggleInclude(source)}
+                                            onClick={e => e.stopPropagation()}
+                                            className="scale-75 shrink-0 mt-0.5"
+                                            disabled={anyNavigating}
+                                        />
                                     </div>
-                                    <Switch
-                                        checked={source.is_included}
-                                        onCheckedChange={() => handleToggleInclude(source)}
-                                        onClick={e => e.stopPropagation()}
-                                        className="scale-75 shrink-0"
-                                        disabled={anyNavigating}
-                                    />
+
+                                    {source.description && (
+                                        <div className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed">{source.description}</div>
+                                    )}
+
+                                    {/* Badges row */}
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <SourceTypeIcon type={source.source_type} size={12} className="text-muted-foreground/50" />
+                                        <StatusBadge status={source.scrape_status} />
+                                        <OriginBadge origin={source.origin} />
+                                        {source.page_age && (
+                                            <span className="text-[10px] text-muted-foreground/60">{pageAgeDisplay}</span>
+                                        )}
+                                        {needsScrape && (
+                                            <button
+                                                className="inline-flex items-center gap-1 h-5 px-1.5 rounded-full glass-subtle text-[10px] text-primary ml-auto"
+                                                disabled={scrapingIds.has(source.id) || anyNavigating}
+                                                onClick={(e) => handleScrapeSource(source, e)}
+                                            >
+                                                <Download className="h-2.5 w-2.5" />
+                                                {source.scrape_status === 'pending' ? 'Scrape' : 'Re-scrape'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -519,27 +520,24 @@ export default function SourceList() {
                 </div>
             )}
 
-            {/* Pagination */}
             {sourceList.length >= filters.limit && (
-                <div className="flex items-center justify-center gap-2 pt-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
+                <div className="flex items-center justify-center gap-1.5 pt-1">
+                    <button
                         disabled={filters.offset === 0}
                         onClick={() => setFilters({ offset: Math.max(0, filters.offset - filters.limit) })}
+                        className="h-6 px-2.5 rounded-full glass-subtle text-[10px] font-medium text-muted-foreground disabled:opacity-30 hover:text-foreground transition-colors"
                     >
-                        Previous
-                    </Button>
-                    <span className="text-sm text-muted-foreground tabular-nums">
+                        Prev
+                    </button>
+                    <span className="text-[10px] text-muted-foreground/60 tabular-nums px-1">
                         {filters.offset + 1}–{filters.offset + sourceList.length}
                     </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
+                    <button
                         onClick={() => setFilters({ offset: filters.offset + filters.limit })}
+                        className="h-6 px-2.5 rounded-full glass-subtle text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                         Next
-                    </Button>
+                    </button>
                 </div>
             )}
 
