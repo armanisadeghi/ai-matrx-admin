@@ -10,11 +10,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useTopicContext } from '../../context/ResearchContext';
+import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchSynthesis, useResearchKeywords } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
-import type { ResearchSynthesis } from '../../types';
+import type { ResearchSynthesis, ResearchStreamDataPayload } from '../../types';
 
 function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
     const [expanded, setExpanded] = useState(false);
@@ -82,10 +82,16 @@ export default function SynthesisList() {
     const { topicId } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
-    const stream = useResearchStream(() => {});
+    const debug = useStreamDebug();
+    const stream = useResearchStream();
 
-    const { data: allSyntheses, isLoading: synthLoading } = useResearchSynthesis(topicId);
+    const { data: allSyntheses, isLoading: synthLoading, refresh: refetchSyntheses } = useResearchSynthesis(topicId);
     const { data: keywords } = useResearchKeywords(topicId);
+
+    // Optimistic synthesis results — merged from stream without DB round-trip
+    const [optimisticSyntheses, setOptimisticSyntheses] = useState<ResearchSynthesis[]>([]);
+    // Live token text while synthesis LLM is streaming
+    const [streamingText, setStreamingText] = useState('');
 
     const [search, setSearch] = useState('');
     const [scopeFilter, setScopeFilter] = useState<string>('all');
@@ -93,7 +99,15 @@ export default function SynthesisList() {
     const [keywordFilter, setKeywordFilter] = useState<string>('all');
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const synthList = allSyntheses ?? [];
+    // Merge DB syntheses + optimistic (deduplicated by id)
+    const allMerged = useMemo(() => {
+        const db = (allSyntheses ?? []) as ResearchSynthesis[];
+        const existingIds = new Set(db.map(s => s.id));
+        const fresh = optimisticSyntheses.filter(s => !existingIds.has(s.id));
+        return [...fresh, ...db];
+    }, [allSyntheses, optimisticSyntheses]);
+
+    const synthList = allMerged;
     const kwList = keywords ?? [];
 
     const getKeywordLabel = (kwId: string | null) => {
@@ -125,8 +139,23 @@ export default function SynthesisList() {
     const resetFilters = () => { setScopeFilter('all'); setStatusFilter('all'); setKeywordFilter('all'); };
 
     const handleRunProjectSynthesis = async () => {
+        setStreamingText('');
         const res = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'initial' });
-        stream.startStream(res);
+        stream.startStream(res, {
+            onChunk: (text) => setStreamingText(prev => prev + text),
+            onData: (payload: ResearchStreamDataPayload) => {
+                if (payload.type === 'synthesis_result') {
+                    setOptimisticSyntheses(prev => [payload.synthesis, ...prev]);
+                    setStreamingText('');
+                }
+            },
+            onEnd: () => {
+                setStreamingText('');
+                // Light refresh to sync any rows not emitted via stream
+                refetchSyntheses();
+            },
+        });
+        debug.pushEvents(stream.rawEvents, 'synthesize');
     };
 
     const filterSelects = (
@@ -228,13 +257,26 @@ export default function SynthesisList() {
             )}
 
             <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
+                {/* Live streaming synthesis card */}
+                {stream.isStreaming && streamingText && (
+                    <div className="rounded-xl border border-primary/30 bg-card/60 overflow-hidden">
+                        <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+                            <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
+                            <span className="text-xs font-medium text-primary">Synthesizing…</span>
+                        </div>
+                        <div className="px-3 py-3 prose prose-sm dark:prose-invert max-w-none prose-p:text-xs">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
+                            <span className="inline-block w-0.5 h-3.5 bg-primary animate-pulse ml-0.5 align-middle" />
+                        </div>
+                    </div>
+                )}
                 {synthLoading ? (
                     <div className="space-y-3">
                         {Array.from({ length: 4 }).map((_, i) => (
                             <Skeleton key={i} className="h-14 rounded-xl" />
                         ))}
                     </div>
-                ) : filtered.length === 0 ? (
+                ) : !synthLoading && filtered.length === 0 && !stream.isStreaming ? (
                     <div className="flex flex-col items-center justify-center min-h-[280px] gap-3 text-center px-4">
                         <div className="h-12 w-12 rounded-2xl bg-primary/8 flex items-center justify-center">
                             <Layers className="h-6 w-6 text-primary/40" />

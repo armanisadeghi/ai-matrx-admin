@@ -6,7 +6,7 @@ import { Settings, AlertCircle, ArrowRight, Zap, SlidersHorizontal, Hand, Search
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTopicContext } from '../../context/ResearchContext';
+import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
 import { PipelineCards } from './PipelineCards';
@@ -24,53 +24,75 @@ const AUTONOMY_ICONS = { auto: Zap, semi: SlidersHorizontal, manual: Hand } as c
 const AUTONOMY_LABELS = { auto: 'Auto', semi: 'Semi', manual: 'Manual' } as const;
 
 export default function ResearchOverview() {
-    const { topicId, progress, topic, refresh, isLoading, error } = useTopicContext();
+    const { topicId, progress, topic, refresh, isLoading, error, addOptimisticSource, clearOptimisticSources } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
+    const debug = useStreamDebug();
 
-    const stream = useResearchStream(() => {
-        refresh();
-    });
+    const stream = useResearchStream();
 
     const [keywordModalOpen, setKeywordModalOpen] = useState(false);
     const [newKeyword, setNewKeyword] = useState('');
     const [addingKeyword, setAddingKeyword] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
+    // Shared data callback: inject sources as they arrive from search
+    const handleStreamData = useCallback((payload: import('../../types').ResearchStreamDataPayload) => {
+        if (payload.type === 'source_found') {
+            addOptimisticSource(payload.source);
+        }
+    }, [addOptimisticSource]);
+
+    const handleStreamEnd = useCallback(() => {
+        refresh();
+        // After a full pipeline run, clear optimistic sources — DB refresh will show real data
+        clearOptimisticSources();
+    }, [refresh, clearOptimisticSources]);
+
     const handleRun = useCallback(async () => {
         const response = await api.runPipeline(topicId);
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, { onData: handleStreamData, onEnd: handleStreamEnd });
+        debug.pushEvents(stream.rawEvents, 'pipeline');
+    }, [api, topicId, stream, handleStreamData, handleStreamEnd, debug]);
 
     const handleSearch = useCallback(async () => {
         const response = await api.triggerSearch(topicId);
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, {
+            onData: handleStreamData,
+            onEnd: () => refresh(),
+        });
+        debug.pushEvents(stream.rawEvents, 'search');
+    }, [api, topicId, stream, handleStreamData, refresh, debug]);
 
     const handleScrape = useCallback(async () => {
         const response = await api.triggerScrape(topicId);
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, { onEnd: () => refresh() });
+        debug.pushEvents(stream.rawEvents, 'scrape');
+    }, [api, topicId, stream, refresh, debug]);
 
     const handleAnalyze = useCallback(async () => {
         const response = await api.analyzeAll(topicId);
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, { onEnd: () => refresh() });
+        debug.pushEvents(stream.rawEvents, 'analyze-all');
+    }, [api, topicId, stream, refresh, debug]);
 
     const handleReport = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'initial' });
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, { onEnd: () => refresh() });
+        debug.pushEvents(stream.rawEvents, 'synthesize');
+    }, [api, topicId, stream, refresh, debug]);
 
     const handleRebuild = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'rebuild' });
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, { onEnd: () => refresh() });
+        debug.pushEvents(stream.rawEvents, 'synthesize-rebuild');
+    }, [api, topicId, stream, refresh, debug]);
 
     const handleUpdate = useCallback(async () => {
         const response = await api.synthesize(topicId, { scope: 'project', iteration_mode: 'update' });
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, { onEnd: () => refresh() });
+        debug.pushEvents(stream.rawEvents, 'synthesize-update');
+    }, [api, topicId, stream, refresh, debug]);
 
     const handleAddKeyword = useCallback(async () => {
         if (!newKeyword.trim()) return;

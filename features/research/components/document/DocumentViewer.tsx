@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTopicContext } from '../../context/ResearchContext';
+import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchDocument } from '../../hooks/useResearchState';
 import { useResearchStream } from '../../hooks/useResearchStream';
@@ -19,29 +19,45 @@ export default function DocumentViewer() {
     const { topicId, refresh } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
+    const debug = useStreamDebug();
     const { data: docData, refresh: refetchDoc } = useResearchDocument(topicId);
-    const stream = useResearchStream(() => { refetchDoc(); refresh(); });
+    const stream = useResearchStream();
+
+    // Live streaming document text — accumulated chunk by chunk
+    const [streamingDocText, setStreamingDocText] = useState('');
 
     const [showHistory, setShowHistory] = useState(false);
     const [diffDocs, setDiffDocs] = useState<[ResearchDocument, ResearchDocument] | null>(null);
 
     const document = docData as ResearchDocument | null;
 
+    // During streaming, show accumulated text; after, show DB document
+    const displayContent = stream.isStreaming ? streamingDocText : (document?.content ?? '');
+
     const headings = useMemo(() => {
-        if (!document?.content) return [];
-        const matches = document.content.match(/^#{1,3}\s+.+$/gm);
+        if (!displayContent) return [];
+        const matches = displayContent.match(/^#{1,3}\s+.+$/gm);
         return (matches ?? []).map(h => {
             const level = h.match(/^#+/)?.[0].length ?? 1;
             const text = h.replace(/^#+\s+/, '');
             const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             return { level, text, id };
         });
-    }, [document?.content]);
+    }, [displayContent]);
 
     const handleRegenerate = useCallback(async () => {
+        setStreamingDocText('');
         const response = await api.generateDocument(topicId);
-        stream.startStream(response);
-    }, [api, topicId, stream]);
+        stream.startStream(response, {
+            onChunk: (text) => setStreamingDocText(prev => prev + text),
+            onEnd: () => {
+                setStreamingDocText('');
+                refetchDoc();
+                refresh();
+            },
+        });
+        debug.pushEvents(stream.rawEvents, 'document');
+    }, [api, topicId, stream, refetchDoc, refresh, debug]);
 
     const handleExport = useCallback(async (format: string) => {
         if (!document) return;
@@ -70,6 +86,29 @@ export default function DocumentViewer() {
         }
     }, [document, topicId]);
 
+    // Show streaming in-progress state when generating (no document yet)
+    if (!document && stream.isStreaming) {
+        return (
+            <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
+                <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5 mb-4">
+                    <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
+                    <span className="text-xs font-medium text-primary">Generating document…</span>
+                    {stream.messages.length > 0 && (
+                        <span className="text-[10px] text-muted-foreground truncate">
+                            {stream.messages[stream.messages.length - 1].message}
+                        </span>
+                    )}
+                </div>
+                {streamingDocText && (
+                    <article className="prose prose-sm dark:prose-invert max-w-none prose-headings:scroll-mt-4">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingDocText}</ReactMarkdown>
+                        <span className="inline-block w-0.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
+                    </article>
+                )}
+            </div>
+        );
+    }
+
     if (!document) {
         return (
             <div className="flex flex-col items-center justify-center h-full min-h-[320px] gap-3 p-6 text-center">
@@ -87,7 +126,7 @@ export default function DocumentViewer() {
                     disabled={stream.isStreaming}
                     className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
                 >
-                    {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                    <FileText className="h-3 w-3" />
                     Generate Document
                 </button>
             </div>
@@ -198,7 +237,7 @@ export default function DocumentViewer() {
                     </div>
                 )}
 
-                {/* Markdown Content */}
+                {/* Markdown Content — uses live streaming text while generating, DB content after */}
                 <article className="prose prose-sm dark:prose-invert max-w-none prose-headings:scroll-mt-4">
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
@@ -208,8 +247,11 @@ export default function DocumentViewer() {
                             h3: ({ children, ...props }) => <h3 id={String(children).toLowerCase().replace(/[^a-z0-9]+/g, '-')} {...props}>{children}</h3>,
                         }}
                     >
-                        {document.content ?? ''}
+                        {displayContent}
                     </ReactMarkdown>
+                    {stream.isStreaming && (
+                        <span className="inline-block w-0.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
+                    )}
                 </article>
             </div>
 

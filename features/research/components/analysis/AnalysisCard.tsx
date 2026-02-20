@@ -16,26 +16,24 @@ interface AnalysisCardProps {
     sourceId?: string;
     contentId?: string;
     onAnalyzed?: () => void;
+    /** Live token stream text while an analysis is being generated */
+    streamingText?: string;
     /** When true, renders only a compact "Re-analyze" trigger button (no card UI) */
     triggerOnly?: boolean;
 }
 
-export function AnalysisCard({ analysis, topicId, sourceId, contentId, onAnalyzed, triggerOnly }: AnalysisCardProps) {
+export function AnalysisCard({
+    analysis,
+    topicId,
+    sourceId,
+    contentId,
+    onAnalyzed,
+    streamingText,
+    triggerOnly,
+}: AnalysisCardProps) {
     const api = useResearchApi();
     const [expanded, setExpanded] = useState(false);
-    const [analyzing, setAnalyzing] = useState(false);
     const [retrying, setRetrying] = useState(false);
-
-    const handleAnalyze = useCallback(async () => {
-        if (!topicId || !sourceId) return;
-        setAnalyzing(true);
-        try {
-            await api.analyzeSource(topicId, sourceId);
-            onAnalyzed?.();
-        } finally {
-            setAnalyzing(false);
-        }
-    }, [api, topicId, sourceId, onAnalyzed]);
 
     const handleRetry = useCallback(async () => {
         if (!topicId || !analysis) return;
@@ -52,16 +50,38 @@ export function AnalysisCard({ analysis, topicId, sourceId, contentId, onAnalyze
     if (triggerOnly) {
         return (
             <button
-                onClick={handleAnalyze}
-                disabled={analyzing || !topicId || !sourceId}
+                onClick={onAnalyzed}
+                disabled={!topicId || !sourceId}
                 className={cn(
                     'inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors',
                     'disabled:opacity-40 disabled:pointer-events-none',
                 )}
             >
-                {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                <Plus className="h-3 w-3" />
                 Re-analyze
             </button>
+        );
+    }
+
+    // Live streaming — analysis is generating right now
+    if (streamingText !== undefined && streamingText !== '') {
+        return (
+            <div className="rounded-xl border border-primary/30 bg-card overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+                    <Loader2 className="h-4 w-4 text-primary animate-spin shrink-0" />
+                    <span className="text-xs font-medium text-primary">Analyzing…</span>
+                    <span className="text-[10px] text-muted-foreground">tokens streaming</span>
+                </div>
+                <div className="px-4 py-3">
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {streamingText}
+                        </ReactMarkdown>
+                    </div>
+                    {/* Blinking cursor */}
+                    <span className="inline-block w-0.5 h-3.5 bg-primary animate-pulse ml-0.5 align-middle" />
+                </div>
+            </div>
         );
     }
 
@@ -78,15 +98,15 @@ export function AnalysisCard({ analysis, topicId, sourceId, contentId, onAnalyze
                     </p>
                 </div>
                 <button
-                    onClick={handleAnalyze}
-                    disabled={analyzing}
+                    onClick={onAnalyzed}
+                    disabled={!topicId || !sourceId}
                     className={cn(
                         'inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium transition-all min-h-[44px]',
                         'bg-primary text-primary-foreground hover:bg-primary/90',
                         'disabled:opacity-40 disabled:pointer-events-none',
                     )}
                 >
-                    {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Brain className="h-3 w-3" />}
+                    <Brain className="h-3 w-3" />
                     Analyze
                 </button>
             </div>

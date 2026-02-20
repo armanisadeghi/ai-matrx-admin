@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTopicContext } from '../../context/ResearchContext';
+import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchSources, useResearchKeywords } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
@@ -259,9 +259,10 @@ function SourceRow({
 }
 
 export default function SourceList() {
-    const { topicId, refresh } = useTopicContext();
+    const { topicId, refresh, optimisticSources } = useTopicContext();
     const api = useResearchApi();
     const isMobile = useIsMobile();
+    const debug = useStreamDebug();
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [navigatingId, setNavigatingId] = useState<string | null>(null);
@@ -274,7 +275,14 @@ export default function SourceList() {
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [scrapingIds, setScrapingIds] = useState<Set<string>>(new Set());
 
-    const sourceList = (sources as ResearchSource[]) ?? [];
+    const dbSources = (sources as ResearchSource[]) ?? [];
+
+    // Merge DB sources + optimistic sources from search stream (deduplicated by id)
+    const sourceList = useMemo(() => {
+        const existingIds = new Set(dbSources.map(s => s.id));
+        const fresh = optimisticSources.filter(s => !existingIds.has(s.id));
+        return [...fresh, ...dbSources];
+    }, [dbSources, optimisticSources]);
     const hostnames = useMemo(() =>
         [...new Set(sourceList.map(s => s.hostname).filter(Boolean) as string[])].sort(),
         [sourceList],
@@ -335,11 +343,17 @@ export default function SourceList() {
         setScrapingIds(prev => new Set(prev).add(source.id));
         try {
             const response = await api.scrapeSource(topicId, source.id);
-            stream.startStream(response);
-        } finally {
+            stream.startStream(response, {
+                onEnd: () => {
+                    refetchSources();
+                    setScrapingIds(prev => { const next = new Set(prev); next.delete(source.id); return next; });
+                },
+            });
+            debug.pushEvents(stream.rawEvents, `scrape-${source.id}`);
+        } catch {
             setScrapingIds(prev => { const next = new Set(prev); next.delete(source.id); return next; });
         }
-    }, [api, topicId, stream]);
+    }, [api, topicId, stream, refetchSources, debug]);
 
     const anyNavigating = isPending || navigatingId !== null;
 

@@ -2,6 +2,7 @@
 
 import { TopicProvider } from '@/features/research/context/ResearchContext';
 import ResearchLayoutShell from '@/features/research/components/shell/ResearchLayoutShell';
+import { StreamDebugOverlay } from '@/features/research/components/shared/StreamDebugOverlay';
 import type { ReactNode } from 'react';
 
 interface ResearchTopicShellProps {
@@ -15,6 +16,7 @@ export default function ResearchTopicShell({ topicId, children }: ResearchTopicS
             <ResearchLayoutShell topicId={topicId}>
                 {children}
             </ResearchLayoutShell>
+            <StreamDebugOverlay />
         </TopicProvider>
     );
 }

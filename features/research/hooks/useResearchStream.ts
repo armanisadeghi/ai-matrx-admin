@@ -2,33 +2,48 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { consumeStream } from '@/lib/api/stream-parser';
-import type { StatusUpdatePayload, ErrorPayload, EndPayload } from '@/lib/api/types';
-import type { ResearchStreamStep } from '../types';
+import type { StatusUpdatePayload, EndPayload, CompletionPayload, ToolEventPayload } from '@/lib/api/types';
+import type { StreamEvent } from '@/types/python-generated/stream-events';
+import type { ResearchStreamStep, ResearchStreamDataPayload, ResearchStreamCallbacks } from '../types';
 
-interface StreamMessage {
+export interface StreamMessage {
     id: string;
     timestamp: number;
     status: ResearchStreamStep;
     message: string;
 }
 
-interface UseResearchStreamReturn {
+export interface UseResearchStreamReturn {
     isStreaming: boolean;
+    streamingText: string;
     messages: StreamMessage[];
     currentStep: ResearchStreamStep | null;
     error: string | null;
-    startStream: (response: Response) => Promise<void>;
+    rawEvents: StreamEvent[];
+    startStream: (response: Response, callbacks?: ResearchStreamCallbacks) => Promise<void>;
     cancel: () => void;
     clearMessages: () => void;
 }
 
+/**
+ * Core streaming hook for all research operations.
+ *
+ * Page load: DB snapshot populates state.
+ * After that: every domain object arrives via `data` events and is merged
+ * into local state immediately — no DB refetch needed.
+ *
+ * Pass per-call callbacks to `startStream` for domain-specific handling.
+ * The hook handles progress messages and error state automatically.
+ */
 export function useResearchStream(
     onComplete?: () => void,
 ): UseResearchStreamReturn {
     const [isStreaming, setIsStreaming] = useState(false);
+    const [streamingText, setStreamingText] = useState('');
     const [messages, setMessages] = useState<StreamMessage[]>([]);
     const [currentStep, setCurrentStep] = useState<ResearchStreamStep | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [rawEvents, setRawEvents] = useState<StreamEvent[]>([]);
     const abortRef = useRef<AbortController | null>(null);
     const idCounter = useRef(0);
 
@@ -41,42 +56,88 @@ export function useResearchStream(
         }]);
     }, []);
 
-    const startStream = useCallback(async (response: Response) => {
+    const startStream = useCallback(async (response: Response, callbacks?: ResearchStreamCallbacks) => {
         const controller = new AbortController();
         abortRef.current = controller;
         setIsStreaming(true);
         setError(null);
         setMessages([]);
         setCurrentStep(null);
+        setStreamingText('');
+        setRawEvents([]);
 
         try {
             await consumeStream(response, {
+                onRawLine: (event: StreamEvent) => {
+                    setRawEvents(prev => [...prev, event]);
+                },
+
+                onChunk: (text: string) => {
+                    setStreamingText(prev => prev + text);
+                    callbacks?.onChunk?.(text);
+                },
+
                 onStatusUpdate: (data: StatusUpdatePayload) => {
                     const step = (data.status as ResearchStreamStep) || 'searching';
                     setCurrentStep(step);
                     if (data.user_message) {
                         addMessage(step, data.user_message);
                     }
+                    callbacks?.onStatusUpdate?.(
+                        step,
+                        data.user_message ?? data.system_message ?? '',
+                        data.metadata ?? undefined,
+                    );
                 },
+
                 onData: (data: Record<string, unknown>) => {
-                    const event = data.event as string;
-                    if (event) {
-                        addMessage('searching', event);
+                    // If it has a `type` field, it's a typed domain payload — forward to caller
+                    if (data.type && typeof data.type === 'string') {
+                        callbacks?.onData?.(data as unknown as ResearchStreamDataPayload);
+                    } else {
+                        // Legacy: surface any `event` string as a progress message
+                        const eventStr = data.event as string | undefined;
+                        if (eventStr) addMessage('searching', eventStr);
                     }
                 },
-                onError: (err) => {
-                    setError((err as unknown as ErrorPayload).user_message || (err as unknown as ErrorPayload).message || 'An error occurred');
-                    setCurrentStep('error');
+
+                onCompletion: (data: CompletionPayload) => {
+                    callbacks?.onCompletion?.(data as unknown as Record<string, unknown>);
                 },
+
+                onToolEvent: (data: ToolEventPayload) => {
+                    callbacks?.onToolEvent?.(data as unknown as Record<string, unknown>);
+                },
+
+                onError: (err) => {
+                    const msg = (err as unknown as { user_message?: string; message?: string }).user_message
+                        ?? (err as unknown as { message?: string }).message
+                        ?? 'An error occurred';
+                    setError(msg);
+                    setCurrentStep('error');
+                    callbacks?.onError?.(msg);
+                },
+
                 onEnd: (_data: EndPayload) => {
                     setCurrentStep('complete');
+                    callbacks?.onEnd?.();
                     onComplete?.();
+                },
+
+                onEvent: (event: StreamEvent) => {
+                    // Forward unhandled event types to the debug callback
+                    const handled = ['chunk', 'status_update', 'data', 'completion', 'tool_event', 'error', 'heartbeat', 'end'];
+                    if (!handled.includes(event.event)) {
+                        callbacks?.onUnknownEvent?.(event as { event: string; data: unknown });
+                    }
                 },
             }, controller.signal);
         } catch (err) {
             if ((err as Error).name !== 'AbortError') {
-                setError((err as Error).message);
+                const msg = (err as Error).message;
+                setError(msg);
                 setCurrentStep('error');
+                callbacks?.onError?.(msg);
             }
         } finally {
             setIsStreaming(false);
@@ -94,13 +155,17 @@ export function useResearchStream(
         setMessages([]);
         setCurrentStep(null);
         setError(null);
+        setStreamingText('');
+        setRawEvents([]);
     }, []);
 
     return {
         isStreaming,
+        streamingText,
         messages,
         currentStep,
         error,
+        rawEvents,
         startStream,
         cancel,
         clearMessages,

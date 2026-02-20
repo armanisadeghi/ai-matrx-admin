@@ -7,10 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useResearchSource, useResearchSources, useSourceContent, useAnalysisForSource } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
+import { useStreamDebug } from '../../context/ResearchContext';
 import { updateSource } from '../../service';
 import { StatusBadge } from '../shared/StatusBadge';
 import { SourceTypeIcon } from '../shared/SourceTypeIcon';
@@ -18,7 +18,7 @@ import { OriginBadge } from '../shared/OriginBadge';
 import { ContentViewer } from './ContentViewer';
 import { PasteContentModal } from './PasteContentModal';
 import { AnalysisCard } from '../analysis/AnalysisCard';
-import type { ResearchSource, ResearchContent, ResearchAnalysis } from '../../types';
+import type { ResearchSource, ResearchContent, ResearchAnalysis, ResearchStreamDataPayload } from '../../types';
 
 function formatPageAge(pageAge: string | null): string {
     if (!pageAge) return '—';
@@ -51,16 +51,23 @@ interface SourceDetailProps {
 }
 
 export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
-    const isMobile = useIsMobile();
     const router = useRouter();
     const api = useResearchApi();
+    const debug = useStreamDebug();
     const [isNavigating, startNavTransition] = useTransition();
 
     const { data: source, refresh: refetchSource } = useResearchSource(sourceId);
     const { data: contentData, refresh: refetchContent } = useSourceContent(sourceId);
     const { data: allSources } = useResearchSources(topicId);
-    const { data: allAnalyses, refresh: refetchAnalyses } = useAnalysisForSource(sourceId);
-    const stream = useResearchStream(() => { refetchSource(); refetchContent(); refetchAnalyses(); });
+    const { data: storedAnalyses, refresh: refetchAnalyses } = useAnalysisForSource(sourceId);
+
+    // Optimistic analysis results — merged from stream without DB round-trip
+    const [optimisticAnalyses, setOptimisticAnalyses] = useState<ResearchAnalysis[]>([]);
+    // Optimistic content versions — merged from scrape stream
+    const [optimisticContent, setOptimisticContent] = useState<ResearchContent[]>([]);
+    // Live token text while analysis LLM is streaming
+    const [streamingAnalysisText, setStreamingAnalysisText] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const [pasteOpen, setPasteOpen] = useState(false);
     const [showRawSearch, setShowRawSearch] = useState(false);
@@ -77,29 +84,86 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         });
     }, [isNavigating, router, topicId]);
 
-    const contentVersions = (contentData ?? []) as ResearchContent[];
+    // Merge DB content + optimistic content from stream (deduplicated by id)
+    const contentVersions = useMemo(() => {
+        const db = (contentData ?? []) as ResearchContent[];
+        const existingIds = new Set(db.map(c => c.id));
+        const fresh = optimisticContent.filter(c => !existingIds.has(c.id));
+        // Most recent version first
+        return [...fresh, ...db].sort((a, b) => b.version - a.version);
+    }, [contentData, optimisticContent]);
+
     const [selectedVersion, setSelectedVersion] = useState(0);
     const currentContent = contentVersions[selectedVersion] ?? null;
 
-    // Filter analyses to those matching the current content version, sorted newest first
+    // Merge DB analyses + optimistic analyses (deduplicated by id), filtered to current content
     const currentAnalyses = useMemo(() => {
-        const analyses = (allAnalyses ?? []) as ResearchAnalysis[];
-        if (!currentContent) return analyses;
-        return analyses.filter(a => a.content_id === currentContent.id);
-    }, [allAnalyses, currentContent]);
+        const db = (storedAnalyses ?? []) as ResearchAnalysis[];
+        const existingIds = new Set(db.map(a => a.id));
+        const fresh = optimisticAnalyses.filter(a => !existingIds.has(a.id));
+        const all = [...fresh, ...db];
+        if (!currentContent) return all;
+        return all.filter(a => a.content_id === currentContent.id);
+    }, [storedAnalyses, optimisticAnalyses, currentContent]);
 
-    const handleAnalysisComplete = useCallback(() => {
-        refetchAnalyses();
-    }, [refetchAnalyses]);
+    // ── Scrape stream ────────────────────────────────────────────────────────
+    const scrapeStream = useResearchStream();
+
+    const handleScrape = useCallback(async () => {
+        if (!typedSource || scrapeStream.isStreaming) return;
+        const response = await api.scrapeSource(topicId, sourceId);
+        scrapeStream.startStream(response, {
+            onData: (payload: ResearchStreamDataPayload) => {
+                if (payload.type === 'source_scraped' && payload.source_id === sourceId) {
+                    // Merge new content version immediately — no DB round-trip
+                    setOptimisticContent(prev => [payload.content, ...prev]);
+                    // Jump to the newest version
+                    setSelectedVersion(0);
+                }
+            },
+            onEnd: () => {
+                // Light refresh to sync source scrape_status field
+                refetchSource();
+            },
+        });
+        debug.pushEvents(scrapeStream.rawEvents, 'scrape');
+    }, [api, topicId, sourceId, scrapeStream, refetchSource, debug]);
+
+    // ── Analyze stream ───────────────────────────────────────────────────────
+    const analyzeStream = useResearchStream();
+
+    const handleAnalyze = useCallback(async () => {
+        if (!currentContent || analyzeStream.isStreaming) return;
+        setIsAnalyzing(true);
+        setStreamingAnalysisText('');
+        const response = await api.analyzeSource(topicId, sourceId);
+        analyzeStream.startStream(response, {
+            onChunk: (text) => {
+                setStreamingAnalysisText(prev => prev + text);
+            },
+            onData: (payload: ResearchStreamDataPayload) => {
+                if (payload.type === 'analysis_result' && payload.source_id === sourceId) {
+                    // Merge into local state immediately
+                    setOptimisticAnalyses(prev => [payload.analysis, ...prev]);
+                    setStreamingAnalysisText('');
+                }
+            },
+            onEnd: () => {
+                setIsAnalyzing(false);
+                setStreamingAnalysisText('');
+                // Light refresh to catch any rows the stream didn't emit
+                refetchAnalyses();
+            },
+            onError: () => {
+                setIsAnalyzing(false);
+                setStreamingAnalysisText('');
+            },
+        });
+        debug.pushEvents(analyzeStream.rawEvents, 'analyze');
+    }, [api, topicId, sourceId, currentContent, analyzeStream, refetchAnalyses, debug]);
 
     const typedSource = source as ResearchSource | null | undefined;
     const hasBeenScraped = typedSource && typedSource.scrape_status !== 'pending';
-
-    const handleScrape = useCallback(async () => {
-        if (!typedSource || stream.isStreaming) return;
-        const response = await api.scrapeSource(topicId, sourceId);
-        stream.startStream(response);
-    }, [api, topicId, sourceId, typedSource, stream]);
 
     const handleMarkComplete = useCallback(async () => {
         await updateSource(sourceId, { scrape_status: 'complete' });
@@ -114,6 +178,8 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     const handleContentSaved = useCallback(() => {
         refetchContent();
     }, [refetchContent]);
+
+    const isScraping = scrapeStream.isStreaming;
 
     return (
         <div className="flex flex-col md:flex-row h-full min-h-0">
@@ -308,7 +374,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 <p className="text-xs leading-relaxed text-foreground/80">{typedSource.description}</p>
                             )}
 
-                            {/* Extra snippets — plain text, no header */}
+                            {/* Extra snippets */}
                             {typedSource.extra_snippets && typedSource.extra_snippets.length > 0 && (
                                 <div className="space-y-2">
                                     {typedSource.extra_snippets.map((snippet, i) => (
@@ -348,13 +414,13 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                             size="sm"
                             className="gap-1.5 h-8"
                             onClick={handleScrape}
-                            disabled={stream.isStreaming}
+                            disabled={isScraping || analyzeStream.isStreaming}
                         >
-                            {stream.isStreaming
+                            {isScraping
                                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 : hasBeenScraped ? <RefreshCw className="h-3.5 w-3.5" /> : <Download className="h-3.5 w-3.5" />
                             }
-                            {stream.isStreaming ? 'Scraping…' : hasBeenScraped ? 'Re-scrape' : 'Scrape'}
+                            {isScraping ? 'Scraping…' : hasBeenScraped ? 'Re-scrape' : 'Scrape'}
                         </Button>
                         <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setPasteOpen(true)}>
                             <ClipboardPaste className="h-3.5 w-3.5" />
@@ -371,6 +437,15 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                     </div>
                 )}
 
+                {/* Scrape progress messages */}
+                {isScraping && scrapeStream.messages.length > 0 && (
+                    <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2 space-y-1">
+                        {scrapeStream.messages.slice(-3).map(msg => (
+                            <p key={msg.id} className="text-[10px] text-muted-foreground">{msg.message}</p>
+                        ))}
+                    </div>
+                )}
+
                 {/* Content Section */}
                 <div className="min-h-[220px]">
                     {currentContent ? (
@@ -381,7 +456,19 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                         />
                     ) : typedSource ? (
                         <div className="rounded-xl border border-dashed border-border/50 bg-card/30 backdrop-blur-sm min-h-[220px] flex flex-col items-center justify-center gap-3 p-6 text-center">
-                            {typedSource.scrape_status === 'failed' ? (
+                            {isScraping ? (
+                                <>
+                                    <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center">
+                                        <Loader2 className="h-5 w-5 text-primary/60 animate-spin" />
+                                    </div>
+                                    <p className="text-xs font-medium text-foreground/70">Scraping…</p>
+                                    {scrapeStream.messages.length > 0 && (
+                                        <p className="text-[10px] text-muted-foreground/60 max-w-[240px]">
+                                            {scrapeStream.messages[scrapeStream.messages.length - 1].message}
+                                        </p>
+                                    )}
+                                </>
+                            ) : typedSource.scrape_status === 'failed' ? (
                                 <>
                                     <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
                                         <AlertTriangle className="h-5 w-5 text-destructive/60" />
@@ -395,7 +482,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={handleScrape}
-                                            disabled={stream.isStreaming}
+                                            disabled={isScraping}
                                             className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
                                         >
                                             <RefreshCw className="h-3 w-3" />
@@ -424,10 +511,10 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={handleScrape}
-                                            disabled={stream.isStreaming}
+                                            disabled={isScraping}
                                             className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-all min-h-[44px]"
                                         >
-                                            {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+                                            <Download className="h-3 w-3" />
                                             Scrape
                                         </button>
                                         <button
@@ -458,40 +545,53 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 <span className="ml-1.5 text-muted-foreground/40">({currentAnalyses.length})</span>
                             )}
                         </span>
-                        {currentContent && currentAnalyses.length > 0 && (
+                        {currentContent && currentAnalyses.length > 0 && !isAnalyzing && (
                             <AnalysisCard
                                 analysis={null}
                                 topicId={topicId}
                                 sourceId={sourceId}
                                 contentId={currentContent.id}
-                                onAnalyzed={handleAnalysisComplete}
+                                onAnalyzed={handleAnalyze}
                                 triggerOnly
                             />
                         )}
                     </div>
+
                     {currentContent ? (
-                        currentAnalyses.length > 0 ? (
-                            <div className="space-y-2">
-                                {currentAnalyses.map(analysis => (
-                                    <AnalysisCard
-                                        key={analysis.id}
-                                        analysis={analysis}
-                                        topicId={topicId}
-                                        sourceId={sourceId}
-                                        contentId={currentContent.id}
-                                        onAnalyzed={handleAnalysisComplete}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <AnalysisCard
-                                analysis={null}
-                                topicId={topicId}
-                                sourceId={sourceId}
-                                contentId={currentContent.id}
-                                onAnalyzed={handleAnalysisComplete}
-                            />
-                        )
+                        <>
+                            {/* Live streaming analysis card — shown while generating */}
+                            {isAnalyzing && (
+                                <AnalysisCard
+                                    analysis={null}
+                                    streamingText={streamingAnalysisText || ' '}
+                                    topicId={topicId}
+                                    sourceId={sourceId}
+                                />
+                            )}
+                            {/* Completed analyses */}
+                            {currentAnalyses.length > 0 ? (
+                                <div className="space-y-2">
+                                    {currentAnalyses.map(analysis => (
+                                        <AnalysisCard
+                                            key={analysis.id}
+                                            analysis={analysis}
+                                            topicId={topicId}
+                                            sourceId={sourceId}
+                                            contentId={currentContent.id}
+                                            onAnalyzed={handleAnalyze}
+                                        />
+                                    ))}
+                                </div>
+                            ) : !isAnalyzing ? (
+                                <AnalysisCard
+                                    analysis={null}
+                                    topicId={topicId}
+                                    sourceId={sourceId}
+                                    contentId={currentContent.id}
+                                    onAnalyzed={handleAnalyze}
+                                />
+                            ) : null}
+                        </>
                     ) : (
                         <div className="rounded-xl border border-dashed border-border/50 bg-card/30 backdrop-blur-sm min-h-[160px] flex flex-col items-center justify-center gap-2 p-6 text-center">
                             <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center">

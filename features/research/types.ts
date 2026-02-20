@@ -356,6 +356,29 @@ export interface ResearchStreamStatus {
     total_steps?: number;
 }
 
+/**
+ * Discriminated union of all domain objects the backend emits via `data` events.
+ * Each member corresponds to a row saved to the database — the frontend merges
+ * it into local state immediately so there is no need to refetch from Supabase.
+ */
+export type ResearchStreamDataPayload =
+    | { type: 'source_scraped'; source_id: string; content: ResearchContent }
+    | { type: 'analysis_result'; source_id: string; content_id: string; analysis: ResearchAnalysis }
+    | { type: 'source_found'; source: ResearchSource }
+    | { type: 'synthesis_result'; synthesis: ResearchSynthesis }
+    | { type: 'progress'; current: number; total: number; label: string };
+
+export interface ResearchStreamCallbacks {
+    onChunk?: (text: string) => void;
+    onStatusUpdate?: (step: ResearchStreamStep, message: string, metadata?: Record<string, unknown>) => void;
+    onData?: (payload: ResearchStreamDataPayload) => void;
+    onCompletion?: (payload: Record<string, unknown>) => void;
+    onToolEvent?: (event: Record<string, unknown>) => void;
+    onError?: (message: string) => void;
+    onEnd?: () => void;
+    onUnknownEvent?: (event: { event: string; data: unknown }) => void;
+}
+
 // ============================================================================
 // SOURCE FILTER TYPES
 // ============================================================================
