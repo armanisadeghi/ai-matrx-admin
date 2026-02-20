@@ -12,6 +12,9 @@ import {
     AlertCircle,
     Loader2,
     CheckCircle2,
+    History,
+    ChevronDown,
+    ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -119,6 +122,7 @@ export default function SandboxListPage() {
     const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(null)
     const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set())
     const [ttlHours, setTtlHours] = useState(2)
+    const [historyOpen, setHistoryOpen] = useState(false)
 
     useEffect(() => {
         fetchInstances()
@@ -214,10 +218,11 @@ export default function SandboxListPage() {
             duplicateIds: instances.map(i => i.id).filter((id, idx, arr) => arr.indexOf(id) !== idx)
         })
     }
-    
-    const activeCount = uniqueInstances.filter((i) =>
-        ['creating', 'starting', 'ready', 'running'].includes(getEffectiveStatus(i))
-    ).length
+
+    const ACTIVE_STATUSES: SandboxStatus[] = ['creating', 'starting', 'ready', 'running', 'shutting_down']
+    const activeInstances = uniqueInstances.filter(i => ACTIVE_STATUSES.includes(getEffectiveStatus(i)))
+    const historicalInstances = uniqueInstances.filter(i => !ACTIVE_STATUSES.includes(getEffectiveStatus(i)))
+    const activeCount = activeInstances.length
 
     return (
         <div className="h-page flex flex-col bg-textured overflow-hidden">
@@ -342,7 +347,7 @@ export default function SandboxListPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-6xl mx-auto space-y-4">
                 {loading && uniqueInstances.length === 0 ? (
                     <div className="rounded-md border">
                         <Table>
@@ -383,6 +388,20 @@ export default function SandboxListPage() {
                         </CardContent>
                     </Card>
                 ) : (
+                    <>
+                    {/* Active Sandboxes */}
+                    {activeInstances.length === 0 ? (
+                        <Card>
+                            <CardContent className="p-8 text-center">
+                                <Container className="w-8 h-8 mx-auto mb-3 text-muted-foreground/30" />
+                                <p className="text-sm text-muted-foreground">No active sandboxes</p>
+                                <Button size="sm" className="mt-3" onClick={() => setCreateOpen(true)}>
+                                    <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                    New Sandbox
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ) : (
                     <div className="relative rounded-md border">
                         {/* Subtle refresh indicator */}
                         {refreshing && (
@@ -401,7 +420,7 @@ export default function SandboxListPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {uniqueInstances.map((instance) => {
+                                {activeInstances.map((instance) => {
                                     const effectiveStatus = getEffectiveStatus(instance)
                                     const isEffectivelyActive = ['ready', 'running'].includes(effectiveStatus)
                                     return (
@@ -462,6 +481,87 @@ export default function SandboxListPage() {
                             </TableBody>
                         </Table>
                     </div>
+                    )}
+
+                    {/* History — stopped/expired/failed sandboxes */}
+                    {historicalInstances.length > 0 && (
+                        <div className="rounded-md border border-dashed border-border/60">
+                            <button
+                                onClick={() => setHistoryOpen(!historyOpen)}
+                                className="flex items-center gap-2 w-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-md transition-colors"
+                            >
+                                <History className="w-4 h-4" />
+                                <span className="font-medium flex-1 text-left">History</span>
+                                <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
+                                    {historicalInstances.length}
+                                </span>
+                                {historyOpen ? (
+                                    <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                    <ChevronRight className="w-4 h-4" />
+                                )}
+                            </button>
+                            {historyOpen && (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-muted/20">
+                                            <TableHead>Sandbox ID</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Created</TableHead>
+                                            <TableHead>Stopped</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {historicalInstances.map((instance) => {
+                                            const effectiveStatus = getEffectiveStatus(instance)
+                                            return (
+                                                <TableRow
+                                                    key={instance.id}
+                                                    className="cursor-pointer hover:bg-muted/30 opacity-75 hover:opacity-100 transition-opacity"
+                                                    onClick={() => router.push(`/sandbox/${instance.id}`)}
+                                                >
+                                                    <TableCell className="font-mono text-sm text-muted-foreground">
+                                                        {instance.sandbox_id}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <StatusBadge status={effectiveStatus} />
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-muted-foreground">
+                                                        {new Date(instance.created_at).toLocaleString()}
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-muted-foreground">
+                                                        {instance.stopped_at
+                                                            ? new Date(instance.stopped_at).toLocaleString()
+                                                            : instance.expires_at && new Date(instance.expires_at) < new Date()
+                                                                ? new Date(instance.expires_at).toLocaleString()
+                                                                : '--'
+                                                        }
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div
+                                                            className="flex items-center justify-end gap-1"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => setDeleteTarget(instance)}
+                                                                className="text-destructive hover:text-destructive"
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </div>
+                    )}
+                    </>
                 )}
                 </div>
             </div>

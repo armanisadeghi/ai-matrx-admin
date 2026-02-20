@@ -19,6 +19,10 @@ import {
     Shield,
     ChevronDown,
     ChevronRight,
+    Zap,
+    RefreshCw,
+    ScrollText,
+    Network,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -87,6 +91,10 @@ export default function SandboxDetailPage() {
     const [cwd, setCwd] = useState(DEFAULT_CWD)
     const [copied, setCopied] = useState(false)
     const [adminPanelOpen, setAdminPanelOpen] = useState(false)
+    const [adminActionsOpen, setAdminActionsOpen] = useState(false)
+    const [adminLogs, setAdminLogs] = useState<string[]>([])
+    const [fetchingLogs, setFetchingLogs] = useState(false)
+    const [adminActionLoading, setAdminActionLoading] = useState<string | null>(null)
 
     const terminalRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -654,6 +662,12 @@ export default function SandboxDetailPage() {
                                         <span className="text-xs font-medium text-muted-foreground block mb-0.5">Expires At</span>
                                         <span className="text-xs font-mono">{instance.expires_at ? new Date(instance.expires_at).toISOString() : '--'}</span>
                                     </div>
+                                    {instance.ssh_port && (
+                                        <div>
+                                            <span className="text-xs font-medium text-muted-foreground block mb-0.5">SSH Port</span>
+                                            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">{instance.ssh_port}</code>
+                                        </div>
+                                    )}
                                     {Object.keys(instance.config).length > 0 && (
                                         <div className="md:col-span-2">
                                             <span className="text-xs font-medium text-muted-foreground block mb-0.5">Config</span>
@@ -661,6 +675,158 @@ export default function SandboxDetailPage() {
                                         </div>
                                     )}
                                 </div>
+                            </CardContent>
+                        )}
+                    </Card>
+                )}
+
+                {/* Admin Quick-Actions Panel */}
+                {isAdmin && (
+                    <Card className="border-rose-500/30 bg-rose-500/5">
+                        <CardHeader className="pb-2">
+                            <button
+                                onClick={() => setAdminActionsOpen(!adminActionsOpen)}
+                                className="flex items-center gap-2 w-full text-left"
+                            >
+                                <Zap className="w-4 h-4 text-rose-500" />
+                                <CardTitle className="text-sm font-medium text-rose-700 dark:text-rose-400 flex-1">
+                                    Admin Quick Actions
+                                </CardTitle>
+                                {adminActionsOpen ? (
+                                    <ChevronDown className="w-4 h-4 text-rose-500" />
+                                ) : (
+                                    <ChevronRight className="w-4 h-4 text-rose-500" />
+                                )}
+                            </button>
+                        </CardHeader>
+                        {adminActionsOpen && (
+                            <CardContent className="space-y-4">
+                                <div className="flex flex-wrap gap-2">
+                                    {/* Force Stop */}
+                                    {isActive && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-1.5 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                                            disabled={!!adminActionLoading}
+                                            onClick={async () => {
+                                                setAdminActionLoading('stop')
+                                                try {
+                                                    await fetch(`/api/sandbox/${id}`, {
+                                                        method: 'PUT',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ action: 'stop' }),
+                                                    })
+                                                    await fetchInstance()
+                                                } finally {
+                                                    setAdminActionLoading(null)
+                                                }
+                                            }}
+                                        >
+                                            {adminActionLoading === 'stop' ? (
+                                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <Square className="w-3.5 h-3.5" />
+                                            )}
+                                            Force Stop
+                                        </Button>
+                                    )}
+
+                                    {/* View Logs (run `journalctl` or `tail /var/log/...` in the container) */}
+                                    {isActive && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-1.5"
+                                            disabled={!!adminActionLoading}
+                                            onClick={async () => {
+                                                setFetchingLogs(true)
+                                                setAdminLogs([])
+                                                try {
+                                                    const resp = await fetch(`/api/sandbox/${id}/exec`, {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ command: 'tail -n 50 /var/log/syslog 2>/dev/null || dmesg | tail -n 50 2>/dev/null || echo "No logs available"', timeout: 10 }),
+                                                    })
+                                                    const data: SandboxExecResponse = await resp.json()
+                                                    const lines = [
+                                                        ...(data.stdout ? data.stdout.split('\n') : []),
+                                                        ...(data.stderr ? data.stderr.split('\n').map(l => `[stderr] ${l}`) : []),
+                                                    ].filter(Boolean)
+                                                    setAdminLogs(lines.length > 0 ? lines : ['No output'])
+                                                } catch {
+                                                    setAdminLogs(['Failed to fetch logs'])
+                                                } finally {
+                                                    setFetchingLogs(false)
+                                                }
+                                            }}
+                                        >
+                                            {fetchingLogs ? (
+                                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <ScrollText className="w-3.5 h-3.5" />
+                                            )}
+                                            View Logs
+                                        </Button>
+                                    )}
+
+                                    {/* Direct API Inspect */}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5"
+                                        onClick={() => {
+                                            window.open(`/api/sandbox/${id}`, '_blank')
+                                        }}
+                                    >
+                                        <Network className="w-3.5 h-3.5" />
+                                        API Inspect
+                                    </Button>
+
+                                    {/* Extend TTL for admin debugging */}
+                                    {isActive && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-1.5"
+                                            disabled={!!adminActionLoading}
+                                            onClick={async () => {
+                                                setAdminActionLoading('extend')
+                                                try {
+                                                    await fetch(`/api/sandbox/${id}`, {
+                                                        method: 'PUT',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ action: 'extend', seconds: 3600 }),
+                                                    })
+                                                    await fetchInstance()
+                                                } finally {
+                                                    setAdminActionLoading(null)
+                                                }
+                                            }}
+                                        >
+                                            {adminActionLoading === 'extend' ? (
+                                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <Clock className="w-3.5 h-3.5" />
+                                            )}
+                                            +1h Debug Time
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* Logs output */}
+                                {adminLogs.length > 0 && (
+                                    <div>
+                                        <p className="text-xs font-medium text-muted-foreground mb-1">Container Logs</p>
+                                        <pre className="text-[10px] font-mono bg-black/80 text-green-400 rounded-md p-3 overflow-x-auto max-h-48 overflow-y-auto">
+                                            {adminLogs.join('\n')}
+                                        </pre>
+                                    </div>
+                                )}
+
+                                <p className="text-xs text-muted-foreground">
+                                    Admin actions bypass user permissions. Use responsibly.
+                                </p>
                             </CardContent>
                         )}
                     </Card>
