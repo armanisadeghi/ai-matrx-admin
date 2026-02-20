@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { TagsSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const TagManager = lazy(() => import('@/features/research/components/tags/TagManager'));
+import TagManager from '@/features/research/components/tags/TagManager';
 
 export default function TagsPage() {
     return (

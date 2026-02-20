@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { GenericPageSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const MediaGallery = lazy(() => import('@/features/research/components/media/MediaGallery'));
+import MediaGallery from '@/features/research/components/media/MediaGallery';
 
 export default function MediaPage() {
     return (

@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { GenericPageSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const TopicSettingsPage = lazy(() => import('@/features/research/components/settings/TopicSettingsPage'));
+import TopicSettingsPage from '@/features/research/components/settings/TopicSettingsPage';
 
 export default function SettingsPage() {
     return (

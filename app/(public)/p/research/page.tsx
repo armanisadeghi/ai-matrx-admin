@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const ResearchLanding = lazy(() => import('@/features/research/components/landing/ResearchLanding'));
+import ResearchLanding from '@/features/research/components/landing/ResearchLanding';
 
 export default function ResearchPage() {
     return (

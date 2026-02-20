@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { GenericPageSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const KeywordManager = lazy(() => import('@/features/research/components/keywords/KeywordManager'));
+import KeywordManager from '@/features/research/components/keywords/KeywordManager';
 
 export default function KeywordsPage() {
     return (

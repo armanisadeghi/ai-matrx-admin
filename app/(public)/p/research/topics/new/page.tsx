@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { InitWizardSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const ResearchInitForm = lazy(() => import('@/features/research/components/init/ResearchInitForm'));
+import ResearchInitForm from '@/features/research/components/init/ResearchInitForm';
 
 export default function ResearchNewTopicPage() {
     return (

@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { SourceDetailSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const SourceDetail = lazy(() => import('@/features/research/components/sources/SourceDetail'));
+import SourceDetail from '@/features/research/components/sources/SourceDetail';
 
 export default async function SourceDetailPage({
     params,

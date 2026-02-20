@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const ResearchTopicShell = lazy(() => import('./ResearchTopicShell'));
+import ResearchTopicShell from './ResearchTopicShell';
 
 export default async function ResearchTopicLayout({
     children,

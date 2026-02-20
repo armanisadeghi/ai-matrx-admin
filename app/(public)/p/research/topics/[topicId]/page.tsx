@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { OverviewSkeleton } from '@/features/research/components/shared/Skeletons';
-
-const ResearchOverview = lazy(() => import('@/features/research/components/overview/ResearchOverview'));
+import ResearchOverview from '@/features/research/components/overview/ResearchOverview';
 
 export default function TopicOverviewPage() {
     return (

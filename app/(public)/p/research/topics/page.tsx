@@ -1,7 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const TopicList = lazy(() => import('@/features/research/components/landing/TopicList'));
+import TopicList from '@/features/research/components/landing/TopicList';
 
 export default function ResearchTopicsPage() {
     return (
