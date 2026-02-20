@@ -10,7 +10,7 @@ import {
     selectPromptVariables,
     selectSelectedModelId
 } from '@/lib/redux/slices/promptEditorSlice';
-import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
+import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

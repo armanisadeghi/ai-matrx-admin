@@ -2,5 +2,6 @@
 
 export * from './taskFieldThunks';
 export * from './submitTaskThunk';
+export * from './submitChatFastAPI';
 export * from './createTaskThunk';
 export * from './createTaskFromPreset'; 

@@ -12,7 +12,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
+import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { replaceVariablesInText } from '../utils/variable-resolver';
 import { v4 as uuidv4 } from 'uuid';

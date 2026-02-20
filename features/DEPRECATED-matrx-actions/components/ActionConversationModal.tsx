@@ -16,7 +16,7 @@ import {
   DialogDescription
 } from '@/components/ui/dialog';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
+import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { ConversationMessages, ConversationMessage } from './conversation/ConversationMessages';
 import { ConversationInput } from './conversation/ConversationInput';

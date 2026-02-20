@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
-import { PromptAppPublicRenderer } from '@/features/prompt-apps/components/PromptAppPublicRenderer';
+import { PromptAppPublicRendererFastAPI } from '@/features/prompt-apps/components/PromptAppPublicRendererFastAPI';
 import { getPromptAppIconsMetadata } from '@/features/prompt-apps/utils/favicon-metadata';
 import type { Metadata } from 'next';
 
@@ -95,7 +95,7 @@ export default async function PromptAppPage({
     delete app.prompt_variable_defaults;
 
     return (
-        <PromptAppPublicRenderer
+        <PromptAppPublicRendererFastAPI
             app={app}
             slug={app.slug}
         />

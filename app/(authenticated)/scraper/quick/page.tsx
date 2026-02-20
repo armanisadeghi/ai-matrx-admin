@@ -2,7 +2,7 @@
 import { useState, useEffect, useTransition } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useScraperContent } from "@/features/scraper/hooks";
-import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
+import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +14,7 @@ export default function QuickScrapePage() {
     const router = useRouter();
     const [url, setUrl] = useState(searchParams.get("url") ?? "");
     const { scrapeUrl, data, isLoading, hasError, error, reset } = useScraperContent();
-    const { quickScrapeUrl } = useScraperSocket();
+    const scraperApi = useScraperApi();
     const [copied, setCopied] = useState(false);
     const [isFullScraping, setIsFullScraping] = useState(false);
     const [, startTransition] = useTransition();
@@ -77,10 +77,12 @@ export default function QuickScrapePage() {
         }
         setIsFullScraping(true);
         try {
-            const taskId = await quickScrapeUrl(targetUrl);
-            startTransition(() => {
-                router.push(`/scraper/${taskId}`);
-            });
+            const result = await scraperApi.scrapeUrl(targetUrl);
+            if (result) {
+                startTransition(() => {
+                    router.push(`/scraper/quick?url=${encodeURIComponent(targetUrl)}`);
+                });
+            }
         } catch (err) {
             console.error("Full scrape failed:", err);
         } finally {

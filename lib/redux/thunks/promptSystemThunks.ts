@@ -26,7 +26,7 @@ import {
   selectPromptFetchStatus,
   CachedPrompt,
 } from '../slices/promptCacheSlice';
-import { createAndSubmitTask } from '../socket-io/thunks/submitTaskThunk';
+import { submitChatFastAPI as createAndSubmitTask } from '../socket-io/thunks/submitChatFastAPI';
 import {
   selectPrimaryResponseTextByTaskId,
   selectPrimaryResponseEndedByTaskId,

@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { Globe, Search, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
+import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 
 export default function Page() {
     const router = useRouter();
-    const { quickScrapeUrl } = useScraperSocket();
+    const { scrapeUrl: fullScrape } = useScraperApi();
     const [url, setUrl] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isFullScraping, setIsFullScraping] = useState(false);
@@ -41,10 +41,14 @@ export default function Page() {
         setError(null);
         setIsFullScraping(true);
         try {
-            const taskId = await quickScrapeUrl(url);
-            startTransition(() => {
-                router.push(`/scraper/${taskId}`);
-            });
+            const result = await fullScrape(url);
+            if (result) {
+                startTransition(() => {
+                    router.push(`/scraper/quick?url=${encodeURIComponent(url)}`);
+                });
+            } else {
+                setError("Scraping returned no data");
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to start scraping");
         } finally {

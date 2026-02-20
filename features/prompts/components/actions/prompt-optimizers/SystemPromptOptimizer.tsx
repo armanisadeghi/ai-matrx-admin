@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
+import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { supabase } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';

@@ -31,6 +31,7 @@ import {
   selectDynamicContexts,
 } from '../selectors';
 import { createAndSubmitTask } from '../../socket-io/thunks/submitTaskThunk';
+import { executeMessageFastAPI } from './executeMessageFastAPIThunk';
 import { generateRunNameFromVariables, generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
 import { createClient } from '@/utils/supabase/client';
 import { processMessagesForExecution } from '../utils/message-builder';
@@ -205,13 +206,17 @@ export const executeMessage = createAsyncThunk<
       const taskId = uuidv4();
       dispatch(startExecution({ runId, taskId }));
 
-      // Submit task - API call happens NOW
-      const apiPromise = dispatch(createAndSubmitTask({
-        service: 'chat_service',
-        taskName: 'direct_chat',
-        taskData: { chat_config: chatConfig },
-        customTaskId: taskId,
-      }));
+      // Migration flag: true = FastAPI (new path), false = Socket.io (legacy path)
+      const USE_FASTAPI = true;
+
+      const apiPromise = USE_FASTAPI
+        ? dispatch(executeMessageFastAPI({ chatConfig, taskId, runId }))
+        : dispatch(createAndSubmitTask({
+            service: 'chat_service',
+            taskName: 'direct_chat',
+            taskData: { chat_config: chatConfig },
+            customTaskId: taskId,
+          }));
 
       // ========== ASYNC: Database Operations (NON-BLOCKING) ==========
       // These happen after API call, don't block response

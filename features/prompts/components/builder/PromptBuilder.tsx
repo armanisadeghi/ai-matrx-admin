@@ -9,7 +9,7 @@ import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
-import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
+import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { toast } from "sonner";
 import { PromptMessageRole, PromptSettings } from "@/features/prompts/types/core";

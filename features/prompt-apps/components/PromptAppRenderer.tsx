@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { transform } from '@babel/standalone';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
-import {
-    selectPrimaryResponseTextByTaskId,
-    selectPrimaryResponseEndedByTaskId
-} from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { getFingerprint } from '@/lib/services/fingerprint-service';
+import { v4 as uuidv4 } from 'uuid';
+import { useApiAuth } from '@/hooks/useApiAuth';
+import { useSelector } from 'react-redux';
+import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
-import type { PromptApp, ExecuteAppResponse, RateLimitInfo, ExecutionErrorType } from '../types';
+import type { PromptApp, RateLimitInfo, ExecutionErrorType } from '../types';
+import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
+import type { AgentExecuteRequestBody } from '@/lib/api/types';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { AlertCircle } from 'lucide-react';
+import MarkdownStream from '@/components/MarkdownStream';
 
 interface PromptAppRendererProps {
     app: PromptApp;
@@ -19,86 +21,147 @@ interface PromptAppRendererProps {
 }
 
 export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
-    const dispatch = useAppDispatch();
-    
-    const [taskId, setTaskId] = useState<string | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
     const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null);
     const [error, setError] = useState<{ type: ExecutionErrorType; message: string } | null>(null);
-    const [fingerprint, setFingerprint] = useState<string>('');
-    
-    // Get streaming response from Redux
-    const response = useAppSelector(
-        taskId ? selectPrimaryResponseTextByTaskId(taskId) : () => ''
-    );
-    
-    const isStreamComplete = useAppSelector(
-        taskId ? selectPrimaryResponseEndedByTaskId(taskId) : () => false
-    );
-    
-    const isStreaming = !isStreamComplete;
-    
-    // Generate fingerprint on mount using centralized service
+    const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
+    const [isStreamComplete, setIsStreamComplete] = useState(false);
+    const [conversationId] = useState(() => uuidv4());
+    const isFirstExecutionRef = useRef(true);
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    const { getHeaders, waitForAuth, isAdmin, fingerprintId } = useApiAuth();
+    const useLocalhost = useSelector(selectIsUsingLocalhost);
+
     useEffect(() => {
-        getFingerprint().then(fp => setFingerprint(fp));
+        return () => {
+            abortControllerRef.current?.abort();
+        };
     }, []);
-    
-    // Execute handler that custom UI will call
-    const handleExecute = async (variables: Record<string, any>) => {
+
+    const handleExecute = useCallback(async (variables: Record<string, any>, userInput?: string) => {
         setIsExecuting(true);
         setError(null);
-        
+        setStreamEvents([]);
+        setIsStreamComplete(false);
+
+        abortControllerRef.current = new AbortController();
+
         try {
-            // Call our API
-            const res = await fetch(`/api/public/apps/${slug}/execute`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    variables,
-                    fingerprint,
-                    metadata: {
-                        timestamp: new Date().toISOString(),
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-                    }
-                })
-            });
-            
-            const data: ExecuteAppResponse = await res.json();
-            
-            setRateLimitInfo(data.rate_limit);
-            
-            if (!data.success || !data.task_id) {
-                setError(data.error || {
-                    type: 'execution_error',
-                    message: 'Execution failed'
-                });
+            const promptId = app.prompt_id;
+            if (!promptId) {
+                setError({ type: 'execution_error', message: 'Prompt configuration not available' });
                 setIsExecuting(false);
                 return;
             }
-            
-            // Success - we have task_id and chat_config
-            setTaskId(data.task_id);
-            
-            // Submit to Socket.IO using Redux
-            await dispatch(createAndSubmitTask({
-                service: 'chat_service',
-                taskName: 'direct_chat',
-                taskData: {
-                    chat_config: (data as any).chat_config
-                },
-                customTaskId: data.task_id
-            })).unwrap();
-            
-        } catch (err) {
-            console.error('Execution error:', err);
+
+            const authReady = await waitForAuth();
+            if (!authReady) {
+                setError({ type: 'execution_error', message: 'Unable to verify access. Please refresh the page.' });
+                setIsExecuting(false);
+                return;
+            }
+
+            const BACKEND_URL = (isAdmin && useLocalhost)
+                ? BACKEND_URLS.localhost
+                : BACKEND_URLS.production;
+
+            const headers = getHeaders();
+
+            const agentRequest: AgentExecuteRequestBody = {
+                prompt_id: promptId,
+                conversation_id: conversationId,
+                is_new_conversation: isFirstExecutionRef.current,
+                variables,
+                user_input: userInput,
+                stream: true,
+                debug: false,
+                is_builtin: false,
+            };
+
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(agentRequest),
+                signal: abortControllerRef.current.signal,
+            });
+
+            if (!fetchResponse.ok) {
+                let errorMsg = `HTTP ${fetchResponse.status}`;
+                try {
+                    const errorData = await fetchResponse.json();
+                    if (typeof errorData.error === 'object' && errorData.error !== null) {
+                        errorMsg = errorData.error.user_message || errorData.error.message || JSON.stringify(errorData.error);
+                    } else {
+                        errorMsg = errorData.error || errorData.message || errorData.detail || errorMsg;
+                    }
+                } catch {
+                    // Use default
+                }
+                throw new Error(errorMsg);
+            }
+
+            if (!fetchResponse.body) {
+                throw new Error('No response body from Agent API');
+            }
+
+            // Background logging (fire-and-forget)
+            fetch(`/api/public/apps/${slug}/execute`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    app_id: app.id,
+                    variables_provided: variables,
+                    variables_used: variables,
+                    fingerprint: fingerprintId,
+                    chat_config: { prompt_id: promptId, conversation_id: conversationId },
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        agent_api: true,
+                        conversation_id: conversationId,
+                    },
+                }),
+            }).then(res => res.json()).then(data => {
+                if (data.rate_limit) setRateLimitInfo(data.rate_limit);
+            }).catch(() => {});
+
+            const { events } = parseNdjsonStream(fetchResponse, abortControllerRef.current.signal);
+
+            for await (const event of events) {
+                setStreamEvents(prev => [...prev, event]);
+
+                if (event.event === 'error') {
+                    const errData = event.data as unknown as ErrorPayload;
+                    setError({
+                        type: 'execution_error',
+                        message: errData.user_message || errData.message || 'Unknown error from stream',
+                    });
+                }
+            }
+
+            isFirstExecutionRef.current = false;
+            setIsStreamComplete(true);
+
+        } catch (err: any) {
+            if (err.name === 'AbortError') return;
+            console.error('Agent API execution error:', err);
             setError({
                 type: 'execution_error',
-                message: err instanceof Error ? err.message : 'Unknown error occurred'
+                message: err.message || 'Execution failed',
             });
         } finally {
             setIsExecuting(false);
+            abortControllerRef.current = null;
         }
-    };
+    }, [app, slug, conversationId, isAdmin, useLocalhost, fingerprintId, waitForAuth, getHeaders]);
+
+    const response = useMemo(() => {
+        return streamEvents
+            .filter(e => e.event === 'chunk')
+            .map(e => (e.data as unknown as ChunkPayload).text)
+            .join('');
+    }, [streamEvents]);
     
     // Dynamically load and render custom component
     const CustomComponent = useMemo(() => {
@@ -191,7 +254,8 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 <CustomComponent
                     onExecute={handleExecute}
                     response={response}
-                    isStreaming={isStreaming}
+                    streamEvents={streamEvents}
+                    isStreaming={!isStreamComplete && isExecuting}
                     isExecuting={isExecuting}
                     error={error}
                     rateLimitInfo={rateLimitInfo}
