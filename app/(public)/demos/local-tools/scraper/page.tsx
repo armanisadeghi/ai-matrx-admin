@@ -55,7 +55,7 @@ function ScrapePanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
             output_mode: outputMode,
         });
 
-        const meta = result.metadata as BatchScrapeMetadata | ScrapeResultMeta | null ?? null;
+        const meta = (result.metadata as unknown) as BatchScrapeMetadata | ScrapeResultMeta | null ?? null;
         setResults({ output: result.output, meta });
     };
 
@@ -221,7 +221,7 @@ function SearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
         if (result.type === 'error') {
             setError(result.output);
         } else {
-            const m = result.metadata as SearchMetadata | undefined;
+            const m = (result.metadata as unknown) as SearchMetadata | undefined;
             if (m?.results) {
                 setResults(m.results);
                 setMeta(m);
@@ -354,7 +354,7 @@ function ResearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
             effort,
             freshness: freshness || null,
         }, 120_000);
-        const meta = res.metadata as ResearchMetadata | undefined;
+        const meta = (res.metadata as unknown) as ResearchMetadata | undefined;
         setResult({ output: res.output, meta: meta ?? null });
     };
 

@@ -49,9 +49,9 @@ export default function ContentList() {
             items = items.filter(s => s.source_type === typeFilter);
         }
         if (qualityFilter === 'good') {
-            items = items.filter(s => s.is_good_scrape);
+            items = items.filter(s => s.scrape_status === 'success');
         } else if (qualityFilter === 'thin') {
-            items = items.filter(s => !s.is_good_scrape);
+            items = items.filter(s => s.scrape_status === 'thin');
         }
         if (hostFilter !== 'all') {
             items = items.filter(s => s.hostname === hostFilter);
@@ -219,7 +219,7 @@ export default function ContentList() {
                                 className="group flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5 hover:border-primary/30 transition-colors min-h-[44px]"
                             >
                                 <div className="shrink-0">
-                                    {source.is_good_scrape ? (
+                                    {source.scrape_status === 'success' ? (
                                         <CheckCircle className="h-3.5 w-3.5 text-green-500/70" />
                                     ) : (
                                         <XCircle className="h-3.5 w-3.5 text-yellow-500/70" />

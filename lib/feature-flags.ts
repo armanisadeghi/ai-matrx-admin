@@ -49,7 +49,7 @@ export async function isFeatureEnabled(
   const client = getClient();
   if (!client) return false;
   try {
-    const result = await client.isFeatureEnabled(flag, userId, { personProperties: properties });
+    const result = await client.isFeatureEnabled(flag, userId, { personProperties: properties as Record<string, string> });
     return result ?? false;
   } catch {
     return false;
@@ -68,7 +68,7 @@ export async function getFeatureFlag(
   const client = getClient();
   if (!client) return null;
   try {
-    const result = await client.getFeatureFlag(flag, userId, { personProperties: properties });
+    const result = await client.getFeatureFlag(flag, userId, { personProperties: properties as Record<string, string> });
     return result ?? null;
   } catch {
     return null;
@@ -86,7 +86,7 @@ export async function getAllFlags(
   const client = getClient();
   if (!client) return {};
   try {
-    const result = await client.getAllFlags(userId, { personProperties: properties });
+    const result = await client.getAllFlags(userId, { personProperties: properties as Record<string, string> });
     return result ?? {};
   } catch {
     return {};

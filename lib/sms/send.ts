@@ -37,7 +37,8 @@ export async function sendSms(options: SendSmsOptions): Promise<SendSmsResult> {
       createParams.mediaUrl = mediaUrl;
     }
 
-    const message = await client.messages.create(createParams as Parameters<typeof client.messages.create>[0]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const message = await client.messages.create(createParams as any);
 
     return {
       success: true,

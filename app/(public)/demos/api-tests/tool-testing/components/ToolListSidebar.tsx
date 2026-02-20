@@ -13,10 +13,11 @@ import {
   Wrench,
   Loader2,
   Package,
+  type LucideIcon,
 } from 'lucide-react';
 import type { ToolDefinition } from '../types';
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
   web: Globe,
   data: Database,
   text: FileText,
@@ -126,7 +127,7 @@ export function ToolListSidebar({
             </div>
           ) : (
             filtered.map((tool) => {
-              const Icon = CATEGORY_ICONS[tool.category] ?? Wrench;
+              const Icon: LucideIcon = (tool.category ? CATEGORY_ICONS[tool.category] : undefined) ?? Wrench;
               const isSelected = selectedTool === tool.name;
               return (
                 <button

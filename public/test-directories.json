@@ -72,6 +72,10 @@
     "name": "full-screen-demo"
   },
   {
+    "path": "/tests/glass-effect",
+    "name": "glass-effect"
+  },
+  {
     "path": "/tests/google-apis",
     "name": "google-apis"
   },

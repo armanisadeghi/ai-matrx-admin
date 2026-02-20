@@ -63,8 +63,8 @@ export type AgentExecuteRequestBody = components['schemas']['AgentExecuteRequest
 export type UnifiedChatRequestBody = components['schemas']['UnifiedChatRequest'];
 export type ToolTestExecuteRequestBody = components['schemas']['ToolTestExecuteRequest'];
 
-export type ResearchConfigCreateBody = components['schemas']['ResearchConfigCreate'];
-export type ResearchConfigUpdateBody = components['schemas']['ResearchConfigUpdate'];
+export type ResearchConfigCreateBody = Record<string, unknown>;
+export type ResearchConfigUpdateBody = Record<string, unknown>;
 export type KeywordCreateBody = components['schemas']['KeywordCreate'];
 export type SourceUpdateBody = components['schemas']['SourceUpdate'];
 export type SourceBulkActionBody = components['schemas']['SourceBulkAction'];

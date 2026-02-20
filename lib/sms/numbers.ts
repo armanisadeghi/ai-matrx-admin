@@ -25,9 +25,8 @@ export async function searchAvailableNumbers(options: PhoneNumberPurchaseOptions
     searchParams.areaCode = areaCode;
   }
 
-  const numbers = await client.availablePhoneNumbers(country).local.list(
-    searchParams as Parameters<typeof client.availablePhoneNumbers>[0]
-  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const numbers = await client.availablePhoneNumbers(country).local.list(searchParams as any);
 
   return numbers.map(n => ({
     sid: '',

@@ -1,4 +1,4 @@
-import { Button, Heading, Text, Section, Hr, Code } from "@react-email/components";
+import { Button, Heading, Text, Section, Hr } from "@react-email/components";
 import * as React from "react";
 import { BaseLayout } from "./BaseLayout";
 
@@ -33,7 +33,7 @@ export function InvitationApprovedEmail({
 
       <Section style={codeBlock}>
         <Text style={codeLabel}>Your invitation code</Text>
-        <Code style={codeStyle}>{invitationCode}</Code>
+        <Text style={codeStyle}>{invitationCode}</Text>
       </Section>
 
       <Section style={buttonSection}>

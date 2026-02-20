@@ -14264,5 +14264,3 @@ export const Constants = {
     },
   },
 } as const
-A new version of Supabase CLI is available: v2.75.0 (currently installed v2.72.8)
-We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
