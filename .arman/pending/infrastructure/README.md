@@ -23,42 +23,35 @@ This folder tracks the full implementation status of the infrastructure services
 Everything below requires action from you. Code is already written where marked.
 
 ### Sentry — Error Monitoring
-> Code is live. Just needs credentials.
+> Code is live. Credentials in `.env.local`. Add to Vercel to activate.
 
-- [ ] Sign up at [sentry.io](https://sentry.io) — create two projects: `ai-matrx-admin` (Next.js) and `matrx-engine` (Python)
-- [ ] Add to **Vercel** env vars:
-  - `NEXT_PUBLIC_SENTRY_DSN`
-  - `SENTRY_ORG`
-  - `SENTRY_PROJECT`
-  - `SENTRY_AUTH_TOKEN` (for source map uploads — get from Sentry → Settings → Auth Tokens)
-  - `NEXT_PUBLIC_SENTRY_ENV=production`
-- [ ] Install Vercel integration in Sentry dashboard (one click, auto-links deploys to releases)
-- [ ] Add Sentry to `matrx-engine` Python backend (see [sentry-error-monitoring.md](./sentry-error-monitoring.md) Part 2)
+- [x] Projects created: `ai-matrx-admin` (Next.js) and `matrx-engine` (Python)
+- [x] Credentials saved to `.env.local`
+- [ ] Add to **Vercel** env vars: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_ENV`
+- [ ] Install Vercel integration in Sentry dashboard (one click → links deploys to releases)
+- [ ] Add `SENTRY_DSN` + `SENTRY_ENV` to **Coolify** secrets for `matrx-engine`
+- [ ] Install `sentry-sdk[fastapi]` and wire up in `matrx-engine` (see [sentry-error-monitoring.md](./sentry-error-monitoring.md) Part 2)
 
 ---
 
 ### PostHog — Analytics, Feature Flags, Session Replay
-> Code is live. Just needs credentials.
+> Code is live. Credentials in `.env.local`. Add to Vercel to activate.
 
-- [ ] Sign up at [posthog.com](https://posthog.com) — free tier covers 1M events/month
-- [ ] Create project `AI Matrx Admin`, copy the Project API Key (`phc_...`)
-- [ ] Add to **Vercel** env vars:
-  - `NEXT_PUBLIC_POSTHOG_KEY=phc_xxxxxxxxxxxx`
-  - `NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com`
+- [x] Project `AI Matrx Admin` created (US Cloud)
+- [x] Credentials saved to `.env.local`
+- [ ] Add to **Vercel** env vars: `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`
 - [ ] After first deploy, verify pageviews appear in PostHog dashboard
 - [ ] Create your first feature flag in PostHog dashboard (key: `beta-features`, start at 0% rollout)
 
 ---
 
 ### Upstash — Rate Limiting
-> Code is live. Just needs credentials.
+> Code is live. Credentials in `.env.local`. Add to Vercel to activate.
 
-- [ ] Sign up at [console.upstash.com](https://console.upstash.com) — free tier, no credit card
-- [ ] Create a Redis database, choose the region matching your Vercel deployment
-- [ ] Add to **Vercel** env vars:
-  - `UPSTASH_REDIS_REST_URL`
-  - `UPSTASH_REDIS_REST_TOKEN`
-- [ ] Verify rate limiting is working: hit `/api/public/email` 6 times — 7th should 429
+- [x] Redis database `ai-matrx` created (us-east-1)
+- [x] Credentials saved to `.env.local`
+- [ ] Add to **Vercel** env vars: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- [ ] Verify rate limiting is working after deploy: hit `/api/public/email` 6 times — 7th should 429
 
 ---
 
@@ -105,23 +98,27 @@ Everything below requires action from you. Code is already written where marked.
 
 ## Environment Variables Checklist
 
-A single view of all env vars to add to Vercel before the first deploy:
+Copy this block into **Vercel → Settings → Environment Variables**. Values already in `.env.local`.
 
 ```bash
-# Sentry
-NEXT_PUBLIC_SENTRY_DSN=
-SENTRY_ORG=
-SENTRY_PROJECT=
-SENTRY_AUTH_TOKEN=
+# Sentry — ✅ ready to paste
+NEXT_PUBLIC_SENTRY_DSN=https://578a5e26d139318290c34448fc11f1ef@o4510915110633472.ingest.us.sentry.io/4510915215228928
+SENTRY_DSN=https://578a5e26d139318290c34448fc11f1ef@o4510915110633472.ingest.us.sentry.io/4510915215228928
+SENTRY_ORG=ai-matrx
+SENTRY_PROJECT=ai-matrx-admin
+SENTRY_AUTH_TOKEN=<YOUR_SENTRY_AUTH_TOKEN>
 NEXT_PUBLIC_SENTRY_ENV=production
 
-# PostHog
-NEXT_PUBLIC_POSTHOG_KEY=
+# PostHog — ✅ ready to paste
+NEXT_PUBLIC_POSTHOG_KEY=phc_hmR5cCQgxaD7Bzff3V8bhkaYty4zW6qY91AJSvdoj6h
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 
-# Upstash
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
+# Upstash — ✅ ready to paste
+UPSTASH_REDIS_REST_URL=https://hot-cow-59579.upstash.io
+UPSTASH_REDIS_REST_TOKEN=Aei7AAIncDJmMzQ2NDUxMzk1N2Q0MGQ1YWU3NzgyZTc5YmI3ZDAxOXAyNTk1Nzk
+
+# Coolify (matrx-engine only — NOT Vercel)
+MATRX_ENGINE_SENTRY_DSN=https://e2a9de7e9b6f2b15c6184821346fdcd9@o4510915110633472.ingest.us.sentry.io/4510915222437888
 
 # Axiom (when ready)
 AXIOM_TOKEN=

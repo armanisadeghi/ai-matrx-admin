@@ -299,6 +299,52 @@ function resolveVariablesInMessages(
 */
 
 // ============================================================================
+// PATCH endpoint to update execution failure status
+// Called by the client when a stream error occurs AFTER the initial log
+// ============================================================================
+
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ slug: string }> }
+) {
+    await params; // consume params (slug not needed here)
+    const supabase = await createClient();
+
+    try {
+        const body = await request.json();
+        const { task_id, error_type, error_message, metadata } = body;
+
+        if (!task_id) {
+            return NextResponse.json({ success: false, error: 'task_id is required' }, { status: 400 });
+        }
+
+        const { error: updateError } = await supabase
+            .from('prompt_app_executions')
+            .update({
+                success: false,
+                error_type: error_type || 'stream_error',
+                error_message: error_message || 'Stream error occurred after execution started',
+                metadata: metadata || {}
+            })
+            .eq('task_id', task_id);
+
+        if (updateError) {
+            console.error('Failed to update execution failure:', updateError);
+            return NextResponse.json({ success: false, error: 'Failed to update record' }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+
+    } catch (error) {
+        console.error('PATCH execution error:', error);
+        return NextResponse.json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
+    }
+}
+
+// ============================================================================
 // GET endpoint to fetch public app info (no auth required)
 // ============================================================================
 

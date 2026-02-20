@@ -13,7 +13,7 @@ import {
     AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
     ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
     ClipboardCheck, Archive, ChevronDown, Copy, UserCheck, XCircle, MinusCircle, TestTube,
-    AlertTriangle, Tag,
+    AlertTriangle, Tag, GitBranch, CornerDownRight,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
@@ -261,6 +261,30 @@ export default function FeedbackTable() {
     const [filterCategory, setFilterCategory] = useState<string>('all');
     const [categories, setCategories] = useState<FeedbackCategory[]>([]);
     const [showFilters, setShowFilters] = useState(false);
+    const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
+
+    // Build lookup maps for parent/child relationships
+    const childrenMap = useMemo(() => {
+        const map = new Map<string, UserFeedback[]>();
+        for (const item of feedback) {
+            if (item.parent_id) {
+                const siblings = map.get(item.parent_id) ?? [];
+                siblings.push(item);
+                map.set(item.parent_id, siblings);
+            }
+        }
+        return map;
+    }, [feedback]);
+
+    const toggleParentExpanded = useCallback((parentId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setExpandedParents(prev => {
+            const next = new Set(prev);
+            if (next.has(parentId)) next.delete(parentId);
+            else next.add(parentId);
+            return next;
+        });
+    }, []);
 
     // Sorting
     const [sortField, setSortField] = useState<SortField>('created_at');
@@ -437,8 +461,25 @@ export default function FeedbackTable() {
             return 0;
         });
 
-        return filtered;
-    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, filterOpenIssues, filterCategory, sortField, sortDirection]);
+        // Build visible list: parents first, with their children interleaved when expanded
+        // Children whose parent is NOT in the filtered list appear as normal rows
+        const filteredIds = new Set(filtered.map(f => f.id));
+        const result: (UserFeedback & { isChild?: boolean })[] = [];
+        for (const item of filtered) {
+            // Skip children here if their parent is visible (they'll be injected after parent)
+            if (item.parent_id && filteredIds.has(item.parent_id)) continue;
+            result.push(item);
+            // If this item has visible children, inject them when expanded
+            if (expandedParents.has(item.id)) {
+                const children = childrenMap.get(item.id) ?? [];
+                const visibleChildren = children.filter(c => filteredIds.has(c.id));
+                for (const child of visibleChildren) {
+                    result.push({ ...child, isChild: true });
+                }
+            }
+        }
+        return result;
+    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, filterOpenIssues, filterCategory, sortField, sortDirection, expandedParents, childrenMap]);
 
     const getStatusOption = (status: FeedbackStatus) => {
         return statusOptions.find(s => s.value === status);
@@ -815,6 +856,9 @@ export default function FeedbackTable() {
                                     const isApproved = item.admin_decision === 'approved';
                                     const isClosed = DONE_STATUSES.includes(item.status);
                                     const isDeferred = item.admin_decision === 'deferred';
+                                    const isChildRow = (item as UserFeedback & { isChild?: boolean }).isChild;
+                                    const childCount = childrenMap.get(item.id)?.length ?? 0;
+                                    const isExpanded = expandedParents.has(item.id);
 
                                     return (
                                         <TableRow
@@ -823,22 +867,42 @@ export default function FeedbackTable() {
                                                 'hover:bg-muted/50 cursor-pointer',
                                                 isApproved && !isClosed && 'bg-green-500/5',
                                                 isDeferred && 'opacity-60',
+                                                isChildRow && 'bg-muted/20 border-l-2 border-l-primary/20',
                                             )}
                                             onClick={() => handleViewDetails(item)}
                                         >
                                             <TableCell>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigator.clipboard.writeText(item.id);
-                                                        toast.success('ID copied to clipboard');
-                                                    }}
-                                                    className="flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors group"
-                                                    title={`Click to copy full ID: ${item.id}`}
-                                                >
-                                                    <span>{item.id.slice(0, 8)}</span>
-                                                    <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </button>
+                                                <div className={cn('flex flex-col gap-0.5', isChildRow && 'pl-3')}>
+                                                    {isChildRow && (
+                                                        <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground/60 mb-0.5">
+                                                            <CornerDownRight className="w-2.5 h-2.5" />
+                                                            child
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigator.clipboard.writeText(item.id);
+                                                            toast.success('ID copied to clipboard');
+                                                        }}
+                                                        className="flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors group"
+                                                        title={`Click to copy full ID: ${item.id}`}
+                                                    >
+                                                        <span>{item.id.slice(0, 8)}</span>
+                                                        <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </button>
+                                                    {childCount > 0 && (
+                                                        <button
+                                                            onClick={(e) => toggleParentExpanded(item.id, e)}
+                                                            className="flex items-center gap-0.5 text-[9px] text-primary/70 hover:text-primary transition-colors mt-0.5"
+                                                            title={isExpanded ? 'Collapse children' : `Show ${childCount} child item${childCount > 1 ? 's' : ''}`}
+                                                        >
+                                                            <GitBranch className="w-2.5 h-2.5" />
+                                                            <span>{childCount}</span>
+                                                            <ChevronRight className={cn('w-2.5 h-2.5 transition-transform', isExpanded && 'rotate-90')} />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="text-sm font-medium">

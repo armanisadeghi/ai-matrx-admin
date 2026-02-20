@@ -95,11 +95,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 ### Environment Variables (Coolify)
 
 ```bash
-SENTRY_DSN=https://xxxx@oXXXX.ingest.sentry.io/XXXXX
+SENTRY_DSN=https://e2a9de7e9b6f2b15c6184821346fdcd9@o4510915110633472.ingest.us.sentry.io/4510915222437888
 SENTRY_ENV=production
 ```
 
-> Create a **separate Sentry project** for `matrx-engine` (Python) so errors are organized by service.
+> Separate Sentry project `matrx-engine` already created — DSN above is specific to it.
 
 ---
 

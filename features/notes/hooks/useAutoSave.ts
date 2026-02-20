@@ -7,9 +7,12 @@ import type { UpdateNoteInput } from '../types';
 
 interface UseAutoSaveOptions {
     noteId: string | null;
+    /** The current updated_at from the server for optimistic locking */
+    currentUpdatedAt?: string | null;
     debounceMs?: number;
     onSaveSuccess?: () => void;
     onSaveError?: (error: Error) => void;
+    onConflict?: () => void;
 }
 
 /**
@@ -17,9 +20,11 @@ interface UseAutoSaveOptions {
  */
 export function useAutoSave({
     noteId,
+    currentUpdatedAt,
     debounceMs = 1000,
     onSaveSuccess,
     onSaveError,
+    onConflict,
 }: UseAutoSaveOptions) {
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -27,6 +32,15 @@ export function useAutoSave({
     
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const pendingUpdatesRef = useRef<UpdateNoteInput>({});
+    // Keep a stable ref to the current updated_at to use in async callbacks
+    const currentUpdatedAtRef = useRef<string | null | undefined>(currentUpdatedAt);
+
+    // Sync ref when currentUpdatedAt changes (only when not dirty, to not reset the lock)
+    useEffect(() => {
+        if (!isDirty) {
+            currentUpdatedAtRef.current = currentUpdatedAt;
+        }
+    }, [currentUpdatedAt, isDirty]);
 
     /**
      * Mark the note as dirty (has unsaved changes)
@@ -55,20 +69,29 @@ export function useAutoSave({
             return;
         }
 
+        const updatesSnapshot = { ...pendingUpdatesRef.current };
+
         try {
             setIsSaving(true);
-            await updateNote(noteId, pendingUpdatesRef.current);
+            await updateNote(noteId, updatesSnapshot);
             pendingUpdatesRef.current = {};
             setIsDirty(false);
             setLastSaved(new Date());
             onSaveSuccess?.();
         } catch (error) {
-            console.error('Error saving note:', error);
-            onSaveError?.(error as Error);
+            const err = error as Error;
+            if (err.message?.startsWith('CONFLICT:')) {
+                // Another session modified this note — surface the conflict
+                console.warn('Note save conflict detected for', noteId);
+                onConflict?.();
+            } else {
+                console.error('Error saving note:', err);
+                onSaveError?.(err);
+            }
         } finally {
             setIsSaving(false);
         }
-    }, [noteId, onSaveSuccess, onSaveError]);
+    }, [noteId, onSaveSuccess, onSaveError, onConflict]);
 
     /**
      * Schedule a save with debouncing
@@ -138,4 +161,5 @@ export function useAutoSave({
         markDirty,
     };
 }
+
 

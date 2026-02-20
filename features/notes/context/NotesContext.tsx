@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { fetchNotes, createNote as createNoteService, updateNote as updateNoteService, deleteNote as deleteNoteService, copyNote as copyNoteService } from '../service/notesService';
 import { findEmptyNewNote, generateUniqueLabel } from '../utils/noteUtils';
 import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
+import { supabase } from '@/utils/supabase/client';
+import { toast } from 'sonner';
 
 interface NotesContextType {
     notes: Note[];
@@ -38,6 +40,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     const initializationPromise = useRef<Promise<void> | null>(null); // For race condition prevention
     const notesRef = useRef<Note[]>([]); // Add ref for notes to avoid callback dependencies
     const activeNoteRef = useRef<Note | null>(null);
+    // Track saves in-flight to avoid spurious realtime conflict warnings
+    const savingNoteIdsRef = useRef<Set<string>>(new Set());
+    // Track notes with stale-data warnings already shown (to avoid spamming)
+    const shownConflictToastsRef = useRef<Set<string>>(new Set());
 
     // Keep refs in sync with state
     useEffect(() => {
@@ -139,6 +145,78 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         refreshNotes();
     }, []);
 
+    // Real-time subscription to prevent data loss from concurrent edits
+    useEffect(() => {
+        const channel = supabase
+            .channel('notes-realtime-sync')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'notes' },
+                (payload) => {
+                    const updatedNote = payload.new as Note;
+                    if (!updatedNote?.id) return;
+
+                    // Skip if we just saved this note (avoid echo from our own save)
+                    if (savingNoteIdsRef.current.has(updatedNote.id)) return;
+
+                    const currentNote = notesRef.current.find(n => n.id === updatedNote.id);
+                    if (!currentNote) return;
+
+                    // Check if the server version is newer than what we have
+                    const serverTime = new Date(updatedNote.updated_at ?? 0).getTime();
+                    const localTime = new Date(currentNote.updated_at ?? 0).getTime();
+
+                    if (serverTime <= localTime) return; // No actual change
+
+                    const isActiveNote = activeNoteRef.current?.id === updatedNote.id;
+                    const toastId = `conflict-${updatedNote.id}`;
+
+                    if (isActiveNote) {
+                        // User is currently viewing this note — warn them
+                        if (!shownConflictToastsRef.current.has(updatedNote.id)) {
+                            shownConflictToastsRef.current.add(updatedNote.id);
+                            toast.warning('This note was updated in another browser or tab.', {
+                                id: toastId,
+                                duration: 10000,
+                                description: 'Your local changes are preserved. Refresh to load the latest version.',
+                                action: {
+                                    label: 'Refresh',
+                                    onClick: () => {
+                                        shownConflictToastsRef.current.delete(updatedNote.id);
+                                        // Update this note from server data
+                                        setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+                                        setActiveNote(prev => prev?.id === updatedNote.id ? updatedNote : prev);
+                                        toast.success('Note refreshed to latest version');
+                                    },
+                                },
+                            });
+                        }
+                    } else {
+                        // Note is not active — silently update it in the sidebar
+                        setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+                    }
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'notes' },
+                (payload) => {
+                    const newNote = payload.new as Note;
+                    if (!newNote?.id || newNote.is_deleted) return;
+                    // Only add if not already present (avoid duplicates from our own creates)
+                    setNotes(prev => {
+                        if (prev.some(n => n.id === newNote.id)) return prev;
+                        return [newNote, ...prev];
+                    });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []); // Stable - no deps needed
+
     // Find or create an empty "New Note" - prevents duplicates
     const findOrCreateEmptyNote = useCallback(async (folderName: string = 'Draft'): Promise<Note> => {
         // Ensure notes are loaded before checking
@@ -205,6 +283,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     // Update a note
     const updateNote = useCallback(async (id: string, updates: UpdateNoteInput): Promise<Note> => {
+        // Mark as saving to suppress spurious realtime conflict warnings
+        savingNoteIdsRef.current.add(id);
+        // Clear any shown conflict toast for this note (we're actively saving)
+        shownConflictToastsRef.current.delete(id);
+
         // Optimistic update
         setNotes(prev =>
             prev.map(note =>
@@ -215,14 +298,21 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         // Update active note if it's the one being edited (use functional setState)
         setActiveNote(prev => prev?.id === id ? { ...prev, ...updates } : prev);
 
-        // Persist to database
-        const updated = await updateNoteService(id, updates);
-        
-        // Update with server response
-        setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
-        setActiveNote(prev => prev?.id === id ? updated : prev);
+        try {
+            // Persist to database
+            const updated = await updateNoteService(id, updates);
+            
+            // Update with server response
+            setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
+            setActiveNote(prev => prev?.id === id ? updated : prev);
 
-        return updated;
+            return updated;
+        } finally {
+            // Small delay before removing from saving set, to absorb the realtime echo
+            setTimeout(() => {
+                savingNoteIdsRef.current.delete(id);
+            }, 2000);
+        }
     }, []); // No dependencies!
 
     // Delete a note

@@ -60,6 +60,14 @@ export const ALLOWED_IMPORTS_CONFIG: AllowedImportConfig[] = [
     }
   },
   {
+    path: '@/components/mardown',  // common typo variant
+    loader: () => require('@/components/MarkdownStream'),
+    scopeStrategy: 'named',
+    exportMap: {
+      'default': 'MarkdownStream'
+    }
+  },
+  {
     path: '@/components/MarkdownStream',
     loader: () => require('@/components/MarkdownStream'),
     scopeStrategy: 'named',

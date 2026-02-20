@@ -56,6 +56,10 @@ import {
     Users,
     AlertTriangle,
     Tag,
+    GitBranch,
+    Link,
+    Unlink,
+    CornerDownRight,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -128,6 +132,12 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [categoryId, setCategoryId] = useState<string>(feedback.category_id ?? 'none');
     const [categories, setCategories] = useState<FeedbackCategory[]>([]);
 
+    // Parent/child relationship state
+    const [parentId, setParentId] = useState<string>(feedback.parent_id ?? 'none');
+    const [allFeedbackItems, setAllFeedbackItems] = useState<Pick<UserFeedback, 'id' | 'description' | 'feedback_type' | 'status'>[]>([]);
+    const [parentSearchQuery, setParentSearchQuery] = useState('');
+    const [showParentPicker, setShowParentPicker] = useState(false);
+
     // Comments state
     const [comments, setComments] = useState<FeedbackComment[]>([]);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
@@ -160,6 +170,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setFormStatus(fresh.status);
         setHasOpenIssues(fresh.has_open_issues ?? false);
         setCategoryId(fresh.category_id ?? 'none');
+        setParentId(fresh.parent_id ?? 'none');
     }, []);
 
     /** Re-fetch the item from the server and update local state */
@@ -337,7 +348,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setCategoryId(feedback.category_id ?? 'none');
     }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
 
-    // Load categories once when dialog opens
+    // Load categories and all feedback items once when dialog opens
     useEffect(() => {
         if (open && categories.length === 0) {
             fetch('/api/admin/feedback/categories')
@@ -345,7 +356,14 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 .then(d => setCategories(d.categories ?? []))
                 .catch(() => {});
         }
-    }, [open, categories.length]);
+        if (open && allFeedbackItems.length === 0) {
+            // Load light list of all feedback items for parent picker
+            fetch('/api/admin/feedback/list-lite')
+                .then(r => r.json())
+                .then(d => setAllFeedbackItems(d.items ?? []))
+                .catch(() => {});
+        }
+    }, [open, categories.length, allFeedbackItems.length]);
 
     // Reset UI interaction state only when a completely different item is opened
     useEffect(() => {
@@ -423,6 +441,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
             const newCategoryId = categoryId === 'none' ? null : categoryId;
             if (newCategoryId !== (item.category_id ?? null)) {
                 updates.category_id = newCategoryId;
+            }
+            const newParentId = parentId === 'none' ? null : parentId;
+            if (newParentId !== (item.parent_id ?? null)) {
+                updates.parent_id = newParentId;
             }
 
             if (Object.keys(updates).length > 0) {
@@ -857,6 +879,38 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         )}
                                     </div>
                                 )}
+
+                                {/* Related Items */}
+                                {item.parent_id ? (
+                                    <div className="p-3 rounded-lg bg-muted/30 border">
+                                        <div className="text-xs font-medium mb-2 flex items-center gap-1.5">
+                                            <GitBranch className="w-3.5 h-3.5 text-primary" />
+                                            Related Items
+                                        </div>
+                                        {item.parent_id && (
+                                            <div className="mb-2">
+                                                <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Parent</div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const parent = allFeedbackItems.find(f => f.id === item.parent_id);
+                                                        if (parent) toast.info(`Parent: ${parent.id.slice(0, 8)} — ${parent.description.slice(0, 60)}`);
+                                                        navigator.clipboard.writeText(item.parent_id!);
+                                                        toast.success('Parent ID copied');
+                                                    }}
+                                                    className="flex items-center gap-2 text-xs px-2 py-1.5 rounded bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors w-full text-left"
+                                                >
+                                                    <CornerDownRight className="w-3 h-3 text-primary flex-shrink-0 rotate-180" />
+                                                    <span className="font-mono text-primary">{item.parent_id.slice(0, 8)}</span>
+                                                    {(() => {
+                                                        const parent = allFeedbackItems.find(f => f.id === item.parent_id);
+                                                        return parent ? <span className="text-muted-foreground truncate">{parent.description.slice(0, 60)}</span> : <span className="text-muted-foreground/50 italic">Loading...</span>;
+                                                    })()}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : null}
                             </TabsContent>
 
                             {/* SECTION 2: AI Analysis */}
@@ -1064,6 +1118,94 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                             Mark this item as having lingering concerns, exposing bigger needs, or being only partially settled.
                                         </p>
                                     </div>
+                                </div>
+
+                                {/* Parent Ticket Link */}
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                                        <GitBranch className="w-3.5 h-3.5" />
+                                        Parent Ticket
+                                    </label>
+                                    {parentId !== 'none' ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 p-2 rounded-lg bg-primary/5 border border-primary/20 text-xs font-mono text-primary">
+                                                {parentId.slice(0, 8)}…
+                                                {(() => {
+                                                    const parent = allFeedbackItems.find(f => f.id === parentId);
+                                                    return parent ? <span className="ml-2 font-normal text-muted-foreground">{parent.description.slice(0, 60)}</span> : null;
+                                                })()}
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setParentId('none')}
+                                                className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                title="Unlink parent"
+                                            >
+                                                <Unlink className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="relative">
+                                            {showParentPicker ? (
+                                                <div className="border rounded-lg p-2 bg-background shadow-md">
+                                                    <Input
+                                                        placeholder="Search feedback items..."
+                                                        value={parentSearchQuery}
+                                                        onChange={e => setParentSearchQuery(e.target.value)}
+                                                        className="h-8 text-xs mb-2"
+                                                        autoFocus
+                                                    />
+                                                    <div className="max-h-48 overflow-y-auto space-y-1">
+                                                        {allFeedbackItems
+                                                            .filter(f =>
+                                                                f.id !== item.id &&
+                                                                (!parentSearchQuery || f.description.toLowerCase().includes(parentSearchQuery.toLowerCase()) || f.id.includes(parentSearchQuery))
+                                                            )
+                                                            .slice(0, 20)
+                                                            .map(f => (
+                                                                <button
+                                                                    key={f.id}
+                                                                    type="button"
+                                                                    onClick={() => { setParentId(f.id); setShowParentPicker(false); setParentSearchQuery(''); }}
+                                                                    className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-muted transition-colors"
+                                                                >
+                                                                    <span className="font-mono text-muted-foreground mr-2">{f.id.slice(0, 8)}</span>
+                                                                    {f.description.slice(0, 70)}
+                                                                    {f.description.length > 70 ? '…' : ''}
+                                                                </button>
+                                                            ))
+                                                        }
+                                                        {allFeedbackItems.filter(f => f.id !== item.id && (!parentSearchQuery || f.description.toLowerCase().includes(parentSearchQuery.toLowerCase()) || f.id.includes(parentSearchQuery))).length === 0 && (
+                                                            <p className="text-xs text-muted-foreground px-2 py-2">No items found</p>
+                                                        )}
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => { setShowParentPicker(false); setParentSearchQuery(''); }}
+                                                        className="w-full mt-1 h-7 text-xs"
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setShowParentPicker(true)}
+                                                    className="h-8 text-xs gap-1.5"
+                                                    disabled={allFeedbackItems.length === 0}
+                                                >
+                                                    <Link className="w-3.5 h-3.5" />
+                                                    Link to parent ticket
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Category */}

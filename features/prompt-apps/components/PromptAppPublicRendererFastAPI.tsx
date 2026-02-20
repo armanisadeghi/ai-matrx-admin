@@ -44,6 +44,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     const isFirstExecutionRef = useRef(true);
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    // Track the task_id from the logging call so we can update it on failure
+    const currentTaskIdRef = useRef<string | null>(null);
     
     // Centralized auth - handles both authenticated users and guests
     const { getHeaders, waitForAuth, isAuthenticated, isAdmin, fingerprintId } = useApiAuth();
@@ -151,6 +153,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     const handleExecute = useCallback(async (variables: Record<string, any>, userInput?: string) => {
         const perfStart = performance.now();
         let firstEventReceived = false;
+        let localChunkCount = 0;
+        let localHasError = false;
         
         const logTiming = (milestone: string) => {
             const elapsed = performance.now() - perfStart;
@@ -163,6 +167,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
         setError(null);
         setStreamEvents([]);
         setIsStreamComplete(false);
+        currentTaskIdRef.current = null;
         
         // Clear any existing timeout
         if (executionTimeoutRef.current) {
@@ -291,6 +296,10 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     }
                 })
             }).then(res => res.json()).then(data => {
+                // Capture task_id so we can update the record on failure
+                if (data.task_id) {
+                    currentTaskIdRef.current = data.task_id;
+                }
                 // Update guest limit in background when logging completes
                 if (data.guest_limit) {
                     guestLimit.refresh();
@@ -313,18 +322,53 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 
                 setStreamEvents(prev => [...prev, event]);
                 
+                if (event.event === 'chunk') {
+                    localChunkCount++;
+                }
+                
                 if (event.event === 'error') {
+                    localHasError = true;
                     const errData = event.data as unknown as ErrorPayload;
+                    const errMsg = errData.user_message || errData.message || 'Unknown error from stream';
                     setError({
                         type: 'stream_error',
-                        message: errData.user_message || errData.message || 'Unknown error from stream'
+                        message: errMsg
                     });
+                    // Patch DB record to mark as failed
+                    if (currentTaskIdRef.current) {
+                        fetch(`/api/public/apps/${slug}/execute`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                task_id: currentTaskIdRef.current,
+                                error_type: 'stream_error',
+                                error_message: errMsg
+                            })
+                        }).catch(() => { /* non-critical */ });
+                    }
                 }
             }
             
             logTiming('Stream complete from Agent API');
             isFirstExecutionRef.current = false;
             setIsStreamComplete(true);
+
+            // Detect empty result: stream finished but no text chunks received
+            if (localChunkCount === 0 && !localHasError) {
+                const emptyResultError = { type: 'empty_result', message: 'The AI returned an empty response. Please try again.' };
+                setError(emptyResultError);
+                if (currentTaskIdRef.current) {
+                    fetch(`/api/public/apps/${slug}/execute`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            task_id: currentTaskIdRef.current,
+                            error_type: 'empty_result',
+                            error_message: 'Stream completed with no content chunks'
+                        })
+                    }).catch(() => { /* non-critical */ });
+                }
+            }
             
         } catch (error: any) {
             if (error.name === 'AbortError') {
@@ -332,10 +376,23 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             } else {
                 logTiming(`❌ Error: ${error.message}`);
                 console.error('Agent API execution error:', error);
+                const errMsg = error.message || 'Execution failed';
                 setError({
                     type: 'execution_error',
-                    message: error.message || 'Execution failed'
+                    message: errMsg
                 });
+                // Patch DB record to mark as failed if we have a task_id
+                if (currentTaskIdRef.current) {
+                    fetch(`/api/public/apps/${slug}/execute`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            task_id: currentTaskIdRef.current,
+                            error_type: 'execution_error',
+                            error_message: errMsg
+                        })
+                    }).catch(() => { /* non-critical */ });
+                }
             }
         } finally {
             setIsExecuting(false);

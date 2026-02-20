@@ -121,7 +121,32 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
 /**
  * Update an existing note
  */
-export async function updateNote(id: string, updates: UpdateNoteInput): Promise<Note> {
+export async function updateNote(id: string, updates: UpdateNoteInput, expectedUpdatedAt?: string): Promise<Note> {
+    // If an expected timestamp is provided, use optimistic locking:
+    // Only update if the note hasn't been modified since we loaded it.
+    if (expectedUpdatedAt) {
+        const { data, error } = await supabase
+            .from('notes')
+            .update(updates)
+            .eq('id', id)
+            .eq('updated_at', expectedUpdatedAt) // Optimistic lock
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating note with optimistic lock:', error);
+            throw error;
+        }
+
+        if (!data) {
+            // The row exists but updated_at didn't match — concurrent modification detected
+            throw new Error('CONFLICT: Note was modified by another session. Please refresh to avoid data loss.');
+        }
+
+        return data;
+    }
+
+    // Standard update (no optimistic locking)
     const { data, error } = await supabase
         .from('notes')
         .update(updates)

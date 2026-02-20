@@ -105,6 +105,7 @@ export interface UpdateFeedbackInput {
     testing_result?: TestingResult;
     has_open_issues?: boolean;
     category_id?: string | null;
+    parent_id?: string | null;
 }
 
 /** Category color mappings (Tailwind classes) matching the color field in feedback_categories */

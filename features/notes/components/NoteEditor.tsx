@@ -95,6 +95,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
 
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
         noteId: note?.id || null,
+        currentUpdatedAt: note?.updated_at,
         debounceMs: 3000, // Increased from 1000ms to 3000ms for less aggressive autosave
         onSaveSuccess: () => {
             // Notify parent with all updated fields + editor mode
@@ -110,6 +111,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                     }
                 });
             }
+        },
+        onConflict: () => {
+            // This note was modified elsewhere — the Realtime subscription in NotesContext
+            // will handle showing the toast and offering a refresh
         },
     });
 
