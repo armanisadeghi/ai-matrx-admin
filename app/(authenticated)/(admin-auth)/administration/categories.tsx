@@ -192,6 +192,13 @@ export const adminCategories = [
                 link: "/administration/feedback",
                 isNew: true,
             },
+            {
+                title: "Invitation Requests",
+                description: "Review and manage access requests. Approve or reject applicants and send invitation codes via email.",
+                icon: <IconUsers />,
+                link: "/administration/invitation-requests",
+                isNew: true,
+            },
         ],
     },
 

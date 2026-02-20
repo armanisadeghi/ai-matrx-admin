@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Loader2, Plus, FolderOpen, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ const STEPS = ['Project', 'Topic', 'Template', 'Keywords', 'Settings'] as const;
 
 export default function ResearchInitForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const api = useResearchApi();
     const [isPending, startTransition] = useTransition();
     const { projects, loading: projectsLoading, refresh: refreshProjects } = useUserProjects();
@@ -26,7 +27,7 @@ export default function ResearchInitForm() {
 
     const [step, setStep] = useState(0);
     const [selectedProject, setSelectedProject] = useState<ProjectWithRole | null>(null);
-    const [topicName, setTopicName] = useState('');
+    const [topicName, setTopicName] = useState(searchParams?.get('topic') ?? '');
     const [description, setDescription] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<ResearchTemplate | null>(null);
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);

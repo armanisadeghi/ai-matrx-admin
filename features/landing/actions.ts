@@ -2,6 +2,7 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { sendEmail, emailTemplates } from '@/lib/email/client';
 import { InvitationRequestStep1, InvitationRequestStep2 } from './types';
 
 // Response types for actions
@@ -59,6 +60,14 @@ export async function submitInvitationRequestStep1(
           return { success: false, error: 'Failed to update request. Please try again.' };
         }
 
+        // Send confirmation email on resubmission (non-blocking)
+        const confirmationTemplate = emailTemplates.invitationRequestReceived(data.full_name);
+        sendEmail({
+          to: data.email.toLowerCase().trim(),
+          subject: confirmationTemplate.subject,
+          html: confirmationTemplate.html,
+        }).catch(err => console.error('Failed to send confirmation email:', err));
+
         return { success: true, data: { requestId: updated.id } };
       }
     }
@@ -78,6 +87,31 @@ export async function submitInvitationRequestStep1(
       console.error('Error creating invitation request:', error);
       return { success: false, error: 'Failed to submit request. Please try again.' };
     }
+
+    // Send confirmation email to user (non-blocking)
+    const confirmationTemplate = emailTemplates.invitationRequestReceived(data.full_name);
+    sendEmail({
+      to: data.email.toLowerCase().trim(),
+      subject: confirmationTemplate.subject,
+      html: confirmationTemplate.html,
+    }).catch(err => console.error('Failed to send confirmation email:', err));
+
+    // Send admin notification email (non-blocking)
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@aimatrx.com';
+    const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.aimatrx.com'}/administration/invitation-requests`;
+    const adminTemplate = emailTemplates.invitationRequestAdminNotification(
+      data.full_name,
+      data.email,
+      data.company,
+      data.use_case,
+      newRequest.id,
+      adminUrl
+    );
+    sendEmail({
+      to: adminEmail,
+      subject: adminTemplate.subject,
+      html: adminTemplate.html,
+    }).catch(err => console.error('Failed to send admin notification email:', err));
 
     return { success: true, data: { requestId: newRequest.id } };
   } catch (error) {

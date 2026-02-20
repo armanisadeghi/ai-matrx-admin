@@ -42,6 +42,13 @@ export function MessagingInitializer() {
   const currentConversationId = useAppSelector((state) => state.messaging.currentConversationId);
   const currentConversationIdRef = useRef(currentConversationId);
   
+  // Track known conversation IDs to filter out global events for other users' conversations
+  const conversations = useAppSelector((state) => state.messaging.conversations);
+  const knownConversationIdsRef = useRef<Set<string>>(new Set());
+  
+  // Per-conversation debounce map to deduplicate rapid fetchConversationDetails calls
+  const fetchDebounceRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  
   // Get messaging preferences for notification sounds
   const messagingPreferences = useAppSelector((state) => state.userPreferences.messaging);
   const messagingPreferencesRef = useRef(messagingPreferences);
@@ -51,6 +58,8 @@ export function MessagingInitializer() {
   // By updating during render, the ref is current by the time any handler reads it.
   currentConversationIdRef.current = currentConversationId;
   messagingPreferencesRef.current = messagingPreferences;
+  // Keep known conversation IDs in sync with Redux state
+  knownConversationIdsRef.current = new Set(conversations.map((c) => c.id));
 
   // Mark messaging as available
   useEffect(() => {
@@ -293,6 +302,14 @@ export function MessagingInitializer() {
       },
       async (payload) => {
         const newMessage = payload.new as Message;
+        
+        // GUARD: Skip messages for conversations the user is not part of.
+        // Supabase Realtime does not support per-user filters on dm_messages, so we
+        // filter client-side against the known conversation list from Redux.
+        if (!knownConversationIdsRef.current.has(newMessage.conversation_id)) {
+          return;
+        }
+        
         const isFromOtherUser = newMessage.sender_id !== userId;
         const isActiveConversation = currentConversationIdRef.current === newMessage.conversation_id;
         
@@ -325,14 +342,20 @@ export function MessagingInitializer() {
           isFromCurrentUser: !isFromOtherUser,
         }));
         
-        // STEP 2: Background full refresh — fetch accurate data from DB after a short
-        // delay to let replication catch up. This ensures unread counts and other details
-        // are correct. The delay avoids read-replica lag issues.
-        setTimeout(async () => {
-          const updatedConv = await fetchConversationDetails(newMessage.conversation_id);
+        // STEP 2: Debounced background full refresh — collapses rapid message bursts
+        // into a single fetchConversationDetails call per conversation to avoid
+        // race conditions and wasted network traffic under high message throughput.
+        const convId = newMessage.conversation_id;
+        const existingTimer = fetchDebounceRef.current.get(convId);
+        if (existingTimer) {
+          clearTimeout(existingTimer);
+        }
+        const timer = setTimeout(async () => {
+          fetchDebounceRef.current.delete(convId);
+          const updatedConv = await fetchConversationDetails(convId);
           
           if (updatedConv) {
-            const isStillActive = currentConversationIdRef.current === newMessage.conversation_id;
+            const isStillActive = currentConversationIdRef.current === convId;
             if (isActiveConversation || isStillActive) {
               updatedConv.unread_count = 0;
             }
@@ -340,6 +363,7 @@ export function MessagingInitializer() {
             dispatch(updateConversation(updatedConv));
           }
         }, 500);
+        fetchDebounceRef.current.set(convId, timer);
       }
     );
 
@@ -393,6 +417,11 @@ export function MessagingInitializer() {
         supabase.removeChannel(subscriptionRef.current);
         subscriptionRef.current = null;
       }
+      // Clean up all pending debounce timers
+      for (const timer of fetchDebounceRef.current.values()) {
+        clearTimeout(timer);
+      }
+      fetchDebounceRef.current.clear();
     };
   }, [userId, supabase, dispatch, fetchConversationDetails]);
 

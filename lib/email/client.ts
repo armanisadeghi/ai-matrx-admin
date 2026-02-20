@@ -236,6 +236,47 @@ export const emailTemplates = {
     `,
   }),
 
+  invitationRequestReceived: (fullName: string) => ({
+    subject: "We received your AI Matrx access request",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #3b82f6;">Request Received!</h1>
+        <p>Hi ${fullName},</p>
+        <p>Thank you for requesting access to AI Matrx. We've received your request and our team will review it shortly.</p>
+        <p>We'll send you an email once your request has been reviewed. In the meantime, feel free to explore our public features.</p>
+        <p style="color: #666; font-size: 14px;">If you have any questions, reply to this email and we'll get back to you.</p>
+        <p>Best regards,<br>The AI Matrx Team</p>
+      </div>
+    `,
+  }),
+
+  invitationRequestAdminNotification: (
+    fullName: string,
+    email: string,
+    company: string,
+    useCase: string,
+    requestId: string,
+    adminUrl: string
+  ) => ({
+    subject: `New access request: ${fullName} (${company})`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #3b82f6;">New Access Request</h1>
+        <p>A new invitation request has been submitted.</p>
+        <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+          <p style="margin: 0 0 8px 0;"><strong>Name:</strong> ${fullName}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${email}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Company:</strong> ${company}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Use Case:</strong> ${useCase}</p>
+          <p style="margin: 0;"><strong>Request ID:</strong> ${requestId}</p>
+        </div>
+        <div style="margin: 24px 0;">
+          <a href="${adminUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Review Request</a>
+        </div>
+      </div>
+    `,
+  }),
+
   invitationRequestApproved: (
     fullName: string,
     invitationCode: string,

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Loader2, Search, Trash2 } from 'lucide-react';
+import { Plus, Loader2, Search, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     AlertDialog,
@@ -47,12 +48,32 @@ export default function TopicList() {
     const [deleting, setDeleting] = useState(false);
     const [isNewOrgOpen, setIsNewOrgOpen] = useState(false);
     const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
+    const [quickTopicName, setQuickTopicName] = useState('');
+    const quickInputRef = useRef<HTMLInputElement>(null);
 
     const { data: topics, isLoading: topicsLoading, refresh } = useFilteredTopics(filter);
+
+    // Auto-focus quick input when there are no topics
+    useEffect(() => {
+        if (!topicsLoading && (topics ?? []).length === 0) {
+            quickInputRef.current?.focus();
+        }
+    }, [topicsLoading, topics]);
 
     const filteredTopics = (topics ?? []).filter(t =>
         !searchQuery || t.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    const handleQuickStart = () => {
+        const name = quickTopicName.trim();
+        if (!name) {
+            router.push('/p/research/topics/new');
+            return;
+        }
+        startTransition(() => {
+            router.push(`/p/research/topics/new?topic=${encodeURIComponent(name)}`);
+        });
+    };
 
     const handleNavigateToTopic = (topicId: string) => {
         if (navigatingId) return;
@@ -86,7 +107,7 @@ export default function TopicList() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height,2.5rem))] flex flex-col overflow-hidden bg-textured">
-            <div className="flex-shrink-0 px-3 sm:px-5 pt-2.5 pb-2">
+            <div className="flex-shrink-0 px-3 sm:px-5 pt-2.5 pb-0">
                 <HierarchyFilter
                     filter={filter}
                     searchValue={searchQuery}
@@ -97,6 +118,39 @@ export default function TopicList() {
                     onNewOrg={() => setIsNewOrgOpen(true)}
                     onNewProject={() => setIsNewProjectOpen(true)}
                 />
+            </div>
+
+            {/* Quick-start topic input */}
+            <div className="flex-shrink-0 px-3 sm:px-5 py-2 border-b border-border/50">
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                        <Input
+                            ref={quickInputRef}
+                            value={quickTopicName}
+                            onChange={e => setQuickTopicName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleQuickStart()}
+                            placeholder="Type a topic to research..."
+                            className="pl-9 h-9 text-sm bg-muted/40 border-border/60"
+                            style={{ fontSize: '16px' }}
+                        />
+                    </div>
+                    <Button
+                        size="sm"
+                        className="h-9 gap-1.5 shrink-0"
+                        onClick={handleQuickStart}
+                        disabled={isPending}
+                    >
+                        {isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                            <>
+                                <span className="hidden sm:inline text-xs">Start Research</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-3 sm:px-5 pb-4">

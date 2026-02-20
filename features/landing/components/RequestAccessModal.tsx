@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Check, AlertCircle, Loader2 } from 'lucide-react';
 import { submitInvitationRequestStep1, submitInvitationRequestStep2 } from '../actions';
 import { InvitationRequestStep1, InvitationRequestStep2, USER_TYPE_OPTIONS } from '../types';
-import { cn } from '@/lib/utils';
 
 interface RequestAccessModalProps {
   open: boolean;
@@ -18,7 +18,8 @@ interface RequestAccessModalProps {
 }
 
 export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalProps) {
-  const [step, setStep] = useState<'form' | 'followup' | 'final'>('form');
+  const router = useRouter();
+  const [step, setStep] = useState<'form' | 'followup'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
@@ -87,9 +88,10 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
         return;
       }
 
-      // Show final success message
-      setStep('final');
+      // Redirect to the dedicated success page
       setIsSubmitting(false);
+      onOpenChange(false);
+      router.push('/request-access/thank-you');
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
@@ -97,8 +99,8 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
   };
 
   const handleSkipFollowup = () => {
-    // User skipped optional fields - that's fine, we already have their core data
-    setStep('final');
+    onOpenChange(false);
+    router.push('/request-access/thank-you');
   };
 
   const handleClose = () => {
@@ -123,29 +125,6 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
     setRequestId(null);
     onOpenChange(false);
   };
-
-  // Final Success State - only shown after follow-up is completed or skipped
-  if (step === 'final') {
-    return (
-      <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md bg-background border-zinc-200 dark:border-zinc-800">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-6 rounded-full bg-primary/10 p-4">
-              <Sparkles className="h-12 w-12 text-primary" />
-            </div>
-            <DialogTitle className="text-2xl font-semibold mb-2">Request Received!</DialogTitle>
-            <DialogDescription className="text-muted-foreground mb-6 max-w-sm">
-              Thank you for your interest in AI Matrx. We'll review your request and be in touch soon with your
-              exclusive invitation.
-            </DialogDescription>
-            <Button onClick={handleClose} size="lg" className="w-full bg-primary hover:bg-primary/90">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
