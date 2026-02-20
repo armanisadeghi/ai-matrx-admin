@@ -4,6 +4,7 @@ import type {
     ResearchKeyword,
     ResearchSource,
     ResearchContent,
+    ResearchAnalysis,
     ResearchSynthesis,
     ResearchTag,
     SourceTag,
@@ -179,6 +180,30 @@ export async function getSourceContent(sourceId: string): Promise<ResearchConten
         .select('*')
         .eq('source_id', sourceId)
         .order('version', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+}
+
+// ============================================================================
+// Analysis
+// ============================================================================
+
+export async function getSourceAnalysis(contentId: string): Promise<ResearchAnalysis[]> {
+    const { data, error } = await supabase
+        .from('rs_analysis')
+        .select('*')
+        .eq('content_id', contentId)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+}
+
+export async function getAnalysisForSource(sourceId: string): Promise<ResearchAnalysis[]> {
+    const { data, error } = await supabase
+        .from('rs_analysis')
+        .select('*')
+        .eq('source_id', sourceId)
+        .order('created_at', { ascending: false });
     if (error) throw error;
     return data ?? [];
 }

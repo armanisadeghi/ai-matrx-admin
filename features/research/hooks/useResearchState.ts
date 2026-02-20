@@ -7,6 +7,7 @@ import type {
     ResearchKeyword,
     ResearchSource,
     ResearchContent,
+    ResearchAnalysis,
     ResearchSynthesis,
     ResearchTag,
     ResearchDocument,
@@ -134,6 +135,26 @@ export function useResearchSources(topicId: string, filters?: Partial<SourceFilt
 export function useSourceContent(sourceId: string) {
     return useServiceQuery<ResearchContent[]>(
         () => service.getSourceContent(sourceId),
+        [sourceId],
+        !!sourceId,
+    );
+}
+
+// ============================================================================
+// Analysis hooks
+// ============================================================================
+
+export function useSourceAnalysis(contentId: string | undefined) {
+    return useServiceQuery<ResearchAnalysis[]>(
+        () => service.getSourceAnalysis(contentId!),
+        [contentId],
+        !!contentId,
+    );
+}
+
+export function useAnalysisForSource(sourceId: string | undefined) {
+    return useServiceQuery<ResearchAnalysis[]>(
+        () => service.getAnalysisForSource(sourceId!),
         [sourceId],
         !!sourceId,
     );

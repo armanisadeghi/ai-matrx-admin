@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ChevronDown, ChevronUp, Brain, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Brain, Loader2, RefreshCw, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -14,10 +14,13 @@ interface AnalysisCardProps {
     analysis: ResearchAnalysis | null;
     topicId?: string;
     sourceId?: string;
+    contentId?: string;
     onAnalyzed?: () => void;
+    /** When true, renders only a compact "Re-analyze" trigger button (no card UI) */
+    triggerOnly?: boolean;
 }
 
-export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: AnalysisCardProps) {
+export function AnalysisCard({ analysis, topicId, sourceId, contentId, onAnalyzed, triggerOnly }: AnalysisCardProps) {
     const api = useResearchApi();
     const [expanded, setExpanded] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
@@ -44,6 +47,23 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
             setRetrying(false);
         }
     }, [api, topicId, analysis, onAnalyzed]);
+
+    // Compact trigger-only mode — used in the section header when analyses already exist
+    if (triggerOnly) {
+        return (
+            <button
+                onClick={handleAnalyze}
+                disabled={analyzing || !topicId || !sourceId}
+                className={cn(
+                    'inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors',
+                    'disabled:opacity-40 disabled:pointer-events-none',
+                )}
+            >
+                {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                Re-analyze
+            </button>
+        );
+    }
 
     if (!analysis) {
         return (
@@ -113,6 +133,10 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
     }
 
     // Successful analysis
+    const createdAt = new Date(analysis.created_at);
+    const formattedDate = createdAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const formattedTime = createdAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
     return (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
             <button
@@ -125,8 +149,11 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
                     {analysis.model_id && (
                         <span className="text-xs text-muted-foreground truncate">{analysis.model_id}</span>
                     )}
-                    <span className="text-xs text-muted-foreground">
-                        {new Date(analysis.created_at).toLocaleDateString()}
+                    <span className="text-xs text-muted-foreground tabular-nums" title={`${formattedDate} at ${formattedTime}`}>
+                        {formattedDate}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/50 tabular-nums hidden sm:inline">
+                        {formattedTime}
                     </span>
                 </div>
                 {expanded ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
@@ -157,15 +184,6 @@ export function AnalysisCard({ analysis, topicId, sourceId, onAnalyzed }: Analys
                             {analysis.token_usage.estimated_cost != null && (
                                 <span>${analysis.token_usage.estimated_cost.toFixed(4)}</span>
                             )}
-                        </div>
-                    )}
-
-                    {topicId && sourceId && (
-                        <div className="flex justify-end">
-                            <Button size="sm" variant="ghost" onClick={handleAnalyze} disabled={analyzing} className="gap-1.5 text-xs">
-                                {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                                Re-analyze
-                            </Button>
                         </div>
                     )}
                 </div>

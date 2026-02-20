@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useResearchSource, useResearchSources, useSourceContent } from '../../hooks/useResearchState';
+import { useResearchSource, useResearchSources, useSourceContent, useAnalysisForSource } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
 import { updateSource } from '../../service';
@@ -59,7 +59,8 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
     const { data: source, refresh: refetchSource } = useResearchSource(sourceId);
     const { data: contentData, refresh: refetchContent } = useSourceContent(sourceId);
     const { data: allSources } = useResearchSources(topicId);
-    const stream = useResearchStream(() => { refetchSource(); refetchContent(); });
+    const { data: allAnalyses, refresh: refetchAnalyses } = useAnalysisForSource(sourceId);
+    const stream = useResearchStream(() => { refetchSource(); refetchContent(); refetchAnalyses(); });
 
     const [pasteOpen, setPasteOpen] = useState(false);
     const [showRawSearch, setShowRawSearch] = useState(false);
@@ -76,10 +77,20 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
         });
     }, [isNavigating, router, topicId]);
 
-    const contentVersions = ((contentData as unknown as Record<string, unknown>)?.content ?? contentData ?? []) as ResearchContent[];
-    const analyses = ((contentData as unknown as Record<string, unknown>)?.analyses ?? []) as ResearchAnalysis[];
+    const contentVersions = (contentData ?? []) as ResearchContent[];
     const [selectedVersion, setSelectedVersion] = useState(0);
     const currentContent = contentVersions[selectedVersion] ?? null;
+
+    // Filter analyses to those matching the current content version, sorted newest first
+    const currentAnalyses = useMemo(() => {
+        const analyses = (allAnalyses ?? []) as ResearchAnalysis[];
+        if (!currentContent) return analyses;
+        return analyses.filter(a => a.content_id === currentContent.id);
+    }, [allAnalyses, currentContent]);
+
+    const handleAnalysisComplete = useCallback(() => {
+        refetchAnalyses();
+    }, [refetchAnalyses]);
 
     const typedSource = source as ResearchSource | null | undefined;
     const hasBeenScraped = typedSource && typedSource.scrape_status !== 'pending';
@@ -440,12 +451,36 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
 
                 {/* Analysis Section */}
                 <div className="space-y-2 min-h-[180px]">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 px-0.5">Analysis</span>
+                    <div className="flex items-center justify-between px-0.5">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                            Analysis
+                            {currentAnalyses.length > 0 && (
+                                <span className="ml-1.5 text-muted-foreground/40">({currentAnalyses.length})</span>
+                            )}
+                        </span>
+                        {currentContent && currentAnalyses.length > 0 && (
+                            <AnalysisCard
+                                analysis={null}
+                                topicId={topicId}
+                                sourceId={sourceId}
+                                contentId={currentContent.id}
+                                onAnalyzed={handleAnalysisComplete}
+                                triggerOnly
+                            />
+                        )}
+                    </div>
                     {currentContent ? (
-                        analyses.length > 0 ? (
+                        currentAnalyses.length > 0 ? (
                             <div className="space-y-2">
-                                {analyses.map(analysis => (
-                                    <AnalysisCard key={analysis.id} analysis={analysis} />
+                                {currentAnalyses.map(analysis => (
+                                    <AnalysisCard
+                                        key={analysis.id}
+                                        analysis={analysis}
+                                        topicId={topicId}
+                                        sourceId={sourceId}
+                                        contentId={currentContent.id}
+                                        onAnalyzed={handleAnalysisComplete}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -453,7 +488,8 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                 analysis={null}
                                 topicId={topicId}
                                 sourceId={sourceId}
-                                onAnalyzed={refetchContent}
+                                contentId={currentContent.id}
+                                onAnalyzed={handleAnalysisComplete}
                             />
                         )
                     ) : (
