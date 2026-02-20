@@ -389,21 +389,42 @@ export function MessagingInitializer() {
     );
 
     // 3. Listen for messages marked as READ (last_read_at update)
+    // No user_id filter so we also catch when OTHER participants read messages (sender read receipts).
+    // Client-side filtering ensures we only process events for known conversations.
     channel.on(
       'postgres_changes',
       {
         event: 'UPDATE',
         schema: 'public',
         table: 'dm_conversation_participants',
-        filter: `user_id=eq.${userId}`,
       },
       async (payload) => {
-        const oldData = payload.old as { last_read_at: string | null; conversation_id: string };
-        const newData = payload.new as { last_read_at: string | null; conversation_id: string };
-        
-        // If last_read_at was updated (messages marked as read)
-        if (oldData.last_read_at !== newData.last_read_at) {
+        const oldData = payload.old as { user_id: string; last_read_at: string | null; conversation_id: string };
+        const newData = payload.new as { user_id: string; last_read_at: string | null; conversation_id: string };
+
+        // Only process events for conversations we know about
+        if (!knownConversationIdsRef.current.has(newData.conversation_id)) return;
+
+        // last_read_at didn't change — nothing to do
+        if (oldData.last_read_at === newData.last_read_at) return;
+
+        if (newData.user_id === userId) {
+          // Our own read state updated — clear our unread count immediately
           dispatch(markConversationAsRead(newData.conversation_id));
+        } else {
+          // Another participant read messages in a shared conversation (sender read receipt).
+          // Trigger a debounced refresh so the conversation shows updated participant read state.
+          const convId = newData.conversation_id;
+          const existing = fetchDebounceRef.current.get(`read_${convId}`);
+          if (existing) clearTimeout(existing);
+          const timer = setTimeout(async () => {
+            fetchDebounceRef.current.delete(`read_${convId}`);
+            const updated = await fetchConversationDetails(convId);
+            if (updated && mountedRef.current) {
+              dispatch(updateConversation(updated));
+            }
+          }, 300);
+          fetchDebounceRef.current.set(`read_${convId}`, timer);
         }
       }
     );
