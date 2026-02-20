@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 
 interface BrokerSelectProps {
     value: string;

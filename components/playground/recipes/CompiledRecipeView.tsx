@@ -1,4 +1,4 @@
-import { useCompiledRecipeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useCompiledRecipeWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { InitialTableSchema } from "@/utils/schema/initialSchemas";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

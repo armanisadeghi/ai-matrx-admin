@@ -5,7 +5,7 @@ import { Database } from "lucide-react";
 import { NodeProps, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowsSelectors, workflowActions, BrokerSourceConfig } from "@/lib/redux/workflow";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { BaseNode, NodeConfig, BaseNodeData } from "@/features/workflows-xyflow/nodes/base/BaseNode";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
 import { toast } from "sonner";

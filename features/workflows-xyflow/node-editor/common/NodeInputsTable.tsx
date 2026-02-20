@@ -10,7 +10,7 @@ import { TableCell } from "@/components/ui/table";
 import { toTitleCase } from "@/utils/dataUtils";
 import { InputMapping } from "@/lib/redux/workflow/types";
 import { generateInputByName } from "@/features/workflows-xyflow/utils/input-utils";
-import { useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 
 export interface NodeInputsTableProps {
     nodeId: string;

@@ -3,7 +3,7 @@
 import { ReactFlowProvider } from "reactflow";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { useEffect } from "react";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 
 export default function WorkflowsLayoutClient({ children }: { children: React.ReactNode }) {
     const { combinedFunctions, isLoading, isError, fetchAll } = useCombinedFunctionsWithArgs();

@@ -3,11 +3,10 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { useEffect } from "react";
-import { useDataBrokerWithFetch, useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch, useNodeCategoryWithFetch, useRegisteredNodeWithFetch, useAiModelWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { useAppDispatch } from "@/lib/redux";
 import WorkflowLoading from "@/features/workflows-xyflow/common/workflow-loading";
-import { useAiModelWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 
 export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch();

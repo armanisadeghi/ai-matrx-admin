@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SaveIcon, RotateCcwIcon } from "lucide-react";
 import { MatrxMetadata, MatrxStatus, encodeMatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 import { getAllColorOptions } from "@/features/rich-text-editor/utils/colorUitls";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 

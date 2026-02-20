@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { SectionContainer, SectionTable } from "@/features/workflows-xyflow/common";
-import { useRegisteredNodeResultsWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useRegisteredNodeResultsWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 

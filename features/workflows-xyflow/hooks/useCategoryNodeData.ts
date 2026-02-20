@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { getIconComponent } from "@/components/official/IconResolver";
-import { useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { WorkflowNode, WorkflowNodeUiData, XyFlowNodeType } from "@/lib/redux/workflow-nodes/types";

@@ -9,7 +9,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrokerSourceConfig, ScopeType } from "./types";
 import JsonEditor from "./JsonEditor";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { useEffect, useState, useMemo } from "react";
 
 type SimpleBroker = {

@@ -7,7 +7,7 @@ import { BaseNode, NodeConfig, BaseNodeData } from "../../base/BaseNode";
 import UserInputNodeSettings from "./UserInputNodeSettings";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowActions } from "@/lib/redux/workflow/slice";
 import { brokerActions } from "@/lib/redux/brokerSlice";

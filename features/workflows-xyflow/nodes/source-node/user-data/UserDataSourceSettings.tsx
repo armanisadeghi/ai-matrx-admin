@@ -15,7 +15,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowsSelectors, workflowActions } from "@/lib/redux/workflow";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
 import { toast } from "sonner";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { BrokerMapEntry } from "@/lib/redux/brokerSlice/types";
 import BrokerSelect from "@/features/workflows-xyflow/common/BrokerSelect";

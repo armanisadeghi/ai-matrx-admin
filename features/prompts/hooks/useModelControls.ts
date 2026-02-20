@@ -112,7 +112,35 @@ export function useModelControls(models: any[], selectedModelId: string) {
         };
     }
 
-    const controls = selectedModel.controls;
+    // Defensively parse controls if it was stored as a JSON string (double-encoded)
+    let controls = selectedModel.controls;
+    if (typeof controls === 'string') {
+        try {
+            controls = JSON.parse(controls);
+        } catch {
+            console.error('Failed to parse model controls JSON string for model:', selectedModel.name);
+            return {
+                normalizedControls: {
+                    rawControls: {},
+                    unmappedControls: {},
+                },
+                selectedModel,
+                error: `Invalid controls JSON for model: ${selectedModel.name}`,
+            };
+        }
+    }
+    // Guard: controls must be a plain object to iterate safely
+    if (typeof controls !== 'object' || controls === null || Array.isArray(controls)) {
+        console.error('Unexpected controls shape for model:', selectedModel.name, controls);
+        return {
+            normalizedControls: {
+                rawControls: {},
+                unmappedControls: {},
+            },
+            selectedModel,
+            error: null,
+        };
+    }
     const normalized: NormalizedControls = {
         rawControls: controls,
         unmappedControls: {},
@@ -141,6 +169,12 @@ export function useModelControls(models: any[], selectedModelId: string) {
 
         // Remap output_format -> response_format (backend uses response_format)
         const normalizedKey = key === 'output_format' ? 'response_format' : key;
+
+        // Guard: skip primitive values — control definitions must be objects
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+            console.warn(`Skipping malformed control "${key}" for model — expected object, got:`, typeof value);
+            return;
+        }
 
         // Parse the control definition based on its structure
         const controlDef: ControlDefinition = {
@@ -198,7 +232,20 @@ export function getModelDefaults(model: any) {
     }
 
     const defaults: Record<string, any> = {};
-    const controls = model.controls;
+
+    // Defensively parse controls if double-encoded as a JSON string
+    let controls = model.controls;
+    if (typeof controls === 'string') {
+        try {
+            controls = JSON.parse(controls);
+        } catch {
+            console.error('Failed to parse model controls JSON string in getModelDefaults for model:', model.name);
+            return {};
+        }
+    }
+    if (typeof controls !== 'object' || controls === null || Array.isArray(controls)) {
+        return {};
+    }
 
     // Keys that represent UI capabilities, not submission values
     const uiOnlyKeys = new Set(['tools']);
@@ -206,6 +253,11 @@ export function getModelDefaults(model: any) {
     Object.entries(controls).forEach(([key, value]: [string, any]) => {
         // Remap output_format -> response_format
         const normalizedKey = key === 'output_format' ? 'response_format' : key;
+
+        // Guard: skip primitive values
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+            return;
+        }
 
         // Skip UI-only capability flags
         if (uiOnlyKeys.has(normalizedKey)) {

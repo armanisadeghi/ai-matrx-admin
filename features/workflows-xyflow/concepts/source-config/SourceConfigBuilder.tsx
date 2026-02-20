@@ -13,7 +13,7 @@ import FileConfigForm from "./FileConfigForm";
 import StateConfigForm from "./StateConfigForm";
 import ComputedConfigForm from "./ComputedConfigForm";
 import FunctionConfigForm from "./FunctionConfigForm";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityUsedHooks";
 import { useEffect } from "react";
 
 
