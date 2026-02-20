@@ -111,6 +111,22 @@ For each of the 3 items in `batch`:
 
 **e) Push triage to DB**
 
+Always assign a `category_id` during triage using the list below. If none fit, use the "Other" category and note the suggested new category name in a comment.
+
+| Category | ID | Color |
+|----------|-----|-------|
+| Feedback System | `2a04d7e9-e6e5-4b0f-9cdd-138bd69d290d` | blue |
+| Sandbox | `dd929aa6-e34a-4724-af2d-b6113022fece` | purple |
+| Prompt Apps | `86768ada-2afa-498e-ab8a-19fd6e9edad4` | green |
+| Messaging | `7b6d243d-3704-4083-a597-14e550514657` | cyan |
+| Notes | `ef3203c3-2384-474b-bda7-1622a6891601` | yellow |
+| Authentication | `59b4320e-8ac0-418f-8153-469c922a4754` | red |
+| UI/UX | `1474f616-07b6-49fa-a448-342f9af1e24e` | orange |
+| Performance | `fa2d5342-307a-4d61-98aa-b14eb3977d4b` | pink |
+| Admin Dashboard | `9342871b-2746-4073-81aa-e7ac0affffbb` | indigo |
+| AI & Prompts | `d5606741-a96f-4a6a-bf2d-dd50557a3dfb` | violet |
+| Other | `09d27b5c-11f8-4dff-8d01-fdeddbee0e87` | gray |
+
 ```sql
 SELECT * FROM triage_feedback_item(
   '<id>'::uuid,
@@ -119,7 +135,8 @@ SELECT * FROM triage_feedback_item(
   'moderate',                      -- simple/moderate/complex
   ARRAY['path/to/file1.tsx'],
   4,                               -- autonomy score
-  'Assessment: ...'
+  'Assessment: ...',
+  '<category_id>'::uuid            -- assign a category from the table above
 );
 ```
 
@@ -177,9 +194,9 @@ If any exist: read the admin's comments (`get_feedback_comments`), fix the issue
 -- Get batch of 3
 SELECT get_triage_batch(3);
 
--- Triage an item
+-- Triage an item (always include category_id — use category table above)
 SELECT * FROM triage_feedback_item('<id>'::uuid, 'proposal', 'priority', 'complexity',
-  ARRAY['files'], score, 'assessment');
+  ARRAY['files'], score, 'assessment', '<category_id>'::uuid);
 
 -- Auto-approve (score 4-5 only)
 SELECT * FROM set_admin_decision('<id>'::uuid, 'approved', NULL, <priority>);

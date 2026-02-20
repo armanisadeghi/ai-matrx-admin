@@ -6,6 +6,7 @@ import {
     UserFeedback,
     FeedbackStatus,
     FeedbackType,
+    FeedbackCategory,
     FeedbackComment,
     FeedbackUserMessage,
     AdminDecision,
@@ -14,6 +15,7 @@ import {
     ADMIN_STATUS_LABELS,
     ADMIN_DECISION_COLORS,
     ADMIN_DECISION_LABELS,
+    CATEGORY_COLORS,
 } from '@/types/feedback.types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -53,6 +55,7 @@ import {
     UserCheck,
     Users,
     AlertTriangle,
+    Tag,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -122,6 +125,8 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
     const [formStatus, setFormStatus] = useState<FeedbackStatus>(feedback.status);
     const [hasOpenIssues, setHasOpenIssues] = useState(feedback.has_open_issues ?? false);
+    const [categoryId, setCategoryId] = useState<string>(feedback.category_id ?? 'none');
+    const [categories, setCategories] = useState<FeedbackCategory[]>([]);
 
     // Comments state
     const [comments, setComments] = useState<FeedbackComment[]>([]);
@@ -154,6 +159,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setAdminNotes(fresh.admin_notes || '');
         setFormStatus(fresh.status);
         setHasOpenIssues(fresh.has_open_issues ?? false);
+        setCategoryId(fresh.category_id ?? 'none');
     }, []);
 
     /** Re-fetch the item from the server and update local state */
@@ -328,7 +334,18 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         setAdminNotes(feedback.admin_notes || '');
         setFormStatus(feedback.status);
         setHasOpenIssues(feedback.has_open_issues ?? false);
+        setCategoryId(feedback.category_id ?? 'none');
     }, [feedback.id, feedback.updated_at]); // Re-sync on different item OR fresher data from parent
+
+    // Load categories once when dialog opens
+    useEffect(() => {
+        if (open && categories.length === 0) {
+            fetch('/api/admin/feedback/categories')
+                .then(r => r.json())
+                .then(d => setCategories(d.categories ?? []))
+                .catch(() => {});
+        }
+    }, [open, categories.length]);
 
     // Reset UI interaction state only when a completely different item is opened
     useEffect(() => {
@@ -402,6 +419,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
             }
             if (hasOpenIssues !== (item.has_open_issues ?? false)) {
                 updates.has_open_issues = hasOpenIssues;
+            }
+            const newCategoryId = categoryId === 'none' ? null : categoryId;
+            if (newCategoryId !== (item.category_id ?? null)) {
+                updates.category_id = newCategoryId;
             }
 
             if (Object.keys(updates).length > 0) {
@@ -1044,6 +1065,47 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Category */}
+                                {categories.length > 0 && (
+                                    <div>
+                                        <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
+                                            <Tag className="w-3.5 h-3.5" />
+                                            Category
+                                        </label>
+                                        <Select value={categoryId} onValueChange={setCategoryId}>
+                                            <SelectTrigger>
+                                                {categoryId !== 'none' ? (() => {
+                                                    const cat = categories.find(c => c.id === categoryId);
+                                                    if (!cat) return <span className="text-muted-foreground text-sm">Uncategorized</span>;
+                                                    const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                                    return (
+                                                        <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border', colors.bg, colors.text, colors.border)}>
+                                                            <Tag className="w-3 h-3" />
+                                                            {cat.name}
+                                                        </span>
+                                                    );
+                                                })() : (
+                                                    <span className="text-muted-foreground text-sm">Uncategorized</span>
+                                                )}
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">Uncategorized</SelectItem>
+                                                {categories.filter(c => c.is_active).map(cat => {
+                                                    const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                                    return (
+                                                        <SelectItem key={cat.id} value={cat.id}>
+                                                            <span className="flex items-center gap-1.5">
+                                                                <span className={cn('w-2 h-2 rounded-full inline-block border', colors.bg, colors.border)} />
+                                                                {cat.name}
+                                                            </span>
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
 
                                 <Separator />
 

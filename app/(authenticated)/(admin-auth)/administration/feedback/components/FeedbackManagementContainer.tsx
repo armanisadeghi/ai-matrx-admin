@@ -7,10 +7,11 @@ import FeedbackTable from './FeedbackTable';
 import WorkQueueTab from './WorkQueueTab';
 import AnnouncementTable from './AnnouncementTable';
 import CreateAnnouncementDialog from './CreateAnnouncementDialog';
+import CategoriesTab from './CategoriesTab';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare, Megaphone, ListOrdered } from 'lucide-react';
+import { Plus, MessageSquare, Megaphone, ListOrdered, Tag } from 'lucide-react';
 
-const VALID_TABS = ['feedback', 'work-queue', 'announcements'] as const;
+const VALID_TABS = ['feedback', 'work-queue', 'announcements', 'categories'] as const;
 type TabValue = typeof VALID_TABS[number];
 
 export default function FeedbackManagementContainer() {
@@ -61,6 +62,10 @@ export default function FeedbackManagementContainer() {
                             <Megaphone className="w-4 h-4" />
                             <span className="hidden sm:inline">Announcements</span>
                         </TabsTrigger>
+                        <TabsTrigger value="categories" className="gap-2">
+                            <Tag className="w-4 h-4" />
+                            <span className="hidden sm:inline">Categories</span>
+                        </TabsTrigger>
                     </TabsList>
 
                     {activeTab === 'announcements' && (
@@ -84,6 +89,10 @@ export default function FeedbackManagementContainer() {
 
                 <TabsContent value="announcements" className="mt-0">
                     <AnnouncementTable key={announcementKey} />
+                </TabsContent>
+
+                <TabsContent value="categories" className="mt-0">
+                    <CategoriesTab />
                 </TabsContent>
             </Tabs>
 

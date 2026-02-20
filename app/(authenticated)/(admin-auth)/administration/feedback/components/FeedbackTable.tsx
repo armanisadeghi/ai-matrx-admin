@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { getAllFeedback, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
-import { UserFeedback, FeedbackStatus, FeedbackType, AdminDecision, TestingResult, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS } from '@/types/feedback.types';
+import { UserFeedback, FeedbackStatus, FeedbackType, FeedbackCategory, AdminDecision, TestingResult, ADMIN_DECISION_COLORS, ADMIN_DECISION_LABELS, ADMIN_STATUS_LABELS, CATEGORY_COLORS } from '@/types/feedback.types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import {
     AlertCircle, Sparkles, Lightbulb, HelpCircle, Search, ArrowUpDown, Eye, ImageIcon,
     ChevronLeft, ChevronRight, Loader2, Brain, CheckCircle2, Hash, ArrowRight, User, Bot,
     ClipboardCheck, Archive, ChevronDown, Copy, UserCheck, XCircle, MinusCircle, TestTube,
-    AlertTriangle,
+    AlertTriangle, Tag,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
@@ -258,6 +258,8 @@ export default function FeedbackTable() {
     const [filterDecision, setFilterDecision] = useState<AdminDecision | 'all'>('all');
     const [filterTestResult, setFilterTestResult] = useState<TestingResult | 'all'>('all');
     const [filterOpenIssues, setFilterOpenIssues] = useState<'all' | 'yes' | 'no'>('all');
+    const [filterCategory, setFilterCategory] = useState<string>('all');
+    const [categories, setCategories] = useState<FeedbackCategory[]>([]);
     const [showFilters, setShowFilters] = useState(false);
 
     // Sorting
@@ -266,6 +268,10 @@ export default function FeedbackTable() {
 
     useEffect(() => {
         loadFeedback();
+        fetch('/api/admin/feedback/categories')
+            .then(r => r.json())
+            .then(d => setCategories(d.categories ?? []))
+            .catch(() => {});
     }, []);
 
     const loadFeedback = async () => {
@@ -379,6 +385,7 @@ export default function FeedbackTable() {
             if (filterTestResult !== 'all' && (item.testing_result || null) !== filterTestResult) return false;
             if (filterOpenIssues === 'yes' && !item.has_open_issues) return false;
             if (filterOpenIssues === 'no' && item.has_open_issues) return false;
+            if (filterCategory !== 'all' && (item.category_id ?? 'none') !== filterCategory) return false;
 
             // Search
             if (searchTerm) {
@@ -431,13 +438,13 @@ export default function FeedbackTable() {
         });
 
         return filtered;
-    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, filterOpenIssues, sortField, sortDirection]);
+    }, [feedback, activeStage, searchTerm, filterStatus, filterType, filterDecision, filterTestResult, filterOpenIssues, filterCategory, sortField, sortDirection]);
 
     const getStatusOption = (status: FeedbackStatus) => {
         return statusOptions.find(s => s.value === status);
     };
 
-    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || filterTestResult !== 'all' || filterOpenIssues !== 'all' || searchTerm !== '';
+    const hasActiveFilters = filterStatus !== 'all' || filterType !== 'all' || filterDecision !== 'all' || filterTestResult !== 'all' || filterOpenIssues !== 'all' || filterCategory !== 'all' || searchTerm !== '';
 
     // Initial load: show skeleton but still render dialogs below so they don't unmount
     const isInitialLoad = loading && feedback.length === 0;
@@ -478,6 +485,7 @@ export default function FeedbackTable() {
                                             setFilterType('all');
                                             setFilterDecision('all');
                                             setFilterTestResult('all');
+                                            setFilterCategory('all');
                                             // Smart sort defaults
                                             if (stage.key === 'agent_working') {
                                                 setSortField('work_priority');
@@ -639,6 +647,28 @@ export default function FeedbackTable() {
                                 <SelectItem value="no">No Open Issues</SelectItem>
                             </SelectContent>
                         </Select>
+                        {categories.length > 0 && (
+                            <Select value={filterCategory} onValueChange={setFilterCategory}>
+                                <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
+                                    <SelectValue placeholder="Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="none">Uncategorized</SelectItem>
+                                    {categories.filter(c => c.is_active).map(cat => {
+                                        const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                        return (
+                                            <SelectItem key={cat.id} value={cat.id}>
+                                                <span className="flex items-center gap-1.5">
+                                                    <span className={cn('w-2 h-2 rounded-full inline-block', colors.bg, 'border', colors.border)} />
+                                                    {cat.name}
+                                                </span>
+                                            </SelectItem>
+                                        );
+                                    })}
+                                </SelectContent>
+                            </Select>
+                        )}
                         {hasActiveFilters && (
                             <Button
                                 variant="ghost"
@@ -650,6 +680,7 @@ export default function FeedbackTable() {
                                     setFilterDecision('all');
                                     setFilterTestResult('all');
                                     setFilterOpenIssues('all');
+                                    setFilterCategory('all');
                                     setSearchTerm('');
                                 }}
                             >
@@ -869,7 +900,20 @@ export default function FeedbackTable() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-start gap-2">
-                                                    <p className="line-clamp-2 text-sm flex-1">{item.description}</p>
+                                                    <div className="flex-1 min-w-0">
+                                                        {item.category_id && (() => {
+                                                            const cat = categories.find(c => c.id === item.category_id);
+                                                            if (!cat) return null;
+                                                            const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                                            return (
+                                                                <span className={cn('inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border mb-1 mr-1', colors.bg, colors.text, colors.border)}>
+                                                                    <Tag className="w-2.5 h-2.5" />
+                                                                    {cat.name}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                        <p className="line-clamp-2 text-sm">{item.description}</p>
+                                                    </div>
                                                     {isTriaged && item.ai_solution_proposal && (
                                                         <Badge
                                                             variant="outline"
