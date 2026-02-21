@@ -9,7 +9,6 @@ import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice
 import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
 import type { PromptApp, RateLimitInfo, ExecutionErrorType } from '../types';
 import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
-import type { AgentWarmRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { AlertCircle } from 'lucide-react';
@@ -31,6 +30,21 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
 
     const { getHeaders, waitForAuth, isAdmin, fingerprintId } = useApiAuth();
     const useLocalhost = useSelector(selectIsUsingLocalhost);
+
+    // Pre-warm the agent on mount — no body, agent_id in URL path
+    useEffect(() => {
+        const promptId = app.prompt_id;
+        if (!promptId) return;
+
+        const BACKEND_URL = (isAdmin && useLocalhost)
+            ? BACKEND_URLS.localhost
+            : BACKEND_URLS.production;
+
+        if (BACKEND_URL.includes('localhost')) return;
+
+        fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`, { method: 'POST' })
+            .catch(() => { /* non-critical */ });
+    }, [app.prompt_id, isAdmin, useLocalhost]);
 
     useEffect(() => {
         return () => {
@@ -73,7 +87,6 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 user_input: userInput,
                 stream: true,
                 debug: false,
-                is_builtin: false,
             };
 
             const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(conversationId)}`, {

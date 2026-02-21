@@ -1083,16 +1083,12 @@ export interface components {
              */
             debug: boolean;
         };
-        /** AgentWarmRequest */
-        AgentWarmRequest: {
-            /** Prompt Id */
-            prompt_id: string;
-            /**
-             * Is Builtin
-             * @default false
-             */
-            is_builtin: boolean;
-        };
+        /**
+         * AgentWarmRequest
+         * No request body — agent_id is passed as a URL path parameter.
+         * POST /api/ai/agents/{agent_id}/warm
+         */
+        AgentWarmRequest: Record<string, never>;
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
             /** Source Ids */

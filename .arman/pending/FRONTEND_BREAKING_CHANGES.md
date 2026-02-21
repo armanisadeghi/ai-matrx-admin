@@ -1,6 +1,6 @@
 # Frontend Breaking Changes — API Migration
 
-> **STATUS: ✅ COMPLETE** — All changes applied 2026-02-20. Full codebase updated.
+> **STATUS: ✅ COMPLETE** — All changes applied 2026-02-20. Full codebase updated (warm endpoint, is_builtin removal, admin override audit).
 
 **Date:** 2026-02-18  
 **Affects:** All clients consuming the AI Dream Python API (web, mobile)  
@@ -50,7 +50,6 @@ Both must be addressed together. A client that hits the new URLs but still tries
   "user_input": "Hello",
   "variables": {},
   "config_overrides": {},
-  "is_builtin": false,
   "stream": true,
   "debug": false
 }
@@ -64,7 +63,6 @@ The server generates and owns the `conversation_id`. You get it back from the st
   "user_input": "Hello",
   "variables": {},
   "config_overrides": {},
-  "is_builtin": false,
   "stream": true,
   "debug": false
 }
@@ -74,6 +72,7 @@ The `conversation_id` is now **in the URL path**, not the body. `is_new_conversa
 **Fields removed from body:**
 - `conversation_id` — moved to URL path for existing conversations
 - `is_new_conversation` — no longer needed; inferred from which URL you call
+- `is_builtin` — **removed entirely**; the server automatically determines whether the `prompt_id` is a prompt or builtin. Pass any valid ID and it just works.
 
 ---
 
@@ -122,6 +121,28 @@ Again — `conversation_id` is in the URL path, `is_new_conversation` is gone.
 - `is_new_conversation` — no longer needed
 
 **All other body fields are unchanged.** The full parameter list for unified chat (model config, tools, reasoning, image/audio/video params, etc.) is exactly the same.
+
+---
+
+### Agent Warm (Pre-loading / Cache)
+
+A single unified warm endpoint. The server automatically determines whether the ID is a prompt or a builtin — you do not need to know or specify. No auth required. No request body.
+
+| Endpoint |
+|---|
+| `POST /api/ai/agents/{agent_id}/warm` |
+
+**Response (success):**
+```json
+{ "status": "cached", "agent_id": "<id>" }
+```
+
+**Response (error):**
+```json
+{ "status": "error", "agent_id": "<id>", "message": "..." }
+```
+
+> **Note:** The old `POST /api/ai/agent/warm` with `{ prompt_id, is_builtin }` body, and the old split routes (`/agents/prompt/{id}/warm`, `/agents/builtin/{id}/warm`) are all **removed**. Use the single unified URL above.
 
 ---
 
@@ -535,8 +556,10 @@ interface HeartbeatData {
 |---|---|---|
 | Agent endpoint URL | `POST /api/ai/agent/execute` | `POST /api/ai/agents/execute` (new) or `POST /api/ai/agents/{conversation_id}/execute` (existing) |
 | Chat endpoint URL | `POST /api/ai/chat/unified` | `POST /api/ai/conversations/chat` (new) or `POST /api/ai/conversations/{conversation_id}/chat` (existing) |
+| Agent warm endpoint | `POST /api/ai/agent/warm` with `{ prompt_id, is_builtin }` body | `POST /api/ai/agents/{agent_id}/warm` — no body, single unified route |
 | `conversation_id` in body | Sent in body | Moved to URL path; remove from body |
 | `is_new_conversation` in body | Sent in body | Removed; determined by which URL you call |
+| `is_builtin` in agent execute body | Sent in body (`true`/`false`) | **Removed entirely** — server auto-detects prompt vs. builtin from the ID |
 | Response format for all AI endpoints | Single JSON object (some) or stream (some) | Always NDJSON stream — no exceptions |
 
 ### Did NOT change

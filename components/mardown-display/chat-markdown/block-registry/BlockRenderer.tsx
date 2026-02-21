@@ -3,6 +3,7 @@ import React, { useCallback } from "react";
 import { BlockComponents, LoadingComponents } from "./BlockComponentRegistry";
 import { ContentBlock } from "@/components/mardown-display/markdown-classification/processors/utils/content-splitter-v2";
 import { looksLikeDiff } from "../diff-blocks/diff-style-registry";
+import { safeJsonParse } from "./json-parse-utils";
 
 interface BlockRendererProps {
     block: ContentBlock;
@@ -30,85 +31,6 @@ function isGenuinelyIncomplete(content: string): boolean {
     
     // If braces are unbalanced, it's genuinely incomplete
     return openBraces > closeBraces;
-}
-
-/**
- * Preprocess JSON content to fix common escape sequence issues before parsing
- * 
- * When AI models generate JSON with LaTeX, they often use single backslashes
- * which get interpreted as escape sequences (e.g., \t, \n, \d, etc.)
- * This function attempts to fix these issues to make the JSON parseable.
- * 
- * CRITICAL: This must never throw an error. Always returns valid input.
- */
-function preprocessJsonContent(jsonString: string): string {
-    try {
-        // First, try parsing as-is. If it works, return unchanged
-        JSON.parse(jsonString);
-        return jsonString;
-    } catch (initialError) {
-        // JSON parsing failed, try to fix common issues
-        try {
-            let fixed = jsonString;
-            
-            // Fix common LaTeX escape sequences in JSON string values
-            // We need to find content within quotes and fix backslashes there
-            
-            // Pattern: Match content within double quotes that contains problematic backslashes
-            // This is complex because we need to handle:
-            // 1. \text -> \\text
-            // 2. \delta -> \\delta
-            // 3. But NOT fix already-escaped sequences like \\text
-            
-            // Strategy: Find all string values (content between quotes) and fix single backslashes
-            fixed = fixed.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match, content) => {
-                // Inside a JSON string value
-                // Fix single backslashes followed by letters (LaTeX commands)
-                // But don't fix already-escaped backslashes (\\)
-                let fixedContent = content;
-                
-                // Common LaTeX commands that need fixing
-                const latexCommands = [
-                    'text', 'delta', 'alpha', 'beta', 'gamma', 'theta', 'omega',
-                    'frac', 'sqrt', 'sum', 'int', 'lim', 'infty',
-                    'nabla', 'partial', 'cdot', 'times', 'pm',
-                    'le', 'ge', 'ne', 'approx', 'equiv'
-                ];
-                
-                // For each command, replace \command with \\command if not already escaped
-                latexCommands.forEach(cmd => {
-                    // Match \command that's not preceded by another backslash
-                    const pattern = new RegExp(`(?<!\\\\)\\\\(${cmd})`, 'g');
-                    fixedContent = fixedContent.replace(pattern, '\\\\$1');
-                });
-                
-                return `"${fixedContent}"`;
-            });
-            
-            // Try parsing the fixed version
-            JSON.parse(fixed);
-            return fixed;
-        } catch (fixError) {
-            // Even fixing failed, return original
-            console.warn('[preprocessJsonContent] Failed to fix JSON, returning original:', fixError);
-            return jsonString;
-        }
-    }
-}
-
-/**
- * Safe JSON parsing with preprocessing for escape sequences
- * Returns null if parsing fails after all attempts
- */
-function safeJsonParse(jsonString: string): any | null {
-    try {
-        // First attempt: preprocess and parse
-        const preprocessed = preprocessJsonContent(jsonString);
-        return JSON.parse(preprocessed);
-    } catch (error) {
-        console.error('[safeJsonParse] Failed to parse JSON after preprocessing:', error);
-        return null;
-    }
 }
 
 /**
@@ -294,7 +216,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             
-            const quizData = safeJsonParse(block.content);
+            const quizData = safeJsonParse(block.content) as any | null;
             if (quizData && quizData.quiz_title && Array.isArray(quizData.multiple_choice) && quizData.multiple_choice.length > 0) {
                 return <BlockComponents.MultipleChoiceQuiz key={index} quizData={quizData} taskId={taskId} />;
             }
@@ -310,7 +232,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 // Otherwise, try to render it anyway (might just be a formatting issue)
             }
             
-            const presentationData = safeJsonParse(block.content);
+            const presentationData = safeJsonParse(block.content) as any | null;
             if (presentationData && presentationData.presentation?.slides && Array.isArray(presentationData.presentation.slides)) {
                 return (
                     <BlockComponents.Slideshow
@@ -561,8 +483,11 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
                 }
                 // Otherwise, try to render it anyway (might just be a formatting issue)
             }
+
+            console.log("block.content", block.content);
             
-            const mathProblemData = safeJsonParse(block.content);
+            const mathProblemData = safeJsonParse(block.content) as Record<string, unknown> | null;
+            console.log("mathProblemData", mathProblemData);
             if (mathProblemData && mathProblemData.math_problem) {
                 return <BlockComponents.MathProblemBlock key={index} problemData={mathProblemData} />;
             }

@@ -92,11 +92,17 @@ export function useChatPersistence() {
                 offset: String(offset),
             });
 
-            const res = await fetch(`/api/cx-chat/history?${params}`);
+            const url = `/api/cx-chat/history?${params}`;
+            console.log('[useChatPersistence] loadHistory →', url);
+            const res = await fetch(url);
+            console.log('[useChatPersistence] loadHistory response:', res.status, res.statusText);
             const json = await res.json();
+            if (!json.success) {
+                console.warn('[useChatPersistence] loadHistory failed:', json.error);
+            }
             return json.success ? json.data : [];
         } catch (error) {
-            console.error('loadHistory error:', error);
+            console.error('[useChatPersistence] loadHistory error:', error);
             return [];
         }
     }, []);
@@ -106,11 +112,17 @@ export function useChatPersistence() {
         conversationId: string,
     ): Promise<CxConversationWithMessages | null> => {
         try {
-            const res = await fetch(`/api/cx-chat/request?id=${conversationId}`);
+            const url = `/api/cx-chat/request?id=${conversationId}`;
+            console.log('[useChatPersistence] loadConversation →', url);
+            const res = await fetch(url);
+            console.log('[useChatPersistence] loadConversation response:', res.status, res.statusText);
             const json = await res.json();
+            if (!json.success) {
+                console.warn('[useChatPersistence] loadConversation failed:', json.error);
+            }
             return json.success ? json.data : null;
         } catch (error) {
-            console.error('loadConversation error:', error);
+            console.error('[useChatPersistence] loadConversation error:', error);
             return null;
         }
     }, []);

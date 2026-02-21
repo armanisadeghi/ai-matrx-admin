@@ -26,9 +26,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: true, data: history });
     } catch (error) {
         console.error('GET /api/cx-chat/history error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Failed to fetch chat history' },
-            { status: 500 },
-        );
+        // Return empty instead of 500 — table may not exist yet
+        return NextResponse.json({ success: true, data: [] });
     }
 }

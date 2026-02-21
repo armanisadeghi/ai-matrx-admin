@@ -3,7 +3,6 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
-import type { AgentWarmRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { extractPersistableToolUpdates } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
@@ -33,7 +32,6 @@ interface AgentExecuteRequestWithContent {
     config_overrides?: Record<string, unknown>;
     stream: boolean;
     debug: boolean;
-    is_builtin: boolean;
 }
 
 // ============================================================================
@@ -73,18 +71,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             const BACKEND_URL = getBackendUrl();
             if (BACKEND_URL.includes('localhost')) return;
 
-            const warmRequest: AgentWarmRequestBody = {
-                prompt_id: promptId,
-                is_builtin: false,
-            };
+            // No request body — agent_id goes in the URL path
+            const warmUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`;
+            console.log('[useAgentChat] warmAgent →', warmUrl);
 
-            await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(warmRequest),
-            });
-        } catch {
-            // Silently ignore — warming is non-critical
+            const res = await fetch(warmUrl, { method: 'POST' });
+            console.log('[useAgentChat] warmAgent response:', res.status, res.statusText);
+        } catch (err) {
+            console.warn('[useAgentChat] warmAgent failed (non-critical):', err);
         }
     }, [getBackendUrl]);
 
@@ -156,17 +150,22 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
                 stream: true,
                 debug: true,
-                is_builtin: false,
             };
 
             updateMessage(assistantMessageId, { status: 'streaming' });
 
-            const response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(state.conversationId)}`, {
+            const executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentExecute(state.conversationId)}`;
+            console.log('[useAgentChat] sendMessage → execute URL:', executeUrl);
+            console.log('[useAgentChat] request body:', JSON.stringify(agentRequest, null, 2));
+            console.log('[useAgentChat] auth headers present:', Object.keys(headers));
+
+            const response = await fetch(executeUrl, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
                 signal: abortControllerRef.current.signal,
             });
+            console.log('[useAgentChat] execute response:', response.status, response.statusText);
 
             if (!response.ok) {
                 let errorMsg = `HTTP ${response.status}`;

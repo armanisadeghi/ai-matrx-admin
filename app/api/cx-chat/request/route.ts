@@ -47,7 +47,7 @@ export async function GET(request: Request) {
         console.error('GET /api/cx-chat/request error:', error);
         return NextResponse.json(
             { success: false, error: 'Failed to load conversation' },
-            { status: 500 },
+            { status: 404 },
         );
     }
 }
@@ -83,6 +83,7 @@ export async function POST(request: Request) {
         });
 
         if (!newConversation) {
+            console.error('POST /api/cx-chat/request: createCxConversation returned null — cx_conversation table may not exist');
             return NextResponse.json(
                 { success: false, error: 'Failed to create conversation' },
                 { status: 500 },

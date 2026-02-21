@@ -11,6 +11,7 @@ interface ChatCollapsibleWrapperProps {
     onStateChange?: (state: any) => void;
     children: ReactNode;
     className?: string;
+    maxWidth?: string;
 }
 
 const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
@@ -21,6 +22,7 @@ const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
     onStateChange,
     children,
     className = "",
+    maxWidth = "max-w-5xl",
 }) => {
     const [isOpen, setIsOpen] = useState(initialOpen);
 
@@ -35,7 +37,7 @@ const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
         <Collapsible
             open={isOpen}
             onOpenChange={handleOpenChange}
-            className={`border-2 border-zinc-200 dark:border-zinc-700 rounded-3xl shadow-sm my-1 w-full max-w-3xl hover:bg-accent/50 hover:shadow-sm ${className}`}
+            className={`border-2 border-zinc-200 dark:border-zinc-700 rounded-3xl shadow-sm my-1 w-full ${maxWidth} mx-auto hover:bg-accent/50 hover:shadow-sm ${className}`}
         >
             <div className="relative flex w-full items-center justify-between rounded-t-lg hover:bg-accent/50 hover:shadow-sm">
                 <CollapsibleTrigger className="flex-1 flex items-center gap-2 py-1 pl-4 pr-1 font-medium hover:bg-accent/50 hover:shadow-sm">

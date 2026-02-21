@@ -58,6 +58,7 @@ export type {
 // Named aliases for the most-used request schemas
 import type { components } from '@/types/python-generated/api-types';
 
+/** @deprecated Warm endpoint no longer takes a body — agent_id is in the URL path. This type is kept for import compatibility only. */
 export type AgentWarmRequestBody = components['schemas']['AgentWarmRequest'];
 export type AgentExecuteRequestBody = components['schemas']['AgentExecuteRequest'];
 export type UnifiedChatRequestBody = components['schemas']['UnifiedChatRequest'];

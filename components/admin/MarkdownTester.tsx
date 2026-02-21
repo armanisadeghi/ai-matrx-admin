@@ -212,7 +212,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
                   ref={textareaRef}
                   value={inputContent}
                   onChange={(e) => setInputContent(e.target.value)}
-                  className="w-full h-full p-3 font-mono text-sm resize-none focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 border-0"
+                  className="w-full h-full p-3 font-mono text-sm resize-none focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 border-0 overflow-y-auto"
                   placeholder="Enter your markdown, JSON, or mixed content here...
                   
 Right-click for content block templates!"

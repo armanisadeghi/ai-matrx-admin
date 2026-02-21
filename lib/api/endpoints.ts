@@ -29,8 +29,11 @@ export const ENDPOINTS = {
          * Always generate a UUID client-side and use the conversation-scoped URL for all turns.
          */
         agentExecute: (conversationId: string) => `/api/ai/agents/${conversationId}/execute` as const,
-        /** POST — Pre-warm agent cache (Public, no auth) */
-        agentWarm: '/api/ai/agent/warm',
+        /**
+         * POST — Pre-warm agent cache. No request body. No auth required.
+         * POST /api/ai/agents/{agentId}/warm
+         */
+        agentWarm: (agentId: string) => `/api/ai/agents/${agentId}/warm` as const,
         /** POST — Cancel a running request by request_id (Authenticated) */
         cancel: (requestId: string) => `/api/ai/cancel/${requestId}` as const,
     },

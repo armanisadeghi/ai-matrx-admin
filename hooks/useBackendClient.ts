@@ -36,8 +36,8 @@ interface UseBackendClientOptions {
  * ```tsx
  * const { client, isReady, backendUrl, scope } = useBackendClient();
  *
- * // Simple JSON request
- * const data = await client.postJson(ENDPOINTS.ai.agentWarm, { prompt_id: 'abc' });
+ * // Warm an agent (no body — agent_id in URL)
+ * await client.post(ENDPOINTS.ai.agentWarm(promptId));
  *
  * // Streaming request
  * for await (const event of client.stream(ENDPOINTS.ai.agentExecute(conversationId), body)) {

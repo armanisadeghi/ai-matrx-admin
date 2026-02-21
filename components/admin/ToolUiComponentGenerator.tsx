@@ -36,6 +36,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useApiAuth } from "@/hooks/useApiAuth";
+import { useSelector } from "react-redux";
+import { selectIsUsingLocalhost } from "@/lib/redux/slices/adminPreferencesSlice";
 import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
 import { COMPONENT_GENERATOR_PROMPT_ID, COMPONENT_GENERATOR_SYSTEM_PROMPT } from "./tool-ui-generator-prompt";
 
@@ -101,6 +103,7 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
     const { toast } = useToast();
     const isMobile = useIsMobile();
     const { getHeaders, isAdmin } = useApiAuth();
+    const useLocalhost = useSelector(selectIsUsingLocalhost);
     const [step, setStep] = useState<WizardStep>("select-tool");
     const [selectedToolName, setSelectedToolName] = useState("");
     const [streamData, setStreamData] = useState("");
@@ -142,7 +145,9 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
 
         try {
             const conversationId = crypto.randomUUID();
-            const backendUrl = BACKEND_URLS.production;
+            const backendUrl = (isAdmin && useLocalhost)
+                ? BACKEND_URLS.localhost
+                : BACKEND_URLS.production;
             const headers = getHeaders();
             const response = await fetch(`${backendUrl}${ENDPOINTS.ai.chat(conversationId)}`, {
                 method: "POST",

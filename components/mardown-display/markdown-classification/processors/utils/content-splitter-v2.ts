@@ -100,41 +100,63 @@ interface ParsingContext {
 
 const JSON_BLOCK_PATTERNS = {
     quiz: {
-        starts: ['{\n  "quiz_title"', '{"quiz_title"'],
+        rootKey: 'quiz_title',
         validate: (parsed: any) => parsed?.quiz_title && Array.isArray(parsed.multiple_choice) && parsed.multiple_choice.length > 0
     },
     presentation: {
-        starts: ['{\n  "presentation"', '{"presentation"'],
+        rootKey: 'presentation',
         validate: (parsed: any) => parsed?.presentation?.slides && Array.isArray(parsed.presentation.slides)
     },
     decision_tree: {
-        starts: ['{\n  "decision_tree"', '{"decision_tree"'],
+        rootKey: 'decision_tree',
         validate: (parsed: any) => parsed?.decision_tree?.title && parsed.decision_tree.root
     },
     comparison_table: {
-        starts: ['{\n  "comparison"', '{"comparison"'],
+        rootKey: 'comparison',
         validate: (parsed: any) => parsed?.comparison?.title && Array.isArray(parsed.comparison.items) && Array.isArray(parsed.comparison.criteria)
     },
     diagram: {
-        starts: ['{\n  "diagram"', '{"diagram"'],
+        rootKey: 'diagram',
         validate: (parsed: any) => parsed?.diagram?.title && Array.isArray(parsed.diagram.nodes)
     },
     math_problem: {
-        starts: ['{\n  "math_problem"', '{"math_problem"'],
+        rootKey: 'math_problem',
         validate: (parsed: any) => parsed?.math_problem && typeof parsed.math_problem === 'object'
     }
 } as const;
 
+/** Extracts the first key from a JSON object string without full parsing. */
+function extractFirstJsonKey(content: string): string | null {
+    const match = content.trimStart().match(/^\{\s*"([^"]+)"/);
+    return match ? match[1] : null;
+}
+
 function detectJsonBlockType(content: string): keyof typeof JSON_BLOCK_PATTERNS | null {
-    const trimmed = content.trim();
-    
+    const firstKey = extractFirstJsonKey(content);
+    if (!firstKey) return null;
+
     for (const [type, pattern] of Object.entries(JSON_BLOCK_PATTERNS)) {
-        if (pattern.starts.some(start => trimmed.startsWith(start))) {
+        if (pattern.rootKey === firstKey) {
             return type as keyof typeof JSON_BLOCK_PATTERNS;
         }
     }
-    
+
     return null;
+}
+
+/**
+ * Detects placeholder/template text that indicates the AI output a schema
+ * description instead of real JSON data (e.g. "[array of solution objects]").
+ * Applied to all JSON block types before any parse attempt.
+ */
+function containsPlaceholderText(content: string): boolean {
+    return (
+        /\[\s*(array|object|string|number|boolean|description|example|etc|list|item)[^\]]*\]/i.test(content) ||
+        /:\s*"?\[?(array|list) of /i.test(content) ||
+        /:\s*"?object with /i.test(content) ||
+        /:\s*"?<[a-z_]+>/i.test(content) ||
+        /:\s*"?\.\.\."?/.test(content)
+    );
 }
 
 function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTERNS): StreamingState {
@@ -144,15 +166,9 @@ function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTER
     // Remove any trailing backticks that might have been included
     trimmed = trimmed.replace(/```+\s*$/, '').trim();
     
-    // Check for placeholder text that indicates malformed JSON
-    if (type === 'math_problem') {
-        const hasPlaceholderText = /\[(array|object|string|number|description|example|etc)[^\]]*\]/i.test(trimmed) ||
-            /:\s*array of/i.test(trimmed) ||
-            /:\s*object with/i.test(trimmed);
-        
-        if (hasPlaceholderText) {
-            return { isComplete: false, shouldShow: false };
-        }
+    // Reject placeholder/template text for all block types — still streaming or malformed
+    if (containsPlaceholderText(trimmed)) {
+        return { isComplete: false, shouldShow: false };
     }
     
     // First, try to parse the JSON directly - if it parses and validates, it's complete
@@ -168,6 +184,9 @@ function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTER
                 metadata: { isComplete: true }
             };
         }
+        
+        // Parsed fine but failed validation — show as code fallback, don't loop
+        return { isComplete: true, shouldShow: false, metadata: { isComplete: true } };
     } catch (error) {
         // JSON parse failed, continue with brace analysis
     }
@@ -181,28 +200,14 @@ function validateJsonBlock(content: string, type: keyof typeof JSON_BLOCK_PATTER
         return { isComplete: false, shouldShow: false };
     }
     
-    // Malformed - treat as complete to stop loading
-    if (closeBraces > openBraces) {
-        return { isComplete: true, shouldShow: true, metadata: { isComplete: true } };
+    // Balanced braces and ends with } — JSON parse already failed above, so this is malformed
+    if (trimmed.endsWith("}") && openBraces === closeBraces) {
+        return { isComplete: true, shouldShow: false, metadata: { isComplete: true } };
     }
     
-    // Balanced braces and ends with }
-    if (trimmed.endsWith("}") && openBraces === closeBraces) {
-        // Try parsing one more time
-        try {
-            const parsed = JSON.parse(trimmed);
-            const pattern = JSON_BLOCK_PATTERNS[type];
-            const isValid = pattern.validate(parsed);
-            
-            return {
-                isComplete: true,
-                shouldShow: isValid,
-                metadata: { isComplete: true }
-            };
-        } catch (error) {
-            // Parse failed with balanced braces - treat as complete anyway
-            return { isComplete: true, shouldShow: true, metadata: { isComplete: true } };
-        }
+    // More closing than opening — malformed, stop waiting
+    if (closeBraces > openBraces) {
+        return { isComplete: true, shouldShow: false, metadata: { isComplete: true } };
     }
     
     // Not complete

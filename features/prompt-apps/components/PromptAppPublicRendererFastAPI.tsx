@@ -13,7 +13,6 @@ import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
 import type { PromptApp } from '../types';
-import type { AgentWarmRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { useSelector } from 'react-redux';
@@ -76,16 +75,10 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     : BACKEND_URLS.production;
 
                 if (BACKEND_URL.includes('localhost')) return;
-                
-                const warmRequest: AgentWarmRequestBody = {
-                    prompt_id: promptId,
-                    is_builtin: false
-                };
-                
-                await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm}`, {
+
+                // No request body — agent_id goes in the URL path
+                await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(warmRequest),
                 });
             } catch {
                 // Silently ignore — warming is non-critical
@@ -238,7 +231,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                 user_input: userInput,
                 stream: true,
                 debug: false,
-                is_builtin: false,
             };
             
             logTiming('Initiating Agent API request...');

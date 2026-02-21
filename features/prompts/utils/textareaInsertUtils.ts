@@ -46,10 +46,6 @@ export const insertTextAtTextareaCursor = (textarea: HTMLTextAreaElement, text: 
         // Focus textarea
         textarea.focus();
         
-        // Auto-resize if needed
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-        
         return true;
     } catch (error) {
         console.error('Error inserting text:', error);

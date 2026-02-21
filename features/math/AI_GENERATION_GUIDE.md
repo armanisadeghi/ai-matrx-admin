@@ -24,10 +24,24 @@ Every response must be a single `math_problem` object with these exact fields:
       "equation": "LaTeX string",
       "instruction": "string"
     },
-    "solutions": [ ... at least 1 solution object ... ],
+    "solutions": [
+      {
+        "task": "Description of the approach",
+        "steps": [
+          {
+            "title": "Step 1: Action taken",
+            "equation": "LaTeX equation",
+            "explanation": "Why this step is performed",
+            "simplified": "Simplified form (optional)"
+          }
+        ],
+        "solutionAnswer": "Final LaTeX answer",
+        "transitionText": "Text before next solution, or null if last"
+      }
+    ],
     "hint": "string or null",
-    "resources": ["array"] or null,
-    "related_content": ["array"] or null
+    "resources": ["optional string", "optional string"],
+    "related_content": ["optional string", "optional string"]
   }
 }
 ```

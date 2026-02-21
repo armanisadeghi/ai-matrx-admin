@@ -1,4 +1,4 @@
-  import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
 import { useAppSelector } from '@/lib/redux';
@@ -33,11 +33,11 @@ interface MultipleChoiceQuizProps {
 }
 
 // Component for expandable question text
-const QuestionText: React.FC<{question: string, isFullScreen: boolean}> = ({ question, isFullScreen }) => {
+const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ question, isFullScreen }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef<HTMLHeadingElement>(null);
-  
+
   useEffect(() => {
     // Check if content is actually overflowing
     const checkOverflow = () => {
@@ -54,7 +54,7 @@ const QuestionText: React.FC<{question: string, isFullScreen: boolean}> = ({ que
     window.addEventListener('resize', checkOverflow);
     return () => window.removeEventListener('resize', checkOverflow);
   }, [question, isExpanded, isFullScreen]);
-  
+
   if (isFullScreen) {
     return (
       <h2 className="text-2xl font-bold mb-3 leading-tight">
@@ -65,11 +65,10 @@ const QuestionText: React.FC<{question: string, isFullScreen: boolean}> = ({ que
 
   return (
     <div className="mb-3">
-      <h2 
+      <h2
         ref={textRef}
-        className={`text-lg font-bold leading-tight transition-all duration-200 ${
-          isExpanded ? '' : 'line-clamp-2'
-        }`}
+        className={`text-lg font-bold leading-tight transition-all duration-200 ${isExpanded ? '' : 'line-clamp-2'
+          }`}
       >
         <InlineLatexRenderer content={question} />
       </h2>
@@ -91,11 +90,11 @@ const QuestionText: React.FC<{question: string, isFullScreen: boolean}> = ({ que
 };
 
 // Component for expandable explanation text
-const ExplanationText: React.FC<{explanation: string, isCorrect: boolean, isFullScreen: boolean}> = ({ explanation, isCorrect, isFullScreen }) => {
+const ExplanationText: React.FC<{ explanation: string, isCorrect: boolean, isFullScreen: boolean }> = ({ explanation, isCorrect, isFullScreen }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef<HTMLParagraphElement>(null);
-  
+
   useEffect(() => {
     // Check if content is actually overflowing
     const checkOverflow = () => {
@@ -115,21 +114,19 @@ const ExplanationText: React.FC<{explanation: string, isCorrect: boolean, isFull
 
   return (
     <div>
-      <p 
+      <p
         ref={textRef}
-        className={`leading-relaxed transition-all duration-200 ${
-          isFullScreen ? 'text-base' : 'text-sm'
-        } ${isExpanded ? '' : 'line-clamp-3'
-        } ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}
+        className={`leading-relaxed transition-all duration-200 ${isFullScreen ? 'text-base' : 'text-sm'
+          } ${isExpanded ? '' : 'line-clamp-3'
+          } ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}
       >
         <InlineLatexRenderer content={explanation} />
       </p>
       {isOverflowing && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`mt-1 flex items-center gap-1 text-xs hover:underline transition-colors ${
-            isCorrect ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
-          }`}
+          className={`mt-1 flex items-center gap-1 text-xs hover:underline transition-colors ${isCorrect ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
+            }`}
           title={isExpanded ? "Show less" : "Read more"}
         >
           {isExpanded ? (
@@ -143,7 +140,7 @@ const ExplanationText: React.FC<{explanation: string, isCorrect: boolean, isFull
   );
 };
 
-const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ 
+const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   quizData,
   sessionId,
   taskId,
@@ -154,7 +151,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   // Canvas integration
   const { open: openCanvas } = useCanvas();
   const isCanvasAvailable = useAppSelector(selectCanvasIsAvailable);
-  
+
   // Parse quiz data and extract metadata
   const [parsedQuiz, setParsedQuiz] = useState<{
     questions: Question[];
@@ -173,7 +170,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         contentHash: parsed.contentHash
       });
     };
-    
+
     parseQuiz();
   }, [quizData]);
 
@@ -267,7 +264,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     if (!isAnswered) {
       const isCorrect = optionIndex === currentQuestion.correctAnswerIndex;
       const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
-      
+
       const updatedProgress = updateProgress(
         quizState.progress,
         currentQuestionIndex,
@@ -386,10 +383,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   };
 
   const getOptionStyle = (optionIndex: number) => {
-    const baseStyle = `rounded-lg border cursor-pointer transition-all duration-200 text-left ${
-      isFullScreen ? 'p-4 text-lg' : 'p-3 text-base'
-    }`;
-    
+    const baseStyle = `rounded-lg border cursor-pointer transition-all duration-200 text-left ${isFullScreen ? 'p-4 text-lg' : 'p-3 text-base'
+      }`;
+
     if (!isAnswered) {
       return `${baseStyle} bg-textured border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30`;
     } else {
@@ -423,7 +419,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     const performanceData = getPerformanceData(scorePercentage);
     const hasIncorrectAnswers = incorrectCount > 0;
     const hasSkippedQuestions = results.skippedCount > 0;
-    
+
     return (
       <div className="w-full py-3">
         <div className="max-w-2xl mx-auto">
@@ -501,7 +497,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                   Retry Quiz
                 </button>
               </div>
-              
+
               {/* Retake Buttons */}
               {quizState.mode !== 'retake' && (hasIncorrectAnswers || hasSkippedQuestions) && (
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -555,16 +551,16 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     <>
       {/* Blur backdrop when fullscreen - click outside to close */}
       {isFullScreen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm cursor-pointer"
           onClick={() => setIsFullScreen(false)}
           role="button"
           aria-label="Close fullscreen mode"
         />
       )}
-      
+
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
-        <div 
+        <div
           className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden relative' : ''}`}
           onClick={(e) => {
             // Prevent click from bubbling to backdrop
@@ -585,246 +581,239 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               />
             </div>
           )}
-          
+
           {/* Scrollable content area */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto p-3' : 'p-3'}>
 
-        {/* Quiz Title */}
-        <div className="mb-3">
-          <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${
-            isFullScreen ? 'text-3xl' : 'text-2xl'
-          }`}>
-            {parsedQuiz.title}
-          </h1>
-          {parsedQuiz.category && (
-            <div className="text-center mt-2">
-              <span className="text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full">
-                {parsedQuiz.category}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Quiz Mode Indicator */}
-        {quizState.mode === 'retake' && (
-          <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-300 dark:border-orange-700 rounded-lg p-2 mb-3">
-            <p className="text-xs text-orange-800 dark:text-orange-300 text-center flex items-center justify-center gap-1.5">
-              <RefreshCw className="h-3 w-3" />
-              <span>Retake Mode - Focusing on missed questions</span>
-            </p>
-          </div>
-        )}
-
-        {/* Question Card */}
-        <div className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-xl shadow-md mb-4 ${
-          isFullScreen ? 'p-6' : 'p-4'
-        }`}>
-          <div className="text-gray-800 dark:text-gray-100">
-            <div className="flex justify-between items-center mb-4 gap-3">
-              <div className={`flex items-center gap-4 ${isFullScreen ? 'text-base' : 'text-sm'}`}>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-blue-600 dark:text-blue-400">
-                    {currentQuestionIndex + 1} / {quizState.randomizedQuestions.length}
+            {/* Quiz Title */}
+            <div className="mb-3">
+              <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${isFullScreen ? 'text-3xl' : 'text-2xl'
+                }`}>
+                {parsedQuiz.title}
+              </h1>
+              {parsedQuiz.category && (
+                <div className="text-center mt-2">
+                  <span className="text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full">
+                    {parsedQuiz.category}
                   </span>
-                  {isAnswered && (
-                    <CheckCircle2 className={`text-green-600 dark:text-green-400 ${isFullScreen ? 'h-5 w-5' : 'h-4 w-4'}`} />
-                  )}
                 </div>
-                <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
-                <span className="font-medium text-gray-600 dark:text-gray-400">
-                  Answered: <span className="text-green-600 dark:text-green-400 font-semibold">{answeredCount}</span>
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                {/* Save Status Indicator */}
-                {enableAutoSave && (
-                  <div className="flex items-center gap-1 mr-2">
-                    {isSaving && (
-                      <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs" title="Saving...">
-                        <Cloud className="h-4 w-4 animate-pulse" />
-                      </div>
-                    )}
-                    {!isSaving && lastSaved && (
-                      <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs" title={`Last saved: ${lastSaved.toLocaleTimeString()}`}>
-                        <Cloud className="h-4 w-4" />
-                      </div>
-                    )}
-                    {saveError && (
-                      <div className="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs" title={saveError}>
-                        <CloudOff className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Manual Save Button (when auto-save enabled) */}
-                {enableAutoSave && (
-                  <IconButton
-                    icon={Save}
-                    tooltip="Save now"
-                    onClick={saveNow}
-                    disabled={isSaving}
-                    size="md"
-                    className="bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700"
-                  />
-                )}
-
-                <IconButton
-                  icon={Download}
-                  tooltip="Download quiz as file"
-                  onClick={handleDownloadQuiz}
-                  size="md"
-                  className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
-                />
-                
-                <IconButton
-                  icon={Upload}
-                  tooltip="Import quiz from file"
-                  onClick={handleUploadQuiz}
-                  size="md"
-                  className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
-                />
-
-                {!isFullScreen && (
-                  <>
-                    {showCanvasButton && isCanvasAvailable && (
-                      <IconButton
-                        icon={ExternalLink}
-                        tooltip="Open in Canvas"
-                        onClick={() => openCanvas({
-                          type: 'quiz',
-                          data: quizData,
-                          metadata: {
-                            title: parsedQuiz.title,
-                            sourceMessageId: sessionId,
-                            sourceTaskId: taskId
-                          }
-                        })}
-                        size="md"
-                        className="bg-purple-500 dark:bg-purple-600 text-white hover:bg-purple-600 dark:hover:bg-purple-700"
-                      />
-                    )}
-                    <IconButton
-                      icon={Maximize2}
-                      tooltip="Enter focus mode"
-                      onClick={() => setIsFullScreen(true)}
-                      size="md"
-                      className="bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700"
-                    />
-                  </>
-                )}
-                {isFullScreen && (
-                  <IconButton
-                    icon={Minimize2}
-                    tooltip="Exit focus mode"
-                    onClick={() => setIsFullScreen(false)}
-                    size="md"
-                    className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  />
-                )}
-              </div>
-            </div>
-            {/* Question text - expandable on mobile */}
-            <QuestionText 
-              question={currentQuestion.question}
-              isFullScreen={isFullScreen}
-            />
-          </div>
-        </div>
-
-        {/* Options Grid - 2 columns on md+ screens, 1 column on mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          {currentQuestion.options.map((option, index) => (
-            <div
-              key={index}
-              onClick={() => handleOptionClick(index)}
-              className={getOptionStyle(index)}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-medium text-gray-800 dark:text-gray-200 flex-1 leading-snug">
-                  <InlineLatexRenderer content={option} />
-                </span>
-                {isAnswered && index === currentQuestion.correctAnswerIndex && (
-                  <Check className={`text-green-600 dark:text-green-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />
-                )}
-                {isAnswered && selectedAnswer?.selectedOptionIndex === index && !isCorrect && (
-                  <X className={`text-red-600 dark:text-red-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Explanation - compact and expandable */}
-        {isAnswered && (
-          <div className={`mb-4 rounded-lg border transition-all duration-300 ${
-            isFullScreen ? 'p-4' : 'p-3'
-          } ${isCorrect
-              ? 'bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600'
-              : 'bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600'
-          }`}>
-            <div className={`font-semibold mb-2 flex items-center gap-2 ${
-              isFullScreen ? 'text-lg' : 'text-base'
-            } ${isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
-            }`}>
-              {isCorrect ? (
-                <>
-                  <CheckCircle2 className={isFullScreen ? 'h-6 w-6' : 'h-5 w-5'} />
-                  <span>Correct!</span>
-                </>
-              ) : (
-                <>
-                  <XCircle className={isFullScreen ? 'h-6 w-6' : 'h-5 w-5'} />
-                  <span>Incorrect</span>
-                </>
               )}
             </div>
-            <ExplanationText 
-              explanation={currentQuestion.explanation}
-              isCorrect={isCorrect}
-              isFullScreen={isFullScreen}
-            />
-          </div>
-        )}
-          </div>
 
-        {/* Navigation Buttons - Fixed at bottom in fullscreen */}
-        <div className={isFullScreen ? 'flex-shrink-0 p-4 border-t border-border bg-textured' : ''}>
-          <div className="flex justify-between items-center gap-3">
-            <button
-              onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0}
-              className={`rounded-lg font-semibold transition-all duration-200 flex-1 ${
-                isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'
-              } ${currentQuestionIndex === 0
-                  ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-gray-200 dark:text-gray-500'
-                  : 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105'
-              }`}
-            >
-              ← Previous
-            </button>
+            {/* Quiz Mode Indicator */}
+            {quizState.mode === 'retake' && (
+              <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-300 dark:border-orange-700 rounded-lg p-2 mb-3">
+                <p className="text-xs text-orange-800 dark:text-orange-300 text-center flex items-center justify-center gap-1.5">
+                  <RefreshCw className="h-3 w-3" />
+                  <span>Retake Mode - Focusing on missed questions</span>
+                </p>
+              </div>
+            )}
 
-            {currentQuestionIndex === quizState.randomizedQuestions.length - 1 ? (
-              <button
-                onClick={handleNext}
-                className={`rounded-lg font-semibold bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${
-                  isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'
-                }`}
-              >
-                View Results →
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                className={`rounded-lg font-semibold bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${
-                  isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'
-                }`}
-              >
-                Next →
-              </button>
+            {/* Question Card */}
+            <div className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-xl shadow-md mb-4 ${isFullScreen ? 'p-6' : 'p-4'
+              }`}>
+              <div className="text-gray-800 dark:text-gray-100">
+                <div className="flex justify-between items-center mb-4 gap-3">
+                  <div className={`flex items-center gap-4 ${isFullScreen ? 'text-base' : 'text-sm'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">
+                        {currentQuestionIndex + 1} / {quizState.randomizedQuestions.length}
+                      </span>
+                      {isAnswered && (
+                        <CheckCircle2 className={`text-green-600 dark:text-green-400 ${isFullScreen ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                      )}
+                    </div>
+                    <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Answered: <span className="text-green-600 dark:text-green-400 font-semibold">{answeredCount}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {/* Save Status Indicator */}
+                    {enableAutoSave && (
+                      <div className="flex items-center gap-1 mr-2">
+                        {isSaving && (
+                          <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs" title="Saving...">
+                            <Cloud className="h-4 w-4 animate-pulse" />
+                          </div>
+                        )}
+                        {!isSaving && lastSaved && (
+                          <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs" title={`Last saved: ${lastSaved.toLocaleTimeString()}`}>
+                            <Cloud className="h-4 w-4" />
+                          </div>
+                        )}
+                        {saveError && (
+                          <div className="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs" title={saveError}>
+                            <CloudOff className="h-4 w-4" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Manual Save Button (when auto-save enabled) */}
+                    {enableAutoSave && (
+                      <IconButton
+                        icon={Save}
+                        tooltip="Save now"
+                        onClick={saveNow}
+                        disabled={isSaving}
+                        size="md"
+                        className="bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700"
+                      />
+                    )}
+
+                    <IconButton
+                      icon={Download}
+                      tooltip="Download quiz as file"
+                      onClick={handleDownloadQuiz}
+                      size="md"
+                      className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
+                    />
+
+                    <IconButton
+                      icon={Upload}
+                      tooltip="Import quiz from file"
+                      onClick={handleUploadQuiz}
+                      size="md"
+                      className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
+                    />
+
+                    {!isFullScreen && (
+                      <>
+                        {showCanvasButton && isCanvasAvailable && (
+                          <IconButton
+                            icon={ExternalLink}
+                            tooltip="Open in Canvas"
+                            onClick={() => openCanvas({
+                              type: 'quiz',
+                              data: quizData,
+                              metadata: {
+                                title: parsedQuiz.title,
+                                sourceMessageId: sessionId,
+                                sourceTaskId: taskId
+                              }
+                            })}
+                            size="md"
+                            className="bg-purple-500 dark:bg-purple-600 text-white hover:bg-purple-600 dark:hover:bg-purple-700"
+                          />
+                        )}
+                        <IconButton
+                          icon={Maximize2}
+                          tooltip="Enter focus mode"
+                          onClick={() => setIsFullScreen(true)}
+                          size="md"
+                          className="bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700"
+                        />
+                      </>
+                    )}
+                    {isFullScreen && (
+                      <IconButton
+                        icon={Minimize2}
+                        tooltip="Exit focus mode"
+                        onClick={() => setIsFullScreen(false)}
+                        size="md"
+                        className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      />
+                    )}
+                  </div>
+                </div>
+                {/* Question text - expandable on mobile */}
+                <QuestionText
+                  question={currentQuestion.question}
+                  isFullScreen={isFullScreen}
+                />
+              </div>
+            </div>
+
+            {/* Options Grid - 2 columns on md+ screens, 1 column on mobile */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              {currentQuestion.options.map((option, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleOptionClick(index)}
+                  className={getOptionStyle(index)}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium text-gray-800 dark:text-gray-200 flex-1 leading-snug">
+                      <InlineLatexRenderer content={option} />
+                    </span>
+                    {isAnswered && index === currentQuestion.correctAnswerIndex && (
+                      <Check className={`text-green-600 dark:text-green-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />
+                    )}
+                    {isAnswered && selectedAnswer?.selectedOptionIndex === index && !isCorrect && (
+                      <X className={`text-red-600 dark:text-red-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Explanation - compact and expandable */}
+            {isAnswered && (
+              <div className={`mb-4 rounded-lg border transition-all duration-300 ${isFullScreen ? 'p-4' : 'p-3'
+                } ${isCorrect
+                  ? 'bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600'
+                  : 'bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600'
+                }`}>
+                <div className={`font-semibold mb-2 flex items-center gap-2 ${isFullScreen ? 'text-lg' : 'text-base'
+                  } ${isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
+                  }`}>
+                  {isCorrect ? (
+                    <>
+                      <CheckCircle2 className={isFullScreen ? 'h-6 w-6' : 'h-5 w-5'} />
+                      <span>Correct!</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className={isFullScreen ? 'h-6 w-6' : 'h-5 w-5'} />
+                      <span>Incorrect</span>
+                    </>
+                  )}
+                </div>
+                <ExplanationText
+                  explanation={currentQuestion.explanation}
+                  isCorrect={isCorrect}
+                  isFullScreen={isFullScreen}
+                />
+              </div>
             )}
           </div>
-        </div>
+
+          {/* Navigation Buttons - Fixed at bottom in fullscreen */}
+          <div className={isFullScreen ? 'flex-shrink-0 p-4 border-t border-border bg-textured' : ''}>
+            <div className="flex justify-between items-center gap-3">
+              <button
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                className={`rounded-lg font-semibold transition-all duration-200 flex-1 ${isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'
+                  } ${currentQuestionIndex === 0
+                    ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-gray-200 dark:text-gray-500'
+                    : 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105'
+                  }`}
+              >
+                ← Previous
+              </button>
+
+              {currentQuestionIndex === quizState.randomizedQuestions.length - 1 ? (
+                <button
+                  onClick={handleNext}
+                  className={`rounded-lg font-semibold bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'
+                    }`}
+                >
+                  View Results →
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  className={`rounded-lg font-semibold bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'
+                    }`}
+                >
+                  Next →
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>
