@@ -1,8 +1,8 @@
-// app/(public)/p/chat/layout.tsx
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { AgentsProvider } from '@/features/public-chat/context/AgentsContext';
 import ChatLayoutShell from './ChatLayoutShell';
+import ChatLoading from './loading';
 
 export const metadata: Metadata = {
     title: 'Chat | AI Matrx',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function PublicChatLayout({ children }: { children: React.ReactNode }) {
     return (
         <AgentsProvider>
-            <Suspense fallback={<div className="h-full w-full bg-textured" />}>
+            <Suspense fallback={<ChatLoading />}>
                 <ChatLayoutShell>{children}</ChatLayoutShell>
             </Suspense>
         </AgentsProvider>

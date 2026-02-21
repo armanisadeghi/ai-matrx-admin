@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import type { PublicResource, ContentItem } from '../types/content';
@@ -220,66 +220,66 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         return initial;
     });
 
-    const setUseLocalhost = useCallback((useLocalhost: boolean) => {
+    const setUseLocalhost = (useLocalhost: boolean) => {
         dispatch({ type: 'SET_USE_LOCALHOST', payload: useLocalhost });
-    }, []);
+    };
 
-    const setAgent = useCallback((agent: AgentConfig) => {
+    const setAgent = (agent: AgentConfig) => {
         dispatch({ type: 'SET_AGENT', payload: agent });
-    }, []);
+    };
 
-    const addMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>): string => {
+    const addMessage = (message: Omit<ChatMessage, 'id' | 'timestamp'>): string => {
         const id = uuidv4();
         dispatch({
             type: 'ADD_MESSAGE',
             payload: { ...message, id, timestamp: new Date() },
         });
         return id;
-    }, []);
+    };
 
-    const updateMessage = useCallback((id: string, updates: Partial<ChatMessage>) => {
+    const updateMessage = (id: string, updates: Partial<ChatMessage>) => {
         dispatch({ type: 'UPDATE_MESSAGE', payload: { id, updates } });
-    }, []);
+    };
 
-    const appendToLastMessage = useCallback((content: string) => {
+    const appendToLastMessage = (content: string) => {
         dispatch({ type: 'APPEND_TO_LAST_MESSAGE', payload: content });
-    }, []);
+    };
 
-    const setStreaming = useCallback((streaming: boolean) => {
+    const setStreaming = (streaming: boolean) => {
         dispatch({ type: 'SET_STREAMING', payload: streaming });
-    }, []);
+    };
 
-    const setExecuting = useCallback((executing: boolean) => {
+    const setExecuting = (executing: boolean) => {
         dispatch({ type: 'SET_EXECUTING', payload: executing });
-    }, []);
+    };
 
-    const setError = useCallback((error: { type: string; message: string } | null) => {
+    const setError = (error: { type: string; message: string } | null) => {
         dispatch({ type: 'SET_ERROR', payload: error });
-    }, []);
+    };
 
-    const updateSettings = useCallback((settings: Partial<ChatSettings>) => {
+    const updateSettings = (settings: Partial<ChatSettings>) => {
         dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
-    }, []);
+    };
 
-    const setModelOverride = useCallback((model: string | undefined) => {
+    const setModelOverride = (model: string | undefined) => {
         dispatch({ type: 'SET_MODEL_OVERRIDE', payload: model });
-    }, []);
+    };
 
-    const clearMessages = useCallback(() => {
+    const clearMessages = () => {
         dispatch({ type: 'CLEAR_MESSAGES' });
-    }, []);
+    };
 
-    const startNewConversation = useCallback(() => {
+    const startNewConversation = () => {
         dispatch({ type: 'START_NEW_CONVERSATION' });
-    }, []);
+    };
 
-    const setDbConversationId = useCallback((id: string | null) => {
+    const setDbConversationId = (id: string | null) => {
         dispatch({ type: 'SET_DB_CONVERSATION_ID', payload: id });
-    }, []);
+    };
 
-    const setMessages = useCallback((messages: ChatMessage[]) => {
+    const setMessages = (messages: ChatMessage[]) => {
         dispatch({ type: 'SET_MESSAGES', payload: messages });
-    }, []);
+    };
 
     const value: ChatContextValue = {
         state,

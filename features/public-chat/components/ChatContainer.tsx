@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
@@ -35,6 +35,7 @@ interface ChatContainerProps {
 
 export function ChatContainer({ className = '' }: ChatContainerProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
     const { onAgentChange, isLoadingConversation, focusKey, openAgentPicker } = useLayoutAgent();
@@ -350,7 +351,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                 params.delete('vars');
             }
             const qs = params.toString();
-            return qs ? `?${qs}` : window.location.pathname;
+            return qs ? `?${qs}` : pathname;
         })();
 
         // Guided mode: pin input to bottom (like conversation mode)

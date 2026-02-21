@@ -1,20 +1,32 @@
-// app/(public)/p/chat/c/[id]/page.tsx
-'use client';
-
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import ChatContainer from '@/features/public-chat/components/ChatContainer';
+import ChatLoading from '../../loading';
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+    const { id } = await params;
+    return {
+        title: `Conversation | AI Matrx Chat`,
+        robots: { index: false, follow: false },
+        alternates: { canonical: `/p/chat/c/${id}` },
+    };
+}
 
 /**
- * Conversation-Direct Route — loads an existing conversation by ID.
- * Route: /p/chat/c/[id]
- * Optional: ?agent=[agentId] — preserves the agent context in the UI.
- *
+ * Conversation-Direct Route — /p/chat/c/[id]
+ * Loads an existing conversation by ID.
  * Conversation loading is handled by ChatLayoutShell (URL-driven).
- * This is a thin shell — ChatProvider lives at the layout level.
  */
 export default function ConversationPage() {
     return (
         <div className="h-full w-full bg-textured">
-            <ChatContainer className="h-full" />
+            <Suspense fallback={<ChatLoading />}>
+                <ChatContainer className="h-full" />
+            </Suspense>
         </div>
     );
 }
