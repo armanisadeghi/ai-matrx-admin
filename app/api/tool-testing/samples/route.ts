@@ -5,6 +5,8 @@
  *   Saves a completed tool test execution as a sample record in `tool_test_samples`.
  *   The authenticated user is recorded as `tested_by`.
  *
+ *   Auth: Reads Bearer token from Authorization header (public route pattern).
+ *
  *   Body: {
  *     tool_name: string
  *     tool_id?: string | null
@@ -20,7 +22,19 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
+const supabaseAnonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    ''
+).trim();
+const supabaseServiceKey = (
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    ''
+).trim();
 
 interface SaveSampleBody {
     tool_name: string;
@@ -35,16 +49,29 @@ interface SaveSampleBody {
 
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient();
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json(
+                { error: 'auth_required', message: 'Not authenticated' },
+                { status: 401 },
+            );
+        }
+
+        const token = authHeader.slice(7);
+
+        const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { persistSession: false, autoRefreshToken: false },
+        });
 
         const {
             data: { user },
             error: authError,
-        } = await supabase.auth.getUser();
+        } = await authClient.auth.getUser(token);
 
         if (authError || !user) {
             return NextResponse.json(
-                { error: 'auth_required', message: 'Not authenticated' },
+                { error: 'auth_required', message: 'Invalid or expired token' },
                 { status: 401 },
             );
         }
@@ -72,7 +99,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { data, error } = await supabase
+        const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+            auth: { persistSession: false, autoRefreshToken: false },
+        });
+
+        const { data, error } = await adminClient
             .from('tool_test_samples')
             .insert({
                 tool_name: body.tool_name,

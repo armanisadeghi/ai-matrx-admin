@@ -227,6 +227,7 @@ interface ResultsPanelProps {
   executionStatus: ExecutionStatus;
   errorMessage: string | null;
   onClear: () => void;
+  authToken?: string | null;
 }
 
 export function ResultsPanel({
@@ -240,6 +241,7 @@ export function ResultsPanel({
   executionStatus,
   errorMessage,
   onClear,
+  authToken,
 }: ResultsPanelProps) {
   const isRunning = executionStatus === 'running' || executionStatus === 'connecting';
   const isComplete = executionStatus === 'complete';
@@ -247,7 +249,7 @@ export function ResultsPanel({
   const duration = finalPayload?.output?.full_result?.duration_ms;
   const canSave = (isComplete || isError) && !!finalPayload;
 
-  const { save, isSaving, savedId, reset } = useSaveSample();
+  const { save, isSaving, savedId, reset } = useSaveSample(authToken);
 
   const handleSave = async (opts: {
     adminComments: string;

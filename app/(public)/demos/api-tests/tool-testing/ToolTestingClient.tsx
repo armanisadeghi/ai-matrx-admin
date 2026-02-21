@@ -452,6 +452,7 @@ export default function ToolTestingClient() {
                 executionStatus={executionStatus}
                 errorMessage={errorMessage}
                 onClear={clearResults}
+                authToken={authToken}
               />
             </Card>
           </div>

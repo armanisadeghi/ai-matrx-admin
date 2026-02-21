@@ -6,32 +6,62 @@
  *   for use in tool testing. The authenticated user is set as both `created_by`
  *   and the sole participant.
  *
+ *   Auth: Reads Bearer token from Authorization header (public route pattern).
+ *
  *   Returns: { conversation_id: string, user_id: string }
  */
 
-import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-export async function POST() {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
+const supabaseAnonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    ''
+).trim();
+const supabaseServiceKey = (
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    ''
+).trim();
+
+export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient();
-
-        const {
-            data: { user },
-            error: authError,
-        } = await supabase.auth.getUser();
-
-        if (authError || !user) {
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
             return NextResponse.json(
                 { error: 'auth_required', message: 'Not authenticated' },
                 { status: 401 },
             );
         }
 
+        const token = authHeader.slice(7);
+
+        const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { persistSession: false, autoRefreshToken: false },
+        });
+
+        const {
+            data: { user },
+            error: authError,
+        } = await authClient.auth.getUser(token);
+
+        if (authError || !user) {
+            return NextResponse.json(
+                { error: 'auth_required', message: 'Invalid or expired token' },
+                { status: 401 },
+            );
+        }
+
         const userId = user.id;
 
-        // Create a placeholder conversation for tool testing
-        const { data: conversation, error: convError } = await supabase
+        const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+            auth: { persistSession: false, autoRefreshToken: false },
+        });
+
+        const { data: conversation, error: convError } = await adminClient
             .from('conversations')
             .insert({
                 type: 'direct',
@@ -49,8 +79,7 @@ export async function POST() {
             );
         }
 
-        // Add the user as a participant
-        const { error: participantError } = await supabase
+        const { error: participantError } = await adminClient
             .from('conversation_participants')
             .insert({
                 conversation_id: conversation.id,
@@ -59,8 +88,7 @@ export async function POST() {
             });
 
         if (participantError) {
-            // Best-effort cleanup — don't block on failure
-            await supabase.from('conversations').delete().eq('id', conversation.id);
+            await adminClient.from('conversations').delete().eq('id', conversation.id);
             console.error('[ToolTest] Failed to add participant:', participantError);
             return NextResponse.json(
                 { error: 'db_error', message: participantError.message },

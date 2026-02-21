@@ -40,7 +40,6 @@ export function PublicProviders({ children, initialState }: PublicProvidersProps
                 <AuthSyncWrapper>
                     <NextThemesProvider 
                         attribute="class" 
-                        defaultTheme="dark"
                         enableSystem={true}
                         storageKey="theme"
                     >

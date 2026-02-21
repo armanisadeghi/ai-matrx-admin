@@ -12,6 +12,7 @@ import { Loader2, Plus, Trash2, X, Play, Settings2, FileText, FileJson } from 'l
 import { TEST_ADMIN_TOKEN } from '../sample-prompt';
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
+import { supabase } from '@/utils/supabase/client';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
@@ -99,9 +100,16 @@ export default function ChatDemoClient() {
     const loadData = async () => {
       try {
         setLoadingData(true);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        const authHeaders: Record<string, string> = {};
+        if (session?.access_token) {
+          authHeaders['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
         const [modelsRes, promptsRes, toolsRes] = await Promise.all([
           fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
-          fetch('/api/admin/prompt-builtins/user-prompts').then(r => r.json()).catch(() => ({ prompts: [] })),
+          fetch('/api/admin/prompt-builtins/user-prompts', { headers: authHeaders }).then(r => r.json()).catch(() => ({ prompts: [] })),
           fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
         ]);
 
@@ -152,8 +160,13 @@ export default function ChatDemoClient() {
     setSelectedPromptId(promptId);
     
     try {
-      // Fetch full prompt data including messages and settings
-      const response = await fetch(`/api/prompts/${promptId}`);
+      const { data: { session } } = await supabase.auth.getSession();
+      const authHeaders: Record<string, string> = {};
+      if (session?.access_token) {
+        authHeaders['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch(`/api/prompts/${promptId}`, { headers: authHeaders });
       if (!response.ok) {
         throw new Error(`Failed to fetch prompt: ${response.status}`);
       }

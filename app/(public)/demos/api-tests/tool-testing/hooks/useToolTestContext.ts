@@ -108,9 +108,10 @@ export function useToolTestContext(): UseToolTestContextReturn {
   const createConversation = useCallback(async () => {
     setIsCreatingConversation(true);
     try {
-      // Use the API route — the server-side Supabase client resolves auth correctly
-      // and avoids RLS issues that occur when inserting directly from the browser client.
-      const res = await fetch('/api/tool-testing/conversation', { method: 'POST' });
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+      const res = await fetch('/api/tool-testing/conversation', { method: 'POST', headers });
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { message?: string };
         throw new Error(body.message ?? `HTTP ${res.status}`);
@@ -120,7 +121,7 @@ export function useToolTestContext(): UseToolTestContextReturn {
     } finally {
       setIsCreatingConversation(false);
     }
-  }, [setConversationId]);
+  }, [setConversationId, authToken]);
 
   const buildTestContext = useCallback((): TestContext | undefined => {
     if (!conversationId) return undefined;

@@ -22,16 +22,19 @@ export interface UseSaveSampleReturn {
     reset: () => void;
 }
 
-export function useSaveSample(): UseSaveSampleReturn {
+export function useSaveSample(authToken?: string | null): UseSaveSampleReturn {
     const [isSaving, setIsSaving] = useState(false);
     const [savedId, setSavedId] = useState<string | null>(null);
 
     const save = useCallback(async (params: SaveSampleParams): Promise<string | null> => {
         setIsSaving(true);
         try {
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
             const response = await fetch('/api/tool-testing/samples', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({
                     tool_name: params.toolName,
                     tool_id: params.toolId ?? null,
@@ -55,7 +58,7 @@ export function useSaveSample(): UseSaveSampleReturn {
         } finally {
             setIsSaving(false);
         }
-    }, []);
+    }, [authToken]);
 
     const reset = useCallback(() => {
         setSavedId(null);
