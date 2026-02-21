@@ -227,6 +227,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             
             const agentRequest = {
                 prompt_id: promptId,
+                conversation_id: conversationId,
                 variables: validVariables,
                 user_input: userInput,
                 stream: true,
@@ -236,7 +237,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             logTiming('Initiating Agent API request...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(conversationId)}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),

@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
-import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
+import type { StreamEvent, DataPayload, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { extractPersistableToolUpdates } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
@@ -27,6 +27,8 @@ interface SendMessageParams {
 
 interface AgentExecuteRequestWithContent {
     prompt_id: string;
+    /** Optional — pass to continue an existing conversation. Omit for a new one. */
+    conversation_id?: string | null;
     user_input: string | ContentItem[];
     variables?: Record<string, unknown>;
     config_overrides?: Record<string, unknown>;
@@ -39,7 +41,7 @@ interface AgentExecuteRequestWithContent {
 // ============================================================================
 
 export function useAgentChat(options: UseAgentChatOptions = {}) {
-    const { state, addMessage, updateMessage, setStreaming, setExecuting, setError } = useChatContext();
+    const { state, addMessage, updateMessage, setStreaming, setExecuting, setError, setDbConversationId } = useChatContext();
     const abortControllerRef = useRef<AbortController | null>(null);
     const streamEventsRef = useRef<StreamEvent[]>([]);
     const isExecutingRef = useRef(false);
@@ -145,6 +147,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             const agentRequest: AgentExecuteRequestWithContent = {
                 prompt_id: promptId,
+                // Always pass the conversation_id — generated client-side on first turn
+                // (server uses it), echoed back from server on all turns via stream.
+                conversation_id: state.conversationId,
                 user_input: userInput,
                 variables: Object.keys(variables).length > 0 ? variables : undefined,
                 config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
@@ -154,10 +159,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             updateMessage(assistantMessageId, { status: 'streaming' });
 
-            const executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentExecute(state.conversationId)}`;
+            const executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`;
             console.log('[useAgentChat] sendMessage → execute URL:', executeUrl);
-            console.log('[useAgentChat] request body:', JSON.stringify(agentRequest, null, 2));
-            console.log('[useAgentChat] auth headers present:', Object.keys(headers));
+            console.log('[useAgentChat] conversation_id:', state.conversationId);
 
             const response = await fetch(executeUrl, {
                 method: 'POST',
@@ -199,6 +203,19 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 options.onStreamEvent?.(event);
 
                 switch (event.event) {
+                    case 'data': {
+                        // Capture conversation_id streamed back by the server (always 2nd event).
+                        const dataPayload = event.data as unknown as DataPayload;
+                        if (dataPayload.event === 'conversation_id' && dataPayload.conversation_id) {
+                            const serverId = dataPayload.conversation_id as string;
+                            // Sync context if server assigned a different ID
+                            if (serverId !== state.conversationId) {
+                                setDbConversationId(serverId);
+                                console.log('[useAgentChat] server conversation_id:', serverId);
+                            }
+                        }
+                        break;
+                    }
                     case 'chunk': {
                         const chunkData = event.data as unknown as ChunkPayload;
                         accumulatedContent += chunkData.text;
@@ -228,7 +245,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                         void _endData;
                         break;
                     }
-                    // status_update, tool_event, data, broker — stored in streamEventsRef
+                    // status_update, tool_event, broker — stored in streamEventsRef
                     // and forwarded via onStreamEvent for downstream rendering
                 }
             }
@@ -274,6 +291,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         setStreaming,
         setExecuting,
         setError,
+        setDbConversationId,
         getBackendUrl,
         options,
     ]);

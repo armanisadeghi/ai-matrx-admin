@@ -16,7 +16,7 @@ import type { BackendApiErrorData, BackendErrorCode } from './types';
  * Usage:
  * ```typescript
  * try {
- *   await client.post(ENDPOINTS.ai.agentExecute(conversationId), body);
+ *   await client.post(ENDPOINTS.ai.agentExecute, body);
  * } catch (err) {
  *   if (err instanceof BackendApiError) {
  *     // Show err.userMessage to the user

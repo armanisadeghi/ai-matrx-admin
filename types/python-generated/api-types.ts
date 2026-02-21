@@ -38,7 +38,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ai/agent/warm": {
+    "/ai/agents/{agent_id}/warm": {
         parameters: {
             query?: never;
             header?: never;
@@ -48,45 +48,41 @@ export interface paths {
         get?: never;
         put?: never;
         /** Warm Agent */
-        post: operations["warm_agent_ai_agent_warm_post"];
+        post: operations["warm_agent_ai_agents__agent_id__warm_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/ai/agents/{conversation_id}/execute": {
+    "/ai/agents/execute": {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                conversation_id: string;
-            };
+            path?: never;
             cookie?: never;
         };
         get?: never;
         put?: never;
         /** Execute Agent */
-        post: operations["execute_agent_ai_agent_execute_post"];
+        post: operations["execute_agent_ai_agents_execute_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/ai/conversations/{conversation_id}/chat": {
+    "/ai/conversations/chat": {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                conversation_id: string;
-            };
+            path?: never;
             cookie?: never;
         };
         get?: never;
         put?: never;
         /** Unified Chat */
-        post: operations["unified_chat_ai_chat_unified_post"];
+        post: operations["unified_chat_ai_conversations_chat_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -104,6 +100,40 @@ export interface paths {
         put?: never;
         /** Cancel Request */
         post: operations["cancel_request_ai_cancel__request_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/chat/direct-chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Direct Chat */
+        post: operations["direct_chat_ai_chat_direct_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/chat/prompt-execution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prompt Execution */
+        post: operations["prompt_execution_ai_chat_prompt_execution_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -206,6 +236,23 @@ export interface paths {
         put?: never;
         /** Mic Check */
         post: operations["mic_check_scraper_mic_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scraper/compat/quick-scrape": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Quick Scrape Compat */
+        post: operations["quick_scrape_compat_scraper_compat_quick_scrape_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1047,14 +1094,12 @@ export interface components {
             /** Urls */
             urls: string[];
         };
-        /**
-         * AgentExecuteRequest
-         * conversation_id is now in the URL path (POST /api/ai/agents/{conversation_id}/execute).
-         * is_new_conversation has been removed — the server infers it from the URL.
-         */
+        /** AgentExecuteRequest */
         AgentExecuteRequest: {
             /** Prompt Id */
             prompt_id: string;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /** User Input */
             user_input?: string | {
                 [key: string]: unknown;
@@ -1068,11 +1113,6 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
-             * Is Builtin
-             * @default false
-             */
-            is_builtin: boolean;
-            /**
              * Stream
              * @default true
              */
@@ -1083,12 +1123,6 @@ export interface components {
              */
             debug: boolean;
         };
-        /**
-         * AgentWarmRequest
-         * No request body — agent_id is passed as a URL path parameter.
-         * POST /api/ai/agents/{agent_id}/warm
-         */
-        AgentWarmRequest: Record<string, never>;
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
             /** Source Ids */
@@ -1133,6 +1167,18 @@ export interface components {
              * @default plain_text
              */
             content_type: string;
+        };
+        /** DirectChatRequest */
+        DirectChatRequest: {
+            /**
+             * Chat Config
+             * @description Legacy socket chat_config wrapper. Use /api/ai/conversations/chat directly instead.
+             */
+            chat_config: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         /** ExtensionContentSubmit */
         ExtensionContentSubmit: {
@@ -1180,6 +1226,91 @@ export interface components {
         MediaUpdate: {
             /** Is Relevant */
             is_relevant?: boolean | null;
+        };
+        /** QuickScrapeCompatRequest */
+        QuickScrapeCompatRequest: {
+            /**
+             * Urls
+             * @description List of URLs to scrape.
+             */
+            urls: string[];
+            /**
+             * Use Cache
+             * @default true
+             */
+            use_cache: boolean;
+            /**
+             * Stream
+             * @default false
+             */
+            stream: boolean;
+            /**
+             * Get Organized Data
+             * @default false
+             */
+            get_organized_data: boolean;
+            /**
+             * Get Structured Data
+             * @default false
+             */
+            get_structured_data: boolean;
+            /**
+             * Get Overview
+             * @default false
+             */
+            get_overview: boolean;
+            /**
+             * Get Text Data
+             * @default true
+             */
+            get_text_data: boolean;
+            /**
+             * Get Main Image
+             * @default false
+             */
+            get_main_image: boolean;
+            /**
+             * Get Links
+             * @default false
+             */
+            get_links: boolean;
+            /**
+             * Get Content Filter Removal Details
+             * @default false
+             */
+            get_content_filter_removal_details: boolean;
+            /**
+             * Include Highlighting Markers
+             * @default true
+             */
+            include_highlighting_markers: boolean;
+            /**
+             * Include Media
+             * @default true
+             */
+            include_media: boolean;
+            /**
+             * Include Media Links
+             * @default true
+             */
+            include_media_links: boolean;
+            /**
+             * Include Media Description
+             * @default true
+             */
+            include_media_description: boolean;
+            /**
+             * Include Anchors
+             * @default true
+             */
+            include_anchors: boolean;
+            /**
+             * Anchor Size
+             * @default 100
+             */
+            anchor_size: number;
+        } & {
+            [key: string]: unknown;
         };
         /** QuickScrapeRequest */
         QuickScrapeRequest: {
@@ -1643,6 +1774,8 @@ export interface components {
             messages: {
                 [key: string]: unknown;
             }[];
+            /** Conversation Id */
+            conversation_id?: string | null;
             /**
              * Max Iterations
              * @default 20
@@ -1815,18 +1948,16 @@ export interface operations {
             };
         };
     };
-    warm_agent_ai_agent_warm_post: {
+    warm_agent_ai_agents__agent_id__warm_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                agent_id: string;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AgentWarmRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -1848,7 +1979,7 @@ export interface operations {
             };
         };
     };
-    execute_agent_ai_agent_execute_post: {
+    execute_agent_ai_agents_execute_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1881,7 +2012,7 @@ export interface operations {
             };
         };
     };
-    unified_chat_ai_chat_unified_post: {
+    unified_chat_ai_conversations_chat_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1924,6 +2055,72 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    direct_chat_ai_chat_direct_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DirectChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prompt_execution_ai_chat_prompt_execution_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DirectChatRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2128,6 +2325,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    quick_scrape_compat_scraper_compat_quick_scrape_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuickScrapeCompatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

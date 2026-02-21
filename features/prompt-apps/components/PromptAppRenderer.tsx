@@ -83,13 +83,14 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
 
             const agentRequest = {
                 prompt_id: promptId,
+                conversation_id: conversationId,
                 variables,
                 user_input: userInput,
                 stream: true,
                 debug: false,
             };
 
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(conversationId)}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),

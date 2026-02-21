@@ -19,16 +19,19 @@ export const ENDPOINTS = {
     ai: {
         /**
          * POST — Unified chat completion (Guest OK)
-         * New conversation:  POST /api/ai/conversations/{conversationId}/chat
-         * Always generate a UUID client-side and use the conversation-scoped URL for all turns.
+         * Single URL for all turns: POST /api/ai/conversations/chat
+         * Pass conversation_id in the request body to continue an existing conversation.
+         * Omit (or pass null) for a new conversation — the server generates an ID and
+         * streams it back as the 2nd event: {"event":"data","data":{"event":"conversation_id","conversation_id":"..."}}
          */
-        chat: (conversationId: string) => `/api/ai/conversations/${conversationId}/chat` as const,
+        chat: '/api/ai/conversations/chat' as const,
         /**
          * POST — Execute agent with streaming (Guest OK)
-         * New conversation:  POST /api/ai/agents/{conversationId}/execute
-         * Always generate a UUID client-side and use the conversation-scoped URL for all turns.
+         * Single URL for all turns: POST /api/ai/agents/execute
+         * Pass conversation_id in the request body to continue an existing conversation.
+         * Omit (or pass null) for a new conversation — the server streams back the ID.
          */
-        agentExecute: (conversationId: string) => `/api/ai/agents/${conversationId}/execute` as const,
+        agentExecute: '/api/ai/agents/execute' as const,
         /**
          * POST — Pre-warm agent cache. No request body. No auth required.
          * POST /api/ai/agents/{agentId}/warm

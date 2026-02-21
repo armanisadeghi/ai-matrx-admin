@@ -80,8 +80,7 @@ export default function DirectChatClient() {
         return;
       }
 
-      const conversationId = crypto.randomUUID();
-      const url = `${getBaseUrl()}/api/ai/conversations/${conversationId}/chat`;
+      const url = `${getBaseUrl()}/api/ai/conversations/chat`;
 
       const response = await fetch(url, {
         method: 'POST',

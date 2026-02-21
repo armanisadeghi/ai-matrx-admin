@@ -1,13 +1,14 @@
 /**
  * FastAPI Bridge Thunk — Drop-in replacement for the socket.io path in executeMessage.
  *
- * Calls POST /api/ai/conversations/{conversationId}/chat via fetch + NDJSON streaming,
+ * Calls POST /api/ai/conversations/chat via fetch + NDJSON streaming,
  * then dispatches to the SAME Redux slices that the socket path uses. All existing
  * selectors, components, and UI continue to work unchanged.
  *
  * This thunk transforms legacy chatConfig (model_id, max_tokens, output_format)
  * into the new unified API body (ai_model_id, max_output_tokens, response_format).
- * The caller must generate a UUID conversation ID client-side and pass it in.
+ * Pass conversation_id in chatConfig to continue an existing conversation.
+ * Omit for a new conversation — the server streams it back.
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -92,10 +93,11 @@ export const executeMessageFastAPI = createAsyncThunk<
     dispatch(addResponse({ listenerId, taskId }));
     dispatch(setTaskListenerIds({ taskId, listenerIds: [listenerId] }));
 
-    // Fields accepted by POST /api/ai/conversations/{id}/chat — anything else gets stripped.
-    // conversation_id and is_new_conversation are no longer sent in the body.
+    // Fields accepted by POST /api/ai/conversations/chat — anything else gets stripped.
+    // conversation_id is optional in the body: omit for new conversations, include for existing.
+    // is_new_conversation has been removed entirely from the API.
     const ALLOWED_FIELDS = new Set([
-      'ai_model_id', 'messages', 'stream', 'debug', 'max_iterations',
+      'ai_model_id', 'messages', 'conversation_id', 'stream', 'debug', 'max_iterations',
       'max_retries_per_iteration', 'system_instruction', 'max_output_tokens',
       'temperature', 'top_p', 'top_k', 'tools', 'tool_choice',
       'parallel_tool_calls', 'reasoning_effort', 'reasoning_summary',
@@ -149,8 +151,8 @@ export const executeMessageFastAPI = createAsyncThunk<
     }
 
     // Copy remaining allowed fields, strip everything else.
-    // conversation_id must not be sent in the body — it goes in the URL path.
-    const skipFields = new Set(['model_id', 'ai_model_id', 'max_tokens', 'output_format', 'response_format', 'stream', 'conversation_id', 'is_new_conversation']);
+    // conversation_id is now allowed in the body (optional). is_new_conversation is gone.
+    const skipFields = new Set(['model_id', 'ai_model_id', 'max_tokens', 'output_format', 'response_format', 'stream', 'is_new_conversation']);
     const droppedFields: string[] = [];
 
     for (const [key, value] of Object.entries(chatConfig)) {
@@ -165,7 +167,7 @@ export const executeMessageFastAPI = createAsyncThunk<
 
     if (droppedFields.length > 0) {
       console.warn(
-        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/conversations/{id}/chat: ${droppedFields.join(', ')}`,
+        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/conversations/chat: ${droppedFields.join(', ')}`,
         'font-weight: bold; color: #ff9800; font-size: 12px;',
       );
     }
@@ -179,7 +181,7 @@ export const executeMessageFastAPI = createAsyncThunk<
 
     let response: Response;
     try {
-      response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat(conversationId)}`, {
+      response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),

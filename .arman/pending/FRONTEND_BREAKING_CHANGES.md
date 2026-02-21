@@ -1,8 +1,8 @@
 # Frontend Breaking Changes — API Migration
 
-> **STATUS: ✅ COMPLETE** — All changes applied 2026-02-20. Full codebase updated (warm endpoint, is_builtin removal, admin override audit).
+> **STATUS: ✅ COMPLETE** — All changes applied 2026-02-20. Single-URL endpoints, conversation_id in body, stream-back capture implemented.
 
-**Date:** 2026-02-18  
+**Date:** 2026-02-20  
 **Affects:** All clients consuming the AI Dream Python API (web, mobile)  
 **Severity:** Breaking — existing calls will 404 or behave incorrectly until updated
 
@@ -10,12 +10,11 @@
 
 ## Overview
 
-Two categories of breaking changes:
+Three categories of breaking changes:
 
-1. **Endpoint URLs changed** — two routes moved, request bodies changed
-2. **Every endpoint now streams** — there are no more single-response endpoints; all responses are NDJSON streams
-
-Both must be addressed together. A client that hits the new URLs but still tries to read a single JSON response will break.
+1. **Endpoint URLs simplified** — one URL per feature, no more new-vs-existing split
+2. **Request bodies simplified** — `conversation_id` is optional in body, `is_builtin` and `is_new_conversation` removed
+3. **Every endpoint now streams** — all responses are NDJSON, and the `conversation_id` is streamed back automatically
 
 ---
 
@@ -23,10 +22,11 @@ Both must be addressed together. A client that hits the new URLs but still tries
 
 ### Agent Execution
 
-| | Before | After |
-|---|---|---|
-| **New conversation** | `POST /api/ai/agent/execute` | `POST /api/ai/agents/execute` |
-| **Existing conversation** | `POST /api/ai/agent/execute` | `POST /api/ai/agents/{conversation_id}/execute` |
+| Before | After |
+|---|---|
+| `POST /api/ai/agent/execute` | `POST /api/ai/agents/execute` |
+
+**One URL for both new and existing conversations.** Pass `conversation_id` in the body to continue an existing conversation. Omit it (or pass `null`) for a new one — the server generates an ID and streams it back immediately.
 
 **Request body — before:**
 ```json
@@ -54,34 +54,36 @@ Both must be addressed together. A client that hits the new URLs but still tries
   "debug": false
 }
 ```
-The server generates and owns the `conversation_id`. You get it back from the stream (see Section 3 below).
 
 **Request body — after (existing conversation):**
 ```json
 {
   "prompt_id": "35461e07-bbd1-46cc-81a7-910850815703",
-  "user_input": "Hello",
+  "conversation_id": "661bd566-f6f5-42c1-9d80-d7fe208e75e6",
+  "user_input": "Follow-up question",
   "variables": {},
   "config_overrides": {},
   "stream": true,
   "debug": false
 }
 ```
-The `conversation_id` is now **in the URL path**, not the body. `is_new_conversation` is gone entirely.
 
 **Fields removed from body:**
-- `conversation_id` — moved to URL path for existing conversations
-- `is_new_conversation` — no longer needed; inferred from which URL you call
-- `is_builtin` — **removed entirely**; the server automatically determines whether the `prompt_id` is a prompt or builtin. Pass any valid ID and it just works.
+- `is_new_conversation` — no longer needed; the server auto-detects based on whether the conversation exists
+- `is_builtin` — removed entirely; the server automatically determines whether the `prompt_id` is a prompt or builtin
+
+**Fields changed:**
+- `conversation_id` — now **optional** in the body (was required before). Omit for new, include for existing.
 
 ---
 
 ### Unified Chat
 
-| | Before | After |
-|---|---|---|
-| **New conversation** | `POST /api/ai/chat/unified` | `POST /api/ai/conversations/chat` |
-| **Existing conversation** | `POST /api/ai/chat/unified` | `POST /api/ai/conversations/{conversation_id}/chat` |
+| Before | After |
+|---|---|
+| `POST /api/ai/chat/unified` | `POST /api/ai/conversations/chat` |
+
+Same pattern as agents — one URL, optional `conversation_id` in body.
 
 **Request body — before:**
 ```json
@@ -110,15 +112,17 @@ The `conversation_id` is now **in the URL path**, not the body. `is_new_conversa
 {
   "ai_model_id": "gpt-4o",
   "messages": [...],
+  "conversation_id": "661bd566-f6f5-42c1-9d80-d7fe208e75e6",
   "stream": true,
   "debug": false
 }
 ```
-Again — `conversation_id` is in the URL path, `is_new_conversation` is gone.
 
 **Fields removed from body:**
-- `conversation_id` — moved to URL path
 - `is_new_conversation` — no longer needed
+
+**Fields changed:**
+- `conversation_id` — now **optional** in the body. Omit for new, include for existing.
 
 **All other body fields are unchanged.** The full parameter list for unified chat (model config, tools, reasoning, image/audio/video params, etc.) is exactly the same.
 
@@ -195,6 +199,24 @@ Informational — the server telling you what it is doing. Show this to the user
 ```
 
 Possible `status` values: `connected`, `processing`, `warning`, `executing`, `scraping`, `analyzing`, and others — treat any unrecognized status as a loading indicator.
+
+---
+
+#### `data` with `event: "conversation_id"` — **NEW, IMPORTANT**
+
+**Always the second event in every stream**, immediately after the initial `status_update`. Contains the `conversation_id` for this request. You **must** capture this and use it for all subsequent requests in the same conversation.
+
+```json
+{
+  "event": "data",
+  "data": {
+    "event": "conversation_id",
+    "conversation_id": "661bd566-f6f5-42c1-9d80-d7fe208e75e6"
+  }
+}
+```
+
+If you sent a `conversation_id` in the request, this echoes it back. If you omitted it, this gives you the server-generated ID. **Either way, store this value and pass it back on subsequent turns.**
 
 ---
 
@@ -285,7 +307,7 @@ Possible inner `event` values: `tool_started`, `tool_progress`, `tool_step`, `to
 ---
 
 #### `data`
-Route-specific structured data. Shape varies by endpoint. Used by research, scraper, and other non-chat endpoints to return structured results.
+Route-specific structured data. Shape varies by endpoint. Used by research, scraper, and other non-chat endpoints to return structured results. Also used for `conversation_id` (see above).
 
 ```json
 {
@@ -349,26 +371,21 @@ Possible `reason` values: `complete`, `cancelled`.
 
 ---
 
-## 3. How to Get the conversation_id for New Conversations
+## 3. How to Get the conversation_id
 
-When you call the new-conversation endpoints, the server generates the `conversation_id` internally. You need it to continue the conversation on the next turn.
+The `conversation_id` is **always streamed back** as the second event in every NDJSON stream. Look for:
 
-**Option A — from the `X-Request-ID` response header** (not conversation_id, skip this)
-
-**Option B — embed it in a `status_update` event** (coming soon — not yet implemented)
-
-**Option C — current approach: generate it client-side and pass it in the URL**
-
-The cleanest current pattern is: **generate a UUID client-side before the first request** and call the existing-conversation endpoint immediately:
-
-```
-POST /api/ai/conversations/{your_generated_uuid}/chat   ← use this for ALL turns including first
-POST /api/ai/agents/{your_generated_uuid}/execute       ← same for agents
+```json
+{"event": "data", "data": {"event": "conversation_id", "conversation_id": "..."}}
 ```
 
-This works because the server validates the conversation exists only when `is_new_conversation=false` (old API) — but now the existing-conversation endpoint just uses whatever ID you pass. You can pass a brand-new UUID on the first turn and it will be treated as a new conversation automatically.
+**Two patterns:**
 
-> **Recommendation for the team:** Always generate the `conversation_id` client-side (a UUID v4) before the first request and use the `/{conversation_id}/` URL form for all turns. This gives you the ID immediately without waiting for a server response.
+1. **New conversation** — omit `conversation_id` from the request body. The server generates a UUID and streams it back. Capture it and use it for all subsequent turns.
+
+2. **Existing conversation** — pass the `conversation_id` you previously received. The server echoes it back in the stream (same value).
+
+**You can also generate the ID client-side** (UUID v4) and pass it in the body on the first turn. The server will use it instead of generating one. This is useful if you need the ID before the stream opens (e.g., for optimistic UI).
 
 ---
 
@@ -420,21 +437,25 @@ async function streamRequest(url: string, body: object, onEvent: (event: StreamE
 ### Usage example
 
 ```typescript
-import { v4 as uuidv4 } from 'uuid';
-
-const conversationId = uuidv4(); // generate once, reuse for all turns
+let conversationId: string | null = null;
 
 await streamRequest(
-  `https://api.aidream.com/api/ai/conversations/${conversationId}/chat`,
+  'https://api.aidream.com/api/ai/conversations/chat',
   {
     ai_model_id: 'gpt-4o',
     messages: [{ role: 'user', content: 'Hello' }],
+    conversation_id: conversationId, // null on first turn, set on subsequent turns
     stream: true,
   },
   (event) => {
     switch (event.event) {
       case 'status_update':
         setLoadingMessage(event.data.user_message);
+        break;
+      case 'data':
+        if (event.data.event === 'conversation_id') {
+          conversationId = event.data.conversation_id as string;
+        }
         break;
       case 'chunk':
         appendToOutput(event.data.text);
@@ -485,6 +506,11 @@ interface StatusUpdateData {
   system_message: string | null;
   user_message: string | null;
   metadata: Record<string, unknown> | null;
+}
+
+interface ConversationIdData {
+  event: 'conversation_id';
+  conversation_id: string;
 }
 
 interface CompletionData {
@@ -554,12 +580,13 @@ interface HeartbeatData {
 
 | What | Before | After |
 |---|---|---|
-| Agent endpoint URL | `POST /api/ai/agent/execute` | `POST /api/ai/agents/execute` (new) or `POST /api/ai/agents/{conversation_id}/execute` (existing) |
-| Chat endpoint URL | `POST /api/ai/chat/unified` | `POST /api/ai/conversations/chat` (new) or `POST /api/ai/conversations/{conversation_id}/chat` (existing) |
+| Agent endpoint URL | `POST /api/ai/agent/execute` | `POST /api/ai/agents/execute` |
+| Chat endpoint URL | `POST /api/ai/chat/unified` | `POST /api/ai/conversations/chat` |
 | Agent warm endpoint | `POST /api/ai/agent/warm` with `{ prompt_id, is_builtin }` body | `POST /api/ai/agents/{agent_id}/warm` — no body, single unified route |
-| `conversation_id` in body | Sent in body | Moved to URL path; remove from body |
-| `is_new_conversation` in body | Sent in body | Removed; determined by which URL you call |
-| `is_builtin` in agent execute body | Sent in body (`true`/`false`) | **Removed entirely** — server auto-detects prompt vs. builtin from the ID |
+| `conversation_id` | Required in body (new) or URL path (existing) | **Optional in body** — omit for new, include for existing. Server streams it back. |
+| `is_new_conversation` in body | Required field | **Removed entirely** — server auto-detects |
+| `is_builtin` in agent execute body | Required field (`true`/`false`) | **Removed entirely** — server auto-detects prompt vs. builtin from the ID |
+| Getting `conversation_id` back | Not available (had to generate client-side) | Streamed back as `data` event with `event: "conversation_id"` — always the 2nd event |
 | Response format for all AI endpoints | Single JSON object (some) or stream (some) | Always NDJSON stream — no exceptions |
 
 ### Did NOT change

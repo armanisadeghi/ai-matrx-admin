@@ -49,23 +49,24 @@
         }
       }
     },
-    "/ai/agent/warm": {
+    "/ai/agents/{agent_id}/warm": {
       "post": {
         "tags": [
           "AI"
         ],
         "summary": "Warm Agent",
-        "operationId": "warm_agent_ai_agent_warm_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AgentWarmRequest"
-              }
+        "operationId": "warm_agent_ai_agents__agent_id__warm_post",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -88,13 +89,13 @@
         }
       }
     },
-    "/ai/agent/execute": {
+    "/ai/agents/execute": {
       "post": {
         "tags": [
           "AI"
         ],
         "summary": "Execute Agent",
-        "operationId": "execute_agent_ai_agent_execute_post",
+        "operationId": "execute_agent_ai_agents_execute_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -127,13 +128,13 @@
         }
       }
     },
-    "/ai/chat/unified": {
+    "/ai/conversations/chat": {
       "post": {
         "tags": [
           "AI"
         ],
         "summary": "Unified Chat",
-        "operationId": "unified_chat_ai_chat_unified_post",
+        "operationId": "unified_chat_ai_conversations_chat_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -184,6 +185,84 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/chat/direct-chat": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Direct Chat",
+        "operationId": "direct_chat_ai_chat_direct_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/chat/prompt-execution": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Prompt Execution",
+        "operationId": "prompt_execution_ai_chat_prompt_execution_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -420,6 +499,45 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scraper/compat/quick-scrape": {
+      "post": {
+        "tags": [
+          "Scraper"
+        ],
+        "summary": "Quick Scrape Compat",
+        "operationId": "quick_scrape_compat_scraper_compat_quick_scrape_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickScrapeCompatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -3241,11 +3359,6 @@
             ],
             "title": "Conversation Id"
           },
-          "is_new_conversation": {
-            "type": "boolean",
-            "title": "Is New Conversation",
-            "default": true
-          },
           "user_input": {
             "anyOf": [
               {
@@ -3288,11 +3401,6 @@
             ],
             "title": "Config Overrides"
           },
-          "is_builtin": {
-            "type": "boolean",
-            "title": "Is Builtin",
-            "default": false
-          },
           "stream": {
             "type": "boolean",
             "title": "Stream",
@@ -3309,24 +3417,6 @@
           "prompt_id"
         ],
         "title": "AgentExecuteRequest"
-      },
-      "AgentWarmRequest": {
-        "properties": {
-          "prompt_id": {
-            "type": "string",
-            "title": "Prompt Id"
-          },
-          "is_builtin": {
-            "type": "boolean",
-            "title": "Is Builtin",
-            "default": false
-          }
-        },
-        "type": "object",
-        "required": [
-          "prompt_id"
-        ],
-        "title": "AgentWarmRequest"
       },
       "AnalyzeBulkRequest": {
         "properties": {
@@ -3430,6 +3520,22 @@
           "content"
         ],
         "title": "ContentPasteRequest"
+      },
+      "DirectChatRequest": {
+        "properties": {
+          "chat_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Chat Config",
+            "description": "Legacy socket chat_config wrapper. Use /api/ai/conversations/chat directly instead."
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "chat_config"
+        ],
+        "title": "DirectChatRequest"
       },
       "ExtensionContentSubmit": {
         "properties": {
@@ -3563,6 +3669,99 @@
         },
         "type": "object",
         "title": "MediaUpdate"
+      },
+      "QuickScrapeCompatRequest": {
+        "properties": {
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Urls",
+            "description": "List of URLs to scrape."
+          },
+          "use_cache": {
+            "type": "boolean",
+            "title": "Use Cache",
+            "default": true
+          },
+          "stream": {
+            "type": "boolean",
+            "title": "Stream",
+            "default": false
+          },
+          "get_organized_data": {
+            "type": "boolean",
+            "title": "Get Organized Data",
+            "default": false
+          },
+          "get_structured_data": {
+            "type": "boolean",
+            "title": "Get Structured Data",
+            "default": false
+          },
+          "get_overview": {
+            "type": "boolean",
+            "title": "Get Overview",
+            "default": false
+          },
+          "get_text_data": {
+            "type": "boolean",
+            "title": "Get Text Data",
+            "default": true
+          },
+          "get_main_image": {
+            "type": "boolean",
+            "title": "Get Main Image",
+            "default": false
+          },
+          "get_links": {
+            "type": "boolean",
+            "title": "Get Links",
+            "default": false
+          },
+          "get_content_filter_removal_details": {
+            "type": "boolean",
+            "title": "Get Content Filter Removal Details",
+            "default": false
+          },
+          "include_highlighting_markers": {
+            "type": "boolean",
+            "title": "Include Highlighting Markers",
+            "default": true
+          },
+          "include_media": {
+            "type": "boolean",
+            "title": "Include Media",
+            "default": true
+          },
+          "include_media_links": {
+            "type": "boolean",
+            "title": "Include Media Links",
+            "default": true
+          },
+          "include_media_description": {
+            "type": "boolean",
+            "title": "Include Media Description",
+            "default": true
+          },
+          "include_anchors": {
+            "type": "boolean",
+            "title": "Include Anchors",
+            "default": true
+          },
+          "anchor_size": {
+            "type": "integer",
+            "title": "Anchor Size",
+            "default": 100
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "urls"
+        ],
+        "title": "QuickScrapeCompatRequest"
       },
       "QuickScrapeRequest": {
         "properties": {
@@ -4432,6 +4631,17 @@
             "type": "array",
             "title": "Messages"
           },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
           "max_iterations": {
             "type": "integer",
             "title": "Max Iterations",
@@ -4831,22 +5041,6 @@
               }
             ],
             "title": "Disable Safety Checker"
-          },
-          "conversation_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Conversation Id"
-          },
-          "is_new_conversation": {
-            "type": "boolean",
-            "title": "Is New Conversation",
-            "default": true
           },
           "metadata": {
             "anyOf": [

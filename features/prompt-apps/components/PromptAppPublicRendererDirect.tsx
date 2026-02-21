@@ -236,8 +236,7 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
             logTiming('Initiating fetch to backend...');
             const fetchStartTime = performance.now();
             
-            const conversationId = crypto.randomUUID();
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat(conversationId)}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(chatConfig),

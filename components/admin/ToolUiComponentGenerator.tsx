@@ -144,12 +144,11 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
         abortRef.current = abortController;
 
         try {
-            const conversationId = crypto.randomUUID();
             const backendUrl = (isAdmin && useLocalhost)
                 ? BACKEND_URLS.localhost
                 : BACKEND_URLS.production;
             const headers = getHeaders();
-            const response = await fetch(`${backendUrl}${ENDPOINTS.ai.chat(conversationId)}`, {
+            const response = await fetch(`${backendUrl}${ENDPOINTS.ai.chat}`, {
                 method: "POST",
                 headers,
                 signal: abortController.signal,
