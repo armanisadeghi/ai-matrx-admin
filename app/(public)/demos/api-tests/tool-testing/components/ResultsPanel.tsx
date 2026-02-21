@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,12 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Activity,
   Eye,
   FileText,
   ShieldCheck,
-  DollarSign,
   FileJson,
   Copy,
   Check,
@@ -25,10 +25,14 @@ import {
   ThumbsDown,
   Minus,
   BookmarkCheck,
+  Gauge,
+  Code2,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StreamEventTimeline } from './StreamEventTimeline';
-import { SchemaValidator } from './SchemaValidator';
+import { SchemaValidator, validateAgainstSchema } from './SchemaValidator';
 import { CostEstimateTable } from './CostEstimateTable';
 import { ToolRendererPreview } from './ToolRendererPreview';
 import { useSaveSample } from '../hooks/useSaveSample';
@@ -109,11 +113,11 @@ function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePo
         <Button
           size="sm"
           variant="outline"
-          className="h-6 text-xs px-2 gap-1"
+          className="h-6 w-6 p-0"
           disabled={disabled}
+          title="Save sample"
         >
           <Save className="h-3 w-3" />
-          Save Sample
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="end">
@@ -219,6 +223,7 @@ function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePo
 interface ResultsPanelProps {
   toolName: string;
   toolId?: string | null;
+  toolSchema?: Record<string, unknown> | null;
   args: Record<string, unknown>;
   toolEvents: ToolStreamEvent[];
   rawLines: StreamEvent[];
@@ -233,6 +238,7 @@ interface ResultsPanelProps {
 export function ResultsPanel({
   toolName,
   toolId,
+  toolSchema,
   args,
   toolEvents,
   rawLines,
@@ -248,6 +254,16 @@ export function ResultsPanel({
   const isError = executionStatus === 'error';
   const duration = finalPayload?.output?.full_result?.duration_ms;
   const canSave = (isComplete || isError) && !!finalPayload;
+
+  // Schema — prefer the tool-level schema (available immediately on selection),
+  // fall back to what comes back in the execution metadata
+  const activeSchema = toolSchema ?? finalPayload?.metadata?.output_schema ?? null;
+  const schemaOutput = finalPayload?.output?.full_result?.output ?? null;
+  const toolSuccess = finalPayload?.output?.full_result?.success ?? false;
+  const schemaValidation = useMemo(() => {
+    if (!activeSchema || !toolSuccess || schemaOutput === null || schemaOutput === undefined) return null;
+    return validateAgainstSchema(schemaOutput, activeSchema);
+  }, [schemaOutput, activeSchema, toolSuccess]);
 
   const { save, isSaving, savedId, reset } = useSaveSample(authToken);
 
@@ -291,7 +307,7 @@ export function ResultsPanel({
             </Badge>
           )}
           {isComplete && (
-            <Badge variant="default" className="text-[10px] px-1.5 py-0 gap-1 bg-success text-success-foreground">
+            <Badge variant="default" className="text-[10px] px-1.5 py-0 gap-1 bg-primary text-foreground">
               <Check className="h-2.5 w-2.5" />
               Complete
             </Badge>
@@ -311,6 +327,22 @@ export function ResultsPanel({
             <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px]" title={finalPayload.metadata.call_id}>
               {finalPayload.metadata.call_id}
             </span>
+          )}
+          {schemaValidation !== null && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex-shrink-0 flex items-center">
+                  {schemaValidation.valid ? (
+                    <CheckCircle2 className="h-3 w-3 text-success" />
+                  ) : (
+                    <XCircle className="h-3 w-3 text-destructive" />
+                  )}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">
+                {schemaValidation.valid ? 'Output matches registered schema' : 'Output does not match schema'}
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
         <div className="flex items-center gap-1.5">
@@ -347,7 +379,7 @@ export function ResultsPanel({
 
       {/* Tabs */}
       <Tabs defaultValue="stream" className="flex-1 flex flex-col overflow-hidden min-h-0 px-3 pt-2">
-        <TabsList className="grid w-full grid-cols-6 h-8 flex-shrink-0">
+        <TabsList className="grid w-full grid-cols-7 h-8 flex-shrink-0">
           <TabsTrigger value="stream" className="text-[10px] gap-1">
             <Activity className="h-3 w-3" />
             Events
@@ -364,9 +396,13 @@ export function ResultsPanel({
             <ShieldCheck className="h-3 w-3" />
             Schema
           </TabsTrigger>
-          <TabsTrigger value="cost" className="text-[10px] gap-1">
-            <DollarSign className="h-3 w-3" />
-            Cost
+          <TabsTrigger value="output" className="text-[10px] gap-1">
+            <Code2 className="h-3 w-3" />
+            Output
+          </TabsTrigger>
+          <TabsTrigger value="usage" className="text-[10px] gap-1">
+            <Gauge className="h-3 w-3" />
+            Usage
           </TabsTrigger>
           <TabsTrigger value="json" className="text-[10px] gap-1">
             <FileJson className="h-3 w-3" />
@@ -432,16 +468,27 @@ export function ResultsPanel({
         </TabsContent>
 
         {/* Schema Validation */}
-        <TabsContent value="schema" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
+        <TabsContent value="schema" className="flex-1 overflow-hidden mt-2 rounded border bg-card">
           <SchemaValidator
-            output={finalPayload?.output?.full_result?.output ?? null}
-            schema={finalPayload?.metadata?.output_schema ?? null}
-            success={finalPayload?.output?.full_result?.success ?? false}
+            output={schemaOutput}
+            schema={activeSchema}
+            success={toolSuccess}
+            schemaOnly
           />
         </TabsContent>
 
-        {/* Cost Estimate */}
-        <TabsContent value="cost" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
+        {/* Raw Output */}
+        <TabsContent value="output" className="flex-1 overflow-hidden mt-2 rounded border bg-card">
+          <SchemaValidator
+            output={schemaOutput}
+            schema={activeSchema}
+            success={toolSuccess}
+            outputOnly
+          />
+        </TabsContent>
+
+        {/* Usage Estimate */}
+        <TabsContent value="usage" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
           <CostEstimateTable costEstimate={finalPayload?.metadata?.cost_estimate ?? null} />
         </TabsContent>
 

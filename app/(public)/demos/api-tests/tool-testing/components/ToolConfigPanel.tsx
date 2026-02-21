@@ -66,9 +66,6 @@ export function ToolConfigPanel({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h2 className="text-sm font-semibold truncate">{tool.name}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-              {tool.description}
-            </p>
           </div>
           {tool.version && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 flex-shrink-0">

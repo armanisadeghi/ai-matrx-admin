@@ -26,10 +26,12 @@ export function ConversationSelector({
 }: ConversationSelectorProps) {
   const [mode, setMode] = useState<Mode>('create');
   const [inputValue, setInputValue] = useState('');
+  const [mounted, setMounted] = useState(false);
   // Track whether the current conversationId was restored from a cookie on mount
   const [restoredFromCookie, setRestoredFromCookie] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (conversationId) {
       setRestoredFromCookie(true);
     }
@@ -112,9 +114,9 @@ export function ConversationSelector({
         </Tooltip>
       </ToggleGroup>
 
-      {/* Mode content */}
+      {/* Mode content — use mounted to avoid SSR/client mismatch on cookie-restored state */}
       {mode === 'create' ? (
-        conversationId ? (
+        mounted && conversationId ? (
           <div className="flex items-center gap-1">
             {restoredFromCookie ? (
               <Tooltip>
@@ -224,7 +226,7 @@ export function ConversationSelector({
       )}
 
       {/* Missing conversation warning */}
-      {!conversationId && (
+      {mounted && !conversationId && (
         <Tooltip>
           <TooltipTrigger asChild>
             <AlertCircle className="h-3 w-3 text-warning flex-shrink-0" />

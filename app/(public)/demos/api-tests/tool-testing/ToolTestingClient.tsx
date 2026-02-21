@@ -301,7 +301,6 @@ export default function ToolTestingClient() {
                     className="h-6 text-xs px-2 gap-1"
                   >
                     <RefreshCw className={`h-3 w-3 ${loadingTools ? 'animate-spin' : ''}`} />
-                    {loadingTools ? 'Loading…' : 'Reload'}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="text-xs">Reload active tools from database</TooltipContent>
@@ -348,7 +347,7 @@ export default function ToolTestingClient() {
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent className="font-mono text-xs break-all max-w-xs">
-                    User ID: {userId}
+                    {userId}
                   </TooltipContent>
                 </Tooltip>
               ) : (
@@ -444,6 +443,7 @@ export default function ToolTestingClient() {
               <ResultsPanel
                 toolName={selectedToolName ?? ''}
                 toolId={selectedTool?.id ?? null}
+                toolSchema={selectedTool?.output_schema ?? null}
                 args={argValues}
                 toolEvents={toolEvents}
                 rawLines={rawLines}
