@@ -10,6 +10,7 @@ import { convertTimelineToTasks } from '@/features/tasks/utils/importConverters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import BlockHeaderWrapper from '@/components/mardown-display/blocks/common/BlockHeaderWrapper';
 import IconButton from '@/components/official/IconButton';
+import type { MenuItem } from '@/components/official/AdvancedMenu';
 
 interface TimelineEvent {
   id: string;
@@ -239,6 +240,16 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline: initialTimeline
             className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/80 hover:shadow-md transform hover:scale-105 transition-all"
           />
         }
+        extraMenuItems={[
+          {
+            key: 'import-tasks',
+            icon: CheckSquare,
+            iconColor: 'text-primary',
+            label: 'Import into Task Manager',
+            action: () => setIsImportModalOpen(true),
+            showToast: false,
+          } satisfies MenuItem,
+        ]}
       >
         {/* Timeline periods */}
         <div className="space-y-6">

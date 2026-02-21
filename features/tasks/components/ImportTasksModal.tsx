@@ -262,7 +262,7 @@ export default function ImportTasksModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl h-full max-h-[70vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckSquare className="h-5 w-5" />
@@ -324,7 +324,7 @@ export default function ImportTasksModal({
                     {getSelectedCount()} selected
                   </span>
                 </div>
-                <div className="border-border rounded-lg p-3 max-h-64 overflow-y-auto">
+                <div className="border-border rounded-lg p-3 h-full overflow-y-auto">
                   {renderTaskTree(tasks)}
                 </div>
               </div>
