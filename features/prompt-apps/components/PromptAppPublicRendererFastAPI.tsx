@@ -44,6 +44,9 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     const abortControllerRef = useRef<AbortController | null>(null);
     // Track the task_id from the logging call so we can update it on failure
     const currentTaskIdRef = useRef<string | null>(null);
+    // Accumulate events in a ref and flush to state via RAF to throttle renders during fast streaming
+    const streamEventsRef = useRef<StreamEvent[]>([]);
+    const streamRafIdRef = useRef<number | null>(null);
     
     // Centralized auth - handles both authenticated users and guests
     const { getHeaders, waitForAuth, isAuthenticated, isAdmin, fingerprintId } = useApiAuth();
@@ -88,7 +91,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
         warmAgent();
     }, [app.prompt_id, isAdmin, useLocalhost]);
     
-    // Cleanup timeout and abort controller on unmount
+    // Cleanup timeout, abort controller, and RAF on unmount
     useEffect(() => {
         return () => {
             if (executionTimeoutRef.current) {
@@ -96,6 +99,9 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             if (abortControllerRef.current) {
                 abortControllerRef.current.abort();
+            }
+            if (streamRafIdRef.current !== null) {
+                cancelAnimationFrame(streamRafIdRef.current);
             }
         };
     }, []);
@@ -160,6 +166,11 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
         setStreamEvents([]);
         setIsStreamComplete(false);
         currentTaskIdRef.current = null;
+        streamEventsRef.current = [];
+        if (streamRafIdRef.current !== null) {
+            cancelAnimationFrame(streamRafIdRef.current);
+            streamRafIdRef.current = null;
+        }
         
         // Clear any existing timeout
         if (executionTimeoutRef.current) {
@@ -310,7 +321,14 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     firstEventReceived = true;
                 }
                 
-                setStreamEvents(prev => [...prev, event]);
+                // Accumulate into ref to avoid one setState per event during fast streaming
+                streamEventsRef.current.push(event);
+                if (streamRafIdRef.current === null) {
+                    streamRafIdRef.current = requestAnimationFrame(() => {
+                        streamRafIdRef.current = null;
+                        setStreamEvents([...streamEventsRef.current]);
+                    });
+                }
                 
                 if (event.event === 'chunk') {
                     localChunkCount++;
@@ -340,6 +358,12 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             
             logTiming('Stream complete from Agent API');
+            // Final flush: cancel any pending RAF and commit all remaining events synchronously
+            if (streamRafIdRef.current !== null) {
+                cancelAnimationFrame(streamRafIdRef.current);
+                streamRafIdRef.current = null;
+            }
+            setStreamEvents([...streamEventsRef.current]);
             setIsStreamComplete(true);
 
             // Detect empty result: stream finished but no text chunks received

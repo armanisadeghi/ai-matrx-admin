@@ -253,8 +253,11 @@ export function ActionConversationModal({
         }
       }
 
-      // Submit the task using socket with the same taskId
-      const result = await dispatch(createAndSubmitTask({
+      // Set taskId BEFORE dispatch so streaming UI mounts immediately
+      setCurrentTaskId(taskId);
+
+      // Submit the task using FastAPI with the pre-generated taskId
+      await dispatch(createAndSubmitTask({
         service: "chat_service",
         taskName: "direct_chat",
         taskData: {
@@ -262,9 +265,6 @@ export function ActionConversationModal({
         },
         customTaskId: taskId,
       })).unwrap();
-
-      // Store the taskId for streaming
-      setCurrentTaskId(result.taskId);
       
     } catch (error) {
       console.error("Error sending message:", error);

@@ -196,7 +196,6 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
 }) => {
     const toast = useToastManager();
     const tableTheme = THEMES[theme]?.table || THEMES.professional.table;
-    const previousDataRef = useRef<string>("");
     
     // State Management
     const [editMode, setEditMode] = useState<"none" | "header" | number>("none");
@@ -267,29 +266,17 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
         }
     }, [content]);
     
-    // Internal editable table data
-    const [internalTableData, setInternalTableData] = useState<ParsedTable | null>(parsedTable);
-    
-    // Update internal state when parsed data changes (with stability check)
-    useEffect(() => {
-        if (parsedTable) {
-            const dataHash = JSON.stringify({
-                headers: parsedTable.headers,
-                rows: parsedTable.rows,
-            });
-            
-            // Only update if data has actually changed
-            if (dataHash !== previousDataRef.current) {
-                previousDataRef.current = dataHash;
-                setInternalTableData(parsedTable);
-            }
-        }
-    }, [parsedTable]);
+    // internalTableData holds user edits. null means "not yet in edit mode — use parsedTable".
+    // We never sync parsedTable → state during streaming to avoid the useEffect update cascade.
+    const [internalTableData, setInternalTableData] = useState<ParsedTable | null>(null);
     
     // If parsing failed, return null (parent handles fallback)
-    if (!parsedTable || !internalTableData) return null;
+    if (!parsedTable) return null;
     
-    const { headers, rows } = internalTableData;
+    // During streaming (or when no edits have been made), render from the live parsedTable.
+    // Once the user enters edit mode, internalTableData diverges from parsedTable.
+    const tableData = internalTableData ?? parsedTable;
+    const { headers, rows } = tableData;
     
     // Show loading indicator during streaming if we have partial content
     const showStreamingIndicator = isStreamActive && metadata?.hasPartialContent;
@@ -375,7 +362,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
 
     const copyJsonToClipboard = async () => {
         try {
-            await navigator.clipboard.writeText(JSON.stringify(internalTableData.normalizedData, null, 2));
+            await navigator.clipboard.writeText(JSON.stringify(tableData.normalizedData, null, 2));
             toast.success("JSON copied to clipboard");
         } catch (err: any) {
             toast.error(err.message || "Failed to copy JSON");
@@ -467,11 +454,13 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
     
     const toggleGlobalEditMode = () => {
         if (editMode !== "none") {
-            onSave(internalTableData);
+            onSave(tableData);
             setEditMode("none");
             toast.info("Edit mode deactivated");
             notifyContentChange();
         } else {
+            // Snapshot parsedTable into state so edits have a stable base
+            setInternalTableData(parsedTable);
             setEditMode("header");
             toast.info("Edit mode activated");
         }
@@ -480,38 +469,37 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
     const handleHeaderChange = (index: number, value: string) => {
         const newHeaders = [...headers];
         newHeaders[index] = value;
-        setInternalTableData({ ...internalTableData, headers: newHeaders });
+        setInternalTableData({ ...tableData, headers: newHeaders });
     };
 
     const handleCellChange = (rowIndex: number, colIndex: number, value: string) => {
         const newRows = [...rows];
         newRows[rowIndex][colIndex] = value;
-        setInternalTableData({ ...internalTableData, rows: newRows });
+        setInternalTableData({ ...tableData, rows: newRows });
     };
 
     const handleRowClick = (rowIndex: number) => {
         if (editMode === "none") return;
-        onSave(internalTableData);
+        onSave(tableData);
         setEditMode(rowIndex);
     };
 
     const handleHeaderClick = () => {
         if (editMode === "none") return;
-        onSave(internalTableData);
+        onSave(tableData);
         setEditMode("header");
     };
 
     const handleSave = () => {
-        onSave(internalTableData);
+        onSave(tableData);
         setEditMode("none");
         toast.success("Table data saved");
         notifyContentChange();
     };
 
     const handleCancel = () => {
-        if (parsedTable) {
-            setInternalTableData(parsedTable);
-        }
+        // Discard edits by resetting to null — tableData will fall back to parsedTable
+        setInternalTableData(null);
         setEditMode("none");
         toast.info("Edits cancelled");
     };
@@ -534,7 +522,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
     };
 
     const renderTableActionButton = () => {
-        if (!internalTableData.normalizedData) return null;
+        if (!tableData.normalizedData) return null;
         if (savedTableInfo) {
             return (
                 <Button
@@ -573,9 +561,9 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
     
     return (
         <div className={cn("relative w-full my-3", className)}>
-            {showNormalized && internalTableData.normalizedData ? (
+            {showNormalized && tableData.normalizedData ? (
                 <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <pre className="text-sm overflow-auto">{JSON.stringify(internalTableData.normalizedData, null, 2)}</pre>
+                    <pre className="text-sm overflow-auto">{JSON.stringify(tableData.normalizedData, null, 2)}</pre>
                     <Button
                         variant="outline"
                         size="sm"
@@ -677,7 +665,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                     {/* Action Buttons - Only show when not streaming and table is complete */}
                     {!isStreamActive && metadata?.isComplete && (
                         <div className="flex justify-end gap-2 mt-2">
-                            {internalTableData.normalizedData && (
+                            {tableData.normalizedData && (
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -690,7 +678,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                             )}
                             {renderTableActionButton()}
                             <ExportDropdownMenu
-                                tableData={internalTableData}
+                                tableData={tableData}
                                 content={content}
                                 copyTableToClipboard={copyTableToClipboard}
                                 copyMarkdownToClipboard={copyMarkdownToClipboard}
@@ -742,7 +730,7 @@ export const StreamingTableRenderer: React.FC<StreamingTableRendererProps> = ({
                     isOpen={showSaveModal}
                     onClose={() => setShowSaveModal(false)}
                     onSaveComplete={handleSaveComplete}
-                    tableData={internalTableData.normalizedData}
+                    tableData={tableData.normalizedData}
                 />
             )}
             {showViewModal && savedTableInfo && (

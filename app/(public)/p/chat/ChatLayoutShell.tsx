@@ -1,91 +1,21 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { ChatSidebar } from '@/features/public-chat/components/ChatSidebar';
 import { ChatMobileHeader } from '@/features/public-chat/components/ChatMobileHeader';
 import { AgentPickerSheet } from '@/features/public-chat/components/AgentPickerSheet';
 import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
+import { LayoutAgentContext, LayoutAgentContextValue } from '@/features/public-chat/context/LayoutAgentContext';
 import { useAgentsContext } from '@/features/public-chat/context/AgentsContext';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
 import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
+import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat/utils/agent-resolver';
 
 // Basic UUID v4 pattern for validating URL-derived IDs
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// ============================================================================
-// RESOLVE AGENT HELPER
-// ============================================================================
-
-function resolveAgentFromId(
-    agentId: string | null,
-    userPrompts: { id: string; name: string; description: string | null; variable_defaults: any[] | null }[] = [],
-): AgentConfig | null {
-    if (!agentId) return null;
-
-    const systemAgent = DEFAULT_AGENTS.find(a => a.promptId === agentId);
-    if (systemAgent) {
-        return {
-            promptId: systemAgent.promptId,
-            name: systemAgent.name,
-            description: systemAgent.description,
-            variableDefaults: systemAgent.variableDefaults,
-        };
-    }
-
-    const userAgent = userPrompts.find(p => p.id === agentId);
-    if (userAgent) {
-        return {
-            promptId: userAgent.id,
-            name: userAgent.name || 'Untitled',
-            description: userAgent.description || undefined,
-            variableDefaults: userAgent.variable_defaults || undefined,
-        };
-    }
-
-    return null;
-}
-
-const DEFAULT_AGENT_CONFIG: AgentConfig = {
-    promptId: DEFAULT_AGENTS[0].promptId,
-    name: DEFAULT_AGENTS[0].name,
-    description: DEFAULT_AGENTS[0].description,
-    variableDefaults: DEFAULT_AGENTS[0].variableDefaults,
-};
-
-// ============================================================================
-// LAYOUT AGENT CONTEXT
-// ============================================================================
-
-interface LayoutAgentContextValue {
-    selectedAgent: AgentConfig;
-    onAgentChange: (agent: AgentConfig) => void;
-    activeConversationId: string | null;
-    isLoadingConversation: boolean;
-    /** Increments on every agent change — used by ChatContainer to trigger focus */
-    focusKey: number;
-    /** Opens the unified agent picker (bottom sheet on mobile, dialog on desktop) */
-    openAgentPicker: () => void;
-}
-
-const LayoutAgentContext = createContext<LayoutAgentContextValue | null>(null);
-
-export function useLayoutAgent(): LayoutAgentContextValue {
-    const ctx = useContext(LayoutAgentContext);
-    if (!ctx) {
-        return {
-            selectedAgent: DEFAULT_AGENT_CONFIG,
-            onAgentChange: () => {},
-            activeConversationId: null,
-            isLoadingConversation: false,
-            focusKey: 0,
-            openAgentPicker: () => {},
-        };
-    }
-    return ctx;
-}
 
 // ============================================================================
 // INNER SHELL — lives inside ChatProvider, manages URL-driven state
@@ -102,7 +32,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     } = useChatContext();
 
     const { loadConversation } = useChatPersistence();
-    const { userPrompts } = useAgentsContext();
+    const { userPrompts, sidebarEvents } = useAgentsContext();
 
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
     const [focusKey, setFocusKey] = useState(0);
@@ -111,18 +41,17 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     const loadedConversationRef = useRef<string | null>(null);
 
     // ── Derive URL state ──────────────────────────────────────────────────
-    const urlConversationId = useMemo(() => {
+    const urlConversationId = (() => {
         const match = pathname.match(/\/p\/chat\/c\/([^/?]+)/);
         if (!match) return null;
-        // Only accept valid UUIDs — prevents DB errors from malformed URLs
         return UUID_RE.test(match[1]) ? match[1] : null;
-    }, [pathname]);
+    })();
 
-    const urlAgentId = useMemo(() => {
+    const urlAgentId = (() => {
         const agentMatch = pathname.match(/\/p\/chat\/a\/([^/?]+)/);
         if (agentMatch) return agentMatch[1];
         return searchParams.get('agent');
-    }, [pathname, searchParams]);
+    })();
 
     const activeConversationId = urlConversationId;
 
@@ -155,26 +84,43 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         const resolved = resolveAgentFromId(urlAgentId, userPrompts);
         if (resolved) {
             setSelectedAgent(resolved);
-            // If navigating to a new agent route (not a conversation), reset chat
             if (!urlConversationId && state.messages.length > 0) {
                 startNewConversation();
             }
         }
     }, [urlAgentId, urlConversationId]);
 
+    // ── URL sync: when a new conversation is created, update URL immediately ─
+    // This runs at layout level so router.replace never remounts ChatContainer.
+    // The dbConversationId is set by ChatContainer on first message send, which
+    // triggers this effect and pushes the canonical URL without interrupting streaming.
+    useEffect(() => {
+        if (!state.dbConversationId) return;
+        if (urlConversationId === state.dbConversationId) return;
+        if (isLoadingConversation) return;
+
+        const params = new URLSearchParams();
+        if (selectedAgent.promptId) params.set('agent', selectedAgent.promptId);
+        const varsParam = searchParams.get('vars');
+        if (varsParam) params.set('vars', varsParam);
+        const qs = params.toString();
+
+        router.replace(`/p/chat/c/${state.dbConversationId}${qs ? `?${qs}` : ''}`);
+
+        // Notify sidebar that a new conversation exists
+        const title = state.messages[0]?.content?.trim().slice(0, 80) || selectedAgent.name || 'New Chat';
+        sidebarEvents.emit('conversation-created', { id: state.dbConversationId, title });
+    }, [state.dbConversationId]);
+
     // ── Conversation loading from URL ─────────────────────────────────────
     useEffect(() => {
         if (!urlConversationId) {
             loadedConversationRef.current = null;
-            // Reset loading state when navigating away from a conversation
-            // (e.g. "New Chat" while a load was in progress)
             setIsLoadingConversation(false);
             return;
         }
 
-        // This conversation was just created in the current session — the
-        // Python server is handling persistence and the messages are already
-        // in context. Skip the DB fetch.
+        // Already in context — Python server persisted it, messages are live.
         if (state.dbConversationId === urlConversationId) {
             loadedConversationRef.current = urlConversationId;
             return;
@@ -199,7 +145,6 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
             loadedConversationRef.current = urlConversationId;
 
-            // Convert DB messages to display format (pass tool calls for V2 resolution)
             const processedMessages = processDbMessagesForDisplay(data.messages, data.toolCalls);
             const chatMessages = processedMessages.map(msg => ({
                 id: msg.id || crypto.randomUUID(),
@@ -211,12 +156,10 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                 isCondensed: msg.isCondensed || undefined,
             }));
 
-            // Reset state and load messages
             startNewConversation();
             setDbConversationId(urlConversationId);
             setMessages(chatMessages);
 
-            // Resolve agent from ?agent= param if present
             const agentParam = searchParams.get('agent');
             if (agentParam) {
                 const resolved = resolveAgentFromId(agentParam, userPrompts);
@@ -229,7 +172,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         return () => { cancelled = true; };
     }, [urlConversationId, state.dbConversationId]);
 
-    // ── When we're on the base /p/chat route (no agent, no conversation), reset if needed
+    // ── Reset when navigating to base /p/chat ─────────────────────────────
     useEffect(() => {
         if (pathname === '/p/chat' && state.messages.length > 0 && !state.isStreaming) {
             startNewConversation();
@@ -237,62 +180,54 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         }
     }, [pathname]);
 
-    // ── Handler: Agent change (from sidebar, header, welcome buttons) ─────
-    const handleAgentChange = useCallback((agent: AgentConfig) => {
-        if (agent.promptId === selectedAgent.promptId && !activeConversationId) {
-            return; // Same agent, already on new chat
-        }
+    // ── Handler: Agent change ─────────────────────────────────────────────
+    const handleAgentChange = (agent: AgentConfig) => {
+        if (agent.promptId === selectedAgent.promptId && !activeConversationId) return;
         setSelectedAgent(agent);
         setAgent(agent);
         startNewConversation();
         loadedConversationRef.current = null;
         setIsLoadingConversation(false);
         setFocusKey(k => k + 1);
-        // Preserve vars mode across agent changes
         const varsParam = searchParams.get('vars');
         const qs = varsParam ? `?vars=${varsParam}` : '';
         router.push(`/p/chat/a/${agent.promptId}${qs}`);
-    }, [router, setAgent, startNewConversation, selectedAgent.promptId, activeConversationId, searchParams]);
+    };
 
     // ── Handler: Select existing chat from sidebar ────────────────────────
-    const handleSelectChat = useCallback((id: string) => {
-        // Preserve agent context in URL so reloads keep the agent selected
+    const handleSelectChat = (id: string) => {
         const params = new URLSearchParams();
-        if (selectedAgent.promptId) {
-            params.set('agent', selectedAgent.promptId);
-        }
+        if (selectedAgent.promptId) params.set('agent', selectedAgent.promptId);
         const qs = params.toString();
         router.push(`/p/chat/c/${id}${qs ? `?${qs}` : ''}`);
-    }, [router, selectedAgent.promptId]);
+    };
 
-    // ── Handler: New chat — preserves current agent and vars mode ─────────
-    const handleNewChat = useCallback(() => {
+    // ── Handler: New chat ─────────────────────────────────────────────────
+    const handleNewChat = () => {
         startNewConversation();
         loadedConversationRef.current = null;
         setIsLoadingConversation(false);
         const varsParam = searchParams.get('vars');
         const qs = varsParam ? `?vars=${varsParam}` : '';
         router.push(`/p/chat/a/${selectedAgent.promptId}${qs}`);
-    }, [router, selectedAgent.promptId, startNewConversation, searchParams]);
+    };
 
-    // ── Context value ─────────────────────────────────────────────────────
-    const openAgentPicker = useCallback(() => setIsAgentPickerOpen(true), []);
+    const openAgentPicker = () => setIsAgentPickerOpen(true);
 
-    const contextValue = useMemo<LayoutAgentContextValue>(() => ({
+    const contextValue: LayoutAgentContextValue = {
         selectedAgent,
         onAgentChange: handleAgentChange,
         activeConversationId,
         isLoadingConversation,
         focusKey,
         openAgentPicker,
-    }), [selectedAgent, handleAgentChange, activeConversationId, isLoadingConversation, focusKey, openAgentPicker]);
+    };
 
     return (
         <LayoutAgentContext.Provider value={contextValue}>
-            {/* Hide the public-layout header — ChatMobileHeader replaces it on all viewports */}
+            {/* Hide the public-layout header — ChatMobileHeader replaces it */}
             <style>{`[data-public-header]{display:none!important}`}</style>
 
-            {/* Unified agent picker — rendered once, opened from any trigger */}
             <AgentPickerSheet
                 open={isAgentPickerOpen}
                 onOpenChange={setIsAgentPickerOpen}
@@ -301,7 +236,6 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
             />
 
             <div className="h-full w-full relative">
-                {/* Floating transparent header — overlays content on all viewports */}
                 <ChatMobileHeader
                     onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
                     onNewChat={handleNewChat}
@@ -319,7 +253,6 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                     isOpen={isSidebarOpen}
                     onOpenChange={setIsSidebarOpen}
                 />
-                {/* Content fills full height — header floats on top */}
                 <div className="h-full">
                     {children}
                 </div>
@@ -336,16 +269,14 @@ export default function ChatLayoutShell({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Resolve initial agent from URL at mount time.
-    // This runs once — subsequent agent changes are handled by ChatLayoutInner.
+    // Resolve initial agent from URL at mount time only.
+    // Subsequent agent changes are handled by ChatLayoutInner.
     const [initialAgent] = useState<AgentConfig>(() => {
-        // Check /p/chat/a/[id]
         const agentMatch = pathname.match(/\/p\/chat\/a\/([^/?]+)/);
         if (agentMatch) {
             const resolved = resolveAgentFromId(agentMatch[1]);
             if (resolved) return resolved;
         }
-        // Check ?agent= param (for /p/chat/c/[id]?agent=xxx)
         const agentParam = searchParams.get('agent');
         if (agentParam) {
             const resolved = resolveAgentFromId(agentParam);

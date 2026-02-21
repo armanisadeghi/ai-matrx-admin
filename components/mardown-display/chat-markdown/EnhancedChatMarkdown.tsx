@@ -137,8 +137,14 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     toolUpdates: toolUpdatesProp,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [currentContent, setCurrentContent] = useState(content);
+    // null = no local edits; use the `content` prop directly.
+    // Set to a string only when the user explicitly edits (code, table, full-screen editor).
+    // This avoids the useEffect -> setState -> re-render cycle during streaming.
+    const [editedContent, setEditedContent] = useState<string | null>(null);
     const [hasError, setHasError] = useState(false);
+
+    // Derive the display content: prefer local edits over the incoming prop.
+    const currentContent = editedContent ?? content;
 
     // Check if we should show loading state (taskId exists but no content yet)
     const isWaitingForContent = taskId && !content.trim();
@@ -182,17 +188,15 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     // Use directly passed tool updates if provided, otherwise fall back to Redux
     const toolUpdates = toolUpdatesProp !== undefined ? toolUpdatesProp : toolUpdatesFromRedux;
 
-    // Update internal content when prop changes
-    // IMPORTANT: Only depend on `content` — including `currentContent` creates an infinite
-    // re-render loop when table content or other processing triggers additional state updates.
+    // When the incoming content prop changes (new stream / stream reset), clear any local edits
+    // so the component re-syncs to the authoritative prop value.
+    // We only do this during streaming (isStreamActive) to avoid clobbering intentional edits
+    // made after a stream has completed.
     useEffect(() => {
-        try {
-            setCurrentContent(content);
-        } catch (error) {
-            console.error("[MarkdownStream] Error updating content:", error);
-            setHasError(true);
+        if (isStreamActive) {
+            setEditedContent(null);
         }
-    }, [content]);
+    }, [isStreamActive]);
 
     // Memoize the content splitting to avoid unnecessary re-processing
     // Skip expensive processing if we're in loading state
@@ -281,13 +285,11 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     const handleCodeChange = useCallback(
         (newCode: string, originalCode: string) => {
             try {
-                // Replace the original code with new code in the full content
                 const updatedContent = currentContent.replace(originalCode, newCode);
-                setCurrentContent(updatedContent);
+                setEditedContent(updatedContent);
                 onContentChange?.(updatedContent);
             } catch (error) {
                 console.error("[MarkdownStream] Error in handleCodeChange:", error);
-                // Don't crash - just log the error
             }
         },
         [currentContent, onContentChange]
@@ -297,17 +299,13 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     const handleTableChange = useCallback(
         (updatedTableMarkdown: string, originalBlockContent: string) => {
             try {
-                // We need to find the original table in the markdown and replace it
                 if (onContentChange) {
-                    // This is a simplified approach - in a real implementation, you might need more sophisticated
-                    // parsing to correctly locate and replace the table in the full markdown content
                     const updatedContent = currentContent.replace(originalBlockContent, updatedTableMarkdown);
-                    setCurrentContent(updatedContent);
+                    setEditedContent(updatedContent);
                     onContentChange(updatedContent);
                 }
             } catch (error) {
                 console.error("[MarkdownStream] Error updating table content:", error);
-                // Don't crash - just log the error
             }
         },
         [currentContent, onContentChange]
@@ -317,11 +315,10 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
         (updatedBrokerContent: string, originalBrokerContent: string) => {
             try {
                 const updatedContent = currentContent.replace(originalBrokerContent, updatedBrokerContent);
-                setCurrentContent(updatedContent);
+                setEditedContent(updatedContent);
                 onContentChange?.(updatedContent);
             } catch (error) {
                 console.error("[MarkdownStream] Error in handleMatrxBrokerChange:", error);
-                // Don't crash - just log the error
             }
         },
         [currentContent, onContentChange]
@@ -347,7 +344,7 @@ export const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = 
     const handleSaveEdit = useCallback(
         (newContent: string) => {
             try {
-                setCurrentContent(newContent);
+                setEditedContent(newContent);
                 onContentChange?.(newContent);
                 setIsEditorOpen(false);
             } catch (error) {

@@ -35,6 +35,12 @@ interface ExecuteBuiltinWithCodeExtractionPayload {
   
   /** Optional: Timeout in milliseconds (default: 120000 = 2 minutes) */
   timeoutMs?: number;
+
+  /**
+   * Called as soon as the taskId is known (before streaming completes).
+   * Use this to wire up live streaming UI before the thunk resolves.
+   */
+  onTaskId?: (taskId: string) => void;
 }
 
 interface ExecuteBuiltinWithCodeExtractionResult {
@@ -64,10 +70,11 @@ function extractCodeFromResponse(response: string): string | null {
 
 /**
  * Wait for streaming to complete and return full response.
- * 
- * Includes socket health monitoring to detect disconnections early
- * instead of waiting for the full timeout to elapse. This is critical
- * for long-running operations where the browser tab may be backgrounded.
+ *
+ * The fetch layer (executeMessageFastAPIThunk) already handles stream stalls:
+ * if no bytes arrive for 45 seconds it aborts the connection and dispatches an
+ * error + markResponseEnd, which causes isEnded to flip to true here. We just
+ * need to wait for that signal and then read whatever text was accumulated.
  */
 async function waitForCompletion(
   runId: string,
@@ -75,61 +82,29 @@ async function waitForCompletion(
   timeoutMs: number = 120000
 ): Promise<string> {
   const startTime = Date.now();
-  let lastTextLength = 0;
-  let lastProgressTime = Date.now();
-  // If no new data arrives for this long AND socket is disconnected, fail fast
-  const STALE_THRESHOLD_MS = 30000;
-  
+
   return new Promise((resolve, reject) => {
     const checkInterval = setInterval(() => {
       const state = getState();
       const isEnded = selectIsResponseEndedForInstance(state, runId);
-      
+
       if (isEnded) {
         clearInterval(checkInterval);
         const fullResponse = selectStreamingTextForInstance(state, runId) || '';
         resolve(fullResponse);
         return;
       }
-      
-      // Track streaming progress to detect stalls
-      const currentText = selectStreamingTextForInstance(state, runId) || '';
-      if (currentText.length > lastTextLength) {
-        lastTextLength = currentText.length;
-        lastProgressTime = Date.now();
-      }
-      
-      // Early detection: if no new data for a while, check socket health
-      const timeSinceProgress = Date.now() - lastProgressTime;
-      if (timeSinceProgress > STALE_THRESHOLD_MS) {
-        try {
-          // Dynamic import to avoid circular deps - check socket health
-          const { SocketConnectionManager } = require('../../socket-io/connection/socketConnectionManager');
-          const socketManager = SocketConnectionManager.getInstance();
-          
-          if (!socketManager.isConnectionHealthy()) {
-            clearInterval(checkInterval);
-            reject(new Error(
-              'Lost connection to the server. This typically happens when the browser tab is in the background. ' +
-              'Please keep this tab active and try again.'
-            ));
-            return;
-          }
-        } catch {
-          // If we can't check socket health, fall through to timeout
-        }
-      }
-      
-      // Check timeout
+
       if (Date.now() - startTime > timeoutMs) {
         clearInterval(checkInterval);
         const elapsed = Math.round((Date.now() - startTime) / 1000);
         reject(new Error(
           `Timed out after ${elapsed} seconds waiting for AI response. ` +
-          'If you switched browser tabs during this process, that may have caused the connection to drop.'
+          'If you switched browser tabs during this process, that may have caused the connection to be suspended. ' +
+          'Please keep this tab active and try again.'
         ));
       }
-    }, 500); // Increased from 100ms to 500ms - more background-tab friendly while still responsive
+    }, 500);
   });
 }
 
@@ -162,7 +137,8 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
       builtinKey,
       variables,
       executionConfig = {},
-      timeoutMs = 120000
+      timeoutMs = 120000,
+      onTaskId,
     } = payload;
 
     let runId: string | null = null;
@@ -189,6 +165,9 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
 
       // Execute the message
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
+
+      // Notify caller immediately so live streaming UI can subscribe before waiting
+      onTaskId?.(taskId);
 
       // Wait for response to complete
       const fullResponse = await waitForCompletion(runId, getState, timeoutMs);

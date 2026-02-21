@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import {
     selectConversationMessages,
@@ -8,7 +9,8 @@ import {
     selectPromptSettings,
     selectPromptMessages,
     selectPromptVariables,
-    selectSelectedModelId
+    selectSelectedModelId,
+    setCurrentTaskId,
 } from '@/lib/redux/slices/promptEditorSlice';
 import { submitChatFastAPI as createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitChatFastAPI";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
@@ -40,6 +42,14 @@ export const PromptTestPanel: React.FC = () => {
     const isResponseEnded = useAppSelector((state) =>
         currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
     );
+
+    // When stream ends, add the completed message to conversation and clear taskId
+    useEffect(() => {
+        if (isResponseEnded && currentTaskId && streamingText) {
+            dispatch(addConversationMessage({ role: 'assistant', content: streamingText }));
+            dispatch(setCurrentTaskId(null));
+        }
+    }, [isResponseEnded, currentTaskId, streamingText, dispatch]);
 
     // Auto-scroll
     useEffect(() => {
@@ -88,32 +98,17 @@ export const PromptTestPanel: React.FC = () => {
         };
 
         try {
-            // Dispatch task
-            // We need to update the slice to store taskId
-            // But createAndSubmitTask returns a promise with taskId
-            // We need a thunk in promptEditorSlice to handle this cleanly and update state
-            // For now, I'll dispatch the socket action here and update local state via a thunk if possible
-            // or just use the result.
+            // Pre-generate taskId and set it in Redux BEFORE dispatch so the
+            // streaming UI mounts immediately and shows chunks as they arrive.
+            const taskId = uuidv4();
+            dispatch(setCurrentTaskId(taskId));
 
-            // Ideally, this logic should be in a thunk `runTestPrompt` in promptEditorSlice
-            // to keep component clean. But I'll do it here for expediency as I didn't define it fully in slice.
-            // Wait, I defined `testMode` in slice but not the thunk.
-            // I'll dispatch the socket thunk directly.
-
-            const result = await dispatch(createAndSubmitTask({
+            await dispatch(createAndSubmitTask({
                 service: "chat_service",
                 taskName: "direct_chat",
-                taskData: { chat_config: chatConfig }
+                taskData: { chat_config: chatConfig },
+                customTaskId: taskId,
             })).unwrap();
-
-            // I need to update currentTaskId in slice
-            // I'll add a reducer for it or just use local state if I didn't expose a reducer.
-            // I exposed `setTestModeActive` but not `setCurrentTaskId`.
-            // I'll add `setCurrentTaskId` to slice or just use `addConversationMessage` when done.
-            // Actually, I need `currentTaskId` in Redux to select streaming text.
-            // I'll add a temporary action or use what I have.
-            // I missed adding `setCurrentTaskId` action in slice.
-            // I'll add it now via `multi_replace_file_content` to `promptEditorSlice.ts`.
         } catch (error) {
             console.error("Failed to send message", error);
         }

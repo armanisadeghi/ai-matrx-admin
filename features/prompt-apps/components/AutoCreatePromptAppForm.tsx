@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { TailwindColorPicker } from '@/components/ui/TailwindColorPicker';
+import { Badge } from '@/components/ui/badge';
 import {
   MessageSquare,
   FileText,
@@ -23,7 +24,10 @@ import {
   ListOrdered,
   Loader2,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Copy,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatTitleCase } from '@/utils/text/text-case-converter';
@@ -31,8 +35,10 @@ import { generateBuiltinVariables, FormatType, DisplayMode, ResponseMode } from 
 import { useAutoCreateApp, type AutoCreateMode } from '../hooks/useAutoCreateApp';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
-import { AutoCreateDebugView } from './AutoCreateDebugView';
+import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { VoiceTextarea } from '@/features/audio';
+import MarkdownStream from '@/components/MarkdownStream';
+import { toast } from 'sonner';
 
 interface AutoCreatePromptAppFormProps {
   prompt?: any;
@@ -55,6 +61,8 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   const [additionalComments, setAdditionalComments] = useState('');
   const [describeText, setDescribeText] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [errorModelResponse, setErrorModelResponse] = useState<string | null>(null);
+  const [showFullResponse, setShowFullResponse] = useState(false);
   const [useLightningMode, setUseLightningMode] = useState(false);
 
   // Track which variables are included in UI (true) vs using defaults (false)
@@ -83,16 +91,29 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   }
 
   // Auto-create hook
-  const { createApp, retry, isCreating, progress, codeTaskId, metadataTaskId, wasBackgrounded, canRetry } = useAutoCreateApp({
+  const { createApp, retry, isCreating, progress, codeTaskId, metadataTaskId, wasBackgrounded, canRetry, errorFullResponse, activeStage } = useAutoCreateApp({
     onSuccess: (appId) => {
       console.log('[AutoCreatePromptAppForm] App created successfully:', appId);
       onSuccess?.();
     },
-    onError: (errorMessage) => {
+    onError: (errorMessage, fullResponse) => {
       console.error('[AutoCreatePromptAppForm] Error creating app:', errorMessage);
       setError(errorMessage);
+      setErrorModelResponse(fullResponse ?? null);
+      setShowFullResponse(false);
     },
   });
+
+  // Live streaming text from Redux — same pattern as AutoCreateDebugView
+  const liveCodeText = useAppSelector((state) =>
+    codeTaskId ? selectPrimaryResponseTextByTaskId(codeTaskId)(state) : ''
+  );
+  const liveMetadataText = useAppSelector((state) =>
+    metadataTaskId ? selectPrimaryResponseTextByTaskId(metadataTaskId)(state) : ''
+  );
+  const isCodeStreamEnded = useAppSelector((state) =>
+    codeTaskId ? selectPrimaryResponseEndedByTaskId(codeTaskId)(state) : false
+  );
 
   // Extract variables from prompt
   const promptVariables = prompt?.variable_defaults || [];
@@ -111,6 +132,8 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
   useEffect(() => {
     setCreationMode('initial');
     setError(null);
+    setErrorModelResponse(null);
+    setShowFullResponse(false);
   }, [prompt?.id]);
 
   const handleSubmit = async () => {
@@ -208,53 +231,106 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
 
   // Show loading screen while creating app
   if (isCreating) {
-    // Debug mode: show live streaming
-    if (isDebugMode && (codeTaskId || metadataTaskId)) {
-      return <AutoCreateDebugView codeTaskId={codeTaskId} metadataTaskId={metadataTaskId} progress={progress} />;
-    }
-
-    // Normal mode: show spinner with background tab warning
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8">
-            <div className="space-y-6">
-              {/* Loading spinner */}
-              <div className="flex justify-center">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                    <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                  </div>
-                </div>
-              </div>
+      <div className="space-y-3 w-full">
+        {/* Compact sticky header bar */}
+        <div className="flex items-center gap-3 py-2 border-b border-border">
+          <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />
+          <span className="text-sm font-medium flex-1 truncate">{progress}</span>
+          {/* Stage pills */}
+          <div className="flex items-center gap-1.5 text-xs flex-shrink-0">
+            <span className={cn(
+              'flex items-center gap-1 px-2 py-0.5 rounded-full',
+              activeStage === 'metadata'
+                ? 'bg-primary/10 text-primary'
+                : metadataTaskId
+                ? 'bg-success/10 text-success'
+                : 'bg-muted text-muted-foreground'
+            )}>
+              {metadataTaskId && activeStage !== 'metadata'
+                ? <Check className="w-3 h-3" />
+                : activeStage === 'metadata'
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : <span className="w-3 h-3 rounded-full border border-current inline-block" />
+              }
+              Metadata
+            </span>
+            <ChevronRight className="w-3 h-3 text-muted-foreground" />
+            <span className={cn(
+              'flex items-center gap-1 px-2 py-0.5 rounded-full',
+              activeStage === 'code'
+                ? 'bg-primary/10 text-primary'
+                : isCodeStreamEnded
+                ? 'bg-success/10 text-success'
+                : 'bg-muted text-muted-foreground'
+            )}>
+              {isCodeStreamEnded
+                ? <Check className="w-3 h-3" />
+                : activeStage === 'code'
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : <span className="w-3 h-3 rounded-full border border-current inline-block" />
+              }
+              Code
+            </span>
+          </div>
+        </div>
 
-              {/* Progress text */}
-              <div className="text-center space-y-2">
-                <h3 className="text-xl font-semibold">Creating Your App</h3>
-                <p className="text-muted-foreground">{progress}</p>
-              </div>
+        {/* Thin progress bar */}
+        <div className="w-full bg-muted rounded-full h-1 overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-primary to-secondary animate-pulse w-full" />
+        </div>
 
-              {/* Progress indicator */}
-              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-primary to-secondary animate-pulse" style={{ width: '100%' }} />
-              </div>
+        {/* Background tab warning */}
+        {wasBackgrounded && (
+          <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-amber-800 dark:text-amber-200">
+              Tab was backgrounded — keep this tab visible to prevent the connection from being suspended.
+            </p>
+          </div>
+        )}
 
-              <p className="text-xs text-center text-muted-foreground">
-                This may take 1-2 minutes. Please keep this tab active.
-              </p>
+        {/* Metadata panel — always shown once metadataTaskId is set */}
+        {metadataTaskId && (
+          <StreamPanel
+            label="App metadata"
+            taskLabel={isDebugMode ? metadataTaskId : undefined}
+            text={liveMetadataText}
+            isActive={activeStage === 'metadata'}
+            isComplete={activeStage !== 'metadata'}
+          />
+        )}
 
-              {/* Background tab warning */}
-              {wasBackgrounded && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-800 dark:text-amber-200">
-                    Connection was briefly interrupted. Attempting to recover...
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Waiting for metadata to start */}
+        {!metadataTaskId && activeStage === 'metadata' && (
+          <div className="flex items-center gap-2 py-3 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Initializing metadata generation...
+          </div>
+        )}
+
+        {/* Code panel — appended below metadata once code stage starts */}
+        {codeTaskId && (
+          <StreamPanel
+            label="Component code"
+            taskLabel={isDebugMode ? codeTaskId : undefined}
+            text={liveCodeText}
+            isActive={activeStage === 'code'}
+            isComplete={isCodeStreamEnded}
+          />
+        )}
+
+        {/* Waiting for code to start (metadata done, code not yet) */}
+        {metadataTaskId && !codeTaskId && activeStage === 'code' && (
+          <div className="flex items-center gap-2 py-3 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Initializing code generation...
+          </div>
+        )}
+
+        <p className="text-xs text-center text-muted-foreground pt-1">
+          This may take 1–2 minutes. Please keep this tab active and visible.
+        </p>
       </div>
     );
   }
@@ -360,25 +436,14 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
 
           {/* Error Message */}
           {error && (
-            <Card className="border-destructive bg-destructive/10">
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
-                  <p className="text-destructive font-semibold text-sm">{error}</p>
-                </div>
-                {canRetry && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={retry}
-                    className="gap-2"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Try Again
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <ErrorCard
+              error={error}
+              fullResponse={errorModelResponse}
+              showFullResponse={showFullResponse}
+              onToggleFullResponse={() => setShowFullResponse(v => !v)}
+              canRetry={canRetry}
+              onRetry={retry}
+            />
           )}
           <div className="text-center space-y-2">
             <h2 className="text-3xl font-bold">
@@ -465,25 +530,14 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
 
       {/* Error Message */}
       {error && (
-        <Card className="border-destructive bg-destructive/10">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
-              <p className="text-destructive font-semibold text-sm">{error}</p>
-            </div>
-            {canRetry && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={retry}
-                className="gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Try Again
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <ErrorCard
+          error={error}
+          fullResponse={errorModelResponse}
+          showFullResponse={showFullResponse}
+          onToggleFullResponse={() => setShowFullResponse(v => !v)}
+          canRetry={canRetry}
+          onRetry={retry}
+        />
       )}
 
       {/* Heading with Prompt Name */}
@@ -1099,6 +1153,135 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
         </div>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// StreamPanel — live streaming output for one generation stage
+// ---------------------------------------------------------------------------
+
+interface StreamPanelProps {
+  label: string;
+  taskLabel?: string;
+  text: string;
+  isActive: boolean;
+  isComplete: boolean;
+}
+
+function StreamPanel({ label, taskLabel, text, isActive, isComplete }: StreamPanelProps) {
+  return (
+    <Card className={cn('overflow-hidden transition-colors', isActive && 'border-primary/40')}>
+      <div className={cn(
+        'flex items-center justify-between px-3 py-2 border-b text-xs',
+        isActive ? 'bg-primary/5' : 'bg-muted/40'
+      )}>
+        <div className="flex items-center gap-2">
+          {isActive
+            ? <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+            : isComplete
+            ? <Check className="w-3.5 h-3.5 text-success" />
+            : <Code2 className="w-3.5 h-3.5 text-muted-foreground" />
+          }
+          <span className={cn('font-medium', isActive ? 'text-primary' : isComplete ? 'text-success' : 'text-muted-foreground')}>
+            {label}
+          </span>
+          {text && (
+            <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+              {text.length.toLocaleString()} chars
+            </Badge>
+          )}
+        </div>
+        {taskLabel && (
+          <span className="font-mono text-[10px] text-muted-foreground truncate max-w-[200px]">{taskLabel}</span>
+        )}
+      </div>
+      <CardContent className="p-0">
+        {text ? (
+          <div className="p-3">
+            <MarkdownStream content={text} isStreamActive={isActive} hideCopyButton />
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Waiting for response...
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ErrorCard — shown when app creation fails
+// ---------------------------------------------------------------------------
+
+interface ErrorCardProps {
+  error: string;
+  fullResponse: string | null;
+  showFullResponse: boolean;
+  onToggleFullResponse: () => void;
+  canRetry: boolean;
+  onRetry: () => void;
+}
+
+function ErrorCard({ error, fullResponse, showFullResponse, onToggleFullResponse, canRetry, onRetry }: ErrorCardProps) {
+  const hasFullResponse = !!fullResponse;
+
+  const handleCopy = () => {
+    if (fullResponse) {
+      navigator.clipboard.writeText(fullResponse);
+      toast.success('Copied model response to clipboard');
+    }
+  };
+
+  return (
+    <Card className="border-destructive bg-destructive/5">
+      <CardContent className="p-4 space-y-3">
+        {/* Error headline */}
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+          <p className="text-destructive font-semibold text-sm leading-snug">{error}</p>
+        </div>
+
+        {/* Full model response — only shown when code extraction failed */}
+        {hasFullResponse && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={onToggleFullResponse}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showFullResponse ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showFullResponse ? 'Hide' : 'Show'} model response
+                <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-1">
+                  {fullResponse.length.toLocaleString()} chars
+                </Badge>
+              </button>
+              {showFullResponse && (
+                <Button variant="ghost" size="sm" onClick={handleCopy} className="h-6 px-2 text-xs gap-1">
+                  <Copy className="w-3 h-3" />
+                  Copy
+                </Button>
+              )}
+            </div>
+
+            {showFullResponse && (
+              <div className="rounded-md border border-border bg-muted/30 max-h-[400px] overflow-y-auto p-3">
+                <MarkdownStream content={fullResponse} isStreamActive={false} hideCopyButton />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Actions */}
+        {canRetry && (
+          <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

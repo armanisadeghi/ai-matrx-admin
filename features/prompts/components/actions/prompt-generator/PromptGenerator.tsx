@@ -146,18 +146,16 @@ export function PromptGenerator({
         ...prompt.settings
       };
 
-      // 5. Submit task via Socket.IO
+      // 5. Submit task — set taskId BEFORE dispatch so streaming UI mounts immediately
       const taskId = uuidv4();
-      
-      const result = await dispatch(createAndSubmitTask({
+      setCurrentTaskId(taskId);
+
+      await dispatch(createAndSubmitTask({
         service: 'chat_service',
         taskName: 'direct_chat',
         taskData: { chat_config: chatConfig },
         customTaskId: taskId
       })).unwrap();
-
-      // Store the taskId for streaming
-      setCurrentTaskId(result.taskId);
       
     } catch (error) {
       console.error('Generation error:', error);

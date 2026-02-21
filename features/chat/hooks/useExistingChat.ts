@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch } from "@/lib/redux";
@@ -69,7 +70,17 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
           if (result && result.success) {
             const message = result.messageData.data;
     
-            const { taskId } = await dispatch(
+            // Pre-generate taskId and store it in Redux BEFORE dispatch so the
+          // streaming UI mounts immediately and shows chunks as they arrive.
+          const taskId = uuidv4();
+          dispatch(
+              chatActions.updateConversationCustomData({
+                keyOrId: conversationId,
+                customData: { taskId },
+              })
+          );
+
+          await dispatch(
               createAndSubmitTask({
                 service: "chat_service",
                 taskName: "ai_chat",
@@ -77,15 +88,9 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
                   conversation_id: conversationId,
                   message_object: message,
                 },
+                customTaskId: taskId,
               })
             ).unwrap();
-    
-            dispatch(
-              chatActions.updateConversationCustomData({
-                keyOrId: conversationId,
-                customData: { taskId },
-              })
-            );
         
             if (DEBUG) console.log("USE EXISTING CHAT: Task created and submitted with taskId:", taskId, "for conversationId:", conversationId);
             return true;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
 import type { StreamEvent, DataPayload, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
@@ -61,19 +61,18 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         };
     }, []);
 
-    const getBackendUrl = useCallback(() => {
+    const getBackendUrl = () => {
         if (isAdmin && state.useLocalhost) {
             return BACKEND_URLS.localhost;
         }
         return BACKEND_URLS.production;
-    }, [isAdmin, state.useLocalhost]);
+    };
 
-    const warmAgent = useCallback(async (promptId: string) => {
+    const warmAgent = async (promptId: string) => {
         try {
             const BACKEND_URL = getBackendUrl();
             if (BACKEND_URL.includes('localhost')) return;
 
-            // No request body — agent_id goes in the URL path
             const warmUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`;
             console.log('[useAgentChat] warmAgent →', warmUrl);
 
@@ -82,9 +81,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         } catch (err) {
             console.warn('[useAgentChat] warmAgent failed (non-critical):', err);
         }
-    }, [getBackendUrl]);
+    };
 
-    const sendMessage = useCallback(async ({ content, variables = {}, resources = [] }: SendMessageParams) => {
+    const sendMessage = async ({ content, variables = {}, resources = [] }: SendMessageParams) => {
         if (!state.currentAgent) {
             setError({ type: 'config_error', message: 'No agent configured' });
             return false;
@@ -147,8 +146,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             const agentRequest: AgentExecuteRequestWithContent = {
                 prompt_id: promptId,
-                // Always pass the conversation_id — generated client-side on first turn
-                // (server uses it), echoed back from server on all turns via stream.
                 conversation_id: state.conversationId,
                 user_input: userInput,
                 variables: Object.keys(variables).length > 0 ? variables : undefined,
@@ -192,7 +189,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 throw new Error('No response body from Agent API');
             }
 
-            // Parse NDJSON stream using the shared parser
             const { events, requestId } = parseNdjsonStream(response, abortControllerRef.current.signal);
             serverRequestIdRef.current = requestId;
 
@@ -204,11 +200,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
                 switch (event.event) {
                     case 'data': {
-                        // Capture conversation_id streamed back by the server (always 2nd event).
-                        const dataPayload = event.data as unknown as DataPayload;
+                        const dataPayload = event.data as DataPayload;
                         if (dataPayload.event === 'conversation_id' && dataPayload.conversation_id) {
                             const serverId = dataPayload.conversation_id as string;
-                            // Sync context if server assigned a different ID
                             if (serverId !== state.conversationId) {
                                 setDbConversationId(serverId);
                                 console.log('[useAgentChat] server conversation_id:', serverId);
@@ -230,23 +224,17 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                         break;
                     }
                     case 'completion': {
-                        // Completion event carries final output and usage stats.
-                        // The accumulated chunks already have the full text, so
-                        // we only use completion for metadata/stats if needed.
                         const _completion = event.data as unknown as CompletionPayload;
                         void _completion;
                         break;
                     }
                     case 'heartbeat':
-                        // Connection keepalive — no action needed
                         break;
                     case 'end': {
                         const _endData = event.data as unknown as EndPayload;
                         void _endData;
                         break;
                     }
-                    // status_update, tool_event, broker — stored in streamEventsRef
-                    // and forwarded via onStreamEvent for downstream rendering
                 }
             }
 
@@ -278,31 +266,13 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             setStreaming(false);
             abortControllerRef.current = null;
         }
-    }, [
-        state.currentAgent,
-        state.conversationId,
-        state.modelOverride,
-        state.settings,
-        state.messages.length,
-        waitForAuth,
-        getHeaders,
-        addMessage,
-        updateMessage,
-        setStreaming,
-        setExecuting,
-        setError,
-        setDbConversationId,
-        getBackendUrl,
-        options,
-    ]);
+    };
 
-    const cancelRequest = useCallback(async () => {
-        // Client-side abort (immediate stream teardown)
+    const cancelRequest = async () => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
 
-        // Server-side cancel (graceful iteration-boundary stop)
         const requestId = serverRequestIdRef.current;
         if (requestId) {
             try {
@@ -316,11 +286,9 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 // Best-effort — don't block the UI if cancel fails
             }
         }
-    }, [getBackendUrl, getHeaders]);
+    };
 
-    const getStreamEvents = useCallback(() => {
-        return streamEventsRef.current;
-    }, []);
+    const getStreamEvents = () => streamEventsRef.current;
 
     return {
         sendMessage,

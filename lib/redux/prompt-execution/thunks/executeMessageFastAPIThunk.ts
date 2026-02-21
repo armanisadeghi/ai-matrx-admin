@@ -59,6 +59,11 @@ interface ExecuteMessageFastAPIPayload {
   runId: string;
   /** Client-generated UUID for the conversation. Generated here if not provided. */
   conversationId?: string;
+  /**
+   * External AbortSignal — callers can pass their own controller to cancel the
+   * fetch early (e.g. when a stall is detected by the polling loop above).
+   */
+  signal?: AbortSignal;
 }
 
 export const executeMessageFastAPI = createAsyncThunk<
@@ -67,7 +72,7 @@ export const executeMessageFastAPI = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >(
   'promptExecution/executeMessageFastAPI',
-  async ({ chatConfig, taskId, runId, conversationId: providedConversationId }, { dispatch, getState }) => {
+  async ({ chatConfig, taskId, runId, conversationId: providedConversationId, signal: externalSignal }, { dispatch, getState }) => {
     const conversationId = providedConversationId || uuidv4();
     const state = getState();
     const accessToken = selectAccessToken(state);
@@ -179,14 +184,63 @@ export const executeMessageFastAPI = createAsyncThunk<
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
+    // --- Abort / stall detection setup ---
+    // We use two signals merged together:
+    //   1. externalSignal  — caller-supplied (e.g. from the polling loop above)
+    //   2. stall controller — aborts after STALL_TIMEOUT_MS with no new bytes
+    //
+    // Browser tabs that go to background can suspend ReadableStream reads
+    // without throwing any error, causing the stream to hang silently forever.
+    // The stall detector resets every time a chunk arrives; if it fires, we
+    // abort the fetch and surface a clear error.
+    const STALL_TIMEOUT_MS = 45_000; // 45s without any chunk = consider it dead
+    const stallController = new AbortController();
+
+    let stallTimer: ReturnType<typeof setTimeout> | null = null;
+    const resetStallTimer = () => {
+      if (stallTimer !== null) clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        const hiddenSuffix =
+          typeof document !== 'undefined' && document.visibilityState === 'hidden'
+            ? ' The browser tab was in the background, which likely caused the stream to be suspended.'
+            : '';
+        stallController.abort(
+          new Error(
+            `Stream stalled — no data received for ${STALL_TIMEOUT_MS / 1000} seconds.${hiddenSuffix} Please keep this tab active and try again.`,
+          ),
+        );
+      }, STALL_TIMEOUT_MS);
+    };
+    const clearStallTimer = () => {
+      if (stallTimer !== null) {
+        clearTimeout(stallTimer);
+        stallTimer = null;
+      }
+    };
+
+    // Merge external signal + stall signal into one
+    const mergedController = new AbortController();
+    const forwardAbort = () => mergedController.abort(stallController.signal.reason);
+    stallController.signal.addEventListener('abort', forwardAbort);
+    externalSignal?.addEventListener('abort', () => mergedController.abort(externalSignal.reason));
+    // If the merged controller itself is already aborted (edge case), propagate
+    if (externalSignal?.aborted) mergedController.abort(externalSignal.reason);
+
     let response: Response;
     try {
+      resetStallTimer(); // start the stall clock before the initial request
       response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
+        signal: mergedController.signal,
+        // keepalive keeps the connection alive even when the tab is backgrounded
+        keepalive: true,
       });
+      resetStallTimer(); // reset after headers arrive, stream hasn't started yet
     } catch (networkError) {
+      clearStallTimer();
+      stallController.signal.removeEventListener('abort', forwardAbort);
       const errMsg = networkError instanceof Error ? networkError.message : 'Network error';
       dispatch(updateErrorResponse({
         listenerId,
@@ -198,6 +252,8 @@ export const executeMessageFastAPI = createAsyncThunk<
     }
 
     if (!response.ok) {
+      clearStallTimer();
+      stallController.signal.removeEventListener('abort', forwardAbort);
       const apiError = await parseHttpError(response);
       dispatch(updateErrorResponse({
         listenerId,
@@ -212,11 +268,13 @@ export const executeMessageFastAPI = createAsyncThunk<
       throw apiError;
     }
 
-    const { events } = parseNdjsonStream(response);
+    const { events } = parseNdjsonStream(response, mergedController.signal);
     let isFirstChunk = true;
 
     try {
       for await (const event of events) {
+        // Any incoming event proves the stream is alive — reset the stall clock
+        resetStallTimer();
         switch (event.event) {
           case 'chunk': {
             if (isFirstChunk) {
@@ -303,7 +361,18 @@ export const executeMessageFastAPI = createAsyncThunk<
       }
     } catch (streamError) {
       if (streamError instanceof Error && streamError.name === 'AbortError') {
-        // User cancelled
+        // Stall-triggered abort or external cancel — surface the reason as an error
+        const reason = stallController.signal.reason ?? externalSignal?.reason;
+        const errMsg =
+          reason instanceof Error
+            ? reason.message
+            : typeof reason === 'string'
+            ? reason
+            : 'Stream was aborted';
+        dispatch(updateErrorResponse({
+          listenerId,
+          error: { message: errMsg, type: 'stream_stall' },
+        }));
       } else {
         const errMsg = streamError instanceof Error ? streamError.message : 'Stream error';
         dispatch(updateErrorResponse({
@@ -311,6 +380,9 @@ export const executeMessageFastAPI = createAsyncThunk<
           error: { message: errMsg, type: 'stream_error' },
         }));
       }
+    } finally {
+      clearStallTimer();
+      stallController.signal.removeEventListener('abort', forwardAbort);
     }
 
     dispatch(setTaskStreaming({ taskId, isStreaming: false }));

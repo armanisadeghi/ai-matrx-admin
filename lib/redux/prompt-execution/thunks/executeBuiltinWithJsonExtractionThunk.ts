@@ -10,6 +10,11 @@ interface ExecuteBuiltinWithJsonExtractionPayload {
   variables: Record<string, string>;
   timeoutMs?: number;
   pollingIntervalMs?: number;
+  /**
+   * Called as soon as the taskId is known (before streaming completes).
+   * Use this to wire up live streaming UI before the thunk resolves.
+   */
+  onTaskId?: (taskId: string) => void;
 }
 
 interface ExecuteBuiltinWithJsonExtractionResult<T = any> {
@@ -59,7 +64,7 @@ export const executeBuiltinWithJsonExtraction = createAsyncThunk<
   }
 >(
   'promptExecution/executeBuiltinWithJsonExtraction',
-  async ({ builtinKey, variables, timeoutMs = 120000, pollingIntervalMs = 100 }, { dispatch, getState }) => {
+  async ({ builtinKey, variables, timeoutMs = 120000, pollingIntervalMs = 100, onTaskId }, { dispatch, getState }) => {
     let runId: string | null = null;
     try {
       // 1. Start the prompt instance
@@ -80,50 +85,31 @@ export const executeBuiltinWithJsonExtraction = createAsyncThunk<
       // 2. Execute the message (no user input, just trigger the prompt)
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
 
-      // 3. Wait for completion and get full response
-      // Uses socket health monitoring to detect disconnections early
+      // Notify caller immediately so live streaming UI can subscribe before waiting
+      onTaskId?.(taskId);
+
+      // 3. Wait for completion and get full response.
+      //
+      // The fetch layer (executeMessageFastAPIThunk) handles stream stalls:
+      // if no bytes arrive for 45 seconds it aborts and dispatches markResponseEnd,
+      // which causes isResponseEnded to flip here. We just wait for that signal.
       const startTime = Date.now();
       let fullResponse = '';
       let isResponseEnded = false;
-      let lastTextLength = 0;
-      let lastProgressTime = Date.now();
-      const STALE_THRESHOLD_MS = 30000; // 30s without progress = check socket health
 
       while (!isResponseEnded && (Date.now() - startTime < timeoutMs)) {
         await new Promise(resolve => setTimeout(resolve, Math.max(pollingIntervalMs, 500)));
         const state = getState();
         fullResponse = selectStreamingTextForInstance(state, runId);
         isResponseEnded = selectIsResponseEndedForInstance(state, runId);
-
-        // Track streaming progress
-        if (fullResponse.length > lastTextLength) {
-          lastTextLength = fullResponse.length;
-          lastProgressTime = Date.now();
-        }
-
-        // Early detection: if stalled, check socket health
-        if (!isResponseEnded && (Date.now() - lastProgressTime > STALE_THRESHOLD_MS)) {
-          try {
-            const { SocketConnectionManager } = require('../../socket-io/connection/socketConnectionManager');
-            const socketManager = SocketConnectionManager.getInstance();
-            if (!socketManager.isConnectionHealthy()) {
-              throw new Error(
-                'Lost connection to the server. This typically happens when the browser tab is in the background. ' +
-                'Please keep this tab active and try again.'
-              );
-            }
-          } catch (healthError: any) {
-            if (healthError.message.includes('Lost connection')) throw healthError;
-            // If we can't check socket health, fall through to timeout
-          }
-        }
       }
 
       if (!isResponseEnded) {
         const elapsed = Math.round((Date.now() - startTime) / 1000);
         throw new Error(
           `AI response timed out after ${elapsed} seconds. ` +
-          'If you switched browser tabs during this process, that may have caused the connection to drop.'
+          'If you switched browser tabs during this process, that may have caused the connection to be suspended. ' +
+          'Please keep this tab active and try again.'
         );
       }
 

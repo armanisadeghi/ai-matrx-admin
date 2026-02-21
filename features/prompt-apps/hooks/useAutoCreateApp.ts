@@ -26,7 +26,7 @@ export type AutoCreateMode = 'standard' | 'lightning';
 
 interface UseAutoCreateAppOptions {
   onSuccess?: (appId: string) => void;
-  onError?: (error: string) => void;
+  onError?: (error: string, fullResponse?: string) => void;
 }
 
 interface AutoCreateAppData {
@@ -81,6 +81,12 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
   const [metadataTaskId, setMetadataTaskId] = useState<string | null>(null);
   const [wasBackgrounded, setWasBackgrounded] = useState(false);
   const [lastAttemptData, setLastAttemptData] = useState<AutoCreateAppData | null>(null);
+  /** Full raw model response when code extraction fails — shown to user for diagnosis */
+  const [errorFullResponse, setErrorFullResponse] = useState<string | null>(null);
+  /** Which stage is currently active: 'metadata' | 'code' | null */
+  const [activeStage, setActiveStage] = useState<'metadata' | 'code' | null>(null);
+  // Ref so the catch block can read the latest value synchronously
+  const errorFullResponseRef = useRef<string | null>(null);
 
   // Refs for tracking background state during async operations
   const isCreatingRef = useRef(false);
@@ -133,6 +139,12 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
     const releaseLock = await acquireWebLock('auto-create-prompt-app');
 
     try {
+      setErrorFullResponse(null);
+      errorFullResponseRef.current = null;
+      setMetadataTaskId(null);
+      setCodeTaskId(null);
+      setActiveStage('metadata');
+
       // Generate metadata first (fast)
       setProgress('Generating app metadata with AI...');
       
@@ -142,14 +154,10 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
           prompt_config: data.builtinVariables.prompt_object,
         },
         timeoutMs: 180000,
+        onTaskId: (id) => setMetadataTaskId(id),
       })).unwrap();
       
-      if (metadataResult.taskId) {
-        setMetadataTaskId(metadataResult.taskId);
-      }
-      
       if (!metadataResult.success) {
-        // Check if this was likely a background tab issue
         const failureContext = tabWasHiddenDuringCreation.current
           ? ' This may have failed because the browser tab was in the background. Please keep this tab active during app creation.'
           : '';
@@ -159,6 +167,7 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       const metadata: AppMetadata = metadataResult.data;
       
       // Generate code second (slow - this is the most vulnerable to background tab issues)
+      setActiveStage('code');
       setProgress('Generating app code with AI (this takes 1-2 minutes)...');
       
       const codeBuiltinKey = data.mode === 'lightning' 
@@ -169,13 +178,15 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
         builtinKey: codeBuiltinKey,
         variables: data.builtinVariables,
         timeoutMs: 300000,
+        onTaskId: (id) => setCodeTaskId(id),
       })).unwrap();
       
-      if (codeResult.taskId) {
-        setCodeTaskId(codeResult.taskId);
-      }
-      
       if (!codeResult.success) {
+        // Capture the full response so the UI can show what the model actually said
+        const rawResponse = codeResult.fullResponse ?? null;
+        errorFullResponseRef.current = rawResponse;
+        setErrorFullResponse(rawResponse);
+
         const failureContext = tabWasHiddenDuringCreation.current
           ? ' This may have failed because the browser tab was in the background. Please keep this tab active during app creation.'
           : '';
@@ -295,12 +306,15 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       }
       
       console.error('[AutoCreateApp] Creation failed:', errorMessage);
-      onErrorRef.current?.(errorMessage);
+      // Pass the full response (if any) so the UI can show what the model actually returned
+      const capturedFullResponse = errorFullResponseRef.current;
+      onErrorRef.current?.(errorMessage, capturedFullResponse ?? undefined);
       
       // ALWAYS reset creating state so the UI never gets stuck
       setIsCreating(false);
       isCreatingRef.current = false;
       setProgress('');
+      setActiveStage(null);
       return null;
     } finally {
       // ALWAYS release the web lock and reset refs
@@ -324,6 +338,10 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
     metadataTaskId,
     wasBackgrounded,
     canRetry: !isCreating && lastAttemptData !== null,
+    /** Raw model response when code extraction fails — display to user for diagnosis */
+    errorFullResponse,
+    /** Which generation stage is currently active */
+    activeStage,
   };
 }
 

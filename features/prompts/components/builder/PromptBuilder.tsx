@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
 import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -716,17 +717,20 @@ export function PromptBuilder({ models, initialData, availableTools, accessInfo 
             // The right panel will display the streaming text using the taskId.
             // We only add the final message when streaming completes.
 
-            // Submit the task using socket
-            const result = await dispatch(createAndSubmitTask({
+            // Pre-generate taskId and set it BEFORE dispatch so the streaming UI
+            // mounts immediately and shows chunks as they arrive.
+            const taskId = uuidv4();
+            setCurrentTaskId(taskId);
+
+            // Submit the task using FastAPI
+            await dispatch(createAndSubmitTask({
                 service: "chat_service",
                 taskName: "direct_chat",
                 taskData: {
                     chat_config: chatConfig
-                }
+                },
+                customTaskId: taskId,
             })).unwrap();
-
-            // Store the taskId for streaming
-            setCurrentTaskId(result.taskId);
             
         } catch (error) {
             console.error("Error testing prompt:", error);

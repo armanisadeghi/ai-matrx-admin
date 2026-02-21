@@ -106,7 +106,7 @@ export function useModelControls(models: any[], selectedModelId: string) {
             normalizedControls: {
                 rawControls: {},
                 unmappedControls: {},
-            },
+            } as NormalizedControls,
             selectedModel,
             error: null,
         };
@@ -123,7 +123,7 @@ export function useModelControls(models: any[], selectedModelId: string) {
                 normalizedControls: {
                     rawControls: {},
                     unmappedControls: {},
-                },
+                } as NormalizedControls,
                 selectedModel,
                 error: `Invalid controls JSON for model: ${selectedModel.name}`,
             };
@@ -136,7 +136,7 @@ export function useModelControls(models: any[], selectedModelId: string) {
             normalizedControls: {
                 rawControls: {},
                 unmappedControls: {},
-            },
+            } as NormalizedControls,
             selectedModel,
             error: null,
         };

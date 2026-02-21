@@ -117,18 +117,16 @@ export function SystemPromptOptimizer({
         ...prompt.settings
       };
 
-      // 4. Submit task via Socket.IO - EXACTLY like PromptRunner
+      // 4. Submit task — set taskId BEFORE dispatch so streaming UI mounts immediately
       const taskId = uuidv4();
-      
-      const result = await dispatch(createAndSubmitTask({
+      setCurrentTaskId(taskId);
+
+      await dispatch(createAndSubmitTask({
         service: 'chat_service',
         taskName: 'direct_chat',
         taskData: { chat_config: chatConfig },
         customTaskId: taskId
       })).unwrap();
-
-      // Store the taskId for streaming - EXACTLY like PromptRunner line 551
-      setCurrentTaskId(result.taskId);
       
     } catch (error) {
       console.error('Optimization error:', error);

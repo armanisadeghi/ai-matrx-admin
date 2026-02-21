@@ -4,6 +4,11 @@
 // Context
 export { ChatProvider, useChatContext, useChatState, useChatActions } from './context/ChatContext';
 export type { ChatMessage, ChatSettings, AgentConfig, ChatState } from './context/ChatContext';
+export { LayoutAgentContext, useLayoutAgent } from './context/LayoutAgentContext';
+export type { LayoutAgentContextValue } from './context/LayoutAgentContext';
+
+// Utils
+export { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from './utils/agent-resolver';
 
 // Types
 export type {

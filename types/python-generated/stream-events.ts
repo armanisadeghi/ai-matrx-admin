@@ -36,6 +36,7 @@ export interface StatusUpdatePayload {
 }
 
 export interface DataPayload {
+  [key: string]: unknown;
 }
 
 export interface CompletionPayload {
