@@ -9,7 +9,7 @@ import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice
 import { buildComponentScope, getScopeFunctionParameters } from '../utils/allowed-imports';
 import type { PromptApp, RateLimitInfo, ExecutionErrorType } from '../types';
 import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
-import type { AgentExecuteRequestBody } from '@/lib/api/types';
+import type { AgentWarmRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { AlertCircle } from 'lucide-react';
@@ -27,7 +27,6 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isStreamComplete, setIsStreamComplete] = useState(false);
     const [conversationId] = useState(() => uuidv4());
-    const isFirstExecutionRef = useRef(true);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const { getHeaders, waitForAuth, isAdmin, fingerprintId } = useApiAuth();
@@ -68,10 +67,8 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
 
             const headers = getHeaders();
 
-            const agentRequest: AgentExecuteRequestBody = {
+            const agentRequest = {
                 prompt_id: promptId,
-                conversation_id: conversationId,
-                is_new_conversation: isFirstExecutionRef.current,
                 variables,
                 user_input: userInput,
                 stream: true,
@@ -79,7 +76,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 is_builtin: false,
             };
 
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(conversationId)}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -140,7 +137,6 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 }
             }
 
-            isFirstExecutionRef.current = false;
             setIsStreamComplete(true);
 
         } catch (err: any) {

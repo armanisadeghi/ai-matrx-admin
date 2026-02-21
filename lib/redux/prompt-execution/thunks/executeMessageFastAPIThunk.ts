@@ -1,15 +1,17 @@
 /**
  * FastAPI Bridge Thunk — Drop-in replacement for the socket.io path in executeMessage.
  *
- * Calls /api/ai/chat/unified via fetch + NDJSON streaming, then dispatches
- * to the SAME Redux slices that the socket path uses. All existing selectors,
- * components, and UI continue to work unchanged.
+ * Calls POST /api/ai/conversations/{conversationId}/chat via fetch + NDJSON streaming,
+ * then dispatches to the SAME Redux slices that the socket path uses. All existing
+ * selectors, components, and UI continue to work unchanged.
  *
  * This thunk transforms legacy chatConfig (model_id, max_tokens, output_format)
  * into the new unified API body (ai_model_id, max_output_tokens, response_format).
+ * The caller must generate a UUID conversation ID client-side and pass it in.
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { v4 as uuidv4 } from 'uuid';
 import type { RootState, AppDispatch } from '../../store';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { parseHttpError } from '@/lib/api/errors';
@@ -54,6 +56,8 @@ interface ExecuteMessageFastAPIPayload {
   };
   taskId: string;
   runId: string;
+  /** Client-generated UUID for the conversation. Generated here if not provided. */
+  conversationId?: string;
 }
 
 export const executeMessageFastAPI = createAsyncThunk<
@@ -62,7 +66,8 @@ export const executeMessageFastAPI = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >(
   'promptExecution/executeMessageFastAPI',
-  async ({ chatConfig, taskId, runId }, { dispatch, getState }) => {
+  async ({ chatConfig, taskId, runId, conversationId: providedConversationId }, { dispatch, getState }) => {
+    const conversationId = providedConversationId || uuidv4();
     const state = getState();
     const accessToken = selectAccessToken(state);
     const isLocalhost = selectIsUsingLocalhost(state);
@@ -87,7 +92,8 @@ export const executeMessageFastAPI = createAsyncThunk<
     dispatch(addResponse({ listenerId, taskId }));
     dispatch(setTaskListenerIds({ taskId, listenerIds: [listenerId] }));
 
-    // Fields accepted by /api/ai/chat/unified — anything else gets stripped
+    // Fields accepted by POST /api/ai/conversations/{id}/chat — anything else gets stripped.
+    // conversation_id and is_new_conversation are no longer sent in the body.
     const ALLOWED_FIELDS = new Set([
       'ai_model_id', 'messages', 'stream', 'debug', 'max_iterations',
       'max_retries_per_iteration', 'system_instruction', 'max_output_tokens',
@@ -95,13 +101,11 @@ export const executeMessageFastAPI = createAsyncThunk<
       'parallel_tool_calls', 'reasoning_effort', 'reasoning_summary',
       'thinking_level', 'include_thoughts', 'thinking_budget',
       'response_format', 'stop_sequences', 'internal_web_search',
-      'internal_url_context', 'conversation_id', 'is_new_conversation',
-      'store', 'metadata',
+      'internal_url_context', 'store', 'metadata',
     ]);
 
     const requestBody: Record<string, unknown> = {
       stream: true,
-      is_new_conversation: false,
     };
 
     // Rename model_id -> ai_model_id
@@ -144,8 +148,9 @@ export const executeMessageFastAPI = createAsyncThunk<
       }
     }
 
-    // Copy remaining allowed fields, strip everything else
-    const skipFields = new Set(['model_id', 'ai_model_id', 'max_tokens', 'output_format', 'response_format', 'stream', 'is_new_conversation']);
+    // Copy remaining allowed fields, strip everything else.
+    // conversation_id must not be sent in the body — it goes in the URL path.
+    const skipFields = new Set(['model_id', 'ai_model_id', 'max_tokens', 'output_format', 'response_format', 'stream', 'conversation_id', 'is_new_conversation']);
     const droppedFields: string[] = [];
 
     for (const [key, value] of Object.entries(chatConfig)) {
@@ -160,7 +165,7 @@ export const executeMessageFastAPI = createAsyncThunk<
 
     if (droppedFields.length > 0) {
       console.warn(
-        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat/unified: ${droppedFields.join(', ')}`,
+        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/conversations/{id}/chat: ${droppedFields.join(', ')}`,
         'font-weight: bold; color: #ff9800; font-size: 12px;',
       );
     }
@@ -174,7 +179,7 @@ export const executeMessageFastAPI = createAsyncThunk<
 
     let response: Response;
     try {
-      response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`, {
+      response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat(conversationId)}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),

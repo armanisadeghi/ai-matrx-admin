@@ -145,7 +145,7 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
         const { model_id, ...modelConfig } = app.prompt.settings;
 
         return {
-            model_id,
+            ai_model_id: model_id,
             messages: resolvedMessages,
             stream: true,
             ...modelConfig
@@ -236,7 +236,8 @@ export function PromptAppPublicRendererDirect({ app, slug }: PromptAppPublicRend
             logTiming('Initiating fetch to backend...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`, {
+            const conversationId = crypto.randomUUID();
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat(conversationId)}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(chatConfig),

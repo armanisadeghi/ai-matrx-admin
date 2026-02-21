@@ -40,7 +40,7 @@ interface UseBackendClientOptions {
  * const data = await client.postJson(ENDPOINTS.ai.agentWarm, { prompt_id: 'abc' });
  *
  * // Streaming request
- * for await (const event of client.stream(ENDPOINTS.ai.agentExecute, body)) {
+ * for await (const event of client.stream(ENDPOINTS.ai.agentExecute(conversationId), body)) {
  *   // handle events
  * }
  * ```

@@ -298,7 +298,9 @@ export default function ChatTestClient() {
     }, 250);
 
     try {
-      const url = `${apiConfig.baseUrl}/api/ai/chat/unified`;
+      // Generate a new conversation ID for each test run
+      const conversationId = crypto.randomUUID();
+      const url = `${apiConfig.baseUrl}/api/ai/conversations/${conversationId}/chat`;
 
       // Build request body - flatten settings into root level
       // Filter out null/undefined values before sending
@@ -309,7 +311,6 @@ export default function ChatTestClient() {
         ...cleanedConfig,
         stream: streamEnabled,
         debug: debugMode,
-        is_new_conversation: true,
       };
 
       const response = await fetch(url, {
@@ -868,7 +869,7 @@ export default function ChatTestClient() {
                 </div>
                 <div className="flex-1 overflow-y-auto min-h-0">
                 <pre className="text-xs font-mono whitespace-pre-wrap">
-                  {JSON.stringify({
+                  {`POST /api/ai/conversations/{conversationId}/chat\n\n` + JSON.stringify({
                     messages: messages,
                     ai_model_id: selectedModelId,
                     ...modelConfig,

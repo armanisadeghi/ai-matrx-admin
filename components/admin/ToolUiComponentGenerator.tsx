@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useApiAuth } from "@/hooks/useApiAuth";
+import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
 import { COMPONENT_GENERATOR_PROMPT_ID, COMPONENT_GENERATOR_SYSTEM_PROMPT } from "./tool-ui-generator-prompt";
 
 // ---------------------------------------------------------------------------
@@ -98,6 +100,7 @@ function extractJsonFromResponse(text: string): GeneratedComponent | null {
 export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) {
     const { toast } = useToast();
     const isMobile = useIsMobile();
+    const { getHeaders, isAdmin } = useApiAuth();
     const [step, setStep] = useState<WizardStep>("select-tool");
     const [selectedToolName, setSelectedToolName] = useState("");
     const [streamData, setStreamData] = useState("");
@@ -138,9 +141,12 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
         abortRef.current = abortController;
 
         try {
-            const response = await fetch("/api/ai/chat/unified", {
+            const conversationId = crypto.randomUUID();
+            const backendUrl = BACKEND_URLS.production;
+            const headers = getHeaders();
+            const response = await fetch(`${backendUrl}${ENDPOINTS.ai.chat(conversationId)}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 signal: abortController.signal,
                 body: JSON.stringify({
                     messages: [
@@ -179,8 +185,8 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
                 for (const line of lines) {
                     try {
                         const event = JSON.parse(line);
-                        if (event.event === "chunk" && event.data?.chunk) {
-                            accumulated += event.data.chunk;
+                        if (event.event === "chunk" && event.data?.text) {
+                            accumulated += event.data.text;
                             setGenerationOutput(accumulated);
                         } else if (event.event === "chunk" && typeof event.data === "string") {
                             accumulated += event.data;

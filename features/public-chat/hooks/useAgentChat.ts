@@ -28,14 +28,12 @@ interface SendMessageParams {
 
 interface AgentExecuteRequestWithContent {
     prompt_id: string;
-    conversation_id: string;
     user_input: string | ContentItem[];
     variables?: Record<string, unknown>;
     config_overrides?: Record<string, unknown>;
     stream: boolean;
     debug: boolean;
     is_builtin: boolean;
-    is_new_conversation: boolean;
 }
 
 // ============================================================================
@@ -112,7 +110,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         streamEventsRef.current = [];
         serverRequestIdRef.current = null;
 
-        const isNewConversation = state.messages.length === 0;
         const contentItems = buildContentArray(content, resources);
 
         addMessage({
@@ -154,19 +151,17 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             const agentRequest: AgentExecuteRequestWithContent = {
                 prompt_id: promptId,
-                conversation_id: state.conversationId,
                 user_input: userInput,
                 variables: Object.keys(variables).length > 0 ? variables : undefined,
                 config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
                 stream: true,
                 debug: true,
                 is_builtin: false,
-                is_new_conversation: isNewConversation,
             };
 
             updateMessage(assistantMessageId, { status: 'streaming' });
 
-            const response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
+            const response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(state.conversationId)}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),

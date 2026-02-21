@@ -9,7 +9,7 @@
  * Usage:
  * ```typescript
  * const api = useBackendApi();
- * const response = await api.post('/api/ai/agent/execute', requestBody);
+ * const response = await api.post('/api/ai/agents/{conversationId}/execute', requestBody);
  * ```
  */
 

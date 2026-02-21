@@ -209,7 +209,9 @@ export default function ChatDemoClient() {
     setDebugInfo({ chunkCount: 0, totalBytes: 0, eventCount: 0, startTime: Date.now(), endTime: null });
 
     try {
-      const url = `${apiConfig.baseUrl}/api/ai/chat/unified`;
+      // Generate a new conversation ID for each test run
+      const conversationId = crypto.randomUUID();
+      const url = `${apiConfig.baseUrl}/api/ai/conversations/${conversationId}/chat`;
 
       // Build request body - flatten settings into root level
       // Filter out null/undefined values before sending

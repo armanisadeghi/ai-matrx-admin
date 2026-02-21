@@ -5,7 +5,8 @@
  * Components can switch by changing ONE import.
  *
  * This thunk transforms the OLD socket payload shape (chat_config.model_id, etc.)
- * into the NEW /api/ai/chat/unified body shape (ai_model_id, etc.).
+ * into the NEW POST /api/ai/conversations/{conversationId}/chat body shape (ai_model_id, etc.).
+ * A UUID conversation ID is generated client-side per turn (or reused via customTaskId).
  *
  * Usage:
  *   // Before:
@@ -57,8 +58,9 @@ interface SubmitChatPayload {
 }
 
 /**
- * Fields the /api/ai/chat/unified endpoint actually accepts.
+ * Fields the POST /api/ai/conversations/{id}/chat endpoint actually accepts.
  * Anything NOT in this set is stripped from the request to prevent 422 errors.
+ * conversation_id and is_new_conversation are no longer body fields — they were removed.
  */
 const UNIFIED_API_ALLOWED_FIELDS = new Set([
   'ai_model_id',
@@ -84,8 +86,6 @@ const UNIFIED_API_ALLOWED_FIELDS = new Set([
   'stop_sequences',
   'internal_web_search',
   'internal_url_context',
-  'conversation_id',
-  'is_new_conversation',
   'store',
   'metadata',
 ]);
@@ -115,12 +115,13 @@ function normalizeResponseFormat(value: unknown): Record<string, unknown> | null
 }
 
 /**
- * Transforms a legacy socket-era chatConfig into the new /api/ai/chat/unified body.
+ * Transforms a legacy socket-era chatConfig into the new POST /api/ai/conversations/{id}/chat body.
  *
  * 1. Renames old fields to new names
  * 2. Strips frontend-only fields the backend doesn't accept (image_urls, file_urls, etc.)
- * 3. Normalizes response_format from string -> dict
- * 4. Logs deprecation warnings for old field names
+ * 3. Strips conversation_id and is_new_conversation (no longer body fields — moved to URL path)
+ * 4. Normalizes response_format from string -> dict
+ * 5. Logs deprecation warnings for old field names
  */
 function transformChatConfigToUnifiedBody(
   chatConfig: Record<string, unknown>,
@@ -166,10 +167,11 @@ function transformChatConfigToUnifiedBody(
     }
   }
 
-  // Copy all other allowed fields directly
+  // Copy all other allowed fields directly.
+  // conversation_id and is_new_conversation must not be sent in the body — they are gone.
   const skipFields = new Set([
     'messages', 'stream', 'model_id', 'ai_model_id', 'max_tokens',
-    'output_format', 'response_format',
+    'output_format', 'response_format', 'conversation_id', 'is_new_conversation',
   ]);
   const droppedFields: string[] = [];
 
@@ -186,7 +188,7 @@ function transformChatConfigToUnifiedBody(
 
   if (droppedFields.length > 0) {
     console.warn(
-      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat/unified: ${droppedFields.join(', ')}`,
+      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/conversations/{id}/chat: ${droppedFields.join(', ')}`,
       'font-weight: bold; color: #ff9800; font-size: 12px;',
     );
   }
@@ -219,8 +221,8 @@ export const submitChatFastAPI = createAsyncThunk<
     );
 
     console.warn(
-      `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → /api/ai/chat/unified. ` +
-      `The calling component should be updated to call the unified API directly and pass the new field names (ai_model_id, max_output_tokens, response_format). ` +
+      `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → POST /api/ai/conversations/{id}/chat. ` +
+      `The calling component should be updated to call the conversation API directly and pass the new field names (ai_model_id, max_output_tokens, response_format). ` +
       `This bridge thunk will be removed once all callers are updated.`,
       'font-weight: bold; color: #ff9800; font-size: 12px;',
     );
@@ -254,7 +256,7 @@ export const submitChatFastAPI = createAsyncThunk<
 
     let response: Response;
     try {
-      response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`, {
+      response = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.chat(taskId)}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
@@ -276,7 +278,7 @@ export const submitChatFastAPI = createAsyncThunk<
         rawErrorBody = await response.clone().text();
       } catch { /* ignore */ }
       console.error(
-        `[submitChatFastAPI] HTTP ${response.status} from ${BACKEND_URL}${ENDPOINTS.ai.chatUnified}`,
+        `[submitChatFastAPI] HTTP ${response.status} from ${BACKEND_URL}${ENDPOINTS.ai.chat(taskId)}`,
         '\nResponse body:', rawErrorBody,
       );
 

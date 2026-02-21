@@ -36,14 +36,13 @@ export default function AgentTestClient() {
         try {
             const requestBody = {
                 prompt_id: promptId,
-                conversation_id: conversationId,
                 user_input: userInput,
                 is_builtin: false,
                 stream: true,
                 debug: true,
             };
 
-            const response = await fetch(`${apiConfig.baseUrl}/api/ai/agent/execute`, {
+            const response = await fetch(`${apiConfig.baseUrl}/api/ai/agents/${conversationId}/execute`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { StreamEvent, ChunkPayload, ErrorPayload } from '@/types/python-generated/stream-events';
 import type { PromptApp } from '../types';
-import type { AgentWarmRequestBody, AgentExecuteRequestBody } from '@/lib/api/types';
+import type { AgentWarmRequestBody } from '@/lib/api/types';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { useSelector } from 'react-redux';
@@ -41,7 +41,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isStreamComplete, setIsStreamComplete] = useState(false);
     const [conversationId] = useState(() => uuidv4()); // Generate once per component instance
-    const isFirstExecutionRef = useRef(true);
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     // Track the task_id from the logging call so we can update it on failure
@@ -233,10 +232,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             
             const headers = getHeaders();
             
-            const agentRequest: AgentExecuteRequestBody = {
+            const agentRequest = {
                 prompt_id: promptId,
-                conversation_id: conversationId,
-                is_new_conversation: isFirstExecutionRef.current,
                 variables: validVariables,
                 user_input: userInput,
                 stream: true,
@@ -247,7 +244,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             logTiming('Initiating Agent API request...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute(conversationId)}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -350,7 +347,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             }
             
             logTiming('Stream complete from Agent API');
-            isFirstExecutionRef.current = false;
             setIsStreamComplete(true);
 
             // Detect empty result: stream finished but no text chunks received

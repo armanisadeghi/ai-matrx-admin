@@ -49,12 +49,12 @@ export interface BackendClientConfig {
  * const data = await client.postJson('/api/ai/agent/warm', { prompt_id: 'abc' });
  *
  * // Streaming request with async generator
- * for await (const event of client.stream('/api/ai/agent/execute', body)) {
+ * for await (const event of client.stream('/api/ai/agents/{conversationId}/execute', body)) {
  *   if (event.event === 'chunk') console.log(event.data);
  * }
  *
  * // Streaming request with callbacks
- * await client.streamWithCallbacks('/api/ai/agent/execute', body, {
+ * await client.streamWithCallbacks('/api/ai/agents/{conversationId}/execute', body, {
  *   onChunk: (text) => setOutput(prev => prev + text),
  *   onError: (err) => setError(err.userMessage),
  *   onEnd: () => setDone(true),

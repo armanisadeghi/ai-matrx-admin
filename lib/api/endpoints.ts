@@ -17,12 +17,20 @@
 export const ENDPOINTS = {
     /** AI endpoints — chat, agents, cancellation */
     ai: {
-        /** POST — Unified chat completion (Guest OK) */
-        chatUnified: '/api/ai/chat/unified',
+        /**
+         * POST — Unified chat completion (Guest OK)
+         * New conversation:  POST /api/ai/conversations/{conversationId}/chat
+         * Always generate a UUID client-side and use the conversation-scoped URL for all turns.
+         */
+        chat: (conversationId: string) => `/api/ai/conversations/${conversationId}/chat` as const,
+        /**
+         * POST — Execute agent with streaming (Guest OK)
+         * New conversation:  POST /api/ai/agents/{conversationId}/execute
+         * Always generate a UUID client-side and use the conversation-scoped URL for all turns.
+         */
+        agentExecute: (conversationId: string) => `/api/ai/agents/${conversationId}/execute` as const,
         /** POST — Pre-warm agent cache (Public, no auth) */
         agentWarm: '/api/ai/agent/warm',
-        /** POST — Execute agent with streaming (Guest OK) */
-        agentExecute: '/api/ai/agent/execute',
         /** POST — Cancel a running request by request_id (Authenticated) */
         cancel: (requestId: string) => `/api/ai/cancel/${requestId}` as const,
     },

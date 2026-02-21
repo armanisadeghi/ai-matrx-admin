@@ -80,8 +80,8 @@ export default function DirectChatClient() {
         return;
       }
 
-      const endpoint = '/api/ai/chat/unified';
-      const url = `${getBaseUrl()}${endpoint}`;
+      const conversationId = crypto.randomUUID();
+      const url = `${getBaseUrl()}/api/ai/conversations/${conversationId}/chat`;
 
       const response = await fetch(url, {
         method: 'POST',

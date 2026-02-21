@@ -55,11 +55,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ai/agent/execute": {
+    "/ai/agents/{conversation_id}/execute": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                conversation_id: string;
+            };
             cookie?: never;
         };
         get?: never;
@@ -72,11 +74,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ai/chat/unified": {
+    "/ai/conversations/{conversation_id}/chat": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                conversation_id: string;
+            };
             cookie?: never;
         };
         get?: never;
@@ -1043,17 +1047,14 @@ export interface components {
             /** Urls */
             urls: string[];
         };
-        /** AgentExecuteRequest */
+        /**
+         * AgentExecuteRequest
+         * conversation_id is now in the URL path (POST /api/ai/agents/{conversation_id}/execute).
+         * is_new_conversation has been removed — the server infers it from the URL.
+         */
         AgentExecuteRequest: {
             /** Prompt Id */
             prompt_id: string;
-            /** Conversation Id */
-            conversation_id?: string | null;
-            /**
-             * Is New Conversation
-             * @default true
-             */
-            is_new_conversation: boolean;
             /** User Input */
             user_input?: string | {
                 [key: string]: unknown;
@@ -1744,13 +1745,6 @@ export interface components {
             reference_images?: unknown[] | null;
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
-            /** Conversation Id */
-            conversation_id?: string | null;
-            /**
-             * Is New Conversation
-             * @default true
-             */
-            is_new_conversation: boolean;
             /** Metadata */
             metadata?: {
                 [key: string]: unknown;
