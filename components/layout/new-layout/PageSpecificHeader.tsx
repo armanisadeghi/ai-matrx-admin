@@ -354,6 +354,7 @@ interface PromptAppHeaderProps {
   mode: 'view' | 'edit' | 'run';
   onModeChange: (mode: 'view' | 'edit' | 'run') => void;
   isSaving?: boolean;
+  onAIEdit?: () => void;
 }
 
 export function PromptAppHeader(props: PromptAppHeaderProps) {

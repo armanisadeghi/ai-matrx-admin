@@ -6,7 +6,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { submitChatFastAPI as createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitChatFastAPI';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
+import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2, BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import MarkdownStream from '@/components/MarkdownStream';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
@@ -25,6 +25,7 @@ import { VoiceTextarea } from '@/features/audio';
 import { PromptJsonDisplay } from './PromptJsonDisplay';
 import { extractNonJsonContent } from './progressive-json-parser';
 import { PROMPT_BUILTINS } from '@/lib/redux/prompt-execution/builtins';
+import { NotesAPI } from '@/features/notes/service/notesApi';
 
 interface PromptGeneratorProps {
   isOpen: boolean;
@@ -46,6 +47,9 @@ export function PromptGenerator({
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [extractedJson, setExtractedJson] = useState<any>(null);
   const [extractionError, setExtractionError] = useState<string | null>(null);
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+  const sessionNoteId = useRef<string | null>(null);
   
   // Watch streaming text
   const streamingText = useAppSelector(state => 
@@ -87,11 +91,51 @@ export function PromptGenerator({
     }
   }, [isResponseEnded, streamingText, isGenerating]);
 
+  const buildNoteContent = () => {
+    const parts: string[] = [];
+    if (promptPurpose.trim()) {
+      parts.push(`## Prompt Purpose\n\n${promptPurpose.trim()}`);
+    }
+    if (additionalContext.trim()) {
+      parts.push(`## Additional Context\n\n${additionalContext.trim()}`);
+    }
+    return parts.join('\n\n');
+  };
+
+  const saveToNote = async (silent = false) => {
+    const content = buildNoteContent();
+    if (!content) return;
+
+    setIsSavingNote(true);
+    try {
+      if (sessionNoteId.current) {
+        await NotesAPI.update(sessionNoteId.current, { content });
+      } else {
+        const label = promptPurpose.trim().slice(0, 60) || 'AI Prompt Generator Draft';
+        const note = await NotesAPI.create({ label, content, folder_name: 'Prompts' });
+        sessionNoteId.current = note.id;
+      }
+      setNoteSaved(true);
+      if (!silent) {
+        toast.success('Saved to Notes', { description: 'Your inputs have been saved in the Prompts folder.' });
+      }
+    } catch {
+      if (!silent) {
+        toast.error('Failed to save note');
+      }
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!promptPurpose.trim()) {
       toast.error('Please describe the purpose of your prompt');
       return;
     }
+
+    // Auto-save to notes before generating so inputs are never lost
+    await saveToNote(true);
 
     setIsGenerating(true);
     setExtractedJson(null);
@@ -235,6 +279,9 @@ export function PromptGenerator({
     setIsSaving(false);
     setExtractedJson(null);
     setExtractionError(null);
+    setIsSavingNote(false);
+    setNoteSaved(false);
+    sessionNoteId.current = null;
     onClose();
   };
 
@@ -268,13 +315,38 @@ export function PromptGenerator({
           <div className="flex flex-col min-h-0 space-y-3 sm:space-y-4 overflow-y-auto lg:overflow-visible">
             <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
-                  Prompt Purpose
-                  <span className="text-xs text-red-500">*</span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                    Prompt Purpose
+                    <span className="text-xs text-red-500">*</span>
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => saveToNote(false)}
+                    disabled={isSavingNote || (!promptPurpose.trim() && !additionalContext.trim())}
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
+                    title="Save inputs to Notes"
+                  >
+                    {isSavingNote ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : noteSaved ? (
+                      <BookmarkCheck className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <BookmarkPlus className="h-3.5 w-3.5" />
+                    )}
+                    <span className="hidden sm:inline ml-1">
+                      {noteSaved ? 'Saved' : 'Save to Notes'}
+                    </span>
+                  </Button>
+                </div>
                 <VoiceTextarea
                   value={promptPurpose}
-                  onChange={(e) => setPromptPurpose(e.target.value)}
+                  onChange={(e) => {
+                    setPromptPurpose(e.target.value);
+                    setNoteSaved(false);
+                  }}
                   placeholder="Describe what you want your prompt or agent to do..."
                   className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                   disabled={isGenerating || hasGeneratedPrompt}
@@ -299,7 +371,10 @@ export function PromptGenerator({
                 </Label>
                 <VoiceTextarea
                   value={additionalContext}
-                  onChange={(e) => setAdditionalContext(e.target.value)}
+                  onChange={(e) => {
+                    setAdditionalContext(e.target.value);
+                    setNoteSaved(false);
+                  }}
                   placeholder="Add any specific requirements, tone, formats, or constraints..."
                   className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                   disabled={isGenerating || hasGeneratedPrompt}

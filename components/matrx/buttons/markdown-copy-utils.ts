@@ -31,11 +31,12 @@ export function removeThinkingContent(content: string): string {
   
   let result = content;
   
-  // Remove thinking tags with surrounding newlines
-  // Pattern matches: optional newlines before, tag+content, optional newlines after
+  // Remove thinking/reasoning tags with surrounding newlines
+  // Handles <thinking>, <think>, and <reasoning> as equivalent
   result = result
     .replace(/\n*<thinking>[\s\S]*?<\/thinking>\n*/gi, '\n')
-    .replace(/\n*<think>[\s\S]*?<\/think>\n*/gi, '\n');
+    .replace(/\n*<think>[\s\S]*?<\/think>\n*/gi, '\n')
+    .replace(/\n*<reasoning>[\s\S]*?<\/reasoning>\n*/gi, '\n');
   
   // Clean up any excessive newlines (3+ becomes 2, preserving intentional paragraph breaks)
   result = result.replace(/\n{3,}/g, '\n\n');
@@ -44,6 +45,15 @@ export function removeThinkingContent(content: string): string {
   result = result.trim();
   
   return result;
+}
+
+/**
+ * Checks whether content contains any thinking/reasoning blocks
+ * Handles <thinking>, <think>, and <reasoning> tags
+ */
+export function hasThinkingContent(content: string): boolean {
+  if (!content || typeof content !== 'string') return false;
+  return /<thinking>|<think>|<reasoning>/i.test(content);
 }
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight, ChevronUp } from "lucide-react";
+import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight, ChevronUp, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -179,17 +179,20 @@ export function PromptInput({
         disabled: !enablePasteImages
     });
 
+    const [isExpanded, setIsExpanded] = useState(false);
+    const showExpandButton = chatInput.length > 80;
+
     // Auto-resize textarea based on content
     useEffect(() => {
         const textarea = textareaRef.current;
         if (textarea) {
-            // Reset height to auto to get the correct scrollHeight
             textarea.style.height = 'auto';
-            // Set height to scrollHeight, but respect max-height
-            const newHeight = Math.min(textarea.scrollHeight, 200);
+            const newHeight = isExpanded
+                ? Math.max(textarea.scrollHeight, 300)
+                : Math.min(textarea.scrollHeight, 200);
             textarea.style.height = `${newHeight}px`;
         }
-    }, [chatInput]);
+    }, [chatInput, isExpanded]);
 
     // Check if the last prompt message is a user message
     const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
@@ -358,19 +361,44 @@ export function PromptInput({
             )}
 
             {/* Text Area */}
-            <div className="px-2 pt-1.5">
-                <textarea
-                    ref={textareaRef}
-                    value={chatInput}
-                    onChange={(e) => onChatInputChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={placeholderText}
-                    className="w-full bg-transparent border-none outline-none text-base md:text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto scrollbar-hide"
-                    style={{ minHeight: '40px', maxHeight: '200px' }}
-                    tabIndex={variableDefaults.length + 1}
-                    rows={1}
-                    autoFocus={!showVariables || variableDefaults.length === 0 || allVariablesHaveValues}
-                />
+            <div className={`px-2 pt-1.5 relative ${isExpanded ? 'fixed inset-x-4 top-16 bottom-24 z-50 bg-white dark:bg-zinc-900 rounded-lg border border-border shadow-2xl px-3 pt-3 flex flex-col' : ''}`}>
+                {isExpanded && (
+                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-border flex-shrink-0">
+                        <span className="text-xs text-muted-foreground font-medium">Expanded input</span>
+                        <button
+                            type="button"
+                            onClick={() => setIsExpanded(false)}
+                            className="p-1 rounded hover:bg-muted transition-colors"
+                            title="Collapse"
+                        >
+                            <Minimize2 className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                    </div>
+                )}
+                <div className="relative flex-1">
+                    <textarea
+                        ref={textareaRef}
+                        value={chatInput}
+                        onChange={(e) => onChatInputChange(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={placeholderText}
+                        className={`w-full bg-transparent border-none outline-none text-base md:text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto scrollbar-hide ${isExpanded ? 'h-full min-h-[200px]' : ''}`}
+                        style={isExpanded ? { minHeight: '200px' } : { minHeight: '40px', maxHeight: '200px' }}
+                        tabIndex={variableDefaults.length + 1}
+                        rows={1}
+                        autoFocus={!showVariables || variableDefaults.length === 0 || allVariablesHaveValues}
+                    />
+                    {showExpandButton && !isExpanded && (
+                        <button
+                            type="button"
+                            onClick={() => setIsExpanded(true)}
+                            className="absolute top-0 right-0 p-1 rounded hover:bg-muted/80 transition-colors opacity-60 hover:opacity-100"
+                            title="Expand input"
+                        >
+                            <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Bottom Controls - All buttons in one row */}

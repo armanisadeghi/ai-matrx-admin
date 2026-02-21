@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw, AlertCircle, ArrowDownToLine } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw, AlertCircle, ArrowDownToLine, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import {
@@ -111,6 +111,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [promptUpdatedAt, setPromptUpdatedAt] = useState<string | null>(null);
   const [isPromptStale, setIsPromptStale] = useState(false);
   const [isUpdatePromptModalOpen, setIsUpdatePromptModalOpen] = useState(false);
+  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
 
   // Regenerate favicon from app name
   const handleRegenerateFavicon = async () => {
@@ -136,6 +137,35 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
       toast.error('Failed to generate favicon');
     } finally {
       setIsRegeneratingFavicon(false);
+    }
+  };
+
+  const handleTakeScreenshot = async () => {
+    setIsTakingScreenshot(true);
+    // Close any open modals before capturing
+    setShowAIEditor(false);
+    setIsUpdatePromptModalOpen(false);
+    setDeleteDialogOpen(false);
+    // Wait for modals to animate out
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(document.body, {
+        logging: false,
+        useCORS: true,
+        allowTaint: false,
+        scale: window.devicePixelRatio || 1,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${app.name.replace(/\s+/g, '-').toLowerCase()}-screenshot.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Screenshot saved!');
+    } catch {
+      toast.error('Failed to take screenshot');
+    } finally {
+      setIsTakingScreenshot(false);
     }
   };
 
@@ -312,6 +342,21 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     setMode('view');
   };
 
+  const hasUnsavedChanges = mode === 'edit' && (
+    editComponentCode !== app.component_code ||
+    editName !== app.name ||
+    editSlug !== app.slug ||
+    editTagline !== (app.tagline || '') ||
+    editDescription !== (app.description || '') ||
+    editTags !== app.tags.join(', ') ||
+    editFaviconUrl !== (app.favicon_url || '')
+  );
+
+  const handleAIEditFromHeader = () => {
+    if (mode !== 'edit') setMode('edit');
+    setShowAIEditor(true);
+  };
+
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
       <PromptAppHeader
@@ -321,6 +366,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           setMode(m);
         }}
         isSaving={isSaving}
+        onAIEdit={handleAIEditFromHeader}
       />
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-5">
@@ -387,6 +433,20 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       Publish
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    onClick={handleTakeScreenshot}
+                    disabled={isTakingScreenshot}
+                    size="icon"
+                    className="shrink-0 h-8 w-8 rounded-full"
+                    title="Take screenshot"
+                  >
+                    {isTakingScreenshot ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Camera className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
                   <Button variant="destructive" onClick={handleDeleteClick} disabled={isDeleting} size="icon" className="shrink-0 h-8 w-8 rounded-full">
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
@@ -454,6 +514,31 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               </Link>
             )}
           </div>
+
+          {/* Unsaved Changes Banner */}
+          {hasUnsavedChanges && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-orange-300/60 bg-orange-50/80 dark:border-orange-600/40 dark:bg-orange-950/30">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <AlertCircle className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
+                <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
+                  You have unsaved changes — click &ldquo;Save Changes&rdquo; to persist them.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                {isSaving ? 'Saving...' : 'Save Now'}
+              </Button>
+            </div>
+          )}
 
           {/* Prompt Updated Banner */}
           {isPromptStale && app.prompt_id && (
