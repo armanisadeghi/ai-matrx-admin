@@ -33,13 +33,13 @@ export function AutonomySelector({ value, onChange }: AutonomySelectorProps) {
                         <div className="flex items-center gap-2.5">
                             <div className={cn(
                                 'h-7 w-7 rounded-lg flex items-center justify-center shrink-0',
-                                isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground/60',
+                                isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground',
                             )}>
                                 {Icon && <Icon className="h-3.5 w-3.5" />}
                             </div>
                             <div className="min-w-0">
                                 <div className="font-medium text-xs">{config.label}</div>
-                                <div className="text-[10px] text-muted-foreground/60 mt-px leading-snug line-clamp-1">{config.description}</div>
+                                <div className="text-[10px] text-muted-foreground mt-px leading-snug line-clamp-1">{config.description}</div>
                             </div>
                         </div>
                     </button>

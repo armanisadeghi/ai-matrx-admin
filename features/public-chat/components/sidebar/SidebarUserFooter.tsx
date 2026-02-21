@@ -59,7 +59,7 @@ export function SidebarUserFooter() {
                 <span className="text-xs text-foreground/80 group-hover:text-foreground truncate flex-1 transition-colors">
                     {displayName || 'Account'}
                 </span>
-                <ChevronRight className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />
+                <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
             </Link>
         </div>
     );

@@ -44,7 +44,7 @@ const OverviewTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) =>
                                         value={nodeData.step_name || ''}
                                         onChange={(e) => handleNodeUpdate({ step_name: e.target.value })}
                                         placeholder="Enter step name"
-                                        className={`h-8 text-sm placeholder:text-muted-foreground/60 ${
+                                        className={`h-8 text-sm placeholder:text-muted-foreground ${
                                             (nodeData.step_name || '') === 'Unnamed Step' 
                                                 ? 'text-muted-foreground dark:text-muted-foreground' 
                                                 : ''

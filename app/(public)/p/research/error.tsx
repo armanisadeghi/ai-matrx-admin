@@ -26,7 +26,7 @@ export default function ResearchError({
                 <p className="text-sm text-muted-foreground">
                     An unexpected error occurred while loading research data.
                     {error.digest && (
-                        <span className="block text-xs text-muted-foreground/50 mt-1">
+                        <span className="block text-xs text-muted-foreground mt-1">
                             Error ID: {error.digest}
                         </span>
                     )}

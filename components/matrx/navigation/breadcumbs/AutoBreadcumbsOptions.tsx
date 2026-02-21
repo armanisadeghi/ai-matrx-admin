@@ -40,7 +40,7 @@ const variantStyles: Record<BreadcrumbVariant, BreadcrumbStyles> = {
     },
     minimal: {
         list: "gap-2",
-        separator: <ChevronRight className="w-3 h-3 text-muted-foreground/50"/>,
+        separator: <ChevronRight className="w-3 h-3 text-muted-foreground"/>,
         item: "px-1 data-[current=true]:font-medium data-[current=true]:text-foreground",
         icon: Component,
     },

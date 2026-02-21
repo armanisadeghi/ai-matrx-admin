@@ -21,6 +21,7 @@ All routes live under `app/(public)/p/research/`.
 | `/p/research/topics/[topicId]/sources` | Source list with URL-driven filters, bulk actions |
 | `/p/research/topics/[topicId]/sources/[sourceId]` | Source detail with content viewer/editor, analysis |
 | `/p/research/topics/[topicId]/keywords` | Keyword management (add/remove) |
+| `/p/research/topics/[topicId]/analysis` | All analyses for the topic with stats, filters, and full markdown display |
 | `/p/research/topics/[topicId]/document` | Markdown document viewer with TOC, version history, diff |
 | `/p/research/topics/[topicId]/tags` | Tag CRUD with URL-driven search |
 | `/p/research/topics/[topicId]/tags/[tagId]` | Per-tag consolidation view |

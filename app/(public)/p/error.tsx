@@ -61,7 +61,7 @@ export default function PromptAppError({ error, reset }: ErrorPageProps) {
 
                 {/* Error digest for support */}
                 {error.digest && (
-                    <p className="text-[11px] text-muted-foreground/60 font-mono">
+                    <p className="text-[11px] text-muted-foreground font-mono">
                         Error ID: {error.digest}
                     </p>
                 )}

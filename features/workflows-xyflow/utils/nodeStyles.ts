@@ -313,14 +313,14 @@ export const NODE_STATUS_ICON_STYLES = {
     execution_complete: "text-green-500 dark:text-green-400",
     failed: "text-red-500 dark:text-red-400",
     execution_failed: "text-red-500 dark:text-red-400",
-    pending: "text-muted-foreground/50",
-    default: "text-muted-foreground/50",
+    pending: "text-muted-foreground",
+    default: "text-muted-foreground",
 } as const;
 
 // Execution required icon styles configuration
 export const EXECUTION_REQUIRED_ICON_STYLES = {
     required: "text-orange-500 dark:text-orange-400",
-    notRequired: "text-muted-foreground/50",
+    notRequired: "text-muted-foreground",
 } as const;
 
 // Icon size configuration

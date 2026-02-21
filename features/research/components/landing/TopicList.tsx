@@ -203,7 +203,7 @@ export default function TopicList() {
                                                 {projectNameMap.get(topic.project_id)}
                                             </span>
                                         )}
-                                        <span className="text-[10px] text-muted-foreground/50">
+                                        <span className="text-[10px] text-muted-foreground">
                                             {new Date(topic.created_at).toLocaleDateString()}
                                         </span>
                                     </div>

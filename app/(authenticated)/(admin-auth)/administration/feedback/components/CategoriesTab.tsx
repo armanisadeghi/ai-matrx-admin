@@ -205,7 +205,7 @@ export default function CategoriesTab() {
 
                         return (
                             <Card key={cat.id} className={cn('p-3 flex items-center gap-3', !cat.is_active && 'opacity-50')}>
-                                <GripVertical className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 cursor-grab" />
+                                <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0 cursor-grab" />
 
                                 <Badge className={cn('shrink-0 border text-xs', colors.bg, colors.text, colors.border)}>
                                     {cat.name}

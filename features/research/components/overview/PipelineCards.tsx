@@ -81,13 +81,13 @@ export function PipelineCards({ topicId, progress: progressProp }: PipelineCards
                         {progress.stale_keywords} stale
                     </span>
                 ) : (
-                    <span className="text-[10px] text-muted-foreground/60">search keywords</span>
+                    <span className="text-[10px] text-muted-foreground">search keywords</span>
                 )}
             </StatCard>
 
             <StatCard icon={Globe} label="Sources" href={`${base}/sources`}>
                 <div className="text-lg font-bold leading-none">{progress.total_sources}</div>
-                <div className="text-[10px] text-muted-foreground/60">{progress.included_sources} included</div>
+                <div className="text-[10px] text-muted-foreground">{progress.included_sources} included</div>
                 {progress.sources_by_status && progress.total_sources > 0 && (
                     <div className="flex h-1 w-full overflow-hidden rounded-full bg-muted/50 mt-0.5">
                         {(Object.entries(progress.sources_by_status) as [ScrapeStatus, number][])
@@ -108,7 +108,7 @@ export function PipelineCards({ topicId, progress: progressProp }: PipelineCards
 
             <StatCard icon={FileText} label="Content" href={`${base}/sources?scrape_status=success`}>
                 <div className="text-lg font-bold leading-none">{progress.total_content}</div>
-                <div className="text-[10px] text-muted-foreground/60">
+                <div className="text-[10px] text-muted-foreground">
                     {progress.total_sources > 0
                         ? `${Math.round((progress.total_content / progress.total_sources) * 100)}% scraped`
                         : 'pages scraped'}
@@ -123,7 +123,7 @@ export function PipelineCards({ topicId, progress: progressProp }: PipelineCards
             >
                 <div className="flex items-baseline gap-1">
                     <span className="text-lg font-bold leading-none">{progress.total_analyses}</span>
-                    <span className="text-[10px] text-muted-foreground/50">/ {progress.total_eligible_for_analysis}</span>
+                    <span className="text-[10px] text-muted-foreground">/ {progress.total_eligible_for_analysis}</span>
                 </div>
                 <Progress value={analysisPercent} className="h-1" />
                 {(progress.failed_analyses ?? 0) > 0 && (
@@ -137,7 +137,7 @@ export function PipelineCards({ topicId, progress: progressProp }: PipelineCards
             <StatCard icon={Layers} label="Kw Syntheses" href={`${base}/keywords`}>
                 <div className="flex items-baseline gap-1">
                     <span className="text-lg font-bold leading-none">{progress.keyword_syntheses}</span>
-                    <span className="text-[10px] text-muted-foreground/50">/ {progress.total_keywords}</span>
+                    <span className="text-[10px] text-muted-foreground">/ {progress.total_keywords}</span>
                 </div>
                 <Progress value={synthPercent} className="h-1" />
                 {(progress.failed_keyword_syntheses ?? 0) > 0 && (
@@ -167,12 +167,12 @@ export function PipelineCards({ topicId, progress: progressProp }: PipelineCards
 
             <StatCard icon={Tags} label="Tags" href={`${base}/tags`}>
                 <div className="text-lg font-bold leading-none">{progress.total_tags}</div>
-                <span className="text-[10px] text-muted-foreground/60">organize sources</span>
+                <span className="text-[10px] text-muted-foreground">organize sources</span>
             </StatCard>
 
             <StatCard icon={DollarSign} label="Documents" href={`${base}/document`}>
                 <div className="text-lg font-bold leading-none">{progress.total_documents}</div>
-                <span className="text-[10px] text-muted-foreground/60">
+                <span className="text-[10px] text-muted-foreground">
                     {progress.total_documents > 0 ? `${progress.total_documents} version${progress.total_documents !== 1 ? 's' : ''}` : 'none yet'}
                 </span>
             </StatCard>

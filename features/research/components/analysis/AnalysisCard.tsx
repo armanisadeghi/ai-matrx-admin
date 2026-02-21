@@ -93,7 +93,7 @@ export function AnalysisCard({
                 </div>
                 <div>
                     <p className="text-xs font-medium text-foreground/70">No analysis yet</p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-[200px]">
+                    <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px]">
                         Run AI analysis to extract insights, key topics, and a summary from this content.
                     </p>
                 </div>
@@ -172,7 +172,7 @@ export function AnalysisCard({
                     <span className="text-xs text-muted-foreground tabular-nums" title={`${formattedDate} at ${formattedTime}`}>
                         {formattedDate}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/50 tabular-nums hidden sm:inline">
+                    <span className="text-[10px] text-muted-foreground tabular-nums hidden sm:inline">
                         {formattedTime}
                     </span>
                 </div>

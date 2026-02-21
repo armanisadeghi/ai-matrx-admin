@@ -112,7 +112,7 @@ export function ProjectCard({ project, orgSlug, onUpdate, isAnyNavigating }: Pro
               </span>
             </div>
             {project.slug && (
-              <span className="text-xs font-mono text-muted-foreground/60">/{project.slug}</span>
+              <span className="text-xs font-mono text-muted-foreground">/{project.slug}</span>
             )}
           </div>
         </div>

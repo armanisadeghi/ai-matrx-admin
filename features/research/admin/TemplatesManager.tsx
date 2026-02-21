@@ -471,7 +471,7 @@ export function TemplatesManager() {
                                                                         </span>
                                                                         <span className={cn(
                                                                             'truncate',
-                                                                            val ? 'text-foreground' : 'text-muted-foreground/50',
+                                                                            val ? 'text-foreground' : 'text-muted-foreground',
                                                                         )}>
                                                                             {val ? (builtinNames[val] ?? val.slice(0, 8) + '...') : 'System default'}
                                                                         </span>

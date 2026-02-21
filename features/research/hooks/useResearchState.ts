@@ -160,6 +160,14 @@ export function useAnalysisForSource(sourceId: string | undefined) {
     );
 }
 
+export function useAnalysesForTopic(topicId: string) {
+    return useServiceQuery<ResearchAnalysis[]>(
+        () => service.getAnalysesForTopic(topicId),
+        [topicId],
+        !!topicId,
+    );
+}
+
 // ============================================================================
 // Synthesis hooks
 // ============================================================================

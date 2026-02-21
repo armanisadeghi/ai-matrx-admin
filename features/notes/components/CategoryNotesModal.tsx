@@ -307,7 +307,7 @@ export function CategoryNotesModal({
                                         </div>
                                     ) : sortedNotes.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                                            <FileText className="h-10 w-10 text-muted-foreground/50 mb-2" />
+                                            <FileText className="h-10 w-10 text-muted-foreground mb-2" />
                                             <p className="text-sm text-muted-foreground">
                                                 {searchQuery ? 'No items found' : `No ${categoryName.toLowerCase()} yet`}
                                             </p>
@@ -396,7 +396,7 @@ export function CategoryNotesModal({
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center text-center p-8">
                                         <div>
-                                            <FileText className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                                            <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                                             <p className="text-muted-foreground">
                                                 Select an item to view details
                                             </p>
@@ -476,7 +476,7 @@ export function CategoryNotesModal({
                             <ScrollArea className="flex-1">
                                 {sortedImportNotes.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <FileText className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                                        <FileText className="h-12 w-12 text-muted-foreground mb-3" />
                                         <p className="text-muted-foreground">
                                             {importSearchQuery ? 'No notes found' : 'No other notes available to import'}
                                         </p>

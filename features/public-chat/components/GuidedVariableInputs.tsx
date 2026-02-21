@@ -46,7 +46,7 @@ function InlineCustomInput({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full text-base md:text-sm bg-textured border-none outline-none text-foreground placeholder:text-muted-foreground/50 py-1 px-2 rounded"
+                className="w-full text-base md:text-sm bg-textured border-none outline-none text-foreground placeholder:text-muted-foreground py-1 px-2 rounded"
             />
         </div>
     );
@@ -694,7 +694,7 @@ export function GuidedVariableInputs({
                     Prev
                 </button>
 
-                <span className="text-[11px] text-muted-foreground/60">
+                <span className="text-[11px] text-muted-foreground">
                     {activeIndex + 1} of {total} &middot; all optional
                 </span>
 

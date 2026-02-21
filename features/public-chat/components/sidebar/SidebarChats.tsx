@@ -273,7 +273,7 @@ function SharedConversationItem({
                 }`}>
                     {item.title || 'Untitled Chat'}
                 </div>
-                <div className="text-[9px] text-muted-foreground/60 truncate">
+                <div className="text-[9px] text-muted-foreground truncate">
                     {item.owner_email ? item.owner_email.split('@')[0] : 'Unknown'} · {levelLabel}
                 </div>
             </button>
@@ -347,8 +347,8 @@ function SharedChatsSection({
                 className="flex items-center gap-1.5 w-full px-2 py-1 text-left hover:bg-accent/30 rounded-md transition-colors"
             >
                 {isOpen
-                    ? <ChevronDown className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
-                    : <ChevronRight className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
+                    ? <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    : <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                 }
                 <Users className="h-3 w-3 text-secondary flex-shrink-0" />
                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider select-none">
@@ -616,7 +616,7 @@ export function SidebarChats({
 
             {Object.entries(grouped).map(([section, items]) => (
                 <div key={section} className="mb-1.5">
-                    <div className="px-2 py-0.5 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider select-none">
+                    <div className="px-2 py-0.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider select-none">
                         {section}
                     </div>
                     <div className="space-y-0.5">

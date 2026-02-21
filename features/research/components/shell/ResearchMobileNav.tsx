@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
     LayoutDashboard, Globe, FileText, Tags, MoreHorizontal,
-    Search, Image, DollarSign, BookOpen, FlaskConical, Bot, Settings2,
+    Search, Image, DollarSign, BookOpen, FlaskConical, Bot, Settings2, Brain,
 } from 'lucide-react';
 import { RESEARCH_NAV_ITEMS } from '../../constants';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
     LayoutDashboard, Globe, FileText, Tags, Search, Image, DollarSign,
-    BookOpen, FlaskConical, Bot, Settings2,
+    BookOpen, FlaskConical, Bot, Settings2, Brain,
 };
 
 interface ResearchMobileNavProps {
@@ -45,7 +45,7 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
                                 href={href}
                                 className={cn(
                                     'flex flex-col items-center gap-px px-2.5 py-1 min-w-[44px] min-h-[44px] justify-center transition-colors',
-                                    isActive ? 'text-primary' : 'text-muted-foreground/50',
+                                    isActive ? 'text-primary' : 'text-muted-foreground',
                                 )}
                             >
                                 {Icon && <Icon className={cn('h-[18px] w-[18px]', isActive && 'drop-shadow-[0_0_4px_hsl(var(--primary)/0.4)]')} />}
@@ -55,7 +55,7 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
                     })}
                     <button
                         onClick={() => setMoreOpen(true)}
-                        className="flex flex-col items-center gap-px px-2.5 py-1 min-w-[44px] min-h-[44px] justify-center text-muted-foreground/50 transition-colors"
+                        className="flex flex-col items-center gap-px px-2.5 py-1 min-w-[44px] min-h-[44px] justify-center text-muted-foreground transition-colors"
                     >
                         <MoreHorizontal className="h-[18px] w-[18px]" />
                         <span className="text-[9px] font-medium leading-none">More</span>
@@ -78,7 +78,7 @@ export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
                                 return (
                                     <div
                                         key={item.key}
-                                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground/40 cursor-default"
+                                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground cursor-default"
                                     >
                                         {Icon && <Icon className="h-4 w-4 shrink-0" />}
                                         <span className="flex-1">{item.label}</span>

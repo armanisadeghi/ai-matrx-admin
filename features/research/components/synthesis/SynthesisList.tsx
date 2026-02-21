@@ -1,12 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Layers, ChevronDown, ChevronUp, RefreshCw, Loader2, AlertCircle, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Layers, ChevronDown, ChevronUp, RefreshCw, Loader2, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -14,6 +11,8 @@ import { useTopicContext, useStreamDebug } from '../../context/ResearchContext';
 import { useResearchSynthesis, useResearchKeywords } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchStream } from '../../hooks/useResearchStream';
+import { ResearchFilterBar, type FilterDef } from '../shared/ResearchFilterBar';
+import type { FilterOption } from '@/components/hierarchy-filter';
 import type { ResearchSynthesis, ResearchDataEvent } from '../../types';
 
 function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; label: string }) {
@@ -39,9 +38,9 @@ function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; lab
                         <Badge variant="secondary" className={cn('text-[10px] font-normal capitalize', statusColors[synthesis.status] ?? '')}>
                             {synthesis.status}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground/60 capitalize">{synthesis.scope}</span>
+                        <span className="text-[10px] text-muted-foreground capitalize">{synthesis.scope}</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
                         {new Date(synthesis.created_at).toLocaleDateString()} · v{synthesis.version}
                         {synthesis.model_id && ` · ${synthesis.model_id}`}
                     </p>
@@ -67,7 +66,7 @@ function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; lab
                             </ReactMarkdown>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground/50">
+                        <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
                             <Loader2 className="h-3 w-3 animate-spin" />
                             Processing...
                         </div>
@@ -81,23 +80,19 @@ function SynthesisCard({ synthesis, label }: { synthesis: ResearchSynthesis; lab
 export default function SynthesisList() {
     const { topicId } = useTopicContext();
     const api = useResearchApi();
-    const isMobile = useIsMobile();
     const debug = useStreamDebug();
     const stream = useResearchStream();
 
     const { data: allSyntheses, isLoading: synthLoading, refresh: refetchSyntheses } = useResearchSynthesis(topicId);
     const { data: keywords } = useResearchKeywords(topicId);
 
-    // Live token text while a synthesis LLM is streaming
     const [streamingText, setStreamingText] = useState('');
-    // Label for the currently streaming synthesis (e.g. "Project Report" or keyword name)
     const [streamingLabel, setStreamingLabel] = useState('');
 
     const [search, setSearch] = useState('');
-    const [scopeFilter, setScopeFilter] = useState<string>('all');
-    const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [keywordFilter, setKeywordFilter] = useState<string>('all');
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [scopeFilter, setScopeFilter] = useState<string | null>(null);
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
 
     const synthList = (allSyntheses ?? []) as ResearchSynthesis[];
     const kwList = keywords ?? [];
@@ -110,15 +105,17 @@ export default function SynthesisList() {
 
     const filtered = useMemo(() => {
         let items = synthList;
-        if (scopeFilter !== 'all') items = items.filter(s => s.scope === scopeFilter);
-        if (statusFilter !== 'all') items = items.filter(s => s.status === statusFilter);
-        if (keywordFilter !== 'all') items = items.filter(s => s.keyword_id === keywordFilter);
+        if (scopeFilter) items = items.filter(s => s.scope === scopeFilter);
+        if (statusFilter) items = items.filter(s => s.status === statusFilter);
+        if (keywordFilter) items = items.filter(s => s.keyword_id === keywordFilter);
         if (search) {
             const q = search.toLowerCase();
             items = items.filter(s =>
                 (s.result ?? '').toLowerCase().includes(q) ||
                 (s.error ?? '').toLowerCase().includes(q) ||
-                getKeywordLabel(s.keyword_id).toLowerCase().includes(q),
+                getKeywordLabel(s.keyword_id).toLowerCase().includes(q) ||
+                (s.model_id ?? '').toLowerCase().includes(q) ||
+                s.scope.toLowerCase().includes(q),
             );
         }
         return items;
@@ -127,8 +124,29 @@ export default function SynthesisList() {
     const projectSyntheses = filtered.filter(s => s.scope === 'project');
     const keywordSyntheses = filtered.filter(s => s.scope === 'keyword');
 
-    const hasActiveFilters = scopeFilter !== 'all' || statusFilter !== 'all' || keywordFilter !== 'all';
-    const resetFilters = () => { setScopeFilter('all'); setStatusFilter('all'); setKeywordFilter('all'); };
+    const scopeOptions: FilterOption[] = [
+        { id: 'project', label: 'Project' },
+        { id: 'keyword', label: 'Keyword' },
+    ];
+    const statusOptions: FilterOption[] = [
+        { id: 'success', label: 'Success' },
+        { id: 'failed', label: 'Failed' },
+    ];
+    const kwOptions: FilterOption[] = useMemo(() =>
+        kwList.map(kw => ({ id: kw.id, label: kw.keyword })),
+        [kwList],
+    );
+
+    const filterDefs: FilterDef[] = useMemo(() => {
+        const defs: FilterDef[] = [
+            { key: 'scope', label: 'Scope', allLabel: 'All Scopes', options: scopeOptions, selectedId: scopeFilter, onSelect: setScopeFilter },
+            { key: 'status', label: 'Status', allLabel: 'All', options: statusOptions, selectedId: statusFilter, onSelect: setStatusFilter },
+        ];
+        if (kwList.length > 0) {
+            defs.push({ key: 'keyword', label: 'Keyword', allLabel: 'All Keywords', options: kwOptions, selectedId: keywordFilter, onSelect: setKeywordFilter });
+        }
+        return defs;
+    }, [scopeOptions, statusOptions, kwOptions, scopeFilter, statusFilter, keywordFilter, kwList.length]);
 
     const handleRunProjectSynthesis = async () => {
         setStreamingText('');
@@ -167,103 +185,30 @@ export default function SynthesisList() {
         debug.pushEvents(stream.rawEvents, 'synthesize');
     };
 
-    const filterSelects = (
-        <>
-            <Select value={scopeFilter} onValueChange={setScopeFilter}>
-                <SelectTrigger className="w-full sm:w-24 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
-                    <SelectValue placeholder="Scope" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Scopes</SelectItem>
-                    <SelectItem value="project">Project</SelectItem>
-                    <SelectItem value="keyword">Keyword</SelectItem>
-                </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-24 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
-                    <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="success">Success</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-            </Select>
-            {kwList.length > 0 && (
-                <Select value={keywordFilter} onValueChange={setKeywordFilter}>
-                    <SelectTrigger className="w-full sm:w-32 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
-                        <SelectValue placeholder="Keyword" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Keywords</SelectItem>
-                        {kwList.map(kw => (
-                            <SelectItem key={kw.id} value={kw.id}>{kw.keyword}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            )}
-            {hasActiveFilters && (
-                <button onClick={resetFilters} className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors shrink-0">
-                    <X className="h-2.5 w-2.5" />
-                </button>
-            )}
-        </>
+    const runButton = (
+        <button
+            onClick={handleRunProjectSynthesis}
+            disabled={stream.isStreaming}
+            className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full glass-subtle text-[11px] font-medium text-primary disabled:opacity-50 transition-colors shrink-0"
+        >
+            {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+            <span className="hidden sm:inline">Run</span>
+        </button>
     );
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
-            <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-2 space-y-1.5">
-                <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5">
-                    <span className="text-xs font-medium text-foreground/80">Synthesis</span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{synthList.length}</span>
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
-                        <input
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            placeholder="Search content, keywords..."
-                            className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-                    {isMobile ? (
-                        <button
-                            onClick={() => setDrawerOpen(true)}
-                            className={cn(
-                                'inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle transition-colors relative shrink-0',
-                                hasActiveFilters ? 'text-primary' : 'text-muted-foreground/60',
-                            )}
-                        >
-                            <SlidersHorizontal className="h-3 w-3" />
-                            {hasActiveFilters && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />}
-                        </button>
-                    ) : null}
-                    <button
-                        onClick={handleRunProjectSynthesis}
-                        disabled={stream.isStreaming}
-                        className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full glass-subtle text-[11px] font-medium text-primary disabled:opacity-50 transition-colors shrink-0"
-                    >
-                        {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                        <span className="hidden sm:inline">Run</span>
-                    </button>
-                </div>
-                {!isMobile && (
-                    <div className="flex items-center gap-1.5 flex-wrap px-1">
-                        {filterSelects}
-                    </div>
-                )}
+            <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-2">
+                <ResearchFilterBar
+                    title="Synthesis"
+                    count={`${filtered.length}/${synthList.length}`}
+                    filters={filterDefs}
+                    search={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search content, keywords..."
+                    trailing={runButton}
+                />
             </div>
-
-            {isMobile && (
-                <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-                    <DrawerContent className="max-h-[75dvh]">
-                        <DrawerTitle className="px-4 pt-3 text-xs font-semibold">Filter Synthesis</DrawerTitle>
-                        <div className="p-4 space-y-3 pb-safe">
-                            <div className="flex flex-col gap-2">{filterSelects}</div>
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            )}
 
             <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4">
                 {/* Live streaming synthesis card — shown while LLM is writing */}
@@ -298,7 +243,7 @@ export default function SynthesisList() {
                             <p className="text-xs font-medium text-foreground/70">
                                 {synthList.length === 0 ? 'No syntheses yet' : 'No matches'}
                             </p>
-                            <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                            <p className="text-[10px] text-muted-foreground mt-1 max-w-[240px]">
                                 {synthList.length === 0
                                     ? 'Synthesize your scraped content and analyses into cohesive research summaries.'
                                     : 'Try adjusting your search or filters to find what you\'re looking for.'}
@@ -320,8 +265,8 @@ export default function SynthesisList() {
                         {projectSyntheses.length > 0 && (
                             <section className="space-y-2">
                                 <div className="flex items-center gap-1.5 px-0.5">
-                                    <Layers className="h-3 w-3 text-muted-foreground/50" />
-                                    <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">
+                                    <Layers className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                                         Project Report
                                     </span>
                                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{projectSyntheses.length}</Badge>
@@ -335,8 +280,8 @@ export default function SynthesisList() {
                         {keywordSyntheses.length > 0 && (
                             <section className="space-y-2">
                                 <div className="flex items-center gap-1.5 px-0.5">
-                                    <Layers className="h-3 w-3 text-muted-foreground/50" />
-                                    <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">
+                                    <Layers className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                                         Keyword Syntheses
                                     </span>
                                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{keywordSyntheses.length}</Badge>

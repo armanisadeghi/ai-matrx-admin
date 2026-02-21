@@ -90,7 +90,7 @@ const ResizablePanel = (
                 >
                     <GripVertical
                         className={cn(
-                            'h-4 w-4 text-muted-foreground/40',
+                            'h-4 w-4 text-muted-foreground',
                             isResizing && 'text-primary'
                         )}
                     />
@@ -108,7 +108,7 @@ const ResizablePanel = (
                 >
                     <GripVertical
                         className={cn(
-                            'h-4 w-4 text-muted-foreground/40',
+                            'h-4 w-4 text-muted-foreground',
                             isResizing && 'text-primary'
                         )}
                     />

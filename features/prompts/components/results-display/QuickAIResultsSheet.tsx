@@ -332,7 +332,7 @@ export function QuickAIResultsSheet() {
           </div>
         ) : allRuns.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <Inbox className="w-12 h-12 text-muted-foreground/50 mb-3" />
+            <Inbox className="w-12 h-12 text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">No chats yet</p>
             <p className="text-xs text-muted-foreground mt-1">
               Start a new chat or load previous ones

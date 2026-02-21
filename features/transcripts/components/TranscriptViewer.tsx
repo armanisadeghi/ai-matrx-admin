@@ -176,7 +176,7 @@ export function TranscriptViewer() {
         return (
             <div className="flex-1 flex items-center justify-center text-muted-foreground bg-background">
                 <div className="text-center">
-                    <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                    <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                     <p>Select a transcript to view</p>
                 </div>
             </div>

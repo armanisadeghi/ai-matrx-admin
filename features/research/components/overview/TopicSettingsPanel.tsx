@@ -96,7 +96,7 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-5">
                 {/* Project */}
                 <section className="space-y-2 pt-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">Project</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Project</span>
                     <Select
                         value={selectedProjectId}
                         onValueChange={setSelectedProjectId}
@@ -119,7 +119,7 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
                                         <FolderOpen className="h-3 w-3 shrink-0 text-muted-foreground" />
                                         {p.name}
                                         {p.isPersonal && (
-                                            <span className="text-[9px] text-muted-foreground/50">Personal</span>
+                                            <span className="text-[9px] text-muted-foreground">Personal</span>
                                         )}
                                     </span>
                                 </SelectItem>
@@ -142,7 +142,7 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
 
                 {/* Basic Info */}
                 <section className="space-y-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">Basic Info</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Basic Info</span>
 
                     <div className="space-y-1">
                         <label htmlFor="topic-name" className="text-[11px] font-medium text-muted-foreground">Name</label>
@@ -189,13 +189,13 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
 
                 {/* Autonomy */}
                 <section className="space-y-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">Automation</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Automation</span>
                     <AutonomySelector value={autonomyLevel} onChange={setAutonomyLevel} />
                 </section>
 
                 {/* Search & Scrape Settings */}
                 <section className="space-y-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">Search & Scrape</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Search & Scrape</span>
 
                     <div className="space-y-1">
                         <label className="text-[11px] font-medium text-muted-foreground">Provider</label>

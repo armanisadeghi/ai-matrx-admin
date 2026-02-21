@@ -904,7 +904,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     <span className="font-mono text-primary">{item.parent_id.slice(0, 8)}</span>
                                                     {(() => {
                                                         const parent = allFeedbackItems.find(f => f.id === item.parent_id);
-                                                        return parent ? <span className="text-muted-foreground truncate">{parent.description.slice(0, 60)}</span> : <span className="text-muted-foreground/50 italic">Loading...</span>;
+                                                        return parent ? <span className="text-muted-foreground truncate">{parent.description.slice(0, 60)}</span> : <span className="text-muted-foreground italic">Loading...</span>;
                                                     })()}
                                                 </button>
                                             </div>

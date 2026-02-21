@@ -29,15 +29,15 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
 
     const getTextSizeClass = (text: string, isMultiLine: boolean = false) => {
         const length = text.length;
-        
+
         if (isMultiLine) {
             if (layoutMode === "list") {
                 if (length < 120) return "text-sm md:text-base";
                 return "text-xs md:text-sm";
             }
-            if (length < 80) return "text-sm md:text-base";
-            if (length < 150) return "text-xs md:text-sm";
-            return "text-[11px] md:text-xs";
+            if (length < 150) return "text-lg";
+            if (length < 250) return "text-base md:text-lg";
+            return "text-sm md:text-base";
         }
 
         if (layoutMode === "list") {
@@ -57,7 +57,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
         if (!isMultiLineBack) {
             return back;
         }
-        
+
         return back.split('\n').map((line, i) => (
             <div key={i} className={line === '' ? 'h-1.5' : undefined}>
                 {line}
@@ -105,7 +105,7 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
                     }}
                 >
                     <CardContent className="flex flex-col items-center justify-center h-full p-4 relative">
-                        <div 
+                        <div
                             className={cn(
                                 "text-center font-medium text-gray-800 dark:text-gray-200 leading-relaxed",
                                 "max-h-full overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 dark:scrollbar-thumb-blue-700",
@@ -140,13 +140,13 @@ const FlashcardItem: React.FC<FlashcardItemProps> = ({ front, back, index, layou
                         "flex flex-col h-full p-4 relative",
                         isMultiLineBack ? "items-start justify-start pt-5" : "items-center justify-center"
                     )}>
-                        <div 
+                        <div
                             className={cn(
-                                "font-medium text-gray-800 dark:text-gray-200",
+                                "font-medium text-foreground",
                                 "max-h-full overflow-y-auto scrollbar-thin scrollbar-thumb-green-300 dark:scrollbar-thumb-green-700",
-                                "px-2 w-full",
-                                isMultiLineBack 
-                                    ? "text-left leading-snug" 
+                                "px-1 w-full",
+                                isMultiLineBack
+                                    ? "text-left leading-snug"
                                     : "text-center leading-relaxed",
                                 getTextSizeClass(back, isMultiLineBack)
                             )}

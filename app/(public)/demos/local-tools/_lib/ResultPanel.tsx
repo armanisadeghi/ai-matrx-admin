@@ -123,7 +123,7 @@ export function MessageLog({ logs, onClear, maxHeight = 'max-h-[400px]' }: Messa
                                 {entry.direction === 'sent' ? 'SEND' : 'RECV'}
                             </Badge>
                             {entry.tool && <span className="text-muted-foreground">{entry.tool}</span>}
-                            <span className="text-muted-foreground/50 ml-auto">
+                            <span className="text-muted-foreground ml-auto">
                                 {entry.timestamp.toLocaleTimeString()}
                             </span>
                         </div>

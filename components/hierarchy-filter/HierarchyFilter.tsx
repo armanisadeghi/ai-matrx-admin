@@ -102,7 +102,7 @@ export function HierarchyFilter({
       {hasSelection && (
         <button
           onClick={resetAll}
-          className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors"
+          className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Reset filters"
         >
           <RotateCcw className="h-2.5 w-2.5" />
@@ -113,13 +113,13 @@ export function HierarchyFilter({
         <>
           <div className="w-px h-4 bg-border/30 mx-0.5" />
           <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full glass-subtle">
-            <Search className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+            <Search className="h-3 w-3 text-muted-foreground shrink-0" />
             <input
               type="text"
               value={searchValue ?? ''}
               onChange={(e) => onSearchChange?.(e.target.value)}
               placeholder={searchPlaceholder}
-              className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground/40"
+              className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground"
               style={{ fontSize: '16px' }}
             />
             {searchValue && (
@@ -127,7 +127,7 @@ export function HierarchyFilter({
                 onClick={() => onSearchChange?.('')}
                 className="shrink-0 p-0.5 rounded-full hover:bg-muted/50 transition-colors"
               >
-                <X className="h-2.5 w-2.5 text-muted-foreground/60" />
+                <X className="h-2.5 w-2.5 text-muted-foreground" />
               </button>
             )}
           </div>

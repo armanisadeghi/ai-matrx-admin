@@ -48,7 +48,7 @@ export default function CostDashboard() {
                 </div>
                 <div>
                     <p className="text-xs font-medium text-foreground/70">No cost data yet</p>
-                    <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                    <p className="text-[10px] text-muted-foreground mt-1 max-w-[240px]">
                         Costs are tracked automatically as you run scraping, analysis, synthesis, and document generation.
                     </p>
                 </div>

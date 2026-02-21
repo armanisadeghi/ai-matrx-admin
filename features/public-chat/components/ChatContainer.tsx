@@ -541,7 +541,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             <div className="absolute top-1 right-3 z-10 hidden md:block">
                                 <button
                                     onClick={() => setIsShareOpen(true)}
-                                    className="p-1.5 rounded-md text-muted-foreground/50 hover:text-foreground hover:bg-accent/50 transition-colors"
+                                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
                                     title="Share conversation"
                                 >
                                     <Share2 className="h-3.5 w-3.5" />

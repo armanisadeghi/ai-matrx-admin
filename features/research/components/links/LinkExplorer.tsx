@@ -83,12 +83,12 @@ export default function LinkExplorer() {
                 <span className="text-xs font-medium text-foreground/80">Links</span>
                 <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{linkList.length}</span>
                 <div className="flex-1 relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search url, text, source..."
-                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                         style={{ fontSize: '16px' }}
                     />
                 </div>
@@ -118,7 +118,7 @@ export default function LinkExplorer() {
                         <p className="text-xs font-medium text-foreground/70">
                             {linkList.length === 0 ? 'No links yet' : 'No matches'}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                        <p className="text-[10px] text-muted-foreground mt-1 max-w-[240px]">
                             {linkList.length === 0
                                 ? 'Links are automatically extracted from pages when you scrape your sources.'
                                 : 'Try adjusting your search to find what you\'re looking for.'}
@@ -146,10 +146,10 @@ export default function LinkExplorer() {
                                     <ExternalLink className="h-2.5 w-2.5 shrink-0" />
                                 </a>
                                 {link.link_text && (
-                                    <div className="text-[10px] text-muted-foreground/60 truncate mt-px">{link.url}</div>
+                                    <div className="text-[10px] text-muted-foreground truncate mt-px">{link.url}</div>
                                 )}
                                 {link.found_on_title && (
-                                    <div className="text-[10px] text-muted-foreground/50 mt-0.5">
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">
                                         from: {link.found_on_title}
                                     </div>
                                 )}

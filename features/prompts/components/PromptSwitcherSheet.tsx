@@ -264,7 +264,7 @@ function MobilePromptSwitcher({ open, onOpenChange, currentPromptId, mode }: Pro
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 autoFocus
-                                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-muted text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 border-0"
+                                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-muted text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30 border-0"
                                 style={{ fontSize: '16px' }}
                             />
                         </div>
@@ -323,7 +323,7 @@ function DesktopPromptSwitcher({ open, onOpenChange, currentPromptId, mode }: Pr
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             autoFocus
-                            className="w-full pl-9 pr-3 py-2 rounded-lg bg-muted text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 border-0"
+                            className="w-full pl-9 pr-3 py-2 rounded-lg bg-muted text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30 border-0"
                         />
                     </div>
                 </div>

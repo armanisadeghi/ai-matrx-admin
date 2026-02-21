@@ -26,7 +26,7 @@ export default function TopicError({
                 <p className="text-sm text-muted-foreground">
                     There was a problem loading this research topic. The data may be temporarily unavailable.
                     {error.digest && (
-                        <span className="block text-xs text-muted-foreground/50 mt-1">
+                        <span className="block text-xs text-muted-foreground mt-1">
                             Error ID: {error.digest}
                         </span>
                     )}

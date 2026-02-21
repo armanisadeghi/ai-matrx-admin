@@ -219,6 +219,16 @@ export async function getAnalysisForSource(sourceId: string): Promise<ResearchAn
     return data ?? [];
 }
 
+export async function getAnalysesForTopic(topicId: string): Promise<ResearchAnalysis[]> {
+    const { data, error } = await supabase
+        .from('rs_analysis')
+        .select('*')
+        .eq('topic_id', topicId)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+}
+
 // ============================================================================
 // Synthesis
 // ============================================================================

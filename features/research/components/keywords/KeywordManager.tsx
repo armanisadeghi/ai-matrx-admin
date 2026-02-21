@@ -1,31 +1,28 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Plus, Trash2, Loader2, Search, RefreshCw, X, SlidersHorizontal } from 'lucide-react';
+import { Plus, Trash2, Loader2, Search, RefreshCw, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useTopicContext } from '../../context/ResearchContext';
 import { useResearchKeywords } from '../../hooks/useResearchState';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { deleteKeyword as deleteKeywordService } from '../../service';
+import { ResearchFilterBar, type FilterDef } from '../shared/ResearchFilterBar';
+import type { FilterOption } from '@/components/hierarchy-filter';
 import type { ResearchKeyword } from '../../types';
 
 export default function KeywordManager() {
     const { topicId } = useTopicContext();
     const { data: keywords, isLoading, refresh } = useResearchKeywords(topicId);
     const api = useResearchApi();
-    const isMobile = useIsMobile();
 
     const [newKeyword, setNewKeyword] = useState('');
     const [adding, setAdding] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
-    const [staleFilter, setStaleFilter] = useState<string>('all');
-    const [providerFilter, setProviderFilter] = useState<string>('all');
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [staleFilter, setStaleFilter] = useState<string | null>(null);
+    const [providerFilter, setProviderFilter] = useState<string | null>(null);
 
     const items = keywords ?? [];
 
@@ -38,16 +35,17 @@ export default function KeywordManager() {
         let list = items;
         if (staleFilter === 'stale') list = list.filter(k => k.is_stale);
         else if (staleFilter === 'fresh') list = list.filter(k => !k.is_stale);
-        if (providerFilter !== 'all') list = list.filter(k => k.search_provider === providerFilter);
+        if (providerFilter) list = list.filter(k => k.search_provider === providerFilter);
         if (search) {
             const q = search.toLowerCase();
-            list = list.filter(k => k.keyword.toLowerCase().includes(q));
+            list = list.filter(k =>
+                k.keyword.toLowerCase().includes(q) ||
+                k.search_provider.toLowerCase().includes(q) ||
+                (k.last_searched_at ?? '').toLowerCase().includes(q),
+            );
         }
         return list;
     }, [items, staleFilter, providerFilter, search]);
-
-    const hasActiveFilters = staleFilter !== 'all' || providerFilter !== 'all';
-    const resetFilters = () => { setStaleFilter('all'); setProviderFilter('all'); };
 
     const handleAdd = async () => {
         const kw = newKeyword.trim();
@@ -76,57 +74,43 @@ export default function KeywordManager() {
         }
     };
 
-    const filterSelects = (
-        <>
-            <Select value={staleFilter} onValueChange={setStaleFilter}>
-                <SelectTrigger className="w-full sm:w-24 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
-                    <SelectValue placeholder="Freshness" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="fresh">Fresh</SelectItem>
-                    <SelectItem value="stale">Stale</SelectItem>
-                </SelectContent>
-            </Select>
-            {providers.length > 1 && (
-                <Select value={providerFilter} onValueChange={setProviderFilter}>
-                    <SelectTrigger className="w-full sm:w-24 h-7 text-[11px] rounded-full glass-subtle border-0" style={{ fontSize: '16px' }}>
-                        <SelectValue placeholder="Provider" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        {providers.map(p => (
-                            <SelectItem key={p} value={p}>{p}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            )}
-            {hasActiveFilters && (
-                <button onClick={resetFilters} className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors shrink-0">
-                    <X className="h-2.5 w-2.5" />
-                </button>
-            )}
-        </>
+    const freshnessOptions: FilterOption[] = [
+        { id: 'fresh', label: 'Fresh' },
+        { id: 'stale', label: 'Stale' },
+    ];
+    const providerOptions: FilterOption[] = useMemo(() =>
+        providers.map(p => ({ id: p, label: p })),
+        [providers],
     );
+
+    const filterDefs: FilterDef[] = useMemo(() => {
+        const defs: FilterDef[] = [
+            { key: 'freshness', label: 'Freshness', allLabel: 'All', options: freshnessOptions, selectedId: staleFilter, onSelect: setStaleFilter },
+        ];
+        if (providers.length > 1) {
+            defs.push({ key: 'provider', label: 'Provider', allLabel: 'All Providers', options: providerOptions, selectedId: providerFilter, onSelect: setProviderFilter });
+        }
+        return defs;
+    }, [freshnessOptions, providerOptions, staleFilter, providerFilter, providers.length]);
 
     return (
         <div className="p-3 sm:p-4 space-y-3">
             {/* Add keyword — glass toolbar (renders instantly) */}
             <div className="flex items-center gap-1.5 p-1 rounded-full glass">
                 <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full glass-subtle">
-                    <Search className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+                    <Search className="h-3 w-3 text-muted-foreground shrink-0" />
                     <input
                         value={newKeyword}
                         onChange={e => setNewKeyword(e.target.value)}
                         placeholder="Add a keyword..."
-                        className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground/40"
+                        className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground"
                         style={{ fontSize: '16px' }}
                         onKeyDown={e => e.key === 'Enter' && handleAdd()}
                         disabled={adding}
                     />
                     {newKeyword && (
                         <button onClick={() => setNewKeyword('')} className="shrink-0 p-0.5 rounded-full hover:bg-muted/50 transition-colors">
-                            <X className="h-2.5 w-2.5 text-muted-foreground/60" />
+                            <X className="h-2.5 w-2.5 text-muted-foreground" />
                         </button>
                     )}
                 </div>
@@ -144,53 +128,20 @@ export default function KeywordManager() {
                 </button>
                 <button
                     onClick={refresh}
-                    className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+                    className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors shrink-0"
                 >
                     <RefreshCw className="h-2.5 w-2.5" />
                 </button>
             </div>
 
-            {/* Search + filters row */}
-            <div className="flex items-center gap-1.5">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
-                    <input
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder="Filter keywords..."
-                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
-                        style={{ fontSize: '16px' }}
-                    />
-                </div>
-                <span className="text-[10px] text-muted-foreground/50 tabular-nums shrink-0">
-                    {filtered.length}/{items.length}
-                </span>
-                {isMobile ? (
-                    <button
-                        onClick={() => setDrawerOpen(true)}
-                        className={cn(
-                            'inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle transition-colors relative shrink-0',
-                            hasActiveFilters ? 'text-primary' : 'text-muted-foreground/60',
-                        )}
-                    >
-                        <SlidersHorizontal className="h-3 w-3" />
-                        {hasActiveFilters && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />}
-                    </button>
-                ) : (
-                    <>{filterSelects}</>
-                )}
-            </div>
-
-            {isMobile && (
-                <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-                    <DrawerContent className="max-h-[75dvh]">
-                        <DrawerTitle className="px-4 pt-3 text-xs font-semibold">Filter Keywords</DrawerTitle>
-                        <div className="p-4 space-y-3 pb-safe">
-                            <div className="flex flex-col gap-2">{filterSelects}</div>
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            )}
+            <ResearchFilterBar
+                title="Keywords"
+                count={`${filtered.length}/${items.length}`}
+                filters={filterDefs}
+                search={search}
+                onSearchChange={setSearch}
+                searchPlaceholder="Filter keywords..."
+            />
 
             {/* Keyword list — only this section shows loading */}
             {isLoading ? (
@@ -208,7 +159,7 @@ export default function KeywordManager() {
                         <p className="text-xs font-medium text-foreground/70">
                             {items.length === 0 ? 'No keywords yet' : 'No matches'}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                        <p className="text-[10px] text-muted-foreground mt-1 max-w-[240px]">
                             {items.length === 0
                                 ? 'Add keywords to define what topics to research. Each keyword drives source discovery.'
                                 : 'Try adjusting your search or filters to find what you\'re looking for.'}
@@ -224,7 +175,7 @@ export default function KeywordManager() {
                         >
                             <div className="min-w-0 flex-1">
                                 <div className="font-medium text-sm leading-tight">{kw.keyword}</div>
-                                <div className="text-[10px] text-muted-foreground/50 mt-0.5 flex items-center gap-2 flex-wrap">
+                                <div className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
                                     <span>{kw.search_provider}</span>
                                     {kw.result_count !== null && <span>{kw.result_count} results</span>}
                                     {kw.last_searched_at && <span>{new Date(kw.last_searched_at).toLocaleDateString()}</span>}

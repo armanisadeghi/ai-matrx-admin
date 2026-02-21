@@ -231,7 +231,7 @@ export default function ResearchOverview() {
                     </span>
                     <button
                         onClick={() => setSettingsOpen(true)}
-                        className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors"
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <Settings className="h-3 w-3" />
                     </button>
@@ -240,7 +240,7 @@ export default function ResearchOverview() {
 
             {/* Description — only if present, subtle */}
             {topic.description && (
-                <p className="text-[11px] text-muted-foreground/60 px-1 line-clamp-1">{topic.description}</p>
+                <p className="text-[11px] text-muted-foreground px-1 line-clamp-1">{topic.description}</p>
             )}
 
             {/* Action Buttons */}
@@ -270,7 +270,7 @@ export default function ResearchOverview() {
             {/* Iteration Controls */}
             {hasReport && (
                 <div className="space-y-2">
-                    <span className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider px-1">Iterate</span>
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">Iterate</span>
                     <IterationControls
                         onRebuild={handleRebuild}
                         onUpdate={handleUpdate}

@@ -116,7 +116,7 @@ export function HierarchyFilterPill({
                   {!selectedId && <Check className="h-2.5 w-2.5" />}
                 </div>
                 <span className="font-medium">{allLabel}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground/60 tabular-nums">
+                <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">
                   {options.length}
                 </span>
               </CommandItem>
@@ -135,10 +135,10 @@ export function HierarchyFilterPill({
                   </div>
                   <span className="truncate">{option.label}</span>
                   {option.sublabel && (
-                    <span className="text-[9px] text-muted-foreground/50">{option.sublabel}</span>
+                    <span className="text-[9px] text-muted-foreground">{option.sublabel}</span>
                   )}
                   {option.count !== undefined && (
-                    <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums shrink-0">
+                    <span className="ml-auto text-[10px] text-muted-foreground tabular-nums shrink-0">
                       {option.count}
                     </span>
                   )}

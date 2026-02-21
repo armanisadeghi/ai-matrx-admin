@@ -76,6 +76,7 @@ export const RESEARCH_NAV_ITEMS: ResearchNavItem[] = [
     { key: 'keywords',  label: 'Keywords',  icon: 'Search',          href: (id) => `/p/research/topics/${id}/keywords`,  group: 'primary',   mobileVisible: true  },
     { key: 'sources',   label: 'Sources',   icon: 'Globe',           href: (id) => `/p/research/topics/${id}/sources`,   group: 'primary',   mobileVisible: true  },
     { key: 'content',   label: 'Content',   icon: 'BookOpen',        href: (id) => `/p/research/topics/${id}/content`,   group: 'primary',   mobileVisible: true  },
+    { key: 'analysis',  label: 'Analysis',  icon: 'Brain',           href: (id) => `/p/research/topics/${id}/analysis`,  group: 'primary',   mobileVisible: true  },
     { key: 'synthesis', label: 'Synthesis', icon: 'FlaskConical',    href: (id) => `/p/research/topics/${id}/synthesis`, group: 'primary',   mobileVisible: true  },
     { key: 'document',  label: 'Document',  icon: 'FileText',        href: (id) => `/p/research/topics/${id}/document`,  group: 'primary',   mobileVisible: false },
     // ── Secondary utility tabs ───────────────────────────────────────────────

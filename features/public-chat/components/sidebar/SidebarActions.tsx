@@ -69,7 +69,7 @@ function PlaceholderDropdownRow({
                 <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors text-left group">
                     <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
                     <span className="text-xs flex-1">{label}</span>
-                    <ChevronRight className="h-3 w-3 text-muted-foreground/50 flex-shrink-0" />
+                    <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right" sideOffset={8} className="w-44">
@@ -108,7 +108,7 @@ export function SidebarActions({ onNewChat, searchQuery, onSearchChange }: Sideb
                     <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors text-left group">
                         <Sparkles className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
                         <span className="text-xs flex-1">Generate</span>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground/50 flex-shrink-0" />
+                        <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" side="right" sideOffset={8} className="w-40">

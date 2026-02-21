@@ -291,7 +291,7 @@ export function AgentWiringDashboard() {
                                                                 <div className="flex items-center gap-2">
                                                                     <span className={cn(
                                                                         'text-xs truncate',
-                                                                        val ? 'text-foreground' : 'text-muted-foreground/60',
+                                                                        val ? 'text-foreground' : 'text-muted-foreground',
                                                                     )}>
                                                                         {val ? (builtinNames[val] ?? val.slice(0, 12) + '...') : 'Using system default'}
                                                                     </span>

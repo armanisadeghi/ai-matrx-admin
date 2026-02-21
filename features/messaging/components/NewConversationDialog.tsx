@@ -316,7 +316,7 @@ export function NewConversationDialog({
                   </div>
                 ) : showNoResults ? (
                   <div className="flex flex-col items-center py-6 text-center">
-                    <User className="h-10 w-10 text-muted-foreground/50 mb-2" />
+                    <User className="h-10 w-10 text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground">
                       No users found matching "{searchQuery}"
                     </p>
@@ -360,7 +360,7 @@ export function NewConversationDialog({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center py-8 text-center">
-                    <User className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                    <User className="h-12 w-12 text-muted-foreground mb-3" />
                     <p className="text-sm text-muted-foreground mb-1">
                       No connections yet
                     </p>

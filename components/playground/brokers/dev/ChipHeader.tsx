@@ -32,7 +32,7 @@ const ChipHeader: React.FC<ChipHeaderProps> = ({
     const getStatusIcon = () => {
         switch (status) {
             case 'disconnected':
-                return <CloudOff className={getIconClasses('text-muted-foreground/50')} />;
+                return <CloudOff className={getIconClasses('text-muted-foreground')} />;
             case 'notFetched':
                 return <Database className={getIconClasses('text-yellow-500 dark:text-yellow-400')} />;
             case 'error':

@@ -53,12 +53,12 @@ export default function MediaGallery() {
                 <span className="text-xs font-medium text-foreground/80">Media</span>
                 <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{mediaList.length}</span>
                 <div className="flex-1 relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search alt text, caption, url..."
-                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                         style={{ fontSize: '16px' }}
                     />
                 </div>
@@ -94,7 +94,7 @@ export default function MediaGallery() {
                         <p className="text-xs font-medium text-foreground/70">
                             {mediaList.length === 0 ? 'No media yet' : 'No matches'}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                        <p className="text-[10px] text-muted-foreground mt-1 max-w-[240px]">
                             {mediaList.length === 0
                                 ? 'Images, videos, and other media are automatically extracted when you scrape sources.'
                                 : 'Try adjusting your search or filters to find what you\'re looking for.'}

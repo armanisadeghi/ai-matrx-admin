@@ -360,7 +360,7 @@ export function UserContentTemplateManager({ className }: UserContentTemplateMan
                         <div className="p-4 md:p-6">
                             {filteredTemplates.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                                    <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                                     <h3 className="text-lg font-semibold mb-2">No templates found</h3>
                                     <p className="text-sm text-muted-foreground mb-4">
                                         {activeTab === 'my' 

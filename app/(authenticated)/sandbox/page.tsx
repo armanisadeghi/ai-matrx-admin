@@ -265,7 +265,7 @@ export default function SandboxListPage() {
                                                 Redirecting to your sandbox...
                                             </p>
                                             {createdInstanceId && (
-                                                <p className="text-xs text-muted-foreground/60 mt-2 font-mono">
+                                                <p className="text-xs text-muted-foreground mt-2 font-mono">
                                                     {instances.find(i => i.id === createdInstanceId)?.sandbox_id || createdInstanceId}
                                                 </p>
                                             )}
@@ -283,7 +283,7 @@ export default function SandboxListPage() {
                                                             {instances.find(i => i.id === createdInstanceId)?.status || 'creating'}
                                                         </Badge>
                                                     </p>
-                                                    <p className="text-xs text-muted-foreground/60 mt-2 font-mono">
+                                                    <p className="text-xs text-muted-foreground mt-2 font-mono">
                                                         {instances.find(i => i.id === createdInstanceId)?.sandbox_id || createdInstanceId}
                                                     </p>
                                                 </>
@@ -376,7 +376,7 @@ export default function SandboxListPage() {
                 ) : uniqueInstances.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
-                            <Container className="w-12 h-12 mx-auto mb-4 text-muted-foreground/40" />
+                            <Container className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                             <h3 className="text-lg font-medium mb-2">No Sandbox Instances</h3>
                             <p className="text-sm text-muted-foreground mb-4">
                                 Create your first sandbox to get started with an isolated development environment.

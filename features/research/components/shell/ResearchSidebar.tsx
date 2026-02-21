@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
     LayoutDashboard, Globe, FileText, Tags, Search, Image, DollarSign,
-    ChevronLeft, BookOpen, FlaskConical, Bot, Settings2,
+    ChevronLeft, BookOpen, FlaskConical, Bot, Settings2, Brain,
 } from 'lucide-react';
 import { RESEARCH_NAV_ITEMS } from '../../constants';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const ICON_MAP: Record<string, typeof LayoutDashboard> = {
     LayoutDashboard, Globe, FileText, Tags, Search, Image, DollarSign,
-    BookOpen, FlaskConical, Bot, Settings2,
+    BookOpen, FlaskConical, Bot, Settings2, Brain,
 };
 
 interface ResearchSidebarProps {
@@ -37,7 +37,7 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
             return (
                 <div
                     key={item.key}
-                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground/40 cursor-default select-none"
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground cursor-default select-none"
                 >
                     {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
                     <span className="truncate flex-1">{item.label}</span>
@@ -76,7 +76,7 @@ export function ResearchSidebar({ topicId }: ResearchSidebarProps) {
             <div className="flex items-center gap-1.5 px-2.5 h-10 border-b border-border/50">
                 <Link
                     href="/p/research/topics"
-                    className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground/60 hover:text-foreground transition-colors"
+                    className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <ChevronLeft className="h-3.5 w-3.5" />
                 </Link>

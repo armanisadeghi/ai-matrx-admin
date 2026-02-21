@@ -127,7 +127,7 @@ function SourceRow({
                             disabled={anyNavigating}
                         />
                         {source.rank ? (
-                            <span className="text-[10px] font-mono font-semibold text-muted-foreground/60 tabular-nums">
+                            <span className="text-[10px] font-mono font-semibold text-muted-foreground tabular-nums">
                                 #{source.rank}
                             </span>
                         ) : null}
@@ -147,7 +147,7 @@ function SourceRow({
                                 unoptimized
                             />
                         ) : (
-                            <Globe className="h-5 w-5 text-muted-foreground/40" />
+                            <Globe className="h-5 w-5 text-muted-foreground" />
                         )}
                     </div>
                 </td>
@@ -274,8 +274,21 @@ export default function SourceList() {
 
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [scrapingIds, setScrapingIds] = useState<Set<string>>(new Set());
+    const [search, setSearch] = useState('');
 
-    const sourceList = (sources as ResearchSource[]) ?? [];
+    const allSources = (sources as ResearchSource[]) ?? [];
+    const sourceList = useMemo(() => {
+        if (!search) return allSources;
+        const q = search.toLowerCase();
+        return allSources.filter(s =>
+            (s.title ?? '').toLowerCase().includes(q) ||
+            s.url.toLowerCase().includes(q) ||
+            (s.description ?? '').toLowerCase().includes(q) ||
+            (s.hostname ?? '').toLowerCase().includes(q) ||
+            (s.origin ?? '').toLowerCase().includes(q) ||
+            (s.source_type ?? '').toLowerCase().includes(q),
+        );
+    }, [allSources, search]);
     const hostnames = useMemo(() =>
         [...new Set(sourceList.map(s => s.hostname).filter(Boolean) as string[])].sort(),
         [sourceList],
@@ -352,20 +365,17 @@ export default function SourceList() {
 
     return (
         <div className="p-3 sm:p-4 space-y-3 overflow-x-hidden">
-            {/* Header — compact glass bar */}
-            <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5">
-                <span className="text-xs font-medium text-foreground/80">Sources</span>
-                <span className="text-[10px] text-muted-foreground tabular-nums">{sourceList.length}</span>
-                <div className="flex-1" />
-                <SourceFilters
-                    filters={filters}
-                    onFilterChange={setFilters}
-                    onReset={resetFilters}
-                    hasActiveFilters={hasActiveFilters}
-                    keywords={(keywords as import('../../types').ResearchKeyword[]) ?? []}
-                    hostnames={hostnames}
-                />
-            </div>
+            <SourceFilters
+                filters={filters}
+                onFilterChange={setFilters}
+                onReset={resetFilters}
+                hasActiveFilters={hasActiveFilters}
+                keywords={(keywords as import('../../types').ResearchKeyword[]) ?? []}
+                hostnames={hostnames}
+                count={sourceList.length}
+                search={search}
+                onSearchChange={setSearch}
+            />
 
             {/* Desktop Table */}
             {!isMobile ? (
@@ -481,7 +491,7 @@ export default function SourceList() {
                                             <div className="font-medium text-sm leading-snug line-clamp-2 break-words">
                                                 {source.title || source.url}
                                             </div>
-                                            <div className="text-[11px] text-muted-foreground/60 truncate mt-0.5">{source.hostname}</div>
+                                            <div className="text-[11px] text-muted-foreground truncate mt-0.5">{source.hostname}</div>
                                         </div>
                                         <Switch
                                             checked={source.is_included}
@@ -498,11 +508,11 @@ export default function SourceList() {
 
                                     {/* Badges row */}
                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                        <SourceTypeIcon type={source.source_type} size={12} className="text-muted-foreground/50" />
+                                        <SourceTypeIcon type={source.source_type} size={12} className="text-muted-foreground" />
                                         <StatusBadge status={source.scrape_status} />
                                         <OriginBadge origin={source.origin} />
                                         {source.page_age && (
-                                            <span className="text-[10px] text-muted-foreground/60">{pageAgeDisplay}</span>
+                                            <span className="text-[10px] text-muted-foreground">{pageAgeDisplay}</span>
                                         )}
                                         {needsScrape && (
                                             <button
@@ -536,7 +546,7 @@ export default function SourceList() {
                     >
                         Prev
                     </button>
-                    <span className="text-[10px] text-muted-foreground/60 tabular-nums px-1">
+                    <span className="text-[10px] text-muted-foreground tabular-nums px-1">
                         {filters.offset + 1}–{filters.offset + sourceList.length}
                     </span>
                     <button

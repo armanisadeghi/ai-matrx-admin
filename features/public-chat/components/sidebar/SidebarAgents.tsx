@@ -143,7 +143,7 @@ function AgentSubsection({
                     onClick={() => setIsExpanded(!expanded)}
                     className="flex items-center gap-1 flex-1 min-w-0 text-left"
                 >
-                    <ChevronRight className={`h-2.5 w-2.5 text-muted-foreground/50 transition-transform duration-150 flex-shrink-0 ${
+                    <ChevronRight className={`h-2.5 w-2.5 text-muted-foreground transition-transform duration-150 flex-shrink-0 ${
                         expanded ? 'rotate-90' : ''
                     }`} />
                     <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider select-none truncate">
@@ -151,7 +151,7 @@ function AgentSubsection({
                     </span>
                     {/* Inline count + expand hint */}
                     {hasMore && !expanded && (
-                        <span className="text-[9px] text-muted-foreground/40 ml-0.5 flex-shrink-0">
+                        <span className="text-[9px] text-muted-foreground ml-0.5 flex-shrink-0">
                             +{hiddenCount}
                         </span>
                     )}
@@ -161,7 +161,7 @@ function AgentSubsection({
                 {agents.length > 3 && (
                     <button
                         onClick={toggleSearch}
-                        className="p-0.5 rounded text-muted-foreground/40 hover:text-muted-foreground transition-colors flex-shrink-0"
+                        className="p-0.5 rounded text-muted-foreground hover:text-muted-foreground transition-colors flex-shrink-0"
                         title="Search agents"
                     >
                         {showSearch ? <X className="h-2.5 w-2.5" /> : <Search className="h-2.5 w-2.5" />}
@@ -178,7 +178,7 @@ function AgentSubsection({
                         value={localSearch}
                         onChange={(e) => setLocalSearch(e.target.value)}
                         autoFocus
-                        className="w-full px-2 py-0.5 text-[11px] rounded bg-muted/50 text-foreground placeholder:text-muted-foreground/50 outline-none focus:bg-muted/80 border-0"
+                        className="w-full px-2 py-0.5 text-[11px] rounded bg-muted/50 text-foreground placeholder:text-muted-foreground outline-none focus:bg-muted/80 border-0"
                         style={{ fontSize: '16px' }}
                     />
                 </div>
@@ -187,7 +187,7 @@ function AgentSubsection({
             {/* Agent list */}
             <div className="px-1">
                 {agents.length === 0 && emptyMessage && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-muted-foreground/50">
+                    <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-muted-foreground">
                         <Lock className="h-2.5 w-2.5 flex-shrink-0" />
                         <span>{emptyMessage}</span>
                     </div>
@@ -202,7 +202,7 @@ function AgentSubsection({
                     />
                 ))}
                 {filteredAgents.length === 0 && agents.length > 0 && localSearch && (
-                    <p className="px-2 py-1 text-[10px] text-muted-foreground/40">No matches</p>
+                    <p className="px-2 py-1 text-[10px] text-muted-foreground">No matches</p>
                 )}
             </div>
         </div>

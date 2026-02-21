@@ -553,7 +553,7 @@ function FilterBar({ active, onChange, counts }: {
                     }`}
                 >
                     {label}
-                    <span className={`text-[10px] ${active === key ? "text-primary-foreground/80" : "text-muted-foreground/60"}`}>
+                    <span className={`text-[10px] ${active === key ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                         {counts[key]}
                     </span>
                 </button>

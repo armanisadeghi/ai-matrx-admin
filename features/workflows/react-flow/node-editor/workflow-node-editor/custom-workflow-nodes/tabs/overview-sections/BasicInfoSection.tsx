@@ -38,7 +38,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ nodeData, onNodeUpd
                                     value={nodeData.step_name || ''}
                                     onChange={(e) => updateNodeField('step_name', e.target.value)}
                                     placeholder="Enter step name"
-                                    className={`h-8 text-sm placeholder:text-muted-foreground/60 ${
+                                    className={`h-8 text-sm placeholder:text-muted-foreground ${
                                         (nodeData.step_name || '') === 'Unnamed Step' 
                                             ? 'text-muted-foreground dark:text-muted-foreground' 
                                             : ''

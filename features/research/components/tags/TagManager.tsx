@@ -139,12 +139,12 @@ export default function TagManager() {
                 <span className="text-xs font-medium text-foreground/80">Tags</span>
                 <span className="text-[10px] text-muted-foreground tabular-nums">{filtered.length}/{tagList.length}</span>
                 <div className="flex-1 relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search tags..."
-                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/40"
+                        className="w-full h-6 pl-7 pr-2 text-[11px] rounded-full glass-subtle border-0 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                         style={{ fontSize: '16px' }}
                     />
                 </div>
@@ -166,7 +166,7 @@ export default function TagManager() {
                         <p className="text-xs font-medium text-foreground/70">
                             {tagList.length === 0 ? 'No tags yet' : 'No matches'}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[240px]">
+                        <p className="text-[10px] text-muted-foreground mt-1 max-w-[240px]">
                             {tagList.length === 0
                                 ? 'Create tags to categorize and organize your research sources into themes.'
                                 : 'Try adjusting your search to find what you\'re looking for.'}
@@ -186,7 +186,7 @@ export default function TagManager() {
                 <div className="space-y-1.5">
                     {filtered.map(tag => (
                         <div key={tag.id} className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-2.5 sm:p-3 group">
-                            <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0 cursor-grab hidden sm:block" />
+                            <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab hidden sm:block" />
                             <div className="flex-1 min-w-0">
                                 <Link
                                     href={`/p/research/topics/${topicId}/tags/${tag.id}`}

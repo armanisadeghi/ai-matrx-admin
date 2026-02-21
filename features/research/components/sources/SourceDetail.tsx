@@ -474,7 +474,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     </div>
                                     <p className="text-xs font-medium text-foreground/70">Scraping…</p>
                                     {scrapeStream.messages.length > 0 && (
-                                        <p className="text-[10px] text-muted-foreground/60 max-w-[240px]">
+                                        <p className="text-[10px] text-muted-foreground max-w-[240px]">
                                             {scrapeStream.messages[scrapeStream.messages.length - 1].message}
                                         </p>
                                     )}
@@ -486,7 +486,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     </div>
                                     <div>
                                         <p className="text-xs font-medium text-foreground/70">Scrape failed</p>
-                                        <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-[240px]">
+                                        <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[240px]">
                                             The scraper couldn&apos;t retrieve this page. Try re-scraping or paste content manually.
                                         </p>
                                     </div>
@@ -515,7 +515,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                                     </div>
                                     <div>
                                         <p className="text-xs font-medium text-foreground/70">No content yet</p>
-                                        <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-[240px]">
+                                        <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[240px]">
                                             Scrape this source to fetch its page content, or paste content manually.
                                         </p>
                                     </div>
@@ -540,7 +540,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                             )}
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-dashed border-border/50 bg-card/30 min-h-[220px] flex items-center justify-center text-muted-foreground/50 text-xs">
+                        <div className="rounded-xl border border-dashed border-border/50 bg-card/30 min-h-[220px] flex items-center justify-center text-muted-foreground text-xs">
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             Loading source...
                         </div>
@@ -550,10 +550,10 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                 {/* Analysis Section */}
                 <div className="space-y-2 min-h-[180px]">
                     <div className="flex items-center justify-between px-0.5">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Analysis
                             {currentAnalyses.length > 0 && (
-                                <span className="ml-1.5 text-muted-foreground/40">({currentAnalyses.length})</span>
+                                <span className="ml-1.5 text-muted-foreground">({currentAnalyses.length})</span>
                             )}
                         </span>
                         {currentContent && currentAnalyses.length > 0 && !isAnalyzing && (
@@ -608,7 +608,7 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                             <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center">
                                 <Brain className="h-5 w-5 text-muted-foreground/30" />
                             </div>
-                            <p className="text-[10px] text-muted-foreground/40 max-w-[200px]">
+                            <p className="text-[10px] text-muted-foreground max-w-[200px]">
                                 Scrape content first, then run analysis to extract insights.
                             </p>
                         </div>

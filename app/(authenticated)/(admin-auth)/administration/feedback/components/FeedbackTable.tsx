@@ -516,7 +516,7 @@ export default function FeedbackTable() {
                             return (
                                 <React.Fragment key={stage.key}>
                                     {index > 0 && (
-                                        <ArrowRight className="w-3 h-3 text-muted-foreground/40 flex-shrink-0 hidden sm:block" />
+                                        <ArrowRight className="w-3 h-3 text-muted-foreground flex-shrink-0 hidden sm:block" />
                                     )}
                                     <button
                                         onClick={() => {
@@ -874,7 +874,7 @@ export default function FeedbackTable() {
                                             <TableCell>
                                                 <div className={cn('flex flex-col gap-0.5', isChildRow && 'pl-3')}>
                                                     {isChildRow && (
-                                                        <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground/60 mb-0.5">
+                                                        <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground mb-0.5">
                                                             <CornerDownRight className="w-2.5 h-2.5" />
                                                             child
                                                         </span>
@@ -909,7 +909,7 @@ export default function FeedbackTable() {
                                                     {item.work_priority !== null ? (
                                                         <span className="text-foreground/80">#{item.work_priority}</span>
                                                     ) : (
-                                                        <span className="text-muted-foreground/40">-</span>
+                                                        <span className="text-muted-foreground">-</span>
                                                     )}
                                                 </div>
                                             </TableCell>

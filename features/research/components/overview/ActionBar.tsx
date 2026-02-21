@@ -71,7 +71,7 @@ export function ActionBar({ onRun, onSearch, onScrape, onAnalyze, onReport, isSt
                                 <span className="leading-none">{action.label}</span>
                             </button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-xs text-xs">{isDisabled ? 'Please wait...' : action.tooltip}</TooltipContent>
+                        <TooltipContent side="top" className="max-w-xs text-xs">{isDisabled ? 'Please wait...' : action.tooltip}</TooltipContent>
                     </Tooltip>
                 );
             })}

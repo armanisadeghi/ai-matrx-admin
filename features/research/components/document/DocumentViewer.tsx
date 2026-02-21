@@ -126,7 +126,7 @@ export default function DocumentViewer() {
                 </div>
                 <div>
                     <p className="text-xs font-medium text-foreground/70">No document yet</p>
-                    <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[260px]">
+                    <p className="text-[10px] text-muted-foreground mt-1 max-w-[260px]">
                         Generate a comprehensive research document from your sources, content, and syntheses.
                     </p>
                 </div>
@@ -151,7 +151,7 @@ export default function DocumentViewer() {
                 <div>
                     <p className="text-xs font-medium text-destructive/80">Generation failed</p>
                     {document.error && (
-                        <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[280px]">{document.error}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1 max-w-[280px]">{document.error}</p>
                     )}
                 </div>
                 <button
@@ -202,7 +202,7 @@ export default function DocumentViewer() {
                 <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5 mb-4">
                     <span className="text-xs font-medium text-foreground/80 truncate">{document.title ?? 'Document'}</span>
                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5">v{document.version}</Badge>
-                    <span className="text-[10px] text-muted-foreground/60">
+                    <span className="text-[10px] text-muted-foreground">
                         {new Date(document.created_at).toLocaleDateString()}
                     </span>
                     <div className="flex-1" />
