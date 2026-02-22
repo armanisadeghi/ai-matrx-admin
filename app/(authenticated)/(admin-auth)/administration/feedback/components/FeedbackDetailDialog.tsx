@@ -721,6 +721,17 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                 Priority #{item.work_priority}
                                             </span>
                                         )}
+                                        {item.category_id && (() => {
+                                            const cat = categories.find(c => c.id === item.category_id);
+                                            if (!cat) return null;
+                                            const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                            return (
+                                                <span className={cn('flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium', colors.bg, colors.text, colors.border)}>
+                                                    <span className={cn('w-1.5 h-1.5 rounded-full', colors.bg, 'border', colors.border)} />
+                                                    {cat.name}
+                                                </span>
+                                            );
+                                        })()}
                                     </span>
                                 </DialogDescription>
                             </div>
@@ -1211,25 +1222,27 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 {/* Category */}
                                 {categories.length > 0 && (
                                     <div>
-                                        <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
+                                        <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
                                             <Tag className="w-3.5 h-3.5" />
                                             Category
                                         </label>
                                         <Select value={categoryId} onValueChange={setCategoryId}>
-                                            <SelectTrigger>
-                                                {categoryId !== 'none' ? (() => {
-                                                    const cat = categories.find(c => c.id === categoryId);
-                                                    if (!cat) return <span className="text-muted-foreground text-sm">Uncategorized</span>;
-                                                    const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
-                                                    return (
-                                                        <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border', colors.bg, colors.text, colors.border)}>
-                                                            <Tag className="w-3 h-3" />
-                                                            {cat.name}
-                                                        </span>
-                                                    );
-                                                })() : (
-                                                    <span className="text-muted-foreground text-sm">Uncategorized</span>
-                                                )}
+                                            <SelectTrigger className="h-9">
+                                                <SelectValue>
+                                                    {categoryId !== 'none' ? (() => {
+                                                        const cat = categories.find(c => c.id === categoryId);
+                                                        if (!cat) return <span className="text-muted-foreground">Uncategorized</span>;
+                                                        const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                                        return (
+                                                            <span className="flex items-center gap-2 min-w-0">
+                                                                <span className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0 border', colors.bg, colors.border)} />
+                                                                <span className={cn('text-sm font-medium truncate', colors.text)}>{cat.name}</span>
+                                                            </span>
+                                                        );
+                                                    })() : (
+                                                        <span className="text-muted-foreground">Uncategorized</span>
+                                                    )}
+                                                </SelectValue>
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="none">Uncategorized</SelectItem>
@@ -1238,7 +1251,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                     return (
                                                         <SelectItem key={cat.id} value={cat.id}>
                                                             <span className="flex items-center gap-1.5">
-                                                                <span className={cn('w-2 h-2 rounded-full inline-block border', colors.bg, colors.border)} />
+                                                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0 border', colors.bg, colors.border)} />
                                                                 {cat.name}
                                                             </span>
                                                         </SelectItem>

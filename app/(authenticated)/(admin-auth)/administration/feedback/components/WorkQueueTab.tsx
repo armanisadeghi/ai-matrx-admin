@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAgentWorkQueue, updateFeedback, setAdminDecision } from '@/actions/feedback.actions';
+import { getAgentWorkQueue, setAdminDecision } from '@/actions/feedback.actions';
 import {
     UserFeedback,
+    FeedbackCategory,
     FEEDBACK_STATUS_COLORS,
     ADMIN_STATUS_LABELS,
-    ADMIN_DECISION_COLORS,
-    ADMIN_DECISION_LABELS,
+    CATEGORY_COLORS,
 } from '@/types/feedback.types';
+import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import FeedbackDetailDialog from './FeedbackDetailDialog';
 
 const feedbackTypeIcons: Record<string, React.ReactNode> = {
@@ -46,6 +46,7 @@ const complexityConfig: Record<string, { label: string; color: string }> = {
 
 export default function WorkQueueTab() {
     const [items, setItems] = useState<UserFeedback[]>([]);
+    const [categories, setCategories] = useState<FeedbackCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [reordering, setReordering] = useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<UserFeedback | null>(null);
@@ -54,11 +55,17 @@ export default function WorkQueueTab() {
     const loadQueue = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await getAgentWorkQueue();
-            if (result.success && result.data) {
-                setItems(result.data);
+            const [queueResult] = await Promise.all([
+                getAgentWorkQueue(),
+                fetch('/api/admin/feedback/categories')
+                    .then(r => r.json())
+                    .then(d => setCategories(d.categories ?? []))
+                    .catch(() => {}),
+            ]);
+            if (queueResult.success && queueResult.data) {
+                setItems(queueResult.data);
             } else {
-                toast.error(`Failed to load work queue: ${result.error}`);
+                toast.error(`Failed to load work queue: ${queueResult.error}`);
             }
         } catch (error) {
             console.error('Error loading work queue:', error);
@@ -200,6 +207,17 @@ export default function WorkQueueTab() {
                                             <Badge className={`${statusColors?.bg || ''} ${statusColors?.text || ''} border-0 text-[10px]`}>
                                                 {ADMIN_STATUS_LABELS[item.status]}
                                             </Badge>
+                                            {item.category_id && (() => {
+                                                const cat = categories.find(c => c.id === item.category_id);
+                                                if (!cat) return null;
+                                                const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                                return (
+                                                    <span className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium', colors.bg, colors.text, colors.border)}>
+                                                        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0 border', colors.border)} style={{ background: 'currentColor', opacity: 0.6 }} />
+                                                        {cat.name}
+                                                    </span>
+                                                );
+                                            })()}
                                             {complexity && (
                                                 <Badge className={`${complexity.color} border-0 text-[10px]`}>
                                                     {complexity.label}

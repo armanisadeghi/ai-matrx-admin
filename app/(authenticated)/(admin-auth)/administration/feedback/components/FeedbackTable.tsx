@@ -605,6 +605,50 @@ export default function FeedbackTable() {
                             className="pl-10 h-9"
                         />
                     </div>
+                    {categories.length > 0 && (
+                        <Select value={filterCategory} onValueChange={setFilterCategory}>
+                            <SelectTrigger className="w-[160px] h-9 text-xs">
+                                <SelectValue>
+                                    {filterCategory === 'all' ? (
+                                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                                            <Tag className="w-3 h-3" />
+                                            All Categories
+                                        </span>
+                                    ) : filterCategory === 'none' ? (
+                                        <span className="flex items-center gap-1.5">
+                                            <Tag className="w-3 h-3" />
+                                            Uncategorized
+                                        </span>
+                                    ) : (() => {
+                                        const cat = categories.find(c => c.id === filterCategory);
+                                        if (!cat) return <span className="text-muted-foreground">Category</span>;
+                                        const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                        return (
+                                            <span className="flex items-center gap-1.5 min-w-0">
+                                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0 border', colors.bg, colors.border)} />
+                                                <span className={cn('truncate font-medium', colors.text)}>{cat.name}</span>
+                                            </span>
+                                        );
+                                    })()}
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Categories</SelectItem>
+                                <SelectItem value="none">Uncategorized</SelectItem>
+                                {categories.filter(c => c.is_active).map(cat => {
+                                    const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                    return (
+                                        <SelectItem key={cat.id} value={cat.id}>
+                                            <span className="flex items-center gap-1.5">
+                                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0 border', colors.bg, colors.border)} />
+                                                <span className={colors.text}>{cat.name}</span>
+                                            </span>
+                                        </SelectItem>
+                                    );
+                                })}
+                            </SelectContent>
+                        </Select>
+                    )}
                     <Button
                         variant={showFilters || hasActiveFilters ? 'secondary' : 'outline'}
                         size="sm"
@@ -688,28 +732,6 @@ export default function FeedbackTable() {
                                 <SelectItem value="no">No Open Issues</SelectItem>
                             </SelectContent>
                         </Select>
-                        {categories.length > 0 && (
-                            <Select value={filterCategory} onValueChange={setFilterCategory}>
-                                <SelectTrigger className="w-full md:w-[180px] h-8 text-xs">
-                                    <SelectValue placeholder="Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Categories</SelectItem>
-                                    <SelectItem value="none">Uncategorized</SelectItem>
-                                    {categories.filter(c => c.is_active).map(cat => {
-                                        const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
-                                        return (
-                                            <SelectItem key={cat.id} value={cat.id}>
-                                                <span className="flex items-center gap-1.5">
-                                                    <span className={cn('w-2 h-2 rounded-full inline-block', colors.bg, 'border', colors.border)} />
-                                                    {cat.name}
-                                                </span>
-                                            </SelectItem>
-                                        );
-                                    })}
-                                </SelectContent>
-                            </Select>
-                        )}
                         {hasActiveFilters && (
                             <Button
                                 variant="ghost"
@@ -776,6 +798,7 @@ export default function FeedbackTable() {
                                         <ArrowUpDown className="w-3 h-3" />
                                     </button>
                                 </TableHead>
+                                <TableHead className="w-[120px]">Category</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead className="w-[150px]">Decision</TableHead>
                                 <TableHead className="w-[130px]">
@@ -802,7 +825,7 @@ export default function FeedbackTable() {
                         <TableBody>
                             {filteredAndSortedFeedback.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                                    <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                                         <div className="flex flex-col items-center gap-1">
                                             {activeStage === 'untriaged' && (
                                                 <>
@@ -962,20 +985,28 @@ export default function FeedbackTable() {
                                                     )}
                                                 </div>
                                             </TableCell>
+                                            <TableCell onClick={(e) => e.stopPropagation()}>
+                                                {item.category_id ? (() => {
+                                                    const cat = categories.find(c => c.id === item.category_id);
+                                                    if (!cat) return <span className="text-xs text-muted-foreground">—</span>;
+                                                    const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
+                                                    return (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setFilterCategory(item.category_id!); }}
+                                                            className={cn('inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border hover:opacity-80 transition-opacity', colors.bg, colors.text, colors.border)}
+                                                            title={`Filter by ${cat.name}`}
+                                                        >
+                                                            <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0')} style={{ background: 'currentColor', opacity: 0.6 }} />
+                                                            {cat.name}
+                                                        </button>
+                                                    );
+                                                })() : (
+                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                )}
+                                            </TableCell>
                                             <TableCell>
                                                 <div className="flex items-start gap-2">
                                                     <div className="flex-1 min-w-0">
-                                                        {item.category_id && (() => {
-                                                            const cat = categories.find(c => c.id === item.category_id);
-                                                            if (!cat) return null;
-                                                            const colors = CATEGORY_COLORS[cat.color as keyof typeof CATEGORY_COLORS] ?? CATEGORY_COLORS.gray;
-                                                            return (
-                                                                <span className={cn('inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border mb-1 mr-1', colors.bg, colors.text, colors.border)}>
-                                                                    <Tag className="w-2.5 h-2.5" />
-                                                                    {cat.name}
-                                                                </span>
-                                                            );
-                                                        })()}
                                                         <p className="line-clamp-2 text-sm">{item.description}</p>
                                                     </div>
                                                     {isTriaged && item.ai_solution_proposal && (
