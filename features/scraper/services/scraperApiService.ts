@@ -14,44 +14,22 @@ import type {
   SearchAndScrapeLimitedRequest,
   ScraperStreamEvent,
 } from '../types/scraper-api';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
 
 /**
- * Parse NDJSON stream from scraper API
+ * Parse NDJSON stream from scraper API.
+ *
+ * Uses the shared read-ahead parser so the TCP reader loop runs independently
+ * of the consumer. This prevents server-side GeneratorExit when large payloads
+ * (e.g. scraped page content) cause consumer backpressure on the browser's
+ * ReadableStream and fill the OS TCP receive buffer.
  */
 async function* parseScraperStream(
   response: Response
 ): AsyncGenerator<ScraperStreamEvent> {
-  if (!response.body) {
-    throw new Error('No response body');
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed) {
-          try {
-            const event = JSON.parse(trimmed) as ScraperStreamEvent;
-            yield event;
-          } catch (error) {
-            console.warn('[Scraper Service] Failed to parse line:', trimmed.substring(0, 100));
-          }
-        }
-      }
-    }
-  } finally {
-    reader.releaseLock();
+  const { events } = parseNdjsonStream(response);
+  for await (const event of events) {
+    yield event as unknown as ScraperStreamEvent;
   }
 }
 

@@ -40,6 +40,7 @@ import { useSelector } from "react-redux";
 import { selectIsUsingLocalhost } from "@/lib/redux/slices/adminPreferencesSlice";
 import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
 import { COMPONENT_GENERATOR_PROMPT_ID, COMPONENT_GENERATOR_SYSTEM_PROMPT } from "./tool-ui-generator-prompt";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -173,31 +174,18 @@ export function ToolUiComponentGenerator({ tools, onComplete }: GeneratorProps) 
                 throw new Error(`API error: ${response.status}`);
             }
 
-            const reader = response.body?.getReader();
-            if (!reader) throw new Error("No response body");
+            if (!response.body) throw new Error("No response body");
 
-            const decoder = new TextDecoder();
             let accumulated = "";
+            const { events } = parseNdjsonStream(response);
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split("\n").filter((l) => l.trim());
-
-                for (const line of lines) {
-                    try {
-                        const event = JSON.parse(line);
-                        if (event.event === "chunk" && event.data?.text) {
-                            accumulated += event.data.text;
-                            setGenerationOutput(accumulated);
-                        } else if (event.event === "chunk" && typeof event.data === "string") {
-                            accumulated += event.data;
-                            setGenerationOutput(accumulated);
-                        }
-                    } catch {
-                        // Non-JSON line, skip
+            for await (const event of events) {
+                if (event.event === "chunk") {
+                    const data = event.data as unknown as { text?: string } | string;
+                    const text = typeof data === "string" ? data : data?.text ?? "";
+                    if (text) {
+                        accumulated += text;
+                        setGenerationOutput(accumulated);
                     }
                 }
             }

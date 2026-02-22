@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -270,77 +271,40 @@ export default function ChatDemoClient() {
       }
       if (!response.body) throw new Error('No response body');
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      let buffer = '';
       let chunkCount = 0;
       let totalBytes = 0;
       let eventCount = 0;
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
+      const { events } = parseNdjsonStream(response);
 
-        if (value) {
-          chunkCount++;
-          totalBytes += value.length;
+      for await (const json of events) {
+        eventCount++;
+        // Approximate byte tracking — actual bytes no longer easily available per-event
+        const rawSize = JSON.stringify(json).length;
+        totalBytes += rawSize;
+        chunkCount++;
 
-          const decodedChunk = decoder.decode(value, { stream: true });
-          buffer += decodedChunk;
+        setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
 
-          // Process complete lines (JSONL format)
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.trim()) {
-              try {
-                const json = JSON.parse(line);
-                eventCount++;
-
-                // Append to JSON output
-                setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
-
-                // Extract text chunks (new ChunkPayload shape: { text: string })
-                if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
-                  setStreamText(prev => prev + json.data.text);
-                }
-                // Check for error events
-                if (json.event === 'error') {
-                  const errData = json.data;
-                  if (typeof errData === 'object' && errData !== null) {
-                    setErrorMessage(errData.user_message || errData.message || JSON.stringify(errData));
-                  } else {
-                    setErrorMessage('Unknown error from stream');
-                  }
-                }
-              } catch (e) {
-                setStreamOutput(prev => prev + line + '\n');
-              }
-            }
-          }
-
-          setDebugInfo(prev => ({
-            ...prev,
-            chunkCount,
-            totalBytes,
-            eventCount,
-          }));
+        if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
+          setStreamText(prev => prev + (json.data as { text: string }).text);
         }
-      }
-
-      // Process remaining buffer
-      if (buffer.trim()) {
-        try {
-          const json = JSON.parse(buffer);
-          setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
-          if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
-            setStreamText(prev => prev + json.data.text);
+        if (json.event === 'error') {
+          const errData = json.data;
+          if (typeof errData === 'object' && errData !== null) {
+            const d = errData as Record<string, unknown>;
+            setErrorMessage((d.user_message || d.message || JSON.stringify(errData)) as string);
+          } else {
+            setErrorMessage('Unknown error from stream');
           }
-        } catch (e) {
-          setStreamOutput(prev => prev + buffer + '\n');
         }
+
+        setDebugInfo(prev => ({
+          ...prev,
+          chunkCount,
+          totalBytes,
+          eventCount,
+        }));
       }
 
       setDebugInfo(prev => ({ ...prev, endTime: Date.now() }));

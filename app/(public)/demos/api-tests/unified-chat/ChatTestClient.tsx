@@ -14,6 +14,7 @@ import { Loader2, Plus, Trash2, X, Play, FileText, FileJson, BarChart3, FlaskCon
 import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload } from '@/types/python-generated/stream-events';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
@@ -354,92 +355,42 @@ export default function ChatTestClient() {
       }
       if (!response.body) throw new Error('No response body');
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      let buffer = '';
       let chunkCount = 0;
       let totalBytes = 0;
       let eventCount = 0;
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
+      const { events } = parseNdjsonStream(response);
 
-        if (value) {
-          chunkCount++;
-          totalBytes += value.length;
+      for await (const json of events) {
+        eventCount++;
+        totalBytes += JSON.stringify(json).length;
+        chunkCount++;
 
-          const decodedChunk = decoder.decode(value, { stream: true });
-          buffer += decodedChunk;
+        setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
+        setStreamEvents(prev => [...prev, json as StreamEvent]);
+        rawEventsRef.current.push(json as Record<string, unknown>);
 
-          // Process complete lines (JSONL format)
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.trim()) {
-              try {
-                const json = JSON.parse(line);
-                eventCount++;
-
-                // Append to JSON output
-                setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
-
-                // Accumulate the event for StreamAwareChatMarkdown
-                setStreamEvents(prev => [...prev, json as StreamEvent]);
-
-                // Accumulate raw event for StreamAnalyzer
-                rawEventsRef.current.push(json as Record<string, unknown>);
-
-                // Extract text chunks using new ChunkPayload shape
-                if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
-                  setStreamText(prev => prev + (json.data as ChunkPayload).text);
-                }
-                // Check for error events
-                if (json.event === 'error') {
-                  const errData = json.data as ErrorPayload;
-                  if (typeof errData === 'object' && errData !== null) {
-                    setErrorMessage(errData.user_message || errData.message || JSON.stringify(errData));
-                  } else {
-                    setErrorMessage('Unknown error from stream');
-                  }
-                }
-                // Capture usage stats from completion events
-                if (json.event === 'completion') {
-                  setUsageStatsData(json.data as CompletionPayload);
-                }
-              } catch (e) {
-                setStreamOutput(prev => prev + line + '\n');
-              }
-            }
-          }
-
-          setDebugInfo(prev => ({
-            ...prev,
-            chunkCount,
-            totalBytes,
-            eventCount,
-          }));
+        if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
+          setStreamText(prev => prev + (json.data as ChunkPayload).text);
         }
-      }
-
-      // Process remaining buffer
-      if (buffer.trim()) {
-        try {
-          const json = JSON.parse(buffer);
-          setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
-          setStreamEvents(prev => [...prev, json as StreamEvent]);
-          rawEventsRef.current.push(json as Record<string, unknown>);
-          if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
-            setStreamText(prev => prev + (json.data as ChunkPayload).text);
+        if (json.event === 'error') {
+          const errData = json.data as ErrorPayload;
+          if (typeof errData === 'object' && errData !== null) {
+            setErrorMessage(errData.user_message || errData.message || JSON.stringify(errData));
+          } else {
+            setErrorMessage('Unknown error from stream');
           }
-          if (json.event === 'completion') {
-            setUsageStatsData(json.data as CompletionPayload);
-          }
-        } catch (e) {
-          setStreamOutput(prev => prev + buffer + '\n');
         }
+        if (json.event === 'completion') {
+          setUsageStatsData(json.data as CompletionPayload);
+        }
+
+        setDebugInfo(prev => ({
+          ...prev,
+          chunkCount,
+          totalBytes,
+          eventCount,
+        }));
       }
 
       setDebugInfo(prev => ({ ...prev, endTime: Date.now() }));

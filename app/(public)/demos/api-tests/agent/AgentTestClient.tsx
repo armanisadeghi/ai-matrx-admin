@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { Bot, Loader2, Send, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,37 +77,19 @@ export default function AgentTestClient() {
             }
 
             // Process streaming response
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
+            const { events } = parseNdjsonStream(response);
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            for await (const event of events) {
+                setStreamOutput(prev => prev + JSON.stringify(event, null, 2) + '\n\n');
 
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
+                if (event.event === 'chunk' && event.data && typeof event.data === 'object' && 'text' in (event.data as object)) {
+                    setTextOutput(prev => prev + (event.data as AgentStreamEvent['data']).text);
+                }
 
-                for (const line of lines) {
-                    if (line.trim()) {
-                        try {
-                            const event: AgentStreamEvent = JSON.parse(line);
-                            
-                            setStreamOutput(prev => prev + JSON.stringify(event, null, 2) + '\n\n');
-
-                            if (event.event === 'chunk' && event.data && typeof event.data === 'object' && 'text' in event.data) {
-                                setTextOutput(prev => prev + event.data.text);
-                            }
-
-                            if (event.event === 'error') {
-                                const errMsg = event.data?.user_message || event.data?.message || JSON.stringify(event.data);
-                                setError(errMsg);
-                            }
-                        } catch (err) {
-                            console.warn('[Agent Demo] Failed to parse line:', line.substring(0, 100));
-                        }
-                    }
+                if (event.event === 'error') {
+                    const errData = event.data as AgentStreamEvent['data'];
+                    const errMsg = errData?.user_message || errData?.message || JSON.stringify(event.data);
+                    setError(errMsg);
                 }
             }
         } catch (err) {

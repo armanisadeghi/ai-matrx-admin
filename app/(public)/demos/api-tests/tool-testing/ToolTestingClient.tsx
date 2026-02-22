@@ -160,7 +160,21 @@ export default function ToolTestingClient() {
         selectedTool.name,
         cleanedArgs,
         {
-          onStatusUpdate: () => setExecutionStatus('running'),
+          onStatusUpdate: (data) => {
+            // "complete" status_update carries the final result payload
+            if ((data as Record<string, unknown>).status === 'complete') {
+              const payload = data as unknown as FinalPayload;
+              setFinalPayload(payload);
+              if (payload.output?.full_result?.success === false) {
+                setErrorMessage(payload.output.full_result.error?.message ?? 'Tool returned error');
+                setExecutionStatus('error');
+              } else {
+                setExecutionStatus('complete');
+              }
+            } else {
+              setExecutionStatus('running');
+            }
+          },
           onToolEvent: (event) => {
             setExecutionStatus('running');
             setToolEvents((prev) => [...prev, event]);
@@ -204,6 +218,12 @@ export default function ToolTestingClient() {
         setErrorMessage(err instanceof Error ? err.message : 'Execution failed');
         setExecutionStatus('error');
       }
+    } finally {
+      // Safety net: if the stream ended without an explicit complete/error signal,
+      // mark as complete so the UI never stays permanently in loading state.
+      setExecutionStatus((prev) =>
+        prev === 'running' || prev === 'connecting' ? 'complete' : prev,
+      );
     }
   };
 

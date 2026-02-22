@@ -34,11 +34,9 @@ async function fetchComponentRow(
         .select("*")
         .eq("tool_name", toolName)
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
 
     if (error) {
-        // PGRST116 = no rows found (not an error, just means no dynamic component)
-        if (error.code === "PGRST116") return null;
         throw error;
     }
 

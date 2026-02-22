@@ -9,6 +9,7 @@ import { get_prompt_sample, TEST_ADMIN_TOKEN } from './sample-prompt';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import MarkdownStream from '@/components/MarkdownStream';
 import { BACKEND_URLS } from '@/lib/api/endpoints';
+import { parseNdjsonStream } from '@/lib/api/stream-parser';
 
 type ServerType = 'local' | 'production';
 
@@ -109,58 +110,15 @@ export default function DirectChatClient() {
       }
 
       // Handle streaming response
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      let buffer = '';
-      let jsonEvents: any[] = [];
+      const jsonEvents: unknown[] = [];
+      const { events } = parseNdjsonStream(response, abortControllerRef.current?.signal);
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
+      for await (const event of events) {
+        jsonEvents.push(event);
+        setResponseJson(JSON.stringify(jsonEvents, null, 2));
 
-        if (value) {
-          const decodedChunk = decoder.decode(value, { stream: true });
-          buffer += decodedChunk;
-
-          // Process complete lines (JSONL format - newline-delimited JSON)
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.trim()) {
-              try {
-                const json = JSON.parse(line);
-                jsonEvents.push(json);
-                
-                // Update response JSON with all events so far
-                setResponseJson(JSON.stringify(jsonEvents, null, 2));
-
-                // Extract chunk events and accumulate text
-                if (json.event === 'chunk' && typeof json.data === 'string') {
-                  setStreamText(prev => prev + json.data);
-                }
-              } catch (e) {
-                // If JSON parse fails, append raw line
-                setResponseJson(prev => prev + (prev ? '\n' : '') + line);
-              }
-            }
-          }
-        }
-      }
-
-      // Process any remaining buffer
-      if (buffer.trim()) {
-        try {
-          const json = JSON.parse(buffer);
-          jsonEvents.push(json);
-          setResponseJson(JSON.stringify(jsonEvents, null, 2));
-
-          if (json.event === 'chunk' && typeof json.data === 'string') {
-            setStreamText(prev => prev + json.data);
-          }
-        } catch (e) {
-          setResponseJson(prev => prev + (prev ? '\n' : '') + buffer);
+        if (event.event === 'chunk' && typeof event.data === 'string') {
+          setStreamText(prev => prev + event.data);
         }
       }
 

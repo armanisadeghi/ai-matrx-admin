@@ -54,13 +54,24 @@ export async function executeToolTest(
 
   const { events } = parseNdjsonStream(response, abortSignal);
 
+  console.log('[ToolTest:stream] Starting for-await loop');
+  let eventCount = 0;
   for await (const event of events) {
+    eventCount++;
+    console.log(`[ToolTest:stream] Event #${eventCount}:`, event.event, JSON.stringify(event.data).slice(0, 80));
     handlers.onRawLine?.(event);
 
     switch (event.event) {
-      case "status_update":
-        handlers.onStatusUpdate?.(event.data as Record<string, unknown>);
+      case "status_update": {
+        const statusData = event.data as Record<string, unknown>;
+        handlers.onStatusUpdate?.(statusData);
+        // The tool-test endpoint sends the final result as a status_update with
+        // status === "complete" — treat it as the final payload too.
+        if (statusData.status === "complete" && statusData.output) {
+          handlers.onFinalResult?.(statusData as unknown as FinalPayload);
+        }
         break;
+      }
 
       case "tool_event":
         handlers.onToolEvent?.(event.data as unknown as ToolStreamEvent);
@@ -71,9 +82,11 @@ export async function executeToolTest(
         handlers.onFinalResult?.(event.data as unknown as FinalPayload);
         break;
 
-      case "data":
-        handlers.onFinalResult?.(event.data as unknown as FinalPayload);
+      case "data": {
+        const dataPayload = event.data as unknown as FinalPayload;
+        handlers.onFinalResult?.(dataPayload);
         break;
+      }
 
       case "error":
         handlers.onError?.(event.data as Record<string, unknown>);

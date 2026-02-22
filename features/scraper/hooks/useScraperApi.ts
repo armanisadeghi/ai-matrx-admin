@@ -13,6 +13,7 @@
 import { useState, useCallback } from "react";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
 
 interface ScraperOverview {
     page_title?: string;
@@ -100,48 +101,18 @@ export function useScraperApi(): UseScraperApiReturn {
                 throw new Error("No response body from scraper service");
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
             let scraperData: { results: Array<Record<string, unknown>>; metadata?: Record<string, unknown> } | null = null;
 
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || "";
-
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-                    try {
-                        const event = JSON.parse(line);
-                        if (event.response_type === "scraped_pages") {
-                            scraperData = event;
-                        } else if (event.event === "data" && event.data?.response_type === "scraped_pages") {
-                            scraperData = event.data;
-                        } else if (event.event === "error") {
-                            throw new Error(event.data?.message || "Scraping failed");
-                        }
-                    } catch (e) {
-                        if (e instanceof Error && e.message !== "Scraping failed") {
-                            continue;
-                        }
-                        throw e;
-                    }
+            const { events } = parseNdjsonStream(response);
+            for await (const event of events) {
+                const e = event as unknown as Record<string, unknown>;
+                if (e.response_type === "scraped_pages") {
+                    scraperData = e as typeof scraperData;
+                } else if (e.event === "data" && (e.data as Record<string, unknown>)?.response_type === "scraped_pages") {
+                    scraperData = e.data as typeof scraperData;
+                } else if (e.event === "error") {
+                    throw new Error((e.data as Record<string, unknown>)?.message as string || "Scraping failed");
                 }
-            }
-
-            if (buffer.trim()) {
-                try {
-                    const event = JSON.parse(buffer);
-                    if (event.response_type === "scraped_pages") {
-                        scraperData = event;
-                    } else if (event.event === "data" && event.data?.response_type === "scraped_pages") {
-                        scraperData = event.data;
-                    }
-                } catch { /* skip malformed trailing line */ }
             }
 
             if (!scraperData?.results?.length) {
