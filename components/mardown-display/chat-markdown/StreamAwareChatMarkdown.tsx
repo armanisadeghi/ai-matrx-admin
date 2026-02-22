@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { EnhancedChatMarkdownInternal, ChatMarkdownDisplayProps } from "./EnhancedChatMarkdown";
 import { StreamEvent } from "./types";
 import { convertStreamEventToToolCall } from "./tool-event-engine";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
 
 /**
  * Extended props that include stream event handling
@@ -222,42 +223,10 @@ export const useStreamEvents = () => {
     setIsStreaming(true);
     setEvents([]);
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
     try {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk;
-
-        // Process complete lines (JSONL format)
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.trim()) {
-            try {
-              const event = JSON.parse(line) as StreamEvent;
-              setEvents(prev => [...prev, event]);
-            } catch (e) {
-              console.error('[useStreamEvents] Failed to parse event:', line, e);
-            }
-          }
-        }
-      }
-
-      // Process remaining buffer
-      if (buffer.trim()) {
-        try {
-          const event = JSON.parse(buffer) as StreamEvent;
-          setEvents(prev => [...prev, event]);
-        } catch (e) {
-          console.error('[useStreamEvents] Failed to parse final event:', buffer, e);
-        }
+      const { events: streamEvents } = parseNdjsonStream(response);
+      for await (const event of streamEvents) {
+        setEvents(prev => [...prev, event as unknown as StreamEvent]);
       }
     } finally {
       setIsStreaming(false);

@@ -56,48 +56,107 @@ async function* _parseNdjsonStream(
         });
     }
 
+    // Read-ahead queue: the reader loop runs independently of the consumer so
+    // that TCP flow-control backpressure never causes the server to see a stall
+    // (and emit GeneratorExit). Large payloads (e.g. Brave search results) used
+    // to suspend reader.read() while React processed the previous yield, which
+    // filled the server-side send buffer and dropped all subsequent events.
+    const queue: Array<StreamEvent | BackendApiError | null> = []; // null = done
+    let resolveWaiter: (() => void) | null = null;
+
+    const notify = () => {
+        if (resolveWaiter) {
+            resolveWaiter();
+            resolveWaiter = null;
+        }
+    };
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
 
-    try {
-        while (true) {
-            if (signal?.aborted) {
-                break;
-            }
+    // Background reader — never yields, never pauses on consumer backpressure.
+    const readLoop = async () => {
+        let buffer = '';
+        try {
+            while (true) {
+                if (signal?.aborted) break;
 
-            const { value, done } = await reader.read();
-            if (done) break;
+                const { value, done } = await reader.read();
+                if (done) break;
 
-            buffer += decoder.decode(value, { stream: true });
+                buffer += decoder.decode(value, { stream: true });
 
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
 
-            for (const line of lines) {
-                const trimmed = line.trim();
-                if (!trimmed) continue;
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
 
-                try {
-                    const parsed = JSON.parse(trimmed) as StreamEvent;
-                    yield parsed;
-                } catch {
-                    console.warn('[stream-parser] Failed to parse NDJSON line:', trimmed);
+                    try {
+                        queue.push(JSON.parse(trimmed) as StreamEvent);
+                        notify();
+                    } catch {
+                        console.warn('[stream-parser] Failed to parse NDJSON line:', trimmed);
+                    }
                 }
             }
-        }
 
-        const remaining = buffer.trim();
-        if (remaining) {
-            try {
-                const parsed = JSON.parse(remaining) as StreamEvent;
-                yield parsed;
-            } catch {
-                // Ignore incomplete trailing data
+            // Flush any remaining partial line (no trailing newline from server).
+            const remaining = buffer.trim();
+            if (remaining) {
+                try {
+                    queue.push(JSON.parse(remaining) as StreamEvent);
+                    notify();
+                } catch {
+                    // Incomplete trailing data — discard silently.
+                }
             }
+        } catch (err) {
+            if (err instanceof BackendApiError) {
+                queue.push(err);
+            }
+            // Other errors (AbortError etc.) just end the loop cleanly.
+        } finally {
+            reader.releaseLock();
+            queue.push(null); // sentinel: stream finished
+            notify();
+        }
+    };
+
+    // Start the background reader immediately — do not await it here.
+    const readerPromise = readLoop();
+
+    // Consumer loop: yield queued events as fast as the caller processes them,
+    // but the reader above never waits on the caller.
+    try {
+        while (true) {
+            if (queue.length === 0) {
+                // Wait until the reader deposits something.
+                await new Promise<void>((resolve) => {
+                    resolveWaiter = resolve;
+                    // If something was pushed between the length check and here,
+                    // the notify() already fired — resolve immediately.
+                    if (queue.length > 0) {
+                        resolveWaiter = null;
+                        resolve();
+                    }
+                });
+            }
+
+            const item = queue.shift();
+            if (item === null) break; // done sentinel
+            if (item === undefined) continue;
+
+            if (item instanceof BackendApiError) {
+                throw item;
+            }
+
+            yield item;
         }
     } finally {
-        reader.releaseLock();
+        // Ensure the background reader is awaited to avoid unhandled rejections.
+        await readerPromise;
     }
 }
 
