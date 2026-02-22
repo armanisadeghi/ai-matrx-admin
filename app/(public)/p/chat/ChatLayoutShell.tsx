@@ -13,6 +13,7 @@ import { useAgentsContext } from '@/features/public-chat/context/AgentsContext';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
 import { processDbMessagesForDisplay } from '@/features/public-chat/utils/cx-content-converter';
 import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat/utils/agent-resolver';
+import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 
 // Basic UUID v4 pattern for validating URL-derived IDs
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -29,9 +30,10 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     const {
         state, setAgent, startNewConversation,
         setDbConversationId, setMessages,
+        loadConversation: loadConversationIntoState,
     } = useChatContext();
 
-    const { loadConversation } = useChatPersistence();
+    const { loadConversation: loadConversationFromDb } = useChatPersistence();
     const { userPrompts, sidebarEvents } = useAgentsContext();
 
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
@@ -135,7 +137,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         setIsLoadingConversation(true);
 
         (async () => {
-            const data = await loadConversation(urlConversationId);
+            const data = await loadConversationFromDb(urlConversationId);
             if (cancelled) return;
 
             if (!data) {
@@ -156,9 +158,15 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                 isCondensed: msg.isCondensed || undefined,
             }));
 
-            startNewConversation();
-            setDbConversationId(urlConversationId);
-            setMessages(chatMessages);
+            // Atomic update: set conversationId, dbConversationId, and messages in one dispatch
+            // This prevents the intermediate empty-state that caused stale closures
+            loadConversationIntoState(urlConversationId, urlConversationId, chatMessages);
+
+            // Pre-warm the conversation on the server so it's cached for the next message
+            try {
+                const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(urlConversationId)}`;
+                fetch(warmUrl, { method: 'POST' }).catch(() => {});
+            } catch {}
 
             const agentParam = searchParams.get('agent');
             if (agentParam) {
@@ -174,7 +182,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
     // ── Reset when navigating to base /p/chat ─────────────────────────────
     useEffect(() => {
-        if (pathname === '/p/chat' && state.messages.length > 0 && !state.isStreaming) {
+        if (pathname === '/p/chat' && state.messages.length > 0 && !state.isStreaming && !isLoadingConversation) {
             startNewConversation();
             loadedConversationRef.current = null;
         }

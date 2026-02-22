@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useRef, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import type { PublicResource, ContentItem } from '../types/content';
@@ -74,7 +74,8 @@ type ChatAction =
     | { type: 'APPEND_TO_LAST_MESSAGE'; payload: string }
     | { type: 'SET_USE_LOCALHOST'; payload: boolean }
     | { type: 'SET_DB_CONVERSATION_ID'; payload: string | null }
-    | { type: 'SET_MESSAGES'; payload: ChatMessage[] };
+    | { type: 'SET_MESSAGES'; payload: ChatMessage[] }
+    | { type: 'LOAD_CONVERSATION'; payload: { conversationId: string; dbConversationId: string; messages: ChatMessage[] } };
 
 // ============================================================================
 // INITIAL STATE
@@ -172,6 +173,15 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         case 'SET_MESSAGES':
             return { ...state, messages: action.payload };
 
+        case 'LOAD_CONVERSATION':
+            return {
+                ...state,
+                conversationId: action.payload.conversationId,
+                dbConversationId: action.payload.dbConversationId,
+                messages: action.payload.messages,
+                error: null,
+            };
+
         default:
             return state;
     }
@@ -184,6 +194,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
 interface ChatContextValue {
     state: ChatState;
     dispatch: React.Dispatch<ChatAction>;
+    /** Ref that always holds the latest conversationId — use inside callbacks to avoid stale closures */
+    conversationIdRef: React.RefObject<string>;
     setAgent: (agent: AgentConfig) => void;
     addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
     updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
@@ -198,6 +210,7 @@ interface ChatContextValue {
     setUseLocalhost: (useLocalhost: boolean) => void;
     setDbConversationId: (id: string | null) => void;
     setMessages: (messages: ChatMessage[]) => void;
+    loadConversation: (conversationId: string, dbConversationId: string, messages: ChatMessage[]) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -219,6 +232,12 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         }
         return initial;
     });
+
+    // Ref that always tracks the latest conversationId for use in async callbacks
+    const conversationIdRef = useRef<string>(state.conversationId);
+    useEffect(() => {
+        conversationIdRef.current = state.conversationId;
+    }, [state.conversationId]);
 
     const setUseLocalhost = (useLocalhost: boolean) => {
         dispatch({ type: 'SET_USE_LOCALHOST', payload: useLocalhost });
@@ -281,9 +300,14 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         dispatch({ type: 'SET_MESSAGES', payload: messages });
     };
 
+    const loadConversation = (conversationId: string, dbConversationId: string, messages: ChatMessage[]) => {
+        dispatch({ type: 'LOAD_CONVERSATION', payload: { conversationId, dbConversationId, messages } });
+    };
+
     const value: ChatContextValue = {
         state,
         dispatch,
+        conversationIdRef,
         setAgent,
         addMessage,
         updateMessage,
@@ -298,6 +322,7 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         setUseLocalhost,
         setDbConversationId,
         setMessages,
+        loadConversation,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

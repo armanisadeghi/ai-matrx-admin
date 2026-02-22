@@ -25,13 +25,18 @@ interface SendMessageParams {
     resources?: PublicResource[];
 }
 
-interface AgentExecuteRequestWithContent {
-    prompt_id: string;
-    /** Optional — pass to continue an existing conversation. Omit for a new one. */
-    conversation_id?: string | null;
+/** Body for POST /agents/{agentId} — first message, new conversation */
+interface AgentStartRequest {
     user_input: string | ContentItem[];
     variables?: Record<string, unknown>;
     config_overrides?: Record<string, unknown>;
+    stream: boolean;
+    debug: boolean;
+}
+
+/** Body for POST /conversations/{conversationId} — follow-up messages */
+interface ConversationContinueRequest {
+    user_input: string | ContentItem[];
     stream: boolean;
     debug: boolean;
 }
@@ -41,7 +46,7 @@ interface AgentExecuteRequestWithContent {
 // ============================================================================
 
 export function useAgentChat(options: UseAgentChatOptions = {}) {
-    const { state, addMessage, updateMessage, setStreaming, setExecuting, setError, setDbConversationId } = useChatContext();
+    const { state, addMessage, updateMessage, setStreaming, setExecuting, setError, setDbConversationId, conversationIdRef } = useChatContext();
     const abortControllerRef = useRef<AbortController | null>(null);
     const streamEventsRef = useRef<StreamEvent[]>([]);
     const isExecutingRef = useRef(false);
@@ -80,6 +85,22 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             console.log('[useAgentChat] warmAgent response:', res.status, res.statusText);
         } catch (err) {
             console.warn('[useAgentChat] warmAgent failed (non-critical):', err);
+        }
+    };
+
+    /** Pre-warm a conversation on the server (fire when user navigates to it) */
+    const warmConversation = async (conversationId: string) => {
+        try {
+            const BACKEND_URL = getBackendUrl();
+            if (BACKEND_URL.includes('localhost')) return;
+
+            const warmUrl = `${BACKEND_URL}${ENDPOINTS.ai.conversationWarm(conversationId)}`;
+            console.log('[useAgentChat] warmConversation →', warmUrl);
+
+            const res = await fetch(warmUrl, { method: 'POST' });
+            console.log('[useAgentChat] warmConversation response:', res.status, res.statusText);
+        } catch (err) {
+            console.warn('[useAgentChat] warmConversation failed (non-critical):', err);
         }
     };
 
@@ -144,26 +165,39 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
             const userInput = contentItems.length > 1 ? contentItems : content;
 
-            const agentRequest: AgentExecuteRequestWithContent = {
-                prompt_id: promptId,
-                conversation_id: state.conversationId,
-                user_input: userInput,
-                variables: Object.keys(variables).length > 0 ? variables : undefined,
-                config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
-                stream: true,
-                debug: true,
-            };
+            // ── Route to correct endpoint based on conversation state ──
+            let executeUrl: string;
+            let requestBody: AgentStartRequest | ConversationContinueRequest;
+
+            if (state.dbConversationId) {
+                // Follow-up: continue existing conversation
+                executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(state.dbConversationId)}`;
+                requestBody = {
+                    user_input: userInput,
+                    stream: true,
+                    debug: true,
+                };
+                console.log('[useAgentChat] CONTINUE conversation →', executeUrl);
+                console.log('[useAgentChat] dbConversationId:', state.dbConversationId);
+            } else {
+                // First message: start new agent conversation
+                executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`;
+                requestBody = {
+                    user_input: userInput,
+                    variables: Object.keys(variables).length > 0 ? variables : undefined,
+                    config_overrides: Object.keys(configOverrides).length > 0 ? configOverrides : undefined,
+                    stream: true,
+                    debug: true,
+                };
+                console.log('[useAgentChat] START new agent conversation →', executeUrl);
+            }
 
             updateMessage(assistantMessageId, { status: 'streaming' });
-
-            const executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`;
-            console.log('[useAgentChat] sendMessage → execute URL:', executeUrl);
-            console.log('[useAgentChat] conversation_id:', state.conversationId);
 
             const response = await fetch(executeUrl, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify(agentRequest),
+                body: JSON.stringify(requestBody),
                 signal: abortControllerRef.current.signal,
             });
             console.log('[useAgentChat] execute response:', response.status, response.statusText);
@@ -203,7 +237,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                         const dataPayload = event.data as DataPayload;
                         if (dataPayload.event === 'conversation_id' && dataPayload.conversation_id) {
                             const serverId = dataPayload.conversation_id as string;
-                            if (serverId !== state.conversationId) {
+                            if (serverId !== conversationIdRef.current) {
                                 setDbConversationId(serverId);
                                 console.log('[useAgentChat] server conversation_id:', serverId);
                             }
@@ -294,6 +328,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         sendMessage,
         cancelRequest,
         warmAgent,
+        warmConversation,
         getStreamEvents,
         isStreaming: state.isStreaming,
         isExecuting: state.isExecuting,

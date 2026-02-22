@@ -63,9 +63,14 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         },
         onComplete: () => {
             setTimeout(() => setStreamEvents([]), 100);
+
+            // Safety net: if the server didn't send a conversation_id event,
+            // use the client-side conversationId so the URL still updates
+            if (!state.dbConversationId) {
+                setDbConversationId(state.conversationId);
+            }
+
             // Notify sidebar that this conversation was updated.
-            // The conversation-created event is emitted by ChatLayoutShell's URL
-            // sync effect — we only emit conversation-updated here.
             if (state.dbConversationId) {
                 sidebarEvents.emit('conversation-updated', { id: state.dbConversationId });
             }
@@ -193,14 +198,10 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const handleSubmit = async (content: string, resources?: PublicResource[]) => {
         setStreamEvents([]);
 
-        // On first message, claim the conversation ID so the layout-level URL
-        // sync effect fires and updates the URL immediately — no deferred update needed.
-        if (!state.dbConversationId) {
-            const convId = state.conversationId;
-            setDbConversationId(convId);
-            // URL update and sidebar conversation-created event are both handled
-            // by the useEffect in ChatLayoutShell that watches state.dbConversationId.
-        }
+        // Don't set dbConversationId here — let the server return the real one
+        // via the 'conversation_id' stream event in useAgentChat.
+        // The conversationIdRef in context ensures the hook always sends the
+        // correct ID without stale closure issues.
 
         let displayContent = '';
 

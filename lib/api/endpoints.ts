@@ -15,28 +15,43 @@
  * - Admin: Valid JWT token + admin role
  */
 export const ENDPOINTS = {
-    /** AI endpoints — chat, agents, cancellation */
+    /** AI endpoints — chat, agents, conversations */
     ai: {
         /**
-         * POST — Unified chat completion (Guest OK)
-         * Single URL for all turns: POST /api/ai/conversations/chat
-         * Pass conversation_id in the request body to continue an existing conversation.
-         * Omit (or pass null) for a new conversation — the server generates an ID and
-         * streams it back as the 2nd event: {"event":"data","data":{"event":"conversation_id","conversation_id":"..."}}
+         * POST — Custom one-shot or managed chat (Guest OK)
+         * POST /api/ai/chat
+         * conversation_id is optional in the body (for labeling/storage only).
+         * You must send the full message history in `messages` every time.
          */
-        chat: '/api/ai/conversations/chat' as const,
+        chat: '/api/ai/chat' as const,
+
         /**
-         * POST — Execute agent with streaming (Guest OK)
-         * Single URL for all turns: POST /api/ai/agents/execute
-         * Pass conversation_id in the request body to continue an existing conversation.
-         * Omit (or pass null) for a new conversation — the server streams back the ID.
+         * POST — Start a new agent conversation (Guest OK)
+         * POST /api/ai/agents/{agentId}
+         * Never send conversation_id — the server generates it and returns it in the stream.
          */
-        agentExecute: '/api/ai/agents/execute' as const,
+        agentStart: (agentId: string) => `/api/ai/agents/${agentId}` as const,
+
         /**
-         * POST — Pre-warm agent cache. No request body. No auth required.
+         * POST — Continue any existing conversation (Guest OK)
+         * POST /api/ai/conversations/{conversationId}
+         * Conversation ID in URL. Just send user_input in the body.
+         */
+        conversationContinue: (conversationId: string) => `/api/ai/conversations/${conversationId}` as const,
+
+        /**
+         * POST — Pre-warm a conversation's server cache. No body. No auth.
+         * POST /api/ai/conversations/{conversationId}/warm
+         * Fire when user navigates to a conversation page.
+         */
+        conversationWarm: (conversationId: string) => `/api/ai/conversations/${conversationId}/warm` as const,
+
+        /**
+         * @deprecated Use agentStart instead. Kept for backward compatibility with other consumers.
          * POST /api/ai/agents/{agentId}/warm
          */
         agentWarm: (agentId: string) => `/api/ai/agents/${agentId}/warm` as const,
+
         /** POST — Cancel a running request by request_id (Authenticated) */
         cancel: (requestId: string) => `/api/ai/cancel/${requestId}` as const,
     },
