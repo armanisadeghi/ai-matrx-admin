@@ -4,13 +4,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     DEFAULT_LOCAL_URL,
     DISCOVERY_TIMEOUT,
+    HEALTH_POLL_INTERVAL,
     MATRX_LOCAL_PORT_RANGE,
     MATRX_LOCAL_PORT_START,
     STATUS_POLL_INTERVAL,
     WS_TIMEOUT_DEFAULT,
     WS_TIMEOUT_RESEARCH,
 } from './constants';
-import type { ConnectionInfo, ConnectionStatus, LogEntry, ToolResult } from './types';
+import type {
+    ActiveRequest,
+    ConnectionInfo,
+    ConnectionStatus,
+    EngineSettings,
+    HealthInfo,
+    LogEntry,
+    PortInfo,
+    ToolResult,
+    VersionInfo,
+} from './types';
 
 // ---------------------------------------------------------------------------
 // Port discovery
@@ -49,11 +60,26 @@ export interface UseMatrxLocalReturn {
     connectWs: () => void;
     disconnectWs: () => void;
     cancelAll: () => void;
+    cancelRequest: (id: string) => void;
     invokeTool: (tool: string, input: Record<string, unknown>, timeoutMs?: number) => Promise<ToolResult>;
     invokeViaRest: (tool: string, input: Record<string, unknown>, timeoutMs?: number) => Promise<ToolResult>;
     clearLogs: () => void;
     useWebSocket: boolean;
     setUseWebSocket: (v: boolean) => void;
+
+    // Health / Version / Engine
+    healthInfo: HealthInfo | null;
+    versionInfo: VersionInfo | null;
+    portInfo: PortInfo | null;
+
+    // Active request tracking
+    activeRequests: ActiveRequest[];
+
+    // REST helpers for non-tool endpoints
+    restGet: (path: string, headers?: Record<string, string>) => Promise<unknown>;
+    restPost: (path: string, body?: unknown, headers?: Record<string, string>) => Promise<unknown>;
+    restPut: (path: string, body?: unknown, headers?: Record<string, string>) => Promise<unknown>;
+    restDelete: (path: string, headers?: Record<string, string>) => Promise<unknown>;
 }
 
 export function useMatrxLocal(): UseMatrxLocalReturn {
@@ -64,9 +90,18 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [useWebSocket, setUseWebSocket] = useState(true);
 
+    // Health / Version / Ports
+    const [healthInfo, setHealthInfo] = useState<HealthInfo | null>(null);
+    const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
+    const [portInfo, setPortInfo] = useState<PortInfo | null>(null);
+
+    // Active requests
+    const [activeRequests, setActiveRequests] = useState<ActiveRequest[]>([]);
+
     const wsRef = useRef<WebSocket | null>(null);
     const pendingCallbacks = useRef<Map<string, (result: ToolResult) => void>>(new Map());
     const statusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const healthPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const addLog = useCallback((direction: 'sent' | 'received', data: unknown, tool?: string) => {
         setLogs(prev => [
@@ -123,6 +158,39 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         };
     }, [checkRestStatus]);
 
+    // ── Health / Version / Ports polling ─────────────────────────────────────
+
+    const pollHealth = useCallback(async () => {
+        try {
+            const [healthRes, versionRes, portsRes] = await Promise.allSettled([
+                fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrl}/version`, { signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrl}/ports`, { signal: AbortSignal.timeout(3000) }),
+            ]);
+            if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
+                setHealthInfo(await healthRes.value.json());
+            } else {
+                setHealthInfo(null);
+            }
+            if (versionRes.status === 'fulfilled' && versionRes.value.ok) {
+                setVersionInfo(await versionRes.value.json());
+            }
+            if (portsRes.status === 'fulfilled' && portsRes.value.ok) {
+                setPortInfo(await portsRes.value.json());
+            }
+        } catch {
+            // Silently ignore — health data is optional
+        }
+    }, [baseUrl]);
+
+    useEffect(() => {
+        pollHealth();
+        healthPollRef.current = setInterval(pollHealth, HEALTH_POLL_INTERVAL);
+        return () => {
+            if (healthPollRef.current) clearInterval(healthPollRef.current);
+        };
+    }, [pollHealth]);
+
     // ── WebSocket connection ────────────────────────────────────────────────
 
     const connectWs = useCallback(() => {
@@ -145,6 +213,8 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 if (data.id && pendingCallbacks.current.has(data.id)) {
                     pendingCallbacks.current.get(data.id)!(data);
                     pendingCallbacks.current.delete(data.id);
+                    // Remove from active requests
+                    setActiveRequests(prev => prev.filter(r => r.id !== data.id));
                 }
             } catch {
                 addLog('received', event.data);
@@ -156,6 +226,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             setStatus('disconnected');
             addLog('received', { event: 'disconnected' });
             pendingCallbacks.current.clear();
+            setActiveRequests([]);
         };
 
         ws.onerror = () => {
@@ -163,6 +234,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             setStatus('disconnected');
             addLog('received', { event: 'error' });
             pendingCallbacks.current.clear();
+            setActiveRequests([]);
         };
 
         wsRef.current = ws;
@@ -183,9 +255,23 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             ws.send(JSON.stringify({ action: 'cancel_all' }));
         }
         pendingCallbacks.current.clear();
+        setActiveRequests([]);
         setLoading(null);
         addLog('sent', { action: 'cancel_all' });
     }, [addLog]);
+
+    const cancelRequest = useCallback(
+        (id: string) => {
+            const ws = wsRef.current;
+            if (ws?.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ id, action: 'cancel' }));
+            }
+            pendingCallbacks.current.delete(id);
+            setActiveRequests(prev => prev.filter(r => r.id !== id));
+            addLog('sent', { id, action: 'cancel' });
+        },
+        [addLog],
+    );
 
     // ── Tool execution ──────────────────────────────────────────────────────
 
@@ -199,21 +285,25 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 const reqId = `req-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
                 const msg = { id: reqId, tool, input };
                 addLog('sent', msg, tool);
+
+                // Track active request
+                setActiveRequests(prev => [...prev, { id: reqId, tool, startedAt: new Date() }]);
+
                 pendingCallbacks.current.set(reqId, resolve);
                 wsRef.current.send(JSON.stringify(msg));
 
                 const timer = setTimeout(() => {
                     if (pendingCallbacks.current.has(reqId)) {
                         pendingCallbacks.current.delete(reqId);
+                        setActiveRequests(prev => prev.filter(r => r.id !== reqId));
                         reject(new Error(`Timeout (${timeoutMs / 1000}s)`));
                     }
                 }, timeoutMs);
 
                 // Clear timer on early resolution
-                const origResolve = resolve;
                 pendingCallbacks.current.set(reqId, (result) => {
                     clearTimeout(timer);
-                    origResolve(result);
+                    resolve(result);
                 });
             });
         },
@@ -268,6 +358,58 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         [useWebSocket, wsConnected, invokeViaWs, invokeViaRest],
     );
 
+    // ── Generic REST helpers (for non-tool endpoints) ───────────────────────
+
+    const restGet = useCallback(
+        async (path: string, headers?: Record<string, string>): Promise<unknown> => {
+            const res = await fetch(`${baseUrl}${path}`, {
+                signal: AbortSignal.timeout(10_000),
+                headers,
+            });
+            return res.json();
+        },
+        [baseUrl],
+    );
+
+    const restPost = useCallback(
+        async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
+            const res = await fetch(`${baseUrl}${path}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...headers },
+                body: body ? JSON.stringify(body) : undefined,
+                signal: AbortSignal.timeout(30_000),
+            });
+            return res.json();
+        },
+        [baseUrl],
+    );
+
+    const restPut = useCallback(
+        async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
+            const res = await fetch(`${baseUrl}${path}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...headers },
+                body: body ? JSON.stringify(body) : undefined,
+                signal: AbortSignal.timeout(10_000),
+            });
+            return res.json();
+        },
+        [baseUrl],
+    );
+
+    const restDelete = useCallback(
+        async (path: string, headers?: Record<string, string>): Promise<unknown> => {
+            const res = await fetch(`${baseUrl}${path}`, {
+                method: 'DELETE',
+                headers,
+                signal: AbortSignal.timeout(10_000),
+            });
+            if (res.status === 204) return { ok: true };
+            return res.json();
+        },
+        [baseUrl],
+    );
+
     return {
         baseUrl,
         setBaseUrl,
@@ -279,10 +421,19 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         connectWs,
         disconnectWs,
         cancelAll,
+        cancelRequest,
         invokeTool,
         invokeViaRest,
         clearLogs,
         useWebSocket,
         setUseWebSocket,
+        healthInfo,
+        versionInfo,
+        portInfo,
+        activeRequests,
+        restGet,
+        restPost,
+        restPut,
+        restDelete,
     };
 }

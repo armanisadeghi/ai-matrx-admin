@@ -45,3 +45,4 @@ export const WS_TIMEOUT_DEFAULT = 30_000;
 export const WS_TIMEOUT_RESEARCH = 120_000;
 export const DISCOVERY_TIMEOUT = 500;
 export const STATUS_POLL_INTERVAL = 15_000;
+export const HEALTH_POLL_INTERVAL = 15_000;

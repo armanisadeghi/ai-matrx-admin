@@ -2,7 +2,8 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw, Wifi, WifiOff, XCircle, Zap } from 'lucide-react';
+import { Activity, ChevronDown, Loader2, RefreshCw, Wifi, WifiOff, XCircle, Zap } from 'lucide-react';
+import { useState } from 'react';
 import type { UseMatrxLocalReturn } from './useMatrxLocal';
 
 interface ConnectionBarProps {
@@ -21,9 +22,15 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
         connectWs,
         disconnectWs,
         cancelAll,
+        cancelRequest,
         useWebSocket,
         setUseWebSocket,
+        healthInfo,
+        versionInfo,
+        activeRequests,
     } = hook;
+
+    const [showActiveReqs, setShowActiveReqs] = useState(false);
 
     const statusBadge = () => {
         if (status === 'discovering') {
@@ -91,6 +98,74 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
 
                 {/* Status */}
                 {statusBadge()}
+
+                {/* Health badge */}
+                {healthInfo && (
+                    <Badge variant="outline" className="gap-1 text-emerald-600 border-emerald-500 text-[10px]">
+                        <Activity className="w-2.5 h-2.5" />
+                        {healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'Healthy' : healthInfo.status}
+                    </Badge>
+                )}
+
+                {/* Version badge */}
+                {(versionInfo?.version || healthInfo?.version) && (
+                    <Badge variant="secondary" className="text-[10px] h-5">
+                        v{versionInfo?.version || healthInfo?.version}
+                    </Badge>
+                )}
+
+                {/* Active requests badge */}
+                {activeRequests.length > 0 && (
+                    <div className="relative">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-[10px] px-2 gap-1 text-orange-600 border-orange-400"
+                            onClick={() => setShowActiveReqs(!showActiveReqs)}
+                        >
+                            <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                            {activeRequests.length} in-flight
+                            <ChevronDown className="w-2.5 h-2.5" />
+                        </Button>
+
+                        {showActiveReqs && (
+                            <div className="absolute top-full mt-1 right-0 z-50 bg-popover border rounded-md shadow-lg p-1 min-w-[200px]">
+                                {activeRequests.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="flex items-center justify-between gap-2 px-2 py-1 text-xs rounded hover:bg-accent"
+                                    >
+                                        <span className="font-mono truncate flex-1">{req.tool}</span>
+                                        <span className="text-muted-foreground text-[10px] shrink-0">
+                                            {Math.round((Date.now() - req.startedAt.getTime()) / 1000)}s
+                                        </span>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+                                            onClick={() => cancelRequest(req.id)}
+                                        >
+                                            <XCircle className="w-3 h-3" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <div className="border-t mt-1 pt-1">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="w-full h-6 text-[10px] text-destructive"
+                                        onClick={() => {
+                                            cancelAll();
+                                            setShowActiveReqs(false);
+                                        }}
+                                    >
+                                        Cancel All
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Transport toggle */}
                 {showTransportToggle && (

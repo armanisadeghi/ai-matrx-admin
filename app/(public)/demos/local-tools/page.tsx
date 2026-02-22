@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import {
     Activity,
     ChevronRight,
+    Cloud,
     FileText,
     FolderOpen,
     Globe,
     Loader2,
     Monitor,
     Send,
+    Settings2,
     Terminal,
     Wifi,
 } from 'lucide-react';
@@ -57,6 +59,27 @@ const SUB_PAGES = [
         icon: FolderOpen,
         label: 'Terminal',
         description: 'Interactive shell-like terminal interface',
+    },
+    {
+        href: '/demos/local-tools/documents',
+        icon: FileText,
+        label: 'Documents & Notes',
+        description: 'Folders, notes, sync, versions, conflicts, shares',
+        badge: 'New',
+    },
+    {
+        href: '/demos/local-tools/cloud-sync',
+        icon: Cloud,
+        label: 'Cloud Sync',
+        description: 'Configure cloud sync, settings, push/pull',
+        badge: 'New',
+    },
+    {
+        href: '/demos/local-tools/engine',
+        icon: Settings2,
+        label: 'Engine Settings',
+        description: 'Health, version, ports, engine configuration',
+        badge: 'New',
     },
 ] as const;
 
