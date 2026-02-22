@@ -25,7 +25,6 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
-  Copy,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
@@ -38,7 +37,6 @@ import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { VoiceTextarea } from '@/features/audio';
 import MarkdownStream from '@/components/MarkdownStream';
-import { toast } from 'sonner';
 
 interface AutoCreatePromptAppFormProps {
   prompt?: any;
@@ -98,9 +96,15 @@ export function AutoCreatePromptAppForm({ prompt, prompts, categories, onSuccess
     },
     onError: (errorMessage, fullResponse) => {
       console.error('[AutoCreatePromptAppForm] Error creating app:', errorMessage);
+      if (fullResponse) {
+        console.log('[AutoCreatePromptAppForm] Full model response on failure:\n', fullResponse);
+      }
       setError(errorMessage);
       setErrorModelResponse(fullResponse ?? null);
-      setShowFullResponse(false);
+      // Auto-expand the response viewer when we have one — most useful for debugging
+      setShowFullResponse(!!fullResponse);
+      // If failure happened in auto-mode (initial), switch to a mode that shows the ErrorCard
+      setCreationMode(prev => prev === 'initial' ? 'describe' : prev);
     },
   });
 
@@ -1227,58 +1231,49 @@ interface ErrorCardProps {
 function ErrorCard({ error, fullResponse, showFullResponse, onToggleFullResponse, canRetry, onRetry }: ErrorCardProps) {
   const hasFullResponse = !!fullResponse;
 
-  const handleCopy = () => {
-    if (fullResponse) {
-      navigator.clipboard.writeText(fullResponse);
-      toast.success('Copied model response to clipboard');
-    }
-  };
-
   return (
     <Card className="border-destructive bg-destructive/5">
       <CardContent className="p-4 space-y-3">
-        {/* Error headline */}
-        <div className="flex items-start gap-2">
-          <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
-          <p className="text-destructive font-semibold text-sm leading-snug">{error}</p>
+        {/* Error headline + retry */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+            <p className="text-destructive font-semibold text-sm leading-snug">{error}</p>
+          </div>
+          {canRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry} className="gap-2 flex-shrink-0">
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </Button>
+          )}
         </div>
 
-        {/* Full model response — only shown when code extraction failed */}
+        {/* Full model response — shown when code extraction failed */}
         {hasFullResponse && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={onToggleFullResponse}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showFullResponse ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                {showFullResponse ? 'Hide' : 'Show'} model response
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-1">
-                  {fullResponse.length.toLocaleString()} chars
-                </Badge>
-              </button>
-              {showFullResponse && (
-                <Button variant="ghost" size="sm" onClick={handleCopy} className="h-6 px-2 text-xs gap-1">
-                  <Copy className="w-3 h-3" />
-                  Copy
-                </Button>
-              )}
-            </div>
+            <button
+              onClick={onToggleFullResponse}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showFullResponse ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              {showFullResponse ? 'Hide' : 'Show'} full model response
+              <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-1">
+                {fullResponse.length.toLocaleString()} chars
+              </Badge>
+            </button>
 
             {showFullResponse && (
-              <div className="rounded-md border border-border bg-muted/30 max-h-[400px] overflow-y-auto p-3">
-                <MarkdownStream content={fullResponse} isStreamActive={false} hideCopyButton />
+              <div className="rounded-md border border-border bg-muted/30 max-h-[500px] overflow-y-auto p-3">
+                {/* MarkdownStream includes built-in copy button and full-screen editor */}
+                <MarkdownStream
+                  content={fullResponse}
+                  isStreamActive={false}
+                  role="assistant"
+                  type="message"
+                />
               </div>
             )}
           </div>
-        )}
-
-        {/* Actions */}
-        {canRetry && (
-          <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Try Again
-          </Button>
         )}
       </CardContent>
     </Card>

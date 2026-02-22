@@ -55,16 +55,25 @@ interface ExecuteBuiltinWithCodeExtractionResult {
 /**
  * Extract code from markdown codeblock
  * Handles: tsx, jsx, typescript, ts, javascript, js, python, py, etc.
+ *
+ * Robust against:
+ * - Windows (\r\n) and Unix (\n) line endings
+ * - Trailing spaces after the language tag (e.g. "```tsx ")
+ * - Missing language tag
+ * - Multiple code blocks (returns first one)
  */
 function extractCodeFromResponse(response: string): string | null {
-  // Match code blocks with optional language specifiers
-  const codeBlockRegex = /```(?:\w+)?\n([\s\S]*?)```/;
-  const match = response.match(codeBlockRegex);
-  
+  // Normalize Windows line endings so \n always works as delimiter
+  const normalized = response.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // Allow optional language tag followed by optional whitespace before the newline
+  const codeBlockRegex = /```(?:\w+)?[^\S\n]*\n([\s\S]*?)```/;
+  const match = normalized.match(codeBlockRegex);
+
   if (match && match[1]) {
     return match[1].trim();
   }
-  
+
   return null;
 }
 
@@ -176,6 +185,10 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
       const code = extractCodeFromResponse(fullResponse);
       
       if (!code) {
+        console.error(
+          '[executeBuiltinWithCodeExtraction] No code block found in response. Full response:\n',
+          fullResponse
+        );
         return {
           success: false,
           fullResponse,

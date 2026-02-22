@@ -138,6 +138,9 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
     // Acquire a Web Lock to discourage browser from freezing this tab
     const releaseLock = await acquireWebLock('auto-create-prompt-app');
 
+    // Track whether we're navigating away on success so we don't reset state prematurely
+    let navigatingAway = false;
+
     try {
       setErrorFullResponse(null);
       errorFullResponseRef.current = null;
@@ -289,6 +292,10 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       
       onSuccessRef.current?.(appData.id);
       
+      // Mark that we're navigating — finally block will skip state reset so
+      // the success UI stays visible during the brief redirect delay
+      navigatingAway = true;
+
       // Redirect to app page
       setTimeout(() => {
         router.push(`/prompt-apps/${appData.id}`);
@@ -309,17 +316,19 @@ export function useAutoCreateApp(options: UseAutoCreateAppOptions = {}) {
       // Pass the full response (if any) so the UI can show what the model actually returned
       const capturedFullResponse = errorFullResponseRef.current;
       onErrorRef.current?.(errorMessage, capturedFullResponse ?? undefined);
-      
-      // ALWAYS reset creating state so the UI never gets stuck
-      setIsCreating(false);
-      isCreatingRef.current = false;
-      setProgress('');
-      setActiveStage(null);
       return null;
     } finally {
-      // ALWAYS release the web lock and reset refs
+      // Always release the web lock
       releaseLock();
       isCreatingRef.current = false;
+
+      // Only reset UI state on failure — on success we keep the spinner visible
+      // until the router redirect unmounts this component
+      if (!navigatingAway) {
+        setIsCreating(false);
+        setProgress('');
+        setActiveStage(null);
+      }
     }
   }, [dispatch, router]);
 
