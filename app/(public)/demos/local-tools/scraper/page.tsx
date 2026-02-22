@@ -45,7 +45,9 @@ function ScrapePanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
     const isDisabled = !!loading || (useWebSocket && !wsConnected);
 
     const runScrape = async () => {
-        const urlList = urls.split('\n').map(u => u.trim()).filter(Boolean);
+        const urlList = urls.split('\n').map(u => u.trim()).filter(Boolean).map(u =>
+            u.match(/^https?:\/\//i) ? u : `https://${u}`
+        );
         setResults(null);
         const result = await invokeTool('Scrape', {
             urls: urlList,
@@ -487,15 +489,16 @@ function ComparisonPanel({ local }: { local: ReturnType<typeof useMatrxLocal> })
 
     const runComparison = async () => {
         if (!url.trim()) return;
+        const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`;
         setComparing(true);
         setFetchResult(null);
         setBrowserResult(null);
         setScrapeResult(null);
 
         const [fetch_, browser_, scrape_] = await Promise.allSettled([
-            invokeViaRest('FetchUrl', { url: url.trim() }),
-            invokeViaRest('FetchWithBrowser', { url: url.trim(), extract_text: true }),
-            invokeViaRest('Scrape', { urls: [url.trim()], use_cache: false, output_mode: 'rich' }),
+            invokeViaRest('FetchUrl', { url: normalizedUrl }),
+            invokeViaRest('FetchWithBrowser', { url: normalizedUrl, extract_text: true }),
+            invokeViaRest('Scrape', { urls: [normalizedUrl], use_cache: false, output_mode: 'rich' }),
         ]);
 
         setFetchResult(fetch_.status === 'fulfilled' ? fetch_.value.output : `Error: ${(fetch_ as PromiseRejectedResult).reason}`);

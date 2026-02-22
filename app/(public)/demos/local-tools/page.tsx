@@ -152,7 +152,7 @@ export default function LocalToolsDemo() {
                                 Matrx Local
                             </h1>
                             <p className="text-sm text-muted-foreground">
-                                Connect to your local machine and test all 23 tools
+                                Connect to your local machine and test all {ALL_TOOLS.length} tools
                             </p>
                         </div>
                         <Badge variant="secondary" className="text-xs">
@@ -213,7 +213,7 @@ export default function LocalToolsDemo() {
                                     disabled={isDisabled}
                                     onClick={() => runTool(preset.tool, preset.input)}
                                 >
-                                    {loading === `${preset.tool}-${Date.now()}` && (
+                                    {typeof loading === 'string' && loading.startsWith(`${preset.tool}-`) && (
                                         <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                                     )}
                                     {preset.label}

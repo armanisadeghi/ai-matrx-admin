@@ -366,6 +366,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 signal: AbortSignal.timeout(10_000),
                 headers,
             });
+            if (!res.ok) {
+                const body = await res.text().catch(() => '');
+                throw new Error(`GET ${path} failed (${res.status}): ${body || res.statusText}`);
+            }
             return res.json();
         },
         [baseUrl],
@@ -379,6 +383,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 body: body ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(30_000),
             });
+            if (!res.ok) {
+                const errBody = await res.text().catch(() => '');
+                throw new Error(`POST ${path} failed (${res.status}): ${errBody || res.statusText}`);
+            }
             return res.json();
         },
         [baseUrl],
@@ -392,6 +400,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 body: body ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(10_000),
             });
+            if (!res.ok) {
+                const errBody = await res.text().catch(() => '');
+                throw new Error(`PUT ${path} failed (${res.status}): ${errBody || res.statusText}`);
+            }
             return res.json();
         },
         [baseUrl],
@@ -405,6 +417,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 signal: AbortSignal.timeout(10_000),
             });
             if (res.status === 204) return { ok: true };
+            if (!res.ok) {
+                const errBody = await res.text().catch(() => '');
+                throw new Error(`DELETE ${path} failed (${res.status}): ${errBody || res.statusText}`);
+            }
             return res.json();
         },
         [baseUrl],
