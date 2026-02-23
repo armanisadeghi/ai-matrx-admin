@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { useChatContext } from '../context/ChatContext';
-import type { StreamEvent, DataPayload, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
+import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload, EndPayload } from '@/types/python-generated/stream-events';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 import { extractPersistableToolUpdates } from '@/components/mardown-display/chat-markdown/tool-event-engine';
 import { buildContentArray, ContentItem, PublicResource } from '../types/content';
@@ -73,36 +73,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         return BACKEND_URLS.production;
     };
 
-    const warmAgent = async (promptId: string) => {
-        try {
-            const BACKEND_URL = getBackendUrl();
-            if (BACKEND_URL.includes('localhost')) return;
-
-            const warmUrl = `${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`;
-            console.log('[useAgentChat] warmAgent →', warmUrl);
-
-            const res = await fetch(warmUrl, { method: 'POST' });
-            console.log('[useAgentChat] warmAgent response:', res.status, res.statusText);
-        } catch (err) {
-            console.warn('[useAgentChat] warmAgent failed (non-critical):', err);
-        }
-    };
-
-    /** Pre-warm a conversation on the server (fire when user navigates to it) */
-    const warmConversation = async (conversationId: string) => {
-        try {
-            const BACKEND_URL = getBackendUrl();
-            if (BACKEND_URL.includes('localhost')) return;
-
-            const warmUrl = `${BACKEND_URL}${ENDPOINTS.ai.conversationWarm(conversationId)}`;
-            console.log('[useAgentChat] warmConversation →', warmUrl);
-
-            const res = await fetch(warmUrl, { method: 'POST' });
-            console.log('[useAgentChat] warmConversation response:', res.status, res.statusText);
-        } catch (err) {
-            console.warn('[useAgentChat] warmConversation failed (non-critical):', err);
-        }
-    };
 
     const sendMessage = async ({ content, variables = {}, resources = [] }: SendMessageParams) => {
         if (!state.currentAgent) {
@@ -234,7 +204,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
                 switch (event.event) {
                     case 'data': {
-                        const dataPayload = event.data as DataPayload;
+                        const dataPayload = event.data as unknown as Record<string, unknown>;
                         if (dataPayload.event === 'conversation_id' && dataPayload.conversation_id) {
                             const serverId = dataPayload.conversation_id as string;
                             if (serverId !== conversationIdRef.current) {
@@ -327,8 +297,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     return {
         sendMessage,
         cancelRequest,
-        warmAgent,
-        warmConversation,
         getStreamEvents,
         isStreaming: state.isStreaming,
         isExecuting: state.isExecuting,

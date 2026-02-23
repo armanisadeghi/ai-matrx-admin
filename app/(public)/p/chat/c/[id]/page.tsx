@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import ChatContainer from '@/features/public-chat/components/ChatContainer';
 import ChatLoading from '../../loading';
+import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
 
 export async function generateMetadata({
     params,
@@ -20,8 +21,21 @@ export async function generateMetadata({
  * Conversation-Direct Route — /p/chat/c/[id]
  * Loads an existing conversation by ID.
  * Conversation loading is handled by ChatLayoutShell (URL-driven).
+ *
+ * Server-side: fires a warm call to Python so the conversation is cached
+ * before the client even loads.
  */
-export default function ConversationPage() {
+export default async function ConversationPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = await params;
+
+    // Fire-and-forget: warm the conversation on the Python backend (server → server)
+    const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(id)}`;
+    fetch(warmUrl, { method: 'POST' }).catch(() => {});
+
     return (
         <div className="h-full w-full bg-textured">
             <Suspense fallback={<ChatLoading />}>

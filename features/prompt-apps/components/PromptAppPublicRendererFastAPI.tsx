@@ -65,32 +65,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fingerprintId]);
     
-    // OPTIMIZATION: Pre-warm the agent on mount (cache the prompt for faster execution)
-    // Skips localhost targets to avoid browser-level ERR_CONNECTION_REFUSED console noise.
-    useEffect(() => {
-        const promptId = app.prompt_id;
-        if (!promptId) return;
-        
-        const warmAgent = async () => {
-            try {
-                const BACKEND_URL = (isAdmin && useLocalhost) 
-                    ? BACKEND_URLS.localhost 
-                    : BACKEND_URLS.production;
-
-                if (BACKEND_URL.includes('localhost')) return;
-
-                // No request body — agent_id goes in the URL path
-                await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`, {
-                    method: 'POST',
-                });
-            } catch {
-                // Silently ignore — warming is non-critical
-            }
-        };
-        
-        warmAgent();
-    }, [app.prompt_id, isAdmin, useLocalhost]);
-    
     // Cleanup timeout, abort controller, and RAF on unmount
     useEffect(() => {
         return () => {
@@ -237,8 +211,6 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             const headers = getHeaders();
             
             const agentRequest = {
-                prompt_id: promptId,
-                conversation_id: conversationId,
                 variables: validVariables,
                 user_input: userInput,
                 stream: true,
@@ -248,7 +220,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             logTiming('Initiating Agent API request...');
             const fetchStartTime = performance.now();
             
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),

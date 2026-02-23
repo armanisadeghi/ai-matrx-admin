@@ -57,7 +57,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const isAuthenticated = !!user?.id;
     const useLocalhost = useSelector(selectIsUsingLocalhost);
 
-    const { sendMessage, warmAgent, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
+    const { sendMessage, isStreaming, isExecuting, messages, conversationId } = useAgentChat({
         onStreamEvent: (event) => {
             setStreamEvents((prev) => [...prev, event]);
         },
@@ -164,13 +164,6 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
             clearTimeout(timer);
         };
     }, [state.currentAgent?.promptId, focusKey, isLoadingConversation]);
-
-    // Pre-warm agent
-    useEffect(() => {
-        if (state.currentAgent?.promptId) {
-            warmAgent(state.currentAgent.promptId);
-        }
-    }, [state.currentAgent?.promptId, warmAgent]);
 
     // Scroll to latest assistant message when a new one appears
     useEffect(() => {

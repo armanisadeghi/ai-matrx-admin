@@ -31,21 +31,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
     const { getHeaders, waitForAuth, isAdmin, fingerprintId } = useApiAuth();
     const useLocalhost = useSelector(selectIsUsingLocalhost);
 
-    // Pre-warm the agent on mount — no body, agent_id in URL path
-    useEffect(() => {
-        const promptId = app.prompt_id;
-        if (!promptId) return;
-
-        const BACKEND_URL = (isAdmin && useLocalhost)
-            ? BACKEND_URLS.localhost
-            : BACKEND_URLS.production;
-
-        if (BACKEND_URL.includes('localhost')) return;
-
-        fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentWarm(promptId)}`, { method: 'POST' })
-            .catch(() => { /* non-critical */ });
-    }, [app.prompt_id, isAdmin, useLocalhost]);
-
+    // Cleanup abort controller on unmount
     useEffect(() => {
         return () => {
             abortControllerRef.current?.abort();
@@ -82,15 +68,13 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
             const headers = getHeaders();
 
             const agentRequest = {
-                prompt_id: promptId,
-                conversation_id: conversationId,
                 variables,
                 user_input: userInput,
                 stream: true,
                 debug: false,
             };
 
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentExecute}`, {
+            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),

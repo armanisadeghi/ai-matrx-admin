@@ -1,7 +1,7 @@
 /**
  * FastAPI Bridge Thunk — Drop-in replacement for the socket.io path in executeMessage.
  *
- * Calls POST /api/ai/conversations/chat via fetch + NDJSON streaming,
+ * Calls POST /api/ai/chat via fetch + NDJSON streaming,
  * then dispatches to the SAME Redux slices that the socket path uses. All existing
  * selectors, components, and UI continue to work unchanged.
  *
@@ -98,8 +98,8 @@ export const executeMessageFastAPI = createAsyncThunk<
     dispatch(addResponse({ listenerId, taskId }));
     dispatch(setTaskListenerIds({ taskId, listenerIds: [listenerId] }));
 
-    // Fields accepted by POST /api/ai/conversations/chat — anything else gets stripped.
-    // conversation_id is optional in the body: omit for new conversations, include for existing.
+    // Fields accepted by POST /api/ai/chat — anything else gets stripped.
+    // conversation_id is optional in the body: used as a label/tracking ID only (server never fetches state).
     // is_new_conversation has been removed entirely from the API.
     const ALLOWED_FIELDS = new Set([
       'ai_model_id', 'messages', 'conversation_id', 'stream', 'debug', 'max_iterations',
@@ -172,7 +172,7 @@ export const executeMessageFastAPI = createAsyncThunk<
 
     if (droppedFields.length > 0) {
       console.warn(
-        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/conversations/chat: ${droppedFields.join(', ')}`,
+        `%c⚠️ FASTAPI MIGRATION [executeMessageFastAPI]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat: ${droppedFields.join(', ')}`,
         'font-weight: bold; color: #ff9800; font-size: 12px;',
       );
     }

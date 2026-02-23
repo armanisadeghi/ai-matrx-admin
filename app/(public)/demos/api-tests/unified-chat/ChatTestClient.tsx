@@ -15,6 +15,7 @@ import MarkdownStream from '@/components/MarkdownStream';
 import { useApiTestConfig, ApiTestConfigPanel } from '@/components/api-test-config';
 import type { StreamEvent, ChunkPayload, ErrorPayload, CompletionPayload } from '@/types/python-generated/stream-events';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 import { useModelControls, getModelDefaults } from '@/features/prompts/hooks/useModelControls';
 import { PromptMessage, PromptSettings } from '@/features/prompts/types/core';
 import { ModelSettings } from '@/features/prompts/components/configuration/ModelSettings';
@@ -300,7 +301,7 @@ export default function ChatTestClient() {
 
     try {
       // For test runs, omit conversation_id to let the server generate one (new conversation per run)
-      const url = `${apiConfig.baseUrl}/api/ai/conversations/chat`;
+      const url = `${apiConfig.baseUrl}${ENDPOINTS.ai.chat}`;
 
       // Build request body - flatten settings into root level
       // Filter out null/undefined values before sending
@@ -368,7 +369,7 @@ export default function ChatTestClient() {
 
         setStreamOutput(prev => prev + JSON.stringify(json, null, 2) + '\n\n');
         setStreamEvents(prev => [...prev, json as StreamEvent]);
-        rawEventsRef.current.push(json as Record<string, unknown>);
+        rawEventsRef.current.push(json as unknown as Record<string, unknown>);
 
         if (json.event === 'chunk' && json.data && typeof json.data === 'object' && 'text' in json.data) {
           setStreamText(prev => prev + (json.data as ChunkPayload).text);

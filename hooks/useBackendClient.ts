@@ -40,7 +40,7 @@ interface UseBackendClientOptions {
  * await client.post(ENDPOINTS.ai.agentWarm(promptId));
  *
  * // Streaming request — pass conversation_id in body to continue an existing conversation
- * for await (const event of client.stream(ENDPOINTS.ai.agentExecute, body)) {
+ * for await (const event of client.stream(ENDPOINTS.ai.agentStart(agentId), body)) {
  *   // handle events
  * }
  * ```

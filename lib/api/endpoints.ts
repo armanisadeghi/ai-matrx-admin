@@ -47,7 +47,7 @@ export const ENDPOINTS = {
         conversationWarm: (conversationId: string) => `/api/ai/conversations/${conversationId}/warm` as const,
 
         /**
-         * @deprecated Use agentStart instead. Kept for backward compatibility with other consumers.
+         * POST — Pre-warm an agent's server cache. No body. No auth. (public endpoint)
          * POST /api/ai/agents/{agentId}/warm
          */
         agentWarm: (agentId: string) => `/api/ai/agents/${agentId}/warm` as const,

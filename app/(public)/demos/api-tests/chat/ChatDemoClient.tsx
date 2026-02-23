@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -224,7 +225,7 @@ export default function ChatDemoClient() {
 
     try {
       // For demo runs, omit conversation_id to let the server generate one (new conversation per run)
-      const url = `${apiConfig.baseUrl}/api/ai/conversations/chat`;
+      const url = `${apiConfig.baseUrl}${ENDPOINTS.ai.chat}`;
 
       // Build request body - flatten settings into root level
       // Filter out null/undefined values before sending

@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { get_prompt_sample, TEST_ADMIN_TOKEN } from './sample-prompt';
 import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import MarkdownStream from '@/components/MarkdownStream';
-import { BACKEND_URLS } from '@/lib/api/endpoints';
+import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
 
 type ServerType = 'local' | 'production';
@@ -81,7 +81,7 @@ export default function DirectChatClient() {
         return;
       }
 
-      const url = `${getBaseUrl()}/api/ai/conversations/chat`;
+      const url = `${getBaseUrl()}${ENDPOINTS.ai.chat}`;
 
       const response = await fetch(url, {
         method: 'POST',

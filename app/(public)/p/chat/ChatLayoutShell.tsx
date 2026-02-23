@@ -162,11 +162,6 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
             // This prevents the intermediate empty-state that caused stale closures
             loadConversationIntoState(urlConversationId, urlConversationId, chatMessages);
 
-            // Pre-warm the conversation on the server so it's cached for the next message
-            try {
-                const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(urlConversationId)}`;
-                fetch(warmUrl, { method: 'POST' }).catch(() => {});
-            } catch {}
 
             const agentParam = searchParams.get('agent');
             if (agentParam) {

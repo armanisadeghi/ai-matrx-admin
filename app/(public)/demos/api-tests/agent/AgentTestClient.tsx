@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 import { Bot, Loader2, Send, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,6 @@ export default function AgentTestClient() {
     });
     
     const [promptId, setPromptId] = useState("a6617ebd-1114-4cc0-84b7-6b0c9ee235c8");
-    const [conversationId, setConversationId] = useState(crypto.randomUUID());
     const [userInput, setUserInput] = useState("Hello! Can you help me with something?");
     const [isLoading, setIsLoading] = useState(false);
     const [streamOutput, setStreamOutput] = useState("");
@@ -36,14 +36,12 @@ export default function AgentTestClient() {
 
         try {
             const requestBody = {
-                prompt_id: promptId,
-                conversation_id: conversationId,
                 user_input: userInput,
                 stream: true,
                 debug: true,
             };
 
-            const response = await fetch(`${apiConfig.baseUrl}/api/ai/agents/execute`, {
+            const response = await fetch(`${apiConfig.baseUrl}${ENDPOINTS.ai.agentStart(promptId)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -101,7 +99,6 @@ export default function AgentTestClient() {
     };
 
     const handleNewConversation = () => {
-        setConversationId(crypto.randomUUID());
         setStreamOutput("");
         setTextOutput("");
         setError(null);
@@ -133,30 +130,6 @@ export default function AgentTestClient() {
                                 disabled={isLoading}
                                 className="h-8 text-sm font-mono"
                             />
-                        </div>
-                        <div>
-                            <Label htmlFor="conversationId" className="text-[10px] text-muted-foreground leading-none mb-0.5 block">Conversation ID</Label>
-                            <div className="flex gap-1">
-                                <Input
-                                    id="conversationId"
-                                    type="text"
-                                    value={conversationId}
-                                    onChange={(e) => setConversationId(e.target.value)}
-                                    disabled={isLoading}
-                                    className="h-8 text-sm font-mono"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={handleNewConversation}
-                                    disabled={isLoading}
-                                    title="New Conversation"
-                                    className="h-8 w-8 flex-shrink-0"
-                                >
-                                    <Zap className="w-3.5 h-3.5" />
-                                </Button>
-                            </div>
                         </div>
                         <div className="flex gap-2 items-end">
                             <div className="flex-1">
