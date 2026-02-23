@@ -30,6 +30,8 @@ interface PromptAppPublicRendererFastAPIProps {
         isExecuting: boolean;
         error: any;
         rateLimitInfo: { remaining: number; total: number } | null;
+        conversationId: string | null;
+        onResetConversation: () => void;
     }>;
 }
 
@@ -39,7 +41,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
     const [error, setError] = useState<any>(null);
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isStreamComplete, setIsStreamComplete] = useState(false);
-    const [conversationId] = useState(() => uuidv4()); // Generate once per component instance
+    const [dbConversationId, setDbConversationId] = useState<string | null>(null);
+    const dbConversationIdRef = useRef<string | null>(null);
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
     // Track the task_id from the logging call so we can update it on failure
@@ -120,6 +123,15 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
 
         return { validVariables: valid, validationErrors: errors };
     }, [app.variable_schema]);
+
+    const resetConversation = useCallback(() => {
+        dbConversationIdRef.current = null;
+        setDbConversationId(null);
+        setStreamEvents([]);
+        streamEventsRef.current = [];
+        setIsStreamComplete(false);
+        setError(null);
+    }, []);
 
     // Execute handler with Agent API streaming
     const handleExecute = useCallback(async (variables: Record<string, any>, userInput?: string) => {
@@ -210,17 +222,18 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             
             const headers = getHeaders();
             
-            const agentRequest = {
-                variables: validVariables,
-                user_input: userInput,
-                stream: true,
-                debug: false,
-            };
-            
+            const existingConversationId = dbConversationIdRef.current;
+            const agentRequest = existingConversationId
+                ? { user_input: userInput ?? '', stream: true, debug: false }
+                : { variables: validVariables, user_input: userInput, stream: true, debug: false };
+            const executeUrl = existingConversationId
+                ? `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`
+                : `${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`;
+
             logTiming('Initiating Agent API request...');
             const fetchStartTime = performance.now();
-            
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`, {
+
+            const fetchResponse = await fetch(executeUrl, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -249,7 +262,11 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             if (!fetchResponse.body) {
                 throw new Error('No response body from Agent API');
             }
-            
+
+            const serverConversationId = fetchResponse.headers.get('X-Conversation-ID') ?? uuidv4();
+            dbConversationIdRef.current = serverConversationId;
+            setDbConversationId(serverConversationId);
+
             // 🔥 BACKGROUND LOGGING: Fire-and-forget logging request (ZERO latency impact)
             logTiming('🔥 Firing background logging request...');
             fetch(`/api/public/apps/${slug}/execute`, {
@@ -260,12 +277,12 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                     variables_provided: variables,
                     variables_used: validVariables,
                     fingerprint: fingerprintId,
-                    chat_config: { prompt_id: promptId, conversation_id: conversationId },
+                    chat_config: { prompt_id: promptId, conversation_id: serverConversationId },
                     metadata: {
                         timestamp: new Date().toISOString(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        agent_api: true, // Flag to indicate this used Agent API
-                        conversation_id: conversationId
+                        agent_api: true,
+                        conversation_id: serverConversationId
                     }
                 })
             }).then(res => res.json()).then(data => {
@@ -383,7 +400,7 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
             setIsExecuting(false);
             abortControllerRef.current = null;
         }
-    }, [app, slug, conversationId, isAdmin, useLocalhost, isAuthenticated, fingerprintId, guestLimit, waitForAuth, getHeaders, validateVariables]);
+    }, [app, slug, isAdmin, useLocalhost, isAuthenticated, fingerprintId, guestLimit, waitForAuth, getHeaders, validateVariables, resetConversation]);
 
     // Transform and render custom UI component
     // If TestComponent is provided, use it directly (for testing purposes)
@@ -478,6 +495,8 @@ export function PromptAppPublicRendererFastAPI({ app, slug, TestComponent }: Pro
                                 remaining: guestLimit.remaining,
                                 total: 5
                             } : null}
+                            conversationId={dbConversationId}
+                            onResetConversation={resetConversation}
                         />
                     </PromptAppErrorBoundary>
                 ) : (

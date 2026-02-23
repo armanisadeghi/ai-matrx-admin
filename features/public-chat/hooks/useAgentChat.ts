@@ -193,8 +193,15 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                 throw new Error('No response body from Agent API');
             }
 
-            const { events, requestId } = parseNdjsonStream(response, abortControllerRef.current.signal);
+            const { events, requestId, conversationId: headerConvId } = parseNdjsonStream(response, abortControllerRef.current.signal);
             serverRequestIdRef.current = requestId;
+
+            // Primary handshake: headers arrive before the body, so this is guaranteed
+            // to fire before any stream events are processed.
+            if (headerConvId && headerConvId !== conversationIdRef.current) {
+                setDbConversationId(headerConvId);
+                console.log('[useAgentChat] conversation_id from header:', headerConvId);
+            }
 
             let accumulatedContent = '';
 

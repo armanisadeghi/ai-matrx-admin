@@ -185,7 +185,7 @@ export class BackendClient {
         endpoint: string,
         body: Record<string, unknown> = {},
         signal?: AbortSignal,
-    ): Promise<{ events: AsyncGenerator<StreamEvent, void, undefined>; requestId: string | null }> {
+    ): Promise<{ events: AsyncGenerator<StreamEvent, void, undefined>; requestId: string | null; conversationId: string | null }> {
         const response = await this.rawPost(endpoint, body, signal);
         return parseNdjsonStream(response, signal);
     }

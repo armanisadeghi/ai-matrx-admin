@@ -36,11 +36,13 @@ import { parseStreamError, BackendApiError } from './errors';
 export function parseNdjsonStream(
     response: Response,
     signal?: AbortSignal,
-): { events: AsyncGenerator<StreamEvent, void, undefined>; requestId: string | null } {
+): { events: AsyncGenerator<StreamEvent, void, undefined>; requestId: string | null; conversationId: string | null } {
     const requestId = response.headers.get('X-Request-ID');
+    const conversationId = response.headers.get('X-Conversation-ID');
     return {
         events: _parseNdjsonStream(response, signal),
         requestId,
+        conversationId,
     };
 }
 

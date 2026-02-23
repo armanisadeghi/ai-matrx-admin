@@ -25,7 +25,8 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
     const [error, setError] = useState<{ type: ExecutionErrorType; message: string } | null>(null);
     const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
     const [isStreamComplete, setIsStreamComplete] = useState(false);
-    const [conversationId] = useState(() => uuidv4());
+    const [dbConversationId, setDbConversationId] = useState<string | null>(null);
+    const dbConversationIdRef = useRef<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const { getHeaders, waitForAuth, isAdmin, fingerprintId } = useApiAuth();
@@ -36,6 +37,14 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
         return () => {
             abortControllerRef.current?.abort();
         };
+    }, []);
+
+    const resetConversation = useCallback(() => {
+        dbConversationIdRef.current = null;
+        setDbConversationId(null);
+        setStreamEvents([]);
+        setIsStreamComplete(false);
+        setError(null);
     }, []);
 
     const handleExecute = useCallback(async (variables: Record<string, any>, userInput?: string) => {
@@ -67,14 +76,15 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
 
             const headers = getHeaders();
 
-            const agentRequest = {
-                variables,
-                user_input: userInput,
-                stream: true,
-                debug: false,
-            };
+            const existingConversationId = dbConversationIdRef.current;
+            const agentRequest = existingConversationId
+                ? { user_input: userInput ?? '', stream: true, debug: false }
+                : { variables, user_input: userInput, stream: true, debug: false };
+            const executeUrl = existingConversationId
+                ? `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(existingConversationId)}`
+                : `${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`;
 
-            const fetchResponse = await fetch(`${BACKEND_URL}${ENDPOINTS.ai.agentStart(promptId)}`, {
+            const fetchResponse = await fetch(executeUrl, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(agentRequest),
@@ -100,6 +110,10 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 throw new Error('No response body from Agent API');
             }
 
+            const serverConversationId = fetchResponse.headers.get('X-Conversation-ID') ?? uuidv4();
+            dbConversationIdRef.current = serverConversationId;
+            setDbConversationId(serverConversationId);
+
             // Background logging (fire-and-forget)
             fetch(`/api/public/apps/${slug}/execute`, {
                 method: 'POST',
@@ -109,12 +123,12 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                     variables_provided: variables,
                     variables_used: variables,
                     fingerprint: fingerprintId,
-                    chat_config: { prompt_id: promptId, conversation_id: conversationId },
+                    chat_config: { prompt_id: promptId, conversation_id: serverConversationId },
                     metadata: {
                         timestamp: new Date().toISOString(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                         agent_api: true,
-                        conversation_id: conversationId,
+                        conversation_id: serverConversationId,
                     },
                 }),
             }).then(res => res.json()).then(data => {
@@ -148,7 +162,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
             setIsExecuting(false);
             abortControllerRef.current = null;
         }
-    }, [app, slug, conversationId, isAdmin, useLocalhost, fingerprintId, waitForAuth, getHeaders]);
+    }, [app, slug, isAdmin, useLocalhost, fingerprintId, waitForAuth, getHeaders, resetConversation]);
 
     const response = useMemo(() => {
         return streamEvents
@@ -256,6 +270,8 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                     appName={app.name}
                     appTagline={app.tagline}
                     appCategory={app.category}
+                    conversationId={dbConversationId}
+                    onResetConversation={resetConversation}
                 />
             </div>
             

@@ -5,7 +5,7 @@
  * Components can switch by changing ONE import.
  *
  * This thunk transforms the OLD socket payload shape (chat_config.model_id, etc.)
- * into the NEW POST /api/ai/conversations/chat body shape (ai_model_id, etc.).
+ * into the NEW POST /api/ai/chat body shape (ai_model_id, etc.).
  * Pass conversation_id in taskData.chat_config to continue an existing conversation.
  * Omit for a new conversation — the server streams it back.
  *
@@ -59,7 +59,7 @@ interface SubmitChatPayload {
 }
 
 /**
- * Fields the POST /api/ai/conversations/chat endpoint actually accepts.
+ * Fields the POST /api/ai/chat endpoint actually accepts.
  * Anything NOT in this set is stripped from the request to prevent 422 errors.
  * conversation_id is optional in the body (omit for new, include for existing).
  * is_new_conversation has been removed entirely.
@@ -118,7 +118,7 @@ function normalizeResponseFormat(value: unknown): Record<string, unknown> | null
 }
 
 /**
- * Transforms a legacy socket-era chatConfig into the new POST /api/ai/conversations/chat body.
+ * Transforms a legacy socket-era chatConfig into the new POST /api/ai/chat body.
  *
  * 1. Renames old fields to new names
  * 2. Strips frontend-only fields the backend doesn't accept (image_urls, file_urls, etc.)
@@ -192,7 +192,7 @@ function transformChatConfigToUnifiedBody(
 
   if (droppedFields.length > 0) {
     console.warn(
-      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/conversations/chat: ${droppedFields.join(', ')}`,
+      `%c⚠️ FASTAPI MIGRATION [${callerContext}]: Stripped ${droppedFields.length} fields not accepted by /api/ai/chat: ${droppedFields.join(', ')}`,
       'font-weight: bold; color: #ff9800; font-size: 12px;',
     );
   }
@@ -225,7 +225,7 @@ export const submitChatFastAPI = createAsyncThunk<
     );
 
     console.warn(
-      `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → POST /api/ai/conversations/chat. ` +
+      `%c🔄 FASTAPI MIGRATION [${callerContext}]: This call flows through submitChatFastAPI → POST /api/ai/chat. ` +
       `The calling component should be updated to call the conversation API directly and pass the new field names (ai_model_id, max_output_tokens, response_format). ` +
       `This bridge thunk will be removed once all callers are updated.`,
       'font-weight: bold; color: #ff9800; font-size: 12px;',
