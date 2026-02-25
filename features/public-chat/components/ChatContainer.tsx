@@ -64,13 +64,6 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         onComplete: () => {
             setTimeout(() => setStreamEvents([]), 100);
 
-            // Safety net: if the server didn't send a conversation_id event,
-            // use the client-side conversationId so the URL still updates
-            if (!state.dbConversationId) {
-                setDbConversationId(state.conversationId);
-            }
-
-            // Notify sidebar that this conversation was updated.
             if (state.dbConversationId) {
                 sidebarEvents.emit('conversation-updated', { id: state.dbConversationId });
             }

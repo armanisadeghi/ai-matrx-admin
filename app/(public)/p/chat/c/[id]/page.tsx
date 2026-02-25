@@ -35,6 +35,7 @@ export default async function ConversationPage({
     // Fire-and-forget: warm the conversation on the Python backend (server → server)
     const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(id)}`;
     fetch(warmUrl, { method: 'POST' }).catch(() => {});
+    console.log('[ConversationPage] warmed conversation:', id);
 
     return (
         <div className="h-full w-full bg-textured">

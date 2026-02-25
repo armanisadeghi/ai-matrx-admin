@@ -200,7 +200,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             // to fire before any stream events are processed.
             if (headerConvId && headerConvId !== conversationIdRef.current) {
                 setDbConversationId(headerConvId);
-                console.log('[useAgentChat] conversation_id from header:', headerConvId);
+                console.log('[useAgentChat] conversation_id from header:', headerConvId); // This is correct.
             }
 
             let accumulatedContent = '';
@@ -216,7 +216,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
                             const serverId = dataPayload.conversation_id as string;
                             if (serverId !== conversationIdRef.current) {
                                 setDbConversationId(serverId);
-                                console.log('[useAgentChat] server conversation_id:', serverId);
+                                console.log('[useAgentChat] server conversation_id:', serverId); // This is correct as well.
                             }
                         }
                         break;
@@ -309,6 +309,6 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         isExecuting: state.isExecuting,
         error: state.error,
         messages: state.messages,
-        conversationId: state.conversationId,
+        conversationId: state.dbConversationId,
     };
 }

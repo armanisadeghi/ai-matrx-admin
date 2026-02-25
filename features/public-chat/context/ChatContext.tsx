@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useRef, useEffect, ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import type { PublicResource, ContentItem } from '../types/content';
 
@@ -91,7 +90,7 @@ const defaultSettings: ChatSettings = {
 };
 
 const createInitialState = (): ChatState => ({
-    conversationId: uuidv4(),
+    conversationId: '',
     dbConversationId: null,
     messages: [],
     isStreaming: false,
@@ -161,13 +160,14 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         case 'START_NEW_CONVERSATION':
             return {
                 ...state,
-                conversationId: uuidv4(),
+                conversationId: '',
                 dbConversationId: null,
                 messages: [],
                 error: null,
             };
 
         case 'SET_DB_CONVERSATION_ID':
+            console.log('[chatReducer] SET_DB_CONVERSATION_ID:', action.payload);
             return { ...state, dbConversationId: action.payload };
 
         case 'SET_MESSAGES':
@@ -194,8 +194,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
 interface ChatContextValue {
     state: ChatState;
     dispatch: React.Dispatch<ChatAction>;
-    /** Ref that always holds the latest conversationId — use inside callbacks to avoid stale closures */
-    conversationIdRef: React.RefObject<string>;
+    /** Ref that always holds the latest dbConversationId — use inside callbacks to avoid stale closures */
+    conversationIdRef: React.RefObject<string | null>;
     setAgent: (agent: AgentConfig) => void;
     addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
     updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
@@ -233,11 +233,12 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
         return initial;
     });
 
-    // Ref that always tracks the latest conversationId for use in async callbacks
-    const conversationIdRef = useRef<string>(state.conversationId);
+    // Ref that always tracks the latest dbConversationId for use in async callbacks.
+    // This is the server-assigned conversation ID (null until the first response).
+    const conversationIdRef = useRef<string | null>(state.dbConversationId);
     useEffect(() => {
-        conversationIdRef.current = state.conversationId;
-    }, [state.conversationId]);
+        conversationIdRef.current = state.dbConversationId;
+    }, [state.dbConversationId]);
 
     const setUseLocalhost = (useLocalhost: boolean) => {
         dispatch({ type: 'SET_USE_LOCALHOST', payload: useLocalhost });
@@ -248,7 +249,7 @@ export function ChatProvider({ children, initialAgent }: ChatProviderProps) {
     };
 
     const addMessage = (message: Omit<ChatMessage, 'id' | 'timestamp'>): string => {
-        const id = uuidv4();
+        const id = crypto.randomUUID();
         dispatch({
             type: 'ADD_MESSAGE',
             payload: { ...message, id, timestamp: new Date() },

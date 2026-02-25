@@ -55,7 +55,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ai/agents/execute": {
+    "/ai/conversations/{conversation_id}/warm": {
         parameters: {
             query?: never;
             header?: never;
@@ -64,15 +64,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Execute Agent */
-        post: operations["execute_agent_ai_agents_execute_post"];
+        /** Warm Conversation */
+        post: operations["warm_conversation_ai_conversations__conversation_id__warm_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/ai/conversations/chat": {
+    "/ai/agents/{agent_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -81,8 +81,42 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Unified Chat */
-        post: operations["unified_chat_ai_conversations_chat_post"];
+        /** Start Agent */
+        post: operations["start_agent_ai_agents__agent_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_ai_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Continue Conversation */
+        post: operations["continue_conversation_ai_conversations__conversation_id__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1094,12 +1128,8 @@ export interface components {
             /** Urls */
             urls: string[];
         };
-        /** AgentExecuteRequest */
-        AgentExecuteRequest: {
-            /** Prompt Id */
-            prompt_id: string;
-            /** Conversation Id */
-            conversation_id?: string | null;
+        /** AgentStartRequest */
+        AgentStartRequest: {
             /** User Input */
             user_input?: string | {
                 [key: string]: unknown;
@@ -1119,7 +1149,7 @@ export interface components {
             stream: boolean;
             /**
              * Debug
-             * @default true
+             * @default false
              */
             debug: boolean;
         };
@@ -1153,6 +1183,126 @@ export interface components {
              */
             file: string;
         };
+        /** ChatRequest */
+        ChatRequest: {
+            /** Ai Model Id */
+            ai_model_id: string;
+            /** Messages */
+            messages: {
+                [key: string]: unknown;
+            }[];
+            /** Conversation Id */
+            conversation_id?: string | null;
+            /**
+             * Max Iterations
+             * @default 20
+             */
+            max_iterations: number;
+            /**
+             * Max Retries Per Iteration
+             * @default 2
+             */
+            max_retries_per_iteration: number;
+            /**
+             * Stream
+             * @default true
+             */
+            stream: boolean;
+            /**
+             * Debug
+             * @default false
+             */
+            debug: boolean;
+            /** System Instruction */
+            system_instruction?: string | null;
+            /** Max Output Tokens */
+            max_output_tokens?: number | null;
+            /** Temperature */
+            temperature?: number | null;
+            /** Top P */
+            top_p?: number | null;
+            /** Top K */
+            top_k?: number | null;
+            /** Tools */
+            tools?: string[] | null;
+            /** Tool Choice */
+            tool_choice?: unknown | null;
+            /**
+             * Parallel Tool Calls
+             * @default true
+             */
+            parallel_tool_calls: boolean;
+            /** Reasoning Effort */
+            reasoning_effort?: string | null;
+            /** Reasoning Summary */
+            reasoning_summary?: string | null;
+            /** Thinking Level */
+            thinking_level?: string | null;
+            /** Include Thoughts */
+            include_thoughts?: boolean | null;
+            /** Thinking Budget */
+            thinking_budget?: number | null;
+            /** Response Format */
+            response_format?: {
+                [key: string]: unknown;
+            } | null;
+            /** Stop Sequences */
+            stop_sequences?: string[] | null;
+            /** Internal Web Search */
+            internal_web_search?: boolean | null;
+            /** Internal Url Context */
+            internal_url_context?: boolean | null;
+            /** Size */
+            size?: string | null;
+            /** Quality */
+            quality?: string | null;
+            /**
+             * Count
+             * @default 1
+             */
+            count: number;
+            /** Audio Voice */
+            audio_voice?: string | null;
+            /** Audio Format */
+            audio_format?: string | null;
+            /** Seconds */
+            seconds?: string | null;
+            /** Fps */
+            fps?: number | null;
+            /** Steps */
+            steps?: number | null;
+            /** Seed */
+            seed?: number | null;
+            /** Guidance Scale */
+            guidance_scale?: number | null;
+            /** Output Quality */
+            output_quality?: number | null;
+            /** Negative Prompt */
+            negative_prompt?: string | null;
+            /** Output Format */
+            output_format?: string | null;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+            /** Frame Images */
+            frame_images?: unknown[] | null;
+            /** Reference Images */
+            reference_images?: unknown[] | null;
+            /** Disable Safety Checker */
+            disable_safety_checker?: boolean | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Store
+             * @default true
+             */
+            store: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** ContentEditRequest */
         ContentEditRequest: {
             /** Content */
@@ -1167,6 +1317,27 @@ export interface components {
              * @default plain_text
              */
             content_type: string;
+        };
+        /** ConversationContinueRequest */
+        ConversationContinueRequest: {
+            /** User Input */
+            user_input: string | {
+                [key: string]: unknown;
+            }[];
+            /** Config Overrides */
+            config_overrides?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Stream
+             * @default true
+             */
+            stream: boolean;
+            /**
+             * Debug
+             * @default false
+             */
+            debug: boolean;
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -1766,126 +1937,6 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
-        /** UnifiedChatRequest */
-        UnifiedChatRequest: {
-            /** Ai Model Id */
-            ai_model_id: string;
-            /** Messages */
-            messages: {
-                [key: string]: unknown;
-            }[];
-            /** Conversation Id */
-            conversation_id?: string | null;
-            /**
-             * Max Iterations
-             * @default 20
-             */
-            max_iterations: number;
-            /**
-             * Max Retries Per Iteration
-             * @default 2
-             */
-            max_retries_per_iteration: number;
-            /**
-             * Stream
-             * @default true
-             */
-            stream: boolean;
-            /**
-             * Debug
-             * @default false
-             */
-            debug: boolean;
-            /** System Instruction */
-            system_instruction?: string | null;
-            /** Max Output Tokens */
-            max_output_tokens?: number | null;
-            /** Temperature */
-            temperature?: number | null;
-            /** Top P */
-            top_p?: number | null;
-            /** Top K */
-            top_k?: number | null;
-            /** Tools */
-            tools?: string[] | null;
-            /** Tool Choice */
-            tool_choice?: unknown | null;
-            /**
-             * Parallel Tool Calls
-             * @default true
-             */
-            parallel_tool_calls: boolean;
-            /** Reasoning Effort */
-            reasoning_effort?: string | null;
-            /** Reasoning Summary */
-            reasoning_summary?: string | null;
-            /** Thinking Level */
-            thinking_level?: string | null;
-            /** Include Thoughts */
-            include_thoughts?: boolean | null;
-            /** Thinking Budget */
-            thinking_budget?: number | null;
-            /** Response Format */
-            response_format?: {
-                [key: string]: unknown;
-            } | null;
-            /** Stop Sequences */
-            stop_sequences?: string[] | null;
-            /** Internal Web Search */
-            internal_web_search?: boolean | null;
-            /** Internal Url Context */
-            internal_url_context?: boolean | null;
-            /** Size */
-            size?: string | null;
-            /** Quality */
-            quality?: string | null;
-            /**
-             * Count
-             * @default 1
-             */
-            count: number;
-            /** Audio Voice */
-            audio_voice?: string | null;
-            /** Audio Format */
-            audio_format?: string | null;
-            /** Seconds */
-            seconds?: string | null;
-            /** Fps */
-            fps?: number | null;
-            /** Steps */
-            steps?: number | null;
-            /** Seed */
-            seed?: number | null;
-            /** Guidance Scale */
-            guidance_scale?: number | null;
-            /** Output Quality */
-            output_quality?: number | null;
-            /** Negative Prompt */
-            negative_prompt?: string | null;
-            /** Output Format */
-            output_format?: string | null;
-            /** Width */
-            width?: number | null;
-            /** Height */
-            height?: number | null;
-            /** Frame Images */
-            frame_images?: unknown[] | null;
-            /** Reference Images */
-            reference_images?: unknown[] | null;
-            /** Disable Safety Checker */
-            disable_safety_checker?: boolean | null;
-            /** Metadata */
-            metadata?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Store
-             * @default true
-             */
-            store: boolean;
-        } & {
-            [key: string]: unknown;
-        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1979,16 +2030,49 @@ export interface operations {
             };
         };
     };
-    execute_agent_ai_agents_execute_post: {
+    warm_conversation_ai_conversations__conversation_id__warm_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_agent_ai_agents__agent_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AgentExecuteRequest"];
+                "application/json": components["schemas"]["AgentStartRequest"];
             };
         };
         responses: {
@@ -2012,7 +2096,7 @@ export interface operations {
             };
         };
     };
-    unified_chat_ai_conversations_chat_post: {
+    chat_ai_chat_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2021,7 +2105,42 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UnifiedChatRequest"];
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    continue_conversation_ai_conversations__conversation_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationContinueRequest"];
             };
         };
         responses: {
