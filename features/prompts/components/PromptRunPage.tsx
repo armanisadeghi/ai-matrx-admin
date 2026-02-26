@@ -7,8 +7,9 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose, Copy } from "lucide-react";
+import { ArrowLeft, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose, Copy, ChevronLeft, Edit3, Play, MoreHorizontal } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -72,6 +73,7 @@ export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
     const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
     const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(false);
     const [isCopyingPrompt, setIsCopyingPrompt] = useState(false);
+    const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
     // Determine if this is a shared prompt
     const isSharedPrompt = accessInfo && !accessInfo.isOwner && accessInfo.permissionLevel !== null;
@@ -201,77 +203,156 @@ export function PromptRunPage({ promptData, accessInfo }: PromptRunnerProps) {
 
     return (
         <>
-            {/* Minimal Header in the top nav area */}
+            {/* Header */}
             <PageSpecificHeader>
                 <div className="flex items-center justify-between w-full h-full px-2 sm:px-4">
-                    {/* Left: Unified 3-icon navigation + name */}
-                    <PromptModeNavigation
-                        promptId={promptData.id}
-                        promptName={promptData.name}
-                        currentMode="run"
-                    />
+                    {/* Mobile Layout */}
+                    <div className="md:hidden flex items-center justify-between w-full">
+                        {/* Left: Back chevron */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-foreground flex-shrink-0"
+                            onClick={() => router.push('/ai/prompts')}
+                            title="Back to Prompts"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
 
-                    {/* Right: Action buttons */}
-                    <div className="flex items-center gap-0.5 flex-shrink-0">
-                        {/* Copy to My Prompts button for shared prompts */}
-                        {isSharedPrompt && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleCopyToMyPrompts}
-                                disabled={isCopyingPrompt}
-                                className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 px-2 gap-1.5"
-                                title="Copy to My Prompts"
+                        {/* Center: Edit/Run toggle */}
+                        <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 flex-shrink-0">
+                            <button
+                                onClick={() => router.push(`/ai/prompts/edit/${promptData.id}`)}
+                                className="px-3 py-1 text-xs font-medium rounded transition-colors text-muted-foreground hover:text-foreground"
                             >
-                                <Copy className="w-4 h-4" />
-                                <span className="hidden sm:inline text-xs">Copy</span>
-                            </Button>
-                        )}
-                        {/* Mobile sidebar toggle */}
-                        {isMobile && (
+                                <Edit3 className="h-3 w-3 inline mr-1" />
+                                Edit
+                            </button>
+                            <button
+                                className="px-3 py-1 text-xs font-medium rounded transition-colors bg-background text-foreground shadow-sm"
+                            >
+                                <Play className="h-3 w-3 inline mr-1" />
+                                Run
+                            </button>
+                        </div>
+
+                        {/* Right: Actions drawer trigger */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-foreground flex-shrink-0"
+                            onClick={() => setIsMobileDrawerOpen(true)}
+                            title="Actions"
+                        >
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden md:flex items-center justify-between w-full">
+                        <PromptModeNavigation
+                            promptId={promptData.id}
+                            promptName={promptData.name}
+                            currentMode="run"
+                        />
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                            {isSharedPrompt && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleCopyToMyPrompts}
+                                    disabled={isCopyingPrompt}
+                                    className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 px-2 gap-1.5"
+                                    title="Copy to My Prompts"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                    <span className="hidden sm:inline text-xs">Copy</span>
+                                </Button>
+                            )}
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setShowSidebarOnMobile(!showSidebarOnMobile)}
+                                onClick={handleClearConversation}
                                 className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
-                                title={showSidebarOnMobile ? "Close runs" : "Show runs"}
+                                title="Reset conversation"
                             >
-                                {showSidebarOnMobile ? (
-                                    <PanelLeftClose className="w-4 h-4" />
+                                <RotateCcw className="w-4 h-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCanvasToggle}
+                                className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
+                                title={isCanvasOpen ? "Close canvas" : "Open canvas"}
+                            >
+                                {isCanvasOpen ? (
+                                    <PanelRightClose className="w-4 h-4" />
                                 ) : (
-                                    <PanelLeftOpen className="w-4 h-4" />
+                                    <PanelRightOpen className="w-4 h-4" />
                                 )}
                             </Button>
-                        )}
-                        {/* Reset conversation button */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleClearConversation}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
-                            title="Reset conversation"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleCanvasToggle}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
-                            title={isMobile && showCanvasOnMobile ? "Back to conversation" : isCanvasOpen ? "Close canvas" : "Open canvas"}
-                        >
-                            {isMobile && showCanvasOnMobile ? (
-                                <ArrowLeft className="w-4 h-4" />
-                            ) : isCanvasOpen ? (
-                                <PanelRightClose className="w-4 h-4" />
-                            ) : (
-                                <PanelRightOpen className="w-4 h-4" />
-                            )}
-                        </Button>
+                        </div>
                     </div>
                 </div>
             </PageSpecificHeader>
+
+            {/* Mobile Actions Drawer */}
+            <Drawer open={isMobileDrawerOpen} onOpenChange={setIsMobileDrawerOpen}>
+                <DrawerContent className="pb-safe">
+                    <DrawerHeader className="pb-2">
+                        <DrawerTitle>Actions</DrawerTitle>
+                    </DrawerHeader>
+                    <div className="flex flex-col gap-1 px-4 pb-6">
+                        {isSharedPrompt && (
+                            <DrawerClose asChild>
+                                <button
+                                    onClick={handleCopyToMyPrompts}
+                                    disabled={isCopyingPrompt}
+                                    className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                                >
+                                    <Copy className="h-4 w-4 text-muted-foreground" />
+                                    Copy to My Prompts
+                                </button>
+                            </DrawerClose>
+                        )}
+                        <DrawerClose asChild>
+                            <button
+                                onClick={() => setShowSidebarOnMobile(!showSidebarOnMobile)}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                                {showSidebarOnMobile ? (
+                                    <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                    <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />
+                                )}
+                                {showSidebarOnMobile ? "Hide Runs" : "Show Runs"}
+                            </button>
+                        </DrawerClose>
+                        <DrawerClose asChild>
+                            <button
+                                onClick={handleClearConversation}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                                <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                                Reset Conversation
+                            </button>
+                        </DrawerClose>
+                        <DrawerClose asChild>
+                            <button
+                                onClick={handleCanvasToggle}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                                {isCanvasOpen ? (
+                                    <PanelRightClose className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                    <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
+                                )}
+                                {isCanvasOpen && showCanvasOnMobile ? "Back to Conversation" : isCanvasOpen ? "Show Canvas" : "Open Canvas"}
+                            </button>
+                        </DrawerClose>
+                    </div>
+                </DrawerContent>
+            </Drawer>
 
             {/* Mobile Canvas Full Screen View */}
             {isMobile && showCanvasOnMobile && isCanvasOpen ? (

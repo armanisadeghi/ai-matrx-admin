@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, useState } from 'react';
-import { Search, X, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { Search, X, SlidersHorizontal, RotateCcw, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HierarchyFilterPill, type FilterOption } from '@/components/hierarchy-filter';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
@@ -25,6 +25,174 @@ interface ResearchFilterBarProps {
     searchPlaceholder?: string;
     trailing?: ReactNode;
     className?: string;
+}
+
+function FilterDrawerContent({ filters, onClose }: { filters: FilterDef[]; onClose: () => void }) {
+    const [activeFilterKey, setActiveFilterKey] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const hasActiveFilters = filters.some(f => f.selectedId !== null);
+    const activeFilter = activeFilterKey ? filters.find(f => f.key === activeFilterKey) : null;
+
+    const resetAll = () => {
+        for (const f of filters) f.onSelect(null);
+    };
+
+    const filteredOptions = activeFilter
+        ? searchQuery
+            ? activeFilter.options.filter(o => o.label.toLowerCase().includes(searchQuery.toLowerCase()))
+            : activeFilter.options
+        : [];
+
+    const headerTitle = activeFilter ? activeFilter.label : 'Filters';
+
+    return (
+        <div className="flex flex-col h-full">
+            {/* Stable header — back button space always reserved */}
+            <div className="flex items-center px-2 pt-2 pb-1 min-h-[44px]">
+                <button
+                    onClick={() => { activeFilterKey ? (setActiveFilterKey(null), setSearchQuery('')) : onClose(); }}
+                    className={cn(
+                        'flex items-center gap-0.5 min-h-[44px] min-w-[72px] px-1 active:opacity-70 transition-opacity',
+                        activeFilterKey ? 'text-primary' : 'text-transparent pointer-events-none',
+                    )}
+                    aria-hidden={!activeFilterKey}
+                    tabIndex={activeFilterKey ? 0 : -1}
+                >
+                    <ChevronLeft className="h-5 w-5" />
+                    <span className="text-[15px]">Back</span>
+                </button>
+                <span className="text-[17px] font-semibold flex-1 text-center">{headerTitle}</span>
+                <div className="min-w-[72px] flex justify-end px-1">
+                    {!activeFilter && hasActiveFilters && (
+                        <button
+                            onClick={resetAll}
+                            className="flex items-center gap-1 text-primary active:opacity-70 min-h-[44px]"
+                        >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            <span className="text-[15px]">Reset</span>
+                        </button>
+                    )}
+                    {!activeFilter && !hasActiveFilters && (
+                        <button
+                            onClick={onClose}
+                            className="text-primary active:opacity-70 min-h-[44px] text-[15px]"
+                        >
+                            Done
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Search bar for detail view with many options */}
+            {activeFilter && activeFilter.options.length > 6 && (
+                <div className="px-4 pb-2">
+                    <div className="flex items-center gap-2 h-9 px-3 rounded-lg mx-glass-subtle">
+                        <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search..."
+                            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground"
+                            style={{ fontSize: '16px' }}
+                        />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} className="p-1">
+                                <X className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto pb-safe">
+                {activeFilter ? (
+                    <>
+                        <button
+                            onClick={() => { activeFilter.onSelect(null); setActiveFilterKey(null); setSearchQuery(''); }}
+                            className="flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                        >
+                            <span className={cn('text-[15px] flex-1 text-left', !activeFilter.selectedId && 'font-medium')}>
+                                {activeFilter.allLabel}
+                            </span>
+                            {!activeFilter.selectedId && <Check className="h-5 w-5 text-primary shrink-0" />}
+                        </button>
+
+                        {filteredOptions.map((option, idx) => (
+                            <button
+                                key={option.id}
+                                onClick={() => {
+                                    activeFilter.onSelect(option.id === activeFilter.selectedId ? null : option.id);
+                                    setActiveFilterKey(null);
+                                    setSearchQuery('');
+                                }}
+                                className={cn(
+                                    'flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors',
+                                    idx < filteredOptions.length - 1 && 'border-b border-white/[0.06]',
+                                )}
+                            >
+                                <span className={cn(
+                                    'text-[15px] flex-1 text-left truncate',
+                                    activeFilter.selectedId === option.id && 'font-medium',
+                                )}>
+                                    {option.label}
+                                </span>
+                                {option.count !== undefined && (
+                                    <span className="text-[13px] text-muted-foreground tabular-nums mr-3 shrink-0">
+                                        {option.count}
+                                    </span>
+                                )}
+                                {activeFilter.selectedId === option.id && (
+                                    <Check className="h-5 w-5 text-primary shrink-0" />
+                                )}
+                            </button>
+                        ))}
+
+                        {filteredOptions.length === 0 && searchQuery && (
+                            <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+                                No matches found
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {filters.map((f, idx) => {
+                            const selected = f.options.find(o => o.id === f.selectedId);
+                            return (
+                                <button
+                                    key={f.key}
+                                    onClick={() => setActiveFilterKey(f.key)}
+                                    className={cn(
+                                        'flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors',
+                                        idx < filters.length - 1 && 'border-b border-white/[0.06]',
+                                    )}
+                                >
+                                    <span className="text-[15px] font-medium flex-1 text-left">{f.label}</span>
+                                    <span className={cn(
+                                        'text-[15px] mr-1.5 truncate max-w-[180px]',
+                                        selected ? 'text-foreground' : 'text-muted-foreground',
+                                    )}>
+                                        {selected ? selected.label : f.allLabel}
+                                    </span>
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                                </button>
+                            );
+                        })}
+
+                        {hasActiveFilters && (
+                            <div className="pt-4 pb-2">
+                                <p className="text-[13px] text-muted-foreground text-center">
+                                    {filters.filter(f => f.selectedId !== null).length} active {filters.filter(f => f.selectedId !== null).length === 1 ? 'filter' : 'filters'}
+                                </p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>
+    );
 }
 
 export function ResearchFilterBar({
@@ -123,31 +291,9 @@ export function ResearchFilterBar({
 
             {isMobile && filters.length > 0 && (
                 <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-                    <DrawerContent className="max-h-[75dvh]">
-                        <DrawerTitle className="px-4 pt-3 text-xs font-semibold">Filters</DrawerTitle>
-                        <div className="p-4 space-y-2 pb-safe">
-                            {filters.map(f => (
-                                <div key={f.key} className="flex items-center gap-2">
-                                    <span className="text-[11px] text-muted-foreground w-16 shrink-0">{f.label}</span>
-                                    <HierarchyFilterPill
-                                        label={f.label}
-                                        allLabel={f.allLabel}
-                                        options={f.options}
-                                        selectedId={f.selectedId}
-                                        onSelect={(id) => { f.onSelect(id); }}
-                                    />
-                                </div>
-                            ))}
-                            {hasActiveFilters && (
-                                <button
-                                    onClick={() => { resetAll(); setDrawerOpen(false); }}
-                                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full mx-glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mt-2 min-h-[44px]"
-                                >
-                                    <RotateCcw className="h-3 w-3" />
-                                    Reset All
-                                </button>
-                            )}
-                        </div>
+                    <DrawerContent className="h-[85dvh] !bg-[var(--glass-bg)]">
+                        <DrawerTitle className="sr-only">Filters</DrawerTitle>
+                        <FilterDrawerContent filters={filters} onClose={() => setDrawerOpen(false)} />
                     </DrawerContent>
                 </Drawer>
             )}

@@ -115,7 +115,7 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
 
 export default function SettingsLayoutClient({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-page w-full bg-textured overflow-hidden flex flex-col">
+    <div className="h-page w-full flex flex-col">
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop sidebar */}
         <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
