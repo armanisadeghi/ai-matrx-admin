@@ -17,6 +17,7 @@ import { TagInput } from './TagInput';
 import type { Note } from '../types';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useAllFolders } from '../utils/folderUtils';
+import { useNotesContext } from '../context/NotesContext';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 import MarkdownStream from '@/components/MarkdownStream';
@@ -62,6 +63,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const toast = useToastManager('notes');
+    const { refreshNotes } = useNotesContext();
     
     // Use refs to avoid callback dependencies
     const localContentRef = useRef(localContent);
@@ -79,7 +81,8 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         localLabelRef.current = localLabel;
         editorModeRef.current = editorMode;
         noteRef.current = note;
-    }, [localContent, localFolder, localTags, localLabel, editorMode, note]);
+        isDirtyRef.current = isDirty;
+    }, [localContent, localFolder, localTags, localLabel, editorMode, note, isDirty]);
 
     // Get all folders (default + custom) - optimized to only recalculate when folder names change
     const availableFolders = useAllFolders(allNotes);
@@ -93,6 +96,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         }
     }, [note?.id, note?.metadata?.lastEditorMode]); // Update when note ID or mode changes
 
+    const isDirtyRef = useRef(false);
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
         noteId: note?.id || null,
         currentUpdatedAt: note?.updated_at,
@@ -113,8 +117,15 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             }
         },
         onConflict: () => {
-            // This note was modified elsewhere — the Realtime subscription in NotesContext
-            // will handle showing the toast and offering a refresh
+            // Save conflict: another session modified this note before our save landed.
+            // Show a toast so the user knows their changes were NOT saved.
+            toast.warning('Save conflict — your changes were not saved', {
+                duration: 15000,
+                action: {
+                    label: 'Refresh note',
+                    onClick: () => refreshNotes(),
+                },
+            });
         },
     });
 
@@ -144,7 +155,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         };
     }, [note?.id, updateWithAutoSave, forceSave]);
 
-    // Sync local state when note changes
+    // Sync local state when note changes (switching notes OR explicit refresh from realtime)
     useEffect(() => {
         if (note) {
             setLocalContent(note.content);
@@ -152,7 +163,19 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             setLocalTags(note.tags || []);
             setLocalLabel(note.label);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [note?.id]); // Only reset when note ID changes
+
+    // When the note is updated externally (realtime refresh) and editor is clean, sync content
+    useEffect(() => {
+        if (note && !isDirtyRef.current) {
+            setLocalContent(note.content);
+            setLocalLabel(note.label);
+            setLocalFolder(note.folder_name || 'Draft');
+            setLocalTags(note.tags || []);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [note?.updated_at]); // Re-sync when server timestamp changes (explicit refresh)
     
     // Cleanup label timeout on unmount
     useEffect(() => {

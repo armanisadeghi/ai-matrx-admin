@@ -147,73 +147,101 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     // Real-time subscription to prevent data loss from concurrent edits
     useEffect(() => {
-        const channel = supabase
-            .channel('notes-realtime-sync')
-            .on(
-                'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'notes' },
-                (payload) => {
-                    const updatedNote = payload.new as Note;
-                    if (!updatedNote?.id) return;
+        let channel: ReturnType<typeof supabase.channel> | null = null;
 
-                    // Skip if we just saved this note (avoid echo from our own save)
-                    if (savingNoteIdsRef.current.has(updatedNote.id)) return;
+        const setupRealtimeSubscription = async () => {
+            // Get the current user ID so we can filter to only our notes
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user?.id) return;
 
-                    const currentNote = notesRef.current.find(n => n.id === updatedNote.id);
-                    if (!currentNote) return;
+            channel = supabase
+                .channel('notes-realtime-sync')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'notes',
+                        filter: `user_id=eq.${user.id}`,
+                    },
+                    (payload) => {
+                        const updatedNote = payload.new as Note;
+                        if (!updatedNote?.id) return;
 
-                    // Check if the server version is newer than what we have
-                    const serverTime = new Date(updatedNote.updated_at ?? 0).getTime();
-                    const localTime = new Date(currentNote.updated_at ?? 0).getTime();
+                        // Skip if we just saved this note (avoid echo from our own save)
+                        if (savingNoteIdsRef.current.has(updatedNote.id)) return;
 
-                    if (serverTime <= localTime) return; // No actual change
+                        const currentNote = notesRef.current.find(n => n.id === updatedNote.id);
+                        if (!currentNote) return;
 
-                    const isActiveNote = activeNoteRef.current?.id === updatedNote.id;
-                    const toastId = `conflict-${updatedNote.id}`;
+                        // Check if the server version is newer than what we have
+                        const serverTime = new Date(updatedNote.updated_at ?? 0).getTime();
+                        const localTime = new Date(currentNote.updated_at ?? 0).getTime();
 
-                    if (isActiveNote) {
-                        // User is currently viewing this note — warn them
-                        if (!shownConflictToastsRef.current.has(updatedNote.id)) {
-                            shownConflictToastsRef.current.add(updatedNote.id);
-                            toast.warning('This note was updated in another browser or tab.', {
-                                id: toastId,
-                                duration: 10000,
-                                description: 'Your local changes are preserved. Refresh to load the latest version.',
-                                action: {
-                                    label: 'Refresh',
-                                    onClick: () => {
-                                        shownConflictToastsRef.current.delete(updatedNote.id);
-                                        // Update this note from server data
-                                        setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
-                                        setActiveNote(prev => prev?.id === updatedNote.id ? updatedNote : prev);
-                                        toast.success('Note refreshed to latest version');
+                        if (serverTime <= localTime) return; // No actual change
+
+                        const isActiveNote = activeNoteRef.current?.id === updatedNote.id;
+                        const toastId = `conflict-${updatedNote.id}`;
+
+                        if (isActiveNote) {
+                            // User is currently viewing this note — warn them
+                            if (!shownConflictToastsRef.current.has(updatedNote.id)) {
+                                shownConflictToastsRef.current.add(updatedNote.id);
+                                toast.warning('This note was updated in another browser or tab.', {
+                                    id: toastId,
+                                    duration: 10000,
+                                    description: 'Your local changes are preserved. Refresh to load the latest version.',
+                                    action: {
+                                        label: 'Refresh',
+                                        onClick: () => {
+                                            shownConflictToastsRef.current.delete(updatedNote.id);
+                                            // Update this note from server data
+                                            setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+                                            setActiveNote(prev => prev?.id === updatedNote.id ? updatedNote : prev);
+                                            toast.success('Note refreshed to latest version');
+                                        },
                                     },
-                                },
-                            });
+                                });
+                            }
+                        } else {
+                            // Note is not active — silently update it in the sidebar
+                            setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
                         }
-                    } else {
-                        // Note is not active — silently update it in the sidebar
-                        setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
                     }
-                }
-            )
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'notes' },
-                (payload) => {
-                    const newNote = payload.new as Note;
-                    if (!newNote?.id || newNote.is_deleted) return;
-                    // Only add if not already present (avoid duplicates from our own creates)
-                    setNotes(prev => {
-                        if (prev.some(n => n.id === newNote.id)) return prev;
-                        return [newNote, ...prev];
-                    });
-                }
-            )
-            .subscribe();
+                )
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'notes',
+                        filter: `user_id=eq.${user.id}`,
+                    },
+                    (payload) => {
+                        const newNote = payload.new as Note;
+                        if (!newNote?.id || newNote.is_deleted) return;
+                        // Only add if not already present (avoid duplicates from our own creates)
+                        setNotes(prev => {
+                            if (prev.some(n => n.id === newNote.id)) return prev;
+                            return [newNote, ...prev];
+                        });
+                    }
+                )
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('[Notes Realtime] Subscribed to notes changes for user', user.id);
+                    } else if (status === 'CHANNEL_ERROR') {
+                        console.error('[Notes Realtime] Channel error — realtime events may not be received');
+                    }
+                });
+        };
+
+        setupRealtimeSubscription();
 
         return () => {
-            supabase.removeChannel(channel);
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
         };
     }, []); // Stable - no deps needed
 

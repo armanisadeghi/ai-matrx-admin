@@ -70,10 +70,12 @@ export function useAutoSave({
         }
 
         const updatesSnapshot = { ...pendingUpdatesRef.current };
+        // Capture the expected timestamp for optimistic locking at the moment of save
+        const expectedAt = currentUpdatedAtRef.current ?? undefined;
 
         try {
             setIsSaving(true);
-            await updateNote(noteId, updatesSnapshot);
+            await updateNote(noteId, updatesSnapshot, expectedAt);
             pendingUpdatesRef.current = {};
             setIsDirty(false);
             setLastSaved(new Date());
