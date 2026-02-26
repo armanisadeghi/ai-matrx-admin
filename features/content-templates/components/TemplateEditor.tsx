@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -13,8 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, FileText } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
     ContentTemplateDB,
@@ -28,7 +25,6 @@ import {
     clearTemplateCache,
 } from "@/features/content-templates/services/content-templates-service";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
-import { FileText } from "lucide-react";
 
 const MESSAGE_ROLES: { value: MessageRole; label: string }[] = [
     { value: "system", label: "System" },
@@ -42,7 +38,45 @@ interface TemplateEditorProps {
     mode: "create" | "edit";
 }
 
-function EditorHeader({ mode, isSaving, canSave, onBack, onSave }: {
+/** Auto-growing textarea — expands with content, page scrolls, no inner scroll */
+function AutoTextarea({
+    value,
+    onChange,
+    placeholder,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+}) {
+    const ref = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.style.height = "auto";
+            ref.current.style.height = `${ref.current.scrollHeight}px`;
+        }
+    }, [value]);
+
+    return (
+        <textarea
+            ref={ref}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            rows={6}
+            style={{ fontSize: "16px" }}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none overflow-hidden"
+        />
+    );
+}
+
+function EditorHeader({
+    mode,
+    isSaving,
+    canSave,
+    onBack,
+    onSave,
+}: {
     mode: "create" | "edit";
     isSaving: boolean;
     canSave: boolean;
@@ -51,34 +85,27 @@ function EditorHeader({ mode, isSaving, canSave, onBack, onSave }: {
 }) {
     return (
         <PageSpecificHeader>
-            <div className="flex items-center gap-2 w-full px-2">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 flex-shrink-0"
-                    onClick={onBack}
-                >
+            <div className="flex items-center gap-1.5 w-full px-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={onBack}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     <FileText className="h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-sm font-semibold truncate">
                         {mode === "create" ? "New Template" : "Edit Template"}
                     </span>
                 </div>
                 <Button
-                    size="sm"
+                    size="icon"
                     onClick={onSave}
                     disabled={isSaving || !canSave}
-                    className="flex-shrink-0 h-7 px-3 text-xs"
+                    className="h-8 w-8 flex-shrink-0"
+                    title="Save"
                 >
                     {isSaving ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                        <>
-                            <Save className="h-3.5 w-3.5 mr-1" />
-                            Save
-                        </>
+                        <Save className="h-3.5 w-3.5" />
                     )}
                 </Button>
             </div>
@@ -99,9 +126,7 @@ export function TemplateEditor({ template, mode }: TemplateEditorProps) {
 
     const canSave = label.trim().length > 0 && content.trim().length > 0;
 
-    const handleBack = useCallback(() => {
-        router.back();
-    }, [router]);
+    const handleBack = useCallback(() => router.back(), [router]);
 
     const handleSave = useCallback(async () => {
         if (!canSave || isSaving) return;
@@ -159,95 +184,60 @@ export function TemplateEditor({ template, mode }: TemplateEditorProps) {
                 onSave={handleSave}
             />
 
-            <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-y-auto">
-                    <div className="max-w-2xl mx-auto p-4 space-y-4">
-                        {/* Label */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="label" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                Label
-                            </Label>
-                            <Input
-                                id="label"
-                                value={label}
-                                onChange={(e) => setLabel(e.target.value)}
-                                placeholder="Template name"
-                                className="text-base"
-                                style={{ fontSize: "16px" }}
-                            />
-                        </div>
-
-                        {/* Role + Visibility row */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                    Type
-                                </Label>
-                                <Select value={role} onValueChange={(v) => setRole(v as MessageRole)}>
-                                    <SelectTrigger className="text-base" style={{ fontSize: "16px" }}>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {MESSAGE_ROLES.map((r) => (
-                                            <SelectItem key={r.value} value={r.value}>
-                                                {r.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                    Visibility
-                                </Label>
-                                <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-input bg-background">
-                                    <Switch
-                                        id="visibility"
-                                        checked={isPublic}
-                                        onCheckedChange={setIsPublic}
-                                    />
-                                    <Label htmlFor="visibility" className="text-sm cursor-pointer select-none">
-                                        {isPublic ? "Public" : "Private"}
-                                    </Label>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Tags */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="tags" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                Tags <span className="normal-case text-muted-foreground/60">(comma-separated)</span>
-                            </Label>
-                            <Input
-                                id="tags"
-                                value={tagsInput}
-                                onChange={(e) => setTagsInput(e.target.value)}
-                                placeholder="e.g. system, prompt, coding"
-                                className="text-base"
-                                style={{ fontSize: "16px" }}
-                            />
-                        </div>
-
-                        {/* Content — full height */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="content" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                Content
-                            </Label>
-                            <Textarea
-                                id="content"
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                placeholder="Write your template content here..."
-                                className="font-mono text-sm leading-relaxed resize-none"
-                                style={{ fontSize: "16px", minHeight: "50vh" }}
-                                rows={20}
-                            />
-                        </div>
-
-                        {/* Spacer for bottom padding */}
-                        <div className="h-4" />
+            {/* Single page scroll — no bounded inner container */}
+            <div className="min-h-[calc(100dvh-var(--header-height))] bg-textured">
+                <div className="max-w-2xl mx-auto px-4 pt-4 pb-16 space-y-3">
+                    {/* Label + Type in one compact row */}
+                    <div className="grid grid-cols-[1fr_auto] gap-2">
+                        <input
+                            value={label}
+                            onChange={(e) => setLabel(e.target.value)}
+                            placeholder="Template name"
+                            style={{ fontSize: "16px" }}
+                            className="w-full rounded-md border border-input bg-background px-3 h-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                        <Select value={role} onValueChange={(v) => setRole(v as MessageRole)}>
+                            <SelectTrigger className="h-9 w-32 text-sm" style={{ fontSize: "16px" }}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {MESSAGE_ROLES.map((r) => (
+                                    <SelectItem key={r.value} value={r.value}>
+                                        {r.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
+
+                    {/* Tags + Visibility in one compact row */}
+                    <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                        <input
+                            value={tagsInput}
+                            onChange={(e) => setTagsInput(e.target.value)}
+                            placeholder="Tags (comma-separated)"
+                            style={{ fontSize: "16px" }}
+                            className="w-full rounded-md border border-input bg-background px-3 h-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                        <div className="flex items-center gap-2 h-9 px-2 rounded-md border border-input bg-background flex-shrink-0">
+                            <Switch
+                                id="visibility"
+                                checked={isPublic}
+                                onCheckedChange={setIsPublic}
+                                className="scale-90"
+                            />
+                            <label htmlFor="visibility" className="text-xs cursor-pointer select-none text-muted-foreground whitespace-nowrap">
+                                {isPublic ? "Public" : "Private"}
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Content — auto-grow textarea, page scrolls */}
+                    <AutoTextarea
+                        value={content}
+                        onChange={setContent}
+                        placeholder="Write your template content here..."
+                    />
                 </div>
             </div>
         </>

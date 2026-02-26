@@ -6,4 +6,5 @@ export { TemplateCard } from './TemplateCard';
 export { TemplateActionDrawer } from './TemplateActionDrawer';
 export { TemplatePreviewDrawer } from './TemplatePreviewDrawer';
 export { TemplateEditor } from './TemplateEditor';
+export { TemplateViewPage } from './TemplateViewPage';
 export { ContentTemplatesPageHeader } from './ContentTemplatesPageHeader';

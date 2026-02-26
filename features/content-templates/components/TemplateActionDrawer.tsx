@@ -14,7 +14,6 @@ import {
     DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
     Pencil,
     Eye,
@@ -29,8 +28,8 @@ interface TemplateActionDrawerProps {
     isOpen: boolean;
     onClose: () => void;
     canEdit: boolean;
+    onView: (template: ContentTemplateDB) => void;
     onEdit: (template: ContentTemplateDB) => void;
-    onPreview: (template: ContentTemplateDB) => void;
     onDuplicate: (template: ContentTemplateDB) => void;
     onDelete: (template: ContentTemplateDB) => void;
 }
@@ -45,8 +44,8 @@ const ROLE_COLORS: Record<string, string> = {
 function TemplateActionContent({
     template,
     canEdit,
+    onView,
     onEdit,
-    onPreview,
     onDuplicate,
     onDelete,
     onClose,
@@ -59,50 +58,59 @@ function TemplateActionContent({
     };
 
     return (
-        <div className="flex flex-col gap-3 p-4">
-            {/* Template info */}
-            <div className="flex items-start gap-2 pb-2 border-b border-border">
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{template.label}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                        <span className={`inline-flex items-center px-1.5 py-0 text-[10px] font-medium rounded border ${ROLE_COLORS[template.role ?? "user"] ?? ROLE_COLORS.user}`}>
-                            {template.role}
+        <div className="flex flex-col gap-0">
+            {/* Template info block — generous padding, full content preview */}
+            <div className="px-4 pt-4 pb-4 border-b border-border">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md border ${ROLE_COLORS[template.role ?? "user"] ?? ROLE_COLORS.user}`}>
+                        {template.role}
+                    </span>
+                    {template.is_public ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                            <Globe className="w-3 h-3" />
+                            Public
                         </span>
-                        {template.is_public ? (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-green-600 dark:text-green-400">
-                                <Globe className="w-2.5 h-2.5" />
-                                Public
-                            </span>
-                        ) : (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                <Lock className="w-2.5 h-2.5" />
-                                Private
-                            </span>
-                        )}
-                    </div>
-                    {template.content && (
-                        <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
-                            {template.content}
-                        </p>
+                    ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <Lock className="w-3 h-3" />
+                            Private
+                        </span>
                     )}
                 </div>
+                <p className="text-sm font-semibold mb-3">{template.label}</p>
+                {template.content && (
+                    <div className="rounded-lg bg-muted/50 border border-border/50 p-3 max-h-48 overflow-y-auto overscroll-contain">
+                        <p className="text-xs text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap break-words">
+                            {template.content}
+                        </p>
+                    </div>
+                )}
+                {template.tags && template.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {template.tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-secondary/50 text-secondary-foreground">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {/* Action buttons */}
-            <div className="flex flex-col gap-2">
+            {/* Actions */}
+            <div className="flex flex-col p-2">
                 <Button
                     variant="ghost"
-                    className="justify-start gap-3 h-10"
-                    onClick={() => handleAction(() => onPreview(template))}
+                    className="justify-start gap-3 h-11 text-sm"
+                    onClick={() => handleAction(() => onView(template))}
                 >
                     <Eye className="w-4 h-4 text-muted-foreground" />
-                    View
+                    Open
                 </Button>
 
                 {canEdit && (
                     <Button
                         variant="ghost"
-                        className="justify-start gap-3 h-10"
+                        className="justify-start gap-3 h-11 text-sm"
                         onClick={() => handleAction(() => onEdit(template))}
                     >
                         <Pencil className="w-4 h-4 text-muted-foreground" />
@@ -112,7 +120,7 @@ function TemplateActionContent({
 
                 <Button
                     variant="ghost"
-                    className="justify-start gap-3 h-10"
+                    className="justify-start gap-3 h-11 text-sm"
                     onClick={() => handleAction(() => onDuplicate(template))}
                 >
                     <Copy className="w-4 h-4 text-muted-foreground" />
@@ -121,10 +129,10 @@ function TemplateActionContent({
 
                 {canEdit && (
                     <>
-                        <div className="h-px bg-border" />
+                        <div className="h-px bg-border mx-2 my-1" />
                         <Button
                             variant="ghost"
-                            className="justify-start gap-3 h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="justify-start gap-3 h-11 text-sm text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => handleAction(() => onDelete(template))}
                         >
                             <Trash2 className="w-4 h-4" />
@@ -133,6 +141,8 @@ function TemplateActionContent({
                     </>
                 )}
             </div>
+            {/* Safe area bottom pad */}
+            <div className="h-2 pb-safe" />
         </div>
     );
 }
@@ -142,21 +152,21 @@ export function TemplateActionDrawer({
     isOpen,
     onClose,
     canEdit,
+    onView,
     onEdit,
-    onPreview,
     onDuplicate,
     onDelete,
 }: TemplateActionDrawerProps) {
     const isMobile = useIsMobile();
 
-    const contentProps = { template, canEdit, onEdit, onPreview, onDuplicate, onDelete, onClose };
+    const contentProps = { template, canEdit, onView, onEdit, onDuplicate, onDelete, onClose };
 
     if (isMobile) {
         return (
             <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-                <DrawerContent className="max-h-[85dvh]">
+                <DrawerContent className="max-h-[90dvh]">
                     <DrawerTitle className="sr-only">Template Actions</DrawerTitle>
-                    <div className="overflow-y-auto overscroll-contain pb-safe">
+                    <div className="overflow-y-auto overscroll-contain">
                         <TemplateActionContent {...contentProps} />
                     </div>
                 </DrawerContent>
@@ -166,9 +176,9 @@ export function TemplateActionDrawer({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-sm">
-                <DialogHeader>
-                    <DialogTitle className="sr-only">Template Actions</DialogTitle>
+            <DialogContent className="max-w-md p-0 overflow-hidden">
+                <DialogHeader className="sr-only">
+                    <DialogTitle>Template Actions</DialogTitle>
                 </DialogHeader>
                 <TemplateActionContent {...contentProps} />
             </DialogContent>

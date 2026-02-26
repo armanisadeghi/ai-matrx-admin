@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, Plus, X, FileText, Filter } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, X, FileText, Loader2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -39,9 +38,7 @@ import {
 import { ContentTemplatesPageHeader } from "./ContentTemplatesPageHeader";
 import { TemplateCard } from "./TemplateCard";
 import { TemplateActionDrawer } from "./TemplateActionDrawer";
-import { TemplatePreviewDrawer } from "./TemplatePreviewDrawer";
 import { createClient } from "@/utils/supabase/client";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 
 const MESSAGE_ROLES: { value: MessageRole | "all"; label: string }[] = [
     { value: "all", label: "All Types" },
@@ -224,8 +221,6 @@ export function UserContentTemplateManager() {
 
     const [actionTarget, setActionTarget] = useState<ContentTemplateDB | null>(null);
     const [isActionOpen, setIsActionOpen] = useState(false);
-    const [previewTarget, setPreviewTarget] = useState<ContentTemplateDB | null>(null);
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<ContentTemplateDB | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -276,23 +271,21 @@ export function UserContentTemplateManager() {
         startTransition(() => router.push("/settings/content-templates/new"));
     };
 
+    const handleView = (t: ContentTemplateDB) => {
+        startTransition(() => router.push(`/settings/content-templates/${t.id}`));
+    };
+
     const handleEdit = (t: ContentTemplateDB) => {
-        startTransition(() => router.push(`/settings/content-templates/edit/${t.id}`));
+        startTransition(() => router.push(`/settings/content-templates/${t.id}?mode=edit`));
     };
 
     const handleDuplicate = (t: ContentTemplateDB) => {
-        // Navigate to new page with state via URL
         startTransition(() => router.push(`/settings/content-templates/new?from=${t.id}`));
     };
 
     const handleCardClick = (t: ContentTemplateDB) => {
         setActionTarget(t);
         setIsActionOpen(true);
-    };
-
-    const handlePreview = (t: ContentTemplateDB) => {
-        setPreviewTarget(t);
-        setIsPreviewOpen(true);
     };
 
     const handleDeleteRequest = (t: ContentTemplateDB) => {
@@ -316,18 +309,12 @@ export function UserContentTemplateManager() {
         }
     };
 
-    const handleCopyContent = useCallback((content: string) => {
-        navigator.clipboard.writeText(content).then(() => {
-            toast({ title: "Copied to clipboard" });
-        });
-    }, [toast]);
-
     const hasFilters = selectedRole !== "all";
 
     if (loading) {
         return (
             <div className="h-[calc(100dvh-var(--header-height))] flex items-center justify-center">
-                <MatrxMiniLoader />
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -431,20 +418,10 @@ export function UserContentTemplateManager() {
                 isOpen={isActionOpen}
                 onClose={() => setIsActionOpen(false)}
                 canEdit={actionTarget ? canEdit(actionTarget) : false}
+                onView={handleView}
                 onEdit={handleEdit}
-                onPreview={handlePreview}
                 onDuplicate={handleDuplicate}
                 onDelete={handleDeleteRequest}
-            />
-
-            {/* Preview drawer/dialog */}
-            <TemplatePreviewDrawer
-                template={previewTarget}
-                isOpen={isPreviewOpen}
-                onClose={() => setIsPreviewOpen(false)}
-                canEdit={previewTarget ? canEdit(previewTarget) : false}
-                onEdit={handleEdit}
-                onCopyContent={handleCopyContent}
             />
 
             {/* Filter sheet */}

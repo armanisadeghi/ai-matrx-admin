@@ -383,6 +383,17 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                         value={localLabel}
                         onChange={(e) => handleLabelChange(e.target.value)}
                         onBlur={handleLabelBlur}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Tab') {
+                                e.preventDefault();
+                                if (editorMode === 'plain' && textareaRef.current) {
+                                    textareaRef.current.focus();
+                                } else if ((editorMode === 'wysiwyg' || editorMode === 'markdown') && tuiEditorRef.current?.getInstance) {
+                                    const editor = tuiEditorRef.current.getInstance();
+                                    editor?.focus?.();
+                                }
+                            }
+                        }}
                         className="w-full bg-transparent border-0 text-lg font-semibold focus:outline-none focus:ring-0 placeholder:text-muted-foreground"
                         placeholder="Untitled Note"
                     />
