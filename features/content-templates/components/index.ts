@@ -2,3 +2,8 @@ export { UserContentTemplateManager } from './UserContentTemplateManager';
 export { TemplateBrowserModal } from './TemplateBrowserModal';
 export { SaveTemplateModal } from './SaveTemplateModal';
 export { TemplateSelector } from './TemplateSelector';
+export { TemplateCard } from './TemplateCard';
+export { TemplateActionDrawer } from './TemplateActionDrawer';
+export { TemplatePreviewDrawer } from './TemplatePreviewDrawer';
+export { TemplateEditor } from './TemplateEditor';
+export { ContentTemplatesPageHeader } from './ContentTemplatesPageHeader';

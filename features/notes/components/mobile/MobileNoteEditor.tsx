@@ -16,7 +16,6 @@ import {
 import { useNotesContext } from '@/features/notes/context/NotesContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -232,12 +231,13 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
       {/* Content */}
       <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch">
         <div className="p-3 pb-[50vh]">
-          <Textarea
+          <textarea
             ref={contentRef}
             value={localContent}
             onChange={(e) => setLocalContent(e.target.value)}
             placeholder="Start writing..."
-            className="min-h-[calc(100vh-16rem)] border-none shadow-none focus-visible:ring-0 resize-none text-base p-0"
+            className="min-h-[calc(100vh-16rem)] w-full border-none outline-none ring-0 shadow-none resize-none text-base p-0 bg-transparent text-foreground placeholder:text-muted-foreground"
+            style={{ fontSize: '16px' }}
             onFocus={(e) => {
               setTimeout(() => {
                 e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
