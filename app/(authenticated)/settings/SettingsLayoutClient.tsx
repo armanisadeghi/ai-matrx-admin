@@ -1,13 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Settings as SettingsIcon, Building2, Chrome, ArrowLeft, Menu, Mic, FileText, MessageSquareMore } from 'lucide-react';
+import { User, Settings as SettingsIcon, Building2, Chrome, Mic, FileText, MessageSquareMore } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 
 interface SettingsNavItem {
   title: string;
@@ -101,56 +98,9 @@ export default function SettingsLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isMobile = useIsMobile();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Get current page title
-  const currentPage = settingsNavItems.find(
-    (item) => pathname === item.href || pathname?.startsWith(item.href + '/')
-  );
-
   return (
     <div className="h-page w-full bg-textured overflow-hidden flex flex-col">
-      {/* Compact Header */}
-      <div className="flex-shrink-0 border-b border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-        <div className="h-12 px-3 md:px-4 flex items-center gap-3">
-          {/* Back Button */}
-          <Link 
-            href="/dashboard" 
-            className="flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            title="Back to Dashboard"
-          >
-            <ArrowLeft size={18} />
-          </Link>
-          
-          {/* Title */}
-          <h1 className="text-base font-semibold text-foreground flex-1 truncate">
-            {currentPage ? currentPage.title : 'Settings'}
-          </h1>
-          
-          {/* Mobile Menu Button */}
-          {isMobile && (
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72">
-                <SheetHeader>
-                  <SheetTitle>Settings</SheetTitle>
-                </SheetHeader>
-                <div className="mt-4">
-                  <SettingsNavigation onItemClick={() => setMobileMenuOpen(false)} />
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
-        </div>
-      </div>
-
-      {/* Content Area */}
+      {/* Content Area — no custom header, PageSpecificHeader portal handles the app header */}
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar Navigation */}
         <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
