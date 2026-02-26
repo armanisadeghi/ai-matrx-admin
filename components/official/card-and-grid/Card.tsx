@@ -48,25 +48,25 @@ const sizeClasses: Record<CardSize, string> = {
   xl: "p-8",
 };
 
-// iOS solid icon backgrounds — vivid, saturated, like real iOS app icons
+// Enterprise iOS dark gradients: distinct color, not childish
 const iosIconBg: Record<CardColor, string> = {
-  indigo:  "bg-indigo-600",
-  emerald: "bg-emerald-600",
-  blue:    "bg-blue-600",
-  amber:   "bg-amber-500",
-  purple:  "bg-purple-700",
-  gray:    "bg-zinc-600",
-  red:     "bg-red-600",
-  green:   "bg-green-600",
-  yellow:  "bg-yellow-500",
-  pink:    "bg-pink-600",
-  orange:  "bg-orange-500",
-  teal:    "bg-teal-600",
-  cyan:    "bg-cyan-600",
-  lime:    "bg-lime-600",
-  rose:    "bg-rose-600",
-  violet:  "bg-violet-700",
-  slate:   "bg-slate-600",
+  indigo:  "from-indigo-800 to-indigo-950",
+  emerald: "from-emerald-700 to-emerald-950",
+  blue:    "from-blue-700 to-blue-950",
+  amber:   "from-amber-700 to-amber-950",
+  purple:  "from-purple-800 to-purple-950",
+  gray:    "from-zinc-600 to-zinc-900",
+  red:     "from-red-700 to-red-950",
+  green:   "from-green-700 to-green-950",
+  yellow:  "from-yellow-600 to-yellow-900",
+  pink:    "from-pink-700 to-pink-950",
+  orange:  "from-orange-700 to-orange-950",
+  teal:    "from-teal-700 to-teal-950",
+  cyan:    "from-cyan-700 to-cyan-950",
+  lime:    "from-lime-700 to-lime-950",
+  rose:    "from-rose-700 to-rose-950",
+  violet:  "from-violet-800 to-violet-950",
+  slate:   "from-slate-600 to-slate-900",
 };
 
 const colorClasses: Record<CardColor, {
@@ -204,10 +204,10 @@ export const Card = ({
         {/* iOS squircle icon container */}
         <div
           className={cn(
-            // 22% border-radius matches the iOS squircle formula
             "rounded-[22%] shadow-sm flex items-center justify-center active:opacity-75 transition-opacity",
-            // Size: ~60px box, fill the cell width
             "w-full aspect-square max-w-[62px]",
+            // gradient-to-br is required to activate the from-*/to-* gradient tokens
+            "bg-gradient-to-br",
             iosIconBg[color],
           )}
         >

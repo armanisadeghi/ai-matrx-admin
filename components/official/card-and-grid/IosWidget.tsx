@@ -52,10 +52,11 @@ export const IosWidget = ({
   const content = (
     <div
       className={cn(
-        // Fill the 2×2 grid area and maintain square aspect
-        "col-span-2 row-span-2 aspect-square",
-        "rounded-[22%] bg-gradient-to-br shadow-md",
-        "flex flex-col justify-between p-[14%]",
+        // Fill the explicit CSS grid area assigned by parent
+        "w-full h-full",
+        "rounded-[20px] bg-gradient-to-br shadow-md",
+        "flex flex-col justify-between",
+        "p-3",
         "cursor-pointer active:opacity-80 transition-opacity select-none",
         widgetGradients[color],
         className,

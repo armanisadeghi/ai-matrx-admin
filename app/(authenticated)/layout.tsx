@@ -27,7 +27,7 @@ const clientGlobalCache = generateClientGlobalCache();
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
     const headersList = await headers();
-    const viewport = headersList.get("viewport-width") || "1024";
+    const viewport = headersList.get("viewport-width") || "0";
     const isMobile = Number(viewport) < 768;
 
     // getUser() validates the session server-side (network call to Supabase Auth)

@@ -38,13 +38,12 @@ export default function ResponsiveLayout({
   forceMode = 'auto',
   serverIsMobile = false,
 }: ResponsiveLayoutProps) {
-  // Initialize from server hint to prevent SSR→hydration layout shift
+  // Initialize from server hint to prevent SSR→hydration layout shift.
+  // With serverIsMobile defaulting to true (set in app layout), this ensures
+  // mobile devices get MobileLayout from the very first render.
   const [isMobile, setIsMobile] = useState(serverIsMobile);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-    
     // Function to check if we should use mobile layout
     const checkMobile = () => {
       if (forceMode !== 'auto') {
@@ -82,21 +81,10 @@ export default function ResponsiveLayout({
     isAdmin,
   };
 
-  // Use serverIsMobile hint during SSR to render the correct layout immediately.
-  // This prevents the visual shift where a desktop layout briefly appears on mobile.
-  if (!isClient) {
-    return serverIsMobile ? (
-      <MobileLayout {...layoutProps}>
-        {children}
-      </MobileLayout>
-    ) : (
-      <DesktopLayout {...layoutProps} initialOpen={initialOpen}>
-        {children}
-      </DesktopLayout>
-    );
-  }
-
-  // Render appropriate layout based on client-measured viewport
+  // Render appropriate layout based on isMobile state.
+  // isMobile is initialized from serverIsMobile so the SSR and initial client
+  // render match — no layout flash. useEffect then corrects if the server hint
+  // was wrong (e.g., desktop user getting mobile hint).
   return isMobile ? (
     <MobileLayout {...layoutProps}>
       {children}
