@@ -99,7 +99,7 @@ export default function DocumentViewer() {
     if (!document && stream.isStreaming) {
         return (
             <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
-                <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5 mb-4">
+                <div className="flex items-center gap-2 rounded-full mx-glass px-3 py-1.5 mb-4">
                     <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
                     <span className="text-xs font-medium text-primary">Generating document…</span>
                     {stream.messages.length > 0 && (
@@ -199,7 +199,7 @@ export default function DocumentViewer() {
 
             {/* Main Content */}
             <div className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4">
-                <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5 mb-4">
+                <div className="flex items-center gap-2 rounded-full mx-glass px-3 py-1.5 mb-4">
                     <span className="text-xs font-medium text-foreground/80 truncate">{document.title ?? 'Document'}</span>
                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5">v{document.version}</Badge>
                     <span className="text-[10px] text-muted-foreground">
@@ -207,13 +207,13 @@ export default function DocumentViewer() {
                     </span>
                     <div className="flex-1" />
                     <div className="flex items-center gap-1">
-                        <button onClick={handleRegenerate} disabled={stream.isStreaming} className="inline-flex items-center gap-1 h-6 px-2 rounded-full glass-subtle text-[11px] font-medium text-primary disabled:opacity-50 transition-colors">
+                        <button onClick={handleRegenerate} disabled={stream.isStreaming} className="inline-flex items-center gap-1 h-6 px-2 rounded-full mx-glass-subtle text-[11px] font-medium text-primary disabled:opacity-50 transition-colors">
                             {stream.isStreaming ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                             <span className="hidden sm:inline">Regen</span>
                         </button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="inline-flex items-center gap-1 h-6 px-2 rounded-full glass-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                <button className="inline-flex items-center gap-1 h-6 px-2 rounded-full mx-glass-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
                                     <Download className="h-3 w-3" />
                                     <span className="hidden sm:inline">Export</span>
                                 </button>
@@ -224,7 +224,7 @@ export default function DocumentViewer() {
                                 <DropdownMenuItem disabled>Export as DOCX (coming soon)</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <button onClick={() => setShowHistory(true)} className="inline-flex items-center gap-1 h-6 px-2 rounded-full glass-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <button onClick={() => setShowHistory(true)} className="inline-flex items-center gap-1 h-6 px-2 rounded-full mx-glass-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
                             <History className="h-3 w-3" />
                             <span className="hidden sm:inline">History</span>
                         </button>

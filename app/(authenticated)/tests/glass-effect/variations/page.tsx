@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Star, Heart, Zap, Globe, Sun, Moon, ArrowDown } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
-/*  Inline glass style generator — shows how each CSS property works  */
+/*  Inline mx-glass style generator — shows how each CSS property works  */
 /* ------------------------------------------------------------------ */
 function inlineGlass(opts: {
     bg?: string;
@@ -48,7 +48,7 @@ export default function GlassVariationsPage() {
             <div className="p-4">
                 <h1 className="text-lg font-bold mb-1">Glass Effect Playground</h1>
                 <p className="text-sm text-muted-foreground mb-4">
-                    Drag the sliders to see how each property changes the glass effect in real time.
+                    Drag the sliders to see how each property changes the mx-glass effect in real time.
                     The preview bar at the top of this section uses inline styles generated from your slider values.
                 </p>
 
@@ -159,26 +159,26 @@ export default function GlassVariationsPage() {
                     Utility Class Reference (current values)
                 </h2>
                 <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl p-4 space-y-2">
-                    <div className="rounded-lg px-3 py-2 glass text-white text-xs">
-                        <strong>.glass</strong> — standard (buttons, cards) — bg: 0.65, blur: 12px, saturate: 180%
+                    <div className="rounded-lg px-3 py-2 mx-glass text-white text-xs">
+                        <strong>.mx-glass</strong> — standard (buttons, cards) — bg: 0.65, blur: 12px, saturate: 180%
                     </div>
-                    <div className="rounded-lg px-3 py-2 glass-subtle text-white text-xs">
-                        <strong>.glass-subtle</strong> — lighter (containers, docks) — bg: 0.50, blur: 8px, saturate: 150%
+                    <div className="rounded-lg px-3 py-2 mx-glass-subtle text-white text-xs">
+                        <strong>.mx-glass-subtle</strong> — lighter (containers, docks) — bg: 0.50, blur: 8px, saturate: 150%
                     </div>
-                    <div className="rounded-lg px-3 py-2 glass-strong text-white text-xs">
-                        <strong>.glass-strong</strong> — heavy (modals, active states) — bg: 0.82, blur: 20px, saturate: 200%
+                    <div className="rounded-lg px-3 py-2 mx-glass-strong text-white text-xs">
+                        <strong>.mx-glass-strong</strong> — heavy (modals, active states) — bg: 0.82, blur: 20px, saturate: 200%
                     </div>
-                    <div className="rounded-lg px-3 py-2 glass-header text-white text-xs">
-                        <strong>.glass-header</strong> — fixed header bar — bg: 0.50 (subtle), blur: 20px, + fade gradient below
+                    <div className="rounded-lg px-3 py-2 mx-glass-header text-white text-xs">
+                        <strong>.mx-glass-header</strong> — fixed header bar — bg: 0.50 (subtle), blur: 20px, + fade gradient below
                     </div>
-                    <div className="rounded-lg px-3 py-2 glass-footer text-white text-xs">
-                        <strong>.glass-footer</strong> — fixed footer bar — bg: 0.50 (subtle), blur: 20px, + fade gradient above
+                    <div className="rounded-lg px-3 py-2 mx-glass-footer text-white text-xs">
+                        <strong>.mx-glass-footer</strong> — fixed footer bar — bg: 0.50 (subtle), blur: 20px, + fade gradient above
                     </div>
-                    <div className="h-10 rounded-full glass-pill flex items-center justify-center text-white text-xs">
-                        <strong>.glass-pill</strong> — round icon buttons — same as .glass + border-radius: 9999px
+                    <div className="h-10 rounded-full mx-glass-pill flex items-center justify-center text-white text-xs">
+                        <strong>.mx-glass-pill</strong> — round icon buttons — same as .mx-glass + border-radius: 9999px
                     </div>
-                    <div className="h-10 rounded-full glass-input flex items-center px-3 text-white text-xs">
-                        <strong>.glass-input</strong> — text inputs — bg: subtle, focus: standard
+                    <div className="h-10 rounded-full mx-glass-input flex items-center px-3 text-white text-xs">
+                        <strong>.mx-glass-input</strong> — text inputs — bg: subtle, focus: standard
                     </div>
                 </div>
             </div>
@@ -190,7 +190,7 @@ export default function GlassVariationsPage() {
                 </h2>
                 <p className="text-xs text-muted-foreground mb-3">
                     This simulates the ::after pseudo-element gradient fade. Adjust height and
-                    mask-image stop to see the effect on the transition from glass to content.
+                    mask-image stop to see the effect on the transition from mx-glass to content.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -215,7 +215,7 @@ export default function GlassVariationsPage() {
                 {/* Simulated header + fade */}
                 <div className="relative bg-gradient-to-b from-indigo-600 via-purple-600 to-pink-600 rounded-2xl overflow-hidden h-64">
                     {/* Fake header */}
-                    <div className="glass-header h-10 flex items-center px-4 relative z-10">
+                    <div className="mx-glass-header h-10 flex items-center px-4 relative z-10">
                         <span className="text-white text-sm font-medium">Simulated Header</span>
                     </div>
                     {/* Fade gradient (simulated, inline) */}
@@ -230,7 +230,7 @@ export default function GlassVariationsPage() {
                     />
                     {/* Content */}
                     <div className="p-4 space-y-2">
-                        {["Content scrolling behind the glass header...", "More content here", "And even more below"].map((t, i) => (
+                        {["Content scrolling behind the mx-glass header...", "More content here", "And even more below"].map((t, i) => (
                             <div key={i} className="text-white/80 text-sm">{t}</div>
                         ))}
                     </div>
@@ -244,7 +244,7 @@ export default function GlassVariationsPage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-gradient-to-br from-sky-400 to-blue-600 rounded-2xl p-4 space-y-2">
-                        <p className="text-white text-xs font-semibold mb-2">White-based glass (light mode)</p>
+                        <p className="text-white text-xs font-semibold mb-2">White-based mx-glass (light mode)</p>
                         {[0.3, 0.5, 0.65, 0.8].map(o => (
                             <div key={o} className="rounded-lg px-3 py-2 text-sm text-zinc-900"
                                 style={inlineGlass({ bg: `rgba(255,255,255,${o})`, borderOpacity: 0.45 })}
@@ -254,7 +254,7 @@ export default function GlassVariationsPage() {
                         ))}
                     </div>
                     <div className="bg-gradient-to-br from-sky-400 to-blue-600 rounded-2xl p-4 space-y-2">
-                        <p className="text-white text-xs font-semibold mb-2">Dark-based glass (dark mode)</p>
+                        <p className="text-white text-xs font-semibold mb-2">Dark-based mx-glass (dark mode)</p>
                         {[0.3, 0.5, 0.65, 0.8].map(o => (
                             <div key={o} className="rounded-lg px-3 py-2 text-sm text-white"
                                 style={inlineGlass({ bg: `rgba(39,39,42,${o})`, borderOpacity: 0.12 })}

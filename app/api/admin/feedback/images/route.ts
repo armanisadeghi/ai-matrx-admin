@@ -5,7 +5,8 @@
  * This is needed because feedback images are stored in user-specific paths
  * and may not be publicly accessible due to RLS policies.
  *
- * GET /api/admin/feedback/images?feedback_id=uuid
+ * GET /api/admin/feedback/images?feedback_id=uuid   — feedback item screenshots
+ * GET /api/admin/feedback/images?message_id=uuid    — message attachment images
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -66,49 +67,56 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Get feedback_id from query params
         const feedbackId = request.nextUrl.searchParams.get('feedback_id');
-        if (!feedbackId) {
+        const messageId = request.nextUrl.searchParams.get('message_id');
+
+        if (!feedbackId && !messageId) {
             return NextResponse.json(
-                { success: false, error: 'Missing required parameter: feedback_id' },
+                { success: false, error: 'Missing required parameter: feedback_id or message_id' },
                 { status: 400 }
             );
         }
 
-        // Fetch the feedback item
-        const { data: feedback, error: fetchError } = await supabase
-            .from('user_feedback')
-            .select('id, image_urls')
-            .eq('id', feedbackId)
-            .single();
+        // Resolve image_urls from either a feedback item or a message
+        let rawUrls: string[] = [];
 
-        if (fetchError || !feedback) {
-            return NextResponse.json(
-                { success: false, error: 'Feedback item not found' },
-                { status: 404 }
-            );
+        if (feedbackId) {
+            const { data: feedback, error: fetchError } = await supabase
+                .from('user_feedback')
+                .select('id, image_urls')
+                .eq('id', feedbackId)
+                .single();
+
+            if (fetchError || !feedback) {
+                return NextResponse.json({ success: false, error: 'Feedback item not found' }, { status: 404 });
+            }
+            rawUrls = feedback.image_urls ?? [];
+        } else {
+            const { data: message, error: fetchError } = await supabase
+                .from('feedback_user_messages')
+                .select('id, image_urls')
+                .eq('id', messageId!)
+                .single();
+
+            if (fetchError || !message) {
+                return NextResponse.json({ success: false, error: 'Message not found' }, { status: 404 });
+            }
+            rawUrls = message.image_urls ?? [];
         }
 
-        if (!feedback.image_urls || feedback.image_urls.length === 0) {
-            return NextResponse.json({
-                success: true,
-                signed_urls: [],
-            });
+        if (rawUrls.length === 0) {
+            return NextResponse.json({ success: true, signed_urls: [] });
         }
 
-        // Resolve URLs for each image.
-        // New uploads use permanent public URLs — return them directly.
-        // Legacy items have signed URLs (expired) — re-sign them for 24h.
+        // Resolve URLs — public URLs pass through, legacy signed URLs get re-signed for 24h.
         const signedUrls: { original_url: string; signed_url: string | null; error?: string }[] = [];
 
-        for (const url of feedback.image_urls) {
-            // Public URLs never expire — pass through as-is
+        for (const url of rawUrls) {
             if (isPublicUrl(url)) {
                 signedUrls.push({ original_url: url, signed_url: url });
                 continue;
             }
 
-            // Legacy signed URL — re-sign it
             const parsed = parseSignedStorageUrl(url);
             if (!parsed) {
                 signedUrls.push({ original_url: url, signed_url: null, error: 'Could not parse storage URL' });
@@ -117,7 +125,7 @@ export async function GET(request: NextRequest) {
 
             const { data, error } = await supabase.storage
                 .from(parsed.bucket)
-                .createSignedUrl(parsed.path, 86400); // 24h for legacy items
+                .createSignedUrl(parsed.path, 86400);
 
             if (error) {
                 signedUrls.push({ original_url: url, signed_url: null, error: error.message });
@@ -128,7 +136,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            feedback_id: feedbackId,
+            ...(feedbackId ? { feedback_id: feedbackId } : { message_id: messageId }),
             signed_urls: signedUrls,
         });
     } catch (error: unknown) {

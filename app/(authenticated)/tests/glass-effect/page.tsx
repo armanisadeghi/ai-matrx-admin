@@ -52,7 +52,7 @@ export default function GlassEffectTestPage() {
                     (gradient fade, no hard line). The bottom dock also fades in.
                 </p>
                 <p className="text-sm text-white/80">
-                    Open modals, sheets, and drawers below to see glass overlays.
+                    Open modals, sheets, and drawers below to see mx-glass overlays.
                 </p>
             </div>
 
@@ -63,30 +63,30 @@ export default function GlassEffectTestPage() {
                 </h2>
                 <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <button className="px-4 py-2 rounded-lg glass text-white text-sm font-medium">
-                            .glass
+                        <button className="px-4 py-2 rounded-lg mx-glass text-white text-sm font-medium">
+                            .mx-glass
                         </button>
-                        <button className="px-4 py-2 rounded-lg glass-subtle text-white text-sm font-medium">
-                            .glass-subtle
+                        <button className="px-4 py-2 rounded-lg mx-glass-subtle text-white text-sm font-medium">
+                            .mx-glass-subtle
                         </button>
-                        <button className="px-4 py-2 rounded-lg glass-strong text-white text-sm font-medium">
-                            .glass-strong
+                        <button className="px-4 py-2 rounded-lg mx-glass-strong text-white text-sm font-medium">
+                            .mx-glass-strong
                         </button>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button className="h-10 w-10 glass-pill flex items-center justify-center">
+                        <button className="h-10 w-10 mx-glass-pill flex items-center justify-center">
                             <Star className="w-5 h-5 text-white" />
                         </button>
-                        <div className="flex-1 h-10 rounded-full glass-input flex items-center px-3">
+                        <div className="flex-1 h-10 rounded-full mx-glass-input flex items-center px-3">
                             <Search className="w-4 h-4 text-white/60 mr-2" />
-                            <span className="text-sm text-white/60">.glass-input</span>
+                            <span className="text-sm text-white/60">.mx-glass-input</span>
                         </div>
                     </div>
-                    <div className="h-12 rounded-xl glass-header flex items-center px-3">
-                        <span className="text-sm text-white font-medium">.glass-header (fade below this bar)</span>
+                    <div className="h-12 rounded-xl mx-glass-header flex items-center px-3">
+                        <span className="text-sm text-white font-medium">.mx-glass-header (fade below this bar)</span>
                     </div>
-                    <div className="h-12 rounded-xl glass-footer flex items-center px-3">
-                        <span className="text-sm text-white font-medium">.glass-footer (fade above this bar)</span>
+                    <div className="h-12 rounded-xl mx-glass-footer flex items-center px-3">
+                        <span className="text-sm text-white font-medium">.mx-glass-footer (fade above this bar)</span>
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@ export default function GlassEffectTestPage() {
                     {/* Dialog */}
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                            <Button variant="outline" className="mx-glass h-20 flex-col gap-1">
                                 <MessageSquare className="w-5 h-5" />
                                 <span className="text-xs">Dialog</span>
                             </Button>
@@ -109,7 +109,7 @@ export default function GlassEffectTestPage() {
                             <DialogHeader>
                                 <DialogTitle>Glass Dialog</DialogTitle>
                                 <DialogDescription>
-                                    This dialog uses glass-modal for the panel and glass-overlay
+                                    This dialog uses mx-glass-modal for the panel and mx-glass-overlay
                                     for the backdrop. Content behind should be softly blurred.
                                 </DialogDescription>
                             </DialogHeader>
@@ -129,7 +129,7 @@ export default function GlassEffectTestPage() {
                     {/* Sheet (right) */}
                     <Sheet>
                         <SheetTrigger asChild>
-                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                            <Button variant="outline" className="mx-glass h-20 flex-col gap-1">
                                 <Settings className="w-5 h-5" />
                                 <span className="text-xs">Side Sheet</span>
                             </Button>
@@ -138,20 +138,20 @@ export default function GlassEffectTestPage() {
                             <SheetHeader>
                                 <SheetTitle>Glass Sheet</SheetTitle>
                                 <SheetDescription>
-                                    This side sheet uses glass-sheet. The overlay behind it
-                                    uses glass-overlay for a frosted backdrop.
+                                    This side sheet uses mx-glass-sheet. The overlay behind it
+                                    uses mx-glass-overlay for a frosted backdrop.
                                 </SheetDescription>
                             </SheetHeader>
                             <div className="py-6 space-y-4">
-                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                <div className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                     <User className="w-5 h-5" />
                                     <span className="text-sm">Profile Settings</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                <div className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                     <Bell className="w-5 h-5" />
                                     <span className="text-sm">Notifications</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                <div className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                     <Settings className="w-5 h-5" />
                                     <span className="text-sm">Preferences</span>
                                 </div>
@@ -162,7 +162,7 @@ export default function GlassEffectTestPage() {
                     {/* Drawer (bottom) */}
                     <Drawer>
                         <DrawerTrigger asChild>
-                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                            <Button variant="outline" className="mx-glass h-20 flex-col gap-1">
                                 <ArrowDown className="w-5 h-5" />
                                 <span className="text-xs">Drawer</span>
                             </Button>
@@ -171,19 +171,19 @@ export default function GlassEffectTestPage() {
                             <DrawerHeader>
                                 <DrawerTitle>Glass Drawer</DrawerTitle>
                                 <DrawerDescription>
-                                    Bottom drawer with glass-drawer. Drag down to dismiss.
+                                    Bottom drawer with mx-glass-drawer. Drag down to dismiss.
                                 </DrawerDescription>
                             </DrawerHeader>
                             <div className="p-4 space-y-3">
-                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                <div className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                     <Star className="w-5 h-5" />
                                     <span className="text-sm">Option A</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                <div className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                     <Heart className="w-5 h-5" />
                                     <span className="text-sm">Option B</span>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                <div className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                     <Zap className="w-5 h-5" />
                                     <span className="text-sm">Option C</span>
                                 </div>
@@ -199,7 +199,7 @@ export default function GlassEffectTestPage() {
                     {/* Sheet (left) */}
                     <Sheet>
                         <SheetTrigger asChild>
-                            <Button variant="outline" className="glass h-20 flex-col gap-1">
+                            <Button variant="outline" className="mx-glass h-20 flex-col gap-1">
                                 <Globe className="w-5 h-5" />
                                 <span className="text-xs">Left Sheet</span>
                             </Button>
@@ -208,12 +208,12 @@ export default function GlassEffectTestPage() {
                             <SheetHeader>
                                 <SheetTitle>Left Sheet</SheetTitle>
                                 <SheetDescription>
-                                    Same glass-sheet effect, sliding from the left.
+                                    Same mx-glass-sheet effect, sliding from the left.
                                 </SheetDescription>
                             </SheetHeader>
                             <div className="py-6 space-y-4">
                                 {["Navigation", "Dashboard", "Analytics", "Reports"].map((item) => (
-                                    <div key={item} className="flex items-center gap-3 p-3 rounded-lg glass-subtle">
+                                    <div key={item} className="flex items-center gap-3 p-3 rounded-lg mx-glass-subtle">
                                         <span className="text-sm">{item}</span>
                                     </div>
                                 ))}
@@ -248,17 +248,17 @@ export default function GlassEffectTestPage() {
             </div>
 
             {/* Fixed floating dock test */}
-            <div className="fixed bottom-0 left-0 right-0 pb-safe z-40 glass-footer">
+            <div className="fixed bottom-0 left-0 right-0 pb-safe z-40 mx-glass-footer">
                 <div className="mx-4 my-2">
                     <div className="flex items-center gap-2">
-                        <button className="h-10 w-10 flex-shrink-0 glass-pill flex items-center justify-center">
+                        <button className="h-10 w-10 flex-shrink-0 mx-glass-pill flex items-center justify-center">
                             <SlidersHorizontal className="h-5 w-5 text-foreground" />
                         </button>
 
-                        <button className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full glass-input">
+                        <button className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full mx-glass-input">
                             <Search className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm text-muted-foreground">Search...</span>
-                            <span className="ml-auto p-1.5 rounded-full glass-subtle">
+                            <span className="ml-auto p-1.5 rounded-full mx-glass-subtle">
                                 <Mic className="h-4 w-4 text-muted-foreground" />
                             </span>
                         </button>

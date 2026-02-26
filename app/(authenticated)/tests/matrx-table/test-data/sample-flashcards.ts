@@ -268,7 +268,7 @@ export const FlashcardData = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "The properties of materials depend on their atomic composition (the types and amounts of atoms) and the structural arrangement of these atoms. For example, the tightly packed atoms in steel give it strength.",
-        audioExplanation: "Absolutely! The properties of materials are significantly influenced by both their atomic composition and how those atoms are arranged. For example, in steel, the specific arrangement of iron and carbon atoms gives it strength and durability. Conversely, if you change the structure or composition, like in glass, it results in a completely different set of properties!"
+        audioExplanation: "Absolutely! The properties of materials are significantly influenced by both their atomic composition and how those atoms are arranged. For example, in steel, the specific arrangement of iron and carbon atoms gives it strength and durability. Conversely, if you change the structure or composition, like in mx-glass, it results in a completely different set of properties!"
     },
     {
         order: 28,

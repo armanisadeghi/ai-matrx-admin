@@ -23,7 +23,6 @@ export function TagInput({ tags, onChange, className }: TagInputProps) {
         if (trimmedValue && !tags.includes(trimmedValue)) {
             onChange([...tags, trimmedValue]);
             setInputValue('');
-            setIsAdding(false);
         }
     };
 

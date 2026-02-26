@@ -76,6 +76,7 @@ export interface FeedbackUserMessage {
     content: string;
     created_at: string;
     email_sent: boolean;
+    image_urls?: string[] | null;
 }
 
 export interface CreateFeedbackInput {

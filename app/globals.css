@@ -653,7 +653,7 @@
     /* ===== GLASS EFFECT UTILITIES — iOS-inspired frosted glass ===== */
 
     /* Standard glass — use on buttons, icon wrappers, inputs, cards */
-    .glass {
+    .mx-glass {
         background: var(--glass-bg);
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -661,23 +661,23 @@
         box-shadow: var(--glass-shadow);
     }
 
-    .glass:hover {
+    .mx-glass:hover {
         background: var(--glass-bg-hover);
     }
 
     /* Subtle glass — lighter frosting, less prominent */
-    .glass-subtle {
+    .mx-glass-subtle {
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(8px) saturate(150%);
         -webkit-backdrop-filter: blur(8px) saturate(150%);
     }
 
-    .glass-subtle:hover {
+    .mx-glass-subtle:hover {
         background: var(--glass-bg);
     }
 
     /* Strong glass — heavier frosting for modals, prominent containers */
-    .glass-strong {
+    .mx-glass-strong {
         background: var(--glass-bg-strong);
         backdrop-filter: blur(20px) saturate(200%);
         -webkit-backdrop-filter: blur(20px) saturate(200%);
@@ -685,12 +685,12 @@
         box-shadow: var(--glass-shadow-lg);
     }
 
-    .glass-strong:hover {
+    .mx-glass-strong:hover {
         background: var(--glass-bg-hover);
     }
 
     /* Glass pill — pre-composed rounded-full glass for icon buttons */
-    .glass-pill {
+    .mx-glass-pill {
         background: var(--glass-bg);
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -699,19 +699,19 @@
         border-radius: 9999px;
     }
 
-    .glass-pill:hover {
+    .mx-glass-pill:hover {
         background: var(--glass-bg-hover);
     }
 
     /* Glass input — for text inputs and search fields */
-    .glass-input {
+    .mx-glass-input {
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
         border: 1px solid var(--glass-border);
     }
 
-    .glass-input:focus, .glass-input:focus-within {
+    .mx-glass-input:focus, .mx-glass-input:focus-within {
         background: var(--glass-bg);
         border-color: hsl(var(--ring));
     }
@@ -719,7 +719,7 @@
     /* Glass header/footer — frosted bar for fixed chrome that content scrolls behind.
        Uses a subtle tint + strong blur with a gradient fade edge (no hard line).
        Individual interactive elements (buttons, inputs) use .glass on top. */
-    .glass-header {
+    .mx-glass-header {
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -728,7 +728,7 @@
     /* Gradient fade below the header — replaces any hard border/line.
        Uses only a tinted gradient (no backdrop-filter) since nested
        backdrop-filter inside a parent stacking-context is unreliable. */
-    .glass-header::after {
+    .mx-glass-header::after {
         content: '';
         position: absolute;
         left: 0;
@@ -742,14 +742,14 @@
         z-index: -1;
     }
 
-    .glass-footer {
+    .mx-glass-footer {
         background: var(--glass-bg-subtle);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
     }
 
     /* Gradient fade above the footer — replaces any hard border/line */
-    .glass-footer::before {
+    .mx-glass-footer::before {
         content: '';
         position: absolute;
         left: 0;
@@ -764,7 +764,7 @@
     }
 
     /* Glass overlay — for modal/dialog/sheet backdrops */
-    .glass-overlay {
+    .mx-glass-overlay {
         background: var(--glass-bg-strong);
         backdrop-filter: blur(20px) saturate(200%);
         -webkit-backdrop-filter: blur(20px) saturate(200%);
@@ -773,7 +773,7 @@
     }
 
     /* Glass modal — for dialog and alert-dialog content panels */
-    .glass-modal {
+    .mx-glass-modal {
         background: var(--glass-bg-strong);
         backdrop-filter: blur(24px) saturate(200%);
         -webkit-backdrop-filter: blur(24px) saturate(200%);
@@ -782,7 +782,7 @@
     }
 
     /* Glass sheet — for side sheets sliding in from edges */
-    .glass-sheet {
+    .mx-glass-sheet {
         background: var(--glass-bg-strong);
         backdrop-filter: blur(24px) saturate(200%);
         -webkit-backdrop-filter: blur(24px) saturate(200%);
@@ -790,7 +790,7 @@
     }
 
     /* Glass drawer — for bottom drawers/sheets */
-    .glass-drawer {
+    .mx-glass-drawer {
         background: var(--glass-bg-strong);
         backdrop-filter: blur(24px) saturate(200%);
         -webkit-backdrop-filter: blur(24px) saturate(200%);

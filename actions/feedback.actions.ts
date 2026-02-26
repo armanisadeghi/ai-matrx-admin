@@ -355,7 +355,8 @@ export async function resolveWithTesting(
 export async function sendUserReviewMessage(
     feedbackId: string,
     message: string,
-    senderName?: string
+    senderName?: string,
+    imageUrls?: string[]
 ): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage }> {
     try {
         const supabase = await createClient();
@@ -367,6 +368,7 @@ export async function sendUserReviewMessage(
             p_feedback_id: feedbackId,
             p_message: message,
             p_sender_name: name,
+            p_image_urls: imageUrls && imageUrls.length > 0 ? imageUrls : null,
         });
         if (error) return { success: false, error: error.message };
         return { success: true, data };
@@ -380,7 +382,8 @@ export async function sendUserReviewMessage(
 export async function adminReplyUserReview(
     feedbackId: string,
     message: string,
-    senderName?: string
+    senderName?: string,
+    imageUrls?: string[]
 ): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage }> {
     try {
         const supabase = await createClient();
@@ -392,6 +395,7 @@ export async function adminReplyUserReview(
             p_feedback_id: feedbackId,
             p_message: message,
             p_sender_name: name,
+            p_image_urls: imageUrls && imageUrls.length > 0 ? imageUrls : null,
         });
         if (error) return { success: false, error: error.message };
         return { success: true, data };
@@ -405,7 +409,8 @@ export async function adminReplyUserReview(
 export async function replyToUserReview(
     feedbackId: string,
     message: string,
-    senderName?: string
+    senderName?: string,
+    imageUrls?: string[]
 ): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage }> {
     try {
         const supabase = await createClient();
@@ -417,6 +422,7 @@ export async function replyToUserReview(
             p_feedback_id: feedbackId,
             p_message: message,
             p_sender_name: name,
+            p_image_urls: imageUrls && imageUrls.length > 0 ? imageUrls : null,
         });
         if (error) return { success: false, error: error.message };
         return { success: true, data };

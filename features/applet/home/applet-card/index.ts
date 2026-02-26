@@ -8,7 +8,7 @@ import Compact from './Compact';
 // Add any other variants here as they're created
 const variants = {
   default: Default,
-  glass: Glass,
+  mx-glass: Glass,
   enhanced: Enhanced,
   modern: Modern,
   simple: Simple,

@@ -6,7 +6,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "Solid, liquid, and gas.",
         "audioExplanation": "It's easy to remember! Just think of ice (solid), water (liquid), and steam (gas). These are the three main forms that matter can take around us.",
         "detailedExplanation": "Matter exists in three primary states: solids, liquids, and gases. Solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container.",
-        "example": "An ice cube is a solid, water in a glass is a liquid, and the air in a balloon is a gas.",
+        "example": "An ice cube is a solid, water in a mx-glass is a liquid, and the air in a balloon is a gas.",
         "order": 1
     },
     {
@@ -22,7 +22,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "The liquid metal takes the shape of the mold but retains its volume.",
         "audioExplanation": "Think of it like pouring pancake batter into a pan! The batter spreads out to fill the shape of the pan, but the amount of batter (volume) stays the same.",
         "detailedExplanation": "When liquid metal is poured into a mold, it conforms to the shape of the mold, meaning it changes shape. However, the volume of the liquid remains constant because the amount of liquid does not change; it simply fills the new shape of the mold.",
-        "example": "When you pour water into a glass, it takes the shape of the glass but the amount of water (volume) stays the same.",
+        "example": "When you pour water into a mx-glass, it takes the shape of the mx-glass but the amount of water (volume) stays the same.",
         "order": 3
     },
     {
@@ -30,7 +30,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "Both solids and liquids have a definite volume, but solids have a fixed shape while liquids take the shape of their container.",
         "audioExplanation": "It's like comparing a rock and a cup of water! The rock keeps its shape, but the water changes shape depending on the cup you pour it into.",
         "detailedExplanation": "Solids and liquids share the property of having a definite volume, meaning they occupy a specific amount of space. However, solids maintain a fixed shape due to closely packed particles, while liquids can flow and adapt to the shape of their container because their particles are less tightly packed and can move around each other.",
-        "example": "A block of wood is a solid with a specific shape, while a glass of juice is a liquid that takes the shape of the glass.",
+        "example": "A block of wood is a solid with a specific shape, while a mx-glass of juice is a liquid that takes the shape of the mx-glass.",
         "order": 4
     },
     {
@@ -54,7 +54,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "Volume is the amount of space matter occupies, while shape is the external form or appearance of the matter.",
         "audioExplanation": "Volume is like how much space something takes up, while shape is how it looks. For example, a cube has a different shape than a ball, but both can have the same volume if they take up the same amount of space.",
         "detailedExplanation": "Volume can be measured using old-tools like graduated cylinders for liquids or calculated for solids using formulas. Shape is more about the outline or form of an object. Solids have a fixed shape, liquids take the shape of their container, and gases fill the entire space available to them.",
-        "example": "A cube of ice has a specific shape and volume, while water in a glass takes the shape of the glass but has the same volume as the ice.",
+        "example": "A cube of ice has a specific shape and volume, while water in a mx-glass takes the shape of the mx-glass but has the same volume as the ice.",
         "order": 7
     },
     {
@@ -69,7 +69,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "front": "What are the similarities and differences between solids and liquids?",
         "back": "Similarities: Both have mass and occupy space. Differences: Solids have a definite shape and volume, while liquids have a definite volume but take the shape of their container.",
         "audioExplanation": "Solids and liquids are both types of matter, but they behave differently. Solids hold their shape, while liquids flow and take the shape of whatever they’re in.",
-        "detailedExplanation": "Both solids and liquids are considered fluids in some contexts, as they can both flow. However, solids maintain a fixed shape and volume, while liquids have a fixed volume but adapt their shape to their container. This is why ice cubes stay as cubes, but water spreads out in a glass.",
+        "detailedExplanation": "Both solids and liquids are considered fluids in some contexts, as they can both flow. However, solids maintain a fixed shape and volume, while liquids have a fixed volume but adapt their shape to their container. This is why ice cubes stay as cubes, but water spreads out in a mx-glass.",
         "example": "A rock (solid) keeps its shape, while a puddle of water (liquid) spreads out on the ground.",
         "order": 9
     },
@@ -109,7 +109,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "front": "What are the similarities and differences between solids and liquids?",
         "back": "Similarities: Both have mass and take up space. Differences: Solids have a definite shape and volume; liquids have a definite volume but take the shape of their container.",
         "audioExplanation": "Think of solids and liquids like this: both are types of matter, but solids hold their shape while liquids flow to fit their container. Imagine a rock (solid) versus water (liquid).",
-        "detailedExplanation": "Solids and liquids are both states of matter, meaning they both have mass and occupy space. However, solids have a fixed shape and volume, while liquids have a fixed volume but adapt their shape to whatever container they are in. This is why a solid like a cube of ice stays a cube, but water in a glass takes the shape of the glass.",
+        "detailedExplanation": "Solids and liquids are both states of matter, meaning they both have mass and occupy space. However, solids have a fixed shape and volume, while liquids have a fixed volume but adapt their shape to whatever container they are in. This is why a solid like a cube of ice stays a cube, but water in a mx-glass takes the shape of the mx-glass.",
         "example": "A rock is a solid that keeps its shape, while water in a bottle takes the shape of the bottle.",
         "order": 14
     },
@@ -166,7 +166,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "Solid, liquid, and gas.",
         "audioExplanation": "It's easy to remember! Just think of ice, water, and steam. Ice is a solid, water is a liquid, and steam is a gas. They are all made of the same stuff—water—but they look and behave differently depending on their state.",
         "detailedExplanation": "Matter can exist in three primary states: solids, liquids, and gases. Solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container. Understanding these states helps us classify and describe the materials around us.",
-        "example": "Think of a cube of ice (solid), a glass of water (liquid), and steam rising from a kettle (gas). Each one is water, but in different states.",
+        "example": "Think of a cube of ice (solid), a mx-glass of water (liquid), and steam rising from a kettle (gas). Each one is water, but in different states.",
         "order": 21
     },
     {
@@ -286,7 +286,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "Similarities: Both have volume. Differences: Solids have a fixed shape; liquids take the shape of their container.",
         "audioExplanation": "Solids and liquids both take up space, but solids are hard and keep their shape, while liquids flow and change shape based on their container. Think of a rock (solid) versus water (liquid)—the rock stays the same, but the water changes shape!",
         "detailedExplanation": "Solids and liquids share the property of having volume, meaning they both occupy space. However, they differ significantly in shape. Solids have a definite shape and do not change unless force is applied, while liquids do not have a fixed shape and will conform to the shape of their container. This distinction is crucial in understanding how matter behaves in different states.",
-        "example": "A book (solid) has a specific shape and does not change, while a glass of water (liquid) takes the shape of the glass.",
+        "example": "A book (solid) has a specific shape and does not change, while a mx-glass of water (liquid) takes the shape of the mx-glass.",
         "order": 36
     },
     {
@@ -326,7 +326,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "Similarities: Both have mass and volume. Differences: Solids have a definite shape; liquids take the shape of their container.",
         "audioExplanation": "Solids and liquids are both types of matter, but solids hold their shape while liquids flow and take the shape of their container.",
         "detailedExplanation": "Both solids and liquids are forms of matter that occupy space and have mass. However, solids maintain a fixed shape and volume, while liquids have a fixed volume but adapt their shape to the container they are in. This is due to the arrangement and movement of their particles.",
-        "example": "A rock is a solid with a fixed shape, while water in a glass takes the shape of the glass.",
+        "example": "A rock is a solid with a fixed shape, while water in a mx-glass takes the shape of the mx-glass.",
         "order": 41
     },
     {
@@ -344,7 +344,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "The three states of matter are solid, liquid, and gas.",
         "audioExplanation": "It's simple! Matter can exist in three forms: solids, which hold their shape; liquids, which take the shape of their container; and gases, which fill the entire space available to them.",
         "detailedExplanation": "Matter is anything that has mass and takes up space. The three main states of matter are solids, which have a definite shape and volume; liquids, which have a definite volume but take the shape of their container; and gases, which have neither a definite shape nor volume and expand to fill their container. Understanding these states helps us describe how different materials behave.",
-        "example": "Think of ice (solid), water (liquid), and steam (gas). Ice keeps its shape, water takes the shape of the glass, and steam spreads out in the air.",
+        "example": "Think of ice (solid), water (liquid), and steam (gas). Ice keeps its shape, water takes the shape of the mx-glass, and steam spreads out in the air.",
         "order": 43
     },
     {
@@ -354,7 +354,7 @@ export const vocabFlashcards: FlashcardData[] = [
         "back": "The physical properties used to describe states of matter are volume and shape.",
         "audioExplanation": "When we talk about matter, we look at how much space it takes up (volume) and what it looks like (shape). This helps us understand what kind of matter we're dealing with.",
         "detailedExplanation": "Volume is the amount of space that a substance occupies, and it can be measured using old-tools like graduated cylinders for liquids. Shape refers to the form of the matter. Solids have a fixed shape, liquids take the shape of their container, and gases have no fixed shape. Observing these properties helps classify matter into its respective state.",
-        "example": "A cube of ice has a definite shape and volume, while water in a glass takes the shape of the glass but has the same volume as the ice cube when melted.",
+        "example": "A cube of ice has a definite shape and volume, while water in a mx-glass takes the shape of the mx-glass but has the same volume as the ice cube when melted.",
         "order": 44
     },
     {
@@ -417,7 +417,7 @@ export const vocabFlashcards: FlashcardData[] = [
 **Definition:** Characteristics that can be observed or measured without changing the substance's identity.  
 **Example:** Color, shape, volume, and mass are all physical properties.`,
         audioExplanation: "Physical properties are essential for identifying and classifying matter. They include attributes like color, shape, volume, and mass. For example, you can observe that a piece of ice is solid and has a specific shape, while water is liquid and takes the shape of its container. These properties help scientists and students alike to categorize and understand different materials. Just as Taylor Swift uses her unique style to express herself, scientists use physical properties to describe matter.",
-        detailedExplanation: `Physical properties are important in everyday life. When you look at an object, you can often determine its state of matter just by observing its physical properties. For instance, a solid object like a rock has a definite shape, while a liquid like juice takes the shape of the glass it’s in. Understanding these properties allows us to make predictions about how substances will behave in different situations, which is a key aspect of scientific inquiry.`
+        detailedExplanation: `Physical properties are important in everyday life. When you look at an object, you can often determine its state of matter just by observing its physical properties. For instance, a solid object like a rock has a definite shape, while a liquid like juice takes the shape of the mx-glass it’s in. Understanding these properties allows us to make predictions about how substances will behave in different situations, which is a key aspect of scientific inquiry.`
     },
     {
         topic: "Science",
@@ -448,8 +448,8 @@ export const vocabFlashcards: FlashcardData[] = [
         front: "Shape of Liquids",
         back: `*(noun)*  
 **Definition:** The form that a liquid takes, which is determined by its container.  
-**Example:** Water takes the shape of the glass it is poured into.`,
-        audioExplanation: "Liquids do not have a fixed shape; instead, they take the shape of their container. This is because the particles in a liquid are close together but can slide past one another, allowing the liquid to flow. For instance, when you pour water into a glass, it adopts the shape of the glass. Understanding how liquids behave is essential in many scientific fields. Just like how Taylor Swift adapts her music style to fit different themes and emotions, liquids adapt their shape to fit their surroundings.",
+**Example:** Water takes the shape of the mx-glass it is poured into.`,
+        audioExplanation: "Liquids do not have a fixed shape; instead, they take the shape of their container. This is because the particles in a liquid are close together but can slide past one another, allowing the liquid to flow. For instance, when you pour water into a mx-glass, it adopts the shape of the mx-glass. Understanding how liquids behave is essential in many scientific fields. Just like how Taylor Swift adapts her music style to fit different themes and emotions, liquids adapt their shape to fit their surroundings.",
         detailedExplanation: `The ability of liquids to take the shape of their container is a fundamental property that distinguishes them from solids. This characteristic is due to the arrangement of particles in liquids, which allows them to move freely while remaining close together. This property is vital in various applications, such as cooking, where liquids are often heated and poured. Recognizing how liquids behave helps us understand their role in chemical reactions and everyday life.`
     },
     {
@@ -503,7 +503,7 @@ export const vocabFlashcards: FlashcardData[] = [
         front: "Condensation",
         back: `*(verb)*  
 **Definition:** The process of a gas turning into a liquid due to cooling.  
-**Example:** Water vapor condenses into droplets on a cold glass.`,
+**Example:** Water vapor condenses into droplets on a cold mx-glass.`,
         audioExplanation: "Condensation is the process that occurs when a gas loses heat and changes back into a liquid. For example, when water vapor in the air comes into contact with a cold surface, it condenses into droplets. Understanding condensation is essential for grasping the water cycle and weather phenomena. Just like how Taylor Swift reflects on her past experiences in her songs, condensation is a reminder of how matter can change states!",
         detailedExplanation: `Condensation occurs when the temperature of a gas decreases, causing its particles to come closer together and form a liquid. This process is crucial in the water cycle, as it leads to the formation of clouds and precipitation. Understanding condensation helps us predict weather patterns and is essential for various scientific applications, including meteorology and HVAC systems. Recognizing how condensation works allows us to appreciate the dynamic nature of matter in our environment.`
     },
@@ -656,8 +656,8 @@ export const vocabFlashcards: FlashcardData[] = [
         order: 10010,
         front: "Condensation",
         back: `*(noun)*  
-**Definition:** A process where a gas changes to a liquid by losing energy (e.g., water vapor on a cold glass).`,
-        example: `*Water vapor condenses on a cold glass, forming droplets.*`,
+**Definition:** A process where a gas changes to a liquid by losing energy (e.g., water vapor on a cold mx-glass).`,
+        example: `*Water vapor condenses on a cold mx-glass, forming droplets.*`,
         audioExplanation: "Condensation is like when you see dew on grass in the morning—it's water coming back down! Just like how Taylor brings back memories with her lyrics.",
         detailedExplanation: ""
     },
@@ -778,7 +778,7 @@ export const vocabFlashcards: FlashcardData[] = [
         front: "Condensation",
         back: `*(noun)*  
 **Definition:** Process of a gas turning into liquid, releasing energy.`,
-        example: `*Water vapor condenses on a cold glass, forming droplets.*`,
+        example: `*Water vapor condenses on a cold mx-glass, forming droplets.*`,
         audioExplanation: "Condensation is like when you see dew on grass in the morning—it's water coming back down! Just like how Taylor brings back memories with her lyrics.",
         detailedExplanation: ""
     },
@@ -1172,7 +1172,7 @@ export const vocabFlashcardsTwo: FlashcardData[] = [
 **Synonyms:** Inspect, examine, analyze  
 **Antonyms:** Ignore, neglect, overlook`,
         example: `*The editor scrutinized the article to ensure there were no factual errors.*`,
-        audioExplanation: "No problem if this sounds tough! 'Scrutinize' is just a fancy way of saying you’re looking at something super closely, like when you look at your homework to make sure everything’s right. Imagine you’re using a magnifying glass—that’s scrutinizing! It’s like how Swifties scrutinize every lyric of Taylor’s songs to uncover all the hidden Easter eggs—total detective mode!",
+        audioExplanation: "No problem if this sounds tough! 'Scrutinize' is just a fancy way of saying you’re looking at something super closely, like when you look at your homework to make sure everything’s right. Imagine you’re using a magnifying mx-glass—that’s scrutinizing! It’s like how Swifties scrutinize every lyric of Taylor’s songs to uncover all the hidden Easter eggs—total detective mode!",
         detailedExplanation: `Scrutinizing means you’re paying very close attention to details. For example, if you’re proofreading an essay, you need to scrutinize it to catch any mistakes. It’s a good habit to develop because it helps you improve your work. Just like how Taylor Swift meticulously scrutinizes her lyrics to make sure they convey the right emotions, we can all benefit from taking the time to scrutinize our own work!`
     },
     {
@@ -1602,7 +1602,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "The properties of materials depend on their atomic composition (the types and amounts of atoms) and the structural arrangement of these atoms. For example, the tightly packed atoms in steel give it strength.",
-        audioExplanation: "Absolutely! The properties of materials are significantly influenced by both their atomic composition and how those atoms are arranged. For example, in steel, the specific arrangement of iron and carbon atoms gives it strength and durability. Conversely, if you change the structure or composition, like in glass, it results in a completely different set of properties!"
+        audioExplanation: "Absolutely! The properties of materials are significantly influenced by both their atomic composition and how those atoms are arranged. For example, in steel, the specific arrangement of iron and carbon atoms gives it strength and durability. Conversely, if you change the structure or composition, like in mx-glass, it results in a completely different set of properties!"
     },
     {
         order: 28,

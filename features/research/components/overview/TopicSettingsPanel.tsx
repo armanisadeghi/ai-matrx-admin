@@ -249,12 +249,12 @@ export function TopicSettingsPanel({ open, onOpenChange, topic, onSaved }: Topic
                 )}
             </div>
 
-            {/* Footer — glass pill buttons */}
+            {/* Footer — mx-glass pill buttons */}
             <div className="shrink-0 flex justify-end gap-2 px-4 py-2.5 border-t border-border/50">
                 <button
                     onClick={() => onOpenChange(false)}
                     disabled={saving}
-                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 min-h-[44px]"
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full mx-glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 min-h-[44px]"
                 >
                     Cancel
                 </button>

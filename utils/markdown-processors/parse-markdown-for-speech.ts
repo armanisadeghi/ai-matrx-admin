@@ -43,7 +43,7 @@ export function parseMarkdownToText(markdown: string): string {
       '👀': 'eyes',
       '👋': 'waving hand',
       '✨': 'sparkles',
-      '🔍': 'magnifying glass',
+      '🔍': 'magnifying mx-glass',
       '📝': 'memo',
       '📋': 'clipboard',
       '📅': 'calendar',

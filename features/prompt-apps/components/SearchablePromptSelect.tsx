@@ -78,7 +78,7 @@ export function SearchablePromptSelect({
           <ChevronDown className={cn('ml-2 shrink-0 opacity-50', compact ? 'h-3 w-3' : 'h-4 w-4')} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start" style={{ zIndex: 99999 }}>
         <div className={cn('flex items-center border-b px-3', compact && 'px-2')}>
           <Search className={cn('mr-2 shrink-0 opacity-50', compact ? 'h-3 w-3' : 'h-4 w-4')} />
           <Input

@@ -105,13 +105,14 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
       return;
     }
 
-    // Wait for next frame to ensure menu is rendered
+    // Double-RAF ensures the menu is fully laid out before measuring height
     requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
       if (!menuRef.current) return;
 
       const rect = anchorElement.getBoundingClientRect();
       const menuWidth = parseInt(width) || 280;
-      const menuHeight = menuRef.current.scrollHeight || menuRef.current.offsetHeight;
+      const menuHeight = menuRef.current.scrollHeight || menuRef.current.offsetHeight || 200;
       const gap = 8; // Gap from trigger
       const edgePadding = 12; // Padding from viewport edges
 
@@ -175,6 +176,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
       }
 
       setMenuPosition({ top, left });
+      });
     });
   }, [isOpen, anchorElement, position, width, isMobile, forceMobileCenter, items]);
 
@@ -330,6 +332,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           zIndex: 2,
           pointerEvents: 'auto',
           position: 'fixed',
+          visibility: menuPosition ? 'visible' : 'hidden',
           ...getPositionStyles()
         }}
         className={cn(

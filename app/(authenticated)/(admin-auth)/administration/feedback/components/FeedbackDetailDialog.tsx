@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { updateFeedback, setAdminDecision, getFeedbackComments, addFeedbackComment, getFeedbackById, sendUserReviewMessage, getUserMessages, adminReplyUserReview } from '@/actions/feedback.actions';
+import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 import {
     UserFeedback,
     FeedbackStatus,
@@ -60,6 +61,8 @@ import {
     Link,
     Unlink,
     CornerDownRight,
+    Paperclip,
+    X,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -159,6 +162,92 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
     const [userReplyText, setUserReplyText] = useState('');
     const [isSendingUserReply, setIsSendingUserReply] = useState(false);
     const userMessagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Image attachment state for message inputs
+    const [replyImages, setReplyImages] = useState<string[]>([]);
+    const [composeImages, setComposeImages] = useState<string[]>([]);
+    const [isUploadingReply, setIsUploadingReply] = useState(false);
+    const [isUploadingCompose, setIsUploadingCompose] = useState(false);
+    const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+    const composeTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const { uploadToPublicUserAssets } = useFileUploadWithStorage('user-public-assets', 'feedback-images');
+
+    // Paste-to-upload handler — call with setter and loading setter
+    const handleImagePaste = useCallback(async (
+        e: ClipboardEvent,
+        setImages: React.Dispatch<React.SetStateAction<string[]>>,
+        setUploading: React.Dispatch<React.SetStateAction<boolean>>
+    ) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of Array.from(items)) {
+            if (item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (!file) continue;
+                const ext = item.type.split('/')[1] || 'png';
+                const namedFile = new File([file], `msg-image-${Date.now()}.${ext}`, { type: item.type });
+                setUploading(true);
+                try {
+                    const result = await uploadToPublicUserAssets(namedFile);
+                    if (result?.url) {
+                        setImages(prev => [...prev, result.url]);
+                        toast.success('Image attached');
+                    }
+                } catch {
+                    toast.error('Failed to upload image');
+                } finally {
+                    setUploading(false);
+                }
+            }
+        }
+    }, [uploadToPublicUserAssets]);
+
+    // Attach paste listeners to both textareas when they mount
+    useEffect(() => {
+        const el = replyTextareaRef.current;
+        if (!el) return;
+        const handler = (e: ClipboardEvent) => handleImagePaste(e, setReplyImages, setIsUploadingReply);
+        el.addEventListener('paste', handler);
+        return () => el.removeEventListener('paste', handler);
+    }, [handleImagePaste]);
+
+    useEffect(() => {
+        const el = composeTextareaRef.current;
+        if (!el || !showUserReviewCompose) return;
+        const handler = (e: ClipboardEvent) => handleImagePaste(e, setComposeImages, setIsUploadingCompose);
+        el.addEventListener('paste', handler);
+        return () => el.removeEventListener('paste', handler);
+    }, [handleImagePaste, showUserReviewCompose]);
+
+    // File-picker upload helper
+    const pickAndUploadImages = useCallback(async (
+        setImages: React.Dispatch<React.SetStateAction<string[]>>,
+        setUploading: React.Dispatch<React.SetStateAction<boolean>>
+    ) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.multiple = true;
+        input.onchange = async () => {
+            const files = Array.from(input.files ?? []);
+            if (!files.length) return;
+            setUploading(true);
+            try {
+                for (const file of files) {
+                    const result = await uploadToPublicUserAssets(file);
+                    if (result?.url) setImages(prev => [...prev, result.url]);
+                }
+                toast.success(`${files.length} image${files.length > 1 ? 's' : ''} attached`);
+            } catch {
+                toast.error('Failed to upload image(s)');
+            } finally {
+                setUploading(false);
+            }
+        };
+        input.click();
+    }, [uploadToPublicUserAssets]);
 
     /** Apply fresh server data to both the live item and all form fields */
     const applyFreshData = useCallback((fresh: UserFeedback) => {
@@ -581,7 +670,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
         if (!userReviewMessage.trim()) return;
         setIsSendingUserReview(true);
         try {
-            const result = await sendUserReviewMessage(item.id, userReviewMessage.trim());
+            const result = await sendUserReviewMessage(item.id, userReviewMessage.trim(), undefined, composeImages.length > 0 ? composeImages : undefined);
             if (result.success && result.data) {
                 // Send email notification
                 try {
@@ -604,6 +693,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 toast.success('Sent to user for review — email notification sent');
                 setShowUserReviewCompose(false);
                 setUserReviewMessage('');
+                setComposeImages([]);
                 onUpdate();
             } else {
                 toast.error(`Failed to send: ${result.error}`);
@@ -618,10 +708,10 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
 
     /** Admin replies in user messages thread */
     const handleAdminReplyUserMessage = async () => {
-        if (!userReplyText.trim()) return;
+        if (!userReplyText.trim() && replyImages.length === 0) return;
         setIsSendingUserReply(true);
         try {
-            const result = await adminReplyUserReview(item.id, userReplyText.trim());
+            const result = await adminReplyUserReview(item.id, userReplyText.trim(), undefined, replyImages.length > 0 ? replyImages : undefined);
             if (result.success && result.data) {
                 // Send email notification to user
                 try {
@@ -641,6 +731,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                 }
 
                 setUserReplyText('');
+                setReplyImages([]);
                 await loadUserMessages();
                 await refreshItem();
                 toast.success('Reply sent to user');
@@ -1693,15 +1784,46 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                         The item will move to the User Review stage until they respond.
                                                     </p>
                                                     <Textarea
+                                                        ref={composeTextareaRef}
                                                         value={userReviewMessage}
                                                         onChange={(e) => setUserReviewMessage(e.target.value)}
-                                                        placeholder="Describe what the user should test and verify..."
+                                                        placeholder="Describe what the user should test and verify... (Ctrl+V to paste images)"
                                                         className="min-h-[120px] text-sm"
                                                     />
+                                                    {/* Compose attached images */}
+                                                    {composeImages.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {composeImages.map((url, idx) => (
+                                                                <div key={idx} className="relative group">
+                                                                    <img src={url} alt={`Attachment ${idx + 1}`} className="h-16 w-16 rounded border border-border object-cover" />
+                                                                    <button
+                                                                        onClick={() => setComposeImages(prev => prev.filter((_, i) => i !== idx))}
+                                                                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    >
+                                                                        <X className="w-2.5 h-2.5" />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-center justify-between">
-                                                        <p className="text-xs text-muted-foreground">
-                                                            Pre-filled with resolution notes. Edit as needed.
-                                                        </p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-xs text-muted-foreground">
+                                                                Pre-filled with resolution notes. Edit as needed.
+                                                            </p>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => pickAndUploadImages(setComposeImages, setIsUploadingCompose)}
+                                                                disabled={isSendingUserReview || isUploadingCompose}
+                                                                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                                                                title="Attach image"
+                                                            >
+                                                                {isUploadingCompose ? <Loader2 className="w-3 h-3 animate-spin" /> : <Paperclip className="w-3 h-3" />}
+                                                                Attach
+                                                            </Button>
+                                                        </div>
                                                         <div className="flex gap-2">
                                                             <Button
                                                                 variant="ghost"
@@ -1709,6 +1831,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                                 onClick={() => {
                                                                     setShowUserReviewCompose(false);
                                                                     setUserReviewMessage('');
+                                                                    setComposeImages([]);
                                                                 }}
                                                                 disabled={isSendingUserReview}
                                                             >
@@ -1717,7 +1840,7 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                             <Button
                                                                 size="sm"
                                                                 onClick={handleSendUserReview}
-                                                                disabled={!userReviewMessage.trim() || isSendingUserReview}
+                                                                disabled={(!userReviewMessage.trim() && composeImages.length === 0) || isSendingUserReview || isUploadingCompose}
                                                                 className="gap-1.5 bg-cyan-600 hover:bg-cyan-700"
                                                             >
                                                                 {isSendingUserReview
@@ -1789,12 +1912,27 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                                             )}
                                                         </div>
                                                         <div className={cn(
-                                                            'text-sm whitespace-pre-wrap rounded-lg p-3 inline-block max-w-[85%]',
+                                                            'rounded-lg p-3 inline-block max-w-[85%]',
                                                             isAdmin
                                                                 ? 'bg-blue-500/5 border border-blue-500/20 text-left'
                                                                 : 'bg-muted/50 border text-left'
                                                         )}>
-                                                            {msg.content}
+                                                            {msg.content && (
+                                                                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                                            )}
+                                                            {msg.image_urls && msg.image_urls.length > 0 && (
+                                                                <div className={cn('flex flex-wrap gap-2', msg.content && 'mt-2')}>
+                                                                    {msg.image_urls.map((url, idx) => (
+                                                                        <a key={idx} href={url} target="_blank" rel="noopener noreferrer">
+                                                                            <img
+                                                                                src={url}
+                                                                                alt={`Attachment ${idx + 1}`}
+                                                                                className="max-h-48 max-w-xs rounded border border-border object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                                                            />
+                                                                        </a>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1805,30 +1943,62 @@ export default function FeedbackDetailDialog({ feedback, open, onOpenChange, onU
                                 )}
 
                                 {/* Admin reply input */}
-                                <div className="relative pt-3 border-t mt-auto">
-                                    <Textarea
-                                        value={userReplyText}
-                                        onChange={(e) => setUserReplyText(e.target.value)}
-                                        placeholder="Reply to user... (this will send them an email)"
-                                        className="min-h-[60px] w-full pr-12"
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                                                handleAdminReplyUserMessage();
-                                            }
-                                        }}
-                                    />
-                                    <Button
-                                        onClick={handleAdminReplyUserMessage}
-                                        disabled={!userReplyText.trim() || isSendingUserReply}
-                                        size="sm"
-                                        className="absolute right-2 bottom-2 h-8 w-8 p-0"
-                                    >
-                                        {isSendingUserReply ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Send className="w-4 h-4" />
-                                        )}
-                                    </Button>
+                                <div className="pt-3 border-t mt-auto space-y-2">
+                                    {/* Attached images preview */}
+                                    {replyImages.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 px-1">
+                                            {replyImages.map((url, idx) => (
+                                                <div key={idx} className="relative group">
+                                                    <img src={url} alt={`Attachment ${idx + 1}`} className="h-16 w-16 rounded border border-border object-cover" />
+                                                    <button
+                                                        onClick={() => setReplyImages(prev => prev.filter((_, i) => i !== idx))}
+                                                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X className="w-2.5 h-2.5" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <div className="relative">
+                                        <Textarea
+                                            ref={replyTextareaRef}
+                                            value={userReplyText}
+                                            onChange={(e) => setUserReplyText(e.target.value)}
+                                            placeholder="Reply to user... (Ctrl+V to paste images, this will send them an email)"
+                                            className="min-h-[60px] w-full pr-20"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                                    handleAdminReplyUserMessage();
+                                                }
+                                            }}
+                                        />
+                                        <div className="absolute right-2 bottom-2 flex items-center gap-1">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => pickAndUploadImages(setReplyImages, setIsUploadingReply)}
+                                                disabled={isSendingUserReply || isUploadingReply}
+                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                                title="Attach image"
+                                            >
+                                                {isUploadingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                                            </Button>
+                                            <Button
+                                                onClick={handleAdminReplyUserMessage}
+                                                disabled={(!userReplyText.trim() && replyImages.length === 0) || isSendingUserReply || isUploadingReply}
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                            >
+                                                {isSendingUserReply ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : (
+                                                    <Send className="w-4 h-4" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </TabsContent>
                         </div>

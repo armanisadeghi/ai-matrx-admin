@@ -93,7 +93,7 @@ export default function TopicSettingsPage() {
 
     return (
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 space-y-6">
-            <div className="flex items-center gap-2 rounded-full glass px-3 py-1.5">
+            <div className="flex items-center gap-2 rounded-full mx-glass px-3 py-1.5">
                 <span className="text-xs font-medium text-foreground/80">Settings</span>
             </div>
 

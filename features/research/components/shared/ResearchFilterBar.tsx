@@ -60,7 +60,7 @@ export function ResearchFilterBar({
 
     return (
         <>
-            <div className={cn('flex items-center gap-1.5 p-1 rounded-full glass', className)}>
+            <div className={cn('flex items-center gap-1.5 p-1 rounded-full mx-glass', className)}>
                 <span className="text-[11px] font-medium text-foreground/80 pl-1.5 shrink-0">{title}</span>
                 {count && (
                     <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">{count}</span>
@@ -71,7 +71,7 @@ export function ResearchFilterBar({
                 {hasActiveFilters && !isMobile && (
                     <button
                         onClick={resetAll}
-                        className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                        className="inline-flex items-center justify-center h-5 w-5 rounded-full mx-glass-subtle text-muted-foreground hover:text-foreground transition-colors shrink-0"
                         aria-label="Reset filters"
                     >
                         <RotateCcw className="h-2.5 w-2.5" />
@@ -81,14 +81,14 @@ export function ResearchFilterBar({
                 {showSearch && (
                     <>
                         <div className="w-px h-4 bg-border/30 mx-0.5 hidden sm:block" />
-                        <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full glass-subtle">
+                        <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full mx-glass-subtle">
                             <Search className="h-3 w-3 text-muted-foreground shrink-0" />
                             <input
                                 type="text"
                                 value={search ?? ''}
                                 onChange={(e) => onSearchChange?.(e.target.value)}
                                 placeholder={searchPlaceholder}
-                                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground"
+                                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground placeholder:text-[11px]"
                                 style={{ fontSize: '16px' }}
                             />
                             {search && (
@@ -107,7 +107,7 @@ export function ResearchFilterBar({
                     <button
                         onClick={() => setDrawerOpen(true)}
                         className={cn(
-                            'inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle transition-colors relative shrink-0',
+                            'inline-flex items-center justify-center h-6 w-6 rounded-full mx-glass-subtle transition-colors relative shrink-0',
                             hasActiveFilters ? 'text-primary' : 'text-muted-foreground',
                         )}
                     >
@@ -141,7 +141,7 @@ export function ResearchFilterBar({
                             {hasActiveFilters && (
                                 <button
                                     onClick={() => { resetAll(); setDrawerOpen(false); }}
-                                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mt-2 min-h-[44px]"
+                                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full mx-glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mt-2 min-h-[44px]"
                                 >
                                     <RotateCcw className="h-3 w-3" />
                                     Reset All

@@ -186,7 +186,7 @@ export default function ResearchOverview() {
             <div className="flex justify-end gap-2">
                 <button
                     onClick={() => setKeywordModalOpen(false)}
-                    className="inline-flex items-center h-8 px-4 rounded-full glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                    className="inline-flex items-center h-8 px-4 rounded-full mx-glass-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
                 >
                     Cancel
                 </button>
@@ -207,31 +207,35 @@ export default function ResearchOverview() {
     );
 
     return (
-        <div className="p-3 sm:p-4 space-y-3">
-            {/* Header — compact glass bar */}
-            <div className="flex items-center gap-2 p-1.5 rounded-full glass">
+        <div className="p-2 space-y-3">
+            {/* Header — compact mx-glass bar */}
+            <div className="@container flex items-center gap-2 p-1.5 rounded-full mx-glass">
                 <div className="min-w-0 flex-1 flex items-center gap-1.5 px-1 overflow-hidden">
-                    <h1 className="text-sm font-semibold truncate">{topic.name}</h1>
-                    <StatusBadge status={topic.status} />
+                    <h1 className="text-xs font-semibold truncate">{topic.name}</h1>
+                    <StatusBadge status={topic.status} className="shrink-0" />
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                     <span className={cn(
-                        'inline-flex items-center gap-0.5 h-5 px-1.5 rounded-full text-[9px] font-medium',
-                        'glass-subtle text-muted-foreground/70',
+                        'inline-flex items-center gap-0.5 h-5 rounded-full text-[9px] font-medium',
+                        'mx-glass-subtle text-muted-foreground/70',
+                        'px-1 @[18rem]:px-1.5',
                     )}>
-                        <AutonomyIcon className="h-2.5 w-2.5" />
-                        {AUTONOMY_LABELS[topic.autonomy_level]}
+                        <AutonomyIcon className="h-2.5 w-2.5 shrink-0" />
+                        <span className="hidden @[18rem]:inline truncate">{AUTONOMY_LABELS[topic.autonomy_level]}</span>
                     </span>
                     <span className={cn(
-                        'hidden sm:inline-flex items-center gap-0.5 h-5 px-1.5 rounded-full text-[9px] font-medium',
-                        'glass-subtle text-muted-foreground/70',
+                        'inline-flex items-center gap-0.5 h-5 rounded-full text-[9px] font-medium',
+                        'mx-glass-subtle text-muted-foreground/70',
+                        'px-1 @[18rem]:px-1.5',
                     )}>
-                        <Search className="h-2.5 w-2.5" />
-                        {topic.default_search_provider === 'brave' ? 'Brave' : 'Google'}
+                        <Search className="h-2.5 w-2.5 shrink-0" />
+                        <span className="hidden @[18rem]:inline truncate">
+                            {topic.default_search_provider === 'brave' ? 'Brave' : 'Google'}
+                        </span>
                     </span>
                     <button
                         onClick={() => setSettingsOpen(true)}
-                        className="inline-flex items-center justify-center h-6 w-6 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors"
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full mx-glass-subtle text-muted-foreground hover:text-foreground transition-colors shrink-0"
                     >
                         <Settings className="h-3 w-3" />
                     </button>

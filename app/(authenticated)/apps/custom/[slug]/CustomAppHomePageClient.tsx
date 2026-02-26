@@ -18,7 +18,7 @@ export default function CustomAppHomePageClient({ slug }: CustomAppHomePageClien
   };
   
   // app display variant options: "default" | "banner" | "minimal" | "sideBySide" | "modern" | "QuarterThreeQuarters" | "modernGlass"
-  // applet card variant options: "default" | "glass" | "modern" | "simple" | "compact" | "enhanced"
+  // applet card variant options: "default" | "mx-glass" | "modern" | "simple" | "compact" | "enhanced"
   // main layout variant options: "default" | "grid" | "sidebar"
   return (
     <HomeApplet 

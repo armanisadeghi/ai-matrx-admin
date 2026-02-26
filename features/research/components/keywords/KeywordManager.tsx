@@ -95,15 +95,15 @@ export default function KeywordManager() {
 
     return (
         <div className="p-3 sm:p-4 space-y-3">
-            {/* Add keyword — glass toolbar (renders instantly) */}
-            <div className="flex items-center gap-1.5 p-1 rounded-full glass">
-                <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full glass-subtle">
+            {/* Add keyword — mx-glass toolbar (renders instantly) */}
+            <div className="flex items-center gap-1.5 p-1 rounded-full mx-glass">
+                <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full mx-glass-subtle">
                     <Search className="h-3 w-3 text-muted-foreground shrink-0" />
                     <input
                         value={newKeyword}
                         onChange={e => setNewKeyword(e.target.value)}
                         placeholder="Add a keyword..."
-                        className="flex-1 min-w-0 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground"
+                        className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground placeholder:text-[11px]"
                         style={{ fontSize: '16px' }}
                         onKeyDown={e => e.key === 'Enter' && handleAdd()}
                         disabled={adding}
@@ -128,7 +128,7 @@ export default function KeywordManager() {
                 </button>
                 <button
                     onClick={refresh}
-                    className="inline-flex items-center justify-center h-5 w-5 rounded-full glass-subtle text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                    className="inline-flex items-center justify-center h-5 w-5 rounded-full mx-glass-subtle text-muted-foreground hover:text-foreground transition-colors shrink-0"
                 >
                     <RefreshCw className="h-2.5 w-2.5" />
                 </button>

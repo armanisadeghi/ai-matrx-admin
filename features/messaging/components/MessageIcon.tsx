@@ -40,8 +40,8 @@ export function MessageIcon({ className }: MessageIconProps) {
             size="sm"
             onClick={handleClick}
             className={cn(
-              "relative p-2 rounded-full glass overflow-visible transition-all duration-200 ease-in-out hover:scale-105 active:scale-95",
-              isOpen && "glass-strong",
+              "relative p-2 rounded-full mx-glass overflow-visible transition-all duration-200 ease-in-out hover:scale-105 active:scale-95",
+              isOpen && "mx-glass-strong",
               className
             )}
             aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}

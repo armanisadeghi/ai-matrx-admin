@@ -74,8 +74,8 @@ export function HierarchyFilterPill({
             'transition-all duration-150 outline-none',
             'disabled:opacity-40 disabled:pointer-events-none',
             selected
-              ? 'glass text-primary border border-primary/20'
-              : 'glass-subtle text-muted-foreground hover:text-foreground',
+              ? 'mx-glass text-primary border border-primary/20'
+              : 'mx-glass-subtle text-muted-foreground hover:text-foreground',
             loading && 'animate-pulse',
             className,
           )}

@@ -44,37 +44,39 @@ export function ActionBar({ onRun, onSearch, onScrape, onAnalyze, onReport, isSt
     const isDisabled = isStreaming || loadingKey !== null;
 
     return (
-        <div className="flex items-center gap-1 p-1 rounded-full glass">
-            {ACTIONS.map((action) => {
-                const isThisLoading = loadingKey === action.key;
-                const Icon = action.icon;
+        <div className="@container w-full">
+            <div className="flex items-center gap-1 p-1 rounded-full mx-glass w-full">
+                {ACTIONS.map((action) => {
+                    const isThisLoading = loadingKey === action.key;
+                    const Icon = action.icon;
 
-                return (
-                    <Tooltip key={action.key}>
-                        <TooltipTrigger asChild>
-                            <button
-                                onClick={() => handleClick(action.key)}
-                                disabled={isDisabled}
-                                className={cn(
-                                    'inline-flex items-center justify-center gap-1.5 h-7 rounded-full text-[11px] font-medium transition-all',
-                                    'disabled:opacity-40 disabled:pointer-events-none',
-                                    action.primary
-                                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 px-3'
-                                        : 'glass-subtle text-muted-foreground hover:text-foreground flex-1 px-1',
-                                )}
-                            >
-                                {isThisLoading ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                    <Icon className={cn('h-3 w-3 shrink-0', action.primary && 'h-3.5 w-3.5')} />
-                                )}
-                                <span className="leading-none">{action.label}</span>
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs text-xs">{isDisabled ? 'Please wait...' : action.tooltip}</TooltipContent>
-                    </Tooltip>
-                );
-            })}
+                    return (
+                        <Tooltip key={action.key}>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={() => handleClick(action.key)}
+                                    disabled={isDisabled}
+                                    className={cn(
+                                        'inline-flex flex-1 items-center justify-center gap-1.5 h-7 rounded-full text-[11px] font-medium transition-all',
+                                        'disabled:opacity-40 disabled:pointer-events-none',
+                                        action.primary
+                                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                            : 'mx-glass-subtle text-muted-foreground hover:text-foreground',
+                                    )}
+                                >
+                                    {isThisLoading ? (
+                                        <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                                    ) : (
+                                        <Icon className={cn('shrink-0', action.primary ? 'h-3.5 w-3.5' : 'h-3 w-3')} />
+                                    )}
+                                    <span className="leading-none @[22rem]:inline hidden">{action.label}</span>
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs text-xs">{isDisabled ? 'Please wait...' : action.tooltip}</TooltipContent>
+                        </Tooltip>
+                    );
+                })}
+            </div>
         </div>
     );
 }

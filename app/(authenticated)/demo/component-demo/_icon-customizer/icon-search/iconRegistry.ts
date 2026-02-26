@@ -31,7 +31,7 @@ export const ICON_REGISTRY = {
         ChevronRight: { type: 'lucide', import: 'ChevronRight', searchTerms: ['chevron', 'right', 'arrow', 'direction'] },
 
         // User interface
-        Search: { type: 'lucide', import: 'Search', searchTerms: ['magnifying glass', 'find', 'look up'] },
+        Search: { type: 'lucide', import: 'Search', searchTerms: ['magnifying mx-glass', 'find', 'look up'] },
         Settings: { type: 'lucide', import: 'Settings', searchTerms: ['settings', 'preferences', 'gear', 'configuration'] },
         Home: { type: 'lucide', import: 'Home', searchTerms: ['home', 'house', 'start', 'main page'] },
         Menu: { type: 'lucide', import: 'Menu', searchTerms: ['menu', 'hamburger', 'navigation', 'options'] },

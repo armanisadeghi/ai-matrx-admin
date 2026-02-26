@@ -342,6 +342,6 @@ export const variantStyles: Record<string, string> = {
     // Inset shadow
     insetPink: "bg-pink-500 dark:bg-pink-600 text-white border-pink-900 shadow-inner shadow-pink-700/50",
 
-    // Frosted glass effect
+    // Frosted mx-glass effect
     frostedPink: "bg-pink-500/80 backdrop-blur-sm text-white border-pink-900"
 };

@@ -22,7 +22,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     const config = TOPIC_STATUS_CONFIG[status as TopicStatus] ?? SCRAPE_STATUS_CONFIG[status as ScrapeStatus];
     if (!config) {
         return (
-            <span className={cn('inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium bg-muted/60 text-muted-foreground', className)}>
+            <span className={cn('inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium whitespace-nowrap bg-muted/60 text-muted-foreground', className)}>
                 {status}
             </span>
         );
@@ -30,7 +30,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 
     return (
         <span className={cn(
-            'inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-medium',
+            'inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-medium whitespace-nowrap',
             config.bgClass,
             config.textClass,
             className,

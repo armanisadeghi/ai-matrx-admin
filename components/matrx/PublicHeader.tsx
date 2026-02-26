@@ -28,7 +28,7 @@ function ThemeToggleFallback() {
 
 export function PublicHeader() {
     return (
-        <header data-public-header className="sticky top-0 z-50 w-full glass-header">
+        <header data-public-header className="sticky top-0 z-50 w-full mx-glass-header">
             <div className="w-full px-4 h-10 flex items-center justify-between">
                 <Link
                     href="/"
@@ -50,7 +50,7 @@ export function PublicHeader() {
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                "h-7 px-3 text-xs font-medium glass rounded-lg",
+                                "h-7 px-3 text-xs font-medium mx-glass rounded-lg",
                                 "text-zinc-600 dark:text-zinc-400",
                                 "hover:text-zinc-900 dark:hover:text-zinc-100",
                                 "transition-all duration-200"
