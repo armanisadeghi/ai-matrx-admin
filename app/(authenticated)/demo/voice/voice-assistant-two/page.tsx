@@ -8,6 +8,8 @@ import { Footer } from "@/components/voice/voice-assistant-ui/Footer";
 import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
 import { NestedResizableWithHeaderFooter } from "@/components/matrx/resizable/NestedDynamicWithRenderControls";
 import CollapsibleSidebar from "@/components/voice/voice-assistant-ui/extras/CollapsibleSidebar";
+import { useMicrophonePermission } from "@/hooks/useMicrophonePermission";
+import { MicrophonePermissionModal } from "@/components/audio/MicrophonePermissionModal";
 
 export default function Page() {
     const voiceChatHook = useVoiceChat();
@@ -22,6 +24,13 @@ export default function Page() {
 
     const currentConversation = getCurrentConversation();
     const messages = currentConversation?.messages || [];
+
+    const {
+        showConsentModal,
+        isDenied,
+        handleConsentAccepted,
+        handleConsentDismissed,
+    } = useMicrophonePermission();
 
     const layout = {
         type: 'nested' as const,
@@ -81,6 +90,14 @@ export default function Page() {
     };
 
     return (
-        <NestedResizableWithHeaderFooter layout={layout} />
+        <>
+            <MicrophonePermissionModal
+                isOpen={showConsentModal}
+                onAccept={handleConsentAccepted}
+                onDismiss={handleConsentDismissed}
+                isDenied={isDenied}
+            />
+            <NestedResizableWithHeaderFooter layout={layout} />
+        </>
     );
 }

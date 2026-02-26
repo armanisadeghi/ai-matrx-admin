@@ -3,13 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Settings as SettingsIcon, Building2, Chrome, Mic, FileText, MessageSquareMore } from 'lucide-react';
+import { User, Settings as SettingsIcon, Building2, Chrome, Mic, FileText, MessageSquareMore, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MobileDock, type DockItem } from '@/components/navigation/MobileDock';
+
+// ─── Settings nav items ───────────────────────────────────────────────────────
 
 interface SettingsNavItem {
   title: string;
   href: string;
   icon: React.ReactNode;
+  IconComp: LucideIcon;
   description: string;
 }
 
@@ -18,45 +22,62 @@ const settingsNavItems: SettingsNavItem[] = [
     title: 'Profile',
     href: '/settings/profile',
     icon: <User className="h-4 w-4" />,
+    IconComp: User,
     description: 'Manage your personal information',
   },
   {
     title: 'Preferences',
     href: '/settings/preferences',
     icon: <SettingsIcon className="h-4 w-4" />,
+    IconComp: SettingsIcon,
     description: 'Customize your app experience',
   },
   {
-    title: 'Content Templates',
+    title: 'Templates',
     href: '/settings/content-templates',
     icon: <FileText className="h-4 w-4" />,
+    IconComp: FileText,
     description: 'Manage your message templates',
   },
   {
-    title: 'Voice & Microphone',
+    title: 'Voice & Mic',
     href: '/settings/voice',
     icon: <Mic className="h-4 w-4" />,
+    IconComp: Mic,
     description: 'Test and troubleshoot voice input',
   },
   {
-    title: 'Organizations',
+    title: 'Orgs',
     href: '/settings/organizations',
     icon: <Building2 className="h-4 w-4" />,
+    IconComp: Building2,
     description: 'Manage your organizations',
   },
   {
-    title: 'My Feedback',
+    title: 'Feedback',
     href: '/settings/feedback',
     icon: <MessageSquareMore className="h-4 w-4" />,
+    IconComp: MessageSquareMore,
     description: 'Track your bug reports and feature requests',
   },
   {
     title: 'Extension',
     href: '/settings/extension',
     icon: <Chrome className="h-4 w-4" />,
+    IconComp: Chrome,
     description: 'Chrome extension settings',
   },
 ];
+
+// Map to DockItem format for MobileDock
+const settingsDockItems: DockItem[] = settingsNavItems.map(item => ({
+  key: item.href,
+  label: item.title,
+  icon: item.IconComp,
+  href: item.href,
+}));
+
+// ─── Desktop sidebar navigation ────────────────────────────────────────────────
 
 function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname();
@@ -65,7 +86,7 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
     <nav className="space-y-0.5">
       {settingsNavItems.map((item) => {
         const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-        
+
         return (
           <Link
             key={item.href}
@@ -76,13 +97,10 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
               'hover:bg-muted',
               isActive
                 ? 'bg-primary/10 text-primary font-medium'
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            <span className={cn(
-              'flex-shrink-0',
-              isActive ? 'text-primary' : 'text-muted-foreground'
-            )}>
+            <span className={cn('flex-shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')}>
               {item.icon}
             </span>
             <span className="truncate">{item.title}</span>
@@ -93,27 +111,27 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
   );
 }
 
-export default function SettingsLayoutClient({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+export default function SettingsLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-page w-full bg-textured overflow-hidden flex flex-col">
-      {/* Content Area — no custom header, PageSpecificHeader portal handles the app header */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar Navigation */}
+        {/* Desktop sidebar */}
         <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
           <div className="p-3 w-full">
             <SettingsNavigation />
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Main content — pb-20 on mobile so dock doesn't cover bottom content */}
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
           {children}
         </main>
       </div>
+
+      {/* Mobile bottom dock — 7 items → 4 visible + "…" drawer for the rest */}
+      <MobileDock items={settingsDockItems} />
     </div>
   );
 }

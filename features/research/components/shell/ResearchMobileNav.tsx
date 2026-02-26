@@ -1,167 +1,35 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 import {
-    LayoutDashboard, Globe, FileText, Tags, MoreHorizontal,
-    Search, Image, DollarSign, BookOpen, FlaskConical, Bot, Settings2, Brain,
+  LayoutDashboard, Globe, FileText, Tags, Search,
+  Image, DollarSign, BookOpen, FlaskConical, Bot, Settings2, Brain,
+  type LucideIcon,
 } from 'lucide-react';
 import { RESEARCH_NAV_ITEMS } from '../../constants';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { Badge } from '@/components/ui/badge';
+import { MobileDock, type DockItem } from '@/components/navigation/MobileDock';
 
-const ICON_MAP: Record<string, typeof LayoutDashboard> = {
-    LayoutDashboard, Globe, FileText, Tags, Search, Image, DollarSign,
-    BookOpen, FlaskConical, Bot, Settings2, Brain,
+const ICON_MAP: Record<string, LucideIcon> = {
+  LayoutDashboard, Globe, FileText, Tags, Search,
+  Image, DollarSign, BookOpen, FlaskConical, Bot, Settings2, Brain,
 };
 
-const PILL_W = 44;
-const PILL_H = 30;
-
 interface ResearchMobileNavProps {
-    topicId: string;
+  topicId: string;
 }
 
 export function ResearchMobileNav({ topicId }: ResearchMobileNavProps) {
-    const pathname = usePathname();
-    const [moreOpen, setMoreOpen] = useState(false);
-    const navRef = useRef<HTMLDivElement>(null);
-    const [pillX, setPillX] = useState<number | null>(null);
-    const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const dockItems = useMemo<DockItem[]>(() =>
+    RESEARCH_NAV_ITEMS.map((item) => ({
+      key: item.key,
+      label: item.label,
+      icon: ICON_MAP[item.icon] ?? LayoutDashboard,
+      href: item.href(topicId),
+      // Topic root must match exactly so it doesn't highlight for all sub-routes
+      exactMatch: item.key === 'topic',
+      comingSoon: item.comingSoon,
+    })),
+  [topicId]);
 
-    const visibleItems = RESEARCH_NAV_ITEMS.filter(i => i.mobileVisible);
-    const hiddenItems = RESEARCH_NAV_ITEMS.filter(i => !i.mobileVisible);
-
-    const activeIndex = visibleItems.findIndex((item) => {
-        const href = item.href(topicId);
-        return item.key === 'topic' ? pathname === href : pathname.startsWith(href);
-    });
-
-    useEffect(() => {
-        const nav = navRef.current;
-        const activeEl = itemRefs.current[activeIndex];
-        if (!nav || !activeEl) { setPillX(null); return; }
-        const navRect = nav.getBoundingClientRect();
-        const itemRect = activeEl.getBoundingClientRect();
-        setPillX(itemRect.left - navRect.left + itemRect.width / 2);
-    }, [activeIndex, pathname]);
-
-    return (
-        <>
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-2 pointer-events-none">
-                <div
-                    ref={navRef}
-                    className="relative flex items-center justify-around h-10 mx-glass-strong rounded-[22px] shadow-lg border border-white/[0.08] mb-1.5 pointer-events-auto overflow-visible"
-                >
-                    {pillX !== null && (
-                        <div
-                            aria-hidden
-                            className="absolute rounded-full bg-primary/10 dark:bg-primary/15 border border-primary/20 dark:border-primary/25"
-                            style={{
-                                top: '50%',
-                                left: 0,
-                                width: PILL_W,
-                                height: PILL_H,
-                                transform: `translateX(${pillX - PILL_W / 2}px) translateY(-50%)`,
-                                transition: 'transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                                zIndex: 1,
-                                pointerEvents: 'none',
-                            }}
-                        />
-                    )}
-
-                    {visibleItems.map((item, i) => {
-                        const Icon = ICON_MAP[item.icon];
-                        const href = item.href(topicId);
-                        const isActive = i === activeIndex;
-
-                        return (
-                            <div
-                                key={item.key}
-                                ref={el => { itemRefs.current[i] = el; }}
-                                className="relative flex items-center justify-center w-[36px] h-[44px]"
-                            >
-                                <Link
-                                    href={href}
-                                    aria-label={item.label}
-                                    title={item.label}
-                                    className={cn(
-                                        'relative z-10 flex items-center justify-center w-full h-full transition-colors duration-200',
-                                        isActive ? 'text-primary' : 'text-muted-foreground',
-                                    )}
-                                >
-                                    {Icon && (
-                                        <Icon
-                                            className={cn(
-                                                'h-[20px] w-[20px] transition-all duration-200',
-                                                isActive && 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)] scale-110',
-                                            )}
-                                        />
-                                    )}
-                                </Link>
-                            </div>
-                        );
-                    })}
-
-                    <button
-                        onClick={() => setMoreOpen(true)}
-                        aria-label="More navigation options"
-                        title="More"
-                        className="relative z-10 flex items-center justify-center w-[36px] h-[44px] text-muted-foreground transition-colors"
-                    >
-                        <MoreHorizontal className="h-[20px] w-[20px]" />
-                    </button>
-                </div>
-            </nav>
-
-            <Drawer open={moreOpen} onOpenChange={setMoreOpen} shouldScaleBackground={false}>
-                <DrawerContent className="max-h-[60dvh]">
-                    <DrawerTitle className="sr-only">More options</DrawerTitle>
-                    <div className="p-3 space-y-0.5 overflow-y-auto overscroll-contain pb-safe">
-                        {hiddenItems.map((item) => {
-                            const Icon = ICON_MAP[item.icon];
-                            const href = item.href(topicId);
-                            const isActive = item.key === 'topic'
-                                ? pathname === href
-                                : pathname.startsWith(href);
-
-                            if (item.comingSoon) {
-                                return (
-                                    <div
-                                        key={item.key}
-                                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-muted-foreground cursor-default"
-                                    >
-                                        {Icon && <Icon className="h-4 w-4 shrink-0" />}
-                                        <span className="flex-1">{item.label}</span>
-                                        <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 font-normal">
-                                            Soon
-                                        </Badge>
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <Link
-                                    key={item.key}
-                                    href={href}
-                                    onClick={() => setMoreOpen(false)}
-                                    className={cn(
-                                        'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium transition-colors min-h-[44px]',
-                                        isActive
-                                            ? 'bg-primary/8 text-primary'
-                                            : 'text-muted-foreground hover:bg-accent/50',
-                                    )}
-                                >
-                                    {Icon && <Icon className="h-4 w-4 shrink-0" />}
-                                    {item.label}
-                                </Link>
-                            );
-                        })}
-                    </div>
-                </DrawerContent>
-            </Drawer>
-        </>
-    );
+  return <MobileDock items={dockItems} />;
 }

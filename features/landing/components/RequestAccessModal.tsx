@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Check, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { submitInvitationRequestStep1, submitInvitationRequestStep2 } from '../actions';
 import { InvitationRequestStep1, InvitationRequestStep2, USER_TYPE_OPTIONS } from '../types';
 
@@ -129,12 +129,31 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl bg-background border-zinc-200 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">Request Early Access</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Join the future of enterprise AI. Share a few details to request your invitation.
-          </DialogDescription>
-        </DialogHeader>
+        {step === 'followup' ? (
+          <>
+            {/* Success banner — only visible in step 2 */}
+            <div className="flex items-center gap-3 rounded-xl bg-green-500/10 border border-green-500/20 px-4 py-3 mb-1">
+              <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-green-600 dark:text-green-400">Request submitted successfully!</p>
+                <p className="text-xs text-green-600/70 dark:text-green-400/70">We sent a confirmation to your email.</p>
+              </div>
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-semibold">One more thing&hellip;</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                These questions are completely optional, but they help us prioritise your access and personalise your experience.
+              </DialogDescription>
+            </DialogHeader>
+          </>
+        ) : (
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">Request Early Access</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Join the future of enterprise AI. Share a few details to request your invitation.
+            </DialogDescription>
+          </DialogHeader>
+        )}
 
         {step === 'form' ? (
           <form onSubmit={handleFormSubmit} className="space-y-4 mt-4">
@@ -389,7 +408,7 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
                 disabled={isSubmitting}
                 className="flex-1"
               >
-                Skip
+                Skip for now
               </Button>
               <Button type="submit" disabled={isSubmitting} className="flex-1 bg-primary hover:bg-primary/90">
                 {isSubmitting ? (
@@ -400,7 +419,7 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
                 ) : (
                   <>
                     <Check className="mr-2 h-4 w-4" />
-                    Submit
+                    Complete Profile
                   </>
                 )}
               </Button>

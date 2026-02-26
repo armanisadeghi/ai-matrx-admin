@@ -6,20 +6,32 @@ import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
 import CollapsibleSidebar from "@/components/voice/voice-assistant-ui/extras/CollapsibleSidebar";
 import { CollapsibleStatus } from "@/components/voice/voice-assistant-ui/extras/VoiceAssistantStatus";
 import VoiceInputBar from "@/components/voice/voice-assistant-ui/extras/VoiceInputBar";
+import { useMicrophonePermission } from "@/hooks/useMicrophonePermission";
+import { MicrophonePermissionModal } from "@/components/audio/MicrophonePermissionModal";
 
 export default function Page() {
     const voiceChatHook = useVoiceChat();
+    const { processState, vad, getCurrentConversation } = voiceChatHook;
+
     const {
-        processState,
-        vad,
-        getCurrentConversation,
-    } = voiceChatHook;
+        showConsentModal,
+        isDenied,
+        handleConsentAccepted,
+        handleConsentDismissed,
+    } = useMicrophonePermission();
 
     const currentConversation = getCurrentConversation();
     const messages = currentConversation?.messages || [];
 
     return (
         <>
+            <MicrophonePermissionModal
+                isOpen={showConsentModal}
+                onAccept={handleConsentAccepted}
+                onDismiss={handleConsentDismissed}
+                isDenied={isDenied}
+            />
+
             <div className="fixed top-4 right-4 z-50">
                 <CollapsibleStatus voiceChatHook={voiceChatHook} />
             </div>
@@ -32,7 +44,7 @@ export default function Page() {
                         <MessagesDisplay messages={messages} />
                     </div>
 
-                    {(processState.recording && vad.listening) && (
+                    {processState.recording && vad.listening && (
                         <SpeechHaloEffect />
                     )}
 
