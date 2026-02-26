@@ -1,26 +1,24 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
-import { Label } from "@/components/ui/label";
+
+const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
+const rowLabel = "text-sm font-medium";
 
 const VideoConferencePreferences = () => {
     const dispatch = useDispatch();
-    const videoConferencePreferences = useSelector((state: RootState) => state.userPreferences.videoConference);
-
-    const handleSelectChange = (preference: string) => (value: string) => {
-        dispatch(setPreference({ module: 'videoConference', preference, value }));
-    };
+    const prefs = useSelector((state: RootState) => state.userPreferences.videoConference);
+    const handle = (preference: string) => (value: string) => dispatch(setPreference({ module: 'videoConference', preference, value }));
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="background">Background</Label>
-                <Select value={videoConferencePreferences.background} onValueChange={handleSelectChange('background')}>
-                    <SelectTrigger id="background">
-                        <SelectValue placeholder="Select a background" />
-                    </SelectTrigger>
+        <div>
+            <div className={row}>
+                <Label htmlFor="background" className={rowLabel}>Background</Label>
+                <Select value={prefs.background} onValueChange={handle('background')}>
+                    <SelectTrigger id="background" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Default</SelectItem>
                         <SelectItem value="blur">Blur</SelectItem>
@@ -28,17 +26,11 @@ const VideoConferencePreferences = () => {
                         <SelectItem value="none">None</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Background setting for video calls
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="filter">Video Filter</Label>
-                <Select value={videoConferencePreferences.filter} onValueChange={handleSelectChange('filter')}>
-                    <SelectTrigger id="filter">
-                        <SelectValue placeholder="Select a filter" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="filter" className={rowLabel}>Video Filter</Label>
+                <Select value={prefs.filter} onValueChange={handle('filter')}>
+                    <SelectTrigger id="filter" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Default</SelectItem>
                         <SelectItem value="none">None</SelectItem>
@@ -48,71 +40,47 @@ const VideoConferencePreferences = () => {
                         <SelectItem value="vivid">Vivid</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Apply visual filter to your video feed
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="defaultCamera">Default Camera</Label>
-                <Select value={videoConferencePreferences.defaultCamera} onValueChange={handleSelectChange('defaultCamera')}>
-                    <SelectTrigger id="defaultCamera">
-                        <SelectValue placeholder="Select default camera" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="defaultCamera" className={rowLabel}>Camera</Label>
+                <Select value={prefs.defaultCamera} onValueChange={handle('defaultCamera')}>
+                    <SelectTrigger id="defaultCamera" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">System Default</SelectItem>
-                        <SelectItem value="front">Front Camera</SelectItem>
-                        <SelectItem value="rear">Rear Camera</SelectItem>
-                        <SelectItem value="external">External Camera</SelectItem>
+                        <SelectItem value="front">Front</SelectItem>
+                        <SelectItem value="rear">Rear</SelectItem>
+                        <SelectItem value="external">External</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default camera device for video calls
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="defaultMicrophone">Default Microphone</Label>
-                <Select value={videoConferencePreferences.defaultMicrophone} onValueChange={handleSelectChange('defaultMicrophone')}>
-                    <SelectTrigger id="defaultMicrophone">
-                        <SelectValue placeholder="Select default microphone" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="defaultMicrophone" className={rowLabel}>Microphone</Label>
+                <Select value={prefs.defaultMicrophone} onValueChange={handle('defaultMicrophone')}>
+                    <SelectTrigger id="defaultMicrophone" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">System Default</SelectItem>
-                        <SelectItem value="builtin">Built-in Microphone</SelectItem>
-                        <SelectItem value="external">External Microphone</SelectItem>
-                        <SelectItem value="headset">Headset Microphone</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default microphone device for audio input
-                </p>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="defaultSpeaker">Default Speaker</Label>
-                <Select value={videoConferencePreferences.defaultSpeaker} onValueChange={handleSelectChange('defaultSpeaker')}>
-                    <SelectTrigger id="defaultSpeaker">
-                        <SelectValue placeholder="Select default speaker" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="default">System Default</SelectItem>
-                        <SelectItem value="builtin">Built-in Speakers</SelectItem>
-                        <SelectItem value="external">External Speakers</SelectItem>
+                        <SelectItem value="builtin">Built-in</SelectItem>
+                        <SelectItem value="external">External</SelectItem>
                         <SelectItem value="headset">Headset</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default speaker device for audio output
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="defaultMeetingType">Default Meeting Type</Label>
-                <Select value={videoConferencePreferences.defaultMeetingType} onValueChange={handleSelectChange('defaultMeetingType')}>
-                    <SelectTrigger id="defaultMeetingType">
-                        <SelectValue placeholder="Select meeting type" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="defaultSpeaker" className={rowLabel}>Speaker</Label>
+                <Select value={prefs.defaultSpeaker} onValueChange={handle('defaultSpeaker')}>
+                    <SelectTrigger id="defaultSpeaker" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">System Default</SelectItem>
+                        <SelectItem value="builtin">Built-in</SelectItem>
+                        <SelectItem value="external">External</SelectItem>
+                        <SelectItem value="headset">Headset</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className={row}>
+                <Label htmlFor="defaultMeetingType" className={rowLabel}>Meeting Type</Label>
+                <Select value={prefs.defaultMeetingType} onValueChange={handle('defaultMeetingType')}>
+                    <SelectTrigger id="defaultMeetingType" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Default</SelectItem>
                         <SelectItem value="video">Video Call</SelectItem>
@@ -121,55 +89,37 @@ const VideoConferencePreferences = () => {
                         <SelectItem value="webinar">Webinar</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default type when creating new meetings
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="defaultLayout">Default Layout</Label>
-                <Select value={videoConferencePreferences.defaultLayout} onValueChange={handleSelectChange('defaultLayout')}>
-                    <SelectTrigger id="defaultLayout">
-                        <SelectValue placeholder="Select layout" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="defaultLayout" className={rowLabel}>Layout</Label>
+                <Select value={prefs.defaultLayout} onValueChange={handle('defaultLayout')}>
+                    <SelectTrigger id="defaultLayout" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Default</SelectItem>
-                        <SelectItem value="grid">Grid View</SelectItem>
-                        <SelectItem value="speaker">Speaker View</SelectItem>
-                        <SelectItem value="gallery">Gallery View</SelectItem>
+                        <SelectItem value="grid">Grid</SelectItem>
+                        <SelectItem value="speaker">Speaker</SelectItem>
+                        <SelectItem value="gallery">Gallery</SelectItem>
                         <SelectItem value="spotlight">Spotlight</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default layout for viewing participants
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="defaultNotesType">Default Notes Type</Label>
-                <Select value={videoConferencePreferences.defaultNotesType} onValueChange={handleSelectChange('defaultNotesType')}>
-                    <SelectTrigger id="defaultNotesType">
-                        <SelectValue placeholder="Select notes type" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="defaultNotesType" className={rowLabel}>Meeting Notes</Label>
+                <Select value={prefs.defaultNotesType} onValueChange={handle('defaultNotesType')}>
+                    <SelectTrigger id="defaultNotesType" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Default</SelectItem>
-                        <SelectItem value="transcript">Auto Transcript</SelectItem>
+                        <SelectItem value="transcript">Transcript</SelectItem>
                         <SelectItem value="summary">AI Summary</SelectItem>
                         <SelectItem value="action-items">Action Items</SelectItem>
-                        <SelectItem value="manual">Manual Notes</SelectItem>
+                        <SelectItem value="manual">Manual</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    How meeting notes should be captured
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="AiActivityLevel">AI Activity Level</Label>
-                <Select value={videoConferencePreferences.AiActivityLevel} onValueChange={handleSelectChange('AiActivityLevel')}>
-                    <SelectTrigger id="AiActivityLevel">
-                        <SelectValue placeholder="Select AI activity level" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="AiActivityLevel" className={rowLabel}>AI Activity</Label>
+                <Select value={prefs.AiActivityLevel} onValueChange={handle('AiActivityLevel')}>
+                    <SelectTrigger id="AiActivityLevel" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Default</SelectItem>
                         <SelectItem value="off">Off</SelectItem>
@@ -178,15 +128,6 @@ const VideoConferencePreferences = () => {
                         <SelectItem value="high">High</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Level of AI assistance during video conferences
-                </p>
-            </div>
-
-            <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                    Configure your video conferencing preferences for meetings and calls.
-                </p>
             </div>
         </div>
     );

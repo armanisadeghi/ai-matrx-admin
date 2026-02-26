@@ -6,26 +6,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
+const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
+const rowLabel = "text-sm font-medium";
+
 const TextGenerationPreferences = () => {
     const dispatch = useDispatch();
-    const textGenerationPreferences = useSelector((state: RootState) => state.userPreferences.textGeneration);
-
-    const handleSwitchChange = (preference: string) => (checked: boolean) => {
-        dispatch(setPreference({ module: 'textGeneration', preference, value: checked }));
-    };
-
-    const handleSelectChange = (preference: string) => (value: string) => {
-        dispatch(setPreference({ module: 'textGeneration', preference, value }));
-    };
+    const prefs = useSelector((state: RootState) => state.userPreferences.textGeneration);
+    const handleSwitch = (preference: string) => (checked: boolean) => dispatch(setPreference({ module: 'textGeneration', preference, value: checked }));
+    const handleSelect = (preference: string) => (value: string) => dispatch(setPreference({ module: 'textGeneration', preference, value }));
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="defaultModel">Default Model</Label>
-                <Select value={textGenerationPreferences.defaultModel} onValueChange={handleSelectChange('defaultModel')}>
-                    <SelectTrigger id="defaultModel">
-                        <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
+        <div>
+            <div className={row}>
+                <Label htmlFor="defaultModel" className={rowLabel}>Model</Label>
+                <Select value={prefs.defaultModel} onValueChange={handleSelect('defaultModel')}>
+                    <SelectTrigger id="defaultModel" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="GPT-4o">GPT-4o</SelectItem>
                         <SelectItem value="GPT-4">GPT-4</SelectItem>
@@ -35,17 +30,11 @@ const TextGenerationPreferences = () => {
                         <SelectItem value="Llama-3">Llama 3</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default AI model for text generation
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="tone">Tone</Label>
-                <Select value={textGenerationPreferences.tone} onValueChange={handleSelectChange('tone')}>
-                    <SelectTrigger id="tone">
-                        <SelectValue placeholder="Select tone" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="tone" className={rowLabel}>Tone</Label>
+                <Select value={prefs.tone} onValueChange={handleSelect('tone')}>
+                    <SelectTrigger id="tone" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="neutral">Neutral</SelectItem>
                         <SelectItem value="professional">Professional</SelectItem>
@@ -57,34 +46,22 @@ const TextGenerationPreferences = () => {
                         <SelectItem value="persuasive">Persuasive</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default tone for generated content
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="creativityLevel">Creativity Level</Label>
-                <Select value={textGenerationPreferences.creativityLevel} onValueChange={handleSelectChange('creativityLevel')}>
-                    <SelectTrigger id="creativityLevel">
-                        <SelectValue placeholder="Select creativity level" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="creativityLevel" className={rowLabel}>Creativity</Label>
+                <Select value={prefs.creativityLevel} onValueChange={handleSelect('creativityLevel')}>
+                    <SelectTrigger id="creativityLevel" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="low">Low (Factual)</SelectItem>
-                        <SelectItem value="medium">Medium (Balanced)</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
                         <SelectItem value="high">High (Creative)</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Controls creativity vs. accuracy (temperature)
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select value={textGenerationPreferences.language} onValueChange={handleSelectChange('language')}>
-                    <SelectTrigger id="language">
-                        <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="language" className={rowLabel}>Language</Label>
+                <Select value={prefs.language} onValueChange={handleSelect('language')}>
+                    <SelectTrigger id="language" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="en">English</SelectItem>
                         <SelectItem value="es">Spanish</SelectItem>
@@ -98,27 +75,10 @@ const TextGenerationPreferences = () => {
                         <SelectItem value="ru">Russian</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default output language
-                </p>
             </div>
-
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <Label htmlFor="plagiarismCheckEnabled">Plagiarism Check</Label>
-                    <p className="text-sm text-muted-foreground">Check generated content for originality</p>
-                </div>
-                <Switch
-                    id="plagiarismCheckEnabled"
-                    checked={textGenerationPreferences.plagiarismCheckEnabled}
-                    onCheckedChange={handleSwitchChange('plagiarismCheckEnabled')}
-                />
-            </div>
-
-            <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                    Configure settings for AI-powered text generation and content creation.
-                </p>
+            <div className={row}>
+                <Label htmlFor="plagiarismCheckEnabled" className={rowLabel}>Plagiarism Check</Label>
+                <Switch id="plagiarismCheckEnabled" checked={prefs.plagiarismCheckEnabled} onCheckedChange={handleSwitch('plagiarismCheckEnabled')} />
             </div>
         </div>
     );

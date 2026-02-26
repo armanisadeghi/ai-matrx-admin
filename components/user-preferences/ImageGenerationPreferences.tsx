@@ -6,26 +6,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
+const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
+const rowLabel = "text-sm font-medium";
+
 const ImageGenerationPreferences = () => {
     const dispatch = useDispatch();
-    const imageGenerationPreferences = useSelector((state: RootState) => state.userPreferences.imageGeneration);
-
-    const handleSwitchChange = (preference: string) => (checked: boolean) => {
-        dispatch(setPreference({ module: 'imageGeneration', preference, value: checked }));
-    };
-
-    const handleSelectChange = (preference: string) => (value: string) => {
-        dispatch(setPreference({ module: 'imageGeneration', preference, value }));
-    };
+    const prefs = useSelector((state: RootState) => state.userPreferences.imageGeneration);
+    const handleSwitch = (preference: string) => (checked: boolean) => dispatch(setPreference({ module: 'imageGeneration', preference, value: checked }));
+    const handleSelect = (preference: string) => (value: string) => dispatch(setPreference({ module: 'imageGeneration', preference, value }));
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="defaultModel">Default Model</Label>
-                <Select value={imageGenerationPreferences.defaultModel} onValueChange={handleSelectChange('defaultModel')}>
-                    <SelectTrigger id="defaultModel">
-                        <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
+        <div>
+            <div className={row}>
+                <Label htmlFor="defaultModel" className={rowLabel}>Model</Label>
+                <Select value={prefs.defaultModel} onValueChange={handleSelect('defaultModel')}>
+                    <SelectTrigger id="defaultModel" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="standard">Standard</SelectItem>
                         <SelectItem value="dall-e-3">DALL-E 3</SelectItem>
@@ -34,36 +29,24 @@ const ImageGenerationPreferences = () => {
                         <SelectItem value="flux">Flux</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    AI model for image generation
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="resolution">Resolution</Label>
-                <Select value={imageGenerationPreferences.resolution} onValueChange={handleSelectChange('resolution')}>
-                    <SelectTrigger id="resolution">
-                        <SelectValue placeholder="Select resolution" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="resolution" className={rowLabel}>Resolution</Label>
+                <Select value={prefs.resolution} onValueChange={handleSelect('resolution')}>
+                    <SelectTrigger id="resolution" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="4k">4K (3840×2160)</SelectItem>
-                        <SelectItem value="1080p">1080p (1920×1080)</SelectItem>
-                        <SelectItem value="720p">720p (1280×720)</SelectItem>
+                        <SelectItem value="4k">4K</SelectItem>
+                        <SelectItem value="1080p">1080p</SelectItem>
+                        <SelectItem value="720p">720p</SelectItem>
                         <SelectItem value="512">512×512</SelectItem>
                         <SelectItem value="1024">1024×1024</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default output resolution
-                </p>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="style">Style</Label>
-                <Select value={imageGenerationPreferences.style} onValueChange={handleSelectChange('style')}>
-                    <SelectTrigger id="style">
-                        <SelectValue placeholder="Select style" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="style" className={rowLabel}>Style</Label>
+                <Select value={prefs.style} onValueChange={handleSelect('style')}>
+                    <SelectTrigger id="style" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="realistic">Realistic</SelectItem>
                         <SelectItem value="artistic">Artistic</SelectItem>
@@ -76,29 +59,11 @@ const ImageGenerationPreferences = () => {
                         <SelectItem value="sketch">Sketch</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Default artistic style
-                </p>
             </div>
-
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <Label htmlFor="useAiEnhancements">Use AI Enhancements</Label>
-                    <p className="text-sm text-muted-foreground">Apply automatic AI enhancements</p>
-                </div>
-                <Switch
-                    id="useAiEnhancements"
-                    checked={imageGenerationPreferences.useAiEnhancements}
-                    onCheckedChange={handleSwitchChange('useAiEnhancements')}
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="colorPalette">Color Palette</Label>
-                <Select value={imageGenerationPreferences.colorPalette} onValueChange={handleSelectChange('colorPalette')}>
-                    <SelectTrigger id="colorPalette">
-                        <SelectValue placeholder="Select color palette" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="colorPalette" className={rowLabel}>Color Palette</Label>
+                <Select value={prefs.colorPalette} onValueChange={handleSelect('colorPalette')}>
+                    <SelectTrigger id="colorPalette" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="vibrant">Vibrant</SelectItem>
                         <SelectItem value="muted">Muted</SelectItem>
@@ -109,15 +74,10 @@ const ImageGenerationPreferences = () => {
                         <SelectItem value="natural">Natural</SelectItem>
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                    Preferred color scheme
-                </p>
             </div>
-
-            <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                    Configure settings for AI-powered image generation and creation.
-                </p>
+            <div className={row}>
+                <Label htmlFor="useAiEnhancements" className={rowLabel}>AI Enhancements</Label>
+                <Switch id="useAiEnhancements" checked={prefs.useAiEnhancements} onCheckedChange={handleSwitch('useAiEnhancements')} />
             </div>
         </div>
     );

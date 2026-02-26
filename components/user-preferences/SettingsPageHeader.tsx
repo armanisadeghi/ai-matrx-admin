@@ -43,7 +43,8 @@ function SettingsHeaderContent({ title, showBack, backLabel }: SettingsHeaderCon
                         variant="ghost"
                         size="sm"
                         className="h-7 w-7 p-0 rounded-full shrink-0"
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/settings/preferences')}
+                        title="Back to Preferences"
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -55,8 +56,8 @@ function SettingsHeaderContent({ title, showBack, backLabel }: SettingsHeaderCon
                 )}
             </div>
 
-            {/* Right: save/reset */}
-            <div className="flex items-center gap-1 shrink-0">
+            {/* Right: save/reset — mr-1 matches the visual gap between the left edge and user avatar on opposite side */}
+            <div className="flex items-center gap-1 shrink-0 mr-1">
                 {meta.isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 ) : (
@@ -66,19 +67,19 @@ function SettingsHeaderContent({ title, showBack, backLabel }: SettingsHeaderCon
                             size="sm"
                             onClick={handleReset}
                             disabled={!meta.hasUnsavedChanges}
-                            className="h-7 px-2 text-xs"
+                            className="h-7 w-7 p-0 rounded-full"
+                            title="Reset changes"
                         >
-                            <RotateCcw className="h-3 w-3" />
-                            <span className="hidden sm:inline ml-1">Reset</span>
+                            <RotateCcw className="h-3.5 w-3.5" />
                         </Button>
                         <Button
                             size="sm"
                             onClick={handleSave}
                             disabled={!meta.hasUnsavedChanges}
-                            className="h-7 px-2 text-xs"
+                            className="h-7 w-7 p-0 rounded-full"
+                            title="Save changes"
                         >
-                            <Save className="h-3 w-3" />
-                            <span className="ml-1">Save</span>
+                            <Save className="h-3.5 w-3.5" />
                         </Button>
                     </>
                 )}

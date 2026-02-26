@@ -7,152 +7,85 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RootState, useAppDispatch } from '@/lib/redux';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
-import { 
-    playNotificationSound, 
+import {
+    playNotificationSound,
     requestNotificationPermission,
     getNotificationPermission,
-    isNotificationSupported 
+    isNotificationSupported,
 } from '@/features/messaging/utils/notificationSound';
 import { Volume2, Bell, BellRing, BellOff, Info } from 'lucide-react';
+
+const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
+const rowLabel = "text-sm font-medium";
 
 const MessagingPreferences = () => {
     const dispatch = useAppDispatch();
     const messaging = useSelector((state: RootState) => state.userPreferences.messaging);
     const [notificationStatus, setNotificationStatus] = useState<'granted' | 'denied' | 'default' | 'unsupported'>('default');
 
-    // Check notification permission status on mount
-    useEffect(() => {
-        setNotificationStatus(getNotificationPermission());
-    }, []);
+    useEffect(() => { setNotificationStatus(getNotificationPermission()); }, []);
 
     const handleSwitchChange = (preference: string) => (checked: boolean) => {
         dispatch(setPreference({ module: 'messaging', preference, value: checked }));
     };
-
     const handleVolumeChange = (value: number[]) => {
         dispatch(setPreference({ module: 'messaging', preference: 'notificationVolume', value: value[0] }));
     };
-
-    const handleTestSound = () => {
-        playNotificationSound(messaging.notificationVolume);
-    };
-
+    const handleTestSound = () => playNotificationSound(messaging.notificationVolume);
     const handleEnableDesktopNotifications = async () => {
         const granted = await requestNotificationPermission();
         setNotificationStatus(getNotificationPermission());
-        if (granted) {
-            dispatch(setPreference({ module: 'messaging', preference: 'showDesktopNotifications', value: true }));
-        }
+        if (granted) dispatch(setPreference({ module: 'messaging', preference: 'showDesktopNotifications', value: true }));
     };
-
     const handleDisableDesktopNotifications = () => {
         dispatch(setPreference({ module: 'messaging', preference: 'showDesktopNotifications', value: false }));
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid gap-6">
-                {/* Notification Sound Toggle */}
-                <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                        <Label htmlFor="notificationSoundEnabled" className="flex items-center gap-2">
-                            <Volume2 className="h-4 w-4" />
-                            Notification Sound
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                            Play a sound when you receive a new message
-                        </p>
-                    </div>
-                    <Switch
-                        id="notificationSoundEnabled"
-                        checked={messaging.notificationSoundEnabled}
-                        onCheckedChange={handleSwitchChange('notificationSoundEnabled')}
-                    />
-                </div>
-
-                {/* Volume Slider - only shown when sounds are enabled */}
-                {messaging.notificationSoundEnabled && (
-                    <div className="space-y-3 pl-6 border-l-2 border-muted">
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="notificationVolume">Volume</Label>
-                            <span className="text-sm text-muted-foreground">{messaging.notificationVolume}%</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Slider
-                                id="notificationVolume"
-                                value={[messaging.notificationVolume]}
-                                onValueChange={handleVolumeChange}
-                                max={100}
-                                min={0}
-                                step={5}
-                                className="flex-1"
-                            />
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleTestSound}
-                                className="shrink-0"
-                            >
-                                Test
-                            </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            No browser permission required for sounds
-                        </p>
-                    </div>
-                )}
-
-                {/* Desktop Notifications Section */}
-                <div className="pt-4 border-t">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                            <Label htmlFor="showDesktopNotifications" className="flex items-center gap-2">
-                                <BellRing className="h-4 w-4" />
-                                Desktop Notifications
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                Show browser notifications when you're on another tab
-                            </p>
-                        </div>
-                        
-                        {/* Show different UI based on permission status */}
-                        {notificationStatus === 'unsupported' ? (
-                            <span className="text-sm text-muted-foreground">Not supported</span>
-                        ) : notificationStatus === 'denied' ? (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <BellOff className="h-4 w-4" />
-                                Blocked
-                            </div>
-                        ) : notificationStatus === 'granted' ? (
-                            <Switch
-                                id="showDesktopNotifications"
-                                checked={messaging.showDesktopNotifications}
-                                onCheckedChange={handleDisableDesktopNotifications}
-                            />
-                        ) : (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleEnableDesktopNotifications}
-                            >
-                                <Bell className="h-4 w-4 mr-2" />
-                                Enable
-                            </Button>
-                        )}
-                    </div>
-
-                    {/* Show helper text for denied state */}
-                    {notificationStatus === 'denied' && (
-                        <Alert className="mt-3">
-                            <Info className="h-4 w-4" />
-                            <AlertDescription>
-                                Notifications are blocked by your browser. To enable them, click the lock icon 
-                                in your browser's address bar and allow notifications for this site.
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                </div>
+        <div>
+            <div className={row}>
+                <Label htmlFor="notificationSoundEnabled" className={rowLabel}>Notification Sound</Label>
+                <Switch id="notificationSoundEnabled" checked={messaging.notificationSoundEnabled} onCheckedChange={handleSwitchChange('notificationSoundEnabled')} />
             </div>
+
+            {messaging.notificationSoundEnabled && (
+                <div className="px-4 py-3.5 border-b border-border/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="notificationVolume" className={rowLabel}>Volume</Label>
+                        <span className="text-xs text-muted-foreground">{messaging.notificationVolume}%</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Slider id="notificationVolume" value={[messaging.notificationVolume]} onValueChange={handleVolumeChange} max={100} min={0} step={5} className="flex-1" />
+                        <Button variant="outline" size="sm" onClick={handleTestSound} className="shrink-0 h-8 text-xs">Test</Button>
+                    </div>
+                </div>
+            )}
+
+            <div className={row}>
+                <Label className={rowLabel}>Desktop Notifications</Label>
+                {notificationStatus === 'unsupported' ? (
+                    <span className="text-xs text-muted-foreground">Not supported</span>
+                ) : notificationStatus === 'denied' ? (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground"><BellOff className="h-3.5 w-3.5" />Blocked</span>
+                ) : notificationStatus === 'granted' ? (
+                    <Switch id="showDesktopNotifications" checked={messaging.showDesktopNotifications} onCheckedChange={handleDisableDesktopNotifications} />
+                ) : (
+                    <Button variant="outline" size="sm" onClick={handleEnableDesktopNotifications} className="h-8 text-xs gap-1">
+                        <Bell className="h-3.5 w-3.5" />Enable
+                    </Button>
+                )}
+            </div>
+
+            {notificationStatus === 'denied' && (
+                <div className="px-4 pb-3">
+                    <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                            Notifications are blocked. Click the lock icon in your browser's address bar to allow them.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+            )}
         </div>
     );
 };

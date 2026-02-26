@@ -6,26 +6,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
+const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
+const rowLabel = "text-sm font-medium";
+
 const CodingPreferences = () => {
     const dispatch = useDispatch();
-    const codingPreferences = useSelector((state: RootState) => state.userPreferences.coding);
-
-    const handleSwitchChange = (preference: string) => (checked: boolean) => {
-        dispatch(setPreference({ module: 'coding', preference, value: checked }));
-    };
-
-    const handleSelectChange = (preference: string) => (value: string) => {
-        dispatch(setPreference({ module: 'coding', preference, value }));
-    };
+    const prefs = useSelector((state: RootState) => state.userPreferences.coding);
+    const handleSwitch = (preference: string) => (checked: boolean) => dispatch(setPreference({ module: 'coding', preference, value: checked }));
+    const handleSelect = (preference: string) => (value: string) => dispatch(setPreference({ module: 'coding', preference, value }));
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="preferredLanguage">Preferred Language</Label>
-                <Select value={codingPreferences.preferredLanguage} onValueChange={handleSelectChange('preferredLanguage')}>
-                    <SelectTrigger id="preferredLanguage">
-                        <SelectValue placeholder="Select a language" />
-                    </SelectTrigger>
+        <div>
+            <div className={row}>
+                <Label htmlFor="preferredLanguage" className={rowLabel}>Language</Label>
+                <Select value={prefs.preferredLanguage} onValueChange={handleSelect('preferredLanguage')}>
+                    <SelectTrigger id="preferredLanguage" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="javascript">JavaScript</SelectItem>
                         <SelectItem value="typescript">TypeScript</SelectItem>
@@ -34,75 +29,30 @@ const CodingPreferences = () => {
                     </SelectContent>
                 </Select>
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="preferredTheme">Preferred Theme</Label>
-                <Select value={codingPreferences.preferredTheme} onValueChange={handleSelectChange('preferredTheme')}>
-                    <SelectTrigger id="preferredTheme">
-                        <SelectValue placeholder="Select a theme" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="preferredTheme" className={rowLabel}>Editor Theme</Label>
+                <Select value={prefs.preferredTheme} onValueChange={handleSelect('preferredTheme')}>
+                    <SelectTrigger id="preferredTheme" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="light">Light</SelectItem>
                         <SelectItem value="dark">Dark</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
-
-            <div className="flex items-center justify-between">
-                <Label htmlFor="gitIntegration">Git Integration</Label>
-                <Switch
-                    id="gitIntegration"
-                    checked={codingPreferences.gitIntegration}
-                    onCheckedChange={handleSwitchChange('gitIntegration')}
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="instancePreference">Instance Preference</Label>
-                <Select value={codingPreferences.instancePreference} onValueChange={handleSelectChange('instancePreference')}>
-                    <SelectTrigger id="instancePreference">
-                        <SelectValue placeholder="Select an instance preference" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="instancePreference" className={rowLabel}>Environment</Label>
+                <Select value={prefs.instancePreference} onValueChange={handleSelect('instancePreference')}>
+                    <SelectTrigger id="instancePreference" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="local">Local</SelectItem>
                         <SelectItem value="cloud">Cloud</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
-
-            <div className="flex items-center justify-between">
-                <Label htmlFor="codeCompletion">Code Completion</Label>
-                <Switch
-                    id="codeCompletion"
-                    checked={codingPreferences.codeCompletion}
-                    onCheckedChange={handleSwitchChange('codeCompletion')}
-                />
-            </div>
-
-            <div className="flex items-center justify-between">
-                <Label htmlFor="codeAnalysis">Code Analysis</Label>
-                <Switch
-                    id="codeAnalysis"
-                    checked={codingPreferences.codeAnalysis}
-                    onCheckedChange={handleSwitchChange('codeAnalysis')}
-                />
-            </div>
-
-            <div className="flex items-center justify-between">
-                <Label htmlFor="codeFormatting">Code Formatting</Label>
-                <Switch
-                    id="codeFormatting"
-                    checked={codingPreferences.codeFormatting}
-                    onCheckedChange={handleSwitchChange('codeFormatting')}
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="aiActivityLevel">AI Activity Level</Label>
-                <Select value={codingPreferences.aiActivityLevel} onValueChange={handleSelectChange('aiActivityLevel')}>
-                    <SelectTrigger id="aiActivityLevel">
-                        <SelectValue placeholder="Select AI activity level" />
-                    </SelectTrigger>
+            <div className={row}>
+                <Label htmlFor="aiActivityLevel" className={rowLabel}>AI Activity</Label>
+                <Select value={prefs.aiActivityLevel} onValueChange={handleSelect('aiActivityLevel')}>
+                    <SelectTrigger id="aiActivityLevel" className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="low">Low</SelectItem>
                         <SelectItem value="medium">Medium</SelectItem>
@@ -110,14 +60,25 @@ const CodingPreferences = () => {
                     </SelectContent>
                 </Select>
             </div>
-
-            <div className="flex items-center justify-between">
-                <Label htmlFor="voiceAssistance">Voice Assistance</Label>
-                <Switch
-                    id="voiceAssistance"
-                    checked={codingPreferences.voiceAssistance}
-                    onCheckedChange={handleSwitchChange('voiceAssistance')}
-                />
+            <div className={row}>
+                <Label htmlFor="gitIntegration" className={rowLabel}>Git Integration</Label>
+                <Switch id="gitIntegration" checked={prefs.gitIntegration} onCheckedChange={handleSwitch('gitIntegration')} />
+            </div>
+            <div className={row}>
+                <Label htmlFor="codeCompletion" className={rowLabel}>Code Completion</Label>
+                <Switch id="codeCompletion" checked={prefs.codeCompletion} onCheckedChange={handleSwitch('codeCompletion')} />
+            </div>
+            <div className={row}>
+                <Label htmlFor="codeAnalysis" className={rowLabel}>Code Analysis</Label>
+                <Switch id="codeAnalysis" checked={prefs.codeAnalysis} onCheckedChange={handleSwitch('codeAnalysis')} />
+            </div>
+            <div className={row}>
+                <Label htmlFor="codeFormatting" className={rowLabel}>Code Formatting</Label>
+                <Switch id="codeFormatting" checked={prefs.codeFormatting} onCheckedChange={handleSwitch('codeFormatting')} />
+            </div>
+            <div className={row}>
+                <Label htmlFor="voiceAssistance" className={rowLabel}>Voice Assistance</Label>
+                <Switch id="voiceAssistance" checked={prefs.voiceAssistance} onCheckedChange={handleSwitch('voiceAssistance')} />
             </div>
         </div>
     );

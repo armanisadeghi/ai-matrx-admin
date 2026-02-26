@@ -6,6 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RootState, useAppDispatch } from '@/lib/redux';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
+const row = "flex items-center justify-between px-4 py-3.5 border-b border-border/40 last:border-b-0";
+const rowLabel = "text-sm font-medium";
+
 const DisplayPreferences = () => {
     const dispatch = useAppDispatch();
     const display = useSelector((state: RootState) => state.userPreferences.display);
@@ -13,98 +16,91 @@ const DisplayPreferences = () => {
     const handleSwitchChange = (preference: string) => (checked: boolean) => {
         dispatch(setPreference({ module: 'display', preference, value: checked }));
     };
-
     const handleSelectChange = (preference: string) => (value: string) => {
         dispatch(setPreference({ module: 'display', preference, value }));
     };
 
     return (
-        <div className="space-y-3">
-            <div className="grid gap-3">
-                <div className="flex items-center justify-between">
-                    <Label htmlFor="darkMode" className="text-sm font-medium">Dark Mode</Label>
-                    <Switch
-                        id="darkMode"
-                        checked={display.darkMode}
-                        onCheckedChange={handleSwitchChange('darkMode')}
-                    />
-                </div>
+        <div>
+            <div className={row}>
+                <Label htmlFor="darkMode" className={rowLabel}>Dark Mode</Label>
+                <Switch id="darkMode" checked={display.darkMode} onCheckedChange={handleSwitchChange('darkMode')} />
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="theme">Theme</Label>
-                    <Select value={display.theme} onValueChange={handleSelectChange('theme')}>
-                        <SelectTrigger id="theme">
-                            <SelectValue placeholder="Select a theme" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default</SelectItem>
-                            <SelectItem value="night">Night</SelectItem>
-                            <SelectItem value="forest">Forest</SelectItem>
-                            <SelectItem value="ocean">Ocean</SelectItem>
-                            <SelectItem value="sunset">Sunset</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className={row}>
+                <Label htmlFor="theme" className={rowLabel}>Theme</Label>
+                <Select value={display.theme} onValueChange={handleSelectChange('theme')}>
+                    <SelectTrigger id="theme" className="w-36 h-8 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="night">Night</SelectItem>
+                        <SelectItem value="forest">Forest</SelectItem>
+                        <SelectItem value="ocean">Ocean</SelectItem>
+                        <SelectItem value="sunset">Sunset</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="dashboardLayout">Dashboard Layout</Label>
-                    <Select value={display.dashboardLayout} onValueChange={handleSelectChange('dashboardLayout')}>
-                        <SelectTrigger id="dashboardLayout">
-                            <SelectValue placeholder="Select dashboard layout" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default</SelectItem>
-                            <SelectItem value="compact">Compact</SelectItem>
-                            <SelectItem value="spacious">Spacious</SelectItem>
-                            <SelectItem value="grid">Grid</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className={row}>
+                <Label htmlFor="dashboardLayout" className={rowLabel}>Dashboard Layout</Label>
+                <Select value={display.dashboardLayout} onValueChange={handleSelectChange('dashboardLayout')}>
+                    <SelectTrigger id="dashboardLayout" className="w-36 h-8 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="compact">Compact</SelectItem>
+                        <SelectItem value="spacious">Spacious</SelectItem>
+                        <SelectItem value="grid">Grid</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="sidebarLayout">Sidebar Layout</Label>
-                    <Select value={display.sidebarLayout} onValueChange={handleSelectChange('sidebarLayout')}>
-                        <SelectTrigger id="sidebarLayout">
-                            <SelectValue placeholder="Select sidebar layout" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default</SelectItem>
-                            <SelectItem value="collapsed">Auto-Collapse</SelectItem>
-                            <SelectItem value="expanded">Always Expanded</SelectItem>
-                            <SelectItem value="floating">Floating</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className={row}>
+                <Label htmlFor="sidebarLayout" className={rowLabel}>Sidebar Layout</Label>
+                <Select value={display.sidebarLayout} onValueChange={handleSelectChange('sidebarLayout')}>
+                    <SelectTrigger id="sidebarLayout" className="w-36 h-8 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="collapsed">Auto-Collapse</SelectItem>
+                        <SelectItem value="expanded">Always Expanded</SelectItem>
+                        <SelectItem value="floating">Floating</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="headerLayout">Header Layout</Label>
-                    <Select value={display.headerLayout} onValueChange={handleSelectChange('headerLayout')}>
-                        <SelectTrigger id="headerLayout">
-                            <SelectValue placeholder="Select header layout" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default</SelectItem>
-                            <SelectItem value="compact">Compact</SelectItem>
-                            <SelectItem value="minimal">Minimal</SelectItem>
-                            <SelectItem value="expanded">Expanded</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className={row}>
+                <Label htmlFor="headerLayout" className={rowLabel}>Header Layout</Label>
+                <Select value={display.headerLayout} onValueChange={handleSelectChange('headerLayout')}>
+                    <SelectTrigger id="headerLayout" className="w-36 h-8 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="compact">Compact</SelectItem>
+                        <SelectItem value="minimal">Minimal</SelectItem>
+                        <SelectItem value="expanded">Expanded</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="windowMode">Window Mode</Label>
-                    <Select value={display.windowMode} onValueChange={handleSelectChange('windowMode')}>
-                        <SelectTrigger id="windowMode">
-                            <SelectValue placeholder="Select window mode" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default</SelectItem>
-                            <SelectItem value="fullscreen">Fullscreen</SelectItem>
-                            <SelectItem value="windowed">Windowed</SelectItem>
-                            <SelectItem value="minimal">Minimal</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className={row}>
+                <Label htmlFor="windowMode" className={rowLabel}>Window Mode</Label>
+                <Select value={display.windowMode} onValueChange={handleSelectChange('windowMode')}>
+                    <SelectTrigger id="windowMode" className="w-36 h-8 text-xs">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="fullscreen">Fullscreen</SelectItem>
+                        <SelectItem value="windowed">Windowed</SelectItem>
+                        <SelectItem value="minimal">Minimal</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
         </div>
     );

@@ -72,31 +72,9 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const localLabelRef = useRef(localLabel);
     const editorModeRef = useRef(editorMode);
     const noteRef = useRef(note);
-    
-    // Keep refs in sync
-    useEffect(() => {
-        localContentRef.current = localContent;
-        localFolderRef.current = localFolder;
-        localTagsRef.current = localTags;
-        localLabelRef.current = localLabel;
-        editorModeRef.current = editorMode;
-        noteRef.current = note;
-        isDirtyRef.current = isDirty;
-    }, [localContent, localFolder, localTags, localLabel, editorMode, note, isDirty]);
-
-    // Get all folders (default + custom) - optimized to only recalculate when folder names change
-    const availableFolders = useAllFolders(allNotes);
-
-    // Load editor mode from note metadata - update when metadata changes
-    useEffect(() => {
-        if (note?.metadata?.lastEditorMode) {
-            setEditorMode(note.metadata.lastEditorMode as EditorMode);
-        } else {
-            setEditorMode('plain');
-        }
-    }, [note?.id, note?.metadata?.lastEditorMode]); // Update when note ID or mode changes
-
+    // isDirtyRef must be declared BEFORE the useEffect below that syncs it
     const isDirtyRef = useRef(false);
+
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
         noteId: note?.id || null,
         currentUpdatedAt: note?.updated_at,
@@ -128,6 +106,29 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             });
         },
     });
+
+    // Keep refs in sync (isDirtyRef and useAutoSave must be declared above this)
+    useEffect(() => {
+        localContentRef.current = localContent;
+        localFolderRef.current = localFolder;
+        localTagsRef.current = localTags;
+        localLabelRef.current = localLabel;
+        editorModeRef.current = editorMode;
+        noteRef.current = note;
+        isDirtyRef.current = isDirty;
+    }, [localContent, localFolder, localTags, localLabel, editorMode, note, isDirty]);
+
+    // Get all folders (default + custom) - optimized to only recalculate when folder names change
+    const availableFolders = useAllFolders(allNotes);
+
+    // Load editor mode from note metadata - update when metadata changes
+    useEffect(() => {
+        if (note?.metadata?.lastEditorMode) {
+            setEditorMode(note.metadata.lastEditorMode as EditorMode);
+        } else {
+            setEditorMode('plain');
+        }
+    }, [note?.id, note?.metadata?.lastEditorMode]); // Update when note ID or mode changes
 
     // Save current content before switching notes
     useEffect(() => {

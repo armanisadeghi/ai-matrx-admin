@@ -5,82 +5,35 @@ import { Input } from "@/components/ui/input";
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 
+const rowLabel = "text-sm font-medium";
+
 const PlaygroundPreferences = () => {
     const dispatch = useDispatch();
-    const playgroundPreferences = useSelector((state: RootState) => state.userPreferences.playground);
-
-    const handleInputChange = (preference: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const prefs = useSelector((state: RootState) => state.userPreferences.playground);
+    const handleInput = (preference: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
         dispatch(setPreference({ module: 'playground', preference, value: e.target.value }));
     };
 
     return (
-        <div className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="lastRecipeId">Last Recipe ID</Label>
-                <Input
-                    id="lastRecipeId"
-                    type="text"
-                    value={playgroundPreferences.lastRecipeId}
-                    onChange={handleInputChange('lastRecipeId')}
-                    placeholder="Last used recipe"
-                    readOnly
-                    className="bg-muted"
-                />
-                <p className="text-sm text-muted-foreground">
-                    ID of the last recipe used in playground (auto-set)
-                </p>
+        <div className="space-y-0">
+            <div className="px-4 py-3.5 border-b border-border/40 space-y-1.5">
+                <Label htmlFor="lastRecipeId" className={rowLabel}>Last Recipe ID</Label>
+                <Input id="lastRecipeId" type="text" value={prefs.lastRecipeId} onChange={handleInput('lastRecipeId')} placeholder="Last used recipe" readOnly className="h-9 text-sm bg-muted" />
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="preferredProvider">Preferred Provider</Label>
-                <Input
-                    id="preferredProvider"
-                    type="text"
-                    value={playgroundPreferences.preferredProvider}
-                    onChange={handleInputChange('preferredProvider')}
-                    placeholder="Preferred provider ID"
-                />
-                <p className="text-sm text-muted-foreground">
-                    Default AI provider for playground experiments
-                </p>
+            <div className="px-4 py-3.5 border-b border-border/40 space-y-1.5">
+                <Label htmlFor="preferredProvider" className={rowLabel}>Preferred Provider</Label>
+                <Input id="preferredProvider" type="text" value={prefs.preferredProvider} onChange={handleInput('preferredProvider')} placeholder="Preferred provider ID" className="h-9 text-sm" />
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="preferredModel">Preferred Model</Label>
-                <Input
-                    id="preferredModel"
-                    type="text"
-                    value={playgroundPreferences.preferredModel}
-                    onChange={handleInputChange('preferredModel')}
-                    placeholder="Preferred model ID"
-                />
-                <p className="text-sm text-muted-foreground">
-                    Default AI model for playground experiments
-                </p>
+            <div className="px-4 py-3.5 border-b border-border/40 space-y-1.5">
+                <Label htmlFor="preferredModel" className={rowLabel}>Preferred Model</Label>
+                <Input id="preferredModel" type="text" value={prefs.preferredModel} onChange={handleInput('preferredModel')} placeholder="Preferred model ID" className="h-9 text-sm" />
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="preferredEndpoint">Preferred Endpoint</Label>
-                <Input
-                    id="preferredEndpoint"
-                    type="text"
-                    value={playgroundPreferences.preferredEndpoint}
-                    onChange={handleInputChange('preferredEndpoint')}
-                    placeholder="Preferred endpoint ID"
-                />
-                <p className="text-sm text-muted-foreground">
-                    Default API endpoint for playground experiments
-                </p>
-            </div>
-
-            <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                    Configure preferences for the AI Playground where you can test and experiment with different models and settings.
-                </p>
+            <div className="px-4 py-3.5 border-b border-border/40 space-y-1.5">
+                <Label htmlFor="preferredEndpoint" className={rowLabel}>Preferred Endpoint</Label>
+                <Input id="preferredEndpoint" type="text" value={prefs.preferredEndpoint} onChange={handleInput('preferredEndpoint')} placeholder="Preferred endpoint ID" className="h-9 text-sm" />
             </div>
         </div>
     );
 };
 
 export default PlaygroundPreferences;
-
