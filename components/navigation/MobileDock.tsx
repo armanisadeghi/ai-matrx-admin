@@ -50,8 +50,8 @@ interface MobileDockProps {
 
 const MAX_VISIBLE = 5; // max items BEFORE we add the "…" slot
 const OVERFLOW_THRESHOLD = MAX_VISIBLE + 1; // 6+ items triggers overflow mode
-const PILL_W = 48;
-const PILL_H = 32;
+const PILL_W = 44;
+const PILL_H = 28;
 
 // Minimum per-item pixel width below which we hide labels
 const LABEL_MIN_WIDTH = 56;
@@ -110,7 +110,7 @@ export function MobileDock({ items, className }: MobileDockProps) {
       <nav className={cn('md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none', className)}>
         <div
           ref={navRef}
-          className="relative flex items-center justify-around mx-glass-strong rounded-[24px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto overflow-visible min-h-[52px]"
+          className="relative flex items-center justify-around mx-glass-strong rounded-[22px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto overflow-visible min-h-[44px]"
         >
           {/* Sliding pill indicator */}
           {pillX !== null && (
@@ -146,7 +146,7 @@ export function MobileDock({ items, className }: MobileDockProps) {
                   aria-label={item.label}
                   title={item.label}
                   className={cn(
-                    'relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-2.5 px-1 transition-colors duration-200 min-h-[44px]',
+                    'relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-1.5 px-1 transition-colors duration-200 min-h-[44px]',
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
@@ -204,7 +204,7 @@ export function MobileDock({ items, className }: MobileDockProps) {
           <DrawerContent className="max-h-[60dvh]">
             <DrawerTitle className="sr-only">More navigation options</DrawerTitle>
             <div className="p-3 space-y-0.5 overflow-y-auto overscroll-contain pb-safe">
-              {overflowItems.map((item) => {
+              {items.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.exactMatch
                   ? pathname === item.href

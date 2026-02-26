@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
+import { Check, AlertCircle, Loader2, Sparkles, Phone, Brain, Radio, Lightbulb } from 'lucide-react';
 import { submitInvitationRequestStep1, submitInvitationRequestStep2 } from '../actions';
 import { InvitationRequestStep1, InvitationRequestStep2, USER_TYPE_OPTIONS } from '../types';
 
@@ -128,34 +128,81 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-background border-zinc-200 dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className={`border-zinc-200 dark:border-zinc-800 max-h-[90vh] overflow-y-auto p-0 gap-0 ${
+          step === 'followup'
+            ? 'sm:max-w-2xl overflow-hidden'
+            : 'sm:max-w-2xl'
+        }`}
+      >
         {step === 'followup' ? (
           <>
-            {/* Success banner — only visible in step 2 */}
-            <div className="flex items-center gap-3 rounded-xl bg-green-500/10 border border-green-500/20 px-4 py-3 mb-1">
-              <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-green-600 dark:text-green-400">Request submitted successfully!</p>
-                <p className="text-xs text-green-600/70 dark:text-green-400/70">We sent a confirmation to your email.</p>
+            {/* ── Hero section ── */}
+            <div className="relative overflow-hidden rounded-t-xl">
+              {/* Gradient background */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(135deg, hsl(var(--primary)/0.18) 0%, hsl(262 80% 60%/0.12) 50%, hsl(var(--primary)/0.06) 100%)',
+                }}
+              />
+              {/* Decorative orbs */}
+              <div className="absolute -top-8 -right-8 w-48 h-48 rounded-full" style={{ background: 'radial-gradient(circle, hsl(var(--primary)/0.25) 0%, transparent 70%)' }} />
+              <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full" style={{ background: 'radial-gradient(circle, hsl(262 80% 60%/0.2) 0%, transparent 70%)' }} />
+
+              <div className="relative px-6 pt-8 pb-6 pr-14">
+                {/* Success pill */}
+                <div className="inline-flex items-center gap-2 rounded-full bg-green-500/15 border border-green-500/25 px-3 py-1 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="text-xs font-semibold text-green-600 dark:text-green-400 tracking-wide uppercase">Request Submitted</span>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  {/* Brand icon */}
+                  <div
+                    className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
+                    style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(262 80% 55%) 100%)' }}
+                  >
+                    <Sparkles className="w-7 h-7 text-white" />
+                  </div>
+
+                  <div>
+                    <DialogTitle className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-1">
+                      One more thing&hellip;
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+                      All optional &mdash; help us tailor your experience and move you to the front of the queue.
+                    </DialogDescription>
+                  </div>
+                </div>
+
+                {/* Confirmation note */}
+                <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground/80">
+                  <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                  Confirmation email sent &bull; We&apos;ll review within 1&ndash;2 business days
+                </div>
               </div>
             </div>
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-semibold">One more thing&hellip;</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                These questions are completely optional, but they help us prioritise your access and personalise your experience.
-              </DialogDescription>
-            </DialogHeader>
+
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
           </>
         ) : (
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-semibold">Request Early Access</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Join the future of enterprise AI. Share a few details to request your invitation.
-            </DialogDescription>
-          </DialogHeader>
+          <div className="px-6 pt-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-semibold">Request Early Access</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Join the future of enterprise AI. Share a few details to request your invitation.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
         )}
 
         {step === 'form' ? (
+          <div className="px-6 pb-6">
           <form onSubmit={handleFormSubmit} className="space-y-4 mt-4">
             {/* Full Name */}
             <div className="space-y-2">
@@ -306,74 +353,76 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
               </Button>
             </div>
           </form>
+          </div>
         ) : (
-          <form onSubmit={handleFollowupSubmit} className="space-y-4 mt-4">
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-medium">
-                Phone (Optional)
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={step2Data.phone}
-                onChange={(e) => setStep2Data({ ...step2Data, phone: e.target.value })}
-                placeholder="+1 (555) 123-4567"
-                disabled={isSubmitting}
-                className="text-base"
-                style={{ fontSize: '16px' }}
-              />
+          <div className="px-6 pb-6">
+          <form onSubmit={handleFollowupSubmit} className="space-y-4 mt-5">
+            {/* Phone + Referral row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  Phone <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={step2Data.phone}
+                  onChange={(e) => setStep2Data({ ...step2Data, phone: e.target.value })}
+                  placeholder="+1 (555) 123-4567"
+                  disabled={isSubmitting}
+                  className="text-base"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="referral_source" className="text-sm font-medium">
+                  How did you hear about us?
+                </Label>
+                <Input
+                  id="referral_source"
+                  type="text"
+                  value={step2Data.referral_source}
+                  onChange={(e) => setStep2Data({ ...step2Data, referral_source: e.target.value })}
+                  placeholder="LinkedIn, Twitter, colleague…"
+                  disabled={isSubmitting}
+                  className="text-base"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
             </div>
 
-            {/* Biggest Obstacle */}
-            <div className="space-y-2">
-              <Label htmlFor="biggest_obstacle" className="text-sm font-medium">
-                What is your biggest current obstacle with AI?
-              </Label>
-              <Textarea
-                id="biggest_obstacle"
-                value={step2Data.biggest_obstacle}
-                onChange={(e) => setStep2Data({ ...step2Data, biggest_obstacle: e.target.value })}
-                placeholder="Tell us about the challenges you're facing..."
-                disabled={isSubmitting}
-                rows={2}
-                className="resize-none text-base"
-                style={{ fontSize: '16px' }}
-              />
-            </div>
-
-            {/* Referral Source */}
-            <div className="space-y-2">
-              <Label htmlFor="referral_source" className="text-sm font-medium">
-                How did you hear about AI Matrx?
-              </Label>
-              <Input
-                id="referral_source"
-                type="text"
-                value={step2Data.referral_source}
-                onChange={(e) => setStep2Data({ ...step2Data, referral_source: e.target.value })}
-                placeholder="LinkedIn, Twitter, colleague, etc."
-                disabled={isSubmitting}
-                className="text-base"
-                style={{ fontSize: '16px' }}
-              />
-            </div>
-
-            {/* Current AI Systems */}
-            <div className="space-y-2">
-              <Label htmlFor="current_ai_systems" className="text-sm font-medium">
-                What other AI systems do you currently use?
-              </Label>
-              <Input
-                id="current_ai_systems"
-                type="text"
-                value={step2Data.current_ai_systems}
-                onChange={(e) => setStep2Data({ ...step2Data, current_ai_systems: e.target.value })}
-                placeholder="List your current AI systems..."
-                disabled={isSubmitting}
-                className="text-base"
-                style={{ fontSize: '16px' }}
-              />
+            {/* Biggest Obstacle + Current AI Systems row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="biggest_obstacle" className="text-sm font-medium">
+                  Biggest AI obstacle?
+                </Label>
+                <Textarea
+                  id="biggest_obstacle"
+                  value={step2Data.biggest_obstacle}
+                  onChange={(e) => setStep2Data({ ...step2Data, biggest_obstacle: e.target.value })}
+                  placeholder="Tell us the challenges you're facing…"
+                  disabled={isSubmitting}
+                  rows={2}
+                  className="resize-none text-base h-24"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="current_ai_systems" className="text-sm font-medium">
+                  Current AI tools you use?
+                </Label>
+                <Textarea
+                  id="current_ai_systems"
+                  value={step2Data.current_ai_systems}
+                  onChange={(e) => setStep2Data({ ...step2Data, current_ai_systems: e.target.value })}
+                  placeholder="ChatGPT, Cursor, Midjourney…"
+                  disabled={isSubmitting}
+                  rows={2}
+                  className="resize-none text-base h-24"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
             </div>
 
             {/* Recent Project */}
@@ -425,6 +474,7 @@ export function RequestAccessModal({ open, onOpenChange }: RequestAccessModalPro
               </Button>
             </div>
           </form>
+          </div>
         )}
       </DialogContent>
     </Dialog>
