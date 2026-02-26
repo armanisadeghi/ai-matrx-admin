@@ -128,8 +128,8 @@ const PreferencesPage = () => {
     };
 
     return (
-        <Card className="w-full mt-8">
-            <CardContent className="p-6">
+        <Card className="w-full">
+            <CardContent className="p-3 sm:p-6">
                 {meta.error && (
                     <Alert variant="destructive" className="mb-4">
                         <AlertCircle className="h-4 w-4" />
@@ -173,7 +173,7 @@ const PreferencesPage = () => {
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <TabsContent value={activeTab} className="mt-6">
+                            <TabsContent value={activeTab} className="mt-2">
                                 {tabContent[activeTab as keyof typeof tabContent]}
                             </TabsContent>
                         </motion.div>
@@ -181,7 +181,7 @@ const PreferencesPage = () => {
                 </Tabs>
             </CardContent>
             
-            <CardFooter className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t bg-muted/10 px-6 py-4">
+            <CardFooter className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 border-t bg-muted/10 px-3 py-3 sm:px-6 sm:py-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {meta.isLoading && (
                         <div className="flex items-center gap-2">

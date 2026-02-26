@@ -384,6 +384,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                 if (note) {
                     setActiveNote(note);
                 }
+                // If note not found in ref (race condition), don't clobber activeNote
+                // — findOrCreateEmptyNote already called setActiveNote(newNote) correctly
                 return prev; // No change to tabs
             }
             
@@ -391,7 +393,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
             return [...prev, noteId];
         });
         
-        // Set as active note
+        // Set as active note — ONLY if the note is found in the ref.
+        // For brand-new notes, notesRef may not have been updated yet (stale ref race).
+        // In that case findOrCreateEmptyNote already set activeNote correctly, so we skip it here.
         const note = notesRef.current.find(n => n.id === noteId);
         if (note) {
             setActiveNote(note);

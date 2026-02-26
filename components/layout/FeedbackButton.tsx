@@ -487,6 +487,10 @@ export default function FeedbackButton({ className = '', triggerOpen, onOpenChan
 
     const handlePasteButton = useCallback(async () => {
         try {
+            if (!navigator.clipboard?.read) {
+                toast.info('Clipboard image reading is not supported in this browser — use Ctrl+V instead');
+                return;
+            }
             const items = await navigator.clipboard.read();
             for (const item of items) {
                 const imageType = item.types.find(t => t.startsWith('image/'));

@@ -120,15 +120,58 @@ export function LatestAiModels() {
                     </div>
                 ) : null}
             </AnimatePresence>
-            <ul className="max-w-2xl mx-auto w-full gap-4">
-                {cards.map((card, index) => (
+            {/* Mobile: horizontal scroll carousel */}
+            <div className="flex md:hidden gap-3 overflow-x-auto scrollbar-none px-1 pb-1 -mx-1">
+                {cards.map((card) => (
+                    <motion.div
+                        layoutId={`card-${card.title}-${id}`}
+                        key={`card-${card.title}-${id}`}
+                        onClick={() => setActive(card)}
+                        className="flex-none w-[130px] flex flex-col items-center gap-2 p-2 rounded-2xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95 transition-transform"
+                    >
+                        <motion.div layoutId={`image-${card.title}-${id}`} className="w-full">
+                            <img
+                                width={130}
+                                height={100}
+                                src={card.src}
+                                alt={card.title}
+                                className="w-full h-[88px] rounded-xl object-cover object-top"
+                            />
+                        </motion.div>
+                        <div className="w-full text-center">
+                            <motion.h3
+                                layoutId={`title-${card.title}-${id}`}
+                                className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 leading-tight truncate"
+                            >
+                                {card.title}
+                            </motion.h3>
+                            <motion.p
+                                layoutId={`description-${card.description}-${id}`}
+                                className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate"
+                            >
+                                {card.description}
+                            </motion.p>
+                        </div>
+                        <motion.button
+                            layoutId={`button-${card.title}-${id}`}
+                            className="w-full px-2 py-1 text-[11px] rounded-full font-bold bg-gray-100 dark:bg-neutral-700 hover:bg-green-500 hover:text-white text-black dark:text-neutral-200"
+                        >
+                            {card.ctaText}
+                        </motion.button>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Desktop: original vertical list */}
+            <ul className="hidden md:block max-w-2xl mx-auto w-full gap-4">
+                {cards.map((card) => (
                     <motion.div
                         layoutId={`card-${card.title}-${id}`}
                         key={`card-${card.title}-${id}`}
                         onClick={() => setActive(card)}
                         className="py-2 px-4 flex flex-col md:flex-row justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-3xl cursor-pointer"
                     >
-                        <div className="flex gap-2 flex-col md:flex-row ">
+                        <div className="flex gap-2 flex-col md:flex-row">
                             <motion.div layoutId={`image-${card.title}-${id}`}>
                                 <img
                                     width={100}

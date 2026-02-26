@@ -1,17 +1,40 @@
-'use client';
+"use client";
 
-import { useState, useEffect, lazy, Suspense, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles, Loader2, TrendingUp, Users, Activity, Clock, BarChart3, Wand2, Copy, Check, Image, RefreshCw, AlertCircle, ArrowDownToLine, Camera } from 'lucide-react';
-import Link from 'next/link';
-import { supabase } from '@/utils/supabase/client';
+import { useState, useEffect, lazy, Suspense, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  ExternalLink,
+  Eye,
+  Trash2,
+  ArrowLeft,
+  Save,
+  Play,
+  Code2,
+  Sparkles,
+  Loader2,
+  TrendingUp,
+  Users,
+  Activity,
+  Clock,
+  BarChart3,
+  Wand2,
+  Copy,
+  Check,
+  Image,
+  RefreshCw,
+  AlertCircle,
+  ArrowDownToLine,
+  Camera,
+} from "lucide-react";
+import Link from "next/link";
+import { supabase } from "@/utils/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,37 +44,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { toast } from '@/lib/toast-service';
-import { AICodeEditorModal } from '@/features/code-editor/components/AICodeEditorModal';
-import type { PromptApp } from '../types';
-import { cn } from '@/lib/utils';
-import { PromptAppHeader } from '@/components/layout/new-layout/PageSpecificHeader';
-import { UpdatePromptAppModal } from './UpdatePromptAppModal';
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/lib/toast-service";
+import { AICodeEditorModal } from "@/features/code-editor/components/AICodeEditorModal";
+import type { PromptApp } from "../types";
+import { cn } from "@/lib/utils";
+import { PromptAppHeader } from "@/components/layout/new-layout/PageSpecificHeader";
+import { UpdatePromptAppModal } from "./UpdatePromptAppModal";
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
-const CodeBlock = lazy(() => import('@/features/code-editor/components/code-block/CodeBlock'));
+const CodeBlock = lazy(
+  () => import("@/features/code-editor/components/code-block/CodeBlock"),
+);
 
 interface PromptAppEditorProps {
   app: PromptApp;
 }
 
-type EditorMode = 'view' | 'edit' | 'run';
+type EditorMode = "view" | "edit" | "run";
 
 function PromptIdCopyBadge({ promptId }: { promptId: string }) {
   const [copied, setCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const shortId = promptId.slice(0, 8) + '...';
+  const shortId = promptId.slice(0, 8) + "...";
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(promptId);
       setCopied(true);
-      toast.success('Prompt ID copied to clipboard');
+      toast.success("Prompt ID copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Failed to copy');
+      toast.error("Failed to copy");
     }
   };
 
@@ -65,14 +90,16 @@ function PromptIdCopyBadge({ promptId }: { promptId: string }) {
         "inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-mono text-xs",
         "bg-muted/60 border border-border/50 text-muted-foreground",
         "hover:bg-primary/10 hover:border-primary/30 hover:text-primary",
-        "transition-all duration-200 cursor-pointer group max-w-full"
+        "transition-all duration-200 cursor-pointer group max-w-full",
       )}
       title="Click to copy prompt ID"
     >
-      <span className={cn(
-        "transition-all duration-200 truncate",
-        isHovered ? "max-w-[22rem]" : "max-w-[5.5rem]"
-      )}>
+      <span
+        className={cn(
+          "transition-all duration-200 truncate",
+          isHovered ? "max-w-[22rem]" : "max-w-[5.5rem]",
+        )}
+      >
         {isHovered ? promptId : shortId}
       </span>
       {copied ? (
@@ -86,25 +113,33 @@ function PromptIdCopyBadge({ promptId }: { promptId: string }) {
 
 export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const router = useRouter();
-  
+
   const [app, setApp] = useState(initialApp);
-  const [mode, setMode] = useState<EditorMode>('view');
+  const [mode, setMode] = useState<EditorMode>("view");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showAIEditor, setShowAIEditor] = useState(false);
-  
+
   // Editable fields
   const [editName, setEditName] = useState(app.name);
   const [editSlug, setEditSlug] = useState(app.slug);
-  const [editTagline, setEditTagline] = useState(app.tagline || '');
-  const [editDescription, setEditDescription] = useState(app.description || '');
-  const [editComponentCode, setEditComponentCode] = useState(app.component_code);
-  const [editTags, setEditTags] = useState(app.tags.join(', '));
-  const [editRateLimitPerIp, setEditRateLimitPerIp] = useState(app.rate_limit_per_ip.toString());
-  const [editRateLimitWindowHours, setEditRateLimitWindowHours] = useState(app.rate_limit_window_hours.toString());
-  const [editRateLimitAuthenticated, setEditRateLimitAuthenticated] = useState(app.rate_limit_authenticated.toString());
-  const [editFaviconUrl, setEditFaviconUrl] = useState(app.favicon_url || '');
+  const [editTagline, setEditTagline] = useState(app.tagline || "");
+  const [editDescription, setEditDescription] = useState(app.description || "");
+  const [editComponentCode, setEditComponentCode] = useState(
+    app.component_code,
+  );
+  const [editTags, setEditTags] = useState(app.tags.join(", "));
+  const [editRateLimitPerIp, setEditRateLimitPerIp] = useState(
+    app.rate_limit_per_ip.toString(),
+  );
+  const [editRateLimitWindowHours, setEditRateLimitWindowHours] = useState(
+    app.rate_limit_window_hours.toString(),
+  );
+  const [editRateLimitAuthenticated, setEditRateLimitAuthenticated] = useState(
+    app.rate_limit_authenticated.toString(),
+  );
+  const [editFaviconUrl, setEditFaviconUrl] = useState(app.favicon_url || "");
   const [isRegeneratingFavicon, setIsRegeneratingFavicon] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
   const [promptName, setPromptName] = useState<string | null>(null);
@@ -117,9 +152,9 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const handleRegenerateFavicon = async () => {
     setIsRegeneratingFavicon(true);
     try {
-      const response = await fetch('/api/prompt-apps/generate-favicon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/prompt-apps/generate-favicon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           appId: app.id,
           name: editName || app.name,
@@ -129,12 +164,12 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
       if (result.success) {
         setEditFaviconUrl(result.faviconUrl);
         setApp({ ...app, favicon_url: result.faviconUrl });
-        toast.success('Favicon generated!');
+        toast.success("Favicon generated!");
       } else {
-        toast.error(result.error || 'Failed to generate favicon');
+        toast.error(result.error || "Failed to generate favicon");
       }
     } catch {
-      toast.error('Failed to generate favicon');
+      toast.error("Failed to generate favicon");
     } finally {
       setIsRegeneratingFavicon(false);
     }
@@ -149,21 +184,21 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     // Wait for modals to animate out
     await new Promise((resolve) => setTimeout(resolve, 350));
     try {
-      const html2canvas = (await import('html2canvas')).default;
+      const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(document.body, {
         logging: false,
         useCORS: true,
         allowTaint: false,
         scale: window.devicePixelRatio || 1,
       });
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `${app.name.replace(/\s+/g, '-').toLowerCase()}-screenshot.png`;
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `${app.name.replace(/\s+/g, "-").toLowerCase()}-screenshot.png`;
       link.href = dataUrl;
       link.click();
-      toast.success('Screenshot saved!');
+      toast.success("Screenshot saved!");
     } catch {
-      toast.error('Failed to take screenshot');
+      toast.error("Failed to take screenshot");
     } finally {
       setIsTakingScreenshot(false);
     }
@@ -172,18 +207,18 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   // Fetch the prompt name and check if prompt has been updated since app was last saved
   useEffect(() => {
     if (!app.prompt_id) return;
-    
+
     const fetchPromptInfo = async () => {
       const { data, error } = await supabase
-        .from('prompts')
-        .select('name, updated_at')
-        .eq('id', app.prompt_id)
+        .from("prompts")
+        .select("name, updated_at")
+        .eq("id", app.prompt_id)
         .single();
-      
+
       if (!error && data) {
         setPromptName(data.name);
         setPromptUpdatedAt(data.updated_at);
-        
+
         // Check if the prompt was updated after the app was last updated
         if (data.updated_at && app.updated_at) {
           const promptTime = new Date(data.updated_at).getTime();
@@ -192,17 +227,20 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         }
       }
     };
-    
+
     fetchPromptInfo();
   }, [app.prompt_id, app.updated_at]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const tagsArray = editTags.split(',').map(t => t.trim()).filter(Boolean);
-      
+      const tagsArray = editTags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
       const { error } = await supabase
-        .from('prompt_apps')
+        .from("prompt_apps")
         .update({
           name: editName,
           slug: editSlug,
@@ -216,10 +254,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           rate_limit_authenticated: parseInt(editRateLimitAuthenticated),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', app.id);
+        .eq("id", app.id);
 
       if (error) {
-        toast.error('Failed to save changes: ' + error.message);
+        toast.error("Failed to save changes: " + error.message);
         return;
       }
 
@@ -237,12 +275,12 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         rate_limit_authenticated: parseInt(editRateLimitAuthenticated),
       };
       setApp(updatedApp);
-      
-      toast.success('Changes saved successfully!');
-      setMode('view');
+
+      toast.success("Changes saved successfully!");
+      setMode("view");
       router.refresh();
     } catch (error) {
-      toast.error('Failed to save changes');
+      toast.error("Failed to save changes");
       console.error(error);
     } finally {
       setIsSaving(false);
@@ -251,28 +289,32 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
 
   const handlePublish = async () => {
     const { error } = await supabase
-      .from('prompt_apps')
-      .update({ status: 'published', published_at: new Date().toISOString() })
-      .eq('id', app.id);
+      .from("prompt_apps")
+      .update({ status: "published", published_at: new Date().toISOString() })
+      .eq("id", app.id);
 
     if (error) {
-      toast.error('Failed to publish app');
+      toast.error("Failed to publish app");
       return;
     }
 
     // Auto-generate favicon on publish if none exists
     if (!app.favicon_url) {
       try {
-        const response = await fetch('/api/prompt-apps/generate-favicon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/prompt-apps/generate-favicon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ appId: app.id, name: app.name }),
         });
         const result = await response.json();
         if (result.success) {
           setEditFaviconUrl(result.faviconUrl);
-          setApp({ ...app, status: 'published', favicon_url: result.faviconUrl });
-          toast.success('App published with auto-generated icon!');
+          setApp({
+            ...app,
+            status: "published",
+            favicon_url: result.faviconUrl,
+          });
+          toast.success("App published with auto-generated icon!");
           router.refresh();
           return;
         }
@@ -281,24 +323,24 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
       }
     }
 
-    toast.success('App published!');
-    setApp({ ...app, status: 'published' });
+    toast.success("App published!");
+    setApp({ ...app, status: "published" });
     router.refresh();
   };
 
   const handleUnpublish = async () => {
     const { error } = await supabase
-      .from('prompt_apps')
-      .update({ status: 'draft' })
-      .eq('id', app.id);
+      .from("prompt_apps")
+      .update({ status: "draft" })
+      .eq("id", app.id);
 
     if (error) {
-      toast.error('Failed to unpublish app');
+      toast.error("Failed to unpublish app");
       return;
     }
 
-    toast.success('App unpublished');
-    setApp({ ...app, status: 'draft' });
+    toast.success("App unpublished");
+    setApp({ ...app, status: "draft" });
     router.refresh();
   };
 
@@ -312,18 +354,18 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
 
     try {
       const response = await fetch(`/api/prompt-apps/${app.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete app');
+        throw new Error("Failed to delete app");
       }
 
-      toast.success('App deleted');
-      router.push('/prompt-apps');
+      toast.success("App deleted");
+      router.push("/prompt-apps");
     } catch (error) {
-      console.error('Error deleting app:', error);
-      toast.error('Failed to delete app');
+      console.error("Error deleting app:", error);
+      toast.error("Failed to delete app");
       setIsDeleting(false);
     }
   };
@@ -332,28 +374,28 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     // Reset all edit fields to current app values
     setEditName(app.name);
     setEditSlug(app.slug);
-    setEditTagline(app.tagline || '');
-    setEditDescription(app.description || '');
+    setEditTagline(app.tagline || "");
+    setEditDescription(app.description || "");
     setEditComponentCode(app.component_code);
-    setEditTags(app.tags.join(', '));
+    setEditTags(app.tags.join(", "));
     setEditRateLimitPerIp(app.rate_limit_per_ip.toString());
     setEditRateLimitWindowHours(app.rate_limit_window_hours.toString());
     setEditRateLimitAuthenticated(app.rate_limit_authenticated.toString());
-    setMode('view');
+    setMode("view");
   };
 
-  const hasUnsavedChanges = mode === 'edit' && (
-    editComponentCode !== app.component_code ||
-    editName !== app.name ||
-    editSlug !== app.slug ||
-    editTagline !== (app.tagline || '') ||
-    editDescription !== (app.description || '') ||
-    editTags !== app.tags.join(', ') ||
-    editFaviconUrl !== (app.favicon_url || '')
-  );
+  const hasUnsavedChanges =
+    mode === "edit" &&
+    (editComponentCode !== app.component_code ||
+      editName !== app.name ||
+      editSlug !== app.slug ||
+      editTagline !== (app.tagline || "") ||
+      editDescription !== (app.description || "") ||
+      editTags !== app.tags.join(", ") ||
+      editFaviconUrl !== (app.favicon_url || ""));
 
   const handleAIEditFromHeader = () => {
-    if (mode !== 'edit') setMode('edit');
+    if (mode !== "edit") setMode("edit");
     setShowAIEditor(true);
   };
 
@@ -362,51 +404,91 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
       <PromptAppHeader
         mode={mode}
         onModeChange={(m) => {
-          if (m === 'run') setIsIframeLoading(true);
+          if (m === "run") setIsIframeLoading(true);
           setMode(m);
         }}
         isSaving={isSaving}
         onAIEdit={handleAIEditFromHeader}
       />
+      {/* Unsaved Changes Banner — OUTSIDE scrollable area so it's always visible */}
+      {hasUnsavedChanges && (
+        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-orange-300/60 bg-orange-50/90 dark:border-orange-600/40 dark:bg-orange-950/40 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <AlertCircle className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
+            <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
+              You have unsaved changes — click &ldquo;Save Changes&rdquo; to
+              persist them.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? "Saving..." : "Save Now"}
+          </Button>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-5">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
               <Link href="/prompt-apps">
-                <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7 rounded-full hover:bg-primary/10 transition-colors">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-7 w-7 rounded-full hover:bg-primary/10 transition-colors"
+                >
                   <ArrowLeft className="w-3.5 h-3.5" />
                 </Button>
               </Link>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">{app.name}</h1>
-                  <Badge 
-                    variant={app.status === 'published' ? 'default' : 'secondary'}
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">
+                    {app.name}
+                  </h1>
+                  <Badge
+                    variant={
+                      app.status === "published" ? "default" : "secondary"
+                    }
                     className={cn(
                       "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors",
-                      app.status === 'published' && "bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
+                      app.status === "published" &&
+                        "bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800",
                     )}
                   >
-                    {app.status === 'published' ? '● Published' : '○ Draft'}
+                    {app.status === "published" ? "● Published" : "○ Draft"}
                   </Badge>
                 </div>
                 {app.tagline && (
-                  <p className="text-sm md:text-base text-muted-foreground mt-1 line-clamp-2">{app.tagline}</p>
+                  <p className="text-sm md:text-base text-muted-foreground mt-1 line-clamp-2">
+                    {app.tagline}
+                  </p>
                 )}
               </div>
             </div>
-            
+
             <div className="flex gap-2 shrink-0 w-full sm:w-auto">
-              {mode === 'edit' ? (
+              {mode === "edit" ? (
                 <>
-                  <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex-1 sm:flex-initial"
+                  >
                     {isSaving ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? "Saving..." : "Save Changes"}
                   </Button>
                   <Button variant="outline" onClick={handleCancelEdit}>
                     Cancel
@@ -414,8 +496,12 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </>
               ) : (
                 <>
-                  {app.status === 'published' && (
-                    <Link href={`/p/${app.slug}`} target="_blank" className="flex-1 sm:flex-initial">
+                  {app.status === "published" && (
+                    <Link
+                      href={`/p/${app.slug}`}
+                      target="_blank"
+                      className="flex-1 sm:flex-initial"
+                    >
                       <Button variant="outline" className="w-full">
                         <ExternalLink className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">View Public</span>
@@ -423,12 +509,19 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       </Button>
                     </Link>
                   )}
-                  {app.status === 'published' ? (
-                    <Button variant="outline" onClick={handleUnpublish} className="flex-1 sm:flex-initial">
+                  {app.status === "published" ? (
+                    <Button
+                      variant="outline"
+                      onClick={handleUnpublish}
+                      className="flex-1 sm:flex-initial"
+                    >
                       Unpublish
                     </Button>
                   ) : (
-                    <Button onClick={handlePublish} className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white">
+                    <Button
+                      onClick={handlePublish}
+                      className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white"
+                    >
                       <Sparkles className="w-4 h-4 mr-2" />
                       Publish
                     </Button>
@@ -447,7 +540,13 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       <Camera className="w-3.5 h-3.5" />
                     )}
                   </Button>
-                  <Button variant="destructive" onClick={handleDeleteClick} disabled={isDeleting} size="icon" className="shrink-0 h-8 w-8 rounded-full">
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteClick}
+                    disabled={isDeleting}
+                    size="icon"
+                    className="shrink-0 h-8 w-8 rounded-full"
+                  >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </>
@@ -459,41 +558,32 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           <div className="flex items-center gap-3 flex-wrap">
             <div className="hidden sm:inline-flex p-1 rounded-lg bg-muted/50 border border-border/50 gap-1">
               <Button
-                variant={mode === 'view' ? 'default' : 'ghost'}
+                variant={mode === "view" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setMode('view')}
-                className={cn(
-                  "transition-all",
-                  mode === 'view' && "shadow-sm"
-                )}
+                onClick={() => setMode("view")}
+                className={cn("transition-all", mode === "view" && "shadow-sm")}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 View
               </Button>
               <Button
-                variant={mode === 'edit' ? 'default' : 'ghost'}
+                variant={mode === "edit" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setMode('edit')}
+                onClick={() => setMode("edit")}
                 disabled={isSaving}
-                className={cn(
-                  "transition-all",
-                  mode === 'edit' && "shadow-sm"
-                )}
+                className={cn("transition-all", mode === "edit" && "shadow-sm")}
               >
                 <Code2 className="w-4 h-4 mr-2" />
                 Edit
               </Button>
               <Button
-                variant={mode === 'run' ? 'default' : 'ghost'}
+                variant={mode === "run" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => {
-                  setMode('run');
+                  setMode("run");
                   setIsIframeLoading(true);
                 }}
-                className={cn(
-                  "transition-all",
-                  mode === 'run' && "shadow-sm"
-                )}
+                className={cn("transition-all", mode === "run" && "shadow-sm")}
               >
                 <Play className="w-4 h-4 mr-2" />
                 Run
@@ -508,37 +598,14 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               >
                 <Wand2 className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-sm font-medium text-primary">
-                  {promptName || 'Loading prompt...'}
+                  {promptName || "Loading prompt..."}
                 </span>
                 <ExternalLink className="w-3.5 h-3.5 text-primary/60 group-hover:text-primary transition-colors" />
               </Link>
             )}
           </div>
 
-          {/* Unsaved Changes Banner */}
-          {hasUnsavedChanges && (
-            <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-orange-300/60 bg-orange-50/80 dark:border-orange-600/40 dark:bg-orange-950/30">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <AlertCircle className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
-                <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
-                  You have unsaved changes — click &ldquo;Save Changes&rdquo; to persist them.
-                </p>
-              </div>
-              <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                {isSaving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                {isSaving ? 'Saving...' : 'Save Now'}
-              </Button>
-            </div>
-          )}
+          {/* Unsaved Changes Banner — moved to above the scroll area for persistent visibility */}
 
           {/* Prompt Updated Banner */}
           {isPromptStale && app.prompt_id && (
@@ -546,10 +613,12 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <p className="text-sm text-amber-800 dark:text-amber-200">
-                  The linked prompt has been updated since this app was last saved.
+                  The linked prompt has been updated since this app was last
+                  saved.
                   {promptUpdatedAt && (
                     <span className="text-amber-600/80 dark:text-amber-400/80 ml-1">
-                      (Prompt updated {new Date(promptUpdatedAt).toLocaleDateString()})
+                      (Prompt updated{" "}
+                      {new Date(promptUpdatedAt).toLocaleDateString()})
                     </span>
                   )}
                 </p>
@@ -591,14 +660,19 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   <div className="p-2 rounded-lg bg-blue-500/10">
                     <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-blue-200 dark:border-blue-800">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 border-blue-200 dark:border-blue-800"
+                  >
                     Total
                   </Badge>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-0.5">
                   {app.total_executions.toLocaleString()}
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Total Runs</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Total Runs
+                </p>
               </div>
             </div>
 
@@ -610,14 +684,19 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   <div className="p-2 rounded-lg bg-purple-500/10">
                     <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-purple-200 dark:border-purple-800">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 border-purple-200 dark:border-purple-800"
+                  >
                     Unique
                   </Badge>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-0.5">
                   {app.unique_users_count.toLocaleString()}
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Unique Users</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Unique Users
+                </p>
               </div>
             </div>
 
@@ -629,14 +708,21 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   <div className="p-2 rounded-lg bg-green-500/10">
                     <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
                   </div>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-green-200 dark:border-green-800">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 border-green-200 dark:border-green-800"
+                  >
                     Rate
                   </Badge>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-0.5">
-                  {app.total_executions === 0 ? '—' : `${Math.round((app.success_rate || 0) * 100)}%`}
+                  {app.total_executions === 0
+                    ? "—"
+                    : `${Math.round((app.success_rate || 0) * 100)}%`}
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Success Rate</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Success Rate
+                </p>
               </div>
             </div>
 
@@ -648,47 +734,75 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   <div className="p-2 rounded-lg bg-orange-500/10">
                     <Clock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                   </div>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-orange-200 dark:border-orange-800">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 border-orange-200 dark:border-orange-800"
+                  >
                     Avg
                   </Badge>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-0.5">
-                  {app.avg_execution_time_ms ? `${Math.round(app.avg_execution_time_ms)}ms` : '—'}
+                  {app.avg_execution_time_ms
+                    ? `${Math.round(app.avg_execution_time_ms)}ms`
+                    : "—"}
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Avg Time</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Avg Time
+                </p>
               </div>
             </div>
           </div>
 
           {/* Mode Content */}
-          {mode === 'view' && (
+          {mode === "view" && (
             <Tabs defaultValue="details" className="space-y-4">
               <TabsList className="bg-muted/50 p-1 h-auto">
-                <TabsTrigger value="details" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <TabsTrigger
+                  value="details"
+                  className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   Basic Information
                 </TabsTrigger>
-                <TabsTrigger value="code" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <TabsTrigger
+                  value="code"
+                  className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   Component Code
                 </TabsTrigger>
-                <TabsTrigger value="variables" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <TabsTrigger
+                  value="variables"
+                  className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   Variables
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <TabsTrigger
+                  value="settings"
+                  className="data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
                   Additional Configuration
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="details" className="space-y-4 animate-in fade-in-50 duration-300">
+              <TabsContent
+                value="details"
+                className="space-y-4 animate-in fade-in-50 duration-300"
+              >
                 <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</label>
-                        <p className="text-foreground font-medium">{app.name}</p>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Name
+                        </label>
+                        <p className="text-foreground font-medium">
+                          {app.name}
+                        </p>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Slug</label>
-                        <a 
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Slug
+                        </label>
+                        <a
                           href={`https://aimatrx.com/p/fast/${app.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -701,26 +815,40 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     {/* Prompt Info (link also shown in header above for quick access) */}
                     {app.prompt_id && (
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Powered by Prompt</label>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Powered by Prompt
+                        </label>
                         <div className="flex items-center gap-2">
                           <Wand2 className="w-4 h-4 text-primary shrink-0" />
-                          <span className="text-sm font-medium text-foreground">{promptName || 'Loading prompt...'}</span>
+                          <span className="text-sm font-medium text-foreground">
+                            {promptName || "Loading prompt..."}
+                          </span>
                         </div>
                         <PromptIdCopyBadge promptId={app.prompt_id} />
                       </div>
                     )}
                     {app.description && (
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</label>
-                        <p className="text-foreground text-sm whitespace-pre-wrap leading-relaxed">{app.description}</p>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Description
+                        </label>
+                        <p className="text-foreground text-sm whitespace-pre-wrap leading-relaxed">
+                          {app.description}
+                        </p>
                       </div>
                     )}
                     {app.tags && app.tags.length > 0 && (
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tags</label>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Tags
+                        </label>
                         <div className="flex flex-wrap gap-2">
-                          {app.tags.map(tag => (
-                            <Badge key={tag} variant="secondary" className="rounded-full px-3 py-1">
+                          {app.tags.map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="rounded-full px-3 py-1"
+                            >
                               {tag}
                             </Badge>
                           ))}
@@ -731,7 +859,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="code" className="animate-in fade-in-50 duration-300">
+              <TabsContent
+                value="code"
+                className="animate-in fade-in-50 duration-300"
+              >
                 <Card className="border-border/50 shadow-sm overflow-hidden">
                   <CardHeader className="pb-3 bg-muted/30">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -740,10 +871,16 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+                    <Suspense
+                      fallback={
+                        <div className="flex items-center justify-center h-64">
+                          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        </div>
+                      }
+                    >
                       <CodeBlock
                         code={app.component_code}
-                        language={app.component_language || 'tsx'}
+                        language={app.component_language || "tsx"}
                         showLineNumbers={true}
                         allowEdit={false}
                       />
@@ -752,7 +889,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="variables" className="animate-in fade-in-50 duration-300">
+              <TabsContent
+                value="variables"
+                className="animate-in fade-in-50 duration-300"
+              >
                 <Card className="border-border/50 shadow-sm overflow-hidden">
                   <CardHeader className="pb-3 bg-muted/30">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -761,7 +901,13 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+                    <Suspense
+                      fallback={
+                        <div className="flex items-center justify-center h-64">
+                          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        </div>
+                      }
+                    >
                       <CodeBlock
                         code={JSON.stringify(app.variable_schema, null, 2)}
                         language="json"
@@ -773,7 +919,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="settings" className="space-y-4 animate-in fade-in-50 duration-300">
+              <TabsContent
+                value="settings"
+                className="space-y-4 animate-in fade-in-50 duration-300"
+              >
                 <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Rate Limiting</CardTitle>
@@ -781,17 +930,31 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-3 rounded-lg bg-muted/50 space-y-1">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Executions per IP</label>
-                        <p className="text-xl font-bold text-foreground">{app.rate_limit_per_ip}</p>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Executions per IP
+                        </label>
+                        <p className="text-xl font-bold text-foreground">
+                          {app.rate_limit_per_ip}
+                        </p>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/50 space-y-1">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Window (hours)</label>
-                        <p className="text-xl font-bold text-foreground">{app.rate_limit_window_hours}</p>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Window (hours)
+                        </label>
+                        <p className="text-xl font-bold text-foreground">
+                          {app.rate_limit_window_hours}
+                        </p>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/50 space-y-1">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Authenticated users</label>
-                        <p className="text-xl font-bold text-foreground">{app.rate_limit_authenticated}</p>
-                        <p className="text-[10px] text-muted-foreground">per window</p>
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Authenticated users
+                        </label>
+                        <p className="text-xl font-bold text-foreground">
+                          {app.rate_limit_authenticated}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          per window
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -803,11 +966,17 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {(app.allowed_imports as string[] || []).map((imp: string) => (
-                        <Badge key={imp} variant="outline" className="font-mono text-xs rounded-md px-2.5 py-1">
-                          {imp}
-                        </Badge>
-                      ))}
+                      {((app.allowed_imports as string[]) || []).map(
+                        (imp: string) => (
+                          <Badge
+                            key={imp}
+                            variant="outline"
+                            className="font-mono text-xs rounded-md px-2.5 py-1"
+                          >
+                            {imp}
+                          </Badge>
+                        ),
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -815,7 +984,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
             </Tabs>
           )}
 
-          {mode === 'edit' && (
+          {mode === "edit" && (
             <div className="space-y-4 animate-in fade-in-50 duration-300">
               <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
@@ -824,7 +993,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      <Label
+                        htmlFor="name"
+                        className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                      >
                         Name <span className="text-destructive">*</span>
                       </Label>
                       <Input
@@ -837,15 +1009,26 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="slug" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      <Label
+                        htmlFor="slug"
+                        className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                      >
                         Slug <span className="text-destructive">*</span>
                       </Label>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground shrink-0">aimatrx.com/p/fast/</span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          aimatrx.com/p/fast/
+                        </span>
                         <Input
                           id="slug"
                           value={editSlug}
-                          onChange={(e) => setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                          onChange={(e) =>
+                            setEditSlug(
+                              e.target.value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9-]/g, "-"),
+                            )
+                          }
                           placeholder="my-awesome-app"
                           className="flex-1 font-mono text-sm transition-all focus:ring-2 focus:ring-primary/20"
                         />
@@ -854,7 +1037,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tagline" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Label
+                      htmlFor="tagline"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
                       Tagline
                     </Label>
                     <Input
@@ -867,7 +1053,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Label
+                      htmlFor="description"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
                       Description
                     </Label>
                     <Textarea
@@ -881,7 +1070,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tags" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Label
+                      htmlFor="tags"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
                       Tags (comma-separated)
                     </Label>
                     <Input
@@ -894,7 +1086,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="favicon" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Label
+                      htmlFor="favicon"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"
+                    >
                       <Image className="w-3.5 h-3.5" />
                       App Icon / Favicon
                     </Label>
@@ -934,7 +1129,8 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       </Button>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Auto-generated from app name on creation. Click Generate to regenerate, or paste a custom icon URL.
+                      Auto-generated from app name on creation. Click Generate
+                      to regenerate, or paste a custom icon URL.
                     </p>
                   </div>
                 </CardContent>
@@ -957,13 +1153,19 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   </Button>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>}>
+                  <Suspense
+                    fallback={
+                      <div className="flex items-center justify-center h-64">
+                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                      </div>
+                    }
+                  >
                     <CodeBlock
                       code={editComponentCode}
-                      language={app.component_language || 'tsx'}
+                      language={app.component_language || "tsx"}
                       showLineNumbers={true}
                       onCodeChange={(newCode) => setEditComponentCode(newCode)}
-                      customBuiltinKeys={['prompt-app-ui-editor']}
+                      customBuiltinKeys={["prompt-app-ui-editor"]}
                     />
                   </Suspense>
                 </CardContent>
@@ -975,7 +1177,10 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="rate_limit_ip" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Label
+                      htmlFor="rate_limit_ip"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
                       Executions per IP
                     </Label>
                     <Input
@@ -987,26 +1192,36 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rate_limit_window" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Label
+                      htmlFor="rate_limit_window"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
                       Window (hours)
                     </Label>
                     <Input
                       id="rate_limit_window"
                       type="number"
                       value={editRateLimitWindowHours}
-                      onChange={(e) => setEditRateLimitWindowHours(e.target.value)}
+                      onChange={(e) =>
+                        setEditRateLimitWindowHours(e.target.value)
+                      }
                       className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rate_limit_auth" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Label
+                      htmlFor="rate_limit_auth"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
                       Authenticated Users
                     </Label>
                     <Input
                       id="rate_limit_auth"
                       type="number"
                       value={editRateLimitAuthenticated}
-                      onChange={(e) => setEditRateLimitAuthenticated(e.target.value)}
+                      onChange={(e) =>
+                        setEditRateLimitAuthenticated(e.target.value)
+                      }
                       className="transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
@@ -1015,7 +1230,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
             </div>
           )}
 
-          {mode === 'run' && (
+          {mode === "run" && (
             <Card className="border-border/50 shadow-sm animate-in fade-in-50 duration-300">
               <CardHeader className="pb-3 bg-gradient-to-r from-green-500/5 to-transparent">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -1029,7 +1244,9 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                     <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
                       <div className="flex flex-col items-center gap-3">
                         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <p className="text-sm text-muted-foreground font-medium">Loading preview...</p>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          Loading preview...
+                        </p>
                       </div>
                     </div>
                   )}
@@ -1068,7 +1285,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         open={showAIEditor}
         onOpenChange={setShowAIEditor}
         currentCode={editComponentCode}
-        language={app.component_language || 'tsx'}
+        language={app.component_language || "tsx"}
         promptKey="prompt-app-ui-editor"
         onCodeChange={(newCode) => setEditComponentCode(newCode)}
         title="AI Code Editor"
@@ -1083,8 +1300,9 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               Delete App
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{app.name}&quot;? This action cannot be undone
-              and will permanently remove the app and all its execution history.
+              Are you sure you want to delete &quot;{app.name}&quot;? This
+              action cannot be undone and will permanently remove the app and
+              all its execution history.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1101,4 +1319,3 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
     </div>
   );
 }
-

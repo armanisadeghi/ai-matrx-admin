@@ -57,6 +57,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         initialOpen: !isMobile ? false : false,
         uniqueId: "matrix-layout-container",
         isAdmin: isAdmin,
+        serverIsMobile: isMobile,
     };
 
     setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);

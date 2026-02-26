@@ -7,6 +7,7 @@ import { LogIn, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { createClient } from '@/utils/supabase/client';
+import { safeRequestIdleCallback, safeCancelIdleCallback } from '@/utils/browser-compat';
 import type { User } from '@supabase/supabase-js';
 
 const BUTTON_CLASS =
@@ -21,7 +22,7 @@ export function AuthAwareButton() {
   useEffect(() => {
     let cancelled = false;
 
-    const id = requestIdleCallback(() => {
+    const id = safeRequestIdleCallback(() => {
       const supabase = createClient();
       supabase.auth.getUser().then(({ data }) => {
         if (!cancelled) {
@@ -33,7 +34,7 @@ export function AuthAwareButton() {
 
     return () => {
       cancelled = true;
-      cancelIdleCallback(id);
+      safeCancelIdleCallback(id);
     };
   }, []);
 

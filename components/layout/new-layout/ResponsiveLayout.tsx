@@ -19,6 +19,12 @@ interface ResponsiveLayoutProps {
   isAdmin?: boolean;
   breakpoint?: number;
   forceMode?: 'desktop' | 'mobile' | 'auto';
+  /** 
+   * Server-detected mobile hint. Pass true when the server detects a mobile viewport.
+   * This prevents the SSR→hydration layout shift where DesktopLayout's sidebar padding
+   * briefly appears on mobile before JS switches to MobileLayout (no padding).
+   */
+  serverIsMobile?: boolean;
 }
 
 export default function ResponsiveLayout({
@@ -29,9 +35,11 @@ export default function ResponsiveLayout({
   uniqueId = "responsive-layout",
   isAdmin = false,
   breakpoint = 1024, // Default to lg breakpoint
-  forceMode = 'auto'
+  forceMode = 'auto',
+  serverIsMobile = false,
 }: ResponsiveLayoutProps) {
-  const [isMobile, setIsMobile] = useState(false);
+  // Initialize from server hint to prevent SSR→hydration layout shift
+  const [isMobile, setIsMobile] = useState(serverIsMobile);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -49,7 +57,7 @@ export default function ResponsiveLayout({
       setIsMobile(viewportWidth < breakpoint);
     };
 
-    // Initial check
+    // Initial check (corrects if server hint was wrong)
     checkMobile();
 
     // Add resize listener
@@ -74,17 +82,21 @@ export default function ResponsiveLayout({
     isAdmin,
   };
 
-  // During SSR or initial load, we can show a loading state or default to desktop
+  // Use serverIsMobile hint during SSR to render the correct layout immediately.
+  // This prevents the visual shift where a desktop layout briefly appears on mobile.
   if (!isClient) {
-    // You could also read from headers here if you have viewport info from Next.js
-    return (
+    return serverIsMobile ? (
+      <MobileLayout {...layoutProps}>
+        {children}
+      </MobileLayout>
+    ) : (
       <DesktopLayout {...layoutProps} initialOpen={initialOpen}>
         {children}
       </DesktopLayout>
     );
   }
 
-  // Render appropriate layout based on viewport
+  // Render appropriate layout based on client-measured viewport
   return isMobile ? (
     <MobileLayout {...layoutProps}>
       {children}

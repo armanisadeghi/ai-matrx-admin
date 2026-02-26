@@ -19,13 +19,10 @@ const DisplayPreferences = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid gap-6">
+        <div className="space-y-3">
+            <div className="grid gap-3">
                 <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                        <Label htmlFor="darkMode">Dark Mode</Label>
-                        <p className="text-sm text-muted-foreground">Toggle between light and dark themes</p>
-                    </div>
+                    <Label htmlFor="darkMode" className="text-sm font-medium">Dark Mode</Label>
                     <Switch
                         id="darkMode"
                         checked={display.darkMode}

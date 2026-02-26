@@ -110,6 +110,8 @@ export function useClipboard(): UseClipboardResult {
 
     const pasteImage = useCallback(async () => {
         try {
+            // clipboard.read() is not available in Safari < 16.4
+            if (!navigator.clipboard?.read) return null;
             const items = await navigator.clipboard.read();
             for (const item of items) {
                 const imageType = item.types.find(type => type.startsWith('image/'));

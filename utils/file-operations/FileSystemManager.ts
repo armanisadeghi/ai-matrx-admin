@@ -278,23 +278,18 @@ class FileSystemManager {
             if (error) throw error;
 
             // Get URL — use permanent public URL for public buckets, signed URL for private ones
-            const isImage = contentType.startsWith('image/');
             const isPublicBucket = PUBLIC_BUCKETS.has(bucketName);
             let signedUrl: string;
 
             if (isPublicBucket) {
                 const { data: publicData } = this.supabase.storage
                     .from(bucketName)
-                    .getPublicUrl(path, {
-                        transform: isImage ? { width: 800 } : undefined
-                    });
+                    .getPublicUrl(path);
                 signedUrl = publicData.publicUrl;
             } else {
                 const { data: signedData, error: signedError } = await this.supabase.storage
                     .from(bucketName)
-                    .createSignedUrl(path, 3600, {
-                        transform: isImage ? { width: 800 } : undefined
-                    });
+                    .createSignedUrl(path, 3600);
                 if (signedError) throw signedError;
                 signedUrl = signedData.signedUrl;
             }

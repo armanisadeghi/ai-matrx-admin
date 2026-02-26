@@ -48,6 +48,27 @@ const sizeClasses: Record<CardSize, string> = {
   xl: "p-8",
 };
 
+// iOS solid icon backgrounds — vivid, saturated, like real iOS app icons
+const iosIconBg: Record<CardColor, string> = {
+  indigo:  "bg-indigo-600",
+  emerald: "bg-emerald-600",
+  blue:    "bg-blue-600",
+  amber:   "bg-amber-500",
+  purple:  "bg-purple-700",
+  gray:    "bg-zinc-600",
+  red:     "bg-red-600",
+  green:   "bg-green-600",
+  yellow:  "bg-yellow-500",
+  pink:    "bg-pink-600",
+  orange:  "bg-orange-500",
+  teal:    "bg-teal-600",
+  cyan:    "bg-cyan-600",
+  lime:    "bg-lime-600",
+  rose:    "bg-rose-600",
+  violet:  "bg-violet-700",
+  slate:   "bg-slate-600",
+};
+
 const colorClasses: Record<CardColor, {
   bg: string;
   hover: string;
@@ -174,18 +195,29 @@ export const Card = ({
   const sizeClass = sizeClasses[size];
 
   if (compact) {
+    // iOS-accurate: squircle icon (border-radius ~22% = rounded-[22%]), solid vivid bg, white icon, small label
     const compactContent = (
       <div className={cn(
-        "flex flex-col items-center gap-1.5 p-2 rounded-2xl cursor-pointer transition active:scale-95",
+        "flex flex-col items-center gap-[6px] cursor-pointer select-none",
         className
       )}>
-        <div className={cn("p-3 rounded-2xl shadow-sm", colorClass.iconBg)}>
+        {/* iOS squircle icon container */}
+        <div
+          className={cn(
+            // 22% border-radius matches the iOS squircle formula
+            "rounded-[22%] shadow-sm flex items-center justify-center active:opacity-75 transition-opacity",
+            // Size: ~60px box, fill the cell width
+            "w-full aspect-square max-w-[62px]",
+            iosIconBg[color],
+          )}
+        >
           {React.cloneElement(icon, {
-            className: cn(colorClass.iconColor, icon.props.className),
-            size: icon.props.size || 22,
+            className: cn("text-white", icon.props.className),
+            size: icon.props.size || 26,
           })}
         </div>
-        <span className="text-[11px] font-medium text-center leading-tight text-foreground line-clamp-2 w-full">
+        {/* iOS label: small, centered, truncated */}
+        <span className="text-[10.5px] font-medium text-center leading-tight text-foreground w-full truncate px-0.5">
           {title}
         </span>
       </div>
