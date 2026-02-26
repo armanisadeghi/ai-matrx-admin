@@ -89,12 +89,23 @@ export function MobileDock({ items, className }: MobileDockProps) {
     const itemRect = activeEl.getBoundingClientRect();
 
     const dockH = navRect.height;
-    const slotLeft = itemRect.left - navRect.left;
-    const slotW = itemRect.width;
+    const navW = navRect.width;
+    const CORNER_RADIUS = 22; // matches rounded-[22px] on the dock
+
+    // Raw slot position relative to nav
+    const rawX = itemRect.left - navRect.left + PILL_INSET_X;
+    const rawW = itemRect.width - PILL_INSET_X * 2;
+
+    // Clamp pill so it never bleeds outside the dock's rounded corners
+    const minX = CORNER_RADIUS / 2;
+    const maxRight = navW - CORNER_RADIUS / 2;
+    const clampedX = Math.max(minX, rawX);
+    const clampedRight = Math.min(maxRight, rawX + rawW);
+    const clampedW = Math.max(0, clampedRight - clampedX);
 
     setPill({
-      x: slotLeft + PILL_INSET_X,
-      width: slotW - PILL_INSET_X * 2,
+      x: clampedX,
+      width: clampedW,
       height: dockH - PILL_INSET_Y * 2,
     });
   }, [activeIndex]);
@@ -133,7 +144,7 @@ export function MobileDock({ items, className }: MobileDockProps) {
       >
         <div
           ref={navRef}
-          className="relative flex items-stretch mx-glass-strong rounded-[22px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto overflow-hidden"
+          className="relative flex items-stretch mx-glass-strong rounded-[22px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto"
         >
           {/* Sliding pill indicator — fills the active slot */}
           {pill && (
