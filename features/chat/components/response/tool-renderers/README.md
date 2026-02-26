@@ -458,6 +458,32 @@ Open the modal → click the Settings toggle icon in the blue header → see the
 
 ## Adding a New Tool — Checklist
 
+### Option A: AI-Generated (Recommended)
+
+Use the **AI Component Generator** in the MCP Tools Manager admin dashboard. This is the preferred workflow:
+
+1. Go to `app/(authenticated)/admin/tools` and open the MCP Tools Manager
+2. Save at least one test sample on the [Tool Testing page](/demos/api-tests/tool-testing) with `use_for_component = true`
+3. Use the tool in a real conversation so a `cx_tool_call` database entry exists
+4. Click **"Generate UI"** in the MCP Tools Manager toolbar
+5. Select the tool → select samples (auto-loaded) → optionally add instructions → Generate
+6. Review the streaming response + parsed code tabs → Save to Database
+7. The component is live immediately via the dynamic renderer system — no code changes needed
+
+**How it works under the hood:**
+- The generator calls the `tool-ui-component-generator` builtin agent (`51b0c1d5-84b7-46d8-aec6-2b08f9f49fff`) via `POST /api/ai/agents/{id}`
+- It passes 4 variables: `complete_tool_object`, `output_schema`, `sample_stream`, `sample_database_entry`
+- The model streams back a JSON block containing all component code fields
+- On save, the component is stored in `tool_ui_components` and immediately served by the dynamic renderer
+
+**Key files:**
+- Generator UI: `components/admin/ToolUiComponentGenerator.tsx`
+- Agent hook: `components/admin/hooks/useToolComponentAgent.ts`
+- Builtin prompt ID constant: `components/admin/tool-ui-generator-prompt.ts`
+- Builtin registry entry: `lib/redux/prompt-execution/builtins.ts` → `TOOL_UI_COMPONENT_GENERATOR`
+
+### Option B: Manual Code (Advanced)
+
 - [ ] Create directory: `features/chat/components/response/tool-renderers/{tool-name}/`
 - [ ] Create `{ToolName}Inline.tsx` implementing `ToolRendererProps`
 - [ ] (Optional) Create `{ToolName}Overlay.tsx` implementing `ToolRendererProps`
@@ -465,3 +491,7 @@ Open the modal → click the Settings toggle icon in the blue header → see the
 - [ ] Register in `registry.tsx` with `displayName`, `resultsLabel`, `inline`, and optionally `overlay`
 - [ ] Add export line in `features/chat/components/response/tool-renderers/index.ts`
 - [ ] Verify: inline renders in chat, "View all" opens correct modal tab, toggle works
+
+### Option C: Dynamic via Editor (No-Code)
+
+Use the **Edit UI Component** (paintbrush icon) on any tool card in the MCP Tools Manager to manually write or paste component code into the database editor (`ToolUiComponentEditor`). Templates are provided for each code field.

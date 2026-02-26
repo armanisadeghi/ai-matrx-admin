@@ -75,8 +75,8 @@ function CopyButton({ content, label = "Copy" }: { content: string; label?: stri
 
 // ─── Expandable JSON Block ────────────────────────────────────────────────────
 
-function JsonBlock({ label, data }: { label: string; data: unknown }) {
-    const [expanded, setExpanded] = useState(false);
+function JsonBlock({ label, data, defaultExpanded = false }: { label: string; data: unknown; defaultExpanded?: boolean }) {
+    const [expanded, setExpanded] = useState(defaultExpanded);
     const json = JSON.stringify(data, null, 2);
     const preview = json.slice(0, 120) + (json.length > 120 ? "…" : "");
 
@@ -448,20 +448,20 @@ function SampleCard({ sample, index, onUpdate }: SampleCardProps) {
 
                 {/* Arguments tab */}
                 <TabsContent value="arguments" className="p-3 mt-0">
-                    <JsonBlock label="arguments" data={sample.arguments} />
+                    <JsonBlock label="arguments" data={sample.arguments} defaultExpanded />
                 </TabsContent>
 
                 {/* Result tab — shows actual tool output */}
                 <TabsContent value="result" className="p-3 mt-0 space-y-2">
                     {toolOutput ? (
                         <>
-                            <JsonBlock label="output" data={toolOutput} />
+                            <JsonBlock label="output" data={toolOutput} defaultExpanded />
                             {fullResult && (
                                 <JsonBlock label="full_result" data={fullResult} />
                             )}
                         </>
                     ) : fullResult ? (
-                        <JsonBlock label="full_result" data={fullResult} />
+                        <JsonBlock label="full_result" data={fullResult} defaultExpanded />
                     ) : (
                         <p className="text-xs text-muted-foreground text-center py-4">No result captured.</p>
                     )}
@@ -477,7 +477,7 @@ function SampleCard({ sample, index, onUpdate }: SampleCardProps) {
                                 </span>
                                 <CopyButton content={modelFacingContent} label="Copy" />
                             </div>
-                            <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-foreground/80 max-h-80 overflow-y-auto">
+                            <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-foreground/80 max-h-96 overflow-y-auto">
                                 {modelFacingContent}
                             </pre>
                         </div>
@@ -490,7 +490,7 @@ function SampleCard({ sample, index, onUpdate }: SampleCardProps) {
                 {/* Output schema tab */}
                 {outputSchema && (
                     <TabsContent value="schema" className="p-3 mt-0">
-                        <JsonBlock label="output_schema" data={outputSchema} />
+                        <JsonBlock label="output_schema" data={outputSchema} defaultExpanded />
                     </TabsContent>
                 )}
 
@@ -504,7 +504,7 @@ function SampleCard({ sample, index, onUpdate }: SampleCardProps) {
                 {/* Stream tab */}
                 <TabsContent value="stream" className="p-3 mt-0">
                     {sample.raw_stream_events?.length > 0 ? (
-                        <JsonBlock label={`raw_stream_events (${sample.raw_stream_events.length})`} data={sample.raw_stream_events} />
+                        <JsonBlock label={`raw_stream_events (${sample.raw_stream_events.length})`} data={sample.raw_stream_events} defaultExpanded />
                     ) : (
                         <p className="text-xs text-muted-foreground text-center py-4">No stream events captured.</p>
                     )}
@@ -513,7 +513,7 @@ function SampleCard({ sample, index, onUpdate }: SampleCardProps) {
                 {/* Raw final payload tab */}
                 <TabsContent value="raw" className="p-3 mt-0">
                     {fp ? (
-                        <JsonBlock label="final_payload (raw)" data={fp} />
+                        <JsonBlock label="final_payload (raw)" data={fp} defaultExpanded />
                     ) : (
                         <p className="text-xs text-muted-foreground text-center py-4">No payload captured.</p>
                     )}

@@ -96,6 +96,14 @@ export interface PromptBuiltin {
       context: false,
       icon: 'Brain',
     },
+    TOOL_UI_COMPONENT_GENERATOR: {
+      id: '51b0c1d5-84b7-46d8-aec6-2b08f9f49fff',
+      name: 'Tool UI Component Generator',
+      description: 'Generates custom inline/overlay React components for MCP tool result rendering in chat.',
+      key: 'tool-ui-component-generator',
+      context: false,
+      icon: 'Paintbrush',
+    },
   } as const;
   
   // Create reverse lookups for O(1) access

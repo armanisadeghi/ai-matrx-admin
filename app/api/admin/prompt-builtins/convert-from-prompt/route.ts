@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { prompt_id, shortcut_id, builtin_id } = body;
+    const { prompt_id, shortcut_id, builtin_id, prompt_data } = body;
 
     if (!prompt_id) {
       return NextResponse.json(
@@ -41,30 +41,54 @@ export async function POST(request: Request) {
       // UPDATE EXISTING BUILTIN
       isUpdate = true;
 
-      // Fetch the prompt data using the user client (respects RLS on prompts)
-      const { data: prompt, error: promptError } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('id', prompt_id)
-        .single();
+      let promptName: string;
+      let promptDescription: string | null;
+      let promptMessages: unknown;
+      let promptVariableDefaults: unknown;
+      let promptTools: unknown;
+      let promptSettings: unknown;
 
-      if (promptError || !prompt) {
-        return NextResponse.json(
-          { error: 'Failed to fetch prompt data' },
-          { status: 500 }
-        );
+      if (prompt_data) {
+        // Use live editor data passed from the client — avoids stale DB snapshot
+        promptName = prompt_data.name;
+        promptDescription = prompt_data.description ?? null;
+        promptMessages = prompt_data.messages ?? null;
+        promptVariableDefaults = prompt_data.variableDefaults ?? null;
+        promptTools = prompt_data.tools ?? null;
+        promptSettings = prompt_data.settings ?? null;
+      } else {
+        // Fallback: fetch from DB (used when called without live data)
+        const { data: prompt, error: promptError } = await supabase
+          .from('prompts')
+          .select('*')
+          .eq('id', prompt_id)
+          .single();
+
+        if (promptError || !prompt) {
+          return NextResponse.json(
+            { error: 'Failed to fetch prompt data' },
+            { status: 500 }
+          );
+        }
+
+        promptName = prompt.name;
+        promptDescription = prompt.description;
+        promptMessages = prompt.messages;
+        promptVariableDefaults = prompt.variable_defaults;
+        promptTools = prompt.tools;
+        promptSettings = prompt.settings;
       }
 
       // Update the builtin using the admin client (bypasses RLS on prompt_builtins)
       const { error: updateError } = await adminClient
         .from('prompt_builtins')
         .update({
-          name: prompt.name,
-          description: prompt.description,
-          messages: prompt.messages,
-          variable_defaults: prompt.variable_defaults,
-          tools: prompt.tools,
-          settings: prompt.settings,
+          name: promptName,
+          description: promptDescription,
+          messages: promptMessages,
+          variable_defaults: promptVariableDefaults,
+          tools: promptTools,
+          settings: promptSettings,
           source_prompt_id: prompt_id,
           source_prompt_snapshot_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

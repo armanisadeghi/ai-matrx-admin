@@ -6,6 +6,8 @@ import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils"
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { EmailInputDialog } from "@/components/dialogs/EmailInputDialog";
+import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/redux/slices/userSlice";
 
 interface PublicMessageOptionsMenuProps {
   content: string;
@@ -20,6 +22,7 @@ interface PublicMessageOptionsMenuProps {
  * Public version of MessageOptionsMenu with features that work without authentication
  * Includes: Copy (plain, Google Docs, with thinking), HTML preview/export, Edit
  * Excludes: Save to notes, TTS, Quick actions, Tasks (require auth)
+ * Email: sends directly to account email if authenticated, otherwise prompts for address
  */
 const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({ 
   content, 
@@ -30,14 +33,32 @@ const PublicMessageOptionsMenu: React.FC<PublicMessageOptionsMenuProps> = ({
   anchorElement 
 }) => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const user = useSelector(selectUser);
+  const isAuthenticated = !!user?.email;
 
-  // Email to me handler - opens email input dialog
-  const handleOpenEmailDialog = () => {
-    setShowEmailDialog(true);
-    onClose();
+  // Email handler - sends directly if authenticated, otherwise opens dialog
+  const handleEmailToMe = async () => {
+    if (isAuthenticated) {
+      const response = await fetch('/api/chat/email-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content,
+          metadata: { timestamp: new Date().toLocaleString() },
+        }),
+      });
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.msg || 'Failed to send email');
+      }
+      onClose();
+    } else {
+      setShowEmailDialog(true);
+      onClose();
+    }
   };
 
-  // Send email with provided address (uses public endpoint)
+  // Send email with provided address (used when not authenticated)
   const handleSendEmail = async (email: string) => {
     const response = await fetch('/api/public/email', {
       method: 'POST',
@@ -229,10 +250,11 @@ ${cssContent}
       icon: Mail, 
       iconColor: "text-sky-500 dark:text-sky-400", 
       label: "Email to me",
-      action: handleOpenEmailDialog,
+      action: handleEmailToMe,
       category: "Export",
-      successMessage: "Opening email...",
-      showToast: false
+      successMessage: isAuthenticated ? "Email sent!" : "Opening email...",
+      errorMessage: "Failed to send email",
+      showToast: isAuthenticated,
     },
   ];
 

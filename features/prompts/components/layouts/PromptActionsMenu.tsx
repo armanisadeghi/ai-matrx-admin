@@ -47,8 +47,9 @@ export interface PromptActionsMenuProps {
         name: string;
         messages?: PromptMessage[];
         variableDefaults?: PromptVariable[];
-        settings?: Record<string, any>;
+        settings?: Record<string, unknown>;
         description?: string;
+        tools?: unknown;
     };
     
     /** Custom trigger element (defaults to MoreVertical icon button) */
@@ -461,6 +462,7 @@ export function PromptActionsMenu({
                 onClose={() => setIsConvertToBuiltinModalOpen(false)}
                 promptId={promptId}
                 promptName={promptData.name}
+                currentPromptData={promptData}
                 onSuccess={() => {
                     if (onConvertToBuiltinSuccess) {
                         onConvertToBuiltinSuccess();

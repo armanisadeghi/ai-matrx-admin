@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { usePromptsWithFetch } from '@/features/prompts/hooks/usePrompts';
 import { FullPromptOptimizer } from './FullPromptOptimizer';
+import MarkdownStream from '@/components/MarkdownStream';
 
 interface SystemPromptOptimizerProps {
   isOpen: boolean;
@@ -56,9 +57,16 @@ export function SystemPromptOptimizer({
   const [isSavingCopy, setIsSavingCopy] = useState(false);
   
   // Watch streaming text - exactly like PromptRunner
-  const streamingText = useAppSelector(state => 
+  const rawStreamingText = useAppSelector(state => 
     currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ''
   );
+
+  // Strip a leading <reasoning>...</reasoning> block — models sometimes emit one
+  // before the actual response. Only strip when it starts the output; inner
+  // reasoning blocks used as content are preserved.
+  const streamingText = rawStreamingText.trimStart().startsWith('<reasoning>')
+    ? rawStreamingText.replace(/^\s*<reasoning>[\s\S]*?<\/reasoning>\s*/i, '')
+    : rawStreamingText;
   
   const isResponseEnded = useAppSelector(state =>
     currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
@@ -281,39 +289,23 @@ export function SystemPromptOptimizer({
           <div className="flex flex-col min-h-0">
             <Label className="text-sm font-medium mb-2">Optimized Version</Label>
             <div className="flex-1 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200 dark:border-purple-700 rounded-lg p-3 overflow-y-auto relative">
-              {isOptimizing ? (
-                <div className="space-y-3">
-                  {streamingText ? (
-                    <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
-                      {streamingText}
-                    </p>
-                  ) : (
+              {hasOptimizedText || isOptimizing ? (
+                <>
+                  {isOptimizing && !streamingText ? (
                     <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="text-sm">Processing...</span>
                     </div>
+                  ) : (
+                    <MarkdownStream
+                      content={streamingText}
+                      isStreamActive={isOptimizing}
+                      role="assistant"
+                      type="text"
+                      hideCopyButton={false}
+                      className="text-sm"
+                    />
                   )}
-                  {streamingText && (
-                    <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      <span>Streaming response...</span>
-                    </div>
-                  )}
-                </div>
-              ) : hasOptimizedText ? (
-                <>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
-                    {streamingText}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopy}
-                    className="absolute top-2 right-2 h-7 w-7 p-0"
-                    title="Copy to clipboard"
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">

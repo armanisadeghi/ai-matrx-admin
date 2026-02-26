@@ -12,8 +12,6 @@ import {
     ChevronDown,
     ChevronUp,
     Settings,
-    Eye,
-    EyeOff,
     Code,
     Tag,
     FileText,
@@ -25,6 +23,8 @@ import {
     Bug,
     Wand2,
     FlaskConical,
+    ArrowLeft,
+    Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import {
     AlertDialog,
@@ -47,8 +46,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import { useTools } from "@/hooks/useTools";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { mapIcon } from "@/utils/icons/icon-mapper";
@@ -58,13 +57,15 @@ import { ToolUiIncidentViewer } from "./ToolUiIncidentViewer";
 import { ToolUiComponentGenerator } from "./ToolUiComponentGenerator";
 import { ToolTestSamplesViewer } from "./ToolTestSamplesViewer";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface Tool {
     id: string;
     name: string;
     description: string;
-    parameters: any;
-    output_schema?: any;
-    annotations?: any[];
+    parameters: Record<string, unknown>;
+    output_schema?: Record<string, unknown>;
+    annotations?: unknown[];
     function_path: string;
     category?: string;
     tags?: string[];
@@ -79,1302 +80,627 @@ interface EditingTool extends Tool {
     _isEditing?: boolean;
 }
 
+type DetailTab = "samples" | "generate" | "edit-ui" | "incidents";
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export function McpToolsManager() {
     const { databaseTools, isLoading, error, refetch } = useTools({ autoFetch: true });
     const { toast } = useToast();
     const isMobile = useIsMobile();
+
     const [tools, setTools] = useState<EditingTool[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
+    const [selectedTool, setSelectedTool] = useState<EditingTool | null>(null);
+    const [detailTab, setDetailTab] = useState<DetailTab>("samples");
     const [editingTool, setEditingTool] = useState<EditingTool | null>(null);
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [expandedTools, setExpandedTools] = useState<Set<string>>(new Set());
+    const [isCreating, setIsCreating] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState<{
         isOpen: boolean;
         toolId: string | null;
         toolName: string | null;
-    }>({
-        isOpen: false,
-        toolId: null,
-        toolName: null,
-    });
-    const [uiEditorTool, setUiEditorTool] = useState<{ name: string; id: string } | null>(null);
-    const [showIncidents, setShowIncidents] = useState(false);
-    const [showGenerator, setShowGenerator] = useState(false);
-    const [samplesTool, setSamplesTool] = useState<{ name: string; id: string } | null>(null);
+    }>({ isOpen: false, toolId: null, toolName: null });
 
-    // Update tools when database tools change
     useEffect(() => {
         setTools(databaseTools.map(tool => ({ ...tool, _isEditing: false })));
     }, [databaseTools]);
 
-    // Get unique categories
     const categories = React.useMemo(() => {
         const cats = new Set(tools.map(tool => tool.category).filter(Boolean));
         return ["all", ...Array.from(cats)].sort();
     }, [tools]);
 
-    // Filter tools
     const filteredTools = React.useMemo(() => {
         return tools.filter(tool => {
-            const matchesSearch = !searchQuery || 
+            const matchesSearch = !searchQuery ||
                 tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 tool.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-            
             const matchesCategory = selectedCategory === "all" || tool.category === selectedCategory;
-            
             return matchesSearch && matchesCategory;
         });
     }, [tools, searchQuery, selectedCategory]);
 
-    const handleEditTool = (tool: Tool) => {
-        setEditingTool({ ...tool });
-    };
-
     const handleSaveTool = async (tool: EditingTool) => {
-        try {
-            const isNewTool = !tool.id;
-            const url = isNewTool ? '/api/admin/tools' : `/api/admin/tools/${tool.id}`;
-            const method = isNewTool ? 'POST' : 'PUT';
-
-            // Clean up the tool data - remove internal properties
-            const { _isEditing, ...cleanTool } = tool;
-
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(cleanTool),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to save tool');
-            }
-
-            toast({
-                title: 'Success',
-                description: `Tool ${isNewTool ? 'created' : 'updated'} successfully`,
-            });
-
-            setEditingTool(null);
-            await refetch();
-        } catch (error) {
-            console.error('Error saving tool:', error);
-            toast({
-                title: 'Error',
-                description: `Failed to save tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                variant: 'destructive',
-            });
+        const isNew = !tool.id;
+        const url = isNew ? "/api/admin/tools" : `/api/admin/tools/${tool.id}`;
+        const { _isEditing, ...cleanTool } = tool;
+        const response = await fetch(url, {
+            method: isNew ? "POST" : "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cleanTool),
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || "Failed to save");
         }
+        toast({ title: "Saved", description: `Tool ${isNew ? "created" : "updated"} successfully` });
+        setEditingTool(null);
+        setIsCreating(false);
+        await refetch();
     };
 
-    const handleDeleteTool = async (toolId: string, toolName: string) => {
-        setDeleteConfirmation({
-            isOpen: true,
-            toolId,
-            toolName,
-        });
+    const handleDeleteTool = (toolId: string, toolName: string) => {
+        setDeleteConfirmation({ isOpen: true, toolId, toolName });
     };
 
     const confirmDelete = async () => {
-        const { toolId } = deleteConfirmation;
-        
-        if (!toolId) return;
-        
+        if (!deleteConfirmation.toolId) return;
         try {
-            const response = await fetch(`/api/admin/tools/${toolId}`, {
-                method: 'DELETE',
-            });
-
+            const response = await fetch(`/api/admin/tools/${deleteConfirmation.toolId}`, { method: "DELETE" });
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to delete tool');
+                const err = await response.json();
+                throw new Error(err.error || "Failed to delete");
             }
-
-            toast({
-                title: 'Success',
-                description: 'Tool deleted successfully',
-            });
-
-            setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null });
+            toast({ title: "Deleted" });
+            if (selectedTool?.id === deleteConfirmation.toolId) setSelectedTool(null);
             await refetch();
-        } catch (error) {
-            console.error('Error deleting tool:', error);
-            toast({
-                title: 'Error',
-                description: `Failed to delete tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                variant: 'destructive',
-            });
+        } catch (err) {
+            toast({ title: "Error", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+        } finally {
+            setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null });
         }
     };
 
     const handleToggleActive = async (toolId: string, isActive: boolean) => {
         try {
             const response = await fetch(`/api/admin/tools/${toolId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ is_active: isActive }),
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to update tool');
-            }
-
-            // Update local state immediately for better UX
-            setTools(prev => prev.map(tool => 
-                tool.id === toolId ? { ...tool, is_active: isActive } : tool
-            ));
-
-            toast({
-                title: 'Success',
-                description: `Tool ${isActive ? 'activated' : 'deactivated'} successfully`,
-            });
-        } catch (error) {
-            console.error('Error toggling tool status:', error);
-            toast({
-                title: 'Error',
-                description: `Failed to update tool: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                variant: 'destructive',
-            });
-            // Revert the change on error
-            setTools(prev => prev.map(tool => 
-                tool.id === toolId ? { ...tool, is_active: !isActive } : tool
-            ));
+            if (!response.ok) throw new Error("Failed to update");
+            setTools(prev => prev.map(t => t.id === toolId ? { ...t, is_active: isActive } : t));
+            if (selectedTool?.id === toolId) setSelectedTool(prev => prev ? { ...prev, is_active: isActive } : null);
+        } catch {
+            toast({ title: "Error updating tool", variant: "destructive" });
+            setTools(prev => prev.map(t => t.id === toolId ? { ...t, is_active: !isActive } : t));
         }
     };
 
-    const toggleExpanded = (toolId: string) => {
-        setExpandedTools(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(toolId)) {
-                newSet.delete(toolId);
-            } else {
-                newSet.add(toolId);
-            }
-            return newSet;
-        });
-    };
+    // ── Edit / Create forms ────────────────────────────────────────────────────
+
+    if (isCreating || editingTool) {
+        return (
+            <div className="space-y-4">
+                <Button variant="ghost" size="sm" onClick={() => { setIsCreating(false); setEditingTool(null); }} className="gap-1.5">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Tools
+                </Button>
+                <ToolEditor
+                    tool={editingTool}
+                    onSave={handleSaveTool}
+                    onCancel={() => { setIsCreating(false); setEditingTool(null); }}
+                    isMobile={isMobile}
+                />
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-400">Loading tools...</p>
-                </div>
+            <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Loading tools…
             </div>
         );
     }
 
     if (error) {
         return (
-            <Card className="border-red-200 dark:border-red-800">
-                <CardContent className="pt-6">
-                    <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
-                        <X className="h-5 w-5" />
-                        <span>Error loading tools: {error}</span>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="flex items-center gap-2 text-destructive py-8">
+                <X className="h-5 w-5" />
+                Error loading tools: {error}
+            </div>
         );
     }
 
+    // ── Detail panel ──────────────────────────────────────────────────────────
+
+    if (selectedTool) {
+        return (
+            <div className="space-y-3">
+                {/* Back + tool header */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedTool(null)} className="gap-1.5 shrink-0">
+                        <ArrowLeft className="h-4 w-4" />
+                        Tools
+                    </Button>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-mono font-semibold truncate">{selectedTool.name}</span>
+                        <Badge variant={selectedTool.is_active ? "default" : "secondary"} className="text-[10px]">
+                            {selectedTool.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                        {selectedTool.category && (
+                            <Badge variant="outline" className="text-[10px]">{formatText(selectedTool.category)}</Badge>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                        <Switch
+                            checked={selectedTool.is_active ?? false}
+                            onCheckedChange={(v) => handleToggleActive(selectedTool.id, v)}
+                        />
+                        <Button variant="outline" size="sm" onClick={() => setEditingTool(selectedTool)} className="gap-1.5 h-8 text-xs">
+                            <Edit className="h-3.5 w-3.5" />
+                            Edit
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteTool(selectedTool.id, selectedTool.name)}
+                            className="gap-1.5 h-8 text-xs text-destructive hover:text-destructive"
+                        >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Detail tabs */}
+                <Tabs value={detailTab} onValueChange={(v) => setDetailTab(v as DetailTab)}>
+                    <TabsList>
+                        <TabsTrigger value="samples" className="gap-1.5 text-xs">
+                            <FlaskConical className="h-3.5 w-3.5" />
+                            Samples
+                        </TabsTrigger>
+                        <TabsTrigger value="generate" className="gap-1.5 text-xs">
+                            <Wand2 className="h-3.5 w-3.5" />
+                            Generate UI
+                        </TabsTrigger>
+                        <TabsTrigger value="edit-ui" className="gap-1.5 text-xs">
+                            <Paintbrush className="h-3.5 w-3.5" />
+                            Edit UI
+                        </TabsTrigger>
+                        <TabsTrigger value="incidents" className="gap-1.5 text-xs">
+                            <Bug className="h-3.5 w-3.5" />
+                            Incidents
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="samples" className="mt-3">
+                        <ToolTestSamplesViewer
+                            toolName={selectedTool.name}
+                            toolId={selectedTool.id}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="generate" className="mt-3">
+                        <ToolUiComponentGenerator
+                            tools={[selectedTool]}
+                            preselectedToolName={selectedTool.name}
+                            onComplete={() => { toast({ title: "Component generated", description: "Active on next tool use." }); }}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="edit-ui" className="mt-3">
+                        <ToolUiComponentEditor
+                            toolName={selectedTool.name}
+                            toolId={selectedTool.id}
+                            onSaved={() => toast({ title: "Saved", description: "UI component saved." })}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="incidents" className="mt-3">
+                        <ToolUiIncidentViewer toolName={selectedTool.name} />
+                    </TabsContent>
+                </Tabs>
+
+                {/* Delete confirmation */}
+                <AlertDialog open={deleteConfirmation.isOpen} onOpenChange={(o) => !o && setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null })}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Tool</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Delete <strong>&ldquo;{deleteConfirmation.toolName}&rdquo;</strong>? This cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        );
+    }
+
+    // ── Tool list ─────────────────────────────────────────────────────────────
+
     return (
-        <div className="space-y-6 pb-safe">
-            {/* Header Controls */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                        <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                            {/* Search */}
-                            <div className="relative flex-1 max-w-md">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input
-                                    placeholder="Search tools..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 text-base"
-                                    style={{ fontSize: '16px' }}
-                                />
-                            </div>
-
-                            {/* Category Filter */}
-                            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                <SelectTrigger className="w-full sm:w-48">
-                                    <Filter className="h-4 w-4 mr-2" />
-                                    <SelectValue placeholder="Filter by category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {categories.map(category => (
-                                        <SelectItem key={category} value={category}>
-                                            {category === "all" ? "All Categories" : formatText(category)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-wrap gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowGenerator(true)}
-                            >
-                                <Wand2 className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Generate UI</span>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowIncidents(true)}
-                            >
-                                <Bug className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Incidents</span>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={refetch}
-                            >
-                                <Settings className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Refresh</span>
-                            </Button>
-                            {isMobile ? (
-                                <>
-                                    <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
-                                        <Plus className="h-4 w-4 sm:mr-2" />
-                                        <span className="hidden sm:inline">Add Tool</span>
-                                    </Button>
-                                    <Drawer open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                                        <DrawerContent className="max-h-[85dvh]">
-                                            <DrawerTitle className="sr-only">Create New Tool</DrawerTitle>
-                                            <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-                                                <ToolEditor
-                                                    tool={null}
-                                                    onSave={(tool) => {
-                                                        handleSaveTool(tool);
-                                                        setIsCreateDialogOpen(false);
-                                                    }}
-                                                    onCancel={() => setIsCreateDialogOpen(false)}
-                                                    isMobile={true}
-                                                />
-                                            </div>
-                                        </DrawerContent>
-                                    </Drawer>
-                                </>
-                            ) : (
-                                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button size="sm">
-                                            <Plus className="h-4 w-4 sm:mr-2" />
-                                            <span className="hidden sm:inline">Add Tool</span>
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-                                        <DialogHeader className="flex-shrink-0">
-                                            <DialogTitle>Create New Tool</DialogTitle>
-                                        </DialogHeader>
-                                        <div className="flex-1 overflow-y-auto">
-                                            <ToolEditor
-                                                tool={null}
-                                                onSave={(tool) => {
-                                                    handleSaveTool(tool);
-                                                    setIsCreateDialogOpen(false);
-                                                }}
-                                                onCancel={() => setIsCreateDialogOpen(false)}
-                                                isMobile={false}
-                                            />
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex flex-wrap gap-4 sm:gap-6 mt-4 pt-4 border-t border-border">
-                        <div className="text-sm">
-                            <span className="font-medium text-gray-900 dark:text-gray-100">{filteredTools.length}</span>
-                            <span className="text-gray-500 dark:text-gray-400 ml-1">
-                                {filteredTools.length === 1 ? 'tool' : 'tools'} shown
-                            </span>
-                        </div>
-                        <div className="text-sm">
-                            <span className="font-medium text-green-600 dark:text-green-400">
-                                {filteredTools.filter(t => t.is_active).length}
-                            </span>
-                            <span className="text-gray-500 dark:text-gray-400 ml-1">active</span>
-                        </div>
-                        <div className="text-sm">
-                            <span className="font-medium text-gray-500 dark:text-gray-400">
-                                {filteredTools.filter(t => !t.is_active).length}
-                            </span>
-                            <span className="text-gray-500 dark:text-gray-400 ml-1">inactive</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Tools List */}
-            <div className="space-y-4">
-                {filteredTools.map((tool) => (
-                    <ToolCard
-                        key={tool.id}
-                        tool={tool}
-                        isExpanded={expandedTools.has(tool.id)}
-                        onToggleExpanded={() => toggleExpanded(tool.id)}
-                        onEdit={() => handleEditTool(tool)}
-                        onDelete={() => handleDeleteTool(tool.id, tool.name)}
-                        onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
-                        onEditUiComponent={() => setUiEditorTool({ name: tool.name, id: tool.id })}
-                        onViewSamples={() => setSamplesTool({ name: tool.name, id: tool.id })}
+        <div className="space-y-4 pb-safe">
+            {/* Toolbar */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search tools…"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                        style={{ fontSize: "16px" }}
                     />
-                ))}
+                </div>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-44">
+                        <Filter className="h-3.5 w-3.5 mr-1.5" />
+                        <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {categories.map(cat => (
+                            <SelectItem key={cat} value={cat}>
+                                {cat === "all" ? "All Categories" : formatText(cat)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <div className="flex items-center gap-2 ml-auto">
+                    <Button variant="outline" size="sm" onClick={refetch} className="h-8 gap-1.5">
+                        <Settings className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Refresh</span>
+                    </Button>
+                    <Button size="sm" onClick={() => setIsCreating(true)} className="h-8 gap-1.5">
+                        <Plus className="h-3.5 w-3.5" />
+                        Add Tool
+                    </Button>
+                </div>
+            </div>
 
-                {filteredTools.length === 0 && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="text-center py-12">
-                                <Search className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                    No tools found
-                                </h3>
-                                <p className="text-gray-500 dark:text-gray-400">
-                                    {searchQuery || selectedCategory !== "all" 
-                                        ? "Try adjusting your search or filters"
-                                        : "No tools available in the system"
-                                    }
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+            {/* Stats row */}
+            <div className="flex gap-4 text-xs text-muted-foreground">
+                <span><span className="font-semibold text-foreground">{filteredTools.length}</span> tools</span>
+                <span><span className="font-semibold text-success">{filteredTools.filter(t => t.is_active).length}</span> active</span>
+                <span><span className="font-semibold text-muted-foreground">{filteredTools.filter(t => !t.is_active).length}</span> inactive</span>
+            </div>
+
+            {/* Tool list */}
+            <div className="space-y-2">
+                {filteredTools.length === 0 ? (
+                    <div className="text-center py-16 text-muted-foreground">
+                        <Search className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">{searchQuery || selectedCategory !== "all" ? "No tools match your filters" : "No tools in the system"}</p>
+                    </div>
+                ) : (
+                    filteredTools.map(tool => (
+                        <ToolListItem
+                            key={tool.id}
+                            tool={tool}
+                            onSelect={() => {
+                                setSelectedTool(tool);
+                                setDetailTab("samples");
+                            }}
+                            onEdit={(e) => { e.stopPropagation(); setEditingTool(tool); }}
+                            onDelete={(e) => { e.stopPropagation(); handleDeleteTool(tool.id, tool.name); }}
+                            onToggleActive={(isActive) => handleToggleActive(tool.id, isActive)}
+                            onGenerateUi={(e) => { e.stopPropagation(); setSelectedTool(tool); setDetailTab("generate"); }}
+                            onViewSamples={(e) => { e.stopPropagation(); setSelectedTool(tool); setDetailTab("samples"); }}
+                        />
+                    ))
                 )}
             </div>
 
-            {/* Edit Dialog */}
-            {isMobile ? (
-                <Drawer open={!!editingTool} onOpenChange={(open) => !open && setEditingTool(null)}>
-                    <DrawerContent className="max-h-[85dvh]">
-                        <DrawerTitle className="sr-only">Edit Tool</DrawerTitle>
-                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-                            {editingTool && (
-                                <ToolEditor
-                                    tool={editingTool}
-                                    onSave={handleSaveTool}
-                                    onCancel={() => setEditingTool(null)}
-                                    isMobile={true}
-                                />
-                            )}
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            ) : (
-                <Dialog open={!!editingTool} onOpenChange={() => setEditingTool(null)}>
-                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-                        <DialogHeader className="flex-shrink-0">
-                            <DialogTitle>Edit Tool</DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto">
-                            {editingTool && (
-                                <ToolEditor
-                                    tool={editingTool}
-                                    onSave={handleSaveTool}
-                                    onCancel={() => setEditingTool(null)}
-                                    isMobile={false}
-                                />
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog
-                open={deleteConfirmation.isOpen}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null });
-                    }
-                }}
-            >
+            {/* Delete confirmation */}
+            <AlertDialog open={deleteConfirmation.isOpen} onOpenChange={(o) => !o && setDeleteConfirmation({ isOpen: false, toolId: null, toolName: null })}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Tool</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete <strong>&quot;{deleteConfirmation.toolName}&quot;</strong>?{' '}
-                            This action cannot be undone and will permanently remove the tool from the system.
+                            Delete <strong>&ldquo;{deleteConfirmation.toolName}&rdquo;</strong>? This cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={confirmDelete}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {/* UI Component Editor Dialog */}
-            {isMobile ? (
-                <Drawer open={!!uiEditorTool} onOpenChange={(open) => !open && setUiEditorTool(null)}>
-                    <DrawerContent className="max-h-[85dvh]">
-                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
-                            <Paintbrush className="h-5 w-5" />
-                            UI Component: {uiEditorTool?.name}
-                        </DrawerTitle>
-                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-                            {uiEditorTool && (
-                                <ToolUiComponentEditor
-                                    toolName={uiEditorTool.name}
-                                    toolId={uiEditorTool.id}
-                                    onSaved={() => {
-                                        toast({ title: "Saved", description: "UI component saved. Changes will take effect on next tool use." });
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            ) : (
-                <Dialog open={!!uiEditorTool} onOpenChange={() => setUiEditorTool(null)}>
-                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
-                        <DialogHeader className="flex-shrink-0">
-                            <DialogTitle className="flex items-center gap-2">
-                                <Paintbrush className="h-5 w-5" />
-                                UI Component: {uiEditorTool?.name}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto">
-                            {uiEditorTool && (
-                                <ToolUiComponentEditor
-                                    toolName={uiEditorTool.name}
-                                    toolId={uiEditorTool.id}
-                                    onSaved={() => {
-                                        toast({ title: "Saved", description: "UI component saved. Changes will take effect on next tool use." });
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-
-            {/* Incidents Viewer Dialog */}
-            {isMobile ? (
-                <Drawer open={showIncidents} onOpenChange={setShowIncidents}>
-                    <DrawerContent className="max-h-[85dvh]">
-                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
-                            <Bug className="h-5 w-5" />
-                            Dynamic Component Incidents
-                        </DrawerTitle>
-                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-                            <ToolUiIncidentViewer />
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            ) : (
-                <Dialog open={showIncidents} onOpenChange={setShowIncidents}>
-                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1400px] max-h-[90dvh] overflow-hidden flex flex-col">
-                        <DialogHeader className="flex-shrink-0">
-                            <DialogTitle className="flex items-center gap-2">
-                                <Bug className="h-5 w-5" />
-                                Dynamic Component Incidents
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto">
-                            <ToolUiIncidentViewer />
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-
-            {/* Test Samples Viewer Dialog */}
-            {isMobile ? (
-                <Drawer open={!!samplesTool} onOpenChange={(open) => !open && setSamplesTool(null)}>
-                    <DrawerContent className="max-h-[90dvh] flex flex-col">
-                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
-                            <FlaskConical className="h-5 w-5" />
-                            Test Samples: {samplesTool?.name}
-                        </DrawerTitle>
-                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe min-h-0">
-                            {samplesTool && (
-                                <ToolTestSamplesViewer
-                                    toolName={samplesTool.name}
-                                    toolId={samplesTool.id}
-                                />
-                            )}
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            ) : (
-                <Dialog open={!!samplesTool} onOpenChange={(open) => !open && setSamplesTool(null)}>
-                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1200px] max-h-[90dvh] overflow-hidden flex flex-col">
-                        <DialogHeader className="flex-shrink-0">
-                            <DialogTitle className="flex items-center gap-2">
-                                <FlaskConical className="h-5 w-5" />
-                                Test Samples: {samplesTool?.name}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-                            {samplesTool && (
-                                <ToolTestSamplesViewer
-                                    toolName={samplesTool.name}
-                                    toolId={samplesTool.id}
-                                />
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-
-            {/* AI Component Generator Dialog */}
-            {isMobile ? (
-                <Drawer open={showGenerator} onOpenChange={setShowGenerator}>
-                    <DrawerContent className="max-h-[85dvh]">
-                        <DrawerTitle className="px-4 pt-4 flex items-center gap-2">
-                            <Wand2 className="h-5 w-5" />
-                            AI Component Generator
-                        </DrawerTitle>
-                        <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-                            <ToolUiComponentGenerator
-                                tools={tools.map(t => ({
-                                    id: t.id,
-                                    name: t.name,
-                                    description: t.description,
-                                    category: t.category,
-                                }))}
-                                onComplete={() => {
-                                    toast({ title: "Component generated", description: "The new UI component has been saved and will be active on next tool use." });
-                                }}
-                            />
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-            ) : (
-                <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
-                    <DialogContent className="max-w-[95vw] w-full lg:max-w-[1600px] max-h-[90dvh] overflow-hidden flex flex-col">
-                        <DialogHeader className="flex-shrink-0">
-                            <DialogTitle className="flex items-center gap-2">
-                                <Wand2 className="h-5 w-5" />
-                                AI Component Generator
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto">
-                            <ToolUiComponentGenerator
-                                tools={tools.map(t => ({
-                                    id: t.id,
-                                    name: t.name,
-                                    description: t.description,
-                                    category: t.category,
-                                }))}
-                                onComplete={() => {
-                                    toast({ title: "Component generated", description: "The new UI component has been saved and will be active on next tool use." });
-                                }}
-                            />
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
         </div>
     );
 }
 
-// Tool Card Component
-interface ToolCardProps {
+// ─── Tool List Item ───────────────────────────────────────────────────────────
+
+interface ToolListItemProps {
     tool: EditingTool;
-    isExpanded: boolean;
-    onToggleExpanded: () => void;
-    onEdit: () => void;
-    onDelete: () => void;
+    onSelect: () => void;
+    onEdit: (e: React.MouseEvent) => void;
+    onDelete: (e: React.MouseEvent) => void;
     onToggleActive: (isActive: boolean) => void;
-    onEditUiComponent: () => void;
-    onViewSamples: () => void;
+    onGenerateUi: (e: React.MouseEvent) => void;
+    onViewSamples: (e: React.MouseEvent) => void;
 }
 
-function ToolCard({ tool, isExpanded, onToggleExpanded, onEdit, onDelete, onToggleActive, onEditUiComponent, onViewSamples }: ToolCardProps) {
-    const icon = mapIcon(tool.icon, tool.category, 20);
-    
-    return (
-        <Card className={`transition-all ${!tool.is_active ? 'opacity-60' : ''}`}>
-            <CardContent className="pt-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:justify-between mb-4 gap-3">
-                    <div className="flex items-start space-x-3 flex-1 min-w-0 w-full sm:w-auto">
-                        <div className="flex-shrink-0 mt-1">
-                            {icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center flex-wrap gap-2 mb-1">
-                                <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                                    {formatText(tool.name)}
-                                </h3>
-                                <Badge variant={tool.is_active ? "default" : "secondary"} className="text-xs">
-                                    {tool.is_active ? "Active" : "Inactive"}
-                                </Badge>
-                                {tool.category && (
-                                    <Badge variant="outline" className="text-xs">
-                                        {formatText(tool.category)}
-                                    </Badge>
-                                )}
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                {tool.description}
-                            </p>
-                            <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                <span className="font-mono truncate max-w-[150px] sm:max-w-none">{tool.name}</span>
-                                <span>v{tool.version}</span>
-                                {tool.tags && tool.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-1">
-                                        {tool.tags.slice(0, 3).map(tag => (
-                                            <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0">
-                                                {tag}
-                                            </Badge>
-                                        ))}
-                                        {tool.tags.length > 3 && (
-                                            <span className="text-[10px]">+{tool.tags.length - 3}</span>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+function ToolListItem({ tool, onSelect, onEdit, onDelete, onToggleActive, onGenerateUi, onViewSamples }: ToolListItemProps) {
+    const icon = mapIcon(tool.icon, tool.category, 16);
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                        <Switch
-                            checked={tool.is_active}
-                            onCheckedChange={onToggleActive}
-                            className="scale-90 sm:scale-100"
-                        />
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onToggleExpanded}
-                            className="h-8 w-8 p-0"
-                        >
-                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onEditUiComponent}
-                            title="Edit UI Component"
-                            className="h-8 w-8 p-0"
-                        >
-                            <Paintbrush className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onViewSamples}
-                            title="View Test Samples"
-                            className="h-8 w-8 p-0"
-                        >
-                            <FlaskConical className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onEdit}
-                            className="h-8 w-8 p-0"
-                        >
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onDelete}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 dark:text-red-400"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+    return (
+        <button
+            onClick={onSelect}
+            className={`w-full text-left rounded-lg border border-border bg-card hover:bg-accent/30 transition-colors px-4 py-3 ${!tool.is_active ? "opacity-60" : ""}`}
+        >
+            <div className="flex items-center gap-3">
+                {/* Icon + name */}
+                <div className="flex-shrink-0 text-muted-foreground">{icon}</div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-sm font-medium truncate">{tool.name}</span>
+                        <Badge variant={tool.is_active ? "default" : "secondary"} className="text-[10px] h-4 px-1.5">
+                            {tool.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                        {tool.category && (
+                            <Badge variant="outline" className="text-[10px] h-4 px-1.5">{formatText(tool.category)}</Badge>
+                        )}
+                        {tool.version && (
+                            <span className="text-[10px] text-muted-foreground font-mono">v{tool.version}</span>
+                        )}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{tool.description}</p>
                 </div>
 
-                {/* Expanded Content */}
-                {isExpanded && (
-                    <div className="border-t border-border pt-4 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <Label className="font-medium text-gray-700 dark:text-gray-300">Function Path</Label>
-                                <p className="font-mono text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
-                                    {tool.function_path}
-                                </p>
-                            </div>
-                            <div>
-                                <Label className="font-medium text-gray-700 dark:text-gray-300">Created</Label>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                    {tool.created_at ? new Date(tool.created_at).toLocaleString() : 'N/A'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Parameters Preview */}
-                        {tool.parameters && (
-                            <div>
-                                <Label className="font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                                    Parameters Schema
-                                </Label>
-                                <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-x-auto max-h-48 overflow-y-auto">
-                                    {JSON.stringify(tool.parameters, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-
-                        {/* Output Schema Preview */}
-                        {tool.output_schema && (
-                            <div>
-                                <Label className="font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                                    Output Schema
-                                </Label>
-                                <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-x-auto max-h-48 overflow-y-auto">
-                                    {JSON.stringify(tool.output_schema, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                {/* Actions */}
+                <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    <Switch
+                        checked={tool.is_active ?? false}
+                        onCheckedChange={onToggleActive}
+                        className="scale-75"
+                    />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onViewSamples}
+                        title="View Test Samples"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                    >
+                        <FlaskConical className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onGenerateUi}
+                        title="Generate UI Component"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                    >
+                        <Wand2 className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onEdit}
+                        title="Edit Tool"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                    >
+                        <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onDelete}
+                        title="Delete Tool"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                    >
+                        <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            </div>
+        </button>
     );
 }
 
-// Tool Editor Component
+// ─── Tool Editor ──────────────────────────────────────────────────────────────
+
 interface ToolEditorProps {
     tool: EditingTool | null;
-    onSave: (tool: EditingTool) => void;
+    onSave: (tool: EditingTool) => Promise<void>;
     onCancel: () => void;
     isMobile: boolean;
 }
 
 function ToolEditor({ tool, onSave, onCancel, isMobile }: ToolEditorProps) {
     const { toast } = useToast();
-    const [editedTool, setEditedTool] = useState<EditingTool>(() => 
+    const [editedTool, setEditedTool] = useState<EditingTool>(() =>
         tool || {
-            id: '',
-            name: '',
-            description: '',
-            parameters: { type: 'object', properties: {}, required: [] },
-            output_schema: { type: 'object', properties: {} },
+            id: "",
+            name: "",
+            description: "",
+            parameters: { type: "object", properties: {}, required: [] },
+            output_schema: { type: "object", properties: {} },
             annotations: [],
-            function_path: '',
-            category: '',
+            function_path: "",
+            category: "",
             tags: [],
-            icon: '',
+            icon: "",
             is_active: true,
-            version: '1.0.0'
+            version: "1.0.0",
         }
     );
-
     const [activeTab, setActiveTab] = useState("basic");
     const [isSaving, setIsSaving] = useState(false);
     const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
 
     const handleSave = async () => {
-        // Validate required fields
         if (!editedTool.name || !editedTool.description || !editedTool.function_path) {
-            toast({
-                title: 'Validation Error',
-                description: 'Please fill in all required fields: Name, Description, and Function Path',
-                variant: 'destructive',
-            });
+            toast({ title: "Missing required fields", description: "Name, Description, and Function Path are required.", variant: "destructive" });
             return;
         }
-
-        // Check for JSON errors
         if (Object.keys(jsonErrors).length > 0) {
-            toast({
-                title: 'Validation Error',
-                description: 'Please fix JSON errors before saving',
-                variant: 'destructive',
-            });
+            toast({ title: "Fix JSON errors before saving", variant: "destructive" });
             return;
         }
-
         setIsSaving(true);
         try {
             await onSave(editedTool);
+        } catch (err) {
+            toast({ title: "Save failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
     };
 
-    const handleFieldChange = (field: string, value: any) => {
-        setEditedTool(prev => ({ ...prev, [field]: value }));
-    };
+    const setField = (field: string, value: unknown) => setEditedTool(prev => ({ ...prev, [field]: value }));
 
-    const handleJsonFieldChange = (field: string, value: string) => {
+    const setJsonField = (field: string, value: string) => {
         try {
-            const parsed = JSON.parse(value);
-            setEditedTool(prev => ({ ...prev, [field]: parsed }));
-            // Clear error if JSON is now valid
-            setJsonErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
-            });
+            setEditedTool(prev => ({ ...prev, [field]: JSON.parse(value) }));
+            setJsonErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
         } catch (e) {
-            // Set error for invalid JSON
-            setJsonErrors(prev => ({
-                ...prev,
-                [field]: e instanceof Error ? e.message : 'Invalid JSON'
-            }));
+            setJsonErrors(prev => ({ ...prev, [field]: e instanceof Error ? e.message : "Invalid JSON" }));
         }
     };
 
-    const handleTagsChange = (value: string) => {
-        const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-        setEditedTool(prev => ({ ...prev, tags }));
+    const fields = {
+        basic: (
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <Label>Tool Name <span className="text-destructive">*</span></Label>
+                        <Input value={editedTool.name} onChange={e => setField("name", e.target.value)} placeholder="e.g., core_web_search" className="font-mono" style={{ fontSize: "16px" }} />
+                    </div>
+                    <div>
+                        <Label>Category</Label>
+                        <Input value={editedTool.category || ""} onChange={e => setField("category", e.target.value)} placeholder="e.g., core, web, data" style={{ fontSize: "16px" }} />
+                    </div>
+                </div>
+                <div>
+                    <Label>Description <span className="text-destructive">*</span></Label>
+                    <Textarea value={editedTool.description} onChange={e => setField("description", e.target.value)} rows={3} style={{ fontSize: "16px" }} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <Label>Icon</Label>
+                        <IconInputWithValidation value={editedTool.icon || ""} onChange={v => setField("icon", v)} placeholder="e.g., Search" />
+                    </div>
+                    <div>
+                        <Label>Version</Label>
+                        <Input value={editedTool.version || ""} onChange={e => setField("version", e.target.value)} placeholder="1.0.0" style={{ fontSize: "16px" }} />
+                    </div>
+                    <div className="flex items-center gap-2 pt-6">
+                        <Switch checked={editedTool.is_active ?? true} onCheckedChange={v => setField("is_active", v)} />
+                        <Label>Active</Label>
+                    </div>
+                </div>
+                <div>
+                    <Label>Function Path <span className="text-destructive">*</span></Label>
+                    <Input value={editedTool.function_path} onChange={e => setField("function_path", e.target.value)} className="font-mono" style={{ fontSize: "16px" }} />
+                </div>
+                <div>
+                    <Label>Tags (comma-separated)</Label>
+                    <Input
+                        value={editedTool.tags?.join(", ") || ""}
+                        onChange={e => setField("tags", e.target.value.split(",").map(t => t.trim()).filter(Boolean))}
+                        style={{ fontSize: "16px" }}
+                    />
+                </div>
+            </div>
+        ),
+        parameters: (
+            <div className="space-y-2">
+                <Label>Parameters Schema (JSON)</Label>
+                <Textarea
+                    value={JSON.stringify(editedTool.parameters, null, 2)}
+                    onChange={e => setJsonField("parameters", e.target.value)}
+                    className={`font-mono text-sm ${jsonErrors.parameters ? "border-destructive" : ""}`}
+                    style={{ fontSize: "14px" }}
+                    rows={20}
+                />
+                {jsonErrors.parameters && <p className="text-xs text-destructive">JSON Error: {jsonErrors.parameters}</p>}
+            </div>
+        ),
+        output: (
+            <div className="space-y-2">
+                <Label>Output Schema (JSON)</Label>
+                <Textarea
+                    value={JSON.stringify(editedTool.output_schema, null, 2)}
+                    onChange={e => setJsonField("output_schema", e.target.value)}
+                    className={`font-mono text-sm ${jsonErrors.output_schema ? "border-destructive" : ""}`}
+                    style={{ fontSize: "14px" }}
+                    rows={20}
+                />
+                {jsonErrors.output_schema && <p className="text-xs text-destructive">JSON Error: {jsonErrors.output_schema}</p>}
+            </div>
+        ),
+        advanced: (
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label>Annotations (JSON Array)</Label>
+                    <Textarea
+                        value={JSON.stringify(editedTool.annotations, null, 2)}
+                        onChange={e => setJsonField("annotations", e.target.value)}
+                        className={`font-mono text-sm ${jsonErrors.annotations ? "border-destructive" : ""}`}
+                        style={{ fontSize: "14px" }}
+                        rows={8}
+                    />
+                    {jsonErrors.annotations && <p className="text-xs text-destructive">JSON Error: {jsonErrors.annotations}</p>}
+                </div>
+                {tool && (
+                    <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground pt-4 border-t border-border">
+                        <div><span className="block font-medium text-foreground mb-1">Tool ID</span><span className="font-mono">{tool.id}</span></div>
+                        <div><span className="block font-medium text-foreground mb-1">Created</span>{tool.created_at ? new Date(tool.created_at).toLocaleString() : "N/A"}</div>
+                    </div>
+                )}
+            </div>
+        ),
     };
 
-    // Mobile: Stack all sections vertically (no tabs)
-    if (isMobile) {
-        return (
-            <div className="space-y-6 p-4">
-                {/* Mobile Header */}
-                <div className="pb-4 border-b border-border">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {tool ? 'Edit Tool' : 'Create New Tool'}
-                    </h2>
-                </div>
-
-                {/* Basic Info Section */}
-                <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <div className="h-6 w-1 bg-primary rounded-full" />
-                        Basic Info
-                    </h3>
-                    <div className="grid grid-cols-1 gap-4">
-                        <div>
-                            <Label htmlFor="name">Tool Name (Identifier)</Label>
-                            <Input
-                                id="name"
-                                value={editedTool.name}
-                                onChange={(e) => handleFieldChange('name', e.target.value)}
-                                placeholder="e.g., core_web_search"
-                                className="font-mono text-base"
-                                style={{ fontSize: '16px' }}
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="category">Category</Label>
-                            <Input
-                                id="category"
-                                value={editedTool.category || ''}
-                                onChange={(e) => handleFieldChange('category', e.target.value)}
-                                placeholder="e.g., core, web, data"
-                                className="text-base"
-                                style={{ fontSize: '16px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                            id="description"
-                            value={editedTool.description}
-                            onChange={(e) => handleFieldChange('description', e.target.value)}
-                            placeholder="Describe what this tool does..."
-                            rows={3}
-                            className="text-base"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="icon">Icon Name</Label>
-                            <IconInputWithValidation
-                                id="icon"
-                                value={editedTool.icon || ''}
-                                onChange={(value) => handleFieldChange('icon', value)}
-                                placeholder="e.g., Search"
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="version">Version</Label>
-                            <Input
-                                id="version"
-                                value={editedTool.version || ''}
-                                onChange={(e) => handleFieldChange('version', e.target.value)}
-                                placeholder="e.g., 1.0.0"
-                                className="text-base"
-                                style={{ fontSize: '16px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                        <Switch
-                            id="is_active"
-                            checked={editedTool.is_active}
-                            onCheckedChange={(checked) => handleFieldChange('is_active', checked)}
-                        />
-                        <Label htmlFor="is_active">Active</Label>
-                    </div>
-
-                    <div>
-                        <Label htmlFor="function_path">Function Path</Label>
-                        <Input
-                            id="function_path"
-                            value={editedTool.function_path}
-                            onChange={(e) => handleFieldChange('function_path', e.target.value)}
-                            placeholder="e.g., scraper.db_version.tools_functions.search.search_tool_util"
-                            className="font-mono text-base"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="tags">Tags (comma-separated)</Label>
-                        <Input
-                            id="tags"
-                            value={editedTool.tags?.join(', ') || ''}
-                            onChange={(e) => handleTagsChange(e.target.value)}
-                            placeholder="e.g., core, web, search"
-                            className="text-base"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-                </div>
-
-                {/* Parameters Section */}
-                <div className="space-y-4 pt-4 border-t border-border">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <div className="h-6 w-1 bg-primary rounded-full" />
-                        Parameters Schema
-                    </h3>
-                    <div>
-                        <Label htmlFor="parameters">Parameters Schema (JSON)</Label>
-                        <Textarea
-                            id="parameters"
-                            value={JSON.stringify(editedTool.parameters, null, 2)}
-                            onChange={(e) => handleJsonFieldChange('parameters', e.target.value)}
-                            className={`font-mono text-sm ${jsonErrors.parameters ? 'border-red-500 dark:border-red-400' : ''}`}
-                            style={{ fontSize: '16px' }}
-                            rows={12}
-                        />
-                        {jsonErrors.parameters ? (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                JSON Error: {jsonErrors.parameters}
-                            </p>
-                        ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Define the JSON schema for tool parameters. Must be valid JSON.
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Output Schema Section */}
-                <div className="space-y-4 pt-4 border-t border-border">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <div className="h-6 w-1 bg-primary rounded-full" />
-                        Output Schema
-                    </h3>
-                    <div>
-                        <Label htmlFor="output_schema">Output Schema (JSON)</Label>
-                        <Textarea
-                            id="output_schema"
-                            value={JSON.stringify(editedTool.output_schema, null, 2)}
-                            onChange={(e) => handleJsonFieldChange('output_schema', e.target.value)}
-                            className={`font-mono text-sm ${jsonErrors.output_schema ? 'border-red-500 dark:border-red-400' : ''}`}
-                            style={{ fontSize: '16px' }}
-                            rows={12}
-                        />
-                        {jsonErrors.output_schema ? (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                JSON Error: {jsonErrors.output_schema}
-                            </p>
-                        ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Define the JSON schema for tool output. Must be valid JSON.
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Advanced Section */}
-                <div className="space-y-4 pt-4 border-t border-border">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <div className="h-6 w-1 bg-primary rounded-full" />
-                        Advanced
-                    </h3>
-                    <div>
-                        <Label htmlFor="annotations">Annotations (JSON Array)</Label>
-                        <Textarea
-                            id="annotations"
-                            value={JSON.stringify(editedTool.annotations, null, 2)}
-                            onChange={(e) => handleJsonFieldChange('annotations', e.target.value)}
-                            className={`font-mono text-sm ${jsonErrors.annotations ? 'border-red-500 dark:border-red-400' : ''}`}
-                            style={{ fontSize: '16px' }}
-                            rows={8}
-                        />
-                        {jsonErrors.annotations ? (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                JSON Error: {jsonErrors.annotations}
-                            </p>
-                        ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Additional metadata and annotations for the tool.
-                            </p>
-                        )}
-                    </div>
-
-                    {tool && (
-                        <div className="grid grid-cols-1 gap-4 pt-4 border-t border-border">
-                            <div>
-                                <Label>Tool ID</Label>
-                                <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
-                                    {tool.id}
-                                </p>
-                            </div>
-                            <div>
-                                <Label>Created At</Label>
-                                <p className="text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
-                                    {tool.created_at ? new Date(tool.created_at).toLocaleString() : 'N/A'}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 pt-4 border-t border-border pb-safe">
-                    <Button onClick={handleSave} disabled={isSaving} className="w-full">
-                        {isSaving ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        ) : (
-                            <Save className="h-4 w-4 mr-2" />
-                        )}
-                        {isSaving ? 'Saving...' : 'Save Tool'}
-                    </Button>
-                    <Button variant="outline" onClick={onCancel} className="w-full">
-                        Cancel
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    // Desktop: Use tabs
     return (
-        <div className="space-y-6 p-1">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                    <TabsTrigger value="parameters">Parameters</TabsTrigger>
-                    <TabsTrigger value="output">Output Schema</TabsTrigger>
-                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="basic" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="name">Tool Name (Identifier)</Label>
-                            <Input
-                                id="name"
-                                value={editedTool.name}
-                                onChange={(e) => handleFieldChange('name', e.target.value)}
-                                placeholder="e.g., core_web_search"
-                                className="font-mono text-base"
-                                style={{ fontSize: '16px' }}
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="category">Category</Label>
-                            <Input
-                                id="category"
-                                value={editedTool.category || ''}
-                                onChange={(e) => handleFieldChange('category', e.target.value)}
-                                placeholder="e.g., core, web, data"
-                                className="text-base"
-                                style={{ fontSize: '16px' }}
-                            />
-                        </div>
+        <Card>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-base">{tool ? `Edit: ${tool.name}` : "Create New Tool"}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {isMobile ? (
+                    <div className="space-y-6">
+                        <div className="h-px bg-border" /><h3 className="text-sm font-medium">Basic Info</h3>{fields.basic}
+                        <div className="h-px bg-border" /><h3 className="text-sm font-medium">Parameters</h3>{fields.parameters}
+                        <div className="h-px bg-border" /><h3 className="text-sm font-medium">Output Schema</h3>{fields.output}
+                        <div className="h-px bg-border" /><h3 className="text-sm font-medium">Advanced</h3>{fields.advanced}
                     </div>
+                ) : (
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList>
+                            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                            <TabsTrigger value="parameters">Parameters</TabsTrigger>
+                            <TabsTrigger value="output">Output Schema</TabsTrigger>
+                            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="basic" className="mt-4">{fields.basic}</TabsContent>
+                        <TabsContent value="parameters" className="mt-4">{fields.parameters}</TabsContent>
+                        <TabsContent value="output" className="mt-4">{fields.output}</TabsContent>
+                        <TabsContent value="advanced" className="mt-4">{fields.advanced}</TabsContent>
+                    </Tabs>
+                )}
 
-                    <div>
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                            id="description"
-                            value={editedTool.description}
-                            onChange={(e) => handleFieldChange('description', e.target.value)}
-                            placeholder="Describe what this tool does..."
-                            rows={3}
-                            className="text-base"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <Label htmlFor="icon">Icon Name</Label>
-                            <IconInputWithValidation
-                                id="icon"
-                                value={editedTool.icon || ''}
-                                onChange={(value) => handleFieldChange('icon', value)}
-                                placeholder="e.g., Search"
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="version">Version</Label>
-                            <Input
-                                id="version"
-                                value={editedTool.version || ''}
-                                onChange={(e) => handleFieldChange('version', e.target.value)}
-                                placeholder="e.g., 1.0.0"
-                                className="text-base"
-                                style={{ fontSize: '16px' }}
-                            />
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Switch
-                                id="is_active"
-                                checked={editedTool.is_active}
-                                onCheckedChange={(checked) => handleFieldChange('is_active', checked)}
-                            />
-                            <Label htmlFor="is_active">Active</Label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <Label htmlFor="function_path">Function Path</Label>
-                        <Input
-                            id="function_path"
-                            value={editedTool.function_path}
-                            onChange={(e) => handleFieldChange('function_path', e.target.value)}
-                            placeholder="e.g., scraper.db_version.tools_functions.search.search_tool_util"
-                            className="font-mono text-base"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="tags">Tags (comma-separated)</Label>
-                        <Input
-                            id="tags"
-                            value={editedTool.tags?.join(', ') || ''}
-                            onChange={(e) => handleTagsChange(e.target.value)}
-                            placeholder="e.g., core, web, search"
-                            className="text-base"
-                            style={{ fontSize: '16px' }}
-                        />
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="parameters" className="space-y-4">
-                    <div>
-                        <Label htmlFor="parameters">Parameters Schema (JSON)</Label>
-                        <Textarea
-                            id="parameters"
-                            value={JSON.stringify(editedTool.parameters, null, 2)}
-                            onChange={(e) => handleJsonFieldChange('parameters', e.target.value)}
-                            className={`font-mono text-sm ${jsonErrors.parameters ? 'border-red-500 dark:border-red-400' : ''}`}
-                            style={{ fontSize: '16px' }}
-                            rows={15}
-                        />
-                        {jsonErrors.parameters ? (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                JSON Error: {jsonErrors.parameters}
-                            </p>
-                        ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Define the JSON schema for tool parameters. Must be valid JSON.
-                            </p>
-                        )}
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="output" className="space-y-4">
-                    <div>
-                        <Label htmlFor="output_schema">Output Schema (JSON)</Label>
-                        <Textarea
-                            id="output_schema"
-                            value={JSON.stringify(editedTool.output_schema, null, 2)}
-                            onChange={(e) => handleJsonFieldChange('output_schema', e.target.value)}
-                            className={`font-mono text-sm ${jsonErrors.output_schema ? 'border-red-500 dark:border-red-400' : ''}`}
-                            style={{ fontSize: '16px' }}
-                            rows={15}
-                        />
-                        {jsonErrors.output_schema ? (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                JSON Error: {jsonErrors.output_schema}
-                            </p>
-                        ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Define the JSON schema for tool output. Must be valid JSON.
-                            </p>
-                        )}
-                    </div>
-                </TabsContent>
-
-                <TabsContent value="advanced" className="space-y-4">
-                    <div>
-                        <Label htmlFor="annotations">Annotations (JSON Array)</Label>
-                        <Textarea
-                            id="annotations"
-                            value={JSON.stringify(editedTool.annotations, null, 2)}
-                            onChange={(e) => handleJsonFieldChange('annotations', e.target.value)}
-                            className={`font-mono text-sm ${jsonErrors.annotations ? 'border-red-500 dark:border-red-400' : ''}`}
-                            style={{ fontSize: '16px' }}
-                            rows={8}
-                        />
-                        {jsonErrors.annotations ? (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                                JSON Error: {jsonErrors.annotations}
-                            </p>
-                        ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Additional metadata and annotations for the tool.
-                            </p>
-                        )}
-                    </div>
-
-                    {tool && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
-                            <div>
-                                <Label>Tool ID</Label>
-                                <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
-                                    {tool.id}
-                                </p>
-                            </div>
-                            <div>
-                                <Label>Created At</Label>
-                                <p className="text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1">
-                                    {tool.created_at ? new Date(tool.created_at).toLocaleString() : 'N/A'}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </TabsContent>
-            </Tabs>
-
-            {/* Actions */}
-            <div className="flex justify-end space-x-2 pt-4 border-t border-border">
-                <Button variant="outline" onClick={onCancel}>
-                    Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    ) : (
-                        <Save className="h-4 w-4 mr-2" />
-                    )}
-                    {isSaving ? 'Saving...' : 'Save Tool'}
-                </Button>
-            </div>
-        </div>
+                <div className="flex justify-end gap-2 pt-4 border-t border-border mt-6">
+                    <Button variant="outline" onClick={onCancel}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={isSaving} className="gap-1.5">
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        {isSaving ? "Saving…" : "Save Tool"}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
     );
 }

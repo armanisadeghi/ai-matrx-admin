@@ -64,11 +64,22 @@ import { getPlacementTypeMeta } from '@/features/prompt-builtins/constants';
 import { ShortcutFormFields } from '@/features/prompt-builtins/components/ShortcutFormFields';
 import { ScopeMappingEditor } from '@/features/prompt-builtins/components/ScopeMappingEditor';
 
+interface CurrentPromptData {
+  name: string;
+  messages?: unknown;
+  variableDefaults?: PromptVariable[];
+  settings?: Record<string, unknown>;
+  description?: string;
+  tools?: unknown;
+}
+
 interface ConvertToBuiltinModalProps {
   isOpen: boolean;
   onClose: () => void;
   promptId: string;
   promptName: string;
+  /** Live in-memory prompt data from the editor — uses DB fallback if not provided */
+  currentPromptData?: CurrentPromptData;
   onSuccess?: () => void;
 }
 
@@ -140,6 +151,7 @@ export function ConvertToBuiltinModal({
   onClose,
   promptId,
   promptName,
+  currentPromptData,
   onSuccess,
 }: ConvertToBuiltinModalProps) {
   const router = useRouter();
@@ -210,17 +222,24 @@ export function ConvertToBuiltinModal({
     }
   }, [isOpen, promptId, promptName]);
 
-  // Fetch prompt data to get variables
+  // Get prompt variables — use live editor data if available, otherwise fall back to DB fetch
   const fetchPromptData = async () => {
+    if (currentPromptData) {
+      const variables = currentPromptData.variableDefaults || [];
+      console.log('📊 Using live prompt variables:', variables);
+      setPromptVariables(variables);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/prompts/${promptId}`);
       if (!response.ok) throw new Error('Failed to fetch prompt data');
       
       const data = await response.json();
       const variables = data.variable_defaults || [];
-      console.log('📊 Fetched prompt variables:', variables);
+      console.log('📊 Fetched prompt variables from DB:', variables);
       setPromptVariables(variables);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching prompt data:', err);
       setPromptVariables([]);
     }
@@ -282,6 +301,8 @@ export function ConvertToBuiltinModal({
         body: JSON.stringify({
           prompt_id: promptId,
           builtin_id: builtinAction === 'update' ? selectedBuiltin?.id : undefined,
+          // Pass live editor data so the API uses current state, not a stale DB snapshot
+          prompt_data: currentPromptData ?? null,
         }),
       });
 
