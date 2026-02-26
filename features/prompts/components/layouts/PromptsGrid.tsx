@@ -254,8 +254,15 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
         { value: "name-asc", label: "Name (A-Z)" },
         { value: "name-desc", label: "Name (Z-A)" },
     ];
+    const showOptions: { value: PromptTab | "all"; label: string }[] = [
+        { value: "all", label: "All Prompts" },
+        { value: "mine", label: "My Prompts" },
+        { value: "shared", label: "Shared with Me" },
+    ];
     const [filterDetailKey, setFilterDetailKey] = useState<string | null>(null);
     const hasSortFilter = sortBy !== "updated-desc";
+    const hasShowFilter = activeTab !== "mine";
+    const activeFilterCount = (hasSortFilter ? 1 : 0) + (hasShowFilter ? 1 : 0);
 
     const handleFilterModalChange = (open: boolean) => {
         setIsFilterModalOpen(open);
@@ -552,15 +559,22 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                 isOpen={isNewModalOpen}
                 onClose={() => setIsNewModalOpen(false)}
             />
-            <BottomSheet open={isFilterModalOpen} onOpenChange={handleFilterModalChange}>
+            <BottomSheet open={isFilterModalOpen} onOpenChange={handleFilterModalChange} title="Filters">
                 <BottomSheetHeader
-                    title={filterDetailKey === "sortBy" ? "Sort By" : "Filters"}
+                    title={
+                        filterDetailKey === "sortBy" ? "Sort By"
+                            : filterDetailKey === "show" ? "Show"
+                                : "Filters"
+                    }
                     showBack={filterDetailKey !== null}
                     onBack={() => setFilterDetailKey(null)}
                     trailing={
-                        !filterDetailKey && hasSortFilter ? (
+                        !filterDetailKey && activeFilterCount > 0 ? (
                             <button
-                                onClick={() => setSortBy("updated-desc")}
+                                onClick={() => {
+                                    setSortBy("updated-desc");
+                                    setActiveTab("mine");
+                                }}
                                 className="flex items-center gap-1 text-primary active:opacity-70 min-h-[44px] px-1"
                             >
                                 <RotateCcw className="h-3.5 w-3.5" />
@@ -603,8 +617,56 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                 </button>
                             ))}
                         </>
+                    ) : filterDetailKey === "show" ? (
+                        <>
+                            {showOptions.map((option, idx) => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => {
+                                        if (option.value === "all") {
+                                            setActiveTab("mine");
+                                        } else {
+                                            setActiveTab(option.value);
+                                        }
+                                        setFilterDetailKey(null);
+                                    }}
+                                    className={cn(
+                                        "flex items-center w-full px-5 min-h-[44px] active:bg-white/5 transition-colors",
+                                        idx < showOptions.length - 1 && "border-b border-white/[0.06]"
+                                    )}
+                                >
+                                    <span className={cn(
+                                        "text-[15px] flex-1 text-left",
+                                        (option.value === "all" && activeTab === "mine" && !hasShowFilter) || option.value === activeTab
+                                            ? "font-medium"
+                                            : ""
+                                    )}>
+                                        {option.label}
+                                    </span>
+                                    {((option.value === "all" && activeTab === "mine") || (option.value !== "all" && option.value === activeTab)) && (
+                                        <Check className="h-5 w-5 text-primary shrink-0" />
+                                    )}
+                                </button>
+                            ))}
+                        </>
                     ) : (
                         <>
+                            {/* Show filter */}
+                            <button
+                                onClick={() => setFilterDetailKey("show")}
+                                className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Show</span>
+                                <span className={cn(
+                                    "text-[15px] mr-1.5 truncate max-w-[180px]",
+                                    hasShowFilter ? "text-foreground" : "text-muted-foreground"
+                                )}>
+                                    {activeTab === "mine" ? "All Prompts" : activeTab === "shared" ? "Shared with Me" : "All Prompts"}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                            </button>
+
+                            {/* Sort By filter */}
                             <button
                                 onClick={() => setFilterDetailKey("sortBy")}
                                 className="flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors border-b border-white/[0.06]"
@@ -619,10 +681,29 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                             </button>
 
-                            {hasSortFilter && (
+                            {/* Coming Soon filters */}
+                            <button
+                                disabled
+                                className="flex items-center w-full px-5 min-h-[52px] opacity-40 border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Tags</span>
+                                <span className="text-[13px] text-muted-foreground mr-1.5">Coming Soon</span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                            </button>
+
+                            <button
+                                disabled
+                                className="flex items-center w-full px-5 min-h-[52px] opacity-40 border-b border-white/[0.06]"
+                            >
+                                <span className="text-[15px] font-medium flex-1 text-left">Categories</span>
+                                <span className="text-[13px] text-muted-foreground mr-1.5">Coming Soon</span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                            </button>
+
+                            {activeFilterCount > 0 && (
                                 <div className="pt-4 pb-2">
                                     <p className="text-[13px] text-muted-foreground text-center">
-                                        1 active filter
+                                        {activeFilterCount} active {activeFilterCount === 1 ? "filter" : "filters"}
                                     </p>
                                 </div>
                             )}

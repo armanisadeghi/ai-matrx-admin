@@ -1021,11 +1021,11 @@
     border-bottom: none;
   }
 
-  /* Glass scrim — subtle blur behind bottom sheets (no darkening) */
+  /* Glass scrim — very subtle blur behind bottom sheets (no darkening) */
   .mx-glass-scrim {
-    backdrop-filter: blur(6px) saturate(120%);
-    -webkit-backdrop-filter: blur(6px) saturate(120%);
-    background: transparent;
+    backdrop-filter: blur(2px) saturate(110%);
+    -webkit-backdrop-filter: blur(2px) saturate(110%);
+    background: rgba(0, 0, 0, 0.05);
   }
 
   /* ===== END GLASS EFFECT UTILITIES ===== */

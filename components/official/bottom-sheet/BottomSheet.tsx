@@ -2,38 +2,34 @@
 
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const SNAP_POINTS = [0.6, 1] as const;
 
 interface BottomSheetProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    title?: string;
     children: React.ReactNode;
 }
 
-function BottomSheet({ open, onOpenChange, children }: BottomSheetProps) {
-    const [snap, setSnap] = React.useState<number | string | null>(SNAP_POINTS[0]);
-
-    React.useEffect(() => {
-        if (!open) setSnap(SNAP_POINTS[0]);
-    }, [open]);
-
+function BottomSheet({ open, onOpenChange, title = "Bottom Sheet", children }: BottomSheetProps) {
     return (
-        <DrawerPrimitive.Root
-            open={open}
-            onOpenChange={onOpenChange}
-            snapPoints={SNAP_POINTS as unknown as (number | string)[]}
-            activeSnapPoint={snap}
-            setActiveSnapPoint={setSnap}
-            modal={false}
-        >
+        <DrawerPrimitive.Root open={open} onOpenChange={onOpenChange}>
             <DrawerPrimitive.Portal>
                 <DrawerPrimitive.Overlay className="fixed inset-0 z-50 mx-glass-scrim" />
                 <DrawerPrimitive.Content
-                    className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl mx-glass-drawer overflow-hidden"
+                    className="fixed inset-x-0 bottom-0 z-50 flex flex-col h-[60dvh] rounded-t-2xl overflow-hidden border border-b-0 border-[var(--glass-border)]"
+                    style={{
+                        background: "var(--glass-bg)",
+                        backdropFilter: "blur(24px) saturate(200%)",
+                        WebkitBackdropFilter: "blur(24px) saturate(200%)",
+                    }}
+                    aria-describedby={undefined}
                 >
+                    <VisuallyHidden>
+                        <DrawerPrimitive.Title>{title}</DrawerPrimitive.Title>
+                    </VisuallyHidden>
                     <div className="mx-auto mt-3 mb-1 h-1.5 w-10 rounded-full bg-muted-foreground/30 flex-shrink-0" />
                     {children}
                 </DrawerPrimitive.Content>
@@ -82,9 +78,7 @@ interface BottomSheetBodyProps {
 
 function BottomSheetBody({ children, className }: BottomSheetBodyProps) {
     return (
-        <div
-            className={cn("flex-1 overflow-y-auto overscroll-contain pb-safe", className)}
-        >
+        <div className={cn("flex-1 overflow-y-auto overscroll-contain pb-safe", className)}>
             {children}
         </div>
     );
