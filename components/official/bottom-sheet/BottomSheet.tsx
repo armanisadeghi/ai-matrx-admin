@@ -1,10 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Drawer as DrawerPrimitive } from "vaul";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+    Drawer,
+    DrawerPortal,
+    DrawerContent,
+    DrawerTitle,
+} from "@/components/ui/drawer";
+import { Drawer as DrawerPrimitive } from "vaul";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface BottomSheetProps {
     open: boolean;
@@ -15,17 +21,21 @@ interface BottomSheetProps {
 
 function BottomSheet({ open, onOpenChange, title = "Bottom Sheet", children }: BottomSheetProps) {
     return (
-        <DrawerPrimitive.Root open={open} onOpenChange={onOpenChange}>
-            <DrawerPrimitive.Portal>
-                <DrawerPrimitive.Overlay className="fixed inset-0 z-50 mx-glass-scrim" />
+        <Drawer open={open} onOpenChange={onOpenChange}>
+            <DrawerPortal>
+                <DrawerPrimitive.Overlay
+                    className="fixed inset-0 z-50"
+                    style={{ background: "rgba(0, 0, 0, 0.08)" }}
+                />
                 <DrawerPrimitive.Content
-                    className="fixed inset-x-0 bottom-0 z-50 flex flex-col h-[60dvh] rounded-t-2xl overflow-hidden border border-b-0 border-[var(--glass-border)]"
+                    className="fixed inset-x-0 bottom-0 z-50 mt-24 flex flex-col rounded-t-2xl overflow-hidden min-h-[60dvh]"
                     style={{
-                        background: "var(--glass-bg)",
-                        backdropFilter: "blur(24px) saturate(200%)",
-                        WebkitBackdropFilter: "blur(24px) saturate(200%)",
+                        background: "var(--glass-bg-subtle)",
+                        backdropFilter: "blur(20px) saturate(180%)",
+                        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                        border: "1px solid var(--glass-border)",
+                        borderBottom: "none",
                     }}
-                    aria-describedby={undefined}
                 >
                     <VisuallyHidden>
                         <DrawerPrimitive.Title>{title}</DrawerPrimitive.Title>
@@ -33,8 +43,8 @@ function BottomSheet({ open, onOpenChange, title = "Bottom Sheet", children }: B
                     <div className="mx-auto mt-3 mb-1 h-1.5 w-10 rounded-full bg-muted-foreground/30 flex-shrink-0" />
                     {children}
                 </DrawerPrimitive.Content>
-            </DrawerPrimitive.Portal>
-        </DrawerPrimitive.Root>
+            </DrawerPortal>
+        </Drawer>
     );
 }
 
