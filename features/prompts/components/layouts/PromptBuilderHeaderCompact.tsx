@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
@@ -9,6 +8,7 @@ import { SystemPromptOptimizer } from "@/features/prompts/components/actions/pro
 import { PromptActionsMenu } from "@/features/prompts/components/layouts/PromptActionsMenu";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { PromptModeNavigation } from "@/features/prompts/components/PromptModeNavigation";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;
@@ -49,118 +49,23 @@ export function PromptBuilderHeaderCompact({
     const router = useRouter();
     const { openPrompt } = usePromptRunner();
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
+    const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
     const isAdminMode = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
 
     return (
         <>
         <div className="flex items-center justify-between gap-2 h-full w-full overflow-hidden">
-            {/* Mobile - Left: Menu + Status */}
+            {/* Mobile - Left: Back chevron + status */}
             <div className="md:hidden flex items-center gap-1 flex-shrink-0">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-full">
-                            <MoreHorizontal className="h-3.5 w-3.5" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
-                        <DropdownMenuItem onClick={() => router.push('/ai/prompts')}>
-                            <ChevronLeft className="h-4 w-4 mr-2" />
-                            Back to Prompts
-                        </DropdownMenuItem>
-                        {promptId && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => router.push(`/ai/prompts/run/${promptId}`)}>
-                                    <Play className="h-4 w-4 mr-2" />
-                                    Switch to Run Mode
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                        <DropdownMenuSeparator />
-                        {onOpenSettings && (
-                            <DropdownMenuItem onClick={onOpenSettings}>
-                                <Settings className="h-4 w-4 mr-2" />
-                                Settings
-                            </DropdownMenuItem>
-                        )}
-                        {onOpenFullScreenEditor && (
-                            <DropdownMenuItem onClick={onOpenFullScreenEditor}>
-                                <Maximize2 className="h-4 w-4 mr-2" />
-                                Full Editor
-                            </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setIsOptimizerOpen(true)}>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Optimize
-                        </DropdownMenuItem>
-                        {isAdminMode && (
-                            <>
-                                <DropdownMenuItem>
-                                    <GitCompare className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
-                                    <span className="text-amber-600 dark:text-amber-400">Compare</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <BarChart className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
-                                    <span className="text-amber-600 dark:text-amber-400">Evaluate</span>
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                        {/* Prompt Actions Group */}
-                        {fullPromptObject?.id && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => {
-                                    openPrompt({
-                                        promptId: fullPromptObject.id,
-                                        executionConfig: {
-                                            auto_run: false,
-                                            allow_chat: true,
-                                            show_variables: true,
-                                            apply_variables: false,
-                                            track_in_runs: true,
-                                            use_pre_execution_input: false,
-                                        },
-                                    });
-                                }}>
-                                    <Play className="h-4 w-4 mr-2" />
-                                    Open Run Modal
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                    router.push(`/ai/prompts/run/${fullPromptObject.id}`);
-                                }}>
-                                    <Route className="h-4 w-4 mr-2" />
-                                    Go To Run Page
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                    router.push(`/prompt-apps/new?promptId=${fullPromptObject.id}`);
-                                }}>
-                                    <AppWindow className="h-4 w-4 mr-2" />
-                                    Create App
-                                </DropdownMenuItem>
-                                {isAdminMode && (
-                                    <>
-                                        <DropdownMenuItem>
-                                            <LayoutTemplate className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
-                                            <span className="text-amber-600 dark:text-amber-400">Convert to Template</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Code2 className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
-                                            <span className="text-amber-600 dark:text-amber-400">Convert to Builtin</span>
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                            </>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={onSave} disabled={isSaving || !isDirty}>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Prompt
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Mobile status indicator */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-foreground"
+                    onClick={() => router.push('/ai/prompts')}
+                    title="Back to Prompts"
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
                 {isDirty && (
                     <div className="w-2 h-2 bg-orange-500 rounded-full" title="Unsaved changes" />
                 )}
@@ -194,9 +99,17 @@ export function PromptBuilderHeaderCompact({
                 </div>
             )}
 
-            {/* Mobile - Right: Save button (placeholder for layout balance) */}
+            {/* Mobile - Right: Actions drawer trigger */}
             <div className="md:hidden flex-shrink-0">
-                {/* Intentionally minimal - keeps layout balanced */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 rounded-full text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMobileDrawerOpen(true)}
+                    title="Actions"
+                >
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
             </div>
 
             {/* Desktop - Inline controls with tighter spacing */}
@@ -343,6 +256,138 @@ export function PromptBuilderHeaderCompact({
             onAcceptFullPrompt={onAcceptFullPrompt}
             onAcceptAsCopy={onAcceptAsCopy}
         />
+
+        {/* Mobile Actions Drawer */}
+        <Drawer open={isMobileDrawerOpen} onOpenChange={setIsMobileDrawerOpen}>
+            <DrawerContent className="pb-safe">
+                <DrawerHeader className="pb-2">
+                    <DrawerTitle>Actions</DrawerTitle>
+                </DrawerHeader>
+                <div className="flex flex-col gap-1 px-4 pb-6">
+                    {promptId && (
+                        <DrawerClose asChild>
+                            <button
+                                onClick={() => router.push(`/ai/prompts/run/${promptId}`)}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                                <Play className="h-4 w-4 text-muted-foreground" />
+                                Switch to Run Mode
+                            </button>
+                        </DrawerClose>
+                    )}
+                    {onOpenSettings && (
+                        <DrawerClose asChild>
+                            <button
+                                onClick={onOpenSettings}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                                <Settings className="h-4 w-4 text-muted-foreground" />
+                                Settings
+                            </button>
+                        </DrawerClose>
+                    )}
+                    {onOpenFullScreenEditor && (
+                        <DrawerClose asChild>
+                            <button
+                                onClick={onOpenFullScreenEditor}
+                                className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            >
+                                <Maximize2 className="h-4 w-4 text-muted-foreground" />
+                                Full Editor
+                            </button>
+                        </DrawerClose>
+                    )}
+                    <DrawerClose asChild>
+                        <button
+                            onClick={() => setIsOptimizerOpen(true)}
+                            className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Sparkles className="h-4 w-4 text-muted-foreground" />
+                            Optimize
+                        </button>
+                    </DrawerClose>
+                    {isAdminMode && (
+                        <>
+                            <button className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-muted transition-colors">
+                                <GitCompare className="h-4 w-4" />
+                                Compare
+                            </button>
+                            <button className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-muted transition-colors">
+                                <BarChart className="h-4 w-4" />
+                                Evaluate
+                            </button>
+                        </>
+                    )}
+                    {fullPromptObject?.id && (
+                        <>
+                            <div className="h-px bg-border my-1" />
+                            <DrawerClose asChild>
+                                <button
+                                    onClick={() => {
+                                        openPrompt({
+                                            promptId: fullPromptObject.id,
+                                            executionConfig: {
+                                                auto_run: false,
+                                                allow_chat: true,
+                                                show_variables: true,
+                                                apply_variables: false,
+                                                track_in_runs: true,
+                                                use_pre_execution_input: false,
+                                            },
+                                        });
+                                    }}
+                                    className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                                >
+                                    <Play className="h-4 w-4 text-muted-foreground" />
+                                    Open Run Modal
+                                </button>
+                            </DrawerClose>
+                            <DrawerClose asChild>
+                                <button
+                                    onClick={() => router.push(`/ai/prompts/run/${fullPromptObject.id}`)}
+                                    className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                                >
+                                    <Route className="h-4 w-4 text-muted-foreground" />
+                                    Go To Run Page
+                                </button>
+                            </DrawerClose>
+                            <DrawerClose asChild>
+                                <button
+                                    onClick={() => router.push(`/prompt-apps/new?promptId=${fullPromptObject.id}`)}
+                                    className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                                >
+                                    <AppWindow className="h-4 w-4 text-muted-foreground" />
+                                    Create App
+                                </button>
+                            </DrawerClose>
+                            {isAdminMode && (
+                                <>
+                                    <button className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-muted transition-colors">
+                                        <LayoutTemplate className="h-4 w-4" />
+                                        Convert to Template
+                                    </button>
+                                    <button className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-muted transition-colors">
+                                        <Code2 className="h-4 w-4" />
+                                        Convert to Builtin
+                                    </button>
+                                </>
+                            )}
+                        </>
+                    )}
+                    <div className="h-px bg-border my-1" />
+                    <DrawerClose asChild>
+                        <button
+                            onClick={onSave}
+                            disabled={isSaving || !isDirty}
+                            className="flex items-center gap-3 w-full h-12 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                        >
+                            <Save className="h-4 w-4 text-muted-foreground" />
+                            Save Prompt
+                        </button>
+                    </DrawerClose>
+                </div>
+            </DrawerContent>
+        </Drawer>
         </>
     );
 }

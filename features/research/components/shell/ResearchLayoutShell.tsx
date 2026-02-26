@@ -11,7 +11,7 @@ interface ResearchLayoutShellProps {
 
 export default function ResearchLayoutShell({ topicId, children }: ResearchLayoutShellProps) {
     return (
-        <div className="h-full flex overflow-hidden">
+        <div className="h-full flex">
             <ResearchSidebar topicId={topicId} />
             <main className="flex-1 min-w-0 overflow-y-auto research-mobile-scroll-pad md:pb-0">
                 {children}

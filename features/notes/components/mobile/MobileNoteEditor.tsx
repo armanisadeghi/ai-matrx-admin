@@ -1,22 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  ChevronLeft,
-  MoreVertical,
-  FolderOpen,
-  Tag as TagIcon,
-  Save,
-  Loader2,
   Copy,
   Share2,
   Trash2,
   Download,
+  FolderOpen,
+  Tag as TagIcon,
+  MoreHorizontal,
+  Save,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import { useNotesContext } from '@/features/notes/context/NotesContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,9 +24,9 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet';
 import MobileNoteToolbar from './MobileNoteToolbar';
 import { useToastManager } from '@/hooks/useToastManager';
@@ -41,12 +38,7 @@ interface MobileNoteEditorProps {
 }
 
 export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps) {
-  const {
-    updateNote,
-    deleteNote,
-    copyNote,
-    refreshNotes,
-  } = useNotesContext();
+  const { updateNote, deleteNote, copyNote, refreshNotes } = useNotesContext();
 
   const toast = useToastManager('notes');
   const [localLabel, setLocalLabel] = useState(note.label || '');
@@ -57,10 +49,12 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showToolbar, setShowToolbar] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Update local state when note changes
+  // Sync state when note changes
   useEffect(() => {
     setLocalLabel(note.label || '');
     setLocalContent(note.content || '');
@@ -72,16 +66,59 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
   // Track dirty state
   useEffect(() => {
     const hasChanges =
-      localLabel !== note.label ||
-      localContent !== note.content ||
-      localFolder !== note.folder_name ||
+      localLabel !== (note.label || '') ||
+      localContent !== (note.content || '') ||
+      localFolder !== (note.folder_name || 'Draft') ||
       JSON.stringify(localTags) !== JSON.stringify(note.tags || []);
     setIsDirty(hasChanges);
   }, [localLabel, localContent, localFolder, localTags, note]);
 
+  // Auto-grow textarea
+  const growTextarea = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    growTextarea();
+  }, [localContent, growTextarea]);
+
+  // Auto-save after 2s of no typing
+  const scheduleAutoSave = useCallback(() => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(async () => {
+      if (!isDirty || isSaving) return;
+      setIsSaving(true);
+      try {
+        await updateNote(note.id, {
+          label: localLabel.trim() || 'Untitled Note',
+          content: localContent,
+          folder_name: localFolder,
+          tags: localTags,
+        });
+        setIsDirty(false);
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+      } catch {
+        // silent — user can manually save
+      } finally {
+        setIsSaving(false);
+      }
+    }, 2000);
+  }, [isDirty, isSaving, note.id, localLabel, localContent, localFolder, localTags, updateNote]);
+
+  useEffect(() => {
+    if (isDirty) scheduleAutoSave();
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+  }, [isDirty, scheduleAutoSave]);
+
   const handleSave = async () => {
     if (!isDirty || isSaving) return;
-
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     setIsSaving(true);
     try {
       await updateNote(note.id, {
@@ -92,9 +129,9 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
       });
       await refreshNotes();
       setIsDirty(false);
-      toast.success('Note saved');
-    } catch (error) {
-      console.error('Error saving note:', error);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
+    } catch {
       toast.error('Failed to save note');
     } finally {
       setIsSaving(false);
@@ -103,14 +140,12 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
 
   const handleDelete = async () => {
     if (isDeleting) return;
-
     setIsDeleting(true);
     try {
       await deleteNote(note.id);
       toast.success('Note deleted');
       onBack();
-    } catch (error) {
-      console.error('Error deleting note:', error);
+    } catch {
       toast.error('Failed to delete note');
     } finally {
       setIsDeleting(false);
@@ -121,19 +156,12 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
     try {
       await copyNote(note.id);
       toast.success('Note copied');
-    } catch (error) {
-      console.error('Error copying note:', error);
+    } catch {
       toast.error('Failed to copy note');
     }
   };
 
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    toast.info('Share functionality coming soon');
-  };
-
   const handleExport = () => {
-    // Export as markdown
     const blob = new Blob([localContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -146,64 +174,150 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
     toast.success('Note exported');
   };
 
-  return (
-    <div className="h-full flex flex-col bg-background overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 border-b border-border bg-card">
-        <div className="flex items-center justify-between px-3 py-2">
-          <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-7 w-7 rounded-full">
-            <ChevronLeft size={18} />
-          </Button>
+  const displayLabel = localLabel || 'Untitled Note';
 
-          <div className="flex-1 px-2 min-w-0">
-            <Input
+  return (
+    <>
+      {/* Scrollable page */}
+      <div className="min-h-dvh bg-background flex flex-col">
+        {/* Inline mini-header for back + title + actions */}
+        <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-2 bg-background/90 backdrop-blur-md border-b border-border/30">
+          <button
+            onClick={onBack}
+            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors text-foreground"
+            aria-label="Back"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+
+          {/* Title — small, centered, editable inline */}
+          <div className="flex-1 min-w-0 text-center">
+            <input
+              type="text"
               value={localLabel}
-              onChange={(e) => setLocalLabel(e.target.value)}
-              placeholder="Note title..."
-              className="text-base font-medium border-none shadow-none focus-visible:ring-0 px-2 text-center"
-              onFocus={(e) => {
-                setTimeout(() => {
-                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-              }}
+              onChange={e => setLocalLabel(e.target.value)}
+              placeholder="Untitled Note"
+              className="w-full bg-transparent text-xs font-medium text-foreground text-center outline-none border-none placeholder:text-muted-foreground"
+              style={{ fontSize: '13px' }}
             />
           </div>
 
+          {/* Save indicator + overflow menu */}
+          <div className="flex-shrink-0 flex items-center gap-1">
+            {isSaving && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+            {justSaved && !isSaving && <Check size={14} className="text-green-500" />}
+            {isDirty && !isSaving && (
+              <button
+                onClick={handleSave}
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors text-primary"
+                aria-label="Save"
+              >
+                <Save size={15} />
+              </button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors text-foreground">
+                  <MoreHorizontal size={18} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleCopy}>
+                  <Copy size={15} className="mr-2" />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.info('Share coming soon')}>
+                  <Share2 size={15} className="mr-2" />
+                  Share
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExport}>
+                  <Download size={15} className="mr-2" />
+                  Export
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="text-destructive focus:text-destructive"
+                >
+                  {isDeleting ? (
+                    <><Loader2 size={15} className="mr-2 animate-spin" />Deleting...</>
+                  ) : (
+                    <><Trash2 size={15} className="mr-2" />Delete Note</>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Content area */}
+        <div className="flex-1 px-4 pt-4 pb-32">
+          <textarea
+            ref={textareaRef}
+            value={localContent}
+            onChange={e => {
+              setLocalContent(e.target.value);
+              growTextarea();
+            }}
+            placeholder="Start writing..."
+            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none border-none resize-none text-base leading-relaxed"
+            style={{ fontSize: '16px', minHeight: 'calc(100dvh - 180px)' }}
+          />
+        </div>
+
+        {/* Bottom safe area spacer */}
+        <div className="h-safe" />
+      </div>
+
+      {/* Floating glass toolbar — pinned above keyboard safe area */}
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-safe pointer-events-none z-30">
+        <div className="pointer-events-auto mb-4 flex items-center gap-1 bg-background/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl px-3 py-2">
+          {/* Folder chip */}
+          <button
+            onClick={() => setShowToolbar(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <FolderOpen size={15} />
+            <span className="text-xs font-medium max-w-[80px] truncate">{localFolder}</span>
+          </button>
+
+          <div className="w-px h-4 bg-border/60" />
+
+          {/* Tags chip */}
+          <button
+            onClick={() => setShowToolbar(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <TagIcon size={15} />
+            <span className="text-xs font-medium">
+              {localTags.length > 0 ? `${localTags.length} tag${localTags.length !== 1 ? 's' : ''}` : 'Tags'}
+            </span>
+          </button>
+
+          <div className="w-px h-4 bg-border/60" />
+
+          {/* More / share */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0 h-7 w-7 rounded-full">
-                <MoreVertical size={16} />
-              </Button>
+              <button className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground">
+                <MoreHorizontal size={16} />
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {isDirty && (
-                <>
-                  <DropdownMenuItem onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <Loader2 size={16} className="mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save size={16} className="mr-2" />
-                        Save
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
+            <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
               <DropdownMenuItem onClick={handleCopy}>
-                <Copy size={16} className="mr-2" />
-                Copy Note
+                <Copy size={14} className="mr-2" />
+                Duplicate
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleShare}>
-                <Share2 size={16} className="mr-2" />
+              <DropdownMenuItem onClick={() => toast.info('Share coming soon')}>
+                <Share2 size={14} className="mr-2" />
                 Share
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleExport}>
-                <Download size={16} className="mr-2" />
+                <Download size={14} className="mr-2" />
                 Export
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -212,82 +326,15 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
                 disabled={isDeleting}
                 className="text-destructive focus:text-destructive"
               >
-                {isDeleting ? (
-                  <>
-                    <Loader2 size={16} className="mr-2 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 size={16} className="mr-2" />
-                    Delete
-                  </>
-                )}
+                <Trash2 size={14} className="mr-2" />
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch">
-        <div className="p-3 pb-[50vh]">
-          <Textarea
-            ref={contentRef}
-            value={localContent}
-            onChange={(e) => setLocalContent(e.target.value)}
-            placeholder="Start writing..."
-            className="min-h-[calc(100vh-16rem)] border-none shadow-none focus-visible:ring-0 resize-none text-base p-0"
-            onFocus={(e) => {
-              setTimeout(() => {
-                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }, 300);
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex-shrink-0 border-t border-border bg-card">
-        <div className="flex items-center justify-between px-3 py-2">
-          <button
-            onClick={() => setShowToolbar(true)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <FolderOpen size={16} />
-            <span>{localFolder}</span>
-          </button>
-
-          <button
-            onClick={() => setShowToolbar(true)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <TagIcon size={16} />
-            <span>{localTags.length > 0 ? `${localTags.length} tags` : 'Add tags'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Save Button (Sticky at bottom if dirty) */}
-      {isDirty && (
-        <div className="flex-shrink-0 border-t border-border bg-card px-3 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-          <Button onClick={handleSave} disabled={isSaving} className="w-full" size="lg">
-            {isSaving ? (
-              <>
-                <Loader2 size={18} className="mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save size={18} className="mr-2" />
-                Save Changes
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Toolbar Sheet */}
+      {/* Folder + Tags Sheet */}
       <Sheet open={showToolbar} onOpenChange={setShowToolbar}>
         <SheetContent side="bottom" className="h-[70vh]">
           <SheetHeader className="sr-only">
@@ -297,13 +344,12 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
           <MobileNoteToolbar
             folder={localFolder}
             tags={localTags}
-            onFolderChange={setLocalFolder}
-            onTagsChange={setLocalTags}
+            onFolderChange={f => { setLocalFolder(f); }}
+            onTagsChange={t => { setLocalTags(t); }}
             onClose={() => setShowToolbar(false)}
           />
         </SheetContent>
       </Sheet>
-    </div>
+    </>
   );
 }
-

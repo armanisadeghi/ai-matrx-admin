@@ -147,26 +147,33 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     // Real-time subscription to prevent data loss from concurrent edits
     useEffect(() => {
+        // Get the current user ID synchronously from the session cache
+        // We use getSession() (not getUser()) to avoid a network round-trip on every mount.
+        // RLS on the notes table already ensures we only receive events for our own notes.
         let channel: ReturnType<typeof supabase.channel> | null = null;
 
-        const setupRealtimeSubscription = async () => {
-            // Get the current user ID so we can filter to only our notes
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user?.id) return;
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            const userId = session?.user?.id;
+            if (!userId) return;
 
             channel = supabase
-                .channel('notes-realtime-sync')
+                .channel(`notes-realtime:${userId}`)
                 .on(
                     'postgres_changes',
                     {
                         event: 'UPDATE',
                         schema: 'public',
                         table: 'notes',
-                        filter: `user_id=eq.${user.id}`,
+                        // No server-side filter — Supabase Realtime CHANNEL_ERROR occurs when
+                        // column filters are used on tables not configured for filtered realtime
+                        // in the publication. RLS already scopes events to the current user.
                     },
                     (payload) => {
                         const updatedNote = payload.new as Note;
                         if (!updatedNote?.id) return;
+
+                        // Client-side user guard (belt-and-suspenders over RLS)
+                        if (updatedNote.user_id && updatedNote.user_id !== userId) return;
 
                         // Skip if we just saved this note (avoid echo from our own save)
                         if (savingNoteIdsRef.current.has(updatedNote.id)) return;
@@ -195,7 +202,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                                         label: 'Refresh',
                                         onClick: () => {
                                             shownConflictToastsRef.current.delete(updatedNote.id);
-                                            // Update this note from server data
                                             setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
                                             setActiveNote(prev => prev?.id === updatedNote.id ? updatedNote : prev);
                                             toast.success('Note refreshed to latest version');
@@ -215,11 +221,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                         event: 'INSERT',
                         schema: 'public',
                         table: 'notes',
-                        filter: `user_id=eq.${user.id}`,
                     },
                     (payload) => {
                         const newNote = payload.new as Note;
                         if (!newNote?.id || newNote.is_deleted) return;
+
+                        // Client-side user guard
+                        if (newNote.user_id && newNote.user_id !== userId) return;
+
                         // Only add if not already present (avoid duplicates from our own creates)
                         setNotes(prev => {
                             if (prev.some(n => n.id === newNote.id)) return prev;
@@ -229,14 +238,12 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                 )
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
-                        console.log('[Notes Realtime] Subscribed to notes changes for user', user.id);
+                        console.log('[Notes Realtime] Subscribed to notes changes for user', userId);
                     } else if (status === 'CHANNEL_ERROR') {
                         console.error('[Notes Realtime] Channel error — realtime events may not be received');
                     }
                 });
-        };
-
-        setupRealtimeSubscription();
+        });
 
         return () => {
             if (channel) {
