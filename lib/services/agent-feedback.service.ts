@@ -34,6 +34,7 @@ export interface AgentTriageInput {
     ai_estimated_files?: string[];
     autonomy_score?: number;
     ai_assessment?: string;
+    category_id?: string;
 }
 
 // ============= Submit =============
@@ -194,6 +195,7 @@ export async function triageItem(
     try {
         const supabase = createAdminClient();
 
+        // Always pass p_category_id (even as null) to resolve the PostgreSQL function overload ambiguity
         const { data, error } = await supabase.rpc('triage_feedback_item', {
             p_id: feedbackId,
             p_ai_solution_proposal: triage.ai_solution_proposal || null,
@@ -202,6 +204,7 @@ export async function triageItem(
             p_ai_estimated_files: triage.ai_estimated_files || null,
             p_autonomy_score: triage.autonomy_score || null,
             p_ai_assessment: triage.ai_assessment || null,
+            p_category_id: triage.category_id || null,
         });
 
         if (error) return { success: false, error: error.message };

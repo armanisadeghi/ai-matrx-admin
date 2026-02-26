@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import FullScreenOverlay, { TabDefinition } from '@/components/official/FullScreenOverlay';
 import { CreatePromptAppForm } from './CreatePromptAppForm';
 import { AutoCreatePromptAppForm } from './AutoCreatePromptAppForm';
+import { SearchablePromptSelect } from './SearchablePromptSelect';
 import { supabase } from '@/utils/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 interface CreatePromptAppModalProps {
   isOpen: boolean;
@@ -16,11 +18,13 @@ interface CreatePromptAppModalProps {
   prompt?: any;
 }
 
-export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: CreatePromptAppModalProps) {
+export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt: promptProp }: CreatePromptAppModalProps) {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPromptId, setSelectedPromptId] = useState<string | undefined>(promptId);
+  const [selectedPrompt, setSelectedPrompt] = useState<any>(promptProp);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,17 +32,22 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
     }
   }, [isOpen]);
 
+  // Sync preselected prompt once prompts are loaded
+  useEffect(() => {
+    if (prompts.length > 0 && promptId && !selectedPrompt) {
+      const found = prompts.find(p => p.id === promptId);
+      if (found) setSelectedPrompt(found);
+    }
+  }, [prompts, promptId, selectedPrompt]);
+
   const loadData = async () => {
     setIsLoading(true);
     setError(null);
 
-
     try {
-      // Get user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Fetch prompts - get all fields for auto-create
       const { data: promptsData, error: promptsError } = await supabase
         .from('prompts')
         .select('*')
@@ -47,7 +56,6 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
 
       if (promptsError) throw promptsError;
 
-      // Fetch categories (table might not exist yet)
       const { data: categoriesData } = await supabase
         .from('prompt_app_categories')
         .select('*')
@@ -63,8 +71,34 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
     }
   };
 
-  const tabs: TabDefinition[] = [
+  const handlePromptChange = (id: string, prompt: any) => {
+    setSelectedPromptId(id);
+    setSelectedPrompt(prompt);
+  };
 
+  const promptSelector = isLoading ? (
+    <div className="flex items-center gap-2 px-6 pt-4 pb-2">
+      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+      <span className="text-sm text-muted-foreground">Loading prompts...</span>
+    </div>
+  ) : error ? null : (
+    <div className="px-6 pt-4 pb-3 space-y-2 border-b border-border">
+      <Label className="text-sm font-semibold">Select Your Prompt</Label>
+      <SearchablePromptSelect
+        prompts={prompts}
+        value={selectedPromptId}
+        onChange={handlePromptChange}
+        placeholder="Choose the prompt to power your app..."
+      />
+      {prompts.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {prompts.length} prompt{prompts.length !== 1 ? 's' : ''} available
+        </p>
+      )}
+    </div>
+  );
+
+  const tabs: TabDefinition[] = [
     {
       id: 'auto',
       label: 'Auto Create',
@@ -76,7 +110,7 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-destructive font-semibold">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="mt-4 text-sm text-primary hover:underline"
             >
@@ -86,8 +120,8 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
         </div>
       ) : (
         <div className="p-6">
-          <AutoCreatePromptAppForm 
-            prompt={prompt || prompts.find(p => p.id === promptId)}
+          <AutoCreatePromptAppForm
+            prompt={selectedPrompt}
             prompts={prompts}
             categories={categories}
             onSuccess={onClose}
@@ -106,7 +140,7 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-destructive font-semibold">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="mt-4 text-sm text-primary hover:underline"
             >
@@ -116,10 +150,10 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
         </div>
       ) : (
         <div className="p-6">
-          <CreatePromptAppForm 
+          <CreatePromptAppForm
             prompts={prompts}
             categories={categories}
-            preselectedPromptId={promptId}
+            preselectedPromptId={selectedPromptId}
             onSuccess={onClose}
           />
         </div>
@@ -134,6 +168,7 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
       title=""
       description="Turn your prompt into a shareable web app"
       tabs={tabs}
+      sharedHeader={promptSelector}
       showCancelButton
       cancelButtonLabel="Close"
       onCancel={onClose}
@@ -142,4 +177,3 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId, prompt }: Crea
     />
   );
 }
-

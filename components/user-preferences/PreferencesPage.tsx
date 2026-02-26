@@ -181,7 +181,7 @@ const PreferencesPage = () => {
                 </Tabs>
             </CardContent>
             
-            <CardFooter className="flex justify-between items-center border-t bg-muted/10 px-6 py-4">
+            <CardFooter className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-t bg-muted/10 px-6 py-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {meta.isLoading && (
                         <div className="flex items-center gap-2">
@@ -201,13 +201,13 @@ const PreferencesPage = () => {
                     )}
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={handleReset}
                         disabled={!meta.hasUnsavedChanges || meta.isLoading}
-                        className="gap-2"
+                        className="gap-2 flex-1 sm:flex-none"
                     >
                         <RotateCcw className="h-4 w-4" />
                         Reset
@@ -216,7 +216,7 @@ const PreferencesPage = () => {
                         size="sm"
                         onClick={handleSave}
                         disabled={!meta.hasUnsavedChanges || meta.isLoading}
-                        className="gap-2"
+                        className="gap-2 flex-1 sm:flex-none"
                     >
                         {meta.isLoading ? (
                             <>

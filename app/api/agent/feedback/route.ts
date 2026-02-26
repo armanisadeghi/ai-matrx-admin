@@ -70,6 +70,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
             ai_estimated_files,
             autonomy_score,
             ai_assessment,
+            category_id,
         } = body as {
             feedback_id: string;
             ai_solution_proposal?: string;
@@ -78,6 +79,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
             ai_estimated_files?: string[];
             autonomy_score?: number;
             ai_assessment?: string;
+            category_id?: string;
         };
 
         if (!feedback_id) return { success: false, error: 'Missing required field: feedback_id' };
@@ -88,6 +90,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
             ai_estimated_files,
             autonomy_score,
             ai_assessment,
+            category_id,
         });
     },
 

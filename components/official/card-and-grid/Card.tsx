@@ -36,6 +36,8 @@ export interface CardProps {
   size?: CardSize;
   className?: string;
   onClick?: () => void;
+  /** Compact iOS-style icon layout: small square with icon + label only, no description */
+  compact?: boolean;
 }
 
 const sizeClasses: Record<CardSize, string> = {
@@ -166,9 +168,38 @@ export const Card = ({
   size = "md",
   className,
   onClick,
+  compact = false,
 }: CardProps) => {
   const colorClass = colorClasses[color] ?? colorClasses.gray;
   const sizeClass = sizeClasses[size];
+
+  if (compact) {
+    const compactContent = (
+      <div className={cn(
+        "flex flex-col items-center gap-1.5 p-2 rounded-2xl cursor-pointer transition active:scale-95",
+        className
+      )}>
+        <div className={cn("p-3 rounded-2xl shadow-sm", colorClass.iconBg)}>
+          {React.cloneElement(icon, {
+            className: cn(colorClass.iconColor, icon.props.className),
+            size: icon.props.size || 22,
+          })}
+        </div>
+        <span className="text-[11px] font-medium text-center leading-tight text-foreground line-clamp-2 w-full">
+          {title}
+        </span>
+      </div>
+    );
+
+    if (path) {
+      return (
+        <Link href={path} className="block" onClick={onClick}>
+          {compactContent}
+        </Link>
+      );
+    }
+    return <div onClick={onClick}>{compactContent}</div>;
+  }
   
   const cardContent = (
     <div className={cn(

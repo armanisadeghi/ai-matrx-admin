@@ -12,6 +12,8 @@ export interface GridProps {
   showAddButton?: boolean;
   onAddButtonClick?: () => void;
   addButtonText?: string;
+  /** Render cards in compact iOS-style icon mode — overrides columns to use grid-cols-4 */
+  compact?: boolean;
 }
 
 export const Grid = ({
@@ -24,26 +26,30 @@ export const Grid = ({
   showAddButton = false,
   onAddButtonClick,
   addButtonText = "Add Feature",
+  compact = false,
 }: GridProps) => {
-  const colsClass = {
-    1: "grid-cols-1",
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3",
-    4: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
-    5: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
-    6: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
-  }[Math.min(6, Math.max(1, columns))];
+  const colsClass = compact
+    ? "grid-cols-4"
+    : {
+        1: "grid-cols-1",
+        2: "grid-cols-1 sm:grid-cols-2",
+        3: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3",
+        4: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+        5: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+        6: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
+      }[Math.min(6, Math.max(1, columns))];
 
   return (
     <div className={className}>
       {title && <h2 className="text-md font-semibold mb-4">{title}</h2>}
       {description && <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{description}</p>}
       
-      <div className={cn("grid gap-4", colsClass)}>
+      <div className={cn("grid", compact ? "gap-2" : "gap-4", colsClass)}>
         {items.map((item, index) => (
           <Card
             key={`card-${index}`}
             {...item}
+            compact={compact}
             className={cn(cardClassName, item.className)}
           />
         ))}

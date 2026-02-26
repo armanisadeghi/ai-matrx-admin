@@ -103,7 +103,7 @@ const ReasoningVisualization: React.FC<ReasoningVisualizationProps> = ({
 
       {/* Content */}
       {isExpanded && (
-        <div className="px-3 py-2">
+        <div className="px-3 py-2 max-h-[400px] overflow-y-auto">
           <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
             {cleanedContent}
           </p>

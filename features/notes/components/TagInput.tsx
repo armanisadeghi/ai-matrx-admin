@@ -42,44 +42,44 @@ export function TagInput({ tags, onChange, className }: TagInputProps) {
     };
 
     return (
-        <div className={cn("flex items-center gap-1.5 flex-wrap", className)}>
+        <div className={cn("flex items-center gap-1.5 flex-nowrap overflow-x-auto min-w-0", className)}>
             {tags.map((tag) => (
                 <Badge
                     key={tag}
                     variant="outline"
-                    className="text-xs h-5 px-1.5 pr-1 flex items-center gap-1"
+                    className="text-xs h-5 px-1.5 pr-1 flex items-center gap-1 flex-shrink-0"
                 >
                     {tag}
                     <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:bg-accent rounded-full p-0.5"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:bg-accent rounded-full p-0.5"
+                    >
+                        <X className="h-2.5 w-2.5" />
+                    </button>
+                </Badge>
+            ))}
+
+            {isAdding ? (
+                <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={() => {
+                        if (inputValue.trim()) {
+                            handleAddTag();
+                        } else {
+                            setIsAdding(false);
+                        }
+                    }}
+                    placeholder="Type tag..."
+                    className="h-5 text-xs px-1.5 min-w-[6rem] w-24 bg-muted border-0 flex-shrink-0"
+                    autoFocus
+                />
+            ) : (
+                <button
+                    onClick={() => setIsAdding(true)}
+                    className="h-5 px-1.5 text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded flex-shrink-0"
                 >
-                    <X className="h-2.5 w-2.5" />
-                </button>
-            </Badge>
-        ))}
-        
-        {isAdding ? (
-            <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={() => {
-                    if (inputValue.trim()) {
-                        handleAddTag();
-                    } else {
-                        setIsAdding(false);
-                    }
-                }}
-                placeholder="Type tag..."
-                className="h-5 text-xs px-1.5 w-24 bg-muted border-0"
-                autoFocus
-            />
-        ) : (
-            <button
-                onClick={() => setIsAdding(true)}
-                className="h-5 px-1.5 text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded"
-            >
                     <Plus className="h-3 w-3" />
                     Tag
                 </button>

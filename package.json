@@ -152,6 +152,7 @@
     "katex": "latest",
     "leaflet": "^1.9.4",
     "libphonenumber-js": "^1.12.35",
+    "liquid-glass-react": "^1.1.1",
     "lodash": "^4.17.23",
     "lucide-react": "latest",
     "mcp-handler": "^1.0.7",

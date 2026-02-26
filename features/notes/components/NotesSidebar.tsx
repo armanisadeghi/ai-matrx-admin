@@ -89,6 +89,7 @@ export function NotesSidebar({
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuType, setContextMenuType] = useState<'folder' | 'note' | null>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<string | null>(null);
+    const [contextMenuAnchor, setContextMenuAnchor] = useState<HTMLElement | null>(null);
     const [isInitialRender, setIsInitialRender] = useState(true);
     
     // Auto-scroll during drag
@@ -327,6 +328,7 @@ export function NotesSidebar({
         e.stopPropagation();
         setContextMenuType('folder');
         setContextMenuTarget(folderName);
+        setContextMenuAnchor(e.currentTarget as HTMLElement);
         setContextMenuOpen(true);
     };
 
@@ -335,6 +337,7 @@ export function NotesSidebar({
         e.stopPropagation();
         setContextMenuType('note');
         setContextMenuTarget(note.id);
+        setContextMenuAnchor(e.currentTarget as HTMLElement);
         setContextMenuOpen(true);
     };
 
@@ -500,13 +503,15 @@ export function NotesSidebar({
                         setContextMenuOpen(false);
                         setContextMenuType(null);
                         setContextMenuTarget(null);
+                        setContextMenuAnchor(null);
                     }}
                     items={getFolderContextMenuItems(
                         contextMenuTarget,
                         folderGroups.find(g => g.folder_name === contextMenuTarget)?.count || 0
                     )}
                     title={`Folder: ${contextMenuTarget}`}
-                    position="center"
+                    position="bottom-left"
+                    anchorElement={contextMenuAnchor}
                     width="280px"
                     closeOnAction={true}
                     categorizeItems={true}
@@ -520,13 +525,15 @@ export function NotesSidebar({
                         setContextMenuOpen(false);
                         setContextMenuType(null);
                         setContextMenuTarget(null);
+                        setContextMenuAnchor(null);
                     }}
                     items={getNoteContextMenuItems(
                         notes.find(n => n.id === contextMenuTarget)!
                     )}
                     title="Note Actions"
                     description={notes.find(n => n.id === contextMenuTarget)?.label}
-                    position="center"
+                    position="bottom-left"
+                    anchorElement={contextMenuAnchor}
                     width="280px"
                     closeOnAction={true}
                     categorizeItems={true}

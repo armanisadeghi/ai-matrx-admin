@@ -137,7 +137,7 @@ const DashboardPage = () => {
                     <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${isMobile ? '' : 'h-full'}`}>
                         {/* Main features section - spans 2 columns with independent scroll */}
                         <div className={`lg:col-span-2 ${!isMobile ? 'overflow-y-auto scrollbar-none h-full' : ''} ${isMobile ? 'pr-0' : 'pr-3'} pb-8`}>
-                            <Grid title="" items={featureCards} columns={isMobile ? 2 : 4} showAddButton addButtonText="Add Feature" />
+                            <Grid title="" items={featureCards} columns={isMobile ? 4 : 4} compact={isMobile} showAddButton={!isMobile} addButtonText="Add Feature" />
 
                             {/* Quick Access Section */}
                             <List title="" items={quickAccessItems} className="mt-8" containerClassName={`${isMobile ? 'p-0' : 'p-2'}`} />
@@ -146,7 +146,7 @@ const DashboardPage = () => {
                             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* User Settings Section - 2 columns */}
                                 <div className="lg:col-span-2">
-                                    <Grid items={userSettingsCards} columns={isMobile ? 2 : 4} className="mt-2" />
+                                    <Grid items={userSettingsCards} columns={isMobile ? 4 : 4} compact={isMobile} className="mt-2" />
                                 </div>
                                 
                                 {/* Moved Recommendations - 1 column */}

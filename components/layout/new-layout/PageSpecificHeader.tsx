@@ -32,22 +32,16 @@ interface CockpitHeaderProps {
 
 export function CockpitHeader({ cockpitControls }: CockpitHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on cockpit pages
-  if (!pathname?.includes('/ai/cockpit')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [PlaygroundHeaderAllInOne, setPlaygroundHeaderAllInOne] = useState<any>(null);
 
   useEffect(() => {
+    if (!pathname?.includes('/ai/cockpit')) return;
     import('@/components/playground/header/PlaygroundHeaderAllInOne').then((module) => {
       setPlaygroundHeaderAllInOne(() => module.default);
     });
-  }, []);
+  }, [pathname]);
 
-  if (!PlaygroundHeaderAllInOne) {
+  if (!pathname?.includes('/ai/cockpit') || !PlaygroundHeaderAllInOne) {
     return null;
   }
 
@@ -79,22 +73,16 @@ interface PromptHeaderProps {
 
 export function PromptHeader(props: PromptHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on prompt pages
-  if (!pathname?.includes('/ai/prompts')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [PromptBuilderHeaderCompact, setPromptBuilderHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
+    if (!pathname?.includes('/ai/prompts')) return;
     import('@/features/prompts/components/layouts/PromptBuilderHeaderCompact').then((module) => {
       setPromptBuilderHeaderCompact(() => module.PromptBuilderHeaderCompact);
     });
-  }, []);
+  }, [pathname]);
 
-  if (!PromptBuilderHeaderCompact) {
+  if (!pathname?.includes('/ai/prompts') || !PromptBuilderHeaderCompact) {
     return null;
   }
 
@@ -111,22 +99,16 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ baseRoute = "/chat" }: ChatHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on chat pages
-  if (!pathname?.includes('/chat')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [ChatHeaderCompact, setChatHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
+    if (!pathname?.includes('/chat')) return;
     import('@/features/chat/components/header/ChatHeaderCompact').then((module) => {
       setChatHeaderCompact(() => module.ChatHeaderCompact);
     });
-  }, []);
+  }, [pathname]);
 
-  if (!ChatHeaderCompact) {
+  if (!pathname?.includes('/chat') || !ChatHeaderCompact) {
     return null;
   }
 
@@ -143,21 +125,18 @@ interface RecipeViewHeaderProps {
 
 export function RecipeViewHeader(props: RecipeViewHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on recipe view pages (not edit)
-  if (!pathname?.includes('/ai/recipes/') || pathname?.includes('/edit')) {
-    return null;
-  }
-
   const [RecipeViewHeaderCompact, setRecipeViewHeaderCompact] = useState<any>(null);
 
+  const isRecipeView = !!pathname?.includes('/ai/recipes/') && !pathname?.includes('/edit');
+
   useEffect(() => {
+    if (!isRecipeView) return;
     import('@/features/recipes/components/RecipeViewHeaderCompact').then((module) => {
       setRecipeViewHeaderCompact(() => module.RecipeViewHeaderCompact);
     });
-  }, []);
+  }, [isRecipeView]);
 
-  if (!RecipeViewHeaderCompact) {
+  if (!isRecipeView || !RecipeViewHeaderCompact) {
     return null;
   }
 
@@ -179,21 +158,18 @@ interface RecipeEditHeaderProps {
 
 export function RecipeEditHeader(props: RecipeEditHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on recipe edit pages
-  if (!pathname?.includes('/ai/recipes/') || !pathname?.includes('/edit')) {
-    return null;
-  }
-
   const [RecipeEditHeaderCompact, setRecipeEditHeaderCompact] = useState<any>(null);
 
+  const isRecipeEdit = !!pathname?.includes('/ai/recipes/') && !!pathname?.includes('/edit');
+
   useEffect(() => {
+    if (!isRecipeEdit) return;
     import('@/features/recipes/components/RecipeEditHeaderCompact').then((module) => {
       setRecipeEditHeaderCompact(() => module.RecipeEditHeaderCompact);
     });
-  }, []);
+  }, [isRecipeEdit]);
 
-  if (!RecipeEditHeaderCompact) {
+  if (!isRecipeEdit || !RecipeEditHeaderCompact) {
     return null;
   }
 
@@ -213,22 +189,16 @@ interface NotesHeaderProps {
 
 export function NotesHeader(props: NotesHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on notes pages
-  if (!pathname?.includes('/notes')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [NotesHeaderCompact, setNotesHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
+    if (!pathname?.includes('/notes')) return;
     import('@/features/notes/components/NotesHeaderCompact').then((module) => {
       setNotesHeaderCompact(() => module.NotesHeaderCompact);
     });
-  }, []);
+  }, [pathname]);
 
-  if (!NotesHeaderCompact) {
+  if (!pathname?.includes('/notes') || !NotesHeaderCompact) {
     return null;
   }
 
@@ -247,22 +217,16 @@ interface TranscriptsHeaderProps {
 
 export function TranscriptsHeaderPortal(props: TranscriptsHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on transcripts pages
-  if (!pathname?.includes('/transcripts')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [TranscriptsHeader, setTranscriptsHeader] = useState<any>(null);
 
   useEffect(() => {
+    if (!pathname?.includes('/transcripts')) return;
     import('@/features/transcripts/components/TranscriptsHeader').then((module) => {
       setTranscriptsHeader(() => module.TranscriptsHeader);
     });
-  }, []);
+  }, [pathname]);
 
-  if (!TranscriptsHeader) {
+  if (!pathname?.includes('/transcripts') || !TranscriptsHeader) {
     return null;
   }
 
@@ -285,21 +249,14 @@ interface AppletHeaderProps {
 
 export function AppletHeader(props: AppletHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on applet pages
-  if (!pathname?.includes('/apps/custom/')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [AppletHeaderCompact, setAppletHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    // Applet header doesn't exist yet, skip
-    setAppletHeaderCompact(() => null);
-  }, []);
+    if (!pathname?.includes('/apps/custom/')) return;
+    // Applet header component not yet implemented
+  }, [pathname]);
 
-  if (!AppletHeaderCompact) {
+  if (!pathname?.includes('/apps/custom/') || !AppletHeaderCompact) {
     return null;
   }
 
@@ -324,22 +281,16 @@ interface MessagesHeaderProps {
 
 export function MessagesHeader(props: MessagesHeaderProps) {
   const pathname = usePathname();
-  
-  // Only render on messages pages
-  if (!pathname?.includes('/messages')) {
-    return null;
-  }
-
-  // Dynamically import the component to avoid SSR issues
   const [MessagesHeaderCompact, setMessagesHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
+    if (!pathname?.includes('/messages')) return;
     import('@/features/messaging/components/MessagesHeaderCompact').then((module) => {
       setMessagesHeaderCompact(() => module.MessagesHeaderCompact);
     });
-  }, []);
+  }, [pathname]);
 
-  if (!MessagesHeaderCompact) {
+  if (!pathname?.includes('/messages') || !MessagesHeaderCompact) {
     return null;
   }
 
