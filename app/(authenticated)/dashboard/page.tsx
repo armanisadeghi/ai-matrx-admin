@@ -20,45 +20,45 @@ import { LatestAiModels } from "@/components/animated/ExpandableCards/Expandable
 import { dashboardLinks } from "@/constants/navigation-links";
 import { SandboxWidget } from "./SandboxWidget";
 
-// ─── Enterprise iOS dark gradients ─────────────────────────────────────────────
-// Distinct color per icon but dark & premium — not neon/childish
+// ─── Enterprise iOS gradients ────────────────────────────────────────────────────
+// Vivid but professional — mid-range stops, not neon-flat, not near-black
 const IOSGrad: Record<string, string> = {
-    indigo:  "from-indigo-800 to-indigo-950",
-    emerald: "from-emerald-700 to-emerald-950",
-    blue:    "from-blue-700 to-blue-950",
-    amber:   "from-amber-700 to-amber-950",
-    purple:  "from-purple-800 to-purple-950",
-    gray:    "from-zinc-600 to-zinc-900",
-    red:     "from-red-700 to-red-950",
-    green:   "from-green-700 to-green-950",
-    yellow:  "from-yellow-600 to-yellow-900",
-    pink:    "from-pink-700 to-pink-950",
-    orange:  "from-orange-700 to-orange-950",
-    teal:    "from-teal-700 to-teal-950",
-    cyan:    "from-cyan-700 to-cyan-950",
-    lime:    "from-lime-700 to-lime-950",
-    rose:    "from-rose-700 to-rose-950",
-    violet:  "from-violet-800 to-violet-950",
-    slate:   "from-slate-600 to-slate-900",
+    indigo:  "from-indigo-500 to-indigo-800",
+    emerald: "from-emerald-500 to-emerald-800",
+    blue:    "from-blue-500 to-blue-800",
+    amber:   "from-amber-500 to-amber-800",
+    purple:  "from-purple-600 to-purple-900",
+    gray:    "from-zinc-500 to-zinc-800",
+    red:     "from-red-500 to-red-800",
+    green:   "from-green-500 to-green-800",
+    yellow:  "from-yellow-500 to-yellow-700",
+    pink:    "from-pink-500 to-pink-800",
+    orange:  "from-orange-500 to-orange-800",
+    teal:    "from-teal-500 to-teal-800",
+    cyan:    "from-cyan-500 to-cyan-800",
+    lime:    "from-lime-500 to-lime-800",
+    rose:    "from-rose-500 to-rose-800",
+    violet:  "from-violet-600 to-violet-900",
+    slate:   "from-slate-500 to-slate-800",
 };
 
 // ─── Single iOS icon cell ───────────────────────────────────────────────────────
-// Fixed 60×60 squircle box + label below.  Sized to fit inside an 84px grid row.
+// Fixed 60×60 squircle box + label below. Icon fills ~80% of the box (size 36).
 function IosAppIcon({ item }: { item: CardProps }) {
     const grad = IOSGrad[item.color] ?? IOSGrad.gray;
     const inner = (
-        <div className="flex flex-col items-center gap-[3px]">
-            {/* 60px squircle — iOS border-radius is ~22% of the icon size */}
+        <div className="flex flex-col items-center gap-[4px]">
+            {/* 60px squircle — iOS uses ~22% border-radius */}
             <div className={`w-[60px] h-[60px] rounded-[22%] bg-gradient-to-br ${grad}
                             ring-1 ring-white/10 shadow-md flex items-center justify-center
                             active:opacity-70 transition-opacity`}>
                 {React.cloneElement(
                     item.icon as React.ReactElement<{ size?: number; className?: string }>,
-                    { className: "text-white/90", size: 26 }
+                    { className: "text-white", size: 36 }
                 )}
             </div>
-            {/* 14px label — fits in remaining ~21px of the 84px row */}
-            <span className="text-[10px] font-medium text-center leading-tight text-foreground/80 w-[68px] truncate">
+            {/* Label sits below the squircle */}
+            <span className="text-[10px] font-medium text-center leading-tight text-foreground w-[68px] truncate">
                 {item.title}
             </span>
         </div>
@@ -134,7 +134,7 @@ const DashboardPage = () => {
 
                 {/* ═══ MOBILE — CSS only, no JS layout switch ═══════════════════════════ */}
                 <div className="block md:hidden h-full overflow-y-auto">
-                    <div className="px-2 pt-3 pb-10 space-y-6">
+                    <div className="px-4 pt-3 pb-10 space-y-6">
 
                         {/* iOS icon + widget grid */}
                         <div className="grid grid-cols-4" style={iconGridStyle}>

@@ -132,20 +132,20 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     }, [text, onPlaybackEnd, apiKey]);
 
     const handlePause = useCallback(async () => {
-        if (playerRef.current) {
+        if (playerRef.current && hasPlayedOnce) {
             await playerRef.current.pause();
             setIsPlaying(false);
             updatePlaybackStatus('paused', 'handlePause');
         }
-    }, []);
+    }, [hasPlayedOnce]);
 
     const handleResume = useCallback(async () => {
-        if (playerRef.current) {
+        if (playerRef.current && hasPlayedOnce) {
             await playerRef.current.resume();
             setIsPlaying(true);
             updatePlaybackStatus('playing', 'handleResume');
         }
-    }, []);
+    }, [hasPlayedOnce]);
 
     const handleReplay = useCallback(async () => {
         if (playerRef.current && sourceRef.current) {

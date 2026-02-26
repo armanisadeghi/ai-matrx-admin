@@ -48,25 +48,25 @@ const sizeClasses: Record<CardSize, string> = {
   xl: "p-8",
 };
 
-// Enterprise iOS dark gradients: distinct color, not childish
+// Enterprise iOS gradients: vivid but professional (mid-range, not near-black)
 const iosIconBg: Record<CardColor, string> = {
-  indigo:  "from-indigo-800 to-indigo-950",
-  emerald: "from-emerald-700 to-emerald-950",
-  blue:    "from-blue-700 to-blue-950",
-  amber:   "from-amber-700 to-amber-950",
-  purple:  "from-purple-800 to-purple-950",
-  gray:    "from-zinc-600 to-zinc-900",
-  red:     "from-red-700 to-red-950",
-  green:   "from-green-700 to-green-950",
-  yellow:  "from-yellow-600 to-yellow-900",
-  pink:    "from-pink-700 to-pink-950",
-  orange:  "from-orange-700 to-orange-950",
-  teal:    "from-teal-700 to-teal-950",
-  cyan:    "from-cyan-700 to-cyan-950",
-  lime:    "from-lime-700 to-lime-950",
-  rose:    "from-rose-700 to-rose-950",
-  violet:  "from-violet-800 to-violet-950",
-  slate:   "from-slate-600 to-slate-900",
+  indigo:  "from-indigo-500 to-indigo-800",
+  emerald: "from-emerald-500 to-emerald-800",
+  blue:    "from-blue-500 to-blue-800",
+  amber:   "from-amber-500 to-amber-800",
+  purple:  "from-purple-600 to-purple-900",
+  gray:    "from-zinc-500 to-zinc-800",
+  red:     "from-red-500 to-red-800",
+  green:   "from-green-500 to-green-800",
+  yellow:  "from-yellow-500 to-yellow-700",
+  pink:    "from-pink-500 to-pink-800",
+  orange:  "from-orange-500 to-orange-800",
+  teal:    "from-teal-500 to-teal-800",
+  cyan:    "from-cyan-500 to-cyan-800",
+  lime:    "from-lime-500 to-lime-800",
+  rose:    "from-rose-500 to-rose-800",
+  violet:  "from-violet-600 to-violet-900",
+  slate:   "from-slate-500 to-slate-800",
 };
 
 const colorClasses: Record<CardColor, {
@@ -213,7 +213,7 @@ export const Card = ({
         >
           {React.cloneElement(icon, {
             className: cn("text-white", icon.props.className),
-            size: icon.props.size || 26,
+            size: icon.props.size || 36,
           })}
         </div>
         {/* iOS label: small, centered, truncated */}

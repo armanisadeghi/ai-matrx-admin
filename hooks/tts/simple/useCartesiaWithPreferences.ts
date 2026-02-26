@@ -24,6 +24,8 @@ export function useCartesiaWithPreferences({
 }: UseCartesiaWithPreferencesOptions = {}) {
   const websocketRef = useRef<ReturnType<typeof CartesiaClient.prototype.tts.websocket> | null>(null);
   const playerRef = useRef<WebPlayer | null>(null);
+  // Track whether play() has been called — WebPlayer's AudioContext is lazy-initialized on first play
+  const hasPlayedRef = useRef(false);
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [playerState, setPlayerState] = useState<PlayerState>("idle");
 
@@ -71,7 +73,8 @@ export function useCartesiaWithPreferences({
       if (websocketRef.current) {
         websocketRef.current.disconnect();
       }
-      if (playerRef.current) {
+      // Only stop if play() has been called — WebPlayer throws 'AudioContext not initialized' otherwise
+      if (playerRef.current && hasPlayedRef.current) {
         playerRef.current.stop();
       }
     };
@@ -125,6 +128,7 @@ export function useCartesiaWithPreferences({
         setPlayerState("playing");
         
         try {
+          hasPlayedRef.current = true;
           await playerRef.current.play(resp.source);
           setPlayerState("idle");
           onPlaybackEnd?.();

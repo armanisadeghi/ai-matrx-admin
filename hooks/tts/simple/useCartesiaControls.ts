@@ -9,6 +9,8 @@ type PlayerState = "idle" | "playing" | "paused";
 export function useCartesiaControls() {
     const websocketRef = useRef<ReturnType<typeof CartesiaClient.prototype.tts.websocket> | null>(null);
     const playerRef = useRef<WebPlayer | null>(null);
+    // Track whether play() has been called — WebPlayer's AudioContext is lazy-initialized on first play
+    const hasPlayedRef = useRef(false);
     const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
     const [playerState, setPlayerState] = useState<PlayerState>("idle");
     const [script, setScript] = useState("Hi. This is AI Matrix.");
@@ -97,6 +99,7 @@ export function useCartesiaControls() {
 
             setPlayerState("playing");
             try {
+                hasPlayedRef.current = true;
                 await playerRef.current.play(resp.source);
                 setPlayerState("idle");
             } catch (error) {
@@ -119,7 +122,7 @@ export function useCartesiaControls() {
     }, [playerState]);
 
     const toggle = useCallback(async () => {
-        if (!playerRef.current) return;
+        if (!playerRef.current || !hasPlayedRef.current) return;
 
         try {
             await playerRef.current.toggle();

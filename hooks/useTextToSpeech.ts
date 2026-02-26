@@ -28,6 +28,8 @@ const useTextToSpeech = (options: UseTextToSpeechOptions) => {
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
+    // Track whether play() has been called — WebPlayer's AudioContext is lazy-initialized on first play
+    const hasPlayedRef = useRef(false);
 
     useEffect(() => {
         websocketRef.current = cartesia.tts.websocket({
@@ -40,7 +42,10 @@ const useTextToSpeech = (options: UseTextToSpeechOptions) => {
 
         return () => {
             websocketRef.current?.disconnect();
-            playerRef.current?.stop();
+            // Only stop if play() has been called — WebPlayer throws 'AudioContext not initialized' otherwise
+            if (playerRef.current && hasPlayedRef.current) {
+                playerRef.current.stop();
+            }
         };
     }, []);
 
@@ -74,6 +79,7 @@ const useTextToSpeech = (options: UseTextToSpeechOptions) => {
 
             setIsPlaying(true);
             setPlaybackStatus('playing');
+            hasPlayedRef.current = true;
             await playerRef.current?.play(sourceRef.current);
             setPlaybackStatus('finished');
         } catch (error) {
@@ -85,7 +91,7 @@ const useTextToSpeech = (options: UseTextToSpeechOptions) => {
     }, [text, modelId, voiceId, language, speed, emotions]);
 
     const pause = useCallback(() => {
-        if (playerRef.current) {
+        if (playerRef.current && hasPlayedRef.current) {
             playerRef.current.pause();
             setIsPlaying(false);
             setPlaybackStatus('paused');
@@ -93,7 +99,7 @@ const useTextToSpeech = (options: UseTextToSpeechOptions) => {
     }, []);
 
     const resume = useCallback(() => {
-        if (playerRef.current) {
+        if (playerRef.current && hasPlayedRef.current) {
             playerRef.current.resume();
             setIsPlaying(true);
             setPlaybackStatus('playing');
@@ -101,7 +107,7 @@ const useTextToSpeech = (options: UseTextToSpeechOptions) => {
     }, []);
 
     const stop = useCallback(() => {
-        if (playerRef.current) {
+        if (playerRef.current && hasPlayedRef.current) {
             playerRef.current.stop();
             setIsPlaying(false);
             setPlaybackStatus('inactive');

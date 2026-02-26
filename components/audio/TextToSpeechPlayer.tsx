@@ -42,6 +42,8 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
     const cartesiaRef = useRef<CartesiaClient | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
+    // Track whether play() has been called — WebPlayer's AudioContext is lazy-initialized on first play
+    const hasPlayedRef = useRef(false);
     const progressIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const cleanupRef = useRef(false);
 
@@ -54,7 +56,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
             progressIntervalRef.current = undefined;
         }
 
-        if (playerRef.current) {
+        if (playerRef.current && hasPlayedRef.current) {
             playerRef.current.stop();
         }
 
@@ -189,6 +191,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
 
             if (cleanupRef.current) return;
 
+            hasPlayedRef.current = true;
             await playerRef.current.play(source);
 
             if (cleanupRef.current) return;

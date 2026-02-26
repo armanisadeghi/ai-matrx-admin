@@ -73,6 +73,8 @@ export function useCartesia(
     });
     
     const playerRef = useRef<WebPlayer | null>(null);
+    // Track whether play() has been called at least once (AudioContext is lazy-initialized on first play)
+    const hasPlayedRef = useRef(false);
     // Create a silent audio buffer to unlock Web Audio API
     const silentSourceRef = useRef<Source | null>(null);
 
@@ -102,7 +104,8 @@ export function useCartesia(
             if (ws) {
                 ws.disconnect();
             }
-            if (playerRef.current) {
+            // Only stop if play() has been called — WebPlayer throws 'AudioContext not initialized' otherwise
+            if (playerRef.current && hasPlayedRef.current) {
                 playerRef.current.stop().catch(console.error);
             }
         };
@@ -137,6 +140,7 @@ export function useCartesia(
             // Play and immediately stop the silent source
             // This will initialize the AudioContext but not produce audible sound
             if (silentSourceRef.current) {
+                hasPlayedRef.current = true;
                 await playerRef.current.play(silentSourceRef.current);
                 await playerRef.current.stop();
                 setIsAudioInitialized(true);
@@ -195,6 +199,7 @@ export function useCartesia(
             });
             
             if (playerRef.current && response.source instanceof Source) {
+                hasPlayedRef.current = true;
                 await playerRef.current.play(response.source);
             } else {
                 throw new Error("Player not initialized or invalid source");
@@ -259,7 +264,7 @@ export function useCartesia(
     }, [isAudioInitialized, initializeAudio]);
 
     const stopPlayback = useCallback(async () => {
-        if (!playerRef.current) return;
+        if (!playerRef.current || !hasPlayedRef.current) return;
         
         try {
             await playerRef.current.stop();

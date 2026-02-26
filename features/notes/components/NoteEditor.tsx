@@ -76,7 +76,8 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const isDirtyRef = useRef(false);
 
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
-        noteId: note?.id || null,
+        // Disable autosave for the phantom note (no real DB row yet)
+        noteId: (note?.id && note.id !== '__phantom__') ? note.id : null,
         currentUpdatedAt: note?.updated_at,
         debounceMs: 3000, // Increased from 1000ms to 3000ms for less aggressive autosave
         onSaveSuccess: () => {
@@ -247,8 +248,13 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 content: value, 
                 folder_name: localFolder, 
                 tags: localTags,
-                metadata: { ...note.metadata, lastEditorMode: editorMode } // Include mode in actual content saves
+                metadata: { ...note.metadata, lastEditorMode: editorMode }
             });
+            // For phantom notes (id === '__phantom__'), updateWithAutoSave is a no-op.
+            // We must call onUpdate so NotesLayout can materialise the real DB note.
+            if (note.id === '__phantom__') {
+                onUpdate?.(note.id, { content: value, label: localLabel, folder_name: localFolder, tags: localTags });
+            }
         }
     };
 
@@ -263,8 +269,12 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 tags: localTagsRef.current,
                 metadata: { ...currentNote.metadata, lastEditorMode: editorModeRef.current }
             });
+            // Materialise phantom on TUI editor changes too
+            if (currentNote.id === '__phantom__') {
+                onUpdate?.(currentNote.id, { content: value, label: localLabelRef.current, folder_name: localFolderRef.current, tags: localTagsRef.current });
+            }
         }
-    }, [updateWithAutoSave]); // Only depends on updateWithAutoSave
+    }, [updateWithAutoSave, onUpdate]);
 
     const handleFolderChange = (value: string) => {
         setLocalFolder(value);
@@ -300,6 +310,12 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const handleLabelChange = (newLabel: string) => {
         // Update local state immediately for responsive UI
         setLocalLabel(newLabel);
+        
+        // For phantom notes, trigger materialisation immediately on label change
+        if (note?.id === '__phantom__') {
+            onUpdate?.(note.id, { label: newLabel, content: localContent, folder_name: localFolder, tags: localTags });
+            return;
+        }
         
         // Clear existing timeout
         if (labelSaveTimeoutRef.current) {

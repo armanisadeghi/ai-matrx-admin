@@ -1,7 +1,7 @@
 // features/notes/components/NotesLayout.tsx
 "use client";
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { NotesSidebar } from './NotesSidebar';
 import { NoteEditor } from './NoteEditor';
 import { NoteTabs } from './NoteTabs';
@@ -16,6 +16,26 @@ import { Loader2, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { useToastManager } from '@/hooks/useToastManager';
+
+/** Sentinel ID for the phantom (unsaved) note shown before any real note is active. */
+const PHANTOM_NOTE_ID = '__phantom__';
+
+/** Create a fresh local-only placeholder note. Never persisted until the user edits it. */
+function createPhantomNote(): Note {
+    const now = new Date().toISOString();
+    return {
+        id: PHANTOM_NOTE_ID,
+        label: '',
+        content: '',
+        folder_name: 'Draft',
+        tags: [],
+        user_id: '',
+        created_at: now,
+        updated_at: now,
+        is_deleted: false,
+        metadata: {},
+    };
+}
 
 interface NotesLayoutProps {
     className?: string;
@@ -50,6 +70,15 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         order: 'desc',
     });
     const toast = useToastManager('notes');
+
+    // Phantom note: shown when no real note is active, never saved until user edits
+    const [phantomNote] = useState<Note>(createPhantomNote);
+    // Track if we're in the process of materialising the phantom into a real note
+    const materialisingRef = useRef(false);
+
+    // The note passed to the editor: real active note if we have one, phantom otherwise
+    // During loading, pass null so the spinner shows instead of a phantom
+    const editorNote = activeNote ?? (isLoading ? null : phantomNote);
 
     // Track when label changes
     useEffect(() => {
@@ -194,10 +223,32 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         }
     }, [activeNote, updateNote, toast]);
 
-    const handleUpdateNote = useCallback((noteId: string, updates: Partial<Note>) => {
+    const handleUpdateNote = useCallback(async (noteId: string, updates: Partial<Note>) => {
+        // If editing the phantom note, materialise it as a real DB note first
+        if (noteId === PHANTOM_NOTE_ID) {
+            // Guard against concurrent calls during materialisation
+            if (materialisingRef.current) return;
+            materialisingRef.current = true;
+            try {
+                const realNote = await findOrCreateEmptyNote(updates.folder_name || 'Draft');
+                // Apply any content/label updates from the first edit
+                const { folder_name: _f, ...restUpdates } = updates;
+                const hasPayload = Object.keys(restUpdates).some(k => restUpdates[k as keyof typeof restUpdates] !== undefined);
+                if (hasPayload) {
+                    await updateNote(realNote.id, restUpdates);
+                }
+                openNoteInTab(realNote.id);
+            } catch (err) {
+                console.error('Error materialising phantom note:', err);
+                toast.error(err);
+            } finally {
+                materialisingRef.current = false;
+            }
+            return;
+        }
         // Context handles optimistic updates automatically
         updateNote(noteId, updates);
-    }, [updateNote]);
+    }, [updateNote, findOrCreateEmptyNote, openNoteInTab, toast]);
 
     const handleMoveNote = useCallback(async (noteId: string, newFolder: string) => {
         try {
@@ -335,7 +386,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 />
                 
                 <NoteEditor
-                    note={activeNote}
+                    note={editorNote}
                     onUpdate={handleUpdateNote}
                     allNotes={notes}
                     className="flex-1"

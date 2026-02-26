@@ -24,8 +24,8 @@ export function usePlayerSafe() {
 	}
 
 	async function play(stream: ReadableStream, callback: () => void) {
-		// First, make sure AudioContext is initialized
-		if (!audioContextInitialized) {
+		// Use the ref directly (synchronous) instead of the state (may be stale during re-renders)
+		if (!audioContext.current) {
 			const initialized = initializeAudioContext();
 			if (!initialized) {
 				console.error("Failed to initialize AudioContext");
