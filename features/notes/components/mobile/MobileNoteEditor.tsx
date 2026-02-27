@@ -31,7 +31,7 @@ interface MobileNoteEditorProps {
 }
 
 export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNoteEditorProps) {
-  const { updateNote, deleteNote, copyNote, refreshNotes } = useNotesContext();
+  const { updateNote, deleteNote, copyNote, setActiveNoteDirty } = useNotesContext();
   const toast = useToastManager('notes');
 
   const [localLabel, setLocalLabel] = useState(note.label || '');
@@ -46,24 +46,48 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
   const tuiRef = useRef<any>(null);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync when note switches
+  // Capture the server baseline when the note first loads (or switches).
+  // We compare local edits against THIS snapshot — not the live `note` prop —
+  // so that realtime context updates don't reset isDirty to false mid-edit.
+  const savedBaselineRef = useRef({
+    label: note.label || '',
+    content: note.content || '',
+    folder_name: note.folder_name || 'Draft',
+    tags: JSON.stringify(note.tags || []),
+  });
+
+  // Sync when note switches (ID change only)
   useEffect(() => {
-    setLocalLabel(note.label || '');
-    setLocalContent(note.content || '');
-    setLocalFolder(note.folder_name || 'Draft');
+    const baseline = {
+      label: note.label || '',
+      content: note.content || '',
+      folder_name: note.folder_name || 'Draft',
+      tags: JSON.stringify(note.tags || []),
+    };
+    savedBaselineRef.current = baseline;
+    setLocalLabel(baseline.label);
+    setLocalContent(baseline.content);
+    setLocalFolder(baseline.folder_name);
     setLocalTags(note.tags || []);
     setIsDirty(false);
-  }, [note.id]);
+  }, [note.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Track dirty state
+  // Report dirty state to context so refreshNotes() never overwrites unsaved user input
   useEffect(() => {
+    setActiveNoteDirty(isDirty);
+    return () => { setActiveNoteDirty(false); };
+  }, [isDirty, setActiveNoteDirty]);
+
+  // Track dirty state against the saved baseline (not the live note prop)
+  useEffect(() => {
+    const baseline = savedBaselineRef.current;
     const hasChanges =
-      localLabel !== (note.label || '') ||
-      localContent !== (note.content || '') ||
-      localFolder !== (note.folder_name || 'Draft') ||
-      JSON.stringify(localTags) !== JSON.stringify(note.tags || []);
+      localLabel !== baseline.label ||
+      localContent !== baseline.content ||
+      localFolder !== baseline.folder_name ||
+      JSON.stringify(localTags) !== baseline.tags;
     setIsDirty(hasChanges);
-  }, [localLabel, localContent, localFolder, localTags, note]);
+  }, [localLabel, localContent, localFolder, localTags]);
 
   // Auto-grow plain textarea
   const growTextarea = useCallback(() => {
@@ -83,13 +107,19 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
     autoSaveTimer.current = setTimeout(async () => {
       if (!isDirty || isSaving) return;
       setIsSaving(true);
+      const label = localLabel.trim() || 'Untitled Note';
+      const content = localContent;
+      const folder = localFolder;
+      const tags = localTags;
       try {
-        await updateNote(note.id, {
-          label: localLabel.trim() || 'Untitled Note',
-          content: localContent,
-          folder_name: localFolder,
-          tags: localTags,
-        });
+        await updateNote(note.id, { label, content, folder_name: folder, tags });
+        // Update baseline so dirty check doesn't flip back to true on next compare
+        savedBaselineRef.current = {
+          label,
+          content,
+          folder_name: folder,
+          tags: JSON.stringify(tags),
+        };
         setIsDirty(false);
       } catch {
         // silent — user can see save button
@@ -115,13 +145,22 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
         content = tuiRef.current.getCurrentMarkdown();
         setLocalContent(content);
       }
+      const label = localLabel.trim() || 'Untitled Note';
       await updateNote(note.id, {
-        label: localLabel.trim() || 'Untitled Note',
+        label,
         content,
         folder_name: localFolder,
         tags: localTags,
       });
-      await refreshNotes();
+      // Update the baseline so dirty tracking reflects the just-saved values.
+      // Do NOT call refreshNotes() — that fetches from server and can overwrite
+      // content the user is actively editing if a realtime echo arrives simultaneously.
+      savedBaselineRef.current = {
+        label,
+        content,
+        folder_name: localFolder,
+        tags: JSON.stringify(localTags),
+      };
       setIsDirty(false);
     } catch {
       toast.error('Failed to save note');

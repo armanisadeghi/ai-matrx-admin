@@ -29,6 +29,8 @@ All classes are self-contained — background, blur, saturate, and border are al
 | `mx-glass-sheet` | Side sheet sliding in from edge | Strong-tier values |
 | `mx-glass-drawer` | Bottom drawer/sheet | Strong-tier values, no bottom border |
 | `mx-glass-scrim` | Very light blur behind a bottom sheet, no tint | 2px blur, 110% sat, near-transparent bg |
+| `mx-glass-vibrancy` | Floating toolbars, pills, chips that should feel native | Mode-agnostic white tint — reads light/dark from content behind it |
+| `mx-glass-vibrancy-dock` | Bottom docks, action bars (Apple dock equivalent) | Same as vibrancy + higher blur, shadow — identical tint in light and dark mode |
 
 ---
 
@@ -69,6 +71,8 @@ Use `text-glass-foreground` for body/label text sitting on glass surfaces. It si
 | `text-foreground` | 16% L | 90% L | Headings, primary labels |
 | `text-glass-foreground` | 28% L | 82% L | Body text, secondary labels on glass |
 | `text-muted-foreground` | 46% L | 68% L | Hints, placeholders, tertiary text |
+
+> **On vibrancy surfaces** (`mx-glass-vibrancy`, `mx-glass-vibrancy-dock`): prefer `text-foreground` or `text-glass-foreground`. Because the tint is fixed and the background bleeds through, muted text can become hard to read in certain dark backgrounds.
 
 ---
 

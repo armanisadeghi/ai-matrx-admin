@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, Plus, X, FileText, Loader2, Filter } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, X, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
 import {
     AlertDialog,
@@ -50,7 +49,11 @@ const MESSAGE_ROLES: { value: MessageRole | "all"; label: string }[] = [
 
 type ActiveTab = "my" | "public";
 
-interface FloatingSearchBarProps {
+interface TopBarProps {
+    activeTab: ActiveTab;
+    onTabChange: (tab: ActiveTab) => void;
+    myCount: number;
+    publicCount: number;
     searchValue: string;
     onSearchChange: (v: string) => void;
     onFilterClick: () => void;
@@ -58,15 +61,17 @@ interface FloatingSearchBarProps {
     showFilterBadge?: boolean;
 }
 
-function FloatingSearchBar({
+function TopBar({
+    activeTab,
+    onTabChange,
+    myCount,
+    publicCount,
     searchValue,
     onSearchChange,
     onFilterClick,
     onNewClick,
     showFilterBadge,
-}: FloatingSearchBarProps) {
-    const isMobile = useIsMobile();
-    const [isSearchActive, setIsSearchActive] = useState(false);
+}: TopBarProps) {
     const [local, setLocal] = useState(searchValue);
 
     useEffect(() => { setLocal(searchValue); }, [searchValue]);
@@ -76,138 +81,80 @@ function FloatingSearchBar({
         onSearchChange(v);
     };
 
-    if (isMobile) {
-        if (isSearchActive) {
-            return (
-                <>
-                    <div
-                        className="fixed inset-0 bg-background/60 backdrop-blur-sm z-30"
-                        onClick={() => {
-                            setIsSearchActive(false);
-                            if (!local) onSearchChange("");
-                        }}
-                    />
-                    <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
-                        <div className="px-4 pb-4">
-                            <div className="flex items-center gap-2 p-2 rounded-full mx-glass-strong">
-                                <div className="flex-1 flex items-center gap-2 h-10 px-3">
-                                    <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                    <input
-                                        type="text"
-                                        value={local}
-                                        onChange={(e) => handleChange(e.target.value)}
-                                        placeholder="Search templates..."
-                                        autoFocus
-                                        style={{ fontSize: "16px" }}
-                                        className="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground"
-                                    />
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => local ? handleChange("") : setIsSearchActive(false)}
-                                    className="h-10 w-10 flex-shrink-0 rounded-full mx-glass-subtle border-0"
-                                >
-                                    <X className="h-5 w-5" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            );
-        }
-
-        return (
-            <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
-                <div className="px-4 pb-4">
-                    <div className="flex items-center gap-2 p-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={onFilterClick}
-                            className="h-10 w-10 flex-shrink-0 mx-glass-pill relative border-0"
-                        >
-                            <SlidersHorizontal className="h-5 w-5" />
-                            {showFilterBadge && (
-                                <span className="absolute top-1 right-1 h-2 w-2 bg-primary rounded-full" />
-                            )}
-                        </Button>
-
-                        <button
-                            onClick={() => setIsSearchActive(true)}
-                            className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full mx-glass-input transition-colors"
-                        >
-                            <Search className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground truncate">
-                                {local || "Search templates..."}
-                            </span>
-                        </button>
-
-                        <Button
-                            size="icon"
-                            onClick={onNewClick}
-                            className="h-10 w-10 flex-shrink-0 rounded-full bg-primary hover:bg-primary/90"
-                        >
-                            <Plus className="h-5 w-5" />
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Desktop search bar (top)
     return (
-        <div className="flex items-center gap-2 mb-4">
-            <div className="flex-1 relative">
-                <div className="flex items-center gap-3 px-3 py-2 rounded-full mx-glass hover:shadow-xl transition-shadow">
-                    <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <input
-                        type="text"
-                        value={local}
-                        onChange={(e) => handleChange(e.target.value)}
-                        placeholder="Search templates..."
-                        className="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground"
-                    />
-                    {local && (
-                        <button
-                            onClick={() => handleChange("")}
-                            className="p-1 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
-                        >
-                            <X className="h-3.5 w-3.5 text-muted-foreground" />
-                        </button>
-                    )}
-                </div>
+        <div className="flex-shrink-0 flex items-center gap-2 px-3 pt-3 pb-2">
+            {/* Tab pills */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                    onClick={() => onTabChange("my")}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        activeTab === "my"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                >
+                    Mine
+                    <span className={`text-[10px] px-1 py-0 rounded-full ${activeTab === "my" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        {myCount}
+                    </span>
+                </button>
+                <button
+                    onClick={() => onTabChange("public")}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        activeTab === "public"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                >
+                    Public
+                    <span className={`text-[10px] px-1 py-0 rounded-full ${activeTab === "public" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        {publicCount}
+                    </span>
+                </button>
             </div>
 
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={onFilterClick}
-                className="h-9 px-3 rounded-full mx-glass hover:shadow-xl relative border border-border/50"
-            >
-                <SlidersHorizontal className="h-4 w-4" />
-                <span className="ml-1.5">Filter</span>
-                {showFilterBadge && (
-                    <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 bg-primary rounded-full" />
+            {/* Search input — fills remaining space */}
+            <div className="flex-1 flex items-center gap-1 h-8 px-2.5 rounded-full bg-muted/60 border border-border/40 min-w-0">
+                <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                <input
+                    type="text"
+                    value={local}
+                    onChange={(e) => handleChange(e.target.value)}
+                    placeholder="Search..."
+                    style={{ fontSize: "16px" }}
+                    className="flex-1 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground min-w-0"
+                />
+                {local && (
+                    <button onClick={() => handleChange("")} className="flex-shrink-0">
+                        <X className="h-3 w-3 text-muted-foreground" />
+                    </button>
                 )}
-            </Button>
+            </div>
 
-            <Button
-                size="sm"
+            {/* Filter button */}
+            <button
+                onClick={onFilterClick}
+                className="flex-shrink-0 relative h-8 w-8 flex items-center justify-center rounded-full bg-muted/60 border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+            >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                {showFilterBadge && (
+                    <span className="absolute top-0.5 right-0.5 h-2 w-2 bg-primary rounded-full" />
+                )}
+            </button>
+
+            {/* New button */}
+            <button
                 onClick={onNewClick}
-                className="h-9 px-3 rounded-full bg-primary hover:bg-primary/90"
+                className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">New</span>
-            </Button>
+            </button>
         </div>
     );
 }
 
 export function UserContentTemplateManager() {
     const router = useRouter();
-    const isMobile = useIsMobile();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
 
@@ -324,51 +271,21 @@ export function UserContentTemplateManager() {
             <ContentTemplatesPageHeader />
 
             <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
-                {/* Tabs row */}
-                <div className="flex-shrink-0 flex items-center gap-1 px-3 pt-3 pb-0">
-                    <button
-                        onClick={() => setActiveTab("my")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                            activeTab === "my"
-                                ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
-                    >
-                        Mine
-                        <span className={`text-[10px] px-1.5 py-0 rounded-full ${activeTab === "my" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            {myTemplates.length}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("public")}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                            activeTab === "public"
-                                ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
-                    >
-                        Public
-                        <span className={`text-[10px] px-1.5 py-0 rounded-full ${activeTab === "public" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            {publicTemplates.length}
-                        </span>
-                    </button>
-                </div>
-
-                {/* Desktop search */}
-                {!isMobile && (
-                    <div className="flex-shrink-0 px-4 pt-3">
-                        <FloatingSearchBar
-                            searchValue={searchTerm}
-                            onSearchChange={setSearchTerm}
-                            onFilterClick={() => setIsFilterOpen(true)}
-                            onNewClick={handleNewTemplate}
-                            showFilterBadge={hasFilters}
-                        />
-                    </div>
-                )}
+                {/* Single top bar: tabs + search + filter + new (works on all screen sizes) */}
+                <TopBar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    myCount={myTemplates.length}
+                    publicCount={publicTemplates.length}
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onFilterClick={() => setIsFilterOpen(true)}
+                    onNewClick={handleNewTemplate}
+                    showFilterBadge={hasFilters}
+                />
 
                 {/* Template grid */}
-                <div className="flex-1 overflow-y-auto px-3 pt-3 pb-24 md:pb-6">
+                <div className="flex-1 overflow-y-auto px-3 pb-24 md:pb-6">
                     {filteredTemplates.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <FileText className="w-10 h-10 text-muted-foreground/40 mb-3" />
@@ -399,17 +316,6 @@ export function UserContentTemplateManager() {
                         </div>
                     )}
                 </div>
-
-                {/* Mobile floating action bar */}
-                {isMobile && (
-                    <FloatingSearchBar
-                        searchValue={searchTerm}
-                        onSearchChange={setSearchTerm}
-                        onFilterClick={() => setIsFilterOpen(true)}
-                        onNewClick={handleNewTemplate}
-                        showFilterBadge={hasFilters}
-                    />
-                )}
             </div>
 
             {/* Action drawer/dialog */}

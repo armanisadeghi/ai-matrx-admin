@@ -32,15 +32,25 @@ export function useAutoSave({
     
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const pendingUpdatesRef = useRef<UpdateNoteInput>({});
-    // Keep a stable ref to the current updated_at to use in async callbacks
+    // Keep a stable ref to the current updated_at to use in async callbacks.
+    // This is set to the incoming server value when the editor is clean, and is
+    // updated after each successful save so the next save uses the latest timestamp.
     const currentUpdatedAtRef = useRef<string | null | undefined>(currentUpdatedAt);
+    // Use a ref for isDirty so the sync effect below can read it synchronously
+    const isDirtyRef = useRef(false);
 
-    // Sync ref when currentUpdatedAt changes (only when not dirty, to not reset the lock)
     useEffect(() => {
-        if (!isDirty) {
+        isDirtyRef.current = isDirty;
+    }, [isDirty]);
+
+    // Sync ref when currentUpdatedAt changes — but only when the editor is clean.
+    // While the user has unsaved edits we must keep the pre-edit timestamp so the
+    // optimistic lock check on save uses the correct baseline.
+    useEffect(() => {
+        if (!isDirtyRef.current) {
             currentUpdatedAtRef.current = currentUpdatedAt;
         }
-    }, [currentUpdatedAt, isDirty]);
+    }, [currentUpdatedAt]);
 
     /**
      * Mark the note as dirty (has unsaved changes)
@@ -75,7 +85,12 @@ export function useAutoSave({
 
         try {
             setIsSaving(true);
-            await updateNote(noteId, updatesSnapshot, expectedAt);
+            const saved = await updateNote(noteId, updatesSnapshot, expectedAt);
+            // Advance the lock baseline to the timestamp returned by the server,
+            // so the next save doesn't re-use the pre-edit timestamp.
+            if (saved?.updated_at) {
+                currentUpdatedAtRef.current = saved.updated_at;
+            }
             pendingUpdatesRef.current = {};
             setIsDirty(false);
             setLastSaved(new Date());

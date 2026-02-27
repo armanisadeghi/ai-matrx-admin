@@ -63,7 +63,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const toast = useToastManager('notes');
-    const { refreshNotes } = useNotesContext();
+    const { refreshNotes, setActiveNoteDirty } = useNotesContext();
     
     // Use refs to avoid callback dependencies
     const localContentRef = useRef(localContent);
@@ -119,6 +119,12 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         isDirtyRef.current = isDirty;
     }, [localContent, localFolder, localTags, localLabel, editorMode, note, isDirty]);
 
+    // Report dirty state to context so refreshNotes() never overwrites unsaved user input
+    useEffect(() => {
+        setActiveNoteDirty(isDirty);
+        return () => { setActiveNoteDirty(false); };
+    }, [isDirty, setActiveNoteDirty]);
+
     // Get all folders (default + custom) - optimized to only recalculate when folder names change
     const availableFolders = useAllFolders(allNotes);
 
@@ -168,16 +174,11 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [note?.id]); // Only reset when note ID changes
 
-    // When the note is updated externally (realtime refresh) and editor is clean, sync content
-    useEffect(() => {
-        if (note && !isDirtyRef.current) {
-            setLocalContent(note.content);
-            setLocalLabel(note.label);
-            setLocalFolder(note.folder_name || 'Draft');
-            setLocalTags(note.tags || []);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [note?.updated_at]); // Re-sync when server timestamp changes (explicit refresh)
+    // Intentionally NOT syncing on note?.updated_at changes.
+    // The realtime subscription in NotesContext already shows a toast warning the user
+    // about external changes and lets them choose to refresh. Silently overwriting local
+    // state here is the primary cause of data loss — even a clean isDirty=false window
+    // between saves can clobber content the user just typed.
     
     // Cleanup label timeout on unmount
     useEffect(() => {

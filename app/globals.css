@@ -1094,6 +1094,90 @@
     background: rgba(0, 0, 0, 0.05);
   }
 
+  /* Vibrancy — mode-agnostic frosted glass.
+     All visual layers live on ::before/::after so the container itself stays
+     layout-neutral: no overflow:hidden, no background, no border on the element.
+     This prevents iOS Safari flex shifts and icon color bleed into the blur. */
+  .mx-glass-vibrancy {
+    position: relative;
+  }
+
+  /* Blur + tint layer — sits behind children, never clips them */
+  .mx-glass-vibrancy::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(20px) saturate(155%);
+    -webkit-backdrop-filter: blur(20px) saturate(155%);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.30),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+      inset 1px 0 0 rgba(255, 255, 255, 0.12),
+      inset -1px 0 0 rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Edge dispersion — radial brightening at the rim, on top of blur layer */
+  .mx-glass-vibrancy::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 58%,
+      rgba(255, 255, 255, 0.06) 80%,
+      rgba(255, 255, 255, 0.13) 100%
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Vibrancy dock — same approach, tuned for a bottom nav pill */
+  .mx-glass-vibrancy-dock {
+    position: relative;
+  }
+
+  .mx-glass-vibrancy-dock::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(24px) saturate(155%);
+    -webkit-backdrop-filter: blur(24px) saturate(155%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.10),
+      0 2px 6px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+      inset 1px 0 0 rgba(255, 255, 255, 0.14),
+      inset -1px 0 0 rgba(255, 255, 255, 0.14);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Edge dispersion ring */
+  .mx-glass-vibrancy-dock::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 55%,
+      rgba(255, 255, 255, 0.05) 78%,
+      rgba(255, 255, 255, 0.12) 100%
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+
   /* ===== END GLASS EFFECT UTILITIES ===== */
 
   /* Automatically apply textures and colors to backgrounds */

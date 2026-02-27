@@ -13,6 +13,8 @@ interface NotesContextType {
     error: Error | null;
     activeNote: Note | null;
     setActiveNote: (note: Note | null) => void;
+    /** Report whether the active note has unsaved local edits. Prevents refreshNotes from overwriting user input. */
+    setActiveNoteDirty: (dirty: boolean) => void;
     createNote: (input: CreateNoteInput) => Promise<Note>;
     updateNote: (id: string, updates: UpdateNoteInput) => Promise<Note>;
     deleteNote: (id: string) => Promise<void>;
@@ -51,6 +53,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         activeNoteRef.current = activeNote;
     }, [notes, activeNote]);
 
+    // Track whether the active note has unsaved local edits (set by NoteEditor/MobileNoteEditor)
+    const activeNoteIsDirtyRef = useRef(false);
+
+    // Called by editors to tell the context whether there are unsaved local changes
+    const setActiveNoteDirty = useCallback((dirty: boolean) => {
+        activeNoteIsDirtyRef.current = dirty;
+    }, []);
+
     // Fetch notes from database with race condition prevention
     const refreshNotes = useCallback(async () => {
         // If already refreshing, wait for that to complete
@@ -80,7 +90,12 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                 if (currentActive) {
                     const updatedActiveNote = fetchedNotes.find(n => n.id === currentActive.id);
                     if (updatedActiveNote) {
-                        setActiveNote(updatedActiveNote);
+                        // CRITICAL: Never overwrite activeNote if the user has unsaved local edits.
+                        // Only update metadata fields that can't be edited in the editor (e.g. updated_at
+                        // from the server). Content/label/folder/tags are owned by the editor until saved.
+                        if (!activeNoteIsDirtyRef.current) {
+                            setActiveNote(updatedActiveNote);
+                        }
                         // Ensure active note is in tabs
                         setOpenTabs(prev => {
                             if (!prev.includes(updatedActiveNote.id)) {
@@ -465,6 +480,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         error,
         activeNote,
         setActiveNote,
+        setActiveNoteDirty,
         createNote,
         updateNote,
         deleteNote,
@@ -481,6 +497,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         error,
         activeNote,
+        setActiveNoteDirty,
         createNote,
         updateNote,
         deleteNote,

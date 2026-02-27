@@ -141,7 +141,7 @@ export function MobileActionBar({
         return (
             <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                    <div className="flex items-center gap-2 p-2 rounded-full ">
+                    <div className="flex items-center gap-2 p-2 rounded-full mx-glass-vibrancy-dock">
                         {/* Filter Button */}
                         {showFilterButton && (
                             <Button
