@@ -158,7 +158,7 @@ export default function MobileLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="pt-10 min-h-dvh">
+      <main className="pt-10 min-h-dvh bg-transparent">
         {children}
       </main>
     </div>

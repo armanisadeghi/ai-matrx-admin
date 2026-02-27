@@ -29,8 +29,8 @@ All classes are self-contained — background, blur, saturate, and border are al
 | `mx-glass-sheet` | Side sheet sliding in from edge | Strong-tier values |
 | `mx-glass-drawer` | Bottom drawer/sheet | Strong-tier values, no bottom border |
 | `mx-glass-scrim` | Very light blur behind a bottom sheet, no tint | 2px blur, 110% sat, near-transparent bg |
-| `mx-glass-vibrancy` | Floating toolbars, pills, chips that should feel native | Mode-agnostic white tint — reads light/dark from content behind it |
-| `mx-glass-vibrancy-dock` | Bottom docks, action bars (Apple dock equivalent) | Same as vibrancy + higher blur, shadow — identical tint in light and dark mode |
+| `mx-glass-vibrancy` | Floating toolbars, pills, chips that should feel native (**must be `position: fixed/absolute`**) | Mode-agnostic white tint — reads light/dark from content behind it |
+| `mx-glass-vibrancy-dock` | Bottom docks, action bars (**must be `position: fixed/absolute`**) | Same as vibrancy + higher blur, shadow — identical tint in light and dark mode |
 
 ---
 

@@ -115,8 +115,8 @@ function SettingsNavigation({ onItemClick }: { onItemClick?: () => void }) {
 
 export default function SettingsLayoutClient({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-page w-full flex flex-col">
-      <div className="flex flex-1 overflow-hidden">
+    <div className="h-page w-full flex flex-col bg-transparent">
+      <div className="flex flex-1 overflow-hidden bg-transparent">
         {/* Desktop sidebar */}
         <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
           <div className="p-3 w-full">
@@ -124,8 +124,8 @@ export default function SettingsLayoutClient({ children }: { children: React.Rea
           </div>
         </aside>
 
-        {/* Main content — pb-20 on mobile so dock doesn't cover bottom content */}
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
+        {/* Main content */}
+        <main className="flex-1 min-h-0 bg-transparent">
           {children}
         </main>
       </div>
