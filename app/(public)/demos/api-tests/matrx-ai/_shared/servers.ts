@@ -7,6 +7,8 @@ export interface ServerPreset {
 }
 
 export const SERVER_PRESETS: readonly ServerPreset[] = [
+  { label: 'ai.app.matrxserver.com', url: 'https://ai.app.matrxserver.com' },
+  { label: 'dev.ai.app.matrxserver.com', url: 'https://dev.ai.app.matrxserver.com' },
   { label: 'localhost:8000', url: 'http://localhost:8000' },
   { label: 'localhost:8001', url: 'http://localhost:8001' },
   { label: 'server.app.matrxserver.com', url: 'https://server.app.matrxserver.com' },
