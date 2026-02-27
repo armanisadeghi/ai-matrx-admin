@@ -51,13 +51,13 @@ export default function MobileLayout({
   return (
     <div id={uniqueId} className="min-h-dvh">
       {/* Mobile Header — mx-glass bar, content scrolls behind and blurs through */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-10 mx-glass-header">
+      <header className="fixed top-0 left-0 right-0 z-50 h-10 mx-glass-nano">
         <div className="flex items-center justify-between h-full px-2">
           {/* Left side - Menu and page-specific content */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               onClick={toggleSidebar}
-              className="p-1.5 rounded-full mx-glass transition-colors flex-shrink-0"
+              className="p-1.5 rounded-full border mx-glass-border-subtle mx-glass transition-colors flex-shrink-0"
               aria-label="Open menu"
             >
               <Menu className="w-4 h-4 text-foreground" />

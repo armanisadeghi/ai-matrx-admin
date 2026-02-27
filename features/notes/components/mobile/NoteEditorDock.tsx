@@ -1,0 +1,256 @@
+'use client';
+
+/**
+ * NoteEditorDock — fixed bottom action dock for the mobile note editor.
+ *
+ * Visual DNA identical to MobileDock (mx-glass-subtle, rounded-[22px], pb-safe,
+ * fixed bottom-0, pointer-events-none wrapper) but uses action callbacks instead
+ * of Link-based navigation, since this is a contextual toolbar, not a nav bar.
+ */
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  FolderOpen,
+  Tag,
+  Share2,
+  MoreHorizontal,
+  Copy,
+  Download,
+  Trash2,
+  Loader2,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { BottomSheet, BottomSheetHeader, BottomSheetBody } from '@/components/official/bottom-sheet/BottomSheet';
+import MobileNoteToolbar from './MobileNoteToolbar';
+import { useToastManager } from '@/hooks/useToastManager';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface NoteEditorDockProps {
+  folder: string;
+  tags: string[];
+  onFolderChange: (folder: string) => void;
+  onTagsChange: (tags: string[]) => void;
+  onCopy: () => void;
+  onExport: () => void;
+  onDelete: () => void;
+  isDeleting?: boolean;
+}
+
+// ─── Constants (mirrors MobileDock) ──────────────────────────────────────────
+
+const PILL_INSET_X = 3;
+const PILL_INSET_Y = 4;
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export function NoteEditorDock({
+  folder,
+  tags,
+  onFolderChange,
+  onTagsChange,
+  onCopy,
+  onExport,
+  onDelete,
+  isDeleting,
+}: NoteEditorDockProps) {
+  const toast = useToastManager('notes');
+  const navRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [pill, setPill] = useState<{ x: number; width: number; height: number } | null>(null);
+  const [sheetOpen, setSheetOpen] = useState<'folder-tags' | 'more' | null>(null);
+
+  // Dock items definition
+  const items: { key: string; label: string; Icon: LucideIcon; onPress: () => void }[] = [
+    {
+      key: 'folder',
+      label: folder,
+      Icon: FolderOpen,
+      onPress: () => { setActiveIndex(0); setSheetOpen('folder-tags'); },
+    },
+    {
+      key: 'tags',
+      label: tags.length > 0 ? `${tags.length} tag${tags.length !== 1 ? 's' : ''}` : 'Tags',
+      Icon: Tag,
+      onPress: () => { setActiveIndex(1); setSheetOpen('folder-tags'); },
+    },
+    {
+      key: 'share',
+      label: 'Share',
+      Icon: Share2,
+      onPress: () => { toast.info('Sharing coming soon'); },
+    },
+    {
+      key: 'more',
+      label: 'More',
+      Icon: MoreHorizontal,
+      onPress: () => { setActiveIndex(3); setSheetOpen('more'); },
+    },
+  ];
+
+  // Measure pill geometry — same math as MobileDock
+  const measurePill = useCallback(() => {
+    const nav = navRef.current;
+    const idx = activeIndex;
+    if (!nav || idx === null) { setPill(null); return; }
+    const activeEl = itemRefs.current[idx];
+    if (!activeEl) { setPill(null); return; }
+
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = activeEl.getBoundingClientRect();
+    const dockH = navRect.height;
+    const navW = navRect.width;
+    const CORNER_RADIUS = 22;
+
+    const rawX = itemRect.left - navRect.left + PILL_INSET_X;
+    const rawW = itemRect.width - PILL_INSET_X * 2;
+    const minX = CORNER_RADIUS / 2;
+    const maxRight = navW - CORNER_RADIUS / 2;
+    const clampedX = Math.max(minX, rawX);
+    const clampedRight = Math.min(maxRight, rawX + rawW);
+    const clampedW = Math.max(0, clampedRight - clampedX);
+
+    setPill({ x: clampedX, width: clampedW, height: dockH - PILL_INSET_Y * 2 });
+  }, [activeIndex]);
+
+  useEffect(() => { measurePill(); }, [measurePill]);
+
+  useEffect(() => {
+    if (!sheetOpen) setActiveIndex(null);
+  }, [sheetOpen]);
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+  return (
+    <>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none">
+        <div
+          ref={navRef}
+          className="relative flex items-stretch mx-glass-subtle rounded-[22px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto"
+        >
+          {/* Sliding pill indicator */}
+          {pill && (
+            <div
+              aria-hidden
+              className="absolute rounded-full bg-primary/10 dark:bg-primary/15 border border-primary/20 dark:border-primary/30"
+              style={{
+                top: PILL_INSET_Y,
+                left: pill.x,
+                width: pill.width,
+                height: pill.height,
+                transition: 'left 380ms cubic-bezier(0.34, 1.56, 0.64, 1), width 380ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+
+          {items.map((item, i) => {
+            const { Icon } = item;
+            const isActive = activeIndex === i;
+
+            return (
+              <div
+                key={item.key}
+                ref={el => { itemRefs.current[i] = el; }}
+                className="relative flex-1 flex items-center justify-center min-w-0"
+              >
+                <button
+                  onClick={item.onPress}
+                  aria-label={item.label}
+                  className={cn(
+                    'relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-3 px-1 transition-colors duration-200',
+                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'h-[20px] w-[20px] transition-all duration-200 shrink-0',
+                      isActive && 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.4)]',
+                    )}
+                  />
+                  <span className={cn(
+                    'text-[9px] leading-none font-medium truncate max-w-full transition-colors duration-200',
+                    isActive ? 'text-primary' : 'text-muted-foreground',
+                  )}>
+                    {item.label}
+                  </span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Folder + Tags sheet */}
+      <BottomSheet
+        open={sheetOpen === 'folder-tags'}
+        onOpenChange={open => setSheetOpen(open ? 'folder-tags' : null)}
+        title="Note Settings"
+      >
+        <BottomSheetHeader title="Folder &amp; Tags" />
+        <BottomSheetBody>
+          <MobileNoteToolbar
+            folder={folder}
+            tags={tags}
+            onFolderChange={f => { onFolderChange(f); setSheetOpen(null); }}
+            onTagsChange={onTagsChange}
+            onClose={() => setSheetOpen(null)}
+          />
+        </BottomSheetBody>
+      </BottomSheet>
+
+      {/* More actions sheet */}
+      <BottomSheet
+        open={sheetOpen === 'more'}
+        onOpenChange={open => setSheetOpen(open ? 'more' : null)}
+        title="Note Actions"
+      >
+        <BottomSheetHeader title="Note Actions" />
+        <BottomSheetBody>
+          <div className="px-4 py-2 space-y-1">
+            <button
+              onClick={() => { onCopy(); setSheetOpen(null); }}
+              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
+            >
+              <Copy className="h-5 w-5 text-muted-foreground" />
+              Duplicate Note
+            </button>
+            <button
+              onClick={() => { toast.info('Sharing coming soon'); setSheetOpen(null); }}
+              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
+            >
+              <Share2 className="h-5 w-5 text-muted-foreground" />
+              Share
+              <span className="ml-auto text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-normal">
+                Soon
+              </span>
+            </button>
+            <button
+              onClick={() => { onExport(); setSheetOpen(null); }}
+              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
+            >
+              <Download className="h-5 w-5 text-muted-foreground" />
+              Export as Markdown
+            </button>
+            <div className="h-px bg-border/40 my-1" />
+            <button
+              onClick={() => { setSheetOpen(null); onDelete(); }}
+              disabled={isDeleting}
+              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+            >
+              {isDeleting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Trash2 className="h-5 w-5" />
+              )}
+              {isDeleting ? 'Deleting...' : 'Delete Note'}
+            </button>
+          </div>
+        </BottomSheetBody>
+      </BottomSheet>
+    </>
+  );
+}

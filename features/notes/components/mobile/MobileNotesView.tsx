@@ -1,60 +1,260 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { ChevronLeft, FileText, PilcrowRight, Eye, Save, Loader2, Check, FolderOpen, Layers, ChevronDown } from 'lucide-react';
 import { useNotesContext } from '@/features/notes/context/NotesContext';
 import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
+import { cn } from '@/lib/utils';
 import MobileNotesList from './MobileNotesList';
-import MobileNoteEditor from './MobileNoteEditor';
+import MobileNoteEditor, { type MobileEditorMode } from './MobileNoteEditor';
+import { DEFAULT_FILTER_STATE, type NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
 
 type MobileView = 'list' | 'editor';
 
+const VIEW_MODES: { mode: MobileEditorMode; icon: React.ReactNode; label: string }[] = [
+  { mode: 'plain',   icon: <FileText size={13} />,    label: 'Text' },
+  { mode: 'wysiwyg', icon: <PilcrowRight size={13} />, label: 'Rich' },
+  { mode: 'preview', icon: <Eye size={13} />,          label: 'Preview' },
+];
+
 export default function MobileNotesView() {
   const { notes } = useNotesContext();
+
   const [currentView, setCurrentView] = useState<MobileView>('list');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [editorMode, setEditorMode] = useState<MobileEditorMode>('plain');
+  // Shared filter state — owned here so header dropdown and list stay in sync
+  const [filters, setFilters] = useState<NotesFilterState>(DEFAULT_FILTER_STATE);
+  const [folderDropdownOpen, setFolderDropdownOpen] = useState(false);
+  // Mirror of the editor's dirty/saving state for the header
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+
+  // Unique folder names derived from all notes
+  const folderNames = useMemo(() => {
+    const seen = new Set<string>();
+    notes.forEach(n => seen.add(n.folder_name || 'Draft'));
+    return Array.from(seen).sort();
+  }, [notes]);
 
   const selectedNote = selectedNoteId
-    ? notes.find(n => n.id === selectedNoteId) || null
+    ? notes.find(n => n.id === selectedNoteId) ?? null
     : null;
 
   const handleNoteSelect = (note: Note) => {
     setSelectedNoteId(note.id);
     setCurrentView('editor');
+    setIsDirty(false);
+    setJustSaved(false);
   };
 
   const handleBack = () => {
     setCurrentView('list');
     setSelectedNoteId(null);
+    setIsDirty(false);
   };
+
+  // Called from the header save button — delegates to editor via window ref
+  const handleSave = useCallback(async () => {
+    const editorState = (window as any).__mobileNoteEditorState;
+    if (!editorState?.handleSave) return;
+    setIsSaving(true);
+    try {
+      await editorState.handleSave();
+      setIsDirty(false);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
+    } finally {
+      setIsSaving(false);
+    }
+  }, []);
+
+  // Poll editor dirty state every 500ms when in editor view
+  React.useEffect(() => {
+    if (currentView !== 'editor') return;
+    const id = setInterval(() => {
+      const editorState = (window as any).__mobileNoteEditorState;
+      if (editorState) setIsDirty(editorState.isDirty ?? false);
+    }, 500);
+    return () => clearInterval(id);
+  }, [currentView]);
 
   return (
     <>
-      {/* "Notes" title in the app header — only when on the list view */}
+      {/* ── List header: "Notes" title + folder quick-filter dropdown ── */}
       {currentView === 'list' && (
         <PageSpecificHeader>
-          <span className="text-sm font-semibold text-foreground">Notes</span>
+          <div className="flex items-center gap-2 h-full w-full">
+            <span className="text-sm font-semibold text-foreground flex-shrink-0">Notes</span>
+
+            {/* Folder quick-filter pill */}
+            <div className="relative">
+              <button
+                onClick={() => setFolderDropdownOpen(v => !v)}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors',
+                  filters.folder !== 'all'
+                    ? 'bg-primary/15 text-primary'
+                    : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted',
+                )}
+              >
+                {filters.folder === 'all'
+                  ? <Layers size={12} />
+                  : <FolderOpen size={12} />
+                }
+                <span className="max-w-[90px] truncate">
+                  {filters.folder === 'all' ? 'All' : filters.folder}
+                </span>
+                <ChevronDown size={11} className={cn('transition-transform', folderDropdownOpen && 'rotate-180')} />
+              </button>
+
+              {folderDropdownOpen && (
+                <>
+                  {/* Backdrop to close */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setFolderDropdownOpen(false)}
+                  />
+                  {/* Dropdown panel */}
+                  <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[160px] rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-xl py-1 overflow-hidden">
+                    {/* All Notes */}
+                    <button
+                      onClick={() => {
+                        setFilters(f => ({ ...f, folder: 'all' }));
+                        setFolderDropdownOpen(false);
+                      }}
+                      className={cn(
+                        'flex items-center gap-2.5 w-full px-3 py-2.5 text-sm transition-colors',
+                        filters.folder === 'all'
+                          ? 'text-primary bg-primary/8'
+                          : 'text-foreground hover:bg-muted/60',
+                      )}
+                    >
+                      <Layers size={14} className="flex-shrink-0 text-muted-foreground" />
+                      <span className="flex-1 text-left truncate">All Notes</span>
+                      {filters.folder === 'all' && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                      )}
+                    </button>
+
+                    {folderNames.length > 0 && (
+                      <div className="h-px bg-border/40 mx-2 my-0.5" />
+                    )}
+
+                    {folderNames.map(folder => (
+                      <button
+                        key={folder}
+                        onClick={() => {
+                          setFilters(f => ({ ...f, folder }));
+                          setFolderDropdownOpen(false);
+                        }}
+                        className={cn(
+                          'flex items-center gap-2.5 w-full px-3 py-2.5 text-sm transition-colors',
+                          filters.folder === folder
+                            ? 'text-primary bg-primary/8'
+                            : 'text-foreground hover:bg-muted/60',
+                        )}
+                      >
+                        <FolderOpen size={14} className="flex-shrink-0 text-muted-foreground" />
+                        <span className="flex-1 text-left truncate">{folder}</span>
+                        {filters.folder === folder && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </PageSpecificHeader>
       )}
 
+      {/* ── Editor header: back + title + view toggle + save ── */}
+      {currentView === 'editor' && selectedNote && (
+        <PageSpecificHeader>
+          <div className="flex items-center gap-1.5 h-full w-full">
+            {/* Back */}
+            <button
+              onClick={handleBack}
+              className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full hover:bg-muted/60 transition-colors text-foreground"
+              aria-label="Back to notes"
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            {/* Title — truncated, small */}
+            <span className="text-xs font-medium text-muted-foreground truncate min-w-0 flex-1 max-w-[100px]">
+              {selectedNote.label || 'Untitled Note'}
+            </span>
+
+            {/* View mode toggle — 3 pill buttons */}
+            <div className="flex items-center gap-0.5 bg-muted/60 rounded-lg p-0.5 mx-1">
+              {VIEW_MODES.map(({ mode, icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => setEditorMode(mode)}
+                  title={label}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all',
+                    editorMode === mode
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {icon}
+                  <span className="hidden xs:inline">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Save state */}
+            <div className="flex-shrink-0 flex items-center">
+              {isSaving && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+              {justSaved && !isSaving && <Check size={14} className="text-green-500" />}
+              {isDirty && !isSaving && !justSaved && (
+                <button
+                  onClick={handleSave}
+                  className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-muted/60 transition-colors text-primary"
+                  aria-label="Save"
+                >
+                  <Save size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+        </PageSpecificHeader>
+      )}
+
+      {/* ── Page container ── */}
       <div className="h-[calc(100dvh-var(--header-height))] w-full bg-background overflow-hidden relative">
-        {/* List View */}
+        {/* List view */}
         <div
           className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
             currentView === 'list' ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <MobileNotesList onNoteSelect={handleNoteSelect} />
+          <MobileNotesList
+          onNoteSelect={handleNoteSelect}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
         </div>
 
-        {/* Editor View — scrollable, not overflow-hidden */}
+        {/* Editor view — scrolls within its container */}
         <div
-          className={`absolute inset-0 transition-transform duration-300 ease-in-out overflow-y-auto ${
+          className={`absolute inset-0 transition-transform duration-300 ease-in-out overflow-y-auto overscroll-contain ${
             currentView === 'editor' ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           {selectedNote && (
-            <MobileNoteEditor note={selectedNote} onBack={handleBack} />
+            <MobileNoteEditor
+              note={selectedNote}
+              editorMode={editorMode}
+              onBack={handleBack}
+            />
           )}
         </div>
       </div>

@@ -2,16 +2,14 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, LayoutPanelTop, Settings, Globe, AppWindow } from "lucide-react";
-import { FaBars } from "react-icons/fa";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, Share2, LayoutPanelTop, Settings, Globe, AppWindow, AlignJustify } from "lucide-react";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
-import { createClient } from "@/utils/supabase/client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "@/lib/toast-service";
 import {
     DropdownMenu,
@@ -25,6 +23,8 @@ interface PromptCardProps {
     id: string;
     name: string;
     description?: string;
+    isOwner?: boolean;
+    isAdmin?: boolean;
     onDelete?: (id: string) => void;
     onDuplicate?: (id: string) => void;
     onNavigate?: (id: string, path: string) => void;
@@ -38,6 +38,8 @@ export function PromptCard({
     id,
     name,
     description,
+    isOwner = true,
+    isAdmin: isAdminProp,
     onDelete,
     onDuplicate,
     onNavigate,
@@ -47,7 +49,7 @@ export function PromptCard({
     isAnyNavigating
 }: PromptCardProps) {
     const isSystemAdmin = useAppSelector((state: RootState) => selectIsAdmin(state));
-    const [isOwner, setIsOwner] = useState(true);
+    const effectiveIsAdmin = isAdminProp ?? isSystemAdmin;
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
@@ -55,33 +57,6 @@ export function PromptCard({
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
-    const supabase = createClient();
-
-    useEffect(() => {
-        const checkOwnership = async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    setIsOwner(false);
-                    return;
-                }
-
-                // Fetch the prompt to check ownership
-                const { data: prompt } = await supabase
-                    .from('prompts')
-                    .select('user_id')
-                    .eq('id', id)
-                    .single();
-
-                setIsOwner(prompt?.user_id === user.id);
-            } catch (error) {
-                console.error('Error checking prompt ownership:', error);
-                setIsOwner(false);
-            }
-        };
-
-        checkOwnership();
-    }, [id, supabase]);
 
     const handleView = () => {
         if (onNavigate && !isAnyNavigating) {
@@ -138,7 +113,7 @@ export function PromptCard({
     };
 
     const handleConvertToTemplate = async () => {
-        if (!isSystemAdmin || isConvertingToTemplate) return;
+        if (!effectiveIsAdmin || isConvertingToTemplate) return;
         
         setIsConvertingToTemplate(true);
         try {
@@ -166,7 +141,7 @@ export function PromptCard({
     };
 
     const handleMakeGlobalBuiltin = async () => {
-        if (!isSystemAdmin) return;
+        if (!effectiveIsAdmin) return;
         
         setIsAdminMenuOpen(false);
         setIsConvertToBuiltinModalOpen(true);
@@ -204,12 +179,12 @@ export function PromptCard({
                 </div>
             )}
             
-            {/* Chat Icon */}
+            {/* Prompt Icon */}
             <div className="absolute top-3 left-3 z-10">
                 <div className={`w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm transition-all duration-200 ${
                     !isDisabled && 'group-hover:bg-primary/90 group-hover:shadow-md group-hover:scale-105'
                 }`}>
-                    <FaBars className={`w-4 h-4 text-primary-foreground transition-transform duration-200 ${
+                    <AlignJustify className={`w-4 h-4 text-primary-foreground transition-transform duration-200 ${
                         !isDisabled && 'group-hover:scale-110'
                     }`} />
                 </div>
@@ -221,8 +196,8 @@ export function PromptCard({
                     {name || "Untitled Prompt"}
                 </h3>
             </div>
-            <div className="border-t border-border p-1 bg-card rounded-b-lg">
-                <div className="flex gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
+            <div className="border-t border-border p-1 bg-card rounded-b-lg min-h-[36px]">
+                <div className="flex gap-2 justify-center items-center" onClick={(e) => e.stopPropagation()}>
                     <IconButton
                         icon={Play}
                         tooltip={isDisabled ? "Please wait..." : "Run"}
@@ -284,7 +259,7 @@ export function PromptCard({
                         onClick={handleCreateApp}
                         disabled={isDisabled}
                     />
-                    {isSystemAdmin && (
+                    <div className={effectiveIsAdmin ? undefined : "invisible pointer-events-none"}>
                         <DropdownMenu open={isAdminMenuOpen} onOpenChange={setIsAdminMenuOpen}>
                             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                 <div>
@@ -295,7 +270,7 @@ export function PromptCard({
                                         variant="ghost"
                                         tooltipSide="top"
                                         tooltipAlign="center"
-                                        disabled={isDisabled}
+                                        disabled={isDisabled || !effectiveIsAdmin}
                                     />
                                 </div>
                             </DropdownMenuTrigger>
@@ -331,7 +306,7 @@ export function PromptCard({
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                    )}
+                    </div>
                     <IconButton
                         icon={isDeleting ? Loader2 : Trash2}
                         tooltip={isDeleting ? "Deleting..." : isDisabled ? "Please wait..." : "Delete"}

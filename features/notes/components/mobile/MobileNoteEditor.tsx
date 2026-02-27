@@ -1,46 +1,39 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Copy,
-  Share2,
-  Trash2,
-  Download,
-  FolderOpen,
-  Tag as TagIcon,
-  MoreHorizontal,
-  Save,
-  Loader2,
-  Check,
-} from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
 import { useNotesContext } from '@/features/notes/context/NotesContext';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import MobileNoteToolbar from './MobileNoteToolbar';
+import { NoteEditorDock } from './NoteEditorDock';
 import { useToastManager } from '@/hooks/useToastManager';
+import MarkdownStream from '@/components/MarkdownStream';
 import type { Note } from '@/features/notes/types';
+
+export type MobileEditorMode = 'plain' | 'wysiwyg' | 'preview';
+
+// Heavy TUI editor — only loaded when needed
+const TuiEditorContent = dynamic(
+  () => import('@/components/mardown-display/chat-markdown/tui/TuiEditorContent'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
 
 interface MobileNoteEditorProps {
   note: Note;
+  editorMode: MobileEditorMode;
   onBack: () => void;
 }
 
-export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps) {
+export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNoteEditorProps) {
   const { updateNote, deleteNote, copyNote, refreshNotes } = useNotesContext();
-
   const toast = useToastManager('notes');
+
   const [localLabel, setLocalLabel] = useState(note.label || '');
   const [localContent, setLocalContent] = useState(note.content || '');
   const [localFolder, setLocalFolder] = useState(note.folder_name || 'Draft');
@@ -48,13 +41,12 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showToolbar, setShowToolbar] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const tuiRef = useRef<any>(null);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync state when note changes
+  // Sync when note switches
   useEffect(() => {
     setLocalLabel(note.label || '');
     setLocalContent(note.content || '');
@@ -73,7 +65,7 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
     setIsDirty(hasChanges);
   }, [localLabel, localContent, localFolder, localTags, note]);
 
-  // Auto-grow textarea
+  // Auto-grow plain textarea
   const growTextarea = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -82,10 +74,10 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
   }, []);
 
   useEffect(() => {
-    growTextarea();
-  }, [localContent, growTextarea]);
+    if (editorMode === 'plain') growTextarea();
+  }, [localContent, editorMode, growTextarea]);
 
-  // Auto-save after 2s of no typing
+  // Auto-save 2s after last change
   const scheduleAutoSave = useCallback(() => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(async () => {
@@ -99,10 +91,8 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
           tags: localTags,
         });
         setIsDirty(false);
-        setJustSaved(true);
-        setTimeout(() => setJustSaved(false), 2000);
       } catch {
-        // silent — user can manually save
+        // silent — user can see save button
       } finally {
         setIsSaving(false);
       }
@@ -111,9 +101,7 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
 
   useEffect(() => {
     if (isDirty) scheduleAutoSave();
-    return () => {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-    };
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
   }, [isDirty, scheduleAutoSave]);
 
   const handleSave = async () => {
@@ -121,22 +109,33 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     setIsSaving(true);
     try {
+      // Capture latest TUI content if in rich mode
+      let content = localContent;
+      if ((editorMode === 'wysiwyg') && tuiRef.current?.getCurrentMarkdown) {
+        content = tuiRef.current.getCurrentMarkdown();
+        setLocalContent(content);
+      }
       await updateNote(note.id, {
         label: localLabel.trim() || 'Untitled Note',
-        content: localContent,
+        content,
         folder_name: localFolder,
         tags: localTags,
       });
       await refreshNotes();
       setIsDirty(false);
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2000);
     } catch {
       toast.error('Failed to save note');
     } finally {
       setIsSaving(false);
     }
   };
+
+  // Expose save state and handler to parent (MobileNotesView injects into header)
+  // We use a module-level ref pattern so the parent can read current values
+  useEffect(() => {
+    (window as any).__mobileNoteEditorState = { isDirty, isSaving, handleSave };
+    return () => { delete (window as any).__mobileNoteEditorState; };
+  });
 
   const handleDelete = async () => {
     if (isDeleting) return;
@@ -155,14 +154,17 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
   const handleCopy = async () => {
     try {
       await copyNote(note.id);
-      toast.success('Note copied');
+      toast.success('Note duplicated');
     } catch {
-      toast.error('Failed to copy note');
+      toast.error('Failed to duplicate note');
     }
   };
 
   const handleExport = () => {
-    const blob = new Blob([localContent], { type: 'text/markdown' });
+    const content = (editorMode === 'wysiwyg' && tuiRef.current?.getCurrentMarkdown)
+      ? tuiRef.current.getCurrentMarkdown()
+      : localContent;
+    const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -171,185 +173,64 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Note exported');
+    toast.success('Exported');
   };
 
-  const displayLabel = localLabel || 'Untitled Note';
-
   return (
-    <>
-      {/* Scrollable page */}
-      <div className="min-h-dvh bg-background flex flex-col">
-        {/* Inline mini-header for back + title + actions */}
-        <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-2 bg-background/90 backdrop-blur-md border-b border-border/30">
-          <button
-            onClick={onBack}
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors text-foreground"
-            aria-label="Back"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
+    // This div is the scroll root — the parent container (in MobileNotesView) has overflow-y-auto
+    <div className="min-h-full bg-background flex flex-col">
+      {/* ── Content area ────────────────────────────────────────────────────── */}
+      <div className="flex-1 px-4 pt-4 pb-32">
 
-          {/* Title — small, centered, editable inline */}
-          <div className="flex-1 min-w-0 text-center">
-            <input
-              type="text"
-              value={localLabel}
-              onChange={e => setLocalLabel(e.target.value)}
-              placeholder="Untitled Note"
-              className="w-full bg-transparent text-xs font-medium text-foreground text-center outline-none border-none placeholder:text-muted-foreground"
-              style={{ fontSize: '13px' }}
-            />
-          </div>
-
-          {/* Save indicator + overflow menu */}
-          <div className="flex-shrink-0 flex items-center gap-1">
-            {isSaving && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
-            {justSaved && !isSaving && <Check size={14} className="text-green-500" />}
-            {isDirty && !isSaving && (
-              <button
-                onClick={handleSave}
-                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors text-primary"
-                aria-label="Save"
-              >
-                <Save size={15} />
-              </button>
-            )}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors text-foreground">
-                  <MoreHorizontal size={18} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleCopy}>
-                  <Copy size={15} className="mr-2" />
-                  Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.info('Share coming soon')}>
-                  <Share2 size={15} className="mr-2" />
-                  Share
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExport}>
-                  <Download size={15} className="mr-2" />
-                  Export
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="text-destructive focus:text-destructive"
-                >
-                  {isDeleting ? (
-                    <><Loader2 size={15} className="mr-2 animate-spin" />Deleting...</>
-                  ) : (
-                    <><Trash2 size={15} className="mr-2" />Delete Note</>
-                  )}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Content area */}
-        <div className="flex-1 px-4 pt-4 pb-32">
+        {/* Plain text */}
+        {editorMode === 'plain' && (
           <textarea
             ref={textareaRef}
             value={localContent}
-            onChange={e => {
-              setLocalContent(e.target.value);
-              growTextarea();
-            }}
+            onChange={e => { setLocalContent(e.target.value); growTextarea(); }}
             placeholder="Start writing..."
-            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none border-none resize-none text-base leading-relaxed"
-            style={{ fontSize: '16px', minHeight: 'calc(100dvh - 180px)' }}
+            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground outline-none border-none resize-none leading-relaxed"
+            style={{ fontSize: '16px', minHeight: 'calc(100dvh - 200px)' }}
           />
-        </div>
+        )}
 
-        {/* Bottom safe area spacer */}
-        <div className="h-safe" />
+        {/* Rich (WYSIWYG) */}
+        {editorMode === 'wysiwyg' && (
+          <div className="min-h-[calc(100dvh-200px)]">
+            <TuiEditorContent
+              ref={tuiRef}
+              content={localContent}
+              onChange={(val: string) => setLocalContent(val)}
+              isActive={true}
+              editMode="wysiwyg"
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Preview */}
+        {editorMode === 'preview' && (
+          <div className="min-h-[calc(100dvh-200px)] prose prose-sm dark:prose-invert max-w-none">
+            {localContent.trim() ? (
+              <MarkdownStream content={localContent} />
+            ) : (
+              <p className="text-muted-foreground text-sm">Nothing to preview yet.</p>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Floating glass toolbar — pinned above keyboard safe area */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-safe pointer-events-none z-30">
-        <div className="pointer-events-auto mb-4 flex items-center gap-1 bg-background/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl px-3 py-2">
-          {/* Folder chip */}
-          <button
-            onClick={() => setShowToolbar(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <FolderOpen size={15} />
-            <span className="text-xs font-medium max-w-[80px] truncate">{localFolder}</span>
-          </button>
-
-          <div className="w-px h-4 bg-border/60" />
-
-          {/* Tags chip */}
-          <button
-            onClick={() => setShowToolbar(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <TagIcon size={15} />
-            <span className="text-xs font-medium">
-              {localTags.length > 0 ? `${localTags.length} tag${localTags.length !== 1 ? 's' : ''}` : 'Tags'}
-            </span>
-          </button>
-
-          <div className="w-px h-4 bg-border/60" />
-
-          {/* More / share */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground">
-                <MoreHorizontal size={16} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
-              <DropdownMenuItem onClick={handleCopy}>
-                <Copy size={14} className="mr-2" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info('Share coming soon')}>
-                <Share2 size={14} className="mr-2" />
-                Share
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExport}>
-                <Download size={14} className="mr-2" />
-                Export
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 size={14} className="mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Folder + Tags Sheet */}
-      <Sheet open={showToolbar} onOpenChange={setShowToolbar}>
-        <SheetContent side="bottom" className="h-[70vh]">
-          <SheetHeader className="sr-only">
-            <SheetTitle>Note Settings</SheetTitle>
-            <SheetDescription>Edit folder and tags</SheetDescription>
-          </SheetHeader>
-          <MobileNoteToolbar
-            folder={localFolder}
-            tags={localTags}
-            onFolderChange={f => { setLocalFolder(f); }}
-            onTagsChange={t => { setLocalTags(t); }}
-            onClose={() => setShowToolbar(false)}
-          />
-        </SheetContent>
-      </Sheet>
-    </>
+      {/* ── Fixed bottom dock ────────────────────────────────────────────────── */}
+      <NoteEditorDock
+        folder={localFolder}
+        tags={localTags}
+        onFolderChange={setLocalFolder}
+        onTagsChange={setLocalTags}
+        onCopy={handleCopy}
+        onExport={handleExport}
+        onDelete={handleDelete}
+        isDeleting={isDeleting}
+      />
+    </div>
   );
 }

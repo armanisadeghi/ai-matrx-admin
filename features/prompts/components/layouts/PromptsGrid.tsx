@@ -290,13 +290,13 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
 
             {/* Pill Tabs */}
             {hasShared && (
-                <div className="flex items-center gap-1 mb-3">
+                <div className="flex items-center gap-1 mb-3 pl-1">
                     <button
                         onClick={() => setActiveTab("mine")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                             activeTab === "mine"
                                 ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`}
                     >
                         Mine
@@ -307,7 +307,7 @@ export function PromptsGrid({ prompts, sharedPrompts = [] }: PromptsGridProps) {
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                             activeTab === "shared"
                                 ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                : "border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`}
                     >
                         Shared

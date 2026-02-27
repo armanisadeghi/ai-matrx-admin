@@ -4,19 +4,20 @@ import React, { useState, useMemo } from 'react';
 import { FolderOpen, Clock, Tag, Plus } from 'lucide-react';
 import { useNotesContext } from '@/features/notes/context/NotesContext';
 import { MobileActionBar } from '@/components/official/mobile-action-bar';
-import NotesFilterSheet, { NotesFilterState, DEFAULT_FILTER_STATE } from './NotesFilterSheet';
+import NotesFilterSheet, { NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
 
 interface MobileNotesListProps {
   onNoteSelect: (note: Note) => void;
+  filters: NotesFilterState;
+  onFiltersChange: (filters: NotesFilterState) => void;
 }
 
-export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) {
+export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange }: MobileNotesListProps) {
   const { notes, findOrCreateEmptyNote, isLoading } = useNotesContext();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<NotesFilterState>(DEFAULT_FILTER_STATE);
 
   // Deduplicated notes
   const uniqueNotes = useMemo(() => {
@@ -176,7 +177,7 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
         notes={uniqueNotes}
         filters={filters}
         filteredCount={filteredNotes.length}
-        onApply={setFilters}
+        onApply={onFiltersChange}
       />
     </div>
   );
