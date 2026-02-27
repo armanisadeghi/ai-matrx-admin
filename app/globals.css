@@ -29,6 +29,7 @@
   --color-secondary-foreground: hsl(var(--secondary-foreground));
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-glass-foreground: hsl(var(--glass-foreground));
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-destructive: hsl(var(--destructive));
@@ -541,7 +542,8 @@
 
     /* Muted - Zinc-200 for subtle backgrounds */
     --muted: 240 5% 92%;
-    --muted-foreground: 240 4% 40%;
+    --muted-foreground: 240 4% 46%;
+    --glass-foreground: 240 4% 33%;
 
     /* Accent - More visible for hover states and UI elements */
     --accent: 240 5% 94%; /* zinc-150 - subtle for hover states */
@@ -702,7 +704,8 @@
 
     /* Muted - Zinc-750 for subtle backgrounds */
     --muted: 240 4% 24%;
-    --muted-foreground: 240 5% 60%;
+    --muted-foreground: 240 5% 68%;
+    --glass-foreground: 240 5% 76%;
 
     /* Accent - More visible for hover states and UI elements */
     --accent: 240 4% 24%; /* zinc-775 - subtle for hover states in dark mode */
@@ -1164,6 +1167,10 @@
 
   .text-muted-foreground {
     color: hsl(var(--muted-foreground));
+  }
+
+  .text-glass-foreground {
+    color: hsl(var(--glass-foreground));
   }
 
   .text-destructive {

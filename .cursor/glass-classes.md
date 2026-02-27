@@ -60,6 +60,18 @@ mx-glass-strong (modal)
 
 ---
 
+## Text on Glass
+
+Use `text-glass-foreground` for body/label text sitting on glass surfaces. It sits between `text-muted-foreground` and `text-foreground` — readable without being solid.
+
+| Token | Light | Dark | Best for |
+|---|---|---|---|
+| `text-foreground` | 16% L | 90% L | Headings, primary labels |
+| `text-glass-foreground` | 28% L | 82% L | Body text, secondary labels on glass |
+| `text-muted-foreground` | 46% L | 68% L | Hints, placeholders, tertiary text |
+
+---
+
 ## "Do I need to add a border class separately?"
 
 No — every class includes its own border. The tiers use one of two border variables:

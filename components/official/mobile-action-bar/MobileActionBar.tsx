@@ -141,14 +141,14 @@ export function MobileActionBar({
         return (
             <div className="fixed bottom-0 left-0 right-0 pb-safe z-40">
                 <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 max-w-[1800px] pb-4">
-                    <div className="flex items-center gap-2 p-2 rounded-full mx-glass-subtle">
+                    <div className="flex items-center gap-2 p-2 rounded-full ">
                         {/* Filter Button */}
                         {showFilterButton && (
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={handleFilterClick}
-                                className="h-10 w-10 flex-shrink-0 rounded-full mx-glass relative"
+                                className="h-10 w-10 flex-shrink-0 rounded-full mx-glass-nano relative"
                             >
                                 <SlidersHorizontal className="h-5 w-5" />
                                 {hasActiveFilters && (
@@ -160,10 +160,10 @@ export function MobileActionBar({
                         {/* Compact Search Bar */}
                         <div
                             onClick={handleSearchActivate}
-                            className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full mx-glass cursor-pointer"
+                            className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full mx-glass-input cursor-pointer"
                         >
-                            <Search className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground truncate">
+                            <Search className="h-4 w-4 text-glass-foreground" />
+                            <span className="text-sm text-glass-foreground truncate">
                                 {localSearchValue || searchPlaceholder}
                             </span>
                             {showVoiceSearch && (
@@ -185,7 +185,7 @@ export function MobileActionBar({
                             <Button
                                 size="icon"
                                 onClick={onPrimaryAction}
-                                className="h-10 w-10 flex-shrink-0 rounded-full bg-primary hover:bg-primary/90"
+                                className="h-10 w-10 flex-shrink-0 rounded-full mx-glass-nano bg-primary hover:bg-primary/90"
                                 aria-label={primaryActionLabel}
                             >
                                 {primaryActionIcon}
