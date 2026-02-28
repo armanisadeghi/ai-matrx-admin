@@ -33,7 +33,7 @@ export const primaryNavItems: ShellNavItem[] = [
   },
   {
     label: "Notes",
-    href: "/notes",
+    href: "/ssr/notes",
     iconName: "NotebookPen",
     section: "primary",
     dockOrder: 3,
