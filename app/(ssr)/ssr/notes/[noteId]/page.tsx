@@ -1,28 +1,12 @@
 // app/(ssr)/ssr/notes/[noteId]/page.tsx — Server-rendered note detail page
 // Fetches the full note content server-side (including content field).
-// The EditorIsland is loaded via next/dynamic for lazy hydration.
+// EditorIsland is a "use client" component — Next.js handles the boundary
+// automatically and code-splits per route (no explicit dynamic import needed).
 // The surrounding layout (sidebar, tab bar, shell) does NOT re-render.
 
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-import dynamic from "next/dynamic";
-
-// Lazy-load the editor — it's the only client component on this page
-const EditorIsland = dynamic(() => import("../_components/EditorIsland"), {
-  loading: () => (
-    <div className="notes-editor note-detail-active">
-      <div className="notes-skeleton">
-        <div className="notes-skeleton-line" />
-        <div className="notes-skeleton-line" />
-        <div className="notes-skeleton-line" />
-        <div className="notes-skeleton-line" />
-        <div className="notes-skeleton-line" />
-        <div className="notes-skeleton-line" />
-      </div>
-    </div>
-  ),
-  ssr: false, // Editor is purely client-side — no SSR for interactive textarea
-});
+import EditorIsland from "../_components/EditorIsland";
 
 interface PageProps {
   params: Promise<{ noteId: string }>;
