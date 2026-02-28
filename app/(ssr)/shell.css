@@ -1,0 +1,981 @@
+/* =============================================================================
+   Shell CSS — Static-First SSR Layout
+
+   All CSS for the glassmorphic, zero-JS application shell.
+   Uses --shell-* prefix to avoid collisions with existing globals.css variables.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. CSS Custom Properties — Geometry & Layout
+   --------------------------------------------------------------------------- */
+
+:root {
+  --shell-header-h: 3rem;
+  --shell-sidebar-w: 3.5rem;
+  --shell-sidebar-w-expanded: 14rem;
+  --shell-dock-h: 3.75rem;
+  --shell-dock-bottom: 0.625rem;
+  --shell-dock-mx: 0.5rem;
+  --shell-safe-area-top: env(safe-area-inset-top, 0px);
+  --shell-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Spring easing — iOS-grade overshoot */
+  --shell-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --shell-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --shell-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Transition durations */
+  --shell-duration-fast: 200ms;
+  --shell-duration-normal: 320ms;
+  --shell-duration-slow: 450ms;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Glass Design Tokens — Light Mode
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Node glass — for individual interactive elements (header items, dock, auth) */
+  --shell-glass-bg: rgba(255, 255, 255, 0.45);
+  --shell-glass-bg-hover: rgba(255, 255, 255, 0.6);
+  --shell-glass-bg-active: rgba(255, 255, 255, 0.7);
+  --shell-glass-border: rgba(255, 255, 255, 0.5);
+  --shell-glass-blur: 14px;
+  --shell-glass-saturate: 1.5;
+  --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+
+  /* Sidebar glass — very subtle, near-transparent */
+  --shell-sidebar-bg: transparent;
+  --shell-sidebar-bg-expanded: rgba(255, 255, 255, 0.25);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.2);
+
+  /* Dock glass */
+  --shell-dock-bg: rgba(255, 255, 255, 0.55);
+  --shell-dock-border: rgba(255, 255, 255, 0.45);
+  --shell-dock-blur: 20px;
+  --shell-dock-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+
+  /* Side sheet overlay */
+  --shell-overlay-bg: rgba(0, 0, 0, 0.2);
+  --shell-sheet-bg: rgba(255, 255, 255, 0.75);
+  --shell-sheet-border: rgba(255, 255, 255, 0.5);
+  --shell-sheet-blur: 24px;
+
+  /* Active route pill — the singular exception to glass-only backgrounds */
+  --shell-pill-bg: rgba(59, 130, 246, 0.12);
+  --shell-pill-border: rgba(59, 130, 246, 0.2);
+  --shell-pill-text: rgb(37, 99, 235);
+
+  /* Nav item colors */
+  --shell-nav-text: rgba(0, 0, 0, 0.6);
+  --shell-nav-text-hover: rgba(0, 0, 0, 0.85);
+  --shell-nav-icon: rgba(0, 0, 0, 0.5);
+  --shell-nav-icon-hover: rgba(0, 0, 0, 0.75);
+
+  /* Auth island */
+  --shell-auth-text: rgba(0, 0, 0, 0.7);
+}
+
+/* ---------------------------------------------------------------------------
+   3. Glass Design Tokens — Dark Mode
+   --------------------------------------------------------------------------- */
+
+.dark {
+  --shell-glass-bg: rgba(255, 255, 255, 0.06);
+  --shell-glass-bg-hover: rgba(255, 255, 255, 0.1);
+  --shell-glass-bg-active: rgba(255, 255, 255, 0.14);
+  --shell-glass-border: rgba(255, 255, 255, 0.08);
+  --shell-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shell-glass-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
+
+  --shell-sidebar-bg: transparent;
+  --shell-sidebar-bg-expanded: rgba(24, 24, 27, 0.5);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-border-expanded: rgba(255, 255, 255, 0.06);
+
+  --shell-dock-bg: rgba(24, 24, 27, 0.65);
+  --shell-dock-border: rgba(255, 255, 255, 0.08);
+  --shell-dock-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.15);
+
+  --shell-overlay-bg: rgba(0, 0, 0, 0.5);
+  --shell-sheet-bg: rgba(24, 24, 27, 0.85);
+  --shell-sheet-border: rgba(255, 255, 255, 0.06);
+
+  --shell-pill-bg: rgba(59, 130, 246, 0.18);
+  --shell-pill-border: rgba(59, 130, 246, 0.3);
+  --shell-pill-text: rgb(96, 165, 250);
+
+  --shell-nav-text: rgba(255, 255, 255, 0.55);
+  --shell-nav-text-hover: rgba(255, 255, 255, 0.9);
+  --shell-nav-icon: rgba(255, 255, 255, 0.45);
+  --shell-nav-icon-hover: rgba(255, 255, 255, 0.8);
+
+  --shell-auth-text: rgba(255, 255, 255, 0.75);
+}
+
+/* ---------------------------------------------------------------------------
+   4. View Transitions — Active Route Pill Animation
+   --------------------------------------------------------------------------- */
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(shell-active-pill) {
+  animation: shell-pill-out var(--shell-duration-normal) var(--shell-ease-smooth);
+}
+
+::view-transition-new(shell-active-pill) {
+  animation: shell-pill-in var(--shell-duration-slow) var(--shell-ease-spring);
+}
+
+@keyframes shell-pill-out {
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes shell-pill-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   5. Glass Utility Classes
+   --------------------------------------------------------------------------- */
+
+/* Glass node — for individual interactive elements */
+.shell-glass {
+  background: var(--shell-glass-bg);
+  backdrop-filter: blur(var(--shell-glass-blur)) saturate(var(--shell-glass-saturate));
+  -webkit-backdrop-filter: blur(var(--shell-glass-blur)) saturate(var(--shell-glass-saturate));
+  border: 1px solid var(--shell-glass-border);
+  box-shadow: var(--shell-glass-shadow);
+}
+
+.shell-glass:hover {
+  background: var(--shell-glass-bg-hover);
+}
+
+.shell-glass:active {
+  background: var(--shell-glass-bg-active);
+}
+
+/* Glass dock — bottom floating dock */
+.shell-glass-dock {
+  background: var(--shell-dock-bg);
+  backdrop-filter: blur(var(--shell-dock-blur)) saturate(1.6);
+  -webkit-backdrop-filter: blur(var(--shell-dock-blur)) saturate(1.6);
+  border: 1px solid var(--shell-dock-border);
+  box-shadow: var(--shell-dock-shadow);
+}
+
+/* Glass side sheet */
+.shell-glass-sheet {
+  background: var(--shell-sheet-bg);
+  backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
+  -webkit-backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
+  border-right: 1px solid var(--shell-sheet-border);
+}
+
+/* Active route pill */
+.shell-active-pill {
+  background: var(--shell-pill-bg);
+  border: 1px solid var(--shell-pill-border);
+  view-transition-name: shell-active-pill;
+}
+
+.shell-active-pill svg,
+.shell-active-pill .shell-nav-icon {
+  color: var(--shell-pill-text);
+}
+
+.shell-active-pill .shell-nav-label {
+  color: var(--shell-pill-text);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   6. Tactile Physics — iOS-grade hover/active feedback
+   --------------------------------------------------------------------------- */
+
+.shell-tactile {
+  transition:
+    transform var(--shell-duration-fast) var(--shell-ease-spring),
+    background var(--shell-duration-fast) var(--shell-ease-smooth);
+  will-change: transform;
+}
+
+.shell-tactile:hover {
+  transform: scale(1.05);
+}
+
+.shell-tactile:active {
+  transform: scale(0.95);
+}
+
+/* Subtle tactile — for nav items (less dramatic) */
+.shell-tactile-subtle {
+  transition:
+    transform var(--shell-duration-fast) var(--shell-ease-spring),
+    background var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+.shell-tactile-subtle:hover {
+  transform: scale(1.02);
+}
+
+.shell-tactile-subtle:active {
+  transform: scale(0.98);
+}
+
+/* ---------------------------------------------------------------------------
+   7. Shell Root Container
+   --------------------------------------------------------------------------- */
+
+.shell-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  /* Default: collapsed sidebar on desktop */
+  grid-template-columns: var(--shell-sidebar-w) 1fr;
+  grid-template-rows: var(--shell-header-h) 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+
+/* ---------------------------------------------------------------------------
+   8. Sidebar — CSS-Driven Toggle State
+   --------------------------------------------------------------------------- */
+
+/* Hide the checkbox visually */
+#shell-sidebar-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.shell-sidebar {
+  grid-area: sidebar;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--shell-sidebar-w);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: var(--shell-sidebar-bg);
+  border-right: 1px solid var(--shell-sidebar-border);
+  transition:
+    width var(--shell-duration-slow) var(--shell-ease-spring),
+    background var(--shell-duration-normal) var(--shell-ease-smooth),
+    border-color var(--shell-duration-normal) var(--shell-ease-smooth);
+  overflow: hidden;
+}
+
+/* Expanded state */
+.shell-root:has(#shell-sidebar-toggle:checked) .shell-sidebar {
+  width: var(--shell-sidebar-w-expanded);
+  background: var(--shell-sidebar-bg-expanded);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-right-color: var(--shell-sidebar-border-expanded);
+}
+
+.shell-root:has(#shell-sidebar-toggle:checked) {
+  grid-template-columns: var(--shell-sidebar-w-expanded) 1fr;
+}
+
+/* Sidebar brand section */
+.shell-sidebar-brand {
+  display: flex;
+  align-items: center;
+  height: var(--shell-header-h);
+  padding: 0 0.75rem;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.shell-sidebar-brand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* Toggle icon never moves */
+}
+
+.shell-sidebar-brand-logo {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity var(--shell-duration-normal) var(--shell-ease-smooth),
+    transform var(--shell-duration-normal) var(--shell-ease-spring);
+  white-space: nowrap;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--shell-nav-text-hover);
+  pointer-events: none;
+}
+
+.shell-root:has(#shell-sidebar-toggle:checked) .shell-sidebar-brand-logo {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Sidebar nav section — scrollable */
+.shell-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.375rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+
+  /* Thin scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.shell-sidebar-nav:hover {
+  scrollbar-color: var(--shell-glass-bg-hover) transparent;
+}
+
+/* Sidebar footer */
+.shell-sidebar-footer {
+  flex-shrink: 0;
+  padding: 0.5rem;
+  border-top: 1px solid transparent;
+  transition: border-color var(--shell-duration-normal) var(--shell-ease-smooth);
+}
+
+.shell-root:has(#shell-sidebar-toggle:checked) .shell-sidebar-footer {
+  border-top-color: var(--shell-glass-border);
+}
+
+/* ---------------------------------------------------------------------------
+   9. Nav Items — Sidebar
+   --------------------------------------------------------------------------- */
+
+.shell-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  text-decoration: none;
+  color: var(--shell-nav-text);
+  transition:
+    background var(--shell-duration-fast) var(--shell-ease-smooth),
+    color var(--shell-duration-fast) var(--shell-ease-smooth);
+  position: relative;
+}
+
+.shell-nav-item:hover {
+  background: var(--shell-glass-bg-hover);
+  color: var(--shell-nav-text-hover);
+}
+
+.shell-nav-item:active {
+  background: var(--shell-glass-bg-active);
+}
+
+.shell-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  color: var(--shell-nav-icon);
+  transition: color var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+.shell-nav-item:hover .shell-nav-icon {
+  color: var(--shell-nav-icon-hover);
+}
+
+.shell-nav-label {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--shell-duration-normal) var(--shell-ease-smooth),
+    transform var(--shell-duration-normal) var(--shell-ease-spring);
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.shell-root:has(#shell-sidebar-toggle:checked) .shell-nav-label {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Center icons when collapsed */
+.shell-root:not(:has(#shell-sidebar-toggle:checked)) .shell-nav-item {
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+/* Tooltip on collapsed sidebar */
+.shell-root:not(:has(#shell-sidebar-toggle:checked)) .shell-nav-item[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--shell-glass-bg-active);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid var(--shell-glass-border);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--shell-nav-text-hover);
+  white-space: nowrap;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: var(--shell-glass-shadow);
+  animation: shell-tooltip-in var(--shell-duration-fast) var(--shell-ease-spring);
+}
+
+@keyframes shell-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   10. Header — Transparent Container
+   --------------------------------------------------------------------------- */
+
+.shell-header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--shell-header-h);
+  padding: 0 0.75rem;
+  padding-top: var(--shell-safe-area-top);
+  /* Completely transparent — no bg, no border, no blur */
+  background: transparent;
+  pointer-events: none;
+}
+
+.shell-header > * {
+  pointer-events: auto;
+}
+
+/* Header center injection zone */
+.shell-header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   11. Auth Island — Immutable Glass Container
+   --------------------------------------------------------------------------- */
+
+.shell-auth-island {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem 0.375rem 0.5rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  color: var(--shell-auth-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  height: 2.125rem;
+}
+
+.shell-auth-island-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+.shell-auth-island-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   12. Main Content Area
+   --------------------------------------------------------------------------- */
+
+.shell-main {
+  grid-area: main;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  /* Scroll behind header */
+  margin-top: calc(-1 * var(--shell-header-h));
+  padding-top: var(--shell-header-h);
+}
+
+/* Thin scrollbar */
+.shell-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shell-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shell-main::-webkit-scrollbar-thumb {
+  background: var(--shell-glass-bg-hover);
+  border-radius: 3px;
+}
+
+.shell-main::-webkit-scrollbar-thumb:hover {
+  background: var(--shell-glass-bg-active);
+}
+
+/* ---------------------------------------------------------------------------
+   13. Mobile — Responsive Overrides
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 1023px) {
+  /* Hide desktop sidebar on mobile */
+  .shell-sidebar {
+    display: none;
+  }
+
+  /* Reset grid to single column */
+  .shell-root {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--shell-header-h) 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
+
+  /* Main content needs bottom padding for dock */
+  .shell-main {
+    padding-bottom: calc(var(--shell-dock-h) + var(--shell-dock-bottom) + 1rem + var(--shell-safe-area-bottom));
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Hide mobile elements on desktop */
+  .shell-dock {
+    display: none !important;
+  }
+
+  .shell-mobile-trigger {
+    display: none !important;
+  }
+
+  .shell-mobile-sheet-wrapper {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   14. Mobile Dock — iOS-style Bottom Navigation
+   --------------------------------------------------------------------------- */
+
+.shell-dock {
+  position: fixed;
+  bottom: calc(var(--shell-dock-bottom) + var(--shell-safe-area-bottom));
+  left: var(--shell-dock-mx);
+  right: var(--shell-dock-mx);
+  height: var(--shell-dock-h);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-radius: 1.25rem;
+  padding: 0 0.25rem;
+}
+
+.shell-dock-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  color: var(--shell-nav-icon);
+  transition:
+    background var(--shell-duration-fast) var(--shell-ease-smooth),
+    color var(--shell-duration-fast) var(--shell-ease-smooth),
+    transform var(--shell-duration-fast) var(--shell-ease-spring);
+}
+
+.shell-dock-item:hover {
+  color: var(--shell-nav-icon-hover);
+}
+
+.shell-dock-item:active {
+  transform: scale(0.9);
+}
+
+.shell-dock-item-active {
+  background: var(--shell-pill-bg);
+  border: 1px solid var(--shell-pill-border);
+  color: var(--shell-pill-text);
+  view-transition-name: shell-dock-pill;
+}
+
+::view-transition-old(shell-dock-pill) {
+  animation: shell-pill-out var(--shell-duration-normal) var(--shell-ease-smooth);
+}
+
+::view-transition-new(shell-dock-pill) {
+  animation: shell-pill-in var(--shell-duration-slow) var(--shell-ease-spring);
+}
+
+/* ---------------------------------------------------------------------------
+   15. Mobile Side Sheet — Off-canvas Navigation
+   --------------------------------------------------------------------------- */
+
+#shell-mobile-menu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.shell-mobile-sheet-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Backdrop overlay */
+.shell-mobile-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--shell-overlay-bg);
+  opacity: 0;
+  transition: opacity var(--shell-duration-normal) var(--shell-ease-smooth);
+  cursor: pointer;
+}
+
+/* Side sheet panel */
+.shell-mobile-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 80%;
+  max-width: 20rem;
+  transform: translateX(-100%);
+  transition: transform var(--shell-duration-slow) var(--shell-ease-spring);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 1rem 0.75rem;
+  padding-top: calc(var(--shell-safe-area-top) + 1rem);
+}
+
+/* Open state */
+.shell-root:has(#shell-mobile-menu:checked) .shell-mobile-sheet-wrapper {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.shell-root:has(#shell-mobile-menu:checked) .shell-mobile-sheet-backdrop {
+  opacity: 1;
+}
+
+.shell-root:has(#shell-mobile-menu:checked) .shell-mobile-sheet {
+  transform: translateX(0);
+}
+
+/* Mobile sheet nav items */
+.shell-mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  text-decoration: none;
+  color: var(--shell-nav-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+.shell-mobile-nav-item:hover {
+  background: var(--shell-glass-bg-hover);
+  color: var(--shell-nav-text-hover);
+}
+
+.shell-mobile-nav-item:active {
+  background: var(--shell-glass-bg-active);
+}
+
+/* Active state in mobile sheet */
+.shell-mobile-nav-item-active {
+  background: var(--shell-pill-bg);
+  border: 1px solid var(--shell-pill-border);
+  color: var(--shell-pill-text);
+}
+
+/* Mobile sheet brand */
+.shell-mobile-sheet-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.shell-mobile-sheet-brand-text {
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  color: var(--shell-nav-text-hover);
+}
+
+/* Section divider in mobile sheet */
+.shell-mobile-section-divider {
+  height: 1px;
+  background: var(--shell-glass-border);
+  margin: 0.5rem 0.75rem;
+}
+
+.shell-mobile-section-label {
+  padding: 0.5rem 0.75rem 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--shell-nav-icon);
+}
+
+/* ---------------------------------------------------------------------------
+   16. Dashboard Specific Styles
+   --------------------------------------------------------------------------- */
+
+.shell-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: 1.25rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .shell-dashboard-grid {
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
+.shell-app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  padding: 0.75rem 0.5rem;
+  border-radius: 1rem;
+  transition:
+    transform var(--shell-duration-fast) var(--shell-ease-spring),
+    background var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+.shell-app-icon:hover {
+  transform: scale(1.05);
+  background: var(--shell-glass-bg);
+}
+
+.shell-app-icon:active {
+  transform: scale(0.95);
+}
+
+.shell-app-icon-square {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shell-app-icon-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--shell-nav-text);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Stats card */
+.shell-stat-card {
+  border-radius: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shell-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--shell-nav-text-hover);
+}
+
+.shell-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--shell-nav-icon);
+}
+
+/* Quick action card */
+.shell-quick-card {
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  color: var(--shell-nav-text);
+}
+
+.shell-quick-card:hover {
+  background: var(--shell-glass-bg-hover);
+  color: var(--shell-nav-text-hover);
+}
+
+.shell-quick-card-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--shell-glass-bg);
+  flex-shrink: 0;
+}
+
+.shell-quick-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.shell-quick-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--shell-nav-text-hover);
+}
+
+.shell-quick-card-desc {
+  font-size: 0.75rem;
+  color: var(--shell-nav-icon);
+}
+
+/* Section heading */
+.shell-section-heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--shell-nav-text-hover);
+  padding: 0.75rem 1.5rem 0.5rem;
+  letter-spacing: -0.005em;
+}
+
+/* ---------------------------------------------------------------------------
+   17. Hamburger Icon — CSS-only animated
+   --------------------------------------------------------------------------- */
+
+.shell-hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.shell-hamburger-line {
+  width: 1.125rem;
+  height: 1.5px;
+  background: var(--shell-nav-icon-hover);
+  border-radius: 1px;
+  transition:
+    transform var(--shell-duration-normal) var(--shell-ease-spring),
+    opacity var(--shell-duration-fast) var(--shell-ease-smooth);
+  transform-origin: center;
+}
+
+.shell-root:has(#shell-mobile-menu:checked) .shell-hamburger-line:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+
+.shell-root:has(#shell-mobile-menu:checked) .shell-hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.shell-root:has(#shell-mobile-menu:checked) .shell-hamburger-line:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
