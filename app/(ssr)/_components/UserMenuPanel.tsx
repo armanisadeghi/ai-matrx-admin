@@ -2,11 +2,12 @@
 
 // UserMenuPanel — Lazy-loaded dropdown panel for the user menu.
 // Only downloads when user opens the menu. Includes: user info, quick actions,
-// notifications, feedback, theme toggle, preferences, and sign out.
+// notifications, feedback (lazy FeedbackDialog), theme toggle, preferences, and sign out.
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   User,
   Settings,
@@ -22,6 +23,11 @@ import {
 import { cn } from "@/lib/utils";
 import type { UserMenuUser } from "./UserMenuIsland";
 
+const FeedbackDialog = dynamic(() => import("./FeedbackDialog"), {
+  ssr: false,
+  loading: () => null,
+});
+
 interface UserMenuPanelProps {
   user: UserMenuUser | null;
   isAdmin: boolean;
@@ -30,6 +36,7 @@ interface UserMenuPanelProps {
 
 export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelProps) {
   const [isDark, setIsDark] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
@@ -51,11 +58,11 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
   }, []);
 
   const itemClass =
-    "flex items-center gap-2.5 w-full px-3 py-1.5 text-[0.8125rem] text-foreground rounded-lg cursor-pointer transition-colors hover:bg-accent [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-muted-foreground [&_svg]:shrink-0";
+    "flex items-center gap-2.5 w-full px-3 py-1.5 text-[0.8125rem] text-foreground rounded-lg cursor-pointer transition-colors hover:bg-[var(--shell-glass-bg-hover)] [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-muted-foreground [&_svg]:shrink-0";
 
   if (!user) {
     return (
-      <div className="absolute right-0 top-full mt-1.5 w-52 p-1.5 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-xl shadow-lg z-50">
+      <div className="absolute right-0 top-full mt-1.5 w-52 p-1.5 rounded-xl shadow-lg z-50 bg-[var(--shell-glass-bg)] backdrop-blur-[20px] saturate-[1.5] border border-[var(--shell-glass-border)]">
         <Link href="/login" className={itemClass} onClick={onClose}>
           <LogOut /> Sign In
         </Link>
@@ -64,11 +71,11 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
   }
 
   return (
-    <div className="absolute right-0 top-full mt-1.5 w-60 p-1.5 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-xl shadow-lg z-50">
+    <div className="absolute right-0 top-full mt-1.5 w-60 p-1.5 rounded-xl shadow-lg z-50 bg-[var(--shell-glass-bg)] backdrop-blur-[20px] saturate-[1.5] border border-[var(--shell-glass-border)]">
       {/* User info */}
       <Link
         href="/ssr/settings"
-        className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+        className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[var(--shell-glass-bg-hover)] transition-colors"
         onClick={onClose}
       >
         {user.avatarUrl ? (
@@ -80,7 +87,7 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
             className="w-7 h-7 rounded-full object-cover shrink-0"
           />
         ) : (
-          <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground shrink-0">
+          <span className="w-7 h-7 rounded-full bg-[var(--shell-glass-bg-active)] flex items-center justify-center text-xs font-semibold text-[var(--shell-nav-text)] shrink-0">
             {user.name.charAt(0).toUpperCase()}
           </span>
         )}
@@ -92,7 +99,7 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
         </span>
       </Link>
 
-      <div className="h-px my-1 mx-2 bg-border" />
+      <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
       {/* Quick Actions */}
       <Link href="/ssr/chat" className={itemClass} onClick={onClose}>
@@ -104,13 +111,24 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
       <button className={itemClass} onClick={onClose}>
         <Bell /> Notifications
       </button>
-      <button className={itemClass} onClick={onClose}>
+      <button
+        className={itemClass}
+        onClick={() => {
+          onClose();
+          setShowFeedback(true);
+        }}
+      >
         <Bug /> Submit Feedback
       </button>
 
+      {/* Feedback dialog — lazy loaded, renders as portal-like overlay */}
+      {showFeedback && (
+        <FeedbackDialog onClose={() => setShowFeedback(false)} />
+      )}
+
       {isAdmin && (
         <>
-          <div className="h-px my-1 mx-2 bg-border" />
+          <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
           <Link
             href="/ssr/admin"
             className={cn(itemClass, "[&_svg]:text-amber-500")}
@@ -121,7 +139,7 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
         </>
       )}
 
-      <div className="h-px my-1 mx-2 bg-border" />
+      <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
       {/* Theme toggle */}
       <button className={itemClass} onClick={toggleTheme}>
@@ -133,7 +151,7 @@ export default function UserMenuPanel({ user, isAdmin, onClose }: UserMenuPanelP
         <Settings /> Preferences
       </Link>
 
-      <div className="h-px my-1 mx-2 bg-border" />
+      <div className="h-px my-1 mx-2 bg-[var(--shell-glass-border)]" />
 
       {/* Sign out */}
       <button

@@ -99,7 +99,7 @@ export default function UserMenuIsland({ user, isAdmin }: UserMenuIslandProps) {
           />
         ) : (
           <span
-            className="w-[22px] h-[22px] rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground"
+            className="w-[22px] h-[22px] rounded-full bg-[var(--shell-glass-bg-active)] flex items-center justify-center text-[10px] font-semibold text-[var(--shell-nav-text)]"
           >
             {user?.name?.charAt(0)?.toUpperCase() ?? "?"}
           </span>

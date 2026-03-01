@@ -24,6 +24,8 @@ import {
   Download,
   FolderInput,
   Plus,
+  ChevronsDownUp,
+  ChevronsUpDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NoteSummary } from "../layout";
@@ -234,6 +236,16 @@ export default function SidebarClient({ notes: serverNotes, folderCounts, allTag
 
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
+  // Collapse / expand all folders
+  const allExpanded = expandedFolders.size >= orderedFolders.length;
+  const toggleAll = useCallback(() => {
+    if (allExpanded) {
+      setExpandedFolders(new Set());
+    } else {
+      setExpandedFolders(new Set(orderedFolders));
+    }
+  }, [allExpanded, orderedFolders]);
+
   // Move note to folder
   const moveToFolder = useCallback(
     async (noteId: string, folder: string) => {
@@ -262,6 +274,14 @@ export default function SidebarClient({ notes: serverNotes, folderCounts, allTag
             aria-label="Search notes"
           />
         </div>
+        <button
+          className="flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0 hover:bg-accent hover:text-foreground [&_svg]:w-3 [&_svg]:h-3"
+          onClick={toggleAll}
+          title={allExpanded ? "Collapse all folders" : "Expand all folders"}
+          aria-label={allExpanded ? "Collapse all folders" : "Expand all folders"}
+        >
+          {allExpanded ? <ChevronsDownUp /> : <ChevronsUpDown />}
+        </button>
         <button
           className={cn(
             "flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0",

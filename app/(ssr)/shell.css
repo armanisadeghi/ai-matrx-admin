@@ -573,21 +573,42 @@
   padding-top: var(--shell-header-h);
 }
 
-/* Thin scrollbar */
-.shell-main::-webkit-scrollbar {
-  width: 6px;
+/* Ultra-thin auto-hiding scrollbar (global for shell) */
+.shell-main,
+.shell-main * {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
-.shell-main::-webkit-scrollbar-track {
+.shell-main:hover,
+.shell-main *:hover {
+  scrollbar-color: var(--shell-glass-bg-hover) transparent;
+}
+
+.shell-main::-webkit-scrollbar,
+.shell-main *::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.shell-main::-webkit-scrollbar-track,
+.shell-main *::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.shell-main::-webkit-scrollbar-thumb {
-  background: var(--shell-glass-bg-hover);
-  border-radius: 3px;
+.shell-main::-webkit-scrollbar-thumb,
+.shell-main *::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 200ms ease;
 }
 
-.shell-main::-webkit-scrollbar-thumb:hover {
+.shell-main:hover::-webkit-scrollbar-thumb,
+.shell-main *:hover::-webkit-scrollbar-thumb {
+  background: var(--shell-glass-bg-hover);
+}
+
+.shell-main *::-webkit-scrollbar-thumb:hover {
   background: var(--shell-glass-bg-active);
 }
 

@@ -613,15 +613,32 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     [],
   );
 
-  // ── AI action handler (stub) ──────────────────────────────────────────
+  // ── AI result handler ────────────────────────────────────────────────
 
-  const handleAiAction = useCallback(
-    (action: string) => {
-      // TODO: Integrate with AI service
-      console.log(`AI action: ${action} on note: ${activeNoteId}`);
+  const handleAiResult = useCallback(
+    (result: string, action: "replace" | "insert") => {
+      if (!activeNoteId) return;
+      const cached = noteCache.get(activeNoteId);
+      if (!cached) return;
+
+      const currentLabel = cached.localEdits?.label ?? cached.data.label;
+      const currentContent = cached.localEdits?.content ?? cached.data.content;
+
+      if (action === "replace" && selectedTextRef.current) {
+        // Replace the selected text with the AI result
+        const newContent = currentContent.replace(selectedTextRef.current, result);
+        scheduleSave(activeNoteId, currentLabel, newContent);
+      } else {
+        // Insert at the end
+        const newContent = currentContent + "\n\n" + result;
+        scheduleSave(activeNoteId, currentLabel, newContent);
+      }
     },
-    [activeNoteId],
+    [activeNoteId, noteCache, scheduleSave],
   );
+
+  // Track selected text in textarea for AI scope mapping
+  const selectedTextRef = useRef<string>("");
 
   // ── Resolve conflict ──────────────────────────────────────────────────
 
@@ -755,14 +772,14 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         activeNoteId &&
         activeCached &&
         createPortal(
-          <div className="flex items-center gap-0.5 bg-muted/50 rounded-lg p-0.5 border border-border">
+          <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
             <button
               className={cn(
-                "flex items-center gap-1 px-2 py-0.5 text-[0.6875rem] font-medium rounded-md transition-colors cursor-pointer",
+                "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 editorMode === "plain"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                  : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
               )}
               onClick={() => setEditorMode("plain")}
             >
@@ -770,11 +787,11 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             </button>
             <button
               className={cn(
-                "flex items-center gap-1 px-2 py-0.5 text-[0.6875rem] font-medium rounded-md transition-colors cursor-pointer",
+                "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 editorMode === "split"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                  : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
               )}
               onClick={() => setEditorMode("split")}
             >
@@ -782,11 +799,11 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             </button>
             <button
               className={cn(
-                "flex items-center gap-1 px-2 py-0.5 text-[0.6875rem] font-medium rounded-md transition-colors cursor-pointer",
+                "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 editorMode === "preview"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                  : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
               )}
               onClick={() => setEditorMode("preview")}
             >
@@ -938,7 +955,12 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           {showAiMenu && (
             <NoteAiMenu
               noteId={contextMenu.noteId}
-              onAction={handleAiAction}
+              noteContent={
+                noteCache.get(contextMenu.noteId)?.localEdits?.content ??
+                noteCache.get(contextMenu.noteId)?.data.content ?? ""
+              }
+              selectedText={selectedTextRef.current || undefined}
+              onResult={handleAiResult}
               onClose={() => setContextMenu(null)}
             />
           )}
@@ -1024,6 +1046,10 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
               className="notes-scrollable flex-1 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
               value={activeContent}
               onChange={handleContentChange}
+              onSelect={(e) => {
+                const ta = e.currentTarget;
+                selectedTextRef.current = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+              }}
               placeholder="Start writing..."
               aria-label="Note content"
             />
@@ -1051,6 +1077,10 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
                 className="notes-scrollable w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto min-w-0 placeholder:text-muted-foreground"
                 value={activeContent}
                 onChange={handleContentChange}
+                onSelect={(e) => {
+                  const ta = e.currentTarget;
+                  selectedTextRef.current = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+                }}
                 placeholder="Start writing..."
                 aria-label="Note content"
               />
@@ -1071,8 +1101,8 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             </div>
           )}
 
-          {/* ── Status Bar ─────────────────────────────────────────── */}
-          <div className="flex items-center gap-3 py-1 px-4 text-[0.625rem] text-muted-foreground border-t border-border shrink-0">
+          {/* ── Status Bar — appears on hover only ─────────────────── */}
+          <div className="notes-status-bar flex items-center gap-3 py-1 px-4 text-[0.625rem] text-muted-foreground border-t border-border shrink-0 opacity-0 h-0 overflow-hidden transition-all duration-200">
             <span
               className={cn(
                 "w-1.5 h-1.5 rounded-full",
