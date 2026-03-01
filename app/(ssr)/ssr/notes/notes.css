@@ -1,8 +1,9 @@
 /* =============================================================================
    Notes Module CSS — SSR-First Two-Panel Layout
 
-   Uses --notes-* prefix for notes-specific variables.
-   Inherits shell glass tokens and easing functions from shell.css.
+   Maps to the app's design token system from globals.css.
+   Uses --glass-* for glass surfaces, hsl(var(--*)) for semantic colors.
+   Keeps --notes-* prefix for notes-specific layout values only.
    ============================================================================= */
 
 /* ---------------------------------------------------------------------------
@@ -14,57 +15,18 @@
   --notes-tab-h: 2.5rem;
   --notes-toolbar-h: 2.75rem;
 
-  /* Notes accent — amber to match nav-data color */
-  --notes-accent: rgb(217, 119, 6);
-  --notes-accent-bg: rgba(217, 119, 6, 0.12);
-  --notes-accent-border: rgba(217, 119, 6, 0.2);
-  --notes-accent-text: rgb(180, 83, 9);
-
-  /* Sidebar surface */
-  --notes-sidebar-bg: rgba(255, 255, 255, 0.3);
-  --notes-sidebar-border: rgba(0, 0, 0, 0.06);
-
-  /* Editor surface */
-  --notes-editor-bg: rgba(255, 255, 255, 0.15);
-
-  /* Note item */
-  --notes-item-bg-hover: rgba(0, 0, 0, 0.03);
-  --notes-item-bg-active: rgba(217, 119, 6, 0.08);
-  --notes-item-border-active: rgba(217, 119, 6, 0.2);
-
-  /* Tab */
-  --notes-tab-bg: transparent;
-  --notes-tab-bg-active: rgba(255, 255, 255, 0.5);
-  --notes-tab-border-active: rgba(217, 119, 6, 0.3);
-
-  /* Muted text */
-  --notes-text-muted: rgba(0, 0, 0, 0.45);
-  --notes-text-secondary: rgba(0, 0, 0, 0.6);
-  --notes-text-primary: rgba(0, 0, 0, 0.88);
+  /* Notes accent — amber (matches nav-data color for Notes) */
+  --notes-accent: 38 92% 50%;
+  --notes-accent-bg: hsl(38 92% 50% / 0.10);
+  --notes-accent-border: hsl(38 92% 50% / 0.18);
+  --notes-accent-text: 28 80% 52%;
 }
 
 .dark {
-  --notes-accent: rgb(251, 191, 36);
-  --notes-accent-bg: rgba(251, 191, 36, 0.12);
-  --notes-accent-border: rgba(251, 191, 36, 0.2);
-  --notes-accent-text: rgb(251, 191, 36);
-
-  --notes-sidebar-bg: rgba(255, 255, 255, 0.03);
-  --notes-sidebar-border: rgba(255, 255, 255, 0.06);
-
-  --notes-editor-bg: rgba(255, 255, 255, 0.02);
-
-  --notes-item-bg-hover: rgba(255, 255, 255, 0.04);
-  --notes-item-bg-active: rgba(251, 191, 36, 0.08);
-  --notes-item-border-active: rgba(251, 191, 36, 0.2);
-
-  --notes-tab-bg: transparent;
-  --notes-tab-bg-active: rgba(255, 255, 255, 0.08);
-  --notes-tab-border-active: rgba(251, 191, 36, 0.3);
-
-  --notes-text-muted: rgba(255, 255, 255, 0.4);
-  --notes-text-secondary: rgba(255, 255, 255, 0.6);
-  --notes-text-primary: rgba(255, 255, 255, 0.92);
+  --notes-accent: 43 96% 56%;
+  --notes-accent-bg: hsl(43 96% 56% / 0.10);
+  --notes-accent-border: hsl(43 96% 56% / 0.18);
+  --notes-accent-text: 43 96% 56%;
 }
 
 /* ---------------------------------------------------------------------------
@@ -91,8 +53,8 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: var(--notes-sidebar-bg);
-  border-right: 1px solid var(--notes-sidebar-border);
+  background: var(--glass-bg-subtle);
+  border-right: 1px solid hsl(var(--border));
   backdrop-filter: blur(8px) saturate(1.3);
   -webkit-backdrop-filter: blur(8px) saturate(1.3);
 }
@@ -119,7 +81,7 @@
   transform: translateY(-50%);
   width: 0.875rem;
   height: 0.875rem;
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   pointer-events: none;
 }
 
@@ -128,16 +90,16 @@
   height: 1.875rem;
   padding: 0 0.5rem 0 1.75rem;
   font-size: 0.75rem;
-  background: var(--shell-glass-bg);
-  border: 1px solid var(--shell-glass-border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 0.5rem;
-  color: var(--notes-text-primary);
+  color: hsl(var(--foreground));
   outline: none;
   transition: border-color var(--shell-duration-fast) var(--shell-ease-smooth);
 }
 
 .notes-search-input::placeholder {
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
 }
 
 .notes-search-input:focus {
@@ -196,7 +158,7 @@
   border-radius: 1rem;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--notes-text-secondary);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   text-decoration: none;
   transition:
@@ -207,7 +169,7 @@
 }
 
 .notes-folder-chip:hover {
-  background: var(--notes-item-bg-hover);
+  background: var(--glass-bg-micro);
 }
 
 .notes-folder-chip[data-active="true"] {
@@ -233,7 +195,7 @@
 .notes-sidebar-divider {
   height: 1px;
   margin: 0 0.625rem;
-  background: var(--notes-sidebar-border);
+  background: hsl(var(--border));
   flex-shrink: 0;
 }
 
@@ -254,12 +216,12 @@
 }
 
 .notes-list::-webkit-scrollbar-thumb {
-  background: var(--shell-glass-bg-hover);
+  background: var(--glass-bg-hover);
   border-radius: 2px;
 }
 
 .notes-list::-webkit-scrollbar-thumb:hover {
-  background: var(--shell-glass-bg-active);
+  background: var(--glass-bg-strong);
 }
 
 /* Note list item */
@@ -279,18 +241,18 @@
 }
 
 .notes-list-item:hover {
-  background: var(--notes-item-bg-hover);
+  background: var(--glass-bg-micro);
 }
 
 .notes-list-item[data-active="true"] {
-  background: var(--notes-item-bg-active);
-  border-color: var(--notes-item-border-active);
+  background: var(--notes-accent-bg);
+  border-color: var(--notes-accent-border);
 }
 
 .notes-list-item-title {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--notes-text-primary);
+  color: hsl(var(--foreground));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,7 +264,7 @@
   align-items: center;
   gap: 0.375rem;
   font-size: 0.6875rem;
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   line-height: 1.2;
 }
 
@@ -316,8 +278,8 @@
   font-size: 0.5625rem;
   padding: 0.0625rem 0.3125rem;
   border-radius: 0.25rem;
-  background: var(--shell-glass-bg);
-  color: var(--notes-text-muted);
+  background: var(--glass-bg);
+  color: hsl(var(--muted-foreground));
 }
 
 /* Empty list state */
@@ -328,7 +290,7 @@
   justify-content: center;
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
   gap: 0.5rem;
 }
@@ -363,7 +325,7 @@
   min-height: var(--notes-tab-h);
   overflow-x: auto;
   overflow-y: hidden;
-  border-bottom: 1px solid var(--notes-sidebar-border);
+  border-bottom: 1px solid hsl(var(--border));
   flex-shrink: 0;
   gap: 0;
 }
@@ -380,9 +342,9 @@
   padding: 0 0.75rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--notes-text-secondary);
-  background: var(--notes-tab-bg);
-  border-right: 1px solid var(--notes-sidebar-border);
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border-right: 1px solid hsl(var(--border));
   border-bottom: 2px solid transparent;
   cursor: pointer;
   text-decoration: none;
@@ -397,11 +359,11 @@
 }
 
 .notes-tab:hover {
-  background: var(--notes-item-bg-hover);
+  background: var(--glass-bg-micro);
 }
 
 .notes-tab[data-active="true"] {
-  background: var(--notes-tab-bg-active);
+  background: var(--glass-bg-subtle);
   border-bottom-color: var(--notes-accent);
   color: var(--notes-accent-text);
   font-weight: 600;
@@ -421,7 +383,7 @@
   border-radius: 0.25rem;
   border: none;
   background: transparent;
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   opacity: 0;
   flex-shrink: 0;
@@ -436,8 +398,8 @@
 }
 
 .notes-tab-close:hover {
-  background: var(--notes-item-bg-hover);
-  color: var(--notes-text-primary);
+  background: var(--glass-bg-micro);
+  color: hsl(var(--foreground));
 }
 
 .notes-tab-close svg {
@@ -456,7 +418,7 @@
   height: var(--notes-toolbar-h);
   min-height: var(--notes-toolbar-h);
   padding: 0 1rem;
-  border-bottom: 1px solid var(--notes-sidebar-border);
+  border-bottom: 1px solid hsl(var(--border));
   flex-shrink: 0;
 }
 
@@ -464,7 +426,7 @@
   flex: 1;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--notes-text-primary);
+  color: hsl(var(--foreground));
   border: none;
   background: transparent;
   outline: none;
@@ -473,7 +435,7 @@
 }
 
 .notes-toolbar-title::placeholder {
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
 }
 
 .notes-toolbar-btn {
@@ -485,9 +447,9 @@
   font-size: 0.6875rem;
   font-weight: 500;
   border-radius: 0.375rem;
-  border: 1px solid var(--shell-glass-border);
-  background: var(--shell-glass-bg);
-  color: var(--notes-text-secondary);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition:
     transform var(--shell-duration-fast) var(--shell-ease-spring),
@@ -495,7 +457,7 @@
 }
 
 .notes-toolbar-btn:hover {
-  background: var(--shell-glass-bg-hover);
+  background: var(--glass-bg-hover);
   transform: scale(1.02);
 }
 
@@ -522,8 +484,8 @@
   font-size: 0.625rem;
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  background: var(--shell-glass-bg);
-  color: var(--notes-text-muted);
+  background: var(--glass-bg);
+  color: hsl(var(--muted-foreground));
 }
 
 .notes-toolbar-folder svg {
@@ -540,7 +502,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--notes-editor-bg);
+  background: var(--glass-bg-nano);
 }
 
 .notes-editor-textarea {
@@ -550,7 +512,7 @@
   font-size: 0.875rem;
   line-height: 1.7;
   font-family: inherit;
-  color: var(--notes-text-primary);
+  color: hsl(var(--foreground));
   background: transparent;
   border: none;
   outline: none;
@@ -559,7 +521,7 @@
 }
 
 .notes-editor-textarea::placeholder {
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
 }
 
 .notes-editor-textarea::-webkit-scrollbar {
@@ -571,7 +533,7 @@
 }
 
 .notes-editor-textarea::-webkit-scrollbar-thumb {
-  background: var(--shell-glass-bg-hover);
+  background: var(--glass-bg-hover);
   border-radius: 2px;
 }
 
@@ -582,8 +544,8 @@
   gap: 0.75rem;
   padding: 0.375rem 1rem;
   font-size: 0.625rem;
-  color: var(--notes-text-muted);
-  border-top: 1px solid var(--notes-sidebar-border);
+  color: hsl(var(--muted-foreground));
+  border-top: 1px solid hsl(var(--border));
   flex-shrink: 0;
 }
 
@@ -591,20 +553,20 @@
   width: 0.375rem;
   height: 0.375rem;
   border-radius: 50%;
-  background: var(--notes-text-muted);
+  background: hsl(var(--muted-foreground));
 }
 
 .notes-editor-status-dot[data-state="saved"] {
-  background: rgb(34, 197, 94);
+  background: hsl(var(--success));
 }
 
 .notes-editor-status-dot[data-state="saving"] {
-  background: rgb(234, 179, 8);
+  background: hsl(var(--warning));
   animation: notes-pulse 1s ease-in-out infinite;
 }
 
 .notes-editor-status-dot[data-state="dirty"] {
-  background: rgb(217, 119, 6);
+  background: hsl(var(--notes-accent));
 }
 
 @keyframes notes-pulse {
@@ -646,12 +608,12 @@
 .notes-empty-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--notes-text-primary);
+  color: hsl(var(--foreground));
 }
 
 .notes-empty-description {
   font-size: 0.8125rem;
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   max-width: 280px;
   line-height: 1.5;
 }
@@ -670,7 +632,7 @@
 .notes-skeleton-line {
   height: 0.875rem;
   border-radius: 0.25rem;
-  background: var(--shell-glass-bg-hover);
+  background: var(--glass-bg-hover);
   animation: notes-shimmer 1.5s ease-in-out infinite;
 }
 
@@ -741,7 +703,7 @@
   border-radius: 0.5rem;
   background: transparent;
   border: 1px solid transparent;
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   flex-shrink: 0;
   transition:
@@ -750,8 +712,8 @@
 }
 
 .notes-sort-btn:hover {
-  background: var(--notes-item-bg-hover);
-  color: var(--notes-text-secondary);
+  background: var(--glass-bg-micro);
+  color: hsl(var(--muted-foreground));
 }
 
 .notes-sort-btn[data-active="true"] {
@@ -775,7 +737,7 @@
   border-radius: 0.375rem;
   border: none;
   background: transparent;
-  color: var(--notes-text-secondary);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   flex-shrink: 0;
   margin-right: 0.25rem;
@@ -801,20 +763,12 @@
   z-index: 100;
   min-width: 180px;
   padding: 0.25rem;
-  background: var(--notes-sidebar-bg);
+  background: var(--glass-bg-subtle);
   backdrop-filter: blur(16px) saturate(1.5);
   -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  border: 1px solid var(--notes-sidebar-border);
+  border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-.dark .notes-context-menu {
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--elevation-3);
 }
 
 .notes-context-item {
@@ -824,7 +778,7 @@
   width: 100%;
   padding: 0.375rem 0.625rem;
   font-size: 0.75rem;
-  color: var(--notes-text-secondary);
+  color: hsl(var(--muted-foreground));
   background: transparent;
   border: none;
   border-radius: 0.375rem;
@@ -834,8 +788,8 @@
 }
 
 .notes-context-item:hover {
-  background: var(--notes-item-bg-hover);
-  color: var(--notes-text-primary);
+  background: var(--glass-bg-micro);
+  color: hsl(var(--foreground));
 }
 
 .notes-context-item svg {
@@ -845,18 +799,18 @@
 }
 
 .notes-context-item-danger {
-  color: rgb(239, 68, 68);
+  color: hsl(var(--destructive));
 }
 
 .notes-context-item-danger:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: rgb(239, 68, 68);
+  background: hsl(var(--destructive) / 0.08);
+  color: hsl(var(--destructive));
 }
 
 .notes-context-divider {
   height: 1px;
   margin: 0.25rem 0.375rem;
-  background: var(--notes-sidebar-border);
+  background: hsl(var(--border));
 }
 
 /* ---------------------------------------------------------------------------
@@ -869,9 +823,9 @@
   gap: 0.75rem;
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
-  color: var(--notes-text-primary);
-  background: rgba(239, 68, 68, 0.08);
-  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+  color: hsl(var(--foreground));
+  background: hsl(var(--destructive) / 0.08);
+  border-bottom: 1px solid hsl(var(--destructive) / 0.2);
   flex-shrink: 0;
 }
 
@@ -880,7 +834,7 @@
 }
 
 .notes-editor-status-dot[data-state="conflict"] {
-  background: rgb(239, 68, 68);
+  background: hsl(var(--destructive));
   animation: notes-pulse 0.8s ease-in-out infinite;
 }
 
@@ -903,70 +857,17 @@
 }
 
 .notes-editor-preview::-webkit-scrollbar-thumb {
-  background: var(--shell-glass-bg-hover);
+  background: var(--glass-bg-hover);
   border-radius: 2px;
 }
 
 .notes-preview-empty {
-  color: var(--notes-text-muted);
+  color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
   font-style: italic;
 }
 
-.notes-markdown-content {
-  font-size: 0.875rem;
-  line-height: 1.7;
-  color: var(--notes-text-primary);
-}
-
-.notes-markdown-content h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
-  line-height: 1.3;
-}
-
-.notes-markdown-content h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 1rem 0 0.5rem;
-  line-height: 1.3;
-}
-
-.notes-markdown-content h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0.75rem 0 0.375rem;
-  line-height: 1.3;
-}
-
-.notes-markdown-content p {
-  margin: 0 0 0.75rem;
-}
-
-.notes-markdown-content ul {
-  margin: 0 0 0.75rem;
-  padding-left: 1.25rem;
-}
-
-.notes-markdown-content li {
-  margin: 0.25rem 0;
-}
-
-.notes-markdown-content code {
-  font-size: 0.8125rem;
-  padding: 0.125rem 0.375rem;
-  background: var(--shell-glass-bg);
-  border-radius: 0.25rem;
-}
-
-.notes-markdown-content strong {
-  font-weight: 700;
-}
-
-.notes-markdown-content em {
-  font-style: italic;
-}
+/* Markdown preview uses Tailwind prose classes via MarkdownWithPlugins */
 
 /* ---------------------------------------------------------------------------
    15. Split Editor View
@@ -989,7 +890,7 @@
 
 .notes-editor-split-divider {
   width: 1px;
-  background: var(--notes-sidebar-border);
+  background: hsl(var(--border));
 }
 
 @media (max-width: 1023px) {

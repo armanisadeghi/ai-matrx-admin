@@ -32,11 +32,39 @@ import {
   Eye,
   SplitSquareHorizontal,
   Download,
-  MoreHorizontal,
-  FolderInput,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
+import type { MarkdownWithPluginsProps } from "@/components/message-display/MarkdownWithPlugins";
+
+const MarkdownWithPlugins = dynamic<MarkdownWithPluginsProps>(
+  () => import("@/components/message-display/MarkdownWithPlugins"),
+  { ssr: false, loading: () => <div className="notes-preview-empty">Loading preview...</div> },
+);
+
+// Markdown component overrides for notes preview
+const notesMarkdownComponents = {
+  code: ({ inline, className, children, ...props }: any) => {
+    if (inline) {
+      return (
+        <code className="px-1 py-0.5 rounded bg-muted font-mono text-[0.8125rem] text-foreground" {...props}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <pre className="p-3 my-2 rounded-md bg-muted/50 overflow-x-auto text-sm">
+        <code className={className} {...props}>{children}</code>
+      </pre>
+    );
+  },
+  a: ({ href, children, ...props }: any) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2" {...props}>
+      {children}
+    </a>
+  ),
+};
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -911,12 +939,9 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           {editorMode === "preview" && (
             <div className="notes-editor-preview">
               {activeContent ? (
-                <div
-                  className="notes-markdown-content"
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdownSimple(activeContent),
-                  }}
-                />
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-p:my-2 prose-p:leading-relaxed prose-p:text-foreground prose-ul:my-2 prose-li:my-0.5 prose-li:text-foreground prose-code:text-foreground">
+                  <MarkdownWithPlugins content={activeContent} components={notesMarkdownComponents} />
+                </div>
               ) : (
                 <p className="notes-preview-empty">Nothing to preview</p>
               )}
@@ -935,12 +960,9 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
               <div className="notes-editor-split-divider" />
               <div className="notes-editor-preview">
                 {activeContent ? (
-                  <div
-                    className="notes-markdown-content"
-                    dangerouslySetInnerHTML={{
-                      __html: renderMarkdownSimple(activeContent),
-                    }}
-                  />
+                  <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-p:my-2 prose-p:leading-relaxed prose-p:text-foreground prose-ul:my-2 prose-li:my-0.5 prose-li:text-foreground prose-code:text-foreground">
+                    <MarkdownWithPlugins content={activeContent} components={notesMarkdownComponents} />
+                  </div>
                 ) : (
                   <p className="notes-preview-empty">Nothing to preview</p>
                 )}
@@ -993,24 +1015,3 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
   );
 }
 
-// ─── Simple Markdown Renderer ────────────────────────────────────────────────
-// Basic markdown → HTML for preview mode. No external dependency.
-
-function renderMarkdownSimple(md: string): string {
-  return md
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/^- (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/\n/g, "<br/>")
-    .replace(/^/, "<p>")
-    .replace(/$/, "</p>");
-}
