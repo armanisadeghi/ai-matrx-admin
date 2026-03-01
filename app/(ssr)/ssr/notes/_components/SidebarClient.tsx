@@ -422,7 +422,7 @@ export default function SidebarClient({ notes: serverNotes, folderCounts, allTag
           <div className="px-2.5 py-1 text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider">
             Move to folder
           </div>
-          {ALL_FOLDERS.map((folder) => {
+          {orderedFolders.map((folder) => {
             const currentFolder = notes.find((n) => n.id === contextMenu.noteId)?.folder_name;
             const isCurrentFolder = currentFolder === folder;
             return (

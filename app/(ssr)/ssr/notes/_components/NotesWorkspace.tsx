@@ -85,7 +85,7 @@ interface CachedNote {
   fetchedAt: number;
 }
 
-const ALL_FOLDERS = ["Draft", "Personal", "Business", "Prompts", "Scratch"];
+const DEFAULT_FOLDERS = ["Draft", "Personal", "Business", "Prompts", "Scratch"];
 
 // ─── URL Utilities ──────────────────────────────────────────────────────────
 
@@ -129,7 +129,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     x: number;
     y: number;
     noteId: string;
-    type: "tab";
+    type: "tab" | "editor";
   } | null>(null);
   const [showAiMenu, setShowAiMenu] = useState(false);
 
@@ -147,6 +147,21 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     for (const n of notes) m[n.id] = n.label;
     return m;
   }, [notes]);
+
+  // All folders: defaults + any custom folders from user's notes
+  const allFolders = useMemo(() => {
+    const folderSet = new Set(DEFAULT_FOLDERS);
+    for (const n of notes) {
+      if (n.folder_name) folderSet.add(n.folder_name);
+    }
+    // Also include folders from cached notes
+    for (const [, cached] of noteCache) {
+      if (cached.data.folder_name) folderSet.add(cached.data.folder_name);
+    }
+    const defaults = DEFAULT_FOLDERS.filter((f) => folderSet.has(f));
+    const custom = [...folderSet].filter((f) => !DEFAULT_FOLDERS.includes(f)).sort();
+    return [...defaults, ...custom];
+  }, [notes, noteCache]);
 
   // ── Fetch note content ──────────────────────────────────────────────────
 
@@ -789,6 +804,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
               className={cn(
                 "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
+                "max-lg:hidden",
                 editorMode === "split"
                   ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
                   : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
@@ -836,8 +852,8 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
                   className={cn(
                     "group flex items-center gap-1 px-2.5 text-[0.6875rem] font-medium border-r border-border cursor-pointer whitespace-nowrap max-w-[160px] min-w-0 shrink-0 transition-colors",
                     isActive
-                      ? "bg-background text-foreground"
-                      : "bg-transparent text-muted-foreground hover:bg-accent/50",
+                      ? "bg-accent/60 text-foreground"
+                      : "bg-transparent text-muted-foreground hover:bg-accent/30",
                   )}
                   role="tab"
                   data-active={isActive ? "true" : undefined}
@@ -923,7 +939,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           <div className="px-2.5 py-1 text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider">
             Move to folder
           </div>
-          {ALL_FOLDERS.map((folder) => {
+          {allFolders.map((folder) => {
             const currentFolder = noteCache.get(contextMenu.noteId)?.data.folder_name;
             const isCurrent = currentFolder === folder;
             return (
@@ -987,7 +1003,13 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
 
       {/* ── Editor or Empty State ──────────────────────────────────── */}
       {activeNoteId && activeCached ? (
-        <div className="flex-1 flex flex-col overflow-hidden bg-background/50 note-detail-active">
+        <div
+          className="flex-1 flex flex-col overflow-hidden note-detail-active"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenu({ x: e.clientX, y: e.clientY, noteId: activeNoteId, type: "editor" });
+          }}
+        >
           {/* ── Conflict Banner ──────────────────────────────────────── */}
           {saveState === "conflict" && (
             <div className="flex items-center gap-3 py-1.5 px-4 text-xs text-foreground bg-destructive/10 border-b border-destructive/20 shrink-0">
@@ -1127,7 +1149,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         </div>
       ) : activeNoteId ? (
         /* Loading state */
-        <div className="flex-1 flex flex-col overflow-hidden bg-background/50 note-detail-active">
+        <div className="flex-1 flex flex-col overflow-hidden note-detail-active">
           <div className="p-4 px-5 flex flex-col gap-3 flex-1">
             {[40, 80, 65, 90, 50, 75].map((w, i) => (
               <div

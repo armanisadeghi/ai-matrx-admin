@@ -72,8 +72,8 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
           {children}
         </main>
 
-        {/* Mobile Bottom Dock */}
-        <MobileDock pathname={pathname} />
+        {/* Mobile Bottom Dock — Client component, uses usePathname() for pushState sync */}
+        <MobileDock />
 
         {/* Mobile Off-canvas Side Sheet */}
         <MobileSideSheet pathname={pathname} isAdmin={isAdmin} />
