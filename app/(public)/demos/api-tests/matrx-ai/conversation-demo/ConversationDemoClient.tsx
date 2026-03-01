@@ -51,6 +51,25 @@ function generateUUID() {
     });
 }
 
+function ConvIdCopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button size="sm" variant="outline" className="h-7 w-7 p-0 flex-shrink-0" disabled={!text}
+          onClick={async () => {
+            await navigator.clipboard.writeText(text).catch(() => null);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1800);
+          }}>
+          {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent className="text-xs">{copied ? 'Copied!' : 'Copy conversation ID'}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -242,7 +261,6 @@ export default function ConversationDemoClient() {
       }
       setCurrentStream('');
       setExecStatus('complete');
-      setUserInput('');
     } catch (err) {
       if (controller.signal.aborted) {
         if (accumulated) {
@@ -292,13 +310,14 @@ export default function ConversationDemoClient() {
     }
   };
 
-  const clearAll = () => {
+  const clearAll = (keepConvId = true) => {
     setHistory([]);
     setCurrentStream('');
     setRawEvents('');
     setErrorMessage(null);
     setStats({ events: 0, bytes: 0, ms: 0 });
     setExecStatus('idle');
+    if (!keepConvId) setConversationId('');
   };
 
   const requestBodyStr = JSON.stringify(
@@ -353,6 +372,7 @@ export default function ConversationDemoClient() {
                       placeholder="UUID of existing conversation"
                       className="h-7 text-xs font-mono flex-1 min-w-0"
                     />
+                    <ConvIdCopyButton text={conversationId} />
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button size="sm" variant="outline" onClick={() => setConversationId(generateUUID())} className="h-7 w-7 p-0 flex-shrink-0">
@@ -420,11 +440,11 @@ export default function ConversationDemoClient() {
                   )}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="sm" variant="outline" onClick={clearAll} disabled={isRunning} className="h-8 w-8 p-0">
+                      <Button size="sm" variant="outline" onClick={() => clearAll()} disabled={isRunning} className="h-8 w-8 p-0">
                         <RotateCcw className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-xs">Clear history + results</TooltipContent>
+                    <TooltipContent className="text-xs">Clear history + results (keeps conversation ID)</TooltipContent>
                   </Tooltip>
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
@@ -450,7 +470,7 @@ export default function ConversationDemoClient() {
                       <span>{(stats.ms / 1000).toFixed(1)}s</span>
                     </>
                   )}
-                  <Button size="sm" variant="ghost" onClick={clearAll} disabled={isRunning} className="h-6 w-6 p-0">
+                  <Button size="sm" variant="ghost" onClick={() => clearAll()} disabled={isRunning} className="h-6 w-6 p-0">
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
