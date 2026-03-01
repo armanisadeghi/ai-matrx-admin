@@ -1,41 +1,14 @@
 /* =============================================================================
-   Notes Module CSS — SSR-First Two-Panel Layout
-
-   Maps to the app's design token system from globals.css.
-   Uses --glass-* for glass surfaces, hsl(var(--*)) for semantic colors.
-   Keeps --notes-* prefix for notes-specific layout values only.
+   Notes Module — Layout & Structural CSS Only
+   All visual styling (colors, backgrounds, borders, text) is in Tailwind.
+   This file handles: grid layout, scrollbar customization, animations,
+   responsive :has() selectors, and pseudo-selectors that need CSS.
    ============================================================================= */
 
-/* ---------------------------------------------------------------------------
-   1. Notes Custom Properties
-   --------------------------------------------------------------------------- */
-
-:root {
-  --notes-sidebar-w: 280px;
-  --notes-tab-h: 2.5rem;
-  --notes-toolbar-h: 2.75rem;
-
-  /* Notes accent — amber (matches nav-data color for Notes) */
-  --notes-accent: 38 92% 50%;
-  --notes-accent-bg: hsl(38 92% 50% / 0.10);
-  --notes-accent-border: hsl(38 92% 50% / 0.18);
-  --notes-accent-text: 28 80% 52%;
-}
-
-.dark {
-  --notes-accent: 43 96% 56%;
-  --notes-accent-bg: hsl(43 96% 56% / 0.10);
-  --notes-accent-border: hsl(43 96% 56% / 0.18);
-  --notes-accent-text: 43 96% 56%;
-}
-
-/* ---------------------------------------------------------------------------
-   2. Notes Root — Two-Panel Grid
-   --------------------------------------------------------------------------- */
-
+/* Grid layout */
 .notes-root {
   display: grid;
-  grid-template-columns: var(--notes-sidebar-w) 1fr;
+  grid-template-columns: 280px 1fr;
   grid-template-rows: 1fr;
   grid-template-areas: "sidebar content";
   height: 100%;
@@ -43,599 +16,60 @@
   position: relative;
 }
 
-/* ---------------------------------------------------------------------------
-   3. Notes Sidebar
-   --------------------------------------------------------------------------- */
-
 .notes-sidebar {
   grid-area: sidebar;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  background: var(--glass-bg-subtle);
-  border-right: 1px solid hsl(var(--border));
-  backdrop-filter: blur(8px) saturate(1.3);
-  -webkit-backdrop-filter: blur(8px) saturate(1.3);
 }
-
-/* Sidebar header: search + new note */
-.notes-sidebar-header {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.625rem 0.625rem 0.375rem;
-  flex-shrink: 0;
-}
-
-/* Search input container */
-.notes-search {
-  flex: 1;
-  position: relative;
-}
-
-.notes-search-icon {
-  position: absolute;
-  left: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.875rem;
-  height: 0.875rem;
-  color: hsl(var(--muted-foreground));
-  pointer-events: none;
-}
-
-.notes-search-input {
-  width: 100%;
-  height: 1.875rem;
-  padding: 0 0.5rem 0 1.75rem;
-  font-size: 0.75rem;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 0.5rem;
-  color: hsl(var(--foreground));
-  outline: none;
-  transition: border-color var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-search-input::placeholder {
-  color: hsl(var(--muted-foreground));
-}
-
-.notes-search-input:focus {
-  border-color: var(--notes-accent-border);
-  box-shadow: 0 0 0 2px var(--notes-accent-bg);
-}
-
-/* New note button */
-.notes-new-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 0.5rem;
-  background: var(--notes-accent-bg);
-  border: 1px solid var(--notes-accent-border);
-  color: var(--notes-accent-text);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    transform var(--shell-duration-fast) var(--shell-ease-spring),
-    background var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-new-btn:hover {
-  transform: scale(1.05);
-  background: var(--notes-accent-border);
-}
-
-.notes-new-btn:active {
-  transform: scale(0.95);
-}
-
-.notes-new-btn svg {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
-/* Folder nav */
-.notes-folders {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  padding: 0.25rem 0.625rem 0.5rem;
-  flex-shrink: 0;
-}
-
-.notes-folder-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.1875rem 0.5rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  border-radius: 1rem;
-  border: 1px solid transparent;
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    background var(--shell-duration-fast) var(--shell-ease-smooth),
-    border-color var(--shell-duration-fast) var(--shell-ease-smooth),
-    color var(--shell-duration-fast) var(--shell-ease-smooth);
-  white-space: nowrap;
-}
-
-.notes-folder-chip:hover {
-  background: var(--glass-bg-micro);
-}
-
-.notes-folder-chip[data-active="true"] {
-  background: var(--notes-accent-bg);
-  border-color: var(--notes-accent-border);
-  color: var(--notes-accent-text);
-  font-weight: 600;
-}
-
-.notes-folder-chip svg {
-  width: 0.75rem;
-  height: 0.75rem;
-  flex-shrink: 0;
-}
-
-.notes-folder-count {
-  font-size: 0.625rem;
-  opacity: 0.6;
-  margin-left: 0.125rem;
-}
-
-/* Sidebar divider */
-.notes-sidebar-divider {
-  height: 1px;
-  margin: 0 0.625rem;
-  background: hsl(var(--border));
-  flex-shrink: 0;
-}
-
-/* Note list — scrollable area */
-.notes-list {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0.25rem;
-}
-
-.notes-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.notes-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.notes-list::-webkit-scrollbar-thumb {
-  background: var(--glass-bg-hover);
-  border-radius: 2px;
-}
-
-.notes-list::-webkit-scrollbar-thumb:hover {
-  background: var(--glass-bg-strong);
-}
-
-/* Note list item */
-.notes-list-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  padding: 0.5rem 0.625rem;
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  transition:
-    background var(--shell-duration-fast) var(--shell-ease-smooth),
-    border-color var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-list-item:hover {
-  background: var(--glass-bg-micro);
-}
-
-.notes-list-item[data-active="true"] {
-  background: var(--notes-accent-bg);
-  border-color: var(--notes-accent-border);
-}
-
-.notes-list-item-title {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-}
-
-.notes-list-item-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.6875rem;
-  color: hsl(var(--muted-foreground));
-  line-height: 1.2;
-}
-
-.notes-list-item-tags {
-  display: flex;
-  gap: 0.25rem;
-  margin-top: 0.125rem;
-}
-
-.notes-list-item-tag {
-  font-size: 0.5625rem;
-  padding: 0.0625rem 0.3125rem;
-  border-radius: 0.25rem;
-  background: var(--glass-bg);
-  color: hsl(var(--muted-foreground));
-}
-
-/* Empty list state */
-.notes-list-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  text-align: center;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.75rem;
-  gap: 0.5rem;
-}
-
-.notes-list-empty svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  opacity: 0.4;
-}
-
-/* ---------------------------------------------------------------------------
-   4. Notes Main Content Area
-   --------------------------------------------------------------------------- */
 
 .notes-content {
   grid-area: content;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  min-width: 0;
 }
 
-/* ---------------------------------------------------------------------------
-   5. Tab Bar
-   --------------------------------------------------------------------------- */
-
-.notes-tab-bar {
-  display: flex;
-  align-items: stretch;
-  height: var(--notes-tab-h);
-  min-height: var(--notes-tab-h);
-  overflow-x: auto;
-  overflow-y: hidden;
-  border-bottom: 1px solid hsl(var(--border));
-  flex-shrink: 0;
-  gap: 0;
-}
-
-.notes-tab-bar::-webkit-scrollbar {
-  height: 0;
-}
-
-/* Individual tab */
-.notes-tab {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: hsl(var(--muted-foreground));
-  background: transparent;
-  border-right: 1px solid hsl(var(--border));
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  max-width: 180px;
-  min-width: 0;
-  flex-shrink: 0;
-  transition:
-    background var(--shell-duration-fast) var(--shell-ease-smooth),
-    color var(--shell-duration-fast) var(--shell-ease-smooth),
-    border-color var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-tab:hover {
-  background: var(--glass-bg-micro);
-}
-
-.notes-tab[data-active="true"] {
-  background: var(--glass-bg-subtle);
-  border-bottom-color: var(--notes-accent);
-  color: var(--notes-accent-text);
-  font-weight: 600;
-}
-
-.notes-tab-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.notes-tab-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 0.25rem;
-  border: none;
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  opacity: 0;
-  flex-shrink: 0;
-  transition:
-    opacity var(--shell-duration-fast) var(--shell-ease-smooth),
-    background var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-tab:hover .notes-tab-close,
-.notes-tab[data-active="true"] .notes-tab-close {
-  opacity: 1;
-}
-
-.notes-tab-close:hover {
-  background: var(--glass-bg-micro);
-  color: hsl(var(--foreground));
-}
-
-.notes-tab-close svg {
-  width: 0.625rem;
-  height: 0.625rem;
-}
-
-/* ---------------------------------------------------------------------------
-   6. Note Toolbar (within editor view)
-   --------------------------------------------------------------------------- */
-
-.notes-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: var(--notes-toolbar-h);
-  min-height: var(--notes-toolbar-h);
-  padding: 0 1rem;
-  border-bottom: 1px solid hsl(var(--border));
-  flex-shrink: 0;
-}
-
-.notes-toolbar-title {
-  flex: 1;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: hsl(var(--foreground));
-  border: none;
-  background: transparent;
-  outline: none;
-  padding: 0.25rem 0;
-  min-width: 0;
-}
-
-.notes-toolbar-title::placeholder {
-  color: hsl(var(--muted-foreground));
-}
-
-.notes-toolbar-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  border-radius: 0.375rem;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  transition:
-    transform var(--shell-duration-fast) var(--shell-ease-spring),
-    background var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-toolbar-btn:hover {
-  background: var(--glass-bg-hover);
-  transform: scale(1.02);
-}
-
-.notes-toolbar-btn:active {
-  transform: scale(0.98);
-}
-
-.notes-toolbar-btn svg {
-  width: 0.8125rem;
-  height: 0.8125rem;
-}
-
-.notes-toolbar-btn[data-variant="accent"] {
-  background: var(--notes-accent-bg);
-  border-color: var(--notes-accent-border);
-  color: var(--notes-accent-text);
-}
-
-/* Folder tag in toolbar */
-.notes-toolbar-folder {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.625rem;
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
-  background: var(--glass-bg);
-  color: hsl(var(--muted-foreground));
-}
-
-.notes-toolbar-folder svg {
-  width: 0.625rem;
-  height: 0.625rem;
-}
-
-/* ---------------------------------------------------------------------------
-   7. Editor Area
-   --------------------------------------------------------------------------- */
-
-.notes-editor {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--glass-bg-nano);
-}
-
-.notes-editor-textarea {
-  flex: 1;
-  width: 100%;
-  padding: 1rem 1.25rem;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  font-family: inherit;
-  color: hsl(var(--foreground));
-  background: transparent;
-  border: none;
-  outline: none;
-  resize: none;
-  overflow-y: auto;
-}
-
-.notes-editor-textarea::placeholder {
-  color: hsl(var(--muted-foreground));
-}
-
-.notes-editor-textarea::-webkit-scrollbar {
+/* Scrollbar customization */
+.notes-scrollable::-webkit-scrollbar {
   width: 4px;
 }
 
-.notes-editor-textarea::-webkit-scrollbar-track {
+.notes-scrollable::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.notes-editor-textarea::-webkit-scrollbar-thumb {
-  background: var(--glass-bg-hover);
+.notes-scrollable::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
   border-radius: 2px;
 }
 
-/* Editor status bar */
-.notes-editor-status {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.375rem 1rem;
-  font-size: 0.625rem;
-  color: hsl(var(--muted-foreground));
-  border-top: 1px solid hsl(var(--border));
-  flex-shrink: 0;
+.notes-scrollable::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.35);
 }
 
-.notes-editor-status-dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: hsl(var(--muted-foreground));
+/* Hide horizontal scrollbar in tab bar */
+.notes-tab-bar-scroll::-webkit-scrollbar {
+  height: 0;
 }
 
-.notes-editor-status-dot[data-state="saved"] {
-  background: hsl(var(--success));
-}
-
-.notes-editor-status-dot[data-state="saving"] {
-  background: hsl(var(--warning));
-  animation: notes-pulse 1s ease-in-out infinite;
-}
-
-.notes-editor-status-dot[data-state="dirty"] {
-  background: hsl(var(--notes-accent));
-}
-
+/* Animations */
 @keyframes notes-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
 
-/* ---------------------------------------------------------------------------
-   8. Empty State — No Note Selected
-   --------------------------------------------------------------------------- */
-
-.notes-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 2rem;
-  text-align: center;
-  gap: 1rem;
+.notes-status-pulse {
+  animation: notes-pulse 1s ease-in-out infinite;
 }
 
-.notes-empty-icon {
-  width: 3rem;
-  height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1rem;
-  background: var(--notes-accent-bg);
-  color: var(--notes-accent-text);
+.notes-conflict-pulse {
+  animation: notes-pulse 0.8s ease-in-out infinite;
 }
 
-.notes-empty-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
+@keyframes notes-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }
 
-.notes-empty-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: hsl(var(--foreground));
-}
-
-.notes-empty-description {
-  font-size: 0.8125rem;
-  color: hsl(var(--muted-foreground));
-  max-width: 280px;
-  line-height: 1.5;
-}
-
-/* ---------------------------------------------------------------------------
-   9. Loading Skeleton
-   --------------------------------------------------------------------------- */
-
-.notes-skeleton {
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
+/* Skeleton loading lines with staggered delays */
 .notes-skeleton-line {
-  height: 0.875rem;
-  border-radius: 0.25rem;
-  background: var(--glass-bg-hover);
   animation: notes-shimmer 1.5s ease-in-out infinite;
 }
-
 .notes-skeleton-line:nth-child(1) { width: 40%; }
 .notes-skeleton-line:nth-child(2) { width: 80%; animation-delay: 0.1s; }
 .notes-skeleton-line:nth-child(3) { width: 65%; animation-delay: 0.2s; }
@@ -643,29 +77,29 @@
 .notes-skeleton-line:nth-child(5) { width: 50%; animation-delay: 0.4s; }
 .notes-skeleton-line:nth-child(6) { width: 75%; animation-delay: 0.5s; }
 
-@keyframes notes-shimmer {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+/* Tab close button — show on parent hover/active */
+.notes-tab-close-btn {
+  opacity: 0;
+  transition: opacity 150ms ease;
 }
 
-/* ---------------------------------------------------------------------------
-   10. Responsive — Mobile Overrides
-   --------------------------------------------------------------------------- */
+.group:hover .notes-tab-close-btn,
+.group[data-active="true"] .notes-tab-close-btn {
+  opacity: 1;
+}
 
+/* Responsive — mobile overrides using :has() */
 @media (max-width: 1023px) {
   .notes-root {
     grid-template-columns: 1fr;
     grid-template-areas: "content";
   }
 
-  /* On mobile, sidebar is full-width when no note is open */
   .notes-sidebar {
     grid-area: content;
     border-right: none;
   }
 
-  /* When a note is active (note-detail-active class on content area),
-     hide sidebar and show content */
   .notes-root:has(.note-detail-active) .notes-sidebar {
     display: none;
   }
@@ -674,231 +108,16 @@
     display: flex;
   }
 
-  /* When no note is active, hide content area */
   .notes-root:not(:has(.note-detail-active)) .notes-content {
     display: none;
   }
 
-  /* Tab bar hidden on mobile — one note at a time */
-  .notes-tab-bar {
-    display: none;
-  }
-
-  /* Add back button space on mobile toolbar */
-  .notes-toolbar {
-    padding-left: 0.5rem;
-  }
-}
-
-/* ---------------------------------------------------------------------------
-   11. Sort/Filter Pills (in sidebar header area)
-   --------------------------------------------------------------------------- */
-
-.notes-sort-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 0.5rem;
-  background: transparent;
-  border: 1px solid transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    background var(--shell-duration-fast) var(--shell-ease-smooth),
-    color var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-sort-btn:hover {
-  background: var(--glass-bg-micro);
-  color: hsl(var(--muted-foreground));
-}
-
-.notes-sort-btn[data-active="true"] {
-  background: var(--notes-accent-bg);
-  border-color: var(--notes-accent-border);
-  color: var(--notes-accent-text);
-}
-
-.notes-sort-btn svg {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
-/* Mobile back button */
-.notes-back-btn {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.375rem;
-  border: none;
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-right: 0.25rem;
-}
-
-.notes-back-btn svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-@media (max-width: 1023px) {
-  .notes-back-btn {
-    display: flex;
-  }
-}
-
-/* ---------------------------------------------------------------------------
-   12. Context Menu
-   --------------------------------------------------------------------------- */
-
-.notes-context-menu {
-  position: fixed;
-  z-index: 100;
-  min-width: 180px;
-  padding: 0.25rem;
-  background: var(--glass-bg-subtle);
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.5rem;
-  box-shadow: var(--elevation-3);
-}
-
-.notes-context-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.375rem 0.625rem;
-  font-size: 0.75rem;
-  color: hsl(var(--muted-foreground));
-  background: transparent;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  text-align: left;
-  transition: background var(--shell-duration-fast) var(--shell-ease-smooth);
-}
-
-.notes-context-item:hover {
-  background: var(--glass-bg-micro);
-  color: hsl(var(--foreground));
-}
-
-.notes-context-item svg {
-  width: 0.8125rem;
-  height: 0.8125rem;
-  flex-shrink: 0;
-}
-
-.notes-context-item-danger {
-  color: hsl(var(--destructive));
-}
-
-.notes-context-item-danger:hover {
-  background: hsl(var(--destructive) / 0.08);
-  color: hsl(var(--destructive));
-}
-
-.notes-context-divider {
-  height: 1px;
-  margin: 0.25rem 0.375rem;
-  background: hsl(var(--border));
-}
-
-/* ---------------------------------------------------------------------------
-   13. Conflict Banner
-   --------------------------------------------------------------------------- */
-
-.notes-conflict-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  color: hsl(var(--foreground));
-  background: hsl(var(--destructive) / 0.08);
-  border-bottom: 1px solid hsl(var(--destructive) / 0.2);
-  flex-shrink: 0;
-}
-
-.notes-conflict-banner span:first-child {
-  flex: 1;
-}
-
-.notes-editor-status-dot[data-state="conflict"] {
-  background: hsl(var(--destructive));
-  animation: notes-pulse 0.8s ease-in-out infinite;
-}
-
-/* ---------------------------------------------------------------------------
-   14. Markdown Preview
-   --------------------------------------------------------------------------- */
-
-.notes-editor-preview {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem 1.25rem;
-}
-
-.notes-editor-preview::-webkit-scrollbar {
-  width: 4px;
-}
-
-.notes-editor-preview::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.notes-editor-preview::-webkit-scrollbar-thumb {
-  background: var(--glass-bg-hover);
-  border-radius: 2px;
-}
-
-.notes-preview-empty {
-  color: hsl(var(--muted-foreground));
-  font-size: 0.875rem;
-  font-style: italic;
-}
-
-/* Markdown preview uses Tailwind prose classes via MarkdownWithPlugins */
-
-/* ---------------------------------------------------------------------------
-   15. Split Editor View
-   --------------------------------------------------------------------------- */
-
-.notes-editor-split {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  overflow: hidden;
-}
-
-.notes-editor-split .notes-editor-textarea {
-  min-width: 0;
-}
-
-.notes-editor-split .notes-editor-preview {
-  min-width: 0;
-}
-
-.notes-editor-split-divider {
-  width: 1px;
-  background: hsl(var(--border));
-}
-
-@media (max-width: 1023px) {
-  .notes-editor-split {
+  /* Split view — single column on mobile */
+  .notes-split-grid {
     grid-template-columns: 1fr;
   }
-  .notes-editor-split-divider,
-  .notes-editor-split .notes-editor-preview {
+  .notes-split-grid .notes-split-divider,
+  .notes-split-grid .notes-split-preview {
     display: none;
   }
 }
