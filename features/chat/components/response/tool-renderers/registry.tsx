@@ -98,15 +98,15 @@ export const toolRendererRegistry: ToolRegistry = {
             const stepDataUpdate = props.toolUpdates.find(
                 u => u.type === "step_data" && u.step_data?.type === "brave_default_page"
             );
-            
+
             if (!stepDataUpdate?.step_data) {
                 return <GenericRenderer {...props} />;
             }
-            
+
             return <BraveSearchDisplay data={stepDataUpdate.step_data as any} />;
         },
     },
-    
+
     // News API - custom inline and overlay components
     "get_news_headlines": {
         displayName: "News Headlines",
@@ -125,7 +125,7 @@ export const toolRendererRegistry: ToolRegistry = {
         keepExpandedOnStream: true,
         getHeaderExtras: seoMetaTagsHeaderExtras,
     },
-    
+
     // SEO Meta Titles Checker - title-only analysis
     "seo_check_meta_titles": {
         displayName: "SEO Title Checker",
@@ -134,7 +134,7 @@ export const toolRendererRegistry: ToolRegistry = {
         keepExpandedOnStream: true,
         getHeaderExtras: seoTitlesHeaderExtras,
     },
-    
+
     // SEO Meta Descriptions Checker - description-only analysis
     "seo_check_meta_descriptions": {
         displayName: "SEO Description Checker",
@@ -143,7 +143,7 @@ export const toolRendererRegistry: ToolRegistry = {
         keepExpandedOnStream: true,
         getHeaderExtras: seoDescriptionsHeaderExtras,
     },
-    
+
     // Web Research v1 - AI-powered multi-page research with summaries
     "web_search_v1": {
         displayName: "Web Research",
@@ -182,7 +182,7 @@ export const toolRendererRegistry: ToolRegistry = {
             );
         },
     },
-    
+
     // Core Web Search - Multi-query parallel web search
     "core_web_search": {
         displayName: "Multi-Query Search",
@@ -191,7 +191,7 @@ export const toolRendererRegistry: ToolRegistry = {
         overlay: CoreWebSearchOverlay,
         keepExpandedOnStream: true, // Keep search results visible
     },
-    
+
     // Deep Research - search + read full web pages
     "core_web_search_and_read": {
         displayName: "Deep Research",
@@ -221,7 +221,7 @@ export const toolRendererRegistry: ToolRegistry = {
             );
         },
     },
-    
+
     // User Lists - paginated list of the authenticated user's lists
     "get_user_lists": {
         displayName: "User Lists",

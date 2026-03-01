@@ -159,9 +159,9 @@ function AttachedResourcesDisplay({ resources }: AttachedResourcesDisplayProps) 
         <div className="flex flex-wrap gap-2">
             {resources.map((resource, index) => {
                 const Icon = getResourceIcon(resource.type);
-                const isImage = resource.type === 'image_link' || 
+                const isImage = resource.type === 'image_link' ||
                     (resource.type === 'file' && resource.data.mime_type?.startsWith('image/'));
-                
+
                 return (
                     <div
                         key={index}
@@ -254,7 +254,7 @@ function UserMessage({ message }: UserMessageProps) {
             {/* Unified container with border and background - matching PromptUserMessage */}
             <div className="bg-muted border border-border rounded-lg">
                 {/* Content with click handler for collapse/expand */}
-                <div 
+                <div
                     className={`p-2 relative group ${shouldBeCollapsible ? 'cursor-pointer' : ''}`}
                     onClick={handleHeaderClick}
                 >
@@ -282,9 +282,8 @@ function UserMessage({ message }: UserMessageProps) {
                             <div className="relative">
                                 <div
                                     ref={measureRef}
-                                    className={`text-xs text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
-                                        shouldBeCollapsible && isCollapsed ? "max-h-12" : ""
-                                    }`}
+                                    className={`text-xs text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${shouldBeCollapsible && isCollapsed ? "max-h-12" : ""
+                                        }`}
                                 >
                                     {textContent}
                                 </div>
@@ -439,7 +438,7 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
                     className="text-xs bg-transparent"
                 />
             )}
-            
+
             {/* Action buttons - only show when not streaming */}
             {!isStreaming && message.content && (
                 <div className="flex items-center gap-1 mt-0.5">
@@ -473,7 +472,7 @@ function AssistantMessage({ message, streamEvents, isStreaming = false, onConten
                     >
                         <MoreHorizontal className="w-3.5 h-3.5" />
                     </Button>
-                    
+
                     {/* Lazy load menu only when opened */}
                     {showOptionsMenu && (
                         <Suspense fallback={null}>
@@ -536,9 +535,9 @@ interface MessageListProps {
     latestAssistantRef?: React.RefObject<HTMLDivElement>;
 }
 
-export function MessageList({ 
-    messages, 
-    streamEvents, 
+export function MessageList({
+    messages,
+    streamEvents,
     isStreaming,
     emptyStateMessage = "Ready to start chatting",
     className = "",
@@ -561,12 +560,12 @@ export function MessageList({
     }
 
     // Adjust spacing classes based on compact mode
-    const spacingClasses = compact 
-        ? "space-y-2 pt-0 pb-2" 
+    const spacingClasses = compact
+        ? "space-y-2 pt-0 pb-2"
         : "space-y-6 pt-0 pb-4";
 
     // Find the index of the last assistant message
-    const lastAssistantIndex = messages.reduce((acc, msg, idx) => 
+    const lastAssistantIndex = messages.reduce((acc, msg, idx) =>
         msg.role === 'assistant' ? idx : acc, -1);
 
     // Detect the boundary between condensed and active messages
@@ -624,7 +623,7 @@ export function MessageList({
                     </div>
                 );
             })}
-            
+
             {/* Breathing room: allows user to scroll content a bit higher */}
             <div className="h-64" aria-hidden="true" />
         </div>

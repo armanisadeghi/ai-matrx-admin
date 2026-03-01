@@ -19,6 +19,7 @@ export default function AuthIsland({ user }: AuthIslandProps) {
         href="/settings"
         className="shell-auth-island shell-glass shell-tactile"
       >
+        
         <span className="shell-auth-island-icon">
           {user.avatarUrl ? (
             <Image
@@ -32,7 +33,6 @@ export default function AuthIsland({ user }: AuthIslandProps) {
             <ShellIcon name="User" size={16} strokeWidth={2} />
           )}
         </span>
-        <span>{user.name}</span>
       </Link>
     );
   }

@@ -357,13 +357,12 @@
   flex-direction: column;
   gap: 0.125rem;
 
-  /* Thin scrollbar */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+  /* Hide scrollbar — always */
+  scrollbar-width: none;
 }
 
-.shell-sidebar-nav:hover {
-  scrollbar-color: var(--shell-glass-bg-hover) transparent;
+.shell-sidebar-nav::-webkit-scrollbar {
+  display: none;
 }
 
 /* Sidebar footer */
@@ -443,6 +442,19 @@
 .shell-root:not(:has(#shell-sidebar-toggle:checked)) .shell-nav-item {
   justify-content: center;
   padding: 0.5rem;
+  gap: 0;
+}
+
+.shell-root:not(:has(#shell-sidebar-toggle:checked)) .shell-nav-label {
+  width: 0;
+}
+
+.shell-root:not(:has(#shell-sidebar-toggle:checked)) .shell-sidebar-brand {
+  gap: 0;
+}
+
+.shell-root:not(:has(#shell-sidebar-toggle:checked)) .shell-sidebar-brand-logo {
+  width: 0;
 }
 
 /* Tooltip on collapsed sidebar */
