@@ -1,13 +1,15 @@
 // app/(ssr)/ssr/notes/layout.tsx — Server-Rendered Notes Layout
 // Fetches the user's note list server-side (lightweight: no content field).
-// Renders a two-panel layout: sidebar (note list) + main content area.
-// Client components receive server-fetched data as props — zero client fetching.
+// Renders a two-panel layout: sidebar + NotesWorkspace (persistent client component).
+// The workspace lives HERE in the layout so it NEVER unmounts when switching notes.
+// Pages return null — the workspace manages all content via URL + client cache.
 
 import "./notes.css";
+import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import SidebarClient from "./_components/SidebarClient";
-import TabBarClient from "./_components/TabBarClient";
+import NotesWorkspace from "./_components/NotesWorkspace";
 
 export const metadata = {
   title: "Notes | AI Matrx",
@@ -62,17 +64,22 @@ export default async function NotesLayout({ children }: { children: React.ReactN
     <div className="notes-root">
       {/* Sidebar — client component for filtering/search, receives server data */}
       <aside className="notes-sidebar">
-        <SidebarClient
-          notes={notesList}
-          folderCounts={folderCounts}
-          allTags={allTags}
-        />
+        <Suspense>
+          <SidebarClient
+            notes={notesList}
+            folderCounts={folderCounts}
+            allTags={allTags}
+          />
+        </Suspense>
       </aside>
 
-      {/* Main content — tab bar + editor area */}
+      {/* Main content — persistent workspace (never unmounts between notes) */}
       <div className="notes-content">
-        <TabBarClient notes={notesList} />
-        {children}
+        <Suspense>
+          <NotesWorkspace notes={notesList} />
+        </Suspense>
+        {/* children exists for route matching but renders null */}
+        <div style={{ display: "none" }}>{children}</div>
       </div>
     </div>
   );

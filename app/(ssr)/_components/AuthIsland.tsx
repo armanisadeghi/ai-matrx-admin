@@ -1,7 +1,7 @@
 // AuthIsland.tsx — Server component for the auth button
-// Immutable glass container: icon (left) + text (right)
-// Pre-hydration: ({Icon} Login) — Hydrated: ({Avatar} UserName)
+// Uses next/link for client-side transitions (shell stays mounted)
 
+import Link from "next/link";
 import Image from "next/image";
 import ShellIcon from "./ShellIcon";
 
@@ -15,7 +15,7 @@ interface AuthIslandProps {
 export default function AuthIsland({ user }: AuthIslandProps) {
   if (user) {
     return (
-      <a
+      <Link
         href="/settings"
         className="shell-auth-island shell-glass shell-tactile"
       >
@@ -33,12 +33,12 @@ export default function AuthIsland({ user }: AuthIslandProps) {
           )}
         </span>
         <span>{user.name}</span>
-      </a>
+      </Link>
     );
   }
 
   return (
-    <a
+    <Link
       href="/login"
       className="shell-auth-island shell-glass shell-tactile"
     >
@@ -46,6 +46,6 @@ export default function AuthIsland({ user }: AuthIslandProps) {
         <ShellIcon name="LogIn" size={16} strokeWidth={2} />
       </span>
       <span>Login</span>
-    </a>
+    </Link>
   );
 }

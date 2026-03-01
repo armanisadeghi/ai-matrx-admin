@@ -1,7 +1,8 @@
 // MobileDock.tsx — Server component for iOS-style bottom navigation dock
+// Uses next/link for client-side transitions (shell stays mounted)
 // Strictly 6 primary route icons, no text
-// Active route shows glass pill with spring animation via View Transitions
 
+import Link from "next/link";
 import ShellIcon from "./ShellIcon";
 import { dockItems } from "../nav-data";
 
@@ -22,7 +23,7 @@ export default function MobileDock({ pathname }: MobileDockProps) {
       {dockItems.map((item) => {
         const active = isActive(item.href);
         return (
-          <a
+          <Link
             key={item.href}
             href={item.href}
             className={`shell-dock-item ${active ? "shell-dock-item-active" : ""}`}
@@ -31,7 +32,7 @@ export default function MobileDock({ pathname }: MobileDockProps) {
             aria-current={active ? "page" : undefined}
           >
             <ShellIcon name={item.iconName} size={22} strokeWidth={1.75} />
-          </a>
+          </Link>
         );
       })}
     </nav>

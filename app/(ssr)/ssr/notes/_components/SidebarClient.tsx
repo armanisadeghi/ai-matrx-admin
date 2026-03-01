@@ -3,9 +3,10 @@
 // SidebarClient — Client island for the notes sidebar.
 // Receives server-fetched note list as props. Handles search, folder filtering,
 // and sort — all via URL searchParams for bookmarkable, shareable state.
+// Uses window.history.pushState for instant navigation (no server roundtrip).
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useTransition } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 import {
   Search,
   FileText,
@@ -14,14 +15,20 @@ import {
   Briefcase,
   Lightbulb,
   Folder,
-  ArrowUpDown,
   ChevronDown,
   ChevronUp,
+  FolderPlus,
+  MoreHorizontal,
+  NotebookPen,
+  Trash2,
+  Copy,
+  Download,
+  FolderInput,
 } from "lucide-react";
 import type { NoteSummary } from "../layout";
 import NewNoteButton from "./NewNoteButton";
 
-// Folder icon mapping (matches defaultFolders.ts without importing Lucide dynamically)
+// Folder icon mapping
 const FOLDER_ICONS: Record<string, typeof FileText> = {
   Draft: Edit3,
   Personal: User,
@@ -39,10 +46,15 @@ interface SidebarClientProps {
 }
 
 export default function SidebarClient({ notes, folderCounts, allTags }: SidebarClientProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    noteId: string;
+  } | null>(null);
 
   // Read filter state from URL
   const activeFolder = searchParams.get("folder") ?? "";
@@ -56,62 +68,47 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
     ? pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? ""
     : "";
 
-  // Build URL with updated params
-  const buildUrl = useCallback(
+  // ── pushState URL helpers (instant, no server roundtrip) ────────────────
+
+  const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === null || value === "") {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
+      for (const [k, v] of Object.entries(updates)) {
+        if (v === null || v === "") params.delete(k);
+        else params.set(k, v);
       }
       const qs = params.toString();
-      // Preserve the current note path if on a note, otherwise go to /ssr/notes
-      return `${pathname}${qs ? `?${qs}` : ""}`;
+      // Keep current path, just update params
+      const url = `${pathname}${qs ? `?${qs}` : ""}`;
+      window.history.replaceState({}, "", url);
     },
     [pathname, searchParams],
   );
 
-  // Navigate with transition (no outer re-renders)
-  const navigateWithParams = useCallback(
-    (updates: Record<string, string | null>) => {
-      startTransition(() => {
-        router.replace(buildUrl(updates), { scroll: false });
-      });
-    },
-    [router, buildUrl],
-  );
-
-  // Navigate to a note — also manages the tabs URL param
   const navigateToNote = useCallback(
     (noteId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       // Add to tabs if not already there
-      const currentTabs = params.get("tabs")?.split(",").filter(Boolean) ?? [];
-      if (!currentTabs.includes(noteId)) {
-        currentTabs.push(noteId);
-        params.set("tabs", currentTabs.join(","));
+      const tabs = params.get("tabs")?.split(",").filter(Boolean) ?? [];
+      if (!tabs.includes(noteId)) {
+        tabs.push(noteId);
+        params.set("tabs", tabs.join(","));
       }
       const qs = params.toString();
-      startTransition(() => {
-        router.push(`/ssr/notes/${noteId}${qs ? `?${qs}` : ""}`);
-      });
+      window.history.pushState({}, "", `/ssr/notes/${noteId}${qs ? `?${qs}` : ""}`);
     },
-    [router, searchParams],
+    [searchParams],
   );
 
-  // Filter + sort notes
+  // ── Filter + sort ───────────────────────────────────────────────────────
+
   const filteredNotes = useMemo(() => {
     let result = notes;
 
-    // Folder filter
     if (activeFolder) {
       result = result.filter((n) => n.folder_name === activeFolder);
     }
 
-    // Search filter
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -121,20 +118,17 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
       );
     }
 
-    // Tag filter
     if (activeTags.length > 0) {
       result = result.filter((n) =>
         activeTags.every((t) => n.tags.includes(t)),
       );
     }
 
-    // Sort
     result = [...result].sort((a, b) => {
       if (sortField === "label") {
         const cmp = a.label.localeCompare(b.label);
         return sortOrder === "asc" ? cmp : -cmp;
       }
-      // Default: updated_at
       const cmp = a.updated_at.localeCompare(b.updated_at);
       return sortOrder === "asc" ? cmp : -cmp;
     });
@@ -142,7 +136,7 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
     return result;
   }, [notes, activeFolder, searchQuery, activeTags, sortField, sortOrder]);
 
-  // Ordered folders: defaults first, then custom alphabetically
+  // Ordered folders
   const orderedFolders = useMemo(() => {
     const allFolders = Object.keys(folderCounts);
     const defaults = DEFAULT_FOLDER_ORDER.filter((f) => allFolders.includes(f));
@@ -155,8 +149,7 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
     if (!dateStr) return "";
     const d = new Date(dateStr);
     const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const mins = Math.floor(diff / 60000);
+    const mins = Math.floor((now.getTime() - d.getTime()) / 60000);
     if (mins < 1) return "just now";
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
@@ -166,14 +159,12 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
 
-  // Toggle sort direction
-  const toggleSort = () => {
-    navigateWithParams({ order: sortOrder === "desc" ? "asc" : "desc" });
-  };
+  // Close context menu on click elsewhere
+  const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
   return (
     <>
-      {/* Search + New Note */}
+      {/* Search + Sort + New Note */}
       <div className="notes-sidebar-header">
         <div className="notes-search">
           <Search className="notes-search-icon" />
@@ -183,15 +174,14 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
             placeholder="Search notes..."
             defaultValue={searchQuery}
             onChange={(e) => {
-              const val = e.target.value;
-              navigateWithParams({ q: val || null });
+              updateParams({ q: e.target.value || null });
             }}
             aria-label="Search notes"
           />
         </div>
         <button
           className="notes-sort-btn"
-          onClick={toggleSort}
+          onClick={() => updateParams({ order: sortOrder === "desc" ? "asc" : "desc" })}
           data-active={sortOrder === "asc" ? "true" : undefined}
           title={`Sort ${sortOrder === "desc" ? "oldest first" : "newest first"}`}
           aria-label="Toggle sort order"
@@ -206,7 +196,7 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
         <button
           className="notes-folder-chip"
           data-active={!activeFolder ? "true" : undefined}
-          onClick={() => navigateWithParams({ folder: null })}
+          onClick={() => updateParams({ folder: null })}
         >
           All
           <span className="notes-folder-count">{notes.length}</span>
@@ -219,9 +209,7 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
               className="notes-folder-chip"
               data-active={activeFolder === folder ? "true" : undefined}
               onClick={() =>
-                navigateWithParams({
-                  folder: activeFolder === folder ? null : folder,
-                })
+                updateParams({ folder: activeFolder === folder ? null : folder })
               }
             >
               <Icon />
@@ -235,7 +223,7 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
       <div className="notes-sidebar-divider" />
 
       {/* Note list */}
-      <div className="notes-list">
+      <div className="notes-list" onClick={contextMenu ? closeContextMenu : undefined}>
         {filteredNotes.length === 0 ? (
           <div className="notes-list-empty">
             <FileText />
@@ -254,6 +242,10 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
               className="notes-list-item"
               data-active={activeNoteId === note.id ? "true" : undefined}
               onClick={() => navigateToNote(note.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setContextMenu({ x: e.clientX, y: e.clientY, noteId: note.id });
+              }}
               style={{ width: "100%", textAlign: "left" }}
             >
               <span className="notes-list-item-title">{note.label}</span>
@@ -278,6 +270,65 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
           ))
         )}
       </div>
+
+      {/* Sidebar context menu for notes */}
+      {contextMenu && (
+        <div
+          className="notes-context-menu"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              navigateToNote(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
+            <NotebookPen /> Open Note
+          </button>
+          <button
+            className="notes-context-item"
+            onClick={async () => {
+              const { data: userData } = await (await import("@/utils/supabase/client")).supabase.auth.getUser();
+              if (!userData?.user?.id) return;
+              const note = notes.find((n) => n.id === contextMenu.noteId);
+              if (!note) return;
+              // Duplicate via workspace will handle this
+              navigateToNote(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
+            <Copy /> Duplicate
+          </button>
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              // Export as markdown
+              const note = notes.find((n) => n.id === contextMenu.noteId);
+              if (!note) return;
+              // Note: sidebar only has metadata, full export is done from workspace
+              navigateToNote(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
+            <Download /> Export
+          </button>
+          <div className="notes-context-divider" />
+          <button
+            className="notes-context-item notes-context-item-danger"
+            onClick={async () => {
+              const { supabase: sb } = await import("@/utils/supabase/client");
+              await sb.from("notes").update({ is_deleted: true }).eq("id", contextMenu.noteId);
+              setContextMenu(null);
+              // Note: sidebar data is stale until layout refreshes
+              window.location.reload();
+            }}
+          >
+            <Trash2 /> Delete Note
+          </button>
+        </div>
+      )}
     </>
   );
 }

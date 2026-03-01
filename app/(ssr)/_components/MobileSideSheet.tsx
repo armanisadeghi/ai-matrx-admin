@@ -1,7 +1,8 @@
 // MobileSideSheet.tsx — Server component for off-canvas mobile navigation
+// Uses next/link for client-side transitions (shell stays mounted)
 // CSS-driven slide from left, triggered by #shell-mobile-menu checkbox
-// Mirrors the full desktop nav inventory
 
+import Link from "next/link";
 import ShellIcon from "./ShellIcon";
 import { primaryNavItems, adminNavItems, settingsItem, type ShellNavItem } from "../nav-data";
 
@@ -40,7 +41,7 @@ export default function MobileSideSheet({ pathname, isAdmin }: MobileSideSheetPr
           {primaryNavItems.map((item) => {
             const active = isActive(item);
             return (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className={`shell-mobile-nav-item ${active ? "shell-mobile-nav-item-active" : ""}`}
@@ -49,13 +50,13 @@ export default function MobileSideSheet({ pathname, isAdmin }: MobileSideSheetPr
                   <ShellIcon name={item.iconName} size={20} strokeWidth={1.75} />
                 </span>
                 <span>{item.label}</span>
-              </a>
+              </Link>
             );
           })}
 
           {/* Settings */}
           <div className="shell-mobile-section-divider" />
-          <a
+          <Link
             href={settingsItem.href}
             className={`shell-mobile-nav-item ${isActive(settingsItem) ? "shell-mobile-nav-item-active" : ""}`}
           >
@@ -63,7 +64,7 @@ export default function MobileSideSheet({ pathname, isAdmin }: MobileSideSheetPr
               <ShellIcon name={settingsItem.iconName} size={20} strokeWidth={1.75} />
             </span>
             <span>{settingsItem.label}</span>
-          </a>
+          </Link>
 
           {/* Admin section */}
           {isAdmin && adminNavItems.length > 0 && (
@@ -73,7 +74,7 @@ export default function MobileSideSheet({ pathname, isAdmin }: MobileSideSheetPr
               {adminNavItems.map((item) => {
                 const active = isActive(item);
                 return (
-                  <a
+                  <Link
                     key={item.href}
                     href={item.href}
                     className={`shell-mobile-nav-item ${active ? "shell-mobile-nav-item-active" : ""}`}
@@ -82,7 +83,7 @@ export default function MobileSideSheet({ pathname, isAdmin }: MobileSideSheetPr
                       <ShellIcon name={item.iconName} size={20} strokeWidth={1.75} />
                     </span>
                     <span>{item.label}</span>
-                  </a>
+                  </Link>
                 );
               })}
             </>
