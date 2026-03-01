@@ -7,7 +7,7 @@
 // - Active note from URL pathname
 // - Background refresh with diff detection
 // - Auto-save with conflict detection
-// - Editor modes (plain, markdown preview via MarkdownStream)
+// - Editor modes (plain, markdown preview)
 // - Context menus, keyboard shortcuts, note CRUD
 
 import { usePathname, useSearchParams } from "next/navigation";
@@ -34,21 +34,13 @@ import {
   Download,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
 import type { MarkdownStreamProps } from "@/components/MarkdownStream";
 
 const MarkdownStream = dynamic<MarkdownStreamProps>(
   () => import("@/components/MarkdownStream"),
-  {
-    ssr: false,
-    loading: () => (
-      <p className="text-muted-foreground italic text-sm p-4">
-        Loading preview...
-      </p>
-    ),
-  },
+  { ssr: false, loading: () => <div className="notes-preview-empty">Loading preview...</div> },
 );
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -153,6 +145,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
       const next = new Map(prev);
       const existing = next.get(noteId);
 
+      // If we have local edits, don't overwrite — detect conflict instead
       if (existing?.localEdits) {
         const serverChanged =
           noteData.content !== existing.data.content ||
@@ -166,6 +159,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           });
           return next;
         }
+        // Server matches what we had — no conflict
         next.set(noteId, {
           ...existing,
           data: noteData,
@@ -174,6 +168,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         return next;
       }
 
+      // No local edits — just update cache
       next.set(noteId, {
         data: noteData,
         localEdits: null,
@@ -193,14 +188,16 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
 
     const cached = noteCache.get(activeNoteId);
     if (!cached) {
+      // First time opening — fetch
       fetchNote(activeNoteId);
     } else {
+      // Already cached — background refresh if stale (>30s)
       const age = Date.now() - cached.fetchedAt;
       if (age > 30_000) {
         fetchNote(activeNoteId);
       }
     }
-  }, [activeNoteId, fetchNote]); // intentionally NOT including noteCache
+  }, [activeNoteId, fetchNote]); // intentionally NOT including noteCache to avoid loop
 
   // ── URL management via pushState (no server roundtrip) ──────────────────
 
@@ -225,6 +222,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     (noteId: string) => {
       if (noteId === activeNoteId) return;
       const params = new URLSearchParams(searchParams.toString());
+      // Add to tabs if missing
       const tabs = params.get("tabs")?.split(",").filter(Boolean) ?? [];
       if (!tabs.includes(noteId)) {
         tabs.push(noteId);
@@ -247,6 +245,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         params.delete("tabs");
       }
 
+      // If closing active tab, switch to adjacent
       let nextNoteId: string | null = null;
       if (noteId === activeNoteId) {
         const idx = tabs.indexOf(noteId);
@@ -279,10 +278,12 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
 
   const scheduleSave = useCallback(
     (noteId: string, label: string, content: string) => {
+      // Clear existing timer
       const timers = saveTimerRef.current;
       const existing = timers.get(noteId);
       if (existing) clearTimeout(existing);
 
+      // Mark dirty
       setNoteCache((prev) => {
         const next = new Map(prev);
         const cached = next.get(noteId);
@@ -295,6 +296,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         return next;
       });
 
+      // Schedule save
       const timer = setTimeout(async () => {
         timers.delete(noteId);
 
@@ -447,12 +449,14 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         .update({ is_deleted: true })
         .eq("id", noteId);
 
+      // Remove from cache
       setNoteCache((prev) => {
         const next = new Map(prev);
         next.delete(noteId);
         return next;
       });
 
+      // Close the tab
       closeTab(noteId);
     },
     [closeTab],
@@ -485,6 +489,8 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         .single();
 
       if (error || !newNote) return;
+
+      // Open the new note in a tab
       switchTab(newNote.id);
     },
     [noteCache, switchTab],
@@ -511,7 +517,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     [noteCache],
   );
 
-  // ── Resolve conflict ────────────────────────────────────────────────────
+  // ── Resolve conflict — keep local or take server ────────────────────────
 
   const resolveConflict = useCallback(
     (noteId: string, choice: "local" | "server") => {
@@ -521,11 +527,21 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         if (!cached) return prev;
 
         if (choice === "server") {
-          next.set(noteId, { ...cached, localEdits: null, saveState: "saved" });
+          // Discard local edits, use server data
+          next.set(noteId, {
+            ...cached,
+            localEdits: null,
+            saveState: "saved",
+          });
         } else {
+          // Keep local edits, save them
           next.set(noteId, { ...cached, saveState: "dirty" });
           if (cached.localEdits) {
-            scheduleSave(noteId, cached.localEdits.label, cached.localEdits.content);
+            scheduleSave(
+              noteId,
+              cached.localEdits.label,
+              cached.localEdits.content,
+            );
           }
         }
         return next;
@@ -540,11 +556,13 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     const handler = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
 
+      // Ctrl+W — close active tab
       if (mod && e.key === "w" && activeNoteId) {
         e.preventDefault();
         closeTab(activeNoteId);
       }
 
+      // Ctrl+Tab — cycle tabs
       if (e.ctrlKey && e.key === "Tab" && tabIds.length > 1) {
         e.preventDefault();
         const idx = tabIds.indexOf(activeNoteId);
@@ -554,6 +572,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         switchTab(tabIds[nextIdx]);
       }
 
+      // Ctrl+S — force save
       if (mod && e.key === "s" && activeNoteId) {
         e.preventDefault();
         forceSave(activeNoteId);
@@ -605,6 +624,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     updateUrl(null);
   };
 
+  // Word/char count
   const wordCount = activeContent.trim()
     ? activeContent.trim().split(/\s+/).length
     : 0;
@@ -619,6 +639,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           ? "Conflict detected"
           : "Saved";
 
+  // Format relative time
   const formatTime = (dateStr: string) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -631,64 +652,39 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
 
-  // ── Reusable style helpers ──────────────────────────────────────────────
-
-  const toolbarBtnClass = (isAccent?: boolean) =>
-    cn(
-      "flex items-center justify-center gap-1 py-1 px-2 text-[0.6875rem] font-medium rounded-md border cursor-pointer transition-all",
-      "hover:bg-accent hover:scale-[1.02] active:scale-[0.98]",
-      "[&_svg]:w-[0.8125rem] [&_svg]:h-[0.8125rem]",
-      isAccent
-        ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
-        : "border-border bg-background text-muted-foreground",
-    );
-
-  const contextItemClass =
-    "flex items-center gap-2 w-full py-1.5 px-2.5 text-xs text-muted-foreground bg-transparent border-none rounded-md cursor-pointer text-left transition-colors hover:bg-accent hover:text-foreground [&_svg]:w-[0.8125rem] [&_svg]:h-[0.8125rem] [&_svg]:shrink-0";
-
   // ─── RENDER ─────────────────────────────────────────────────────────────
 
   return (
     <>
       {/* ── Tab Bar ────────────────────────────────────────────────────── */}
       {visibleTabs.length > 0 && (
-        <div
-          className="notes-tab-bar-scroll flex items-stretch h-10 min-h-[2.5rem] overflow-x-auto overflow-y-hidden border-b border-border shrink-0 lg:flex hidden"
-          role="tablist"
-          aria-label="Open notes"
-        >
+        <div className="notes-tab-bar" role="tablist" aria-label="Open notes">
           {visibleTabs.map((id) => {
             const cached = noteCache.get(id);
             const label =
               cached?.localEdits?.label ?? cached?.data.label ?? labelMap[id] ?? "Untitled";
             const isDirty =
               cached?.saveState === "dirty" || cached?.saveState === "saving";
-            const isActive = id === activeNoteId;
 
             return (
               <button
                 key={id}
-                className={cn(
-                  "group flex items-center gap-1.5 px-3 text-xs font-medium border-r border-border border-b-2 cursor-pointer whitespace-nowrap max-w-[180px] min-w-0 shrink-0 transition-all",
-                  isActive
-                    ? "bg-muted border-b-amber-500 text-amber-600 dark:text-amber-400 font-semibold"
-                    : "bg-transparent border-b-transparent text-muted-foreground hover:bg-accent",
-                )}
+                className="notes-tab"
                 role="tab"
-                data-active={isActive ? "true" : undefined}
-                aria-selected={isActive}
+                data-active={id === activeNoteId ? "true" : undefined}
+                aria-selected={id === activeNoteId}
                 onClick={() => switchTab(id)}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setContextMenu({ x: e.clientX, y: e.clientY, noteId: id, type: "tab" });
                 }}
               >
-                <span className="overflow-hidden text-ellipsis">
+                <span className="notes-tab-label">
                   {isDirty ? "\u2022 " : ""}
                   {label}
                 </span>
                 <span
-                  className="notes-tab-close-btn flex items-center justify-center w-4 h-4 rounded-sm bg-transparent text-muted-foreground cursor-pointer shrink-0 hover:bg-accent hover:text-foreground"
+                  className="notes-tab-close"
                   role="button"
                   aria-label={`Close ${label}`}
                   onClick={(e) => {
@@ -696,7 +692,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
                     closeTab(id);
                   }}
                 >
-                  <X className="w-2.5 h-2.5" />
+                  <X />
                 </span>
               </button>
             );
@@ -707,35 +703,74 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
       {/* ── Context Menu ───────────────────────────────────────────────── */}
       {contextMenu && (
         <div
-          className="fixed z-[100] min-w-[180px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg"
+          className="notes-context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
           {noteCache.get(contextMenu.noteId)?.saveState === "dirty" && (
-            <button className={contextItemClass} onClick={() => { forceSave(contextMenu.noteId); setContextMenu(null); }}>
+            <button
+              className="notes-context-item"
+              onClick={() => {
+                forceSave(contextMenu.noteId);
+                setContextMenu(null);
+              }}
+            >
               <Save /> Save
             </button>
           )}
-          <button className={contextItemClass} onClick={() => { duplicateNote(contextMenu.noteId); setContextMenu(null); }}>
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              duplicateNote(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
             <Copy /> Duplicate
           </button>
-          <button className={contextItemClass} onClick={() => { exportNote(contextMenu.noteId); setContextMenu(null); }}>
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              exportNote(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
             <Download /> Export as Markdown
           </button>
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button className={contextItemClass} onClick={() => { closeTab(contextMenu.noteId); setContextMenu(null); }}>
+          <div className="notes-context-divider" />
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              closeTab(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
             <X /> Close Tab
           </button>
-          <button className={contextItemClass} onClick={() => { closeOtherTabs(contextMenu.noteId); setContextMenu(null); }}>
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              closeOtherTabs(contextMenu.noteId);
+              setContextMenu(null);
+            }}
+          >
             <X /> Close Other Tabs
           </button>
-          <button className={contextItemClass} onClick={() => { closeAllTabs(); setContextMenu(null); }}>
+          <button
+            className="notes-context-item"
+            onClick={() => {
+              closeAllTabs();
+              setContextMenu(null);
+            }}
+          >
             <X /> Close All Tabs
           </button>
-          <div className="h-px my-1 mx-1.5 bg-border" />
+          <div className="notes-context-divider" />
           <button
-            className={cn(contextItemClass, "text-destructive hover:bg-destructive/10 hover:text-destructive")}
-            onClick={() => { deleteNote(contextMenu.noteId); setContextMenu(null); }}
+            className="notes-context-item notes-context-item-danger"
+            onClick={() => {
+              deleteNote(contextMenu.noteId);
+              setContextMenu(null);
+            }}
           >
             <Trash2 /> Delete Note
           </button>
@@ -744,22 +779,23 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
 
       {/* ── Editor or Empty State ──────────────────────────────────────── */}
       {activeNoteId && activeCached ? (
-        <div className="flex-1 flex flex-col overflow-hidden bg-background/50 note-detail-active">
+        <div className="notes-editor note-detail-active">
           {/* ── Conflict Banner ────────────────────────────────────────── */}
           {saveState === "conflict" && (
-            <div className="flex items-center gap-3 py-2 px-4 text-xs text-foreground bg-destructive/10 border-b border-destructive/20 shrink-0">
-              <span className="flex-1">
+            <div className="notes-conflict-banner">
+              <span>
                 This note was modified externally. Keep your version or use the
                 server version?
               </span>
               <button
-                className={toolbarBtnClass(true)}
+                className="notes-toolbar-btn"
+                data-variant="accent"
                 onClick={() => resolveConflict(activeNoteId, "local")}
               >
                 Keep Mine
               </button>
               <button
-                className={toolbarBtnClass(false)}
+                className="notes-toolbar-btn"
                 onClick={() => resolveConflict(activeNoteId, "server")}
               >
                 Use Server
@@ -768,9 +804,9 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           )}
 
           {/* ── Toolbar ────────────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 h-11 min-h-[2.75rem] px-4 max-lg:pl-2 border-b border-border shrink-0">
+          <div className="notes-toolbar">
             <button
-              className="hidden max-lg:flex items-center justify-center w-7 h-7 rounded-md bg-transparent text-muted-foreground cursor-pointer shrink-0 mr-1 [&_svg]:w-4 [&_svg]:h-4"
+              className="notes-back-btn"
               onClick={goBack}
               aria-label="Back to notes"
             >
@@ -778,7 +814,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             </button>
 
             <input
-              className="flex-1 text-sm font-semibold text-foreground border-none bg-transparent outline-none py-1 min-w-0 placeholder:text-muted-foreground"
+              className="notes-toolbar-title"
               type="text"
               value={activeLabel}
               onChange={handleTitleChange}
@@ -786,13 +822,13 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
               aria-label="Note title"
             />
 
-            <span className="inline-flex items-center gap-1 text-[0.625rem] py-0.5 px-1.5 rounded bg-muted text-muted-foreground [&_svg]:w-2.5 [&_svg]:h-2.5">
+            <span className="notes-toolbar-folder">
               <Folder />
               {activeCached.data.folder_name}
             </span>
 
             {activeCached.data.tags.length > 0 && (
-              <span className="inline-flex items-center gap-1 text-[0.625rem] py-0.5 px-1.5 rounded bg-muted text-muted-foreground [&_svg]:w-2.5 [&_svg]:h-2.5">
+              <span className="notes-toolbar-folder">
                 <Tag />
                 {activeCached.data.tags.slice(0, 2).join(", ")}
                 {activeCached.data.tags.length > 2 &&
@@ -801,28 +837,67 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             )}
 
             {/* Editor mode buttons */}
-            <button className={toolbarBtnClass(editorMode === "plain")} onClick={() => setEditorMode("plain")} title="Plain text" aria-label="Plain text mode">
+            <button
+              className="notes-toolbar-btn"
+              data-variant={editorMode === "plain" ? "accent" : undefined}
+              onClick={() => setEditorMode("plain")}
+              title="Plain text"
+              aria-label="Plain text mode"
+            >
               <FileText />
             </button>
-            <button className={toolbarBtnClass(editorMode === "split")} onClick={() => setEditorMode("split")} title="Split view" aria-label="Split view mode">
+            <button
+              className="notes-toolbar-btn"
+              data-variant={editorMode === "split" ? "accent" : undefined}
+              onClick={() => setEditorMode("split")}
+              title="Split view"
+              aria-label="Split view mode"
+            >
               <SplitSquareHorizontal />
             </button>
-            <button className={toolbarBtnClass(editorMode === "preview")} onClick={() => setEditorMode("preview")} title="Preview" aria-label="Preview mode">
+            <button
+              className="notes-toolbar-btn"
+              data-variant={editorMode === "preview" ? "accent" : undefined}
+              onClick={() => setEditorMode("preview")}
+              title="Preview"
+              aria-label="Preview mode"
+            >
               <Eye />
             </button>
 
-            <div className="flex-1" />
+            <div style={{ flex: 1 }} />
 
-            <button className={toolbarBtnClass(saveState === "dirty")} onClick={() => forceSave(activeNoteId)} title="Save (Ctrl+S)" aria-label="Save note">
+            <button
+              className="notes-toolbar-btn"
+              data-variant={saveState === "dirty" ? "accent" : undefined}
+              onClick={() => forceSave(activeNoteId)}
+              title="Save (Ctrl+S)"
+              aria-label="Save note"
+            >
               <Save />
             </button>
-            <button className={toolbarBtnClass(false)} onClick={() => duplicateNote(activeNoteId)} title="Duplicate" aria-label="Duplicate note">
+            <button
+              className="notes-toolbar-btn"
+              onClick={() => duplicateNote(activeNoteId)}
+              title="Duplicate"
+              aria-label="Duplicate note"
+            >
               <Copy />
             </button>
-            <button className={toolbarBtnClass(false)} onClick={() => exportNote(activeNoteId)} title="Export" aria-label="Export note">
+            <button
+              className="notes-toolbar-btn"
+              onClick={() => exportNote(activeNoteId)}
+              title="Export"
+              aria-label="Export note"
+            >
               <Download />
             </button>
-            <button className={toolbarBtnClass(false)} onClick={() => deleteNote(activeNoteId)} title="Delete" aria-label="Delete note">
+            <button
+              className="notes-toolbar-btn"
+              onClick={() => deleteNote(activeNoteId)}
+              title="Delete"
+              aria-label="Delete note"
+            >
               <Trash2 />
             </button>
           </div>
@@ -830,7 +905,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           {/* ── Editor Content ─────────────────────────────────────────── */}
           {editorMode === "plain" && (
             <textarea
-              className="notes-scrollable flex-1 w-full py-4 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
+              className="notes-editor-textarea"
               value={activeContent}
               onChange={handleContentChange}
               placeholder="Start writing..."
@@ -839,58 +914,38 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           )}
 
           {editorMode === "preview" && (
-            <div className="notes-scrollable flex-1 overflow-y-auto py-4 px-5">
+            <div className="notes-editor-preview">
               {activeContent ? (
-                <MarkdownStream
-                  content={activeContent}
-                  type="text"
-                  hideCopyButton={false}
-                  allowFullScreenEditor={false}
-                  className="!bg-transparent !rounded-none !p-0"
-                />
+                <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
               ) : (
-                <p className="text-muted-foreground text-sm italic">Nothing to preview</p>
+                <p className="notes-preview-empty">Nothing to preview</p>
               )}
             </div>
           )}
 
           {editorMode === "split" && (
-            <div className="notes-split-grid flex-1 grid grid-cols-[1fr_auto_1fr] overflow-hidden">
+            <div className="notes-editor-split">
               <textarea
-                className="notes-scrollable w-full py-4 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto min-w-0 placeholder:text-muted-foreground"
+                className="notes-editor-textarea"
                 value={activeContent}
                 onChange={handleContentChange}
                 placeholder="Start writing..."
                 aria-label="Note content"
               />
-              <div className="notes-split-divider w-px bg-border" />
-              <div className="notes-split-preview notes-scrollable overflow-y-auto py-4 px-5 min-w-0">
+              <div className="notes-editor-split-divider" />
+              <div className="notes-editor-preview">
                 {activeContent ? (
-                  <MarkdownStream
-                    content={activeContent}
-                    type="text"
-                    hideCopyButton
-                    allowFullScreenEditor={false}
-                    className="!bg-transparent !rounded-none !p-0"
-                  />
+                  <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
                 ) : (
-                  <p className="text-muted-foreground text-sm italic">Nothing to preview</p>
+                  <p className="notes-preview-empty">Nothing to preview</p>
                 )}
               </div>
             </div>
           )}
 
           {/* ── Status Bar ─────────────────────────────────────────────── */}
-          <div className="flex items-center gap-3 py-1.5 px-4 text-[0.625rem] text-muted-foreground border-t border-border shrink-0">
-            <span
-              className={cn(
-                "w-1.5 h-1.5 rounded-full",
-                saveState === "saved" && "bg-green-500",
-                saveState === "saving" && "bg-yellow-500 notes-status-pulse",
-                saveState === "dirty" && "bg-amber-500",
-                saveState === "conflict" && "bg-red-500 notes-conflict-pulse",
-              )}
-            />
+          <div className="notes-editor-status">
+            <span className="notes-editor-status-dot" data-state={saveState} />
             <span>{statusLabel}</span>
             <span>&middot;</span>
             <span>{wordCount} words</span>
@@ -906,25 +961,24 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
         </div>
       ) : activeNoteId ? (
         /* Loading state — note ID in URL but not yet in cache */
-        <div className="flex-1 flex flex-col overflow-hidden bg-background/50 note-detail-active">
-          <div className="p-4 px-5 flex flex-col gap-3 flex-1">
-            {[40, 80, 65, 90, 50, 75].map((w, i) => (
-              <div
-                key={i}
-                className="notes-skeleton-line h-3.5 rounded bg-muted"
-                style={{ width: `${w}%` }}
-              />
-            ))}
+        <div className="notes-editor note-detail-active">
+          <div className="notes-skeleton" style={{ flex: 1 }}>
+            <div className="notes-skeleton-line" />
+            <div className="notes-skeleton-line" />
+            <div className="notes-skeleton-line" />
+            <div className="notes-skeleton-line" />
+            <div className="notes-skeleton-line" />
+            <div className="notes-skeleton-line" />
           </div>
         </div>
       ) : (
         /* Empty state — no note selected */
-        <div className="flex flex-col items-center justify-center h-full p-8 text-center gap-4">
-          <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 [&_svg]:w-6 [&_svg]:h-6">
+        <div className="notes-empty">
+          <div className="notes-empty-icon">
             <NotebookPen />
           </div>
-          <h2 className="text-base font-semibold text-foreground">Select a note</h2>
-          <p className="text-sm text-muted-foreground max-w-[280px] leading-relaxed">
+          <h2 className="notes-empty-title">Select a note</h2>
+          <p className="notes-empty-description">
             Choose a note from the sidebar to start editing, or create a new one
             with the + button.
           </p>
@@ -933,3 +987,4 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     </>
   );
 }
+
