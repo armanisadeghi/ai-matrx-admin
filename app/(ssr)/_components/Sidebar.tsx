@@ -28,7 +28,7 @@ export default function Sidebar({ pathname, isAdmin }: SidebarProps) {
           className="shell-sidebar-brand-toggle shell-tactile"
           aria-label="Toggle sidebar"
         >
-          <ShellIcon name="PanelLeft" size={20} strokeWidth={1.75} />
+          <ShellIcon name="PanelLeft" size={18} strokeWidth={1.75} />
         </label>
         <span className="shell-sidebar-brand-logo">AI Matrx</span>
       </div>
