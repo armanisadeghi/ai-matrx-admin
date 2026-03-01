@@ -32,11 +32,16 @@ import {
   Eye,
   SplitSquareHorizontal,
   Download,
-  MoreHorizontal,
-  FolderInput,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
+import type { MarkdownStreamProps } from "@/components/MarkdownStream";
+
+const MarkdownStream = dynamic<MarkdownStreamProps>(
+  () => import("@/components/MarkdownStream"),
+  { ssr: false, loading: () => <div className="notes-preview-empty">Loading preview...</div> },
+);
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -911,12 +916,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           {editorMode === "preview" && (
             <div className="notes-editor-preview">
               {activeContent ? (
-                <div
-                  className="notes-markdown-content"
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdownSimple(activeContent),
-                  }}
-                />
+                <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
               ) : (
                 <p className="notes-preview-empty">Nothing to preview</p>
               )}
@@ -935,12 +935,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
               <div className="notes-editor-split-divider" />
               <div className="notes-editor-preview">
                 {activeContent ? (
-                  <div
-                    className="notes-markdown-content"
-                    dangerouslySetInnerHTML={{
-                      __html: renderMarkdownSimple(activeContent),
-                    }}
-                  />
+                  <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
                 ) : (
                   <p className="notes-preview-empty">Nothing to preview</p>
                 )}
@@ -993,24 +988,3 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
   );
 }
 
-// ─── Simple Markdown Renderer ────────────────────────────────────────────────
-// Basic markdown → HTML for preview mode. No external dependency.
-
-function renderMarkdownSimple(md: string): string {
-  return md
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/^- (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/\n/g, "<br/>")
-    .replace(/^/, "<p>")
-    .replace(/$/, "</p>");
-}

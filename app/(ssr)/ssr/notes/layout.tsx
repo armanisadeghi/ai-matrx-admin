@@ -63,7 +63,7 @@ export default async function NotesLayout({ children }: { children: React.ReactN
   return (
     <div className="notes-root">
       {/* Sidebar — client component for filtering/search, receives server data */}
-      <aside className="notes-sidebar">
+      <aside className="notes-sidebar flex flex-col bg-card/80 backdrop-blur-xl border-r border-border overflow-hidden">
         <Suspense>
           <SidebarClient
             notes={notesList}
@@ -74,7 +74,7 @@ export default async function NotesLayout({ children }: { children: React.ReactN
       </aside>
 
       {/* Main content — persistent workspace (never unmounts between notes) */}
-      <div className="notes-content">
+      <div className="notes-content flex flex-col bg-background overflow-hidden">
         <Suspense>
           <NotesWorkspace notes={notesList} />
         </Suspense>

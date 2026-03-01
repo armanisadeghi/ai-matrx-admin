@@ -17,14 +17,12 @@ import {
   Folder,
   ChevronDown,
   ChevronUp,
-  FolderPlus,
-  MoreHorizontal,
   NotebookPen,
   Trash2,
   Copy,
   Download,
-  FolderInput,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { NoteSummary } from "../layout";
 import NewNoteButton from "./NewNoteButton";
 
@@ -78,7 +76,6 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
         else params.set(k, v);
       }
       const qs = params.toString();
-      // Keep current path, just update params
       const url = `${pathname}${qs ? `?${qs}` : ""}`;
       window.history.replaceState({}, "", url);
     },
@@ -88,7 +85,6 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
   const navigateToNote = useCallback(
     (noteId: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      // Add to tabs if not already there
       const tabs = params.get("tabs")?.split(",").filter(Boolean) ?? [];
       if (!tabs.includes(noteId)) {
         tabs.push(noteId);
@@ -165,11 +161,11 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
   return (
     <>
       {/* Search + Sort + New Note */}
-      <div className="notes-sidebar-header">
-        <div className="notes-search">
-          <Search className="notes-search-icon" />
+      <div className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1.5 shrink-0">
+        <div className="flex-1 relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
           <input
-            className="notes-search-input"
+            className="w-full h-8 pl-7 pr-2 text-xs bg-muted/50 border border-border rounded-lg text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-ring focus:bg-muted"
             type="text"
             placeholder="Search notes..."
             defaultValue={searchQuery}
@@ -180,9 +176,13 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
           />
         </div>
         <button
-          className="notes-sort-btn"
+          className={cn(
+            "flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0",
+            "hover:bg-accent hover:text-foreground",
+            "[&_svg]:w-3.5 [&_svg]:h-3.5",
+            sortOrder === "asc" && "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400",
+          )}
           onClick={() => updateParams({ order: sortOrder === "desc" ? "asc" : "desc" })}
-          data-active={sortOrder === "asc" ? "true" : undefined}
           title={`Sort ${sortOrder === "desc" ? "oldest first" : "newest first"}`}
           aria-label="Toggle sort order"
         >
@@ -192,42 +192,56 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
       </div>
 
       {/* Folder chips */}
-      <div className="notes-folders">
+      <div className="flex flex-wrap gap-1 px-2.5 py-1 shrink-0">
         <button
-          className="notes-folder-chip"
-          data-active={!activeFolder ? "true" : undefined}
+          className={cn(
+            "flex items-center gap-1 px-2 py-1 text-[0.6875rem] font-medium rounded-md border cursor-pointer transition-colors",
+            "[&_svg]:w-3 [&_svg]:h-3",
+            !activeFolder
+              ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+              : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
           onClick={() => updateParams({ folder: null })}
         >
           All
-          <span className="notes-folder-count">{notes.length}</span>
+          <span className="text-[0.625rem] opacity-60">{notes.length}</span>
         </button>
         {orderedFolders.map((folder) => {
           const Icon = FOLDER_ICONS[folder] ?? Folder;
+          const isActive = activeFolder === folder;
           return (
             <button
               key={folder}
-              className="notes-folder-chip"
-              data-active={activeFolder === folder ? "true" : undefined}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 text-[0.6875rem] font-medium rounded-md border cursor-pointer transition-colors",
+                "[&_svg]:w-3 [&_svg]:h-3",
+                isActive
+                  ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+                  : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
               onClick={() =>
-                updateParams({ folder: activeFolder === folder ? null : folder })
+                updateParams({ folder: isActive ? null : folder })
               }
             >
               <Icon />
               {folder}
-              <span className="notes-folder-count">{folderCounts[folder]}</span>
+              <span className="text-[0.625rem] opacity-60">{folderCounts[folder]}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="notes-sidebar-divider" />
+      <div className="h-px mx-2.5 bg-border shrink-0" />
 
       {/* Note list */}
-      <div className="notes-list" onClick={contextMenu ? closeContextMenu : undefined}>
+      <div
+        className="flex-1 overflow-y-auto px-1.5 py-1 notes-scrollable"
+        onClick={contextMenu ? closeContextMenu : undefined}
+      >
         {filteredNotes.length === 0 ? (
-          <div className="notes-list-empty">
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground [&_svg]:w-8 [&_svg]:h-8 [&_svg]:opacity-30">
             <FileText />
-            <span>
+            <span className="text-xs">
               {searchQuery
                 ? "No notes match your search"
                 : activeFolder
@@ -236,50 +250,63 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
             </span>
           </div>
         ) : (
-          filteredNotes.map((note) => (
-            <button
-              key={note.id}
-              className="notes-list-item"
-              data-active={activeNoteId === note.id ? "true" : undefined}
-              onClick={() => navigateToNote(note.id)}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                setContextMenu({ x: e.clientX, y: e.clientY, noteId: note.id });
-              }}
-              style={{ width: "100%", textAlign: "left" }}
-            >
-              <span className="notes-list-item-title">{note.label}</span>
-              <span className="notes-list-item-meta">
-                <span>{note.folder_name}</span>
-                <span>&middot;</span>
-                <span>{formatTime(note.updated_at)}</span>
-              </span>
-              {note.tags.length > 0 && (
-                <div className="notes-list-item-tags">
-                  {note.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="notes-list-item-tag">
-                      {tag}
-                    </span>
-                  ))}
-                  {note.tags.length > 3 && (
-                    <span className="notes-list-item-tag">+{note.tags.length - 3}</span>
-                  )}
-                </div>
-              )}
-            </button>
-          ))
+          filteredNotes.map((note) => {
+            const isActive = activeNoteId === note.id;
+            return (
+              <button
+                key={note.id}
+                className={cn(
+                  "flex flex-col gap-0.5 w-full text-left px-2.5 py-2 mx-0.5 rounded-lg cursor-pointer transition-colors border border-transparent",
+                  isActive
+                    ? "bg-amber-500/10 border-amber-500/20 text-foreground"
+                    : "text-foreground hover:bg-accent",
+                )}
+                onClick={() => navigateToNote(note.id)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setContextMenu({ x: e.clientX, y: e.clientY, noteId: note.id });
+                }}
+              >
+                <span className="text-[0.8125rem] font-medium truncate leading-tight">
+                  {note.label}
+                </span>
+                <span className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
+                  <span>{note.folder_name}</span>
+                  <span>&middot;</span>
+                  <span>{formatTime(note.updated_at)}</span>
+                </span>
+                {note.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {note.tags.slice(0, 3).map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-1.5 py-px text-[0.625rem] rounded bg-muted text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {note.tags.length > 3 && (
+                      <span className="px-1.5 py-px text-[0.625rem] rounded bg-muted text-muted-foreground">
+                        +{note.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })
         )}
       </div>
 
       {/* Sidebar context menu for notes */}
       {contextMenu && (
         <div
-          className="notes-context-menu"
+          className="fixed z-[100] min-w-[180px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className="notes-context-item"
+            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
             onClick={() => {
               navigateToNote(contextMenu.noteId);
               setContextMenu(null);
@@ -288,13 +315,12 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
             <NotebookPen /> Open Note
           </button>
           <button
-            className="notes-context-item"
+            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
             onClick={async () => {
               const { data: userData } = await (await import("@/utils/supabase/client")).supabase.auth.getUser();
               if (!userData?.user?.id) return;
               const note = notes.find((n) => n.id === contextMenu.noteId);
               if (!note) return;
-              // Duplicate via workspace will handle this
               navigateToNote(contextMenu.noteId);
               setContextMenu(null);
             }}
@@ -302,26 +328,23 @@ export default function SidebarClient({ notes, folderCounts, allTags }: SidebarC
             <Copy /> Duplicate
           </button>
           <button
-            className="notes-context-item"
+            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
             onClick={() => {
-              // Export as markdown
               const note = notes.find((n) => n.id === contextMenu.noteId);
               if (!note) return;
-              // Note: sidebar only has metadata, full export is done from workspace
               navigateToNote(contextMenu.noteId);
               setContextMenu(null);
             }}
           >
             <Download /> Export
           </button>
-          <div className="notes-context-divider" />
+          <div className="h-px my-1 mx-1.5 bg-border" />
           <button
-            className="notes-context-item notes-context-item-danger"
+            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-destructive rounded-md cursor-pointer transition-colors hover:bg-destructive/10 [&_svg]:w-3.5 [&_svg]:h-3.5"
             onClick={async () => {
               const { supabase: sb } = await import("@/utils/supabase/client");
               await sb.from("notes").update({ is_deleted: true }).eq("id", contextMenu.noteId);
               setContextMenu(null);
-              // Note: sidebar data is stale until layout refreshes
               window.location.reload();
             }}
           >

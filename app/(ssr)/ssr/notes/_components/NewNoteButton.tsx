@@ -8,6 +8,7 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 
 export default function NewNoteButton() {
@@ -59,7 +60,12 @@ export default function NewNoteButton() {
 
   return (
     <button
-      className="notes-new-btn"
+      className={cn(
+        "flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0",
+        "hover:bg-accent hover:text-foreground",
+        "[&_svg]:w-3.5 [&_svg]:h-3.5",
+        creating && "opacity-50 pointer-events-none",
+      )}
       onClick={createNote}
       disabled={creating}
       title="New Note"
