@@ -25,29 +25,29 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
     <>
       <ThemeScript />
 
-      <div className="shell-root">
-        <input type="checkbox" id="shell-sidebar-toggle" aria-hidden="true" />
-        <input type="checkbox" id="shell-mobile-menu" aria-hidden="true" />
+      {/* Provider wraps entire shell so all client islands (Header, Sidebar, etc.) can access the store */}
+      <SSRShellProviders>
+        <div className="shell-root">
+          <input type="checkbox" id="shell-sidebar-toggle" aria-hidden="true" />
+          <input type="checkbox" id="shell-mobile-menu" aria-hidden="true" />
 
-        {/* Shell chrome paints immediately — no auth dependency */}
-        <Sidebar pathname={pathname} isAdmin={false} />
-        <Header />
+          <Sidebar pathname={pathname} isAdmin={false} />
+          <Header />
 
-        <main className="shell-main">
-          <SSRShellProviders>
+          <main className="shell-main">
             {/* Auth + RPC happens here, inside Suspense — never blocks paint */}
             <Suspense fallback={null}>
               <DeferredShellData />
             </Suspense>
             {children}
-          </SSRShellProviders>
-        </main>
+          </main>
 
-        <MobileDock />
-        <MobileSideSheet pathname={pathname} isAdmin={false} />
-      </div>
+          <MobileDock />
+          <MobileSideSheet pathname={pathname} isAdmin={false} />
+        </div>
 
-      <DevPerfOverlay />
+        <DevPerfOverlay />
+      </SSRShellProviders>
     </>
   );
 }

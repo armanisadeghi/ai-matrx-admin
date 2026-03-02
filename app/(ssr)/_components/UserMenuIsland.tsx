@@ -24,8 +24,10 @@ export interface UserMenuUser {
 }
 
 export default function UserMenuIsland() {
+  // Store is initialized empty — user data arrives once DeferredShellData resolves.
+  // Safely handle null/uninitialized state throughout.
   const reduxUser = useAppSelector(selectUser);
-  const isAdmin = useAppSelector(selectIsAdmin);
+  const isAdmin = useAppSelector(selectIsAdmin) ?? false;
 
   const user: UserMenuUser | null = reduxUser?.id ? {
     name: reduxUser.userMetadata?.name || reduxUser.email?.split('@')[0] || 'User',
