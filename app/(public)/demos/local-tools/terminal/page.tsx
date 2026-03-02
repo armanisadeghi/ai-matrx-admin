@@ -15,9 +15,18 @@ import {
     ChevronRight,
     ArrowLeft,
 } from 'lucide-react';
+import { supabase } from '@/utils/supabase/client';
 
 import type { ToolResult } from '../_lib/types';
 import { DEFAULT_LOCAL_URL } from '../_lib/constants';
+
+async function getWsUrl(httpUrl: string): Promise<string> {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    const wsBase = httpUrl.replace(/^http/, 'ws') + '/ws';
+    if (!token) return wsBase;
+    return `${wsBase}?token=${encodeURIComponent(token)}`;
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -166,11 +175,11 @@ export default function LocalToolsDemo() {
 
     // ── WebSocket ─────────────────────────────────────────────────────────
 
-    const connectWs = useCallback(() => {
+    const connectWs = useCallback(async () => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return;
         setConnecting(true);
 
-        const wsUrl = baseUrl.replace(/^http/, 'ws') + '/ws';
+        const wsUrl = await getWsUrl(baseUrl);
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {

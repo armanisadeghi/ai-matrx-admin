@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { supabase } from '@/utils/supabase/client';
 import {
     DEFAULT_LOCAL_URL,
     DISCOVERY_TIMEOUT,
@@ -24,15 +25,42 @@ import type {
 } from './types';
 
 // ---------------------------------------------------------------------------
+// Auth helpers
+// ---------------------------------------------------------------------------
+
+async function getAuthToken(): Promise<string | null> {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+}
+
+async function buildAuthHeaders(extra?: Record<string, string>): Promise<Record<string, string>> {
+    const token = await getAuthToken();
+    const headers: Record<string, string> = { ...extra };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
+// Browser WebSocket API does not support custom headers.
+// Pass the token as a query param — the engine middleware accepts both.
+async function buildWsUrl(httpUrl: string): Promise<string> {
+    const token = await getAuthToken();
+    const wsBase = httpUrl.replace(/^http/, 'ws') + '/ws';
+    if (!token) return wsBase;
+    return `${wsBase}?token=${encodeURIComponent(token)}`;
+}
+
+// ---------------------------------------------------------------------------
 // Port discovery
 // ---------------------------------------------------------------------------
 
 export async function discoverMatrxLocal(): Promise<ConnectionInfo | null> {
+    const headers = await buildAuthHeaders();
     for (let offset = 0; offset < MATRX_LOCAL_PORT_RANGE; offset++) {
         const port = MATRX_LOCAL_PORT_START + offset;
         const url = `http://127.0.0.1:${port}`;
         try {
             const res = await fetch(`${url}/tools/list`, {
+                headers,
                 signal: AbortSignal.timeout(DISCOVERY_TIMEOUT),
             });
             if (res.ok) {
@@ -57,7 +85,7 @@ export interface UseMatrxLocalReturn {
     loading: string | null;
     logs: LogEntry[];
     discover: () => Promise<void>;
-    connectWs: () => void;
+    connectWs: () => Promise<void>;
     disconnectWs: () => void;
     cancelAll: () => void;
     cancelRequest: (id: string) => void;
@@ -137,7 +165,9 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const checkRestStatus = useCallback(async () => {
         try {
+            const headers = await buildAuthHeaders();
             const res = await fetch(`${baseUrl}/tools/list`, {
+                headers,
                 signal: AbortSignal.timeout(2000),
             });
             if (res.ok && !wsConnected) {
@@ -162,10 +192,11 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const pollHealth = useCallback(async () => {
         try {
+            const headers = await buildAuthHeaders();
             const [healthRes, versionRes, portsRes] = await Promise.allSettled([
-                fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(3000) }),
-                fetch(`${baseUrl}/version`, { signal: AbortSignal.timeout(3000) }),
-                fetch(`${baseUrl}/ports`, { signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrl}/health`, { headers, signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrl}/version`, { headers, signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrl}/ports`, { headers, signal: AbortSignal.timeout(3000) }),
             ]);
             if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
                 setHealthInfo(await healthRes.value.json());
@@ -193,11 +224,11 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     // ── WebSocket connection ────────────────────────────────────────────────
 
-    const connectWs = useCallback(() => {
+    const connectWs = useCallback(async () => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return;
         setStatus('connecting');
 
-        const wsUrl = baseUrl.replace(/^http/, 'ws') + '/ws';
+        const wsUrl = await buildWsUrl(baseUrl);
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
@@ -320,9 +351,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             const timer = setTimeout(() => controller.abort(), timeoutMs);
 
             try {
+                const headers = await buildAuthHeaders({ 'Content-Type': 'application/json' });
                 const res = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(body),
                     signal: controller.signal,
                 });
@@ -362,9 +394,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const restGet = useCallback(
         async (path: string, headers?: Record<string, string>): Promise<unknown> => {
+            const authHeaders = await buildAuthHeaders(headers);
             const res = await fetch(`${baseUrl}${path}`, {
                 signal: AbortSignal.timeout(10_000),
-                headers,
+                headers: authHeaders,
             });
             if (!res.ok) {
                 const body = await res.text().catch(() => '');
@@ -377,9 +410,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const restPost = useCallback(
         async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
+            const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
             const res = await fetch(`${baseUrl}${path}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...headers },
+                headers: authHeaders,
                 body: body ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(30_000),
             });
@@ -394,9 +428,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const restPut = useCallback(
         async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
+            const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
             const res = await fetch(`${baseUrl}${path}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...headers },
+                headers: authHeaders,
                 body: body ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(10_000),
             });
@@ -411,9 +446,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const restDelete = useCallback(
         async (path: string, headers?: Record<string, string>): Promise<unknown> => {
+            const authHeaders = await buildAuthHeaders(headers);
             const res = await fetch(`${baseUrl}${path}`, {
                 method: 'DELETE',
-                headers,
+                headers: authHeaders,
                 signal: AbortSignal.timeout(10_000),
             });
             if (res.status === 204) return { ok: true };
