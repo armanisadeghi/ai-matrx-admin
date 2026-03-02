@@ -18,6 +18,8 @@
 
 .notes-sidebar {
   grid-area: sidebar;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .notes-content {
@@ -150,6 +152,39 @@
 .group:hover .notes-tab-close-btn,
 .group[data-active="true"] .notes-tab-close-btn {
   opacity: 1;
+}
+
+/* Desktop — compact VSCode-style toolbar (≥1024px) */
+@media (min-width: 1024px) {
+  .notes-search-bar {
+    height: 1.875rem;
+    gap: 0.125rem;
+    padding: 0 0.5rem;
+  }
+
+  /* Collapse tap wrappers — no oversized touch targets needed on desktop */
+  .notes-search-tap {
+    width: auto;
+    height: auto;
+  }
+
+  /* Shrink glass pill buttons to compact icon size */
+  .notes-search-tap button,
+  .notes-search-tap > button {
+    width: 1.375rem !important;
+    height: 1.375rem !important;
+    border-radius: 0.25rem !important;
+  }
+
+  /* Search input row + pill height to match the bar */
+  .notes-search-input-wrap {
+    height: 1.875rem;
+  }
+
+  .notes-search-input-wrap input {
+    height: 1.375rem !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 /* Responsive — mobile overrides using :has() */
