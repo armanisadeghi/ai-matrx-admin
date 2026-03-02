@@ -1,13 +1,8 @@
-// app/(ssr)/ssr/notes/layout.tsx — Server-Rendered Notes Layout
-// Fetches the user's note list server-side (lightweight: no content field).
-// Renders a two-panel layout: sidebar + NotesWorkspace (persistent client component).
-// The workspace lives HERE in the layout so it NEVER unmounts when switching notes.
-// Pages return null — the workspace manages all content via URL + client cache.
+// app/(ssr)/ssr/notes/layout.tsx
+// Synchronous layout — no auth, no DB, no async work.
+// SidebarClient and NotesWorkspace fetch their own data after mount via Supabase client.
 
 import "./notes.css";
-import { Suspense } from "react";
-import { createClient, getUser } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import SidebarClient from "./_components/SidebarClient";
 import NotesWorkspace from "./_components/NotesWorkspace";
 
@@ -26,59 +21,15 @@ export interface NoteSummary {
   position: number;
 }
 
-export default async function NotesLayout({ children }: { children: React.ReactNode }) {
-  // getUser() and createClient() are request-cached — no extra auth calls
-  const [user, supabase] = await Promise.all([getUser(), createClient()]);
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Fetch all notes for this user — lightweight query, no content column
-  const { data: notes } = await supabase
-    .from("notes")
-    .select("id, label, folder_name, tags, updated_at, position")
-    .eq("user_id", user.id)
-    .eq("is_deleted", false)
-    .order("updated_at", { ascending: false });
-
-  const notesList: NoteSummary[] = (notes ?? []).map((n) => ({
-    id: n.id,
-    label: n.label ?? "Untitled",
-    folder_name: n.folder_name ?? "Draft",
-    tags: n.tags ?? [],
-    updated_at: n.updated_at ?? "",
-    position: n.position ?? 0,
-  }));
-
-  // Extract unique folders with counts
-  const folderCounts: Record<string, number> = {};
-  for (const note of notesList) {
-    folderCounts[note.folder_name] = (folderCounts[note.folder_name] ?? 0) + 1;
-  }
-
-  // Extract unique tags
-  const allTags = Array.from(new Set(notesList.flatMap((n) => n.tags))).sort();
-
+export default function NotesLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="notes-root">
-      {/* Sidebar — client component for filtering/search, receives server data */}
-      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30">  {/* border-r border-border/50 */}
-        <Suspense>
-          <SidebarClient
-            notes={notesList}
-            folderCounts={folderCounts}
-            allTags={allTags}
-          />
-        </Suspense>
+      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30">
+        <SidebarClient />
       </aside>
 
-      {/* Main content — persistent workspace (never unmounts between notes) */}
       <div className="notes-content flex flex-col overflow-hidden">
-        <Suspense>
-          <NotesWorkspace notes={notesList} />
-        </Suspense>
-        {/* children exists for route matching but renders null */}
+        <NotesWorkspace />
         <div style={{ display: "none" }}>{children}</div>
       </div>
     </div>

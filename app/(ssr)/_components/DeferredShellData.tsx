@@ -1,50 +1,71 @@
-// DeferredShellData — Async server component, always inside <Suspense>.
-// Does its own auth via cached getUser() — does NOT block the layout render.
-// The shell chrome paints immediately; this streams in once the RPC resolves.
+'use client';
 
-import { createClient, getUser } from "@/utils/supabase/server";
-import { getSSRShellData } from "@/utils/supabase/ssrShellData";
-import { mapUserData } from "@/utils/userDataMapper";
-import { createServerTimer } from "@/utils/performance/serverTiming";
-import type { LiteInitialReduxState } from "@/types/reduxTypes";
-import ShellDataHydrator from "./ShellDataHydrator";
+// DeferredShellData — fires after first paint, never blocks rendering.
+// Calls Supabase directly from the browser — no API route middleman.
 
-export default async function DeferredShellData() {
-    const timer = createServerTimer();
+import { useEffect, useRef } from 'react';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { setUser } from '@/lib/redux/slices/userSlice';
+import { setModulePreferences, type UserPreferences } from '@/lib/redux/slices/userPreferencesSlice';
+import { setContextMenuRows } from '@/lib/redux/slices/contextMenuCacheSlice';
+import { hydrateModels, type AIModel } from '@/lib/redux/slices/modelRegistrySlice';
+import { setUnreadTotal } from '@/features/sms/redux/smsSlice';
+import { supabase } from '@/utils/supabase/client';
+import { getSSRShellData } from '@/utils/supabase/ssrShellData';
+import { mapUserData } from '@/utils/userDataMapper';
+import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
 
-    let initialState: LiteInitialReduxState | undefined;
-    let isAdmin = false;
+export default function DeferredShellData() {
+    const dispatch = useAppDispatch();
+    const fetched = useRef(false);
 
-    try {
-        // Both are request-cached — no extra network calls
-        const [user, supabase] = await Promise.all([getUser(), createClient()]);
+    useEffect(() => {
+        if (fetched.current) return;
+        fetched.current = true;
 
-        if (user) {
-            const shellData = await timer.measure('rpc:shell_data', () => getSSRShellData(supabase, user.id), 'get_ssr_shell_data RPC');
-            isAdmin = shellData.is_admin;
+        async function load() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
 
-            const userData = mapUserData(user, undefined, isAdmin);
-            initialState = {
-                user: userData,
-                userPreferences: shellData.preferences_exists && shellData.preferences
-                    ? shellData.preferences as Record<string, unknown>
-                    : undefined,
-                modelRegistry: shellData.ai_models.length > 0
-                    ? { availableModels: shellData.ai_models, lastFetched: Date.now() }
-                    : undefined,
-                contextMenuCache: shellData.context_menu.length > 0
-                    ? { rows: shellData.context_menu, hydrated: true }
-                    : undefined,
-                sms: shellData.sms_unread_total > 0
-                    ? { unreadTotal: shellData.sms_unread_total }
-                    : undefined,
-            };
+                const shellData = await getSSRShellData(supabase, user.id);
+                const userData = mapUserData(user, undefined, shellData.is_admin);
+
+                dispatch(setUser(userData));
+
+                if (shellData.preferences_exists && shellData.preferences) {
+                    for (const [key, value] of Object.entries(shellData.preferences)) {
+                        if (key !== '_meta' && value != null) {
+                            dispatch(setModulePreferences({
+                                module: key as keyof UserPreferences,
+                                preferences: value as Partial<UserPreferences[keyof UserPreferences]>,
+                            }));
+                        }
+                    }
+                }
+
+                if (shellData.context_menu.length > 0) {
+                    dispatch(setContextMenuRows(shellData.context_menu as ContextMenuRow[]));
+                }
+
+                if (shellData.ai_models.length > 0) {
+                    dispatch(hydrateModels({
+                        availableModels: shellData.ai_models as AIModel[],
+                        lastFetched: Date.now(),
+                    }));
+                }
+
+                if (shellData.sms_unread_total > 0) {
+                    dispatch(setUnreadTotal(shellData.sms_unread_total));
+                }
+            } catch (err) {
+                console.error('[DeferredShellData]', err);
+                // Non-critical — store stays empty, page still works
+            }
         }
-    } catch {
-        // Non-critical — store starts empty, page still works
-    }
 
-    timer.done('Deferred Shell Data');
+        load();
+    }, [dispatch]);
 
-    return <ShellDataHydrator initialState={initialState} isAdmin={isAdmin} />;
+    return null;
 }

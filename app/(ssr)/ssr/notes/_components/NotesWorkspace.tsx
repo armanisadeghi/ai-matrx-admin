@@ -99,10 +99,35 @@ function buildNotesUrl(
 // ─── Component ──────────────────────────────────────────────────────────────
 
 interface NotesWorkspaceProps {
-  notes: NoteSummary[];
+  notes?: NoteSummary[];
 }
 
-export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
+export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorkspaceProps) {
+  const [notes, setNotes] = useState<NoteSummary[]>(initialNotes);
+
+  // Fetch notes after mount — directly from Supabase, no server roundtrip
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from('notes')
+        .select('id, label, folder_name, tags, updated_at, position')
+        .eq('user_id', user.id)
+        .eq('is_deleted', false)
+        .order('updated_at', { ascending: false })
+        .then(({ data }) => {
+          if (!data) return;
+          setNotes(data.map(n => ({
+            id: n.id,
+            label: n.label ?? 'Untitled',
+            folder_name: n.folder_name ?? 'Draft',
+            tags: n.tags ?? [],
+            updated_at: n.updated_at ?? '',
+            position: n.position ?? 0,
+          })));
+        });
+    });
+  }, []);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 

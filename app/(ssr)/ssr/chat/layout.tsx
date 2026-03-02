@@ -1,25 +1,10 @@
 // app/(ssr)/ssr/chat/layout.tsx
-// Server-rendered layout for the SSR chat route.
-//
-// Data flow:
-//   1. getUser() — cached per-request, zero extra cost (parent layout already called it)
-//   2. Fetch lightweight conversation summaries in parallel with the shell RPC
-//   3. Pass conversation list to ChatSidebarClient (server → client prop)
-//   4. ChatWorkspace manages all chat state as a client island
-//
-// User prompts / agents / models are available via the lite Redux store
-// (pre-hydrated by SSRShellProviders in the parent layout).
+// Synchronous layout — no auth, no DB, no async work.
+// ChatSidebarClient fetches conversations after mount via /api/cx-chat/history.
 
 import './chat.css';
-import { Suspense } from 'react';
-import { createClient, getUser } from '@/utils/supabase/server';
-import type { CxConversationSummary } from '@/features/public-chat/types/cx-tables';
 import ChatSidebarClient from './_components/ChatSidebarClient';
 import ChatWorkspace from './_components/ChatWorkspace';
-
-// ============================================================================
-// SKELETON FALLBACKS
-// ============================================================================
 
 function SidebarSkeleton() {
     return (
@@ -39,61 +24,16 @@ function SidebarSkeleton() {
     );
 }
 
-function WorkspaceSkeleton() {
-    return (
-        <div className="h-full flex flex-col items-center justify-center">
-            <div className="chat-skeleton-icon" style={{ width: '2rem', height: '2rem', borderRadius: '50%' }} />
-            <div className="chat-skeleton-text" style={{ width: '12rem', height: '1rem', marginTop: '0.75rem' }} />
-        </div>
-    );
-}
-
-// ============================================================================
-// SERVER LAYOUT
-// ============================================================================
-
-export default async function ChatLayout({ children }: { children: React.ReactNode }) {
-    // getUser() is request-cached — no extra auth call, parent layout already paid for it
-    const [user, supabase] = await Promise.all([getUser(), createClient()]);
-
-    // Fetch lightweight conversation list for sidebar
-    // Only id, title, status, message_count, updated_at — no messages
-    let conversations: CxConversationSummary[] = [];
-
-    if (user) {
-        try {
-            const { data, error } = await supabase
-                .from('cx_conversation')
-                .select('id, title, status, message_count, created_at, updated_at')
-                .eq('user_id', user.id)
-                .is('deleted_at', null)
-                .in('status', ['active', 'completed'])
-                .order('updated_at', { ascending: false })
-                .limit(50);
-
-            if (!error && data) {
-                conversations = data as CxConversationSummary[];
-            }
-        } catch {
-            // Non-critical — sidebar will show empty state
-        }
-    }
-
+export default function ChatLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="chat-root">
-            {/* Sidebar — server data passed as props */}
             <aside className="chat-sidebar">
-                <Suspense fallback={<SidebarSkeleton />}>
-                    <ChatSidebarClient conversations={conversations} />
-                </Suspense>
+                {/* Renders skeleton instantly, fetches conversations after mount */}
+                <ChatSidebarClient />
             </aside>
 
-            {/* Main content — client island */}
             <div className="chat-content">
-                <Suspense fallback={<WorkspaceSkeleton />}>
-                    <ChatWorkspace />
-                </Suspense>
-                {/* Page stubs (null) — only for routing */}
+                <ChatWorkspace />
                 <div style={{ display: 'none' }}>{children}</div>
             </div>
         </div>

@@ -28,6 +28,7 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
 import NewNoteButton from "./NewNoteButton";
 
@@ -44,12 +45,46 @@ const DEFAULT_FOLDER_ORDER = ["Draft", "Personal", "Business", "Prompts", "Scrat
 const ALL_FOLDERS = [...DEFAULT_FOLDER_ORDER];
 
 interface SidebarClientProps {
-  notes: NoteSummary[];
-  folderCounts: Record<string, number>;
-  allTags: string[];
+  notes?: NoteSummary[];
+  folderCounts?: Record<string, number>;
+  allTags?: string[];
 }
 
-export default function SidebarClient({ notes: serverNotes, folderCounts, allTags }: SidebarClientProps) {
+export default function SidebarClient({ notes: initialNotes = [], folderCounts: initialFolderCounts = {}, allTags: initialAllTags = [] }: SidebarClientProps) {
+  const [serverNotes, setServerNotes] = useState<NoteSummary[]>(initialNotes);
+  const [folderCounts, setFolderCounts] = useState<Record<string, number>>(initialFolderCounts);
+  const [allTags, setAllTags] = useState<string[]>(initialAllTags);
+
+  // Fetch notes after mount — directly from Supabase, no server roundtrip
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from('notes')
+        .select('id, label, folder_name, tags, updated_at, position')
+        .eq('user_id', user.id)
+        .eq('is_deleted', false)
+        .order('updated_at', { ascending: false })
+        .then(({ data }) => {
+          if (!data) return;
+          const fetched: NoteSummary[] = data.map(n => ({
+            id: n.id,
+            label: n.label ?? 'Untitled',
+            folder_name: n.folder_name ?? 'Draft',
+            tags: n.tags ?? [],
+            updated_at: n.updated_at ?? '',
+            position: n.position ?? 0,
+          }));
+          setServerNotes(fetched);
+          const counts: Record<string, number> = {};
+          for (const note of fetched) {
+            counts[note.folder_name] = (counts[note.folder_name] ?? 0) + 1;
+          }
+          setFolderCounts(counts);
+          setAllTags(Array.from(new Set(fetched.flatMap(n => n.tags))).sort());
+        });
+    });
+  }, []);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
