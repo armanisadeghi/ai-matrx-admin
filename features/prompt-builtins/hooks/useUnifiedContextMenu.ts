@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { buildCategoryHierarchy } from '@/features/prompt-builtins/utils/menuHierarchy';
 import type { CategoryGroup } from '@/features/prompt-builtins/types/menu';
@@ -50,6 +50,13 @@ export function useUnifiedContextMenu(
     (state) => (state as unknown as { contextMenuCache: ContextMenuCacheState }).contextMenuCache?.hydrated ?? false
   );
 
+  // Stabilize the array reference so callers can pass inline literals without
+  // triggering an infinite effect loop. We compare by sorted join, same pattern
+  // used in useContextMenuShortcuts.
+  const placementTypesKey = [...placementTypes].sort().join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stablePlacementTypes = useMemo(() => placementTypes, [placementTypesKey]);
+
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -90,17 +97,17 @@ export function useUnifiedContextMenu(
   }, [dispatch]);
 
   const buildFromRows = useCallback((rows: ViewResponse[]) => {
-    const filtered = rows.filter(r => placementTypes.includes(r.placement_type));
+    const filtered = rows.filter(r => stablePlacementTypes.includes(r.placement_type));
     const allGroups = filtered.flatMap(row =>
       // categories_flat is jsonb from DB — shape matches FlatCategory[] at runtime
       buildCategoryHierarchy(row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0], contextFilter)
     );
     cacheBuiltinsFromGroups(allGroups);
     return allGroups;
-  }, [placementTypes, contextFilter, cacheBuiltinsFromGroups]);
+  }, [stablePlacementTypes, contextFilter, cacheBuiltinsFromGroups]);
 
   const loadMenuItems = useCallback(async () => {
-    if (!enabled || placementTypes.length === 0) {
+    if (!enabled || stablePlacementTypes.length === 0) {
       setCategoryGroups([]);
       setLoading(false);
       return;
@@ -130,7 +137,7 @@ export function useUnifiedContextMenu(
       const { data, error: queryError } = await supabase
         .from('context_menu_unified_view')
         .select('placement_type, categories_flat')
-        .in('placement_type', placementTypes);
+        .in('placement_type', stablePlacementTypes);
 
       if (queryError) {
         throw new Error(`Failed to load menu: ${queryError.message}`);
@@ -145,7 +152,7 @@ export function useUnifiedContextMenu(
     } finally {
       setLoading(false);
     }
-  }, [enabled, placementTypes, contextFilter, isHydrated, cachedRows, buildFromRows]);
+  }, [enabled, stablePlacementTypes, contextFilter, isHydrated, cachedRows, buildFromRows]);
 
   useEffect(() => {
     loadMenuItems();
