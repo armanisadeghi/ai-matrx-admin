@@ -1,19 +1,23 @@
-import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { createClient } from '@/utils/supabase/client';
-import { useModelControls } from '@/features/prompts/hooks/useModelControls';
 
-// Define AIModel interface based on common usage
+// AIModel — matches the ai_model table schema exactly (from matrixDb.types.ts)
 export interface AIModel {
     id: string;
     name: string;
-    description?: string;
-    provider: string;
-    family?: string;
-    context_window?: number;
-    max_tokens?: number;
-    controls?: Record<string, any>;
-    is_deprecated?: boolean;
-    [key: string]: any;
+    common_name: string | null;
+    api_class: string | null;
+    capabilities: Record<string, unknown> | null;
+    context_window: number | null;
+    controls: Record<string, unknown> | null;
+    endpoints: Record<string, unknown> | null;
+    is_deprecated: boolean | null;
+    is_premium: boolean | null;
+    is_primary: boolean | null;
+    max_tokens: number | null;
+    model_class: string;
+    model_provider: string | null;
+    provider: string | null;
 }
 
 interface ModelRegistryState {
@@ -30,10 +34,16 @@ const initialState: ModelRegistryState = {
     lastFetched: null,
 };
 
-// Thunk to fetch models
+// Thunk to fetch models — skips fetch if already hydrated from SSR shell data RPC
 export const fetchAvailableModels = createAsyncThunk(
     'modelRegistry/fetchAvailableModels',
-    async (_, { rejectWithValue }) => {
+    async (_, { getState, rejectWithValue }) => {
+        // If models were pre-populated server-side, skip the fetch entirely
+        const state = getState() as { modelRegistry: ModelRegistryState };
+        if (state.modelRegistry.lastFetched !== null && state.modelRegistry.availableModels.length > 0) {
+            return state.modelRegistry.availableModels;
+        }
+
         try {
             const supabase = createClient();
             const { data, error } = await supabase
@@ -44,8 +54,8 @@ export const fetchAvailableModels = createAsyncThunk(
 
             if (error) throw error;
             return data as AIModel[];
-        } catch (error: any) {
-            return rejectWithValue(error.message);
+        } catch (error: unknown) {
+            return rejectWithValue(error instanceof Error ? error.message : 'Unknown error');
         }
     }
 );
@@ -83,20 +93,14 @@ export const selectModelOptions = createSelector(
     [(state: { modelRegistry: ModelRegistryState }) => state.modelRegistry.availableModels],
     (availableModels) => availableModels.map(model => ({
         value: model.id,
-        label: model.name || model.id, // Fallback to ID if name is missing
+        label: model.common_name || model.name || model.id,
         provider: model.provider
     }))
 );
 
 export const selectModelControls = (state: { modelRegistry: ModelRegistryState }, modelId: string) => {
     const model = state.modelRegistry.availableModels.find(m => m.id === modelId);
-    if (!model) return null;
-    // We can reuse the logic from useModelControls here if needed, 
-    // or just return the raw controls for the component to process.
-    // The hook useModelControls is designed for components, but we can extract the logic.
-    // For now, let's return the raw model and let the component/hook handle normalization
-    // to avoid duplicating logic or refactoring the hook right now.
-    return model.controls;
+    return model?.controls ?? null;
 };
 
 export const selectModelById = (state: { modelRegistry: ModelRegistryState }, modelId: string) =>

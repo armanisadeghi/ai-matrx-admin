@@ -1,12 +1,14 @@
 // app/(ssr)/layout.tsx — Static-First SSR Shell Layout
-// Server-rendered structural core. Auth + preferences resolved server-side.
+// Server-rendered structural core. Auth resolved server-side via JWT (0ms).
+// One DB round-trip (get_ssr_shell_data RPC) fetches everything in parallel:
+//   user session, admin status, preferences, AI models, context menu, SMS badge.
 // Shell chrome (Header, Sidebar, Dock) = server components, receive data as props.
-// Page content wrapped in LiteStoreProvider for client islands to read user/prefs/etc.
+// Page content wrapped in LiteStoreProvider — store pre-hydrated before first paint.
 
 import "./shell.css";
 import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import { getUserSessionData } from "@/utils/supabase/userSessionData";
+import { getSSRShellData } from "@/utils/supabase/ssrShellData";
 import { mapUserData } from "@/utils/userDataMapper";
 import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
@@ -40,23 +42,34 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
     authUser = { name, email: user.email, avatarUrl };
   }
 
-  // Fetch admin status + preferences in a single RPC call
+  // Single RPC — fetches everything in parallel inside Postgres:
+  // admin status, preferences, AI models, context menu rows, SMS unread count
   let isAdmin = false;
   let initialState: LiteInitialReduxState | undefined;
 
   if (user) {
     try {
-      const sessionData = await getUserSessionData(supabase, user.id);
-      isAdmin = sessionData.isAdmin;
+      const shellData = await getSSRShellData(supabase, user.id);
+      isAdmin = shellData.is_admin;
 
-      // Build lite store initial state — pre-populated at hydration time
       const userData = mapUserData(user, undefined, isAdmin);
       initialState = {
         user: userData,
-        userPreferences: sessionData.preferencesExist ? sessionData.preferences : undefined,
+        userPreferences: shellData.preferences_exists && shellData.preferences
+          ? shellData.preferences as Record<string, unknown>
+          : undefined,
+        modelRegistry: shellData.ai_models.length > 0
+          ? { availableModels: shellData.ai_models, lastFetched: Date.now() }
+          : undefined,
+        contextMenuCache: shellData.context_menu.length > 0
+          ? { rows: shellData.context_menu, hydrated: true }
+          : undefined,
+        sms: shellData.sms_unread_total > 0
+          ? { unreadTotal: shellData.sms_unread_total }
+          : undefined,
       };
     } catch {
-      // Fallback: admin=false, no preferences. Store starts empty.
+      // Fallback: admin=false, store starts empty. Non-critical — page still renders.
     }
   }
 

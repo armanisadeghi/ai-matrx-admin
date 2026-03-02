@@ -30,6 +30,9 @@ import modelRegistryReducer from "./slices/modelRegistrySlice";
 // SMS
 import smsReducer from "../../features/sms/redux/smsSlice";
 
+// Context menu cache (populated server-side via get_ssr_shell_data RPC)
+import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
+
 // ============================================================================
 // LITE ROOT REDUCER — SSR Shell + Public Routes
 // ============================================================================
@@ -42,8 +45,9 @@ import smsReducer from "../../features/sms/redux/smsSlice";
 // - adminPreferences, adminDebug: Admin tools (lazy, only active for admins)
 // - canvas: Canvas panel state
 // - promptCache, promptRunner, promptExecution, actionCache: Prompt system
-// - modelRegistry: AI model list (fetched via thunk when needed)
-// - sms: SMS conversations (fetched on demand)
+// - modelRegistry: AI model list (pre-populated from SSR RPC; thunk skipped if hydrated)
+// - sms: SMS conversations (unreadTotal pre-populated; full list fetched on demand)
+// - contextMenuCache: Raw context_menu_unified_view rows (pre-populated from SSR RPC)
 //
 // EXCLUDED (require entities, sagas, or socket.io):
 // - entities, globalCache, entityFields: Entity system (~134 slices + 108K schema)
@@ -86,6 +90,9 @@ export const createLiteRootReducer = () => {
 
         // SMS
         sms: smsReducer,
+
+        // Context menu cache (SSR pre-populated, no client fetch)
+        contextMenuCache: contextMenuCacheReducer,
     });
 };
 

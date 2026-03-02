@@ -1,17 +1,19 @@
 "use client";
 
 // NoteAiMenu — Lazy-loaded AI actions submenu for notes.
-// Fetches real AI actions from context_menu_unified_view (Supabase).
+// Fast path: reads pre-hydrated rows from Redux contextMenuCache (populated by SSR RPC).
+// Fallback: fetches from context_menu_unified_view directly if Redux cache is empty.
 // Executes prompts via /api/prompts/test (streaming, no Redux needed).
 // Maps note content + selection to prompt variables via scope_mappings.
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import { buildCategoryHierarchy } from "@/features/prompt-builtins/utils/menuHierarchy";
 import { getIconComponent } from "@/components/official/IconResolver";
 import type { CategoryGroup, ShortcutItem } from "@/features/prompt-builtins/types/menu";
+import { useAppSelector } from "@/lib/redux/hooks";
+import type { ContextMenuCacheState } from "@/lib/redux/slices/contextMenuCacheSlice";
 
 interface NoteAiMenuProps {
   noteId: string;
@@ -24,9 +26,6 @@ interface NoteAiMenuProps {
   onClose: () => void;
 }
 
-// Module-level cache — shared across remounts, cleared on page unload
-let cachedGroups: CategoryGroup[] | null = null;
-
 export default function NoteAiMenu({
   noteId,
   noteContent,
@@ -34,16 +33,38 @@ export default function NoteAiMenu({
   onResult,
   onClose,
 }: NoteAiMenuProps) {
-  const [groups, setGroups] = useState<CategoryGroup[]>(cachedGroups ?? []);
-  const [loading, setLoading] = useState(!cachedGroups);
+  // Read from Redux contextMenuCache — pre-populated by get_ssr_shell_data() RPC
+  // Cast through unknown: contextMenuCache is lite-store-only, not in full RootState type
+  const cachedRows = useAppSelector(
+    (state) => (state as unknown as { contextMenuCache: ContextMenuCacheState }).contextMenuCache?.rows ?? []
+  );
+  const isReduxHydrated = useAppSelector(
+    (state) => (state as unknown as { contextMenuCache: ContextMenuCacheState }).contextMenuCache?.hydrated ?? false
+  );
+
+  const [groups, setGroups] = useState<CategoryGroup[]>([]);
+  const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
   const [streamResult, setStreamResult] = useState<string>("");
   const abortRef = useRef<AbortController | null>(null);
 
-  // ── Fetch AI actions from database (one query, cached in module) ─────
+  // ── Build hierarchy from Redux cache or fetch from Supabase ──────────
   useEffect(() => {
-    if (cachedGroups) return;
+    // Fast path: rows already hydrated from SSR RPC — build hierarchy immediately
+    if (isReduxHydrated && cachedRows.length > 0) {
+      const aiRows = cachedRows.filter((r) => r.placement_type === "ai-action");
+      const built = aiRows.flatMap((row) =>
+        buildCategoryHierarchy(
+          row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
+          "note-editor"
+        )
+      );
+      setGroups(built);
+      setLoading(false);
+      return;
+    }
 
+    // Fallback: fetch from Supabase (public routes or cache miss)
     (async () => {
       try {
         const { data, error } = await supabase
@@ -57,20 +78,24 @@ export default function NoteAiMenu({
           return;
         }
 
-        const allGroups = (data as { placement_type: string; categories_flat: any[] }[])
-          ?.flatMap((row) =>
-            buildCategoryHierarchy(row.categories_flat || [], "note-editor"),
-          ) ?? [];
+        const built = (data as { placement_type: string; categories_flat: unknown[] }[])
+          .flatMap((row) =>
+            buildCategoryHierarchy(
+              row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
+              "note-editor"
+            )
+          );
 
-        cachedGroups = allGroups;
-        setGroups(allGroups);
+        setGroups(built);
       } catch (err) {
         console.error("Failed to load AI actions:", err);
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  // Re-run if Redux hydration completes after initial render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReduxHydrated]);
 
   // ── Execute an AI action via /api/prompts/test ─────────────────────
   const executeAction = useCallback(

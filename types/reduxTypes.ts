@@ -3,6 +3,8 @@ import { Database } from '@/types/matrixDb.types';
 import {TestDirectory} from "@/utils/directoryStructure";
 import {UserData} from "@/utils/userDataMapper";
 import {GlobalCacheState} from "@/lib/redux/schema/globalCacheSlice";
+import type { AIModel } from '@/lib/redux/slices/modelRegistrySlice';
+import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
 
 export interface InitialReduxState {
     user: UserData;
@@ -15,10 +17,19 @@ export interface InitialReduxState {
  * Lightweight initial state for lite Redux store.
  * Does NOT require globalCache/schema - all fields are optional.
  * Use this for public routes or lite authenticated routes.
+ *
+ * Extended fields (ai models, context menu, sms) are fetched server-side
+ * via get_ssr_shell_data() RPC and passed here to pre-populate the store
+ * at hydration time — zero client fetches needed for these on page load.
  */
 export interface LiteInitialReduxState {
     user?: Partial<UserData>;
-    userPreferences?: Record<string, any>;
+    userPreferences?: Record<string, unknown>;
+    // Pre-populated from SSR shell data RPC — no client fetch needed
+    modelRegistry?: { availableModels: AIModel[]; lastFetched: number };
+    contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
+    // sms.unreadTotal seeded via PostPaintHydrator dispatch — not preloadedState
+    sms?: { unreadTotal: number };
 }
 
 

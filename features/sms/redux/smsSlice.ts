@@ -96,6 +96,12 @@ const smsSlice = createSlice({
       state.phoneNumbers = action.payload;
     },
 
+    // ---- Unread badge seed ----
+    // Used to pre-populate unreadTotal from SSR shell data before conversations load
+    setUnreadTotal(state, action: PayloadAction<number>) {
+      state.unreadTotal = action.payload;
+    },
+
     // ---- Reset ----
     resetSms() {
       return initialState;
@@ -116,6 +122,7 @@ export const {
   updateMessageStatus,
   setPreferences,
   setPhoneNumbers,
+  setUnreadTotal,
   resetSms,
 } = smsSlice.actions;
 

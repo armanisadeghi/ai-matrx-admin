@@ -1,7 +1,13 @@
 // app/(ssr)/_components/SSRShellProviders.tsx
-// Thin client boundary wrapping LiteStoreProvider for the SSR shell.
-// Store is pre-populated with server-resolved user + preferences at hydration time.
-// All other slices start empty and hydrate post-render via thunks or RPC.
+// Client boundary wrapping LiteStoreProvider for the SSR shell.
+//
+// Hydration strategy — all via preloadedState, zero client fetches:
+//   • user, userPreferences → user session from RPC
+//   • modelRegistry         → 65 AI models from RPC
+//   • contextMenuCache      → all placement types from RPC
+//   • sms.unreadTotal       → badge count from RPC
+//
+// Nothing here blocks rendering. Store is created with data already present.
 
 'use client';
 
