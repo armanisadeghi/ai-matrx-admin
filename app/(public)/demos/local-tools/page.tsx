@@ -138,7 +138,8 @@ export default function LocalToolsDemo() {
         }
     };
 
-    const isDisabled = !!loading || (local.useWebSocket && !local.wsConnected);
+    // Only block while a tool call is in-flight — WS not connected just means REST fallback is used
+    const isDisabled = !!loading;
 
     // A tool is "available" if we haven't fetched the server list yet (show all),
     // or if it's confirmed in the server's list.

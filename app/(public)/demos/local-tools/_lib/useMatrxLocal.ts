@@ -251,6 +251,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         };
     }, [checkRestStatus]);
 
+
     // ── Health / Ports polling ────────────────────────────────────────────
     // Fix #2: /health and /ports are public — no auth headers needed
     // Fix #7: /version no longer polled — fetched once at discovery
@@ -362,6 +363,14 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         if (wsRetryTimerRef.current) clearTimeout(wsRetryTimerRef.current);
         disconnectWs();
     }, [disconnectWs]);
+
+    // Auto-connect WS on mount — no manual "Connect" button needed
+    useEffect(() => {
+        const t = setTimeout(() => connectWsWithReconnect(), 800);
+        return () => clearTimeout(t);
+    // connectWsWithReconnect is stable — intentionally run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // ── Cancel ──────────────────────────────────────────────────────────────
 

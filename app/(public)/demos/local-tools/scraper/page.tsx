@@ -34,15 +34,15 @@ function statusColor(status: string) {
 // ---------------------------------------------------------------------------
 
 function ScrapePanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
-    const { invokeTool, loading, wsConnected, useWebSocket } = local;
-    const [urls, setUrls] = useState('https://httpbin.org/html\nhttps://example.com');
+    const { invokeTool, loading } = local;
+    const [urls, setUrls] = useState('https://titaniumsuccess.com/');
     const [useCache, setUseCache] = useState(true);
     const [getLinks, setGetLinks] = useState(false);
     const [getOverview, setGetOverview] = useState(false);
     const [outputMode, setOutputMode] = useState<'rich' | 'research'>('rich');
     const [results, setResults] = useState<{ output: string; meta: BatchScrapeMetadata | ScrapeResultMeta | null } | null>(null);
     const [expandedContent, setExpandedContent] = useState(false);
-    const isDisabled = !!loading || (useWebSocket && !wsConnected);
+    const isDisabled = !!loading;
 
     const runScrape = async () => {
         const urlList = urls.split('\n').map(u => u.trim()).filter(Boolean).map(u =>
@@ -199,7 +199,7 @@ function ScrapePanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
 // ---------------------------------------------------------------------------
 
 function SearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
-    const { invokeTool, loading, wsConnected, useWebSocket } = local;
+    const { invokeTool, loading } = local;
     const [keywords, setKeywords] = useState('latest AI frameworks 2026');
     const [country, setCountry] = useState('us');
     const [count, setCount] = useState(10);
@@ -207,7 +207,7 @@ function SearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [meta, setMeta] = useState<SearchMetadata | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const isDisabled = !!loading || (useWebSocket && !wsConnected);
+    const isDisabled = !!loading;
 
     const runSearch = async () => {
         setResults([]);
@@ -337,13 +337,13 @@ function SearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
 // ---------------------------------------------------------------------------
 
 function ResearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
-    const { invokeTool, loading, wsConnected, useWebSocket, cancelAll } = local;
+    const { invokeTool, loading, wsConnected, cancelAll } = local;
     const [query, setQuery] = useState('');
     const [effort, setEffort] = useState<'low' | 'medium' | 'high' | 'extreme'>('low');
     const [country, setCountry] = useState('us');
     const [freshness, setFreshness] = useState('');
     const [result, setResult] = useState<{ output: string; meta: ResearchMetadata | null } | null>(null);
-    const isDisabled = !!loading || (useWebSocket && !wsConnected);
+    const isDisabled = !!loading;
 
     const effortMap = { low: 10, medium: 25, high: 50, extreme: 100 } as const;
 
@@ -581,8 +581,8 @@ export default function ScraperPage() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="max-w-5xl mx-auto space-y-4">
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-screen-2xl mx-auto space-y-4">
                     {/* Header */}
                     <div className="flex items-center gap-3">
                         <Link href="/demos/local-tools">

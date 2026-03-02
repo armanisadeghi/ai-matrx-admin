@@ -36,8 +36,8 @@ interface ActiveShell {
 
 export default function ShellPage() {
     const local = useMatrxLocal();
-    const { invokeTool, loading, logs, clearLogs, wsConnected, useWebSocket } = local;
-    const isDisabled = !!loading || (useWebSocket && !wsConnected);
+    const { invokeTool, loading, logs, clearLogs } = local;
+    const isDisabled = !!loading;
 
     // Foreground Bash
     const [bashCommand, setBashCommand] = useState('uname -a && uptime');
@@ -159,8 +159,8 @@ export default function ShellPage() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="max-w-5xl mx-auto space-y-4">
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-screen-2xl mx-auto space-y-4">
                     {/* Header */}
                     <div className="flex items-center gap-3">
                         <Link href="/demos/local-tools">
