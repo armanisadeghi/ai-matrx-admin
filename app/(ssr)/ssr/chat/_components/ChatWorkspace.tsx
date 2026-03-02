@@ -3,9 +3,6 @@
 // app/(ssr)/ssr/chat/_components/ChatWorkspace.tsx
 // Main client island for the SSR chat route.
 //
-// Manages the entire chat experience: welcome screen, conversation mode,
-// streaming, agent selection, variable inputs, conversation persistence.
-//
 // Architecture:
 //   - ChatContext (reducer) for message/agent/settings state
 //   - useAgentChat for NDJSON streaming to the backend
@@ -14,47 +11,41 @@
 //   - URL state: pathname for conversationId, searchParams for agent/vars/localhost
 //   - Custom DOM events for sidebar sync
 
-import { useState, useEffect, useRef, useCallback, useMemo, useReducer } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useSelector } from 'react-redux';
+import dynamic from 'next/dynamic';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { MessageCircle, Share2, List, Layers } from 'lucide-react';
 
-// Chat infrastructure — all Redux-free
+// Chat infrastructure
 import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
 import type { AgentConfig, ChatMessage } from '@/features/public-chat/context/ChatContext';
 import { useAgentChat } from '@/features/public-chat/hooks/useAgentChat';
 import { useChatPersistence } from '@/features/public-chat/hooks/useChatPersistence';
 import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat/utils/agent-resolver';
 
-// UI components — all standalone, no Redux deps
+// Eager imports — always rendered in conversation mode
 import { ChatInputWithControls } from '@/features/public-chat/components/ChatInputWithControls';
 import { MessageList } from '@/features/public-chat/components/MessageDisplay';
-import { PublicVariableInputs } from '@/features/public-chat/components/PublicVariableInputs';
-import { GuidedVariableInputs } from '@/features/public-chat/components/GuidedVariableInputs';
 import { AgentActionButtons, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+
+// Lazy imports — conditionally rendered, not needed on first paint
+const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ default: m.ShareModal })), { ssr: false });
+const PublicVariableInputs = dynamic(() => import('@/features/public-chat/components/PublicVariableInputs').then(m => ({ default: m.PublicVariableInputs })), { ssr: false });
+const GuidedVariableInputs = dynamic(() => import('@/features/public-chat/components/GuidedVariableInputs').then(m => ({ default: m.GuidedVariableInputs })), { ssr: false });
 
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import type { PublicResource } from '@/features/public-chat/types/content';
 import type { PromptVariable } from '@/features/prompts/types/core';
-import type { CxConversationSummary } from '@/features/public-chat/types/cx-tables';
 import { formatText } from '@/utils/text/text-case-converter';
-import { ShareModal } from '@/features/sharing';
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface ChatWorkspaceProps {
-    initialConversations: CxConversationSummary[];
-}
 
 // ============================================================================
 // INNER WORKSPACE — wrapped by ChatProvider
 // ============================================================================
 
-function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
+function ChatWorkspaceInner() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { state, setAgent, setUseLocalhost, updateMessage, setDbConversationId, loadConversation: loadConversationAction, startNewConversation } = useChatContext();
@@ -70,15 +61,16 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
     const latestAssistantRef = useRef<HTMLDivElement>(null);
     const prevAssistantCountRef = useRef(0);
     const textInputRef = useRef<HTMLTextAreaElement>(null);
+    const variableInputRef = useRef<HTMLInputElement>(null);
 
     // Loading state for conversation switch
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
     const [focusKey, setFocusKey] = useState(0);
 
-    // Redux lite store — user and admin prefs
-    const user = useSelector(selectUser);
+    // Redux lite store — typed hooks
+    const user = useAppSelector(selectUser);
     const isAuthenticated = !!user?.id;
-    const useLocalhost = useSelector(selectIsUsingLocalhost);
+    const useLocalhost = useAppSelector(selectIsUsingLocalhost);
 
     // Persistence hook
     const persistence = useChatPersistence();
@@ -253,43 +245,23 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
         }
     }, [state.currentAgent?.promptId, hasMessages]);
 
-    // Focus management — skip on mobile
+    // Focus management — use refs, skip on mobile
     useEffect(() => {
         if (isLoadingConversation) return;
 
         const isMobile = window.matchMedia('(max-width: 767px)').matches;
         if (isMobile) return;
 
-        let cancelled = false;
-        let attempts = 0;
-
-        function tryFocus() {
-            if (cancelled) return;
-            attempts++;
-
-            if (activeVariables.length > 0) {
-                const container = document.querySelector('[data-variable-inputs]');
-                const firstInput = container?.querySelector<HTMLInputElement>('[data-variable-index="0"]');
-                if (firstInput) {
-                    firstInput.focus();
-                    return;
-                }
-            }
-            if (textInputRef.current) {
+        const timer = setTimeout(() => {
+            if (activeVariables.length > 0 && variableInputRef.current) {
+                variableInputRef.current.focus();
+            } else if (textInputRef.current) {
                 textInputRef.current.focus();
-                return;
             }
-            if (attempts < 8) {
-                setTimeout(tryFocus, attempts * 50);
-            }
-        }
+        }, 80);
 
-        const timer = setTimeout(tryFocus, 50);
-        return () => {
-            cancelled = true;
-            clearTimeout(timer);
-        };
-    }, [state.currentAgent?.promptId, focusKey, isLoadingConversation]);
+        return () => clearTimeout(timer);
+    }, [state.currentAgent?.promptId, focusKey, isLoadingConversation, activeVariables.length]);
 
     // Auto-scroll to latest assistant message
     useEffect(() => {
@@ -369,8 +341,7 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
     }, [updateMessage]);
 
     const openAgentPicker = useCallback(() => {
-        // For now, this is a no-op — agent selection via sidebar chips + action buttons
-        // A future enhancement could open a full agent picker sheet
+        // No-op — agent selection via sidebar chips + action buttons
     }, []);
 
     // ========================================================================
@@ -435,7 +406,7 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
                     </div>
 
                     <div
-                        className="flex-shrink-0 px-2 md:px-4 bg-transparent md:bg-background/95 md:backdrop-blur-sm"
+                        className="flex-shrink-0 px-2 md:px-4 bg-transparent"
                         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
                     >
                         <div className="w-full max-w-3xl mx-auto">
@@ -449,7 +420,7 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
                                 onSubmit={handleSubmit}
                                 seamless
                             />
-                            <div className="rounded-b-2xl bg-background">
+                            <div className="rounded-b-2xl bg-card/80 backdrop-blur-sm">
                                 <ChatInputWithControls
                                     onSubmit={handleSubmit}
                                     disabled={isExecuting}
@@ -573,7 +544,7 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
 
     return (
         <div className="h-full flex flex-col">
-            {/* Share Modal */}
+            {/* Share Modal — lazy-loaded, only rendered on click */}
             {isShareOpen && shareConversationId && (
                 <ShareModal
                     isOpen={isShareOpen}
@@ -587,9 +558,9 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
 
             {/* Messages area */}
             <div className="flex-1 min-h-0 relative">
-                <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/80 to-transparent z-10 pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
 
-                <div className="h-full overflow-y-auto scrollbar-hide">
+                <div className="h-full overflow-y-auto chat-messages-scroll">
                     <div className="w-full max-w-[800px] mx-auto px-3 pt-12 pb-2 md:px-3 md:pt-12 md:pb-4 relative">
                         {isAuthenticated && shareConversationId && (
                             <div className="absolute top-1 right-3 z-10 hidden md:block">
@@ -612,12 +583,12 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
                     </div>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none md:hidden" />
+                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background/40 to-transparent z-10 pointer-events-none md:hidden" />
             </div>
 
             {/* Input area */}
             <div
-                className="flex-shrink-0 px-2 md:px-4 md:pt-2 bg-transparent md:bg-background/95 md:backdrop-blur-sm"
+                className="flex-shrink-0 px-2 md:px-4 md:pt-2 bg-transparent"
                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
             >
                 <div className="w-full max-w-[800px] mx-auto">
@@ -647,7 +618,7 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
                             />
                         </div>
                     )}
-                    <div className={`bg-background ${hasVariables && useGuidedVars ? 'rounded-b-2xl' : 'rounded-2xl'}`}>
+                    <div className={`bg-card/80 backdrop-blur-sm ${hasVariables && useGuidedVars ? 'rounded-b-2xl' : 'rounded-2xl'}`}>
                         <ChatInputWithControls
                             onSubmit={handleSubmit}
                             disabled={isExecuting}
@@ -669,10 +640,10 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
 // OUTER WRAPPER — provides ChatContext
 // ============================================================================
 
-export default function ChatWorkspace({ initialConversations }: ChatWorkspaceProps) {
+export default function ChatWorkspace() {
     return (
         <ChatProvider>
-            <ChatWorkspaceInner initialConversations={initialConversations} />
+            <ChatWorkspaceInner />
         </ChatProvider>
     );
 }

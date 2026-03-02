@@ -30,7 +30,7 @@ export const makeLiteStore = (initialState?: LiteInitialReduxState) => {
 
     const store = configureStore({
         reducer: rootReducer,
-        preloadedState: initialState as Partial<LiteRootState>,
+        preloadedState: initialState as unknown as Partial<LiteRootState>,
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: false,

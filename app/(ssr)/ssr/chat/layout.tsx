@@ -91,7 +91,7 @@ export default async function ChatLayout({ children }: { children: React.ReactNo
             {/* Main content — client island */}
             <div className="chat-content">
                 <Suspense fallback={<WorkspaceSkeleton />}>
-                    <ChatWorkspace initialConversations={conversations} />
+                    <ChatWorkspace />
                 </Suspense>
                 {/* Page stubs (null) — only for routing */}
                 <div style={{ display: 'none' }}>{children}</div>

@@ -181,12 +181,11 @@ export default function ChatSidebarClient({ conversations: initialConversations 
         <>
             {/* Header + New Chat */}
             <div className="chat-sidebar-header">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="flex items-center justify-between">
                     <h2>Chat</h2>
                     <button
-                        className="chat-new-btn"
+                        className="chat-new-btn w-auto m-0 px-2.5 py-1 text-xs"
                         onClick={() => navigateToNewChat()}
-                        style={{ width: 'auto', margin: 0, padding: '0.25rem 0.625rem', fontSize: '0.75rem' }}
                     >
                         <Plus size={14} />
                         New
@@ -196,24 +195,17 @@ export default function ChatSidebarClient({ conversations: initialConversations 
 
             {/* Search */}
             <div className="chat-sidebar-search">
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                     <SearchIcon
                         size={13}
-                        style={{
-                            position: 'absolute',
-                            left: '0.5rem',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'hsl(var(--muted-foreground) / 0.4)',
-                            pointerEvents: 'none',
-                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none"
                     />
                     <input
                         type="text"
                         placeholder="Search conversations..."
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}
-                        style={{ paddingLeft: '1.75rem' }}
+                        className="pl-7"
                     />
                 </div>
             </div>
@@ -221,7 +213,7 @@ export default function ChatSidebarClient({ conversations: initialConversations 
             {/* Agent Chips */}
             <div className="chat-sidebar-agents">
                 <div className="chat-sidebar-agents-label">Agents</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                <div className="flex flex-wrap">
                     {DEFAULT_AGENTS.map(agent => (
                         <button
                             key={agent.id}
@@ -240,9 +232,9 @@ export default function ChatSidebarClient({ conversations: initialConversations 
             {/* Conversation List */}
             <div className="chat-sidebar-list">
                 {groups.length === 0 && (
-                    <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-                        <MessageCircle size={20} style={{ margin: '0 auto 0.5rem', opacity: 0.3 }} />
-                        <p style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground) / 0.5)', margin: 0 }}>
+                    <div className="py-8 px-4 text-center">
+                        <MessageCircle size={20} className="mx-auto mb-2 opacity-30" />
+                        <p className="text-xs text-muted-foreground/50 m-0">
                             {searchQuery ? 'No matching conversations' : 'No conversations yet'}
                         </p>
                     </div>

@@ -255,6 +255,38 @@
     scrollbar-color: hsl(var(--border) / 0.3) transparent;
 }
 
+/* Messages area — thin, auto-hiding scrollbar (not hidden) */
+.chat-messages-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-messages-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-messages-scroll::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.chat-messages-scroll:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--border) / 0.3);
+}
+
+.chat-messages-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--border) / 0.5);
+}
+
+.chat-messages-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.chat-messages-scroll:hover {
+    scrollbar-color: hsl(var(--border) / 0.3) transparent;
+}
+
 /* ============================================================================
    SKELETON LOADING
    ============================================================================ */
