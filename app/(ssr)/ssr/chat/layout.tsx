@@ -2,8 +2,8 @@
 // Server-rendered layout for the SSR chat route.
 //
 // Data flow:
-//   1. Auth check — Supabase JWT (local, ~0ms)
-//   2. Fetch lightweight conversation summaries (cx_conversations, no messages)
+//   1. getUser() — cached per-request, zero extra cost (parent layout already called it)
+//   2. Fetch lightweight conversation summaries in parallel with the shell RPC
 //   3. Pass conversation list to ChatSidebarClient (server → client prop)
 //   4. ChatWorkspace manages all chat state as a client island
 //
@@ -12,7 +12,7 @@
 
 import './chat.css';
 import { Suspense } from 'react';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, getUser } from '@/utils/supabase/server';
 import type { CxConversationSummary } from '@/features/public-chat/types/cx-tables';
 import ChatSidebarClient from './_components/ChatSidebarClient';
 import ChatWorkspace from './_components/ChatWorkspace';
@@ -53,8 +53,8 @@ function WorkspaceSkeleton() {
 // ============================================================================
 
 export default async function ChatLayout({ children }: { children: React.ReactNode }) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // getUser() is request-cached — no extra auth call, parent layout already paid for it
+    const [user, supabase] = await Promise.all([getUser(), createClient()]);
 
     // Fetch lightweight conversation list for sidebar
     // Only id, title, status, message_count, updated_at — no messages

@@ -6,7 +6,7 @@
 
 import "./notes.css";
 import { Suspense } from "react";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, getUser } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import SidebarClient from "./_components/SidebarClient";
 import NotesWorkspace from "./_components/NotesWorkspace";
@@ -27,8 +27,8 @@ export interface NoteSummary {
 }
 
 export default async function NotesLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // getUser() and createClient() are request-cached — no extra auth calls
+  const [user, supabase] = await Promise.all([getUser(), createClient()]);
 
   if (!user) {
     redirect("/login");
