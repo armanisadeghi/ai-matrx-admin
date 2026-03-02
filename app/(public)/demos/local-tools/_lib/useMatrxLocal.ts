@@ -50,22 +50,68 @@ async function buildWsUrl(httpUrl: string): Promise<string> {
 }
 
 // ---------------------------------------------------------------------------
-// Port discovery
+// Fix #4: Authenticated fetch with automatic 401 → session refresh → retry
 // ---------------------------------------------------------------------------
 
-export async function discoverMatrxLocal(): Promise<ConnectionInfo | null> {
-    const headers = await buildAuthHeaders();
+async function authenticatedFetch(url: string, opts: RequestInit): Promise<Response> {
+    const res = await fetch(url, opts);
+    if (res.status === 401) {
+        const { data } = await supabase.auth.refreshSession();
+        if (data.session) {
+            const retryOpts: RequestInit = {
+                ...opts,
+                headers: {
+                    ...(opts.headers as Record<string, string>),
+                    Authorization: `Bearer ${data.session.access_token}`,
+                },
+            };
+            return fetch(url, retryOpts);
+        }
+    }
+    return res;
+}
+
+// ---------------------------------------------------------------------------
+// Fix #3: Port discovery — probe /health (lighter weight than /tools/list)
+// Fix #7: Capture version from /health response at discovery time
+// ---------------------------------------------------------------------------
+
+export interface DiscoveryResult extends ConnectionInfo {
+    availableTools: string[];
+    version: string | null;
+}
+
+export async function discoverMatrxLocal(): Promise<DiscoveryResult | null> {
     for (let offset = 0; offset < MATRX_LOCAL_PORT_RANGE; offset++) {
         const port = MATRX_LOCAL_PORT_START + offset;
         const url = `http://127.0.0.1:${port}`;
         try {
-            const res = await fetch(`${url}/tools/list`, {
-                headers,
+            // Fix #3: probe /health instead of /tools/list
+            const healthRes = await fetch(`${url}/health`, {
                 signal: AbortSignal.timeout(DISCOVERY_TIMEOUT),
             });
-            if (res.ok) {
-                return { url, ws: `ws://127.0.0.1:${port}/ws`, port };
-            }
+            if (!healthRes.ok) continue;
+
+            const healthData = await healthRes.json().catch(() => ({})) as HealthInfo;
+
+            // Fix #1: fetch actual tool list from server
+            const authHeaders = await buildAuthHeaders();
+            const toolsRes = await authenticatedFetch(`${url}/tools/list`, {
+                headers: authHeaders,
+                signal: AbortSignal.timeout(2000),
+            });
+            const availableTools: string[] = toolsRes.ok
+                ? ((await toolsRes.json().catch(() => ({}))) as { tools?: string[] }).tools ?? []
+                : [];
+
+            return {
+                url,
+                ws: `ws://127.0.0.1:${port}/ws`,
+                port,
+                availableTools,
+                // Fix #7: capture version at discovery time instead of polling it every 15s
+                version: healthData.version ?? null,
+            };
         } catch {
             // Port not responding — try next
         }
@@ -100,6 +146,9 @@ export interface UseMatrxLocalReturn {
     versionInfo: VersionInfo | null;
     portInfo: PortInfo | null;
 
+    // Fix #1: live tool list from server
+    availableTools: string[];
+
     // Active request tracking
     activeRequests: ActiveRequest[];
 
@@ -123,6 +172,9 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [portInfo, setPortInfo] = useState<PortInfo | null>(null);
 
+    // Fix #1: server-reported available tools
+    const [availableTools, setAvailableTools] = useState<string[]>([]);
+
     // Active requests
     const [activeRequests, setActiveRequests] = useState<ActiveRequest[]>([]);
 
@@ -130,6 +182,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const pendingCallbacks = useRef<Map<string, (result: ToolResult) => void>>(new Map());
     const statusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const healthPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    // Enhancement: WS auto-reconnect backoff state
+    const wsRetryCountRef = useRef(0);
+    const wsRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const wsAutoReconnect = useRef(true);
 
     const addLog = useCallback((direction: 'sent' | 'received', data: unknown, tool?: string) => {
         setLogs(prev => [
@@ -150,14 +206,22 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const discover = useCallback(async () => {
         setStatus('discovering');
-        const info = await discoverMatrxLocal();
-        if (info) {
-            setBaseUrl(info.url);
+        const result = await discoverMatrxLocal();
+        if (result) {
+            setBaseUrl(result.url);
             setStatus('disconnected');
-            addLog('received', { event: 'discovered', ...info });
+            // Fix #1: populate available tools from server
+            if (result.availableTools.length > 0) {
+                setAvailableTools(result.availableTools);
+            }
+            // Fix #7: set version from discovery, skip separate /version polling
+            if (result.version) {
+                setVersionInfo({ version: result.version });
+            }
+            addLog('received', { event: 'discovered', ...result });
         } else {
             setStatus('disconnected');
-            addLog('received', { event: 'discovery_failed', message: 'Matrx Local not found on ports 22140-22159' });
+            addLog('received', { event: 'discovery_failed', message: 'Matrx Local not found on ports 22140–22159' });
         }
     }, [addLog]);
 
@@ -165,9 +229,8 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const checkRestStatus = useCallback(async () => {
         try {
-            const headers = await buildAuthHeaders();
-            const res = await fetch(`${baseUrl}/tools/list`, {
-                headers,
+            // Fix #3: poll /health (already public) instead of /tools/list
+            const res = await fetch(`${baseUrl}/health`, {
                 signal: AbortSignal.timeout(2000),
             });
             if (res.ok && !wsConnected) {
@@ -188,23 +251,20 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         };
     }, [checkRestStatus]);
 
-    // ── Health / Version / Ports polling ─────────────────────────────────────
+    // ── Health / Ports polling ────────────────────────────────────────────
+    // Fix #2: /health and /ports are public — no auth headers needed
+    // Fix #7: /version no longer polled — fetched once at discovery
 
     const pollHealth = useCallback(async () => {
         try {
-            const headers = await buildAuthHeaders();
-            const [healthRes, versionRes, portsRes] = await Promise.allSettled([
-                fetch(`${baseUrl}/health`, { headers, signal: AbortSignal.timeout(3000) }),
-                fetch(`${baseUrl}/version`, { headers, signal: AbortSignal.timeout(3000) }),
-                fetch(`${baseUrl}/ports`, { headers, signal: AbortSignal.timeout(3000) }),
+            const [healthRes, portsRes] = await Promise.allSettled([
+                fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrl}/ports`, { signal: AbortSignal.timeout(3000) }),
             ]);
             if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
                 setHealthInfo(await healthRes.value.json());
             } else {
                 setHealthInfo(null);
-            }
-            if (versionRes.status === 'fulfilled' && versionRes.value.ok) {
-                setVersionInfo(await versionRes.value.json());
             }
             if (portsRes.status === 'fulfilled' && portsRes.value.ok) {
                 setPortInfo(await portsRes.value.json());
@@ -234,6 +294,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         ws.onopen = () => {
             setWsConnected(true);
             setStatus('connected');
+            wsRetryCountRef.current = 0; // Reset backoff on successful connect
             addLog('received', { event: 'connected', url: wsUrl });
         };
 
@@ -244,7 +305,6 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 if (data.id && pendingCallbacks.current.has(data.id)) {
                     pendingCallbacks.current.get(data.id)!(data);
                     pendingCallbacks.current.delete(data.id);
-                    // Remove from active requests
                     setActiveRequests(prev => prev.filter(r => r.id !== data.id));
                 }
             } catch {
@@ -258,6 +318,14 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             addLog('received', { event: 'disconnected' });
             pendingCallbacks.current.clear();
             setActiveRequests([]);
+
+            // Enhancement: auto-reconnect with exponential backoff (max 30s)
+            if (wsAutoReconnect.current) {
+                const delay = Math.min(2000 * Math.pow(2, wsRetryCountRef.current), 30_000);
+                wsRetryCountRef.current += 1;
+                addLog('received', { event: 'reconnect_scheduled', delay_ms: delay });
+                wsRetryTimerRef.current = setTimeout(() => connectWs(), delay);
+            }
         };
 
         ws.onerror = () => {
@@ -272,11 +340,28 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     }, [baseUrl, addLog]);
 
     const disconnectWs = useCallback(() => {
+        // Disable auto-reconnect when the user explicitly disconnects
+        wsAutoReconnect.current = false;
+        if (wsRetryTimerRef.current) {
+            clearTimeout(wsRetryTimerRef.current);
+            wsRetryTimerRef.current = null;
+        }
         wsRef.current?.close();
         wsRef.current = null;
     }, []);
 
-    useEffect(() => () => disconnectWs(), [disconnectWs]);
+    // Re-enable auto-reconnect whenever connectWs is called manually
+    const connectWsWithReconnect = useCallback(async () => {
+        wsAutoReconnect.current = true;
+        wsRetryCountRef.current = 0;
+        await connectWs();
+    }, [connectWs]);
+
+    useEffect(() => () => {
+        wsAutoReconnect.current = false;
+        if (wsRetryTimerRef.current) clearTimeout(wsRetryTimerRef.current);
+        disconnectWs();
+    }, [disconnectWs]);
 
     // ── Cancel ──────────────────────────────────────────────────────────────
 
@@ -317,7 +402,6 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 const msg = { id: reqId, tool, input };
                 addLog('sent', msg, tool);
 
-                // Track active request
                 setActiveRequests(prev => [...prev, { id: reqId, tool, startedAt: new Date() }]);
 
                 pendingCallbacks.current.set(reqId, resolve);
@@ -352,12 +436,24 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
             try {
                 const headers = await buildAuthHeaders({ 'Content-Type': 'application/json' });
-                const res = await fetch(url, {
+                const res = await authenticatedFetch(url, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify(body),
                     signal: controller.signal,
                 });
+
+                // Fix #5: check status before parsing as ToolResult
+                if (!res.ok) {
+                    const errText = await res.text().catch(() => '');
+                    const result: ToolResult = {
+                        type: 'error',
+                        output: `HTTP ${res.status}: ${errText || res.statusText}`,
+                    };
+                    addLog('received', result, tool);
+                    return result;
+                }
+
                 const data = (await res.json()) as ToolResult;
                 addLog('received', data, tool);
                 return data;
@@ -395,7 +491,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const restGet = useCallback(
         async (path: string, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders(headers);
-            const res = await fetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrl}${path}`, {
                 signal: AbortSignal.timeout(10_000),
                 headers: authHeaders,
             });
@@ -411,7 +507,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const restPost = useCallback(
         async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
-            const res = await fetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrl}${path}`, {
                 method: 'POST',
                 headers: authHeaders,
                 body: body ? JSON.stringify(body) : undefined,
@@ -429,7 +525,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const restPut = useCallback(
         async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
-            const res = await fetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrl}${path}`, {
                 method: 'PUT',
                 headers: authHeaders,
                 body: body ? JSON.stringify(body) : undefined,
@@ -447,7 +543,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const restDelete = useCallback(
         async (path: string, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders(headers);
-            const res = await fetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrl}${path}`, {
                 method: 'DELETE',
                 headers: authHeaders,
                 signal: AbortSignal.timeout(10_000),
@@ -470,7 +566,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         loading,
         logs,
         discover,
-        connectWs,
+        connectWs: connectWsWithReconnect,
         disconnectWs,
         cancelAll,
         cancelRequest,
@@ -482,6 +578,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         healthInfo,
         versionInfo,
         portInfo,
+        availableTools,
         activeRequests,
         restGet,
         restPost,

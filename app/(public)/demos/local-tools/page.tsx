@@ -112,7 +112,7 @@ const QUICK_PRESETS: { label: string; tool: string; input: Record<string, unknow
 
 export default function LocalToolsDemo() {
     const local = useMatrxLocal();
-    const { invokeTool, loading, logs, clearLogs } = local;
+    const { invokeTool, loading, logs, clearLogs, availableTools } = local;
 
     const [activeResult, setActiveResult] = useState<ToolResult | null>(null);
     const [customTool, setCustomTool] = useState('Bash');
@@ -139,6 +139,11 @@ export default function LocalToolsDemo() {
     };
 
     const isDisabled = !!loading || (local.useWebSocket && !local.wsConnected);
+
+    // A tool is "available" if we haven't fetched the server list yet (show all),
+    // or if it's confirmed in the server's list.
+    const isToolAvailable = (tool: string) =>
+        availableTools.length === 0 || availableTools.includes(tool);
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
@@ -204,21 +209,25 @@ export default function LocalToolsDemo() {
                             Quick Fire
                         </h2>
                         <div className="flex flex-wrap gap-2">
-                            {QUICK_PRESETS.map((preset) => (
-                                <Button
-                                    key={`${preset.tool}-${preset.label}`}
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-xs"
-                                    disabled={isDisabled}
-                                    onClick={() => runTool(preset.tool, preset.input)}
-                                >
-                                    {typeof loading === 'string' && loading.startsWith(`${preset.tool}-`) && (
-                                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                    )}
-                                    {preset.label}
-                                </Button>
-                            ))}
+                            {QUICK_PRESETS.map((preset) => {
+                                const available = isToolAvailable(preset.tool);
+                                return (
+                                    <Button
+                                        key={`${preset.tool}-${preset.label}`}
+                                        variant="outline"
+                                        size="sm"
+                                        className={`h-7 text-xs ${!available ? 'opacity-40' : ''}`}
+                                        disabled={isDisabled || !available}
+                                        title={!available ? `${preset.tool} is not available on this engine version` : undefined}
+                                        onClick={() => runTool(preset.tool, preset.input)}
+                                    >
+                                        {typeof loading === 'string' && loading.startsWith(`${preset.tool}-`) && (
+                                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                        )}
+                                        {preset.label}
+                                    </Button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -236,7 +245,13 @@ export default function LocalToolsDemo() {
                                     className="h-8 text-xs font-mono rounded border px-2 bg-background"
                                 >
                                     {ALL_TOOLS.map((t) => (
-                                        <option key={t} value={t}>{t}</option>
+                                        <option
+                                            key={t}
+                                            value={t}
+                                            disabled={availableTools.length > 0 && !availableTools.includes(t)}
+                                        >
+                                            {t}{availableTools.length > 0 && !availableTools.includes(t) ? ' (unavailable)' : ''}
+                                        </option>
                                     ))}
                                 </select>
                             </div>

@@ -210,7 +210,7 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
             </div>
 
             {/* Info strip: health + version */}
-            {(healthInfo || versionInfo) && (
+            {(healthInfo || versionInfo || hook.availableTools.length > 0) && (
                 <div className="flex items-center gap-3 px-3 pb-2 text-[11px] text-muted-foreground border-t pt-2">
                     {(versionInfo?.version || healthInfo?.version) && (
                         <span className="flex items-center gap-1">
@@ -222,6 +222,9 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
                         <span className={healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'text-green-600' : 'text-yellow-600'}>
                             {healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'Engine healthy' : `Engine: ${healthInfo.status}`}
                         </span>
+                    )}
+                    {hook.availableTools.length > 0 && (
+                        <span>{hook.availableTools.length} tools available</span>
                     )}
                     <span className="ml-auto">
                         Using <span className="font-medium text-foreground">{useWebSocket ? 'WebSocket' : 'REST'}</span> for tool calls
