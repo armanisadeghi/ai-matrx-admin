@@ -31,7 +31,7 @@ import {
     AlertTriangle,
 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 import type { DocFolder, DocNote, NoteVersion, SyncStatus, DocConflict } from '../_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -231,7 +231,7 @@ function FolderTree({
 // ---------------------------------------------------------------------------
 
 export default function DocumentsPage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { restGet, restPost, restPut, restDelete } = local;
 
     const [activeTab, setActiveTab] = useState<ActiveTab>('notes');

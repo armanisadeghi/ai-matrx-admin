@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { ConnectionBar } from './_lib/ConnectionBar';
 import { MessageLog, ResultPanel } from './_lib/ResultPanel';
-import { useMatrxLocal } from './_lib/useMatrxLocal';
+import { useMatrxLocalContext } from './_lib/MatrxLocalContext';
 import { ALL_TOOLS } from './_lib/constants';
 import type { ToolResult } from './_lib/types';
 
@@ -111,7 +111,7 @@ const QUICK_PRESETS: { label: string; tool: string; input: Record<string, unknow
 // ---------------------------------------------------------------------------
 
 export default function LocalToolsDemo() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { invokeTool, loading, logs, clearLogs, availableTools } = local;
 
     const [activeResult, setActiveResult] = useState<ToolResult | null>(null);

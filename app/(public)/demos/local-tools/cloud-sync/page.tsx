@@ -17,14 +17,14 @@ import {
     Shield,
 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function CloudSyncPage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { restGet, restPost, restPut } = local;
 
     // Configure form

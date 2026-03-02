@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
 import { MessageLog } from '../_lib/ResultPanel';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
+import type { UseMatrxLocalReturn } from '../_lib/useMatrxLocal';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,7 +36,7 @@ interface ActiveShell {
 // ---------------------------------------------------------------------------
 
 export default function ShellPage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { invokeTool, loading, logs, clearLogs } = local;
     const isDisabled = !!loading;
 
@@ -351,7 +352,7 @@ export default function ShellPage() {
 // Manual control sub-component
 // ---------------------------------------------------------------------------
 
-function ManualControl({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
+function ManualControl({ local }: { local: UseMatrxLocalReturn }) {
     const { invokeTool, loading } = local;
     const [shellId, setShellId] = useState('');
     const [result, setResult] = useState<string | null>(null);

@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Loader2, RefreshCw, Save, Settings2 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function EnginePage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { healthInfo, versionInfo, portInfo, restGet, restPut } = local;
 
     const [settings, setSettings] = useState<Record<string, unknown> | null>(null);

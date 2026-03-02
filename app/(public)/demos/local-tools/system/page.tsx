@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
 import { MessageLog, ResultPanel } from '../_lib/ResultPanel';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 import type { ToolResult } from '../_lib/types';
 
 function SectionHeader({ icon: Icon, title, description }: {
@@ -37,7 +37,7 @@ function SectionHeader({ icon: Icon, title, description }: {
 }
 
 export default function SystemPage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { invokeTool, loading, logs, clearLogs } = local;
 
     const [activeResult, setActiveResult] = useState<ToolResult | null>(null);

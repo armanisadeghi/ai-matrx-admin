@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
 import { MessageLog } from '../_lib/ResultPanel';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
+import type { UseMatrxLocalReturn } from '../_lib/useMatrxLocal';
 import type { BatchScrapeMetadata, ResearchMetadata, ScrapeResultMeta, SearchMetadata, SearchResult } from '../_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ function statusColor(status: string) {
 // Scrape Panel
 // ---------------------------------------------------------------------------
 
-function ScrapePanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
+function ScrapePanel({ local }: { local: UseMatrxLocalReturn }) {
     const { invokeTool, loading } = local;
     const [urls, setUrls] = useState('https://titaniumsuccess.com/');
     const [useCache, setUseCache] = useState(true);
@@ -198,7 +199,7 @@ function ScrapePanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
 // Search Panel
 // ---------------------------------------------------------------------------
 
-function SearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
+function SearchPanel({ local }: { local: UseMatrxLocalReturn }) {
     const { invokeTool, loading } = local;
     const [keywords, setKeywords] = useState('latest AI frameworks 2026');
     const [country, setCountry] = useState('us');
@@ -336,7 +337,7 @@ function SearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
 // Research Panel
 // ---------------------------------------------------------------------------
 
-function ResearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
+function ResearchPanel({ local }: { local: UseMatrxLocalReturn }) {
     const { invokeTool, loading, wsConnected, cancelAll } = local;
     const [query, setQuery] = useState('');
     const [effort, setEffort] = useState<'low' | 'medium' | 'high' | 'extreme'>('low');
@@ -479,7 +480,7 @@ function ResearchPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
 // Comparison Panel
 // ---------------------------------------------------------------------------
 
-function ComparisonPanel({ local }: { local: ReturnType<typeof useMatrxLocal> }) {
+function ComparisonPanel({ local }: { local: UseMatrxLocalReturn }) {
     const { invokeViaRest, loading } = local;
     const [url, setUrl] = useState('https://httpbin.org/html');
     const [fetchResult, setFetchResult] = useState<string | null>(null);
@@ -576,7 +577,7 @@ const TABS: { id: ActiveTab; label: string }[] = [
 ];
 
 export default function ScraperPage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const [activeTab, setActiveTab] = useState<ActiveTab>('scrape');
 
     return (

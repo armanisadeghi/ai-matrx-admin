@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { ConnectionBar } from '../_lib/ConnectionBar';
 import { MessageLog, ResultPanel } from '../_lib/ResultPanel';
-import { useMatrxLocal } from '../_lib/useMatrxLocal';
+import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 import type { ToolResult } from '../_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ function ToolSection({ children, className = '' }: { children: React.ReactNode; 
 // ---------------------------------------------------------------------------
 
 export default function FilesPage() {
-    const local = useMatrxLocal();
+    const local = useMatrxLocalContext();
     const { invokeTool, loading, logs, clearLogs } = local;
     const isDisabled = (t: string) => loading === t;
 
