@@ -33,15 +33,35 @@ Server: layout.tsx, page.tsx, Sidebar.tsx, Header.tsx, NavItem.tsx, ShellIcon.ts
 Client: UserMenuIsland.tsx, MobileDock.tsx, SidebarClient.tsx, NotesWorkspace.tsx
 ```
 
-### 2. No Redux, No Providers
+### 2. Lite Store — No Full Redux, No Entity System
 
-The `(ssr)` route group has **no Redux store, no context providers, no StoreProvider**. This is intentional. If you need data, fetch it server-side or call Supabase directly from client islands.
+The `(ssr)` shell uses `LiteStoreProvider` — a lightweight Redux store with 13 slices and **zero middleware** (no sagas, no socket.io, no entity system). The store wraps only `children` inside `<main>`, not the shell chrome.
 
-- **Server-side:** `import { createClient } from '@/utils/supabase/server'`
-- **Client-side:** `import { supabase } from '@/utils/supabase/client'`
-- **Server actions:** `import { someAction } from '@/actions/...'` (works without Redux)
+**Available slices (all start empty, hydrate on demand):**
+- `user`, `userPreferences` — pre-populated from server at hydration time
+- `adminPreferences`, `adminDebug` — admin tools (lazy, only meaningful for admin users)
+- `layout`, `theme`, `overlays` — core UI state
+- `canvas` — canvas panel state
+- `promptCache`, `promptRunner`, `promptExecution`, `actionCache` — prompt system
+- `modelRegistry` — AI model list (dispatch `fetchAvailableModels()` to hydrate)
+- `sms` — SMS conversations
 
-If you need functionality from the main app that depends on Redux (e.g., `usePromptRunner`, `useAppSelector`), you must create a **lightweight alternative** that uses API routes or server actions instead. Never add Redux to the SSR shell.
+**Client islands can use Redux hooks:**
+```tsx
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+const userId = useAppSelector(state => state.user.id);
+const prefs = useAppSelector(state => state.userPreferences);
+```
+
+**NOT available (requires full store):**
+- `entities`, `globalCache` — entity CRUD system (134 slices + 108K schema)
+- `socketConnections`, `socketResponse`, `socketTasks` — socket.io
+- `broker`, `workflows` — saga-dependent
+- `fileSystem`, `appBuilder` — feature-specific heavy systems
+
+If you need entity system or socket.io, that route belongs in `(authenticated)`, not `(ssr)`.
+
+**Shell chrome still uses props, not Redux.** The Header, Sidebar, MobileDock, and MobileSideSheet are server components that receive data as props from the layout. They do not read from the store.
 
 ### 3. The Glass Rule — No Solid Backgrounds in the Chrome
 
@@ -301,6 +321,7 @@ export default async function FeaturePage() {
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { supabase } from "@/utils/supabase/client";
 import dynamic from "next/dynamic";
 
@@ -314,15 +335,18 @@ interface FeatureClientProps {
 export default function FeatureClient({ items: serverItems }: FeatureClientProps) {
   const [localItems, setLocalItems] = useState(serverItems);
 
+  // Lite store is available — read user/preferences directly
+  const userId = useAppSelector(state => state.user.id);
+  const prefs = useAppSelector(state => state.userPreferences);
+
   const handleAction = useCallback(async () => {
-    // Direct Supabase call — no Redux
+    // Direct Supabase call for data mutations
     const { data } = await supabase.from("table").insert({...}).select().single();
     if (data) setLocalItems(prev => [...prev, data]);
   }, []);
 
   return (
     <div>
-      {/* Render items */}
       {localItems.map(item => (
         <div key={item.id} className="text-foreground">{item.name}</div>
       ))}
@@ -405,7 +429,8 @@ Never duplicate Supabase queries. If the main app has a table or view, query it 
 - [ ] No `bg-background`, `bg-card`, or any solid background on content flow elements
 - [ ] All floating elements use `--shell-glass-*` tokens
 - [ ] No `"use client"` on components that could be server components
-- [ ] No Redux imports (`useAppSelector`, `useAppDispatch`, etc.)
+- [ ] No full Redux imports (no entity hooks, no `globalCache` selectors, no socket slices)
+- [ ] Only lite store slices used: user, userPreferences, overlays, canvas, promptCache, modelRegistry, etc.
 - [ ] Heavy client components lazy-loaded with `next/dynamic` + `ssr: false`
 - [ ] Scrollbars are thin and auto-hiding
 - [ ] Mobile: no split views, no nested scrolling, no dialogs (use drawers)
