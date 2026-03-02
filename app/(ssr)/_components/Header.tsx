@@ -1,19 +1,11 @@
 // Header.tsx — Server component for the transparent header
 // Completely transparent container — glass applies ONLY to child nodes
 // Left: reserved (hamburger on mobile) | Center: injection zone | Right: User Menu
+// User data is read from Redux inside UserMenuIsland — no props needed here.
 
 import UserMenuIsland from "./UserMenuIsland";
 
-interface HeaderProps {
-  user: {
-    name: string;
-    email?: string;
-    avatarUrl?: string;
-  } | null;
-  isAdmin: boolean;
-}
-
-export default function Header({ user, isAdmin }: HeaderProps) {
+export default function Header() {
   return (
     <header className="shell-header">
       {/* Left — Mobile hamburger trigger (hidden on desktop via CSS) */}
@@ -37,7 +29,7 @@ export default function Header({ user, isAdmin }: HeaderProps) {
       </div>
 
       {/* Right — User Menu (hamburger + avatar trigger, lazy dropdown) */}
-      <UserMenuIsland user={user} isAdmin={isAdmin} />
+      <UserMenuIsland />
     </header>
   );
 }

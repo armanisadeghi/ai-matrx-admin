@@ -1,6 +1,7 @@
 "use client";
 
 // UserMenuIsland — Client island for the user dropdown menu.
+// Reads user data from Redux (hydrated by DeferredShellData) — no server props needed.
 // Renders hamburger + avatar trigger (lightweight, instant).
 // Dropdown panel is lazy-loaded via dynamic import — zero cost until opened.
 
@@ -8,6 +9,8 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser, selectIsAdmin } from "@/lib/redux/slices/userSlice";
 
 const UserMenuPanel = dynamic(() => import("./UserMenuPanel"), {
   ssr: false,
@@ -20,12 +23,16 @@ export interface UserMenuUser {
   avatarUrl?: string;
 }
 
-interface UserMenuIslandProps {
-  user: UserMenuUser | null;
-  isAdmin: boolean;
-}
+export default function UserMenuIsland() {
+  const reduxUser = useAppSelector(selectUser);
+  const isAdmin = useAppSelector(selectIsAdmin);
 
-export default function UserMenuIsland({ user, isAdmin }: UserMenuIslandProps) {
+  const user: UserMenuUser | null = reduxUser?.id ? {
+    name: reduxUser.userMetadata?.name || reduxUser.email?.split('@')[0] || 'User',
+    email: reduxUser.email ?? undefined,
+    avatarUrl: reduxUser.userMetadata?.avatarUrl ?? undefined,
+  } : null;
+
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
