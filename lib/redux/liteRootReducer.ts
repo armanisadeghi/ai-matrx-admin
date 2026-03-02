@@ -1,61 +1,91 @@
 // lib/redux/liteRootReducer.ts
-// Lightweight root reducer for public/lite routes that don't need entities, socket.io, or sagas
+// Lightweight root reducer for SSR and public routes — no entities, no sagas, no socket.io
 "use client";
 
 import { combineReducers } from "@reduxjs/toolkit";
-import userReducer from "./slices/userSlice";
-import userPreferencesReducer from "./slices/userPreferencesSlice";
-import adminPreferencesReducer from "./slices/adminPreferencesSlice";
-// Import directly from themeSlice to avoid loading ThemeProvider (which imports full store)
+
+// Core UI
+import layoutReducer from "./slices/layoutSlice";
 import themeReducer from "@/styles/themes/themeSlice";
 import overlaySlice from "./slices/overlaySlice";
-import layoutReducer from "./slices/layoutSlice";
+
+// User
+import userReducer from "./slices/userSlice";
+import userPreferencesReducer from "./slices/userPreferencesSlice";
+
+// Admin
+import adminPreferencesReducer from "./slices/adminPreferencesSlice";
+import adminDebugReducer from "./slices/adminDebugSlice";
+
+// Canvas
+import canvasReducer from "../../features/canvas/redux/canvasSlice";
+
+// Prompt system (all start empty, hydrate on demand)
+import promptCacheReducer from "./slices/promptCacheSlice";
+import promptRunnerReducer from "./slices/promptRunnerSlice";
+import promptExecutionReducer from "./prompt-execution/slice";
+import actionCacheReducer from "./prompt-execution/actionCacheSlice";
+import modelRegistryReducer from "./slices/modelRegistrySlice";
+
+// SMS
+import smsReducer from "../../features/sms/redux/smsSlice";
 
 // ============================================================================
-// LITE ROOT REDUCER - Core slices for public routes
+// LITE ROOT REDUCER — SSR Shell + Public Routes
 // ============================================================================
-// Includes user-related state that's needed across public routes.
-// Excludes feature-specific slices that are only needed in certain contexts.
+// All slices initialize with empty/default state. No blocking fetches.
+// Store is created instantly, then hydrated after render via RPC or thunks.
 //
-// INCLUDED (essential for public routes):
+// INCLUDED:
 // - layout, theme, overlays: Core UI state
-// - user: User identity and auth state
-// - userPreferences: User settings (theme, voice, AI prefs, etc.)
-// - adminPreferences: Admin-only settings (server override, etc.) - lightweight
+// - user, userPreferences: Identity and settings
+// - adminPreferences, adminDebug: Admin tools (lazy, only active for admins)
+// - canvas: Canvas panel state
+// - promptCache, promptRunner, promptExecution, actionCache: Prompt system
+// - modelRegistry: AI model list (fetched via thunk when needed)
+// - sms: SMS conversations (fetched on demand)
 //
-// EXCLUDED (feature-specific, add via feature providers if needed):
-// - canvasReducer: Only for chat+canvas features
-// - promptCache, promptRunner, promptExecution: Only for prompt system
-// - modelRegistry: Only for AI model selection
-// - textDiff, noteVersions: Only for note editing
+// EXCLUDED (require entities, sagas, or socket.io):
+// - entities, globalCache, entityFields: Entity system (~134 slices + 108K schema)
+// - socketConnections, socketResponse, socketTasks: Socket.io middleware
+// - broker, workflows, workflowNodes: Saga-dependent
+// - appBuilder, appletBuilder, etc.: Feature-specific builders
+// - fileSystem: Bucket-based file management
 // ============================================================================
 
 /**
- * Creates a lightweight root reducer for public routes.
- * 
- * Core slices for user-aware public pages:
- * - layout: Window/layout state
- * - theme: Light/dark mode
- * - user: User identity (id, email, metadata)
- * - userPreferences: User settings and preferences
- * - overlays: Modal/overlay state
- * 
- * This is ~80% smaller than the full root reducer.
- * Slices initialize with empty/default state - no blocking fetches.
+ * Creates a lightweight root reducer for SSR and public routes.
+ *
+ * ~90% smaller than the full root reducer. All slices start empty.
+ * Keys match the full root reducer so selectors and hooks are portable.
  */
 export const createLiteRootReducer = () => {
     return combineReducers({
-        // Core UI state
+        // Core UI
         layout: layoutReducer,
         theme: themeReducer,
         overlays: overlaySlice,
-        
-        // User state (initializes empty, populated after auth)
+
+        // User
         user: userReducer,
         userPreferences: userPreferencesReducer,
-        
-        // Admin preferences (lightweight, only used when admin)
+
+        // Admin
         adminPreferences: adminPreferencesReducer,
+        adminDebug: adminDebugReducer,
+
+        // Canvas
+        canvas: canvasReducer,
+
+        // Prompt system
+        promptCache: promptCacheReducer,
+        promptRunner: promptRunnerReducer,
+        promptExecution: promptExecutionReducer,
+        actionCache: actionCacheReducer,
+        modelRegistry: modelRegistryReducer,
+
+        // SMS
+        sms: smsReducer,
     });
 };
 
