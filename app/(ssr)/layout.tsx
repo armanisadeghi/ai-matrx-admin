@@ -17,8 +17,7 @@ export const metadata = {
 export default async function SSRLayout({ children }: { children: React.ReactNode }) {
   // Only headers() — no auth, no DB, nothing async blocking paint
   const headersList = await headers();
-  const fullUrl = headersList.get("x-url") || headersList.get("x-invoke-path") || "";
-  const pathname = headersList.get("x-pathname") || new URL(fullUrl || "http://localhost/ssr/dashboard").pathname;
+  const pathname = headersList.get("x-pathname") || "/ssr";
 
   return (
     <>
