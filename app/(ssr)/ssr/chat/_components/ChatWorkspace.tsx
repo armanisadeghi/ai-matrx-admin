@@ -181,7 +181,7 @@ function ChatWorkspaceInner({ initialConversations }: ChatWorkspaceProps) {
                         role: msg.role as 'user' | 'assistant',
                         content: textContent,
                         status: 'complete' as const,
-                        timestamp: msg.created_at,
+                        timestamp: new Date(msg.created_at),
                     };
                 });
 
