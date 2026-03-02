@@ -24,7 +24,7 @@ export const primaryNavItems: ShellNavItem[] = [
   },
   {
     label: "Chat",
-    href: "/chat",
+    href: "/ssr/chat",
     iconName: "MessageCircle",
     section: "primary",
     dockOrder: 2,
