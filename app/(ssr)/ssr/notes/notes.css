@@ -24,9 +24,18 @@
   grid-area: content;
 }
 
-/* Scrollbar customization */
+/* Ultra-thin auto-hiding scrollbar */
+.notes-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.notes-scrollable:hover {
+  scrollbar-color: hsl(var(--muted-foreground) / 0.15) transparent;
+}
+
 .notes-scrollable::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .notes-scrollable::-webkit-scrollbar-track {
@@ -34,12 +43,23 @@
 }
 
 .notes-scrollable::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.2);
+  background: transparent;
   border-radius: 2px;
 }
 
+.notes-scrollable:hover::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.15);
+}
+
 .notes-scrollable::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.35);
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* Status bar — only visible on hover over the editor area */
+.note-detail-active:hover .notes-status-bar {
+  opacity: 1;
+  height: auto;
+  overflow: visible;
 }
 
 /* Hide horizontal scrollbar in tab bar */

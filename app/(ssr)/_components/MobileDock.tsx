@@ -1,16 +1,17 @@
-// MobileDock.tsx — Server component for iOS-style bottom navigation dock
-// Uses next/link for client-side transitions (shell stays mounted)
-// Strictly 6 primary route icons, no text
+"use client";
+
+// MobileDock — Client component for iOS-style bottom navigation dock.
+// Uses usePathname() to stay in sync with client-side navigation (pushState).
+// Active pill animates via View Transitions API + CSS spring keyframes.
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ShellIcon from "./ShellIcon";
 import { dockItems } from "../nav-data";
 
-interface MobileDockProps {
-  pathname: string;
-}
+export default function MobileDock() {
+  const pathname = usePathname();
 
-export default function MobileDock({ pathname }: MobileDockProps) {
   const isActive = (href: string) => {
     if (href === "/ssr/dashboard") {
       return pathname === "/ssr/dashboard" || pathname === "/ssr";

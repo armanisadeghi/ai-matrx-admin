@@ -21,8 +21,8 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Extract display name and avatar from user metadata
-  let authUser: { name: string; avatarUrl?: string } | null = null;
+  // Extract display name, email, and avatar from user metadata
+  let authUser: { name: string; email?: string; avatarUrl?: string } | null = null;
   if (user) {
     const meta = user.user_metadata ?? {};
     const name =
@@ -32,7 +32,7 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
       user.email?.split("@")[0] ||
       "User";
     const avatarUrl = meta.avatar_url || meta.picture || undefined;
-    authUser = { name, avatarUrl };
+    authUser = { name, email: user.email, avatarUrl };
   }
 
   // Resolve admin status server-side
@@ -65,15 +65,15 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
         <Sidebar pathname={pathname} isAdmin={isAdmin} />
 
         {/* Header — Completely transparent container */}
-        <Header user={authUser} />
+        <Header user={authUser} isAdmin={isAdmin} />
 
         {/* Main Content — Independent scroll context */}
         <main className="shell-main">
           {children}
         </main>
 
-        {/* Mobile Bottom Dock */}
-        <MobileDock pathname={pathname} />
+        {/* Mobile Bottom Dock — Client component, uses usePathname() for pushState sync */}
+        <MobileDock />
 
         {/* Mobile Off-canvas Side Sheet */}
         <MobileSideSheet pathname={pathname} isAdmin={isAdmin} />

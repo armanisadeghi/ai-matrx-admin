@@ -20,7 +20,7 @@ export default function NavItem({ item, isActive }: NavItemProps) {
       style={isActive ? { viewTransitionName: "shell-active-pill" } : undefined}
     >
       <span className="shell-nav-icon">
-        <ShellIcon name={item.iconName} size={20} strokeWidth={1.75} />
+        <ShellIcon name={item.iconName} size={18} strokeWidth={1.75} />
       </span>
       <span className="shell-nav-label">{item.label}</span>
     </Link>
