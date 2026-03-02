@@ -9,8 +9,6 @@
 //
 // Nothing here blocks rendering. Store is created with data already present.
 
-'use client';
-
 import LiteStoreProvider from '@/providers/LiteStoreProvider';
 import { LiteInitialReduxState } from '@/types/reduxTypes';
 

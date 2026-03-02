@@ -1,7 +1,5 @@
 // lib/redux/liteStore.ts
 // Lightweight store for public/lite routes - no sagas, no socket.io, no entity system
-"use client";
-
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import { createLiteRootReducer, LiteRootState } from "@/lib/redux/liteRootReducer";
 import { enableMapSet } from "immer";

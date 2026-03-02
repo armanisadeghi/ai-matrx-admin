@@ -63,7 +63,14 @@ export const fetchAvailableModels = createAsyncThunk(
 const modelRegistrySlice = createSlice({
     name: 'modelRegistry',
     initialState,
-    reducers: {},
+    reducers: {
+        hydrateModels(state, action: { payload: { availableModels: AIModel[]; lastFetched: number } }) {
+            state.availableModels = action.payload.availableModels;
+            state.lastFetched = action.payload.lastFetched;
+            state.isLoading = false;
+            state.error = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchAvailableModels.pending, (state) => {
@@ -82,6 +89,7 @@ const modelRegistrySlice = createSlice({
     },
 });
 
+export const { hydrateModels } = modelRegistrySlice.actions;
 export default modelRegistrySlice.reducer;
 
 // Selectors
