@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, ChevronDown, Loader2, RefreshCw, Wifi, WifiOff, XCircle, Zap } from 'lucide-react';
+import { Activity, Loader2, RefreshCw, Wifi, WifiOff, XCircle, Zap } from 'lucide-react';
 import { useState } from 'react';
 import type { UseMatrxLocalReturn } from './useMatrxLocal';
 
@@ -30,196 +30,204 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
         activeRequests,
     } = hook;
 
-    const [showActiveReqs, setShowActiveReqs] = useState(false);
+    const [showRequests, setShowRequests] = useState(false);
 
-    const statusBadge = () => {
-        if (status === 'discovering') {
-            return (
-                <Badge variant="outline" className="gap-1 text-yellow-600 border-yellow-500">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Discovering…
-                </Badge>
-            );
-        }
-        if (wsConnected) {
-            return (
-                <Badge variant="outline" className="gap-1 text-green-600 border-green-500">
-                    <Wifi className="w-3 h-3" /> WS Connected
-                </Badge>
-            );
-        }
-        if (status === 'connected') {
-            return (
-                <Badge variant="outline" className="gap-1 text-blue-600 border-blue-500">
-                    <Zap className="w-3 h-3" /> REST Online
-                </Badge>
-            );
-        }
-        if (status === 'connecting') {
-            return (
-                <Badge variant="outline" className="gap-1 text-yellow-600 border-yellow-500">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Connecting…
-                </Badge>
-            );
-        }
-        return (
-            <Badge variant="outline" className="gap-1 text-muted-foreground">
-                <WifiOff className="w-3 h-3" /> Offline
-            </Badge>
-        );
-    };
+    const isDiscovering = status === 'discovering';
+    const isConnectingWs = status === 'connecting';
+
+    // REST is "up" when the engine responds on the REST polling endpoint
+    const restOnline = status === 'connected' || wsConnected;
+    // WS connection state
+    const wsOnline = wsConnected;
 
     return (
-        <div className="border rounded-lg p-3 bg-card space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-                {/* URL */}
-                <span className="text-xs font-semibold shrink-0">URL:</span>
-                <input
-                    type="text"
-                    value={baseUrl}
-                    onChange={(e) => setBaseUrl(e.target.value)}
-                    className="h-7 text-xs font-mono flex-1 min-w-[200px] rounded border px-2 bg-background"
-                />
+        <div className="border rounded-lg bg-card">
+            {/* Main row */}
+            <div className="flex items-center gap-3 p-3">
+                {/* URL input */}
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-xs text-muted-foreground font-medium shrink-0">Engine URL</span>
+                    <input
+                        type="text"
+                        value={baseUrl}
+                        onChange={(e) => setBaseUrl(e.target.value)}
+                        className="h-8 text-xs font-mono flex-1 min-w-0 rounded border px-2.5 bg-background"
+                    />
+                </div>
 
-                {/* Auto-discover */}
+                {/* Recheck button */}
                 <Button
                     size="sm"
                     variant="outline"
                     onClick={discover}
-                    disabled={status === 'discovering'}
-                    className="h-7 text-xs px-2 gap-1"
+                    disabled={isDiscovering}
+                    className="h-8 px-3 gap-1.5 shrink-0"
+                    title="Scan ports 22140–22159 for the engine"
                 >
-                    {status === 'discovering' ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                    {isDiscovering ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                        <RefreshCw className="w-3 h-3" />
+                        <RefreshCw className="w-3.5 h-3.5" />
                     )}
-                    Auto-Detect
+                    <span className="text-xs">{isDiscovering ? 'Scanning…' : 'Recheck'}</span>
                 </Button>
 
-                {/* Status */}
-                {statusBadge()}
+                <div className="w-px h-6 bg-border shrink-0" />
 
-                {/* Health badge */}
-                {healthInfo && (
-                    <Badge variant="outline" className="gap-1 text-emerald-600 border-emerald-500 text-[10px]">
-                        <Activity className="w-2.5 h-2.5" />
-                        {healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'Healthy' : healthInfo.status}
-                    </Badge>
-                )}
+                {/* REST status pill */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs text-muted-foreground">REST</span>
+                    {isDiscovering ? (
+                        <Badge variant="outline" className="gap-1 text-yellow-600 border-yellow-500 h-6">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Checking
+                        </Badge>
+                    ) : restOnline ? (
+                        <Badge variant="outline" className="gap-1 text-green-600 border-green-500 h-6">
+                            <Zap className="w-3 h-3" /> Online
+                        </Badge>
+                    ) : (
+                        <Badge variant="outline" className="gap-1 text-muted-foreground h-6">
+                            <WifiOff className="w-3 h-3" /> Offline
+                        </Badge>
+                    )}
+                </div>
 
-                {/* Version badge */}
-                {(versionInfo?.version || healthInfo?.version) && (
-                    <Badge variant="secondary" className="text-[10px] h-5">
-                        v{versionInfo?.version || healthInfo?.version}
-                    </Badge>
-                )}
-
-                {/* Active requests badge */}
-                {activeRequests.length > 0 && (
-                    <div className="relative">
+                {/* WS status pill + connect/disconnect */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs text-muted-foreground">WS</span>
+                    {isConnectingWs ? (
+                        <Badge variant="outline" className="gap-1 text-yellow-600 border-yellow-500 h-6">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Connecting
+                        </Badge>
+                    ) : wsOnline ? (
+                        <Badge variant="outline" className="gap-1 text-green-600 border-green-500 h-6">
+                            <Wifi className="w-3 h-3" /> Connected
+                        </Badge>
+                    ) : (
+                        <Badge variant="outline" className="gap-1 text-muted-foreground h-6">
+                            <WifiOff className="w-3 h-3" /> Disconnected
+                        </Badge>
+                    )}
+                    {wsOnline ? (
+                        <Button size="sm" variant="ghost" onClick={disconnectWs} className="h-7 px-2 text-xs text-muted-foreground">
+                            Disconnect
+                        </Button>
+                    ) : (
                         <Button
                             size="sm"
-                            variant="outline"
-                            className="h-6 text-[10px] px-2 gap-1 text-orange-600 border-orange-400"
-                            onClick={() => setShowActiveReqs(!showActiveReqs)}
+                            variant="ghost"
+                            onClick={connectWs}
+                            disabled={isConnectingWs}
+                            className="h-7 px-2 text-xs"
                         >
-                            <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                            {activeRequests.length} in-flight
-                            <ChevronDown className="w-2.5 h-2.5" />
+                            Connect
                         </Button>
+                    )}
+                </div>
 
-                        {showActiveReqs && (
-                            <div className="absolute top-full mt-1 right-0 z-50 bg-popover border rounded-md shadow-lg p-1 min-w-[200px]">
+                <div className="w-px h-6 bg-border shrink-0" />
+
+                {/* Transport toggle */}
+                {showTransportToggle && (
+                    <div className="flex items-center gap-1 shrink-0 bg-muted rounded-md p-0.5">
+                        <button
+                            onClick={() => setUseWebSocket(true)}
+                            className={`h-6 px-2.5 text-xs rounded transition-colors ${
+                                useWebSocket
+                                    ? 'bg-background text-foreground shadow-sm font-medium'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            WS
+                        </button>
+                        <button
+                            onClick={() => setUseWebSocket(false)}
+                            className={`h-6 px-2.5 text-xs rounded transition-colors ${
+                                !useWebSocket
+                                    ? 'bg-background text-foreground shadow-sm font-medium'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            REST
+                        </button>
+                    </div>
+                )}
+
+                {/* Active requests indicator */}
+                {activeRequests.length > 0 && (
+                    <div className="relative shrink-0">
+                        <button
+                            onClick={() => setShowRequests(!showRequests)}
+                            className="flex items-center gap-1.5 h-7 px-2.5 text-xs rounded-md bg-orange-50 dark:bg-orange-950/30 text-orange-600 border border-orange-300 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/50 transition-colors"
+                        >
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            {activeRequests.length} running
+                        </button>
+
+                        {showRequests && (
+                            <div className="absolute top-full mt-1.5 right-0 z-50 bg-popover border rounded-lg shadow-lg py-1 min-w-[220px]">
                                 {activeRequests.map((req) => (
                                     <div
                                         key={req.id}
-                                        className="flex items-center justify-between gap-2 px-2 py-1 text-xs rounded hover:bg-accent"
+                                        className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs hover:bg-accent"
                                     >
-                                        <span className="font-mono truncate flex-1">{req.tool}</span>
-                                        <span className="text-muted-foreground text-[10px] shrink-0">
+                                        <span className="font-mono font-medium truncate flex-1">{req.tool}</span>
+                                        <span className="text-muted-foreground shrink-0">
                                             {Math.round((Date.now() - req.startedAt.getTime()) / 1000)}s
                                         </span>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+                                        <button
                                             onClick={() => cancelRequest(req.id)}
+                                            className="text-destructive hover:text-destructive/80 shrink-0"
                                         >
-                                            <XCircle className="w-3 h-3" />
-                                        </Button>
+                                            <XCircle className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
                                 ))}
-                                <div className="border-t mt-1 pt-1">
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="w-full h-6 text-[10px] text-destructive"
-                                        onClick={() => {
-                                            cancelAll();
-                                            setShowActiveReqs(false);
-                                        }}
+                                <div className="border-t mt-1 pt-1 px-3 pb-1">
+                                    <button
+                                        onClick={() => { cancelAll(); setShowRequests(false); }}
+                                        className="text-xs text-destructive hover:text-destructive/80"
                                     >
-                                        Cancel All
-                                    </Button>
+                                        Cancel all
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Transport toggle */}
-                {showTransportToggle && (
-                    <div className="flex items-center gap-1 ml-auto">
-                        <Button
-                            size="sm"
-                            variant={useWebSocket ? 'default' : 'outline'}
-                            onClick={() => setUseWebSocket(true)}
-                            className="h-7 text-xs px-2"
-                        >
-                            WS
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={!useWebSocket ? 'default' : 'outline'}
-                            onClick={() => setUseWebSocket(false)}
-                            className="h-7 text-xs px-2"
-                        >
-                            REST
-                        </Button>
-                    </div>
-                )}
-
-                {/* WS connect / disconnect */}
-                {useWebSocket && (
-                    <div className="flex items-center gap-1.5">
-                        {wsConnected ? (
-                            <Button size="sm" variant="outline" onClick={disconnectWs} className="h-7 text-xs px-2">
-                                Disconnect
-                            </Button>
-                        ) : (
-                            <Button
-                                size="sm"
-                                onClick={connectWs}
-                                disabled={status === 'connecting'}
-                                className="h-7 text-xs px-2"
-                            >
-                                {status === 'connecting' && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                                Connect WS
-                            </Button>
-                        )}
-                        {wsConnected && loading && (
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={cancelAll}
-                                className="h-7 text-xs px-2 gap-1"
-                            >
-                                <XCircle className="w-3 h-3" /> Cancel
-                            </Button>
-                        )}
-                    </div>
+                {/* Cancel button when loading */}
+                {loading && (
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={cancelAll}
+                        className="h-7 px-2.5 gap-1 text-xs shrink-0"
+                    >
+                        <XCircle className="w-3 h-3" /> Cancel
+                    </Button>
                 )}
             </div>
+
+            {/* Info strip: health + version */}
+            {(healthInfo || versionInfo) && (
+                <div className="flex items-center gap-3 px-3 pb-2 text-[11px] text-muted-foreground border-t pt-2">
+                    {(versionInfo?.version || healthInfo?.version) && (
+                        <span className="flex items-center gap-1">
+                            <Activity className="w-3 h-3" />
+                            v{versionInfo?.version || healthInfo?.version}
+                        </span>
+                    )}
+                    {healthInfo && (
+                        <span className={healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'text-green-600' : 'text-yellow-600'}>
+                            {healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'Engine healthy' : `Engine: ${healthInfo.status}`}
+                        </span>
+                    )}
+                    <span className="ml-auto">
+                        Using <span className="font-medium text-foreground">{useWebSocket ? 'WebSocket' : 'REST'}</span> for tool calls
+                    </span>
+                </div>
+            )}
         </div>
     );
 }
