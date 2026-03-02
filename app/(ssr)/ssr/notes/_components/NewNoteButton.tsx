@@ -61,9 +61,8 @@ export default function NewNoteButton() {
   return (
     <button
       className={cn(
-        "flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0",
-        "hover:bg-accent hover:text-foreground",
-        "[&_svg]:w-3.5 [&_svg]:h-3.5",
+        "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5",
+        "hover:text-foreground",
         creating && "opacity-50 pointer-events-none",
       )}
       onClick={createNote}

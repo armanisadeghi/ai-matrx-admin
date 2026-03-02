@@ -20,11 +20,10 @@ export default function Header({ user, isAdmin }: HeaderProps) {
       <div className="shell-mobile-trigger">
         <label
           htmlFor="shell-mobile-menu"
-          className="shell-glass shell-tactile"
+          className="shell-mobile-menu-label"
           aria-label="Open navigation menu"
-          style={{ borderRadius: "9999px", padding: "0.375rem", display: "flex" }}
         >
-          <div className="shell-hamburger">
+          <div className="shell-hamburger shell-glass shell-tactile">
             <span className="shell-hamburger-line" />
             <span className="shell-hamburger-line" />
             <span className="shell-hamburger-line" />

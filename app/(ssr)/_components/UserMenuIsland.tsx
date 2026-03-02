@@ -53,6 +53,8 @@ export default function UserMenuIsland({ user, isAdmin }: UserMenuIslandProps) {
 
   return (
     <div ref={menuRef} className="relative">
+      {/* Transparent 44px tap target wrapper */}
+      <div className="flex items-center justify-center w-[60px] h-11">
       <button
         className={cn(
           "shell-auth-island shell-glass shell-tactile cursor-pointer",
@@ -105,6 +107,7 @@ export default function UserMenuIsland({ user, isAdmin }: UserMenuIslandProps) {
           </span>
         )}
       </button>
+      </div>
 
       {/* Dropdown panel — lazy loaded */}
       {open && (

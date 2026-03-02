@@ -63,7 +63,7 @@ export default async function NotesLayout({ children }: { children: React.ReactN
   return (
     <div className="notes-root">
       {/* Sidebar — client component for filtering/search, receives server data */}
-      <aside className="notes-sidebar flex flex-col bg-card/60 backdrop-blur-xl border-r border-border/50 overflow-hidden">
+      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30">  {/* border-r border-border/50 */}
         <Suspense>
           <SidebarClient
             notes={notesList}

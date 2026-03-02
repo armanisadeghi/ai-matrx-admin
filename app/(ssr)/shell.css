@@ -10,7 +10,7 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  --shell-header-h: 2.5rem;
+  --shell-header-h: 2.75rem;
   --shell-sidebar-w: 2.75rem;
   --shell-sidebar-w-expanded: 13rem;
   --shell-dock-h: 3.75rem;
@@ -504,7 +504,7 @@
   align-items: center;
   justify-content: space-between;
   height: var(--shell-header-h);
-  padding: 0 0.75rem;
+  padding: 0 0.75rem 0 0.5rem;
   padding-top: var(--shell-safe-area-top);
   /* Completely transparent — no bg, no border, no blur */
   background: transparent;
@@ -532,7 +532,7 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.25rem 0.5rem 0.25rem 0.375rem;
+  padding: 0 0.875rem 0 0.75rem;
   border-radius: 9999px;
   text-decoration: none;
   color: var(--shell-auth-text);
@@ -568,6 +568,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+  background: transparent;
   /* Scroll behind header */
   margin-top: calc(-1 * var(--shell-header-h));
   padding-top: var(--shell-header-h);
@@ -634,6 +635,16 @@
   /* Main content needs bottom padding for dock */
   .shell-main {
     padding-bottom: calc(var(--shell-dock-h) + var(--shell-dock-bottom) + 1rem + var(--shell-safe-area-bottom));
+  }
+
+  /* Hide dock when a note detail is open — note editor owns the bottom chrome */
+  .shell-root:has(.note-detail-active) .shell-dock {
+    display: none;
+  }
+
+  /* Remove dock padding when note detail is open — dock is hidden */
+  .shell-root:has(.note-detail-active) .shell-main {
+    padding-bottom: 0;
   }
 }
 
@@ -998,13 +1009,25 @@
    17. Hamburger Icon — CSS-only animated
    --------------------------------------------------------------------------- */
 
+.shell-mobile-menu-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px transparent tap target */
+  width: 2.75rem;
+  height: 2.75rem;
+  cursor: pointer;
+}
+
 .shell-hamburger {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 2rem;
-  height: 2rem;
+  /* Visible glass pill — same size as shell-auth-island */
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 9999px;
   gap: 4px;
   cursor: pointer;
 }

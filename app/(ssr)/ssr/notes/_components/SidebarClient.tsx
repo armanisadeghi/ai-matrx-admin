@@ -261,41 +261,50 @@ export default function SidebarClient({ notes: serverNotes, folderCounts, allTag
 
   return (
     <>
-      {/* ── Search + Sort + New Note ───────────────────────────────────── */}
-      <div className="flex items-center gap-1 px-2 pt-2 pb-1 shrink-0">
-        <div className="flex-1 relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-          <input
-            className="w-full h-7 pl-7 pr-2 text-xs bg-muted/50 border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-ring focus:bg-muted"
-            type="text"
-            placeholder="Search notes..."
-            defaultValue={searchQuery}
-            onChange={(e) => updateParams({ q: e.target.value || null })}
-            aria-label="Search notes"
-          />
+      {/* ── Search bar — fixed just below main header, same pattern as the dock ── */}
+      <div className="notes-search-bar">
+        {/* Search input — transparent wrapper, glass pill fills the height */}
+        <div className="notes-search-input-wrap">
+          <div className="relative w-full">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            <input
+              className="w-full h-[1.875rem] pl-8 pr-2 shell-glass rounded-full text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors"
+              style={{ fontSize: "16px" }}
+              type="text"
+              placeholder="Search notes..."
+              defaultValue={searchQuery}
+              onChange={(e) => updateParams({ q: e.target.value || null })}
+              aria-label="Search notes"
+            />
+          </div>
         </div>
-        <button
-          className="flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0 hover:bg-accent hover:text-foreground [&_svg]:w-3 [&_svg]:h-3"
-          onClick={toggleAll}
-          title={allExpanded ? "Collapse all folders" : "Expand all folders"}
-          aria-label={allExpanded ? "Collapse all folders" : "Expand all folders"}
-        >
-          {allExpanded ? <ChevronsDownUp /> : <ChevronsUpDown />}
-        </button>
-        <button
-          className={cn(
-            "flex items-center justify-center w-7 h-7 rounded-md border border-border bg-background text-muted-foreground cursor-pointer transition-colors shrink-0",
-            "hover:bg-accent hover:text-foreground",
-            "[&_svg]:w-3 [&_svg]:h-3",
-            sortOrder === "asc" && "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400",
-          )}
-          onClick={() => updateParams({ order: sortOrder === "desc" ? "asc" : "desc" })}
-          title={`Sort ${sortOrder === "desc" ? "oldest first" : "newest first"}`}
-          aria-label="Toggle sort order"
-        >
-          {sortOrder === "desc" ? <ChevronDown /> : <ChevronUp />}
-        </button>
-        <NewNoteButton />
+        {/* Icon buttons — transparent 44px tap target, small glass pill inside */}
+        <div className="notes-search-tap">
+          <button
+            className="flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5"
+            onClick={toggleAll}
+            title={allExpanded ? "Collapse all folders" : "Expand all folders"}
+            aria-label={allExpanded ? "Collapse all folders" : "Expand all folders"}
+          >
+            {allExpanded ? <ChevronsDownUp /> : <ChevronsUpDown />}
+          </button>
+        </div>
+        <div className="notes-search-tap">
+          <button
+            className={cn(
+              "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5",
+              sortOrder === "asc" && "text-amber-600 dark:text-amber-400",
+            )}
+            onClick={() => updateParams({ order: sortOrder === "desc" ? "asc" : "desc" })}
+            title={`Sort ${sortOrder === "desc" ? "oldest first" : "newest first"}`}
+            aria-label="Toggle sort order"
+          >
+            {sortOrder === "desc" ? <ChevronDown /> : <ChevronUp />}
+          </button>
+        </div>
+        <div className="notes-search-tap">
+          <NewNoteButton />
+        </div>
       </div>
 
       {/* ── VSCode-style Tree ──────────────────────────────────────────── */}

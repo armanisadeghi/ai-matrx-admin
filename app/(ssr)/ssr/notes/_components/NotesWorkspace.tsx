@@ -29,7 +29,6 @@ import {
   Save,
   ChevronLeft,
   Folder,
-  Tag,
   Copy,
   Trash2,
   FileText,
@@ -39,8 +38,10 @@ import {
   Share2,
   FolderInput,
   Sparkles,
+  MoreHorizontal,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
 import type { MarkdownStreamProps } from "@/components/MarkdownStream";
@@ -124,6 +125,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
     type: "tab" | "editor";
   } | null>(null);
   const [showAiMenu, setShowAiMenu] = useState(false);
+  const [showNoteOptions, setShowNoteOptions] = useState(false);
 
   // Portal target for header center
   const [headerCenter, setHeaderCenter] = useState<HTMLElement | null>(null);
@@ -796,6 +798,10 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
   const contextItemClass =
     "flex items-center gap-2 w-full py-1.5 px-2.5 text-xs text-muted-foreground bg-transparent border-none rounded-md cursor-pointer text-left transition-colors hover:bg-accent hover:text-foreground [&_svg]:w-[0.8125rem] [&_svg]:h-[0.8125rem] [&_svg]:shrink-0";
 
+  // Bottom sheet row style — mirrors UserMenuPanel item style
+  const noteOptionItemClass =
+    "flex items-center gap-2.5 w-full px-3 py-1.5 text-[0.8125rem] text-foreground rounded-lg cursor-pointer transition-colors hover:bg-[var(--shell-glass-bg-hover)] bg-transparent border-none text-left";
+
   // ─── RENDER ─────────────────────────────────────────────────────────────
 
   return (
@@ -1082,41 +1088,110 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             </div>
           )}
 
-          {/* ── Inline title + metadata (part of editor content area) ─ */}
-          <div className="flex items-center gap-2 px-5 pt-3 pb-1 shrink-0">
-            <button
-              className="hidden max-lg:flex items-center justify-center w-6 h-6 rounded text-muted-foreground cursor-pointer shrink-0 [&_svg]:w-4 [&_svg]:h-4"
-              onClick={goBack}
-              aria-label="Back to notes"
-            >
-              <ChevronLeft />
-            </button>
-            <input
-              className="flex-1 text-lg font-semibold text-foreground border-none bg-transparent outline-none py-0.5 min-w-0 placeholder:text-muted-foreground/50"
-              type="text"
-              value={activeLabel}
-              onChange={handleTitleChange}
-              placeholder="Note title..."
-              aria-label="Note title"
-            />
-            <span className="inline-flex items-center gap-1 text-[0.625rem] py-0.5 px-1.5 rounded bg-muted text-muted-foreground [&_svg]:w-2.5 [&_svg]:h-2.5 shrink-0">
-              <Folder />
-              {activeCached.data.folder_name}
-            </span>
-            {activeCached.data.tags.length > 0 && (
-              <span className="inline-flex items-center gap-1 text-[0.625rem] py-0.5 px-1.5 rounded bg-muted text-muted-foreground [&_svg]:w-2.5 [&_svg]:h-2.5 shrink-0">
-                <Tag />
-                {activeCached.data.tags.slice(0, 2).join(", ")}
-                {activeCached.data.tags.length > 2 &&
-                  ` +${activeCached.data.tags.length - 2}`}
-              </span>
-            )}
+          {/* ── Note header bar — mirrors search bar structure exactly ─ */}
+          <div className="notes-search-bar notes-note-header">
+            {/* Chevron back — mobile only, same tap target as sidebar icon buttons */}
+            <div className="notes-search-tap lg:hidden">
+              <button
+                className="flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5"
+                onClick={goBack}
+                aria-label="Back to notes"
+              >
+                <ChevronLeft />
+              </button>
+            </div>
+
+            {/* Title input — fills remaining space, same glass pill as search input */}
+            <div className="notes-search-input-wrap">
+              <input
+                className="notes-title-input w-full h-[1.875rem] px-3 shell-glass rounded-full placeholder:text-muted-foreground/60 outline-none transition-colors min-w-0 truncate"
+                style={{ fontSize: "16px" }}
+                type="text"
+                value={activeLabel}
+                onChange={handleTitleChange}
+                placeholder="Note title..."
+                aria-label="Note title"
+              />
+            </div>
+
+            {/* More options — opens bottom sheet with all note actions */}
+            <div className="notes-search-tap">
+              <button
+                className={cn(
+                  "flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full shell-glass shell-tactile text-muted-foreground cursor-pointer hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5",
+                  showNoteOptions && "bg-(--shell-glass-bg-active)! text-foreground",
+                )}
+                onClick={() => setShowNoteOptions((v) => !v)}
+                aria-label="Note options"
+              >
+                <MoreHorizontal />
+              </button>
+            </div>
           </div>
+
+          {/* ── Note Options Bottom Sheet ───────────────────────────── */}
+          {showNoteOptions && activeNoteId && activeCached && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowNoteOptions(false)}
+              />
+              {/* Sheet */}
+              <div className="fixed inset-x-3 z-50 rounded-2xl p-2 bg-(--shell-glass-bg) backdrop-blur-[20px] saturate-[1.5] border border-(--shell-glass-border) shadow-2xl bottom-[calc(var(--shell-dock-h)+var(--shell-dock-bottom)+env(safe-area-inset-bottom,0px)+0.5rem)]">
+                {/* Folder label */}
+                <div className="flex items-center gap-2.5 px-3 py-2 text-[0.8125rem] text-muted-foreground">
+                  <Folder className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{activeCached.data.folder_name ?? "Draft"}</span>
+                </div>
+
+                <div className="h-px my-1 mx-2 bg-(--shell-glass-border)" />
+
+                {/* Save */}
+                <button
+                  className={cn(noteOptionItemClass, saveState === "dirty" && "text-amber-500 [&_svg]:text-amber-500")}
+                  onClick={() => { forceSave(activeNoteId); setShowNoteOptions(false); }}
+                >
+                  <Save className="w-4 h-4 shrink-0" />
+                  {saveState === "dirty" ? "Save Changes" : "Saved"}
+                </button>
+
+                {/* Duplicate */}
+                <button
+                  className={noteOptionItemClass}
+                  onClick={() => { duplicateNote(activeNoteId); setShowNoteOptions(false); }}
+                >
+                  <Copy className="w-4 h-4 shrink-0" />
+                  Duplicate
+                </button>
+
+                {/* Share / Copy to clipboard */}
+                <button
+                  className={noteOptionItemClass}
+                  onClick={() => { shareNote(activeNoteId); setShowNoteOptions(false); }}
+                >
+                  <Share2 className="w-4 h-4 shrink-0" />
+                  Copy to Clipboard
+                </button>
+
+                <div className="h-px my-1 mx-2 bg-(--shell-glass-border)" />
+
+                {/* Delete */}
+                <button
+                  className={cn(noteOptionItemClass, "text-destructive [&_svg]:text-destructive")}
+                  onClick={() => { deleteNote(activeNoteId); setShowNoteOptions(false); }}
+                >
+                  <Trash2 className="w-4 h-4 shrink-0" />
+                  Delete Note
+                </button>
+              </div>
+            </>
+          )}
 
           {/* ── Editor Content ─────────────────────────────────────── */}
           {editorMode === "plain" && (
             <textarea
-              className="notes-scrollable flex-1 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
+              className="notes-editor-textarea notes-scrollable flex-1 min-h-0 w-full py-2 px-5 text-sm leading-[1.7] font-[inherit] text-foreground bg-transparent border-none outline-none resize-none overflow-y-auto placeholder:text-muted-foreground"
               value={activeContent}
               onChange={handleContentChange}
               onSelect={(e) => {
@@ -1129,7 +1204,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           )}
 
           {editorMode === "preview" && (
-            <div className="notes-scrollable flex-1 overflow-y-auto py-2 px-5">
+            <div className="notes-preview-wrapper notes-scrollable flex-1 min-h-0 overflow-y-auto py-2 px-5">
               {activeContent ? (
                 <MarkdownStream content={activeContent} type="text" role="assistant" hideCopyButton />
               ) : (
@@ -1163,7 +1238,7 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
           )}
 
           {/* ── Status Bar — appears on hover only ─────────────────── */}
-          <div className="notes-status-bar flex items-center gap-3 py-1 px-4 text-[0.625rem] text-muted-foreground border-t border-border shrink-0 opacity-0 h-0 overflow-hidden transition-all duration-200">
+          <div className="notes-status-bar flex items-center gap-3 py-1 px-4 text-[0.625rem] text-muted-foreground opacity-0 h-0 overflow-hidden transition-all duration-200">
             <span
               className={cn(
                 "w-1.5 h-1.5 rounded-full",
