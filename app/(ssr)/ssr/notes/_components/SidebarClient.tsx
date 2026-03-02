@@ -115,8 +115,16 @@ export default function SidebarClient({ notes: serverNotes, folderCounts, allTag
   } | null>(null);
 
   // ── Folder expand/collapse state ──────────────────────────────────────
+  const activeNoteFolder = useMemo(() => {
+    const activeId = pathname.startsWith("/ssr/notes/")
+      ? pathname.split("/ssr/notes/")[1]?.split("/")[0] ?? ""
+      : "";
+    if (!activeId) return null;
+    return serverNotes.find((n) => n.id === activeId)?.folder_name ?? null;
+  }, [pathname, serverNotes]);
+
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    () => new Set(Object.keys(folderCounts)),
+    () => activeNoteFolder ? new Set([activeNoteFolder]) : new Set(),
   );
 
   const toggleFolder = useCallback((folder: string) => {
