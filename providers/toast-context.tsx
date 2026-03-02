@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { toast } from '@/lib/toast-service';
 import { ToastAction } from "@/components/ui/toast";
@@ -18,6 +18,10 @@ export const ToastContext = createContext<ToastContextType | null>(null);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [configs, setConfigs] = useState<Record<string, ToastDefaults>>({});
     const { toast: showToast, dismiss } = useToast();
+
+    useEffect(() => {
+        console.debug(`[perf] ToastProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
+    }, []);
 
     const createToastAction = (options?: any): ToastActionElement | undefined => {
         if (!options?.action) return undefined;

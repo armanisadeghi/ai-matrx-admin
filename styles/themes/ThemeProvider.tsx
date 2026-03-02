@@ -29,6 +29,10 @@ export const ThemeProvider: React.FC<{
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        console.debug(`[perf] ThemeProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
+    }, []);
+
+    useEffect(() => {
         setMounted(true);
         const savedTheme = document.cookie.split('; ').find(row => row.startsWith('theme='))?.split('=')[1] as ThemeMode | undefined;
         if (savedTheme) {
