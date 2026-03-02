@@ -856,12 +856,12 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
       {/* ── Compact Tab Row (VSCode-style) ─────────────────────────── */}
       {visibleTabs.length > 0 && (
         <div
-          className="notes-tab-bar-scroll flex items-center h-8 min-h-[2rem] overflow-x-auto overflow-y-hidden border-b border-border shrink-0 lg:flex hidden"
+          className="notes-tab-bar-scroll flex items-stretch h-8 min-h-[2rem] overflow-x-auto overflow-y-hidden border-b border-border shrink-0 lg:flex hidden"
           role="tablist"
           aria-label="Open notes"
         >
           {/* Tabs */}
-          <div className="flex items-stretch flex-1 min-w-0 overflow-x-auto">
+          <div className="flex items-stretch flex-1 min-w-0 overflow-x-auto h-full">
             {visibleTabs.map((id) => {
               const cached = noteCache.get(id);
               const label =
@@ -871,18 +871,18 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
               const isActive = id === activeNoteId;
 
               return (
-                <button
+                <div
                   key={id}
                   className={cn(
-                    "group flex items-center gap-1 px-2.5 text-[0.6875rem] font-medium border-r border-border cursor-pointer whitespace-nowrap max-w-[160px] min-w-0 shrink-0 transition-colors",
+                    "group flex items-center gap-0 px-[6px] text-[0.6875rem] font-medium whitespace-nowrap min-w-0 shrink-0 transition-colors",
                     isActive
-                      ? "bg-accent/60 text-foreground"
-                      : "bg-transparent text-muted-foreground hover:bg-accent/30",
+                      ? "max-w-[340px] bg-accent/60 text-foreground"
+                      : "max-w-[160px] bg-transparent text-muted-foreground hover:bg-accent/30 cursor-pointer",
                   )}
                   role="tab"
                   data-active={isActive ? "true" : undefined}
                   aria-selected={isActive}
-                  onClick={() => switchTab(id)}
+                  onClick={() => !isActive && switchTab(id)}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     setContextMenu({ x: e.clientX, y: e.clientY, noteId: id, type: "tab" });
@@ -891,9 +891,44 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
                   {isDirty && (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                   )}
-                  <span className="overflow-hidden text-ellipsis">{label}</span>
+                  {isActive ? (
+                    <input
+                      className="bg-transparent outline-none border-none min-w-0 w-full text-[0.6875rem] font-medium text-foreground truncate cursor-text"
+                      value={label}
+                      onChange={handleTitleChange}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label="Note title"
+                      spellCheck={false}
+                    />
+                  ) : (
+                    <span className="overflow-hidden text-ellipsis">{label}</span>
+                  )}
+                  {isActive && (
+                    <div className="flex items-center gap-px shrink-0 ml-1" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className={cn(actionBtnClass, saveState === "dirty" && "text-amber-500")}
+                        onClick={() => forceSave(id)}
+                        title="Save (Ctrl+S)"
+                      >
+                        <Save />
+                      </button>
+                      <button className={actionBtnClass} onClick={() => duplicateNote(id)} title="Duplicate">
+                        <Copy />
+                      </button>
+                      <button className={actionBtnClass} onClick={() => shareNote(id)} title="Copy to clipboard">
+                        <Share2 />
+                      </button>
+                      <button
+                        className={cn(actionBtnClass, "hover:text-destructive")}
+                        onClick={() => deleteNote(id)}
+                        title="Delete"
+                      >
+                        <Trash2 />
+                      </button>
+                    </div>
+                  )}
                   <span
-                    className="notes-tab-close-btn flex items-center justify-center w-4 h-4 rounded-sm text-muted-foreground shrink-0 hover:bg-accent hover:text-foreground ml-auto"
+                    className="notes-tab-close-btn flex items-center justify-center w-4 h-4 rounded-sm text-muted-foreground shrink-0 hover:bg-accent hover:text-foreground ml-1"
                     role="button"
                     aria-label={`Close ${label}`}
                     onClick={(e) => {
@@ -903,36 +938,11 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
                   >
                     <X className="w-2.5 h-2.5" />
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
 
-          {/* Active tab action icons — right-aligned */}
-          {activeNoteId && activeCached && (
-            <div className="flex items-center gap-0.5 px-1.5 shrink-0 border-l border-border">
-              <button
-                className={cn(actionBtnClass, saveState === "dirty" && "text-amber-500")}
-                onClick={() => forceSave(activeNoteId)}
-                title="Save (Ctrl+S)"
-              >
-                <Save />
-              </button>
-              <button className={actionBtnClass} onClick={() => duplicateNote(activeNoteId)} title="Duplicate">
-                <Copy />
-              </button>
-              <button className={actionBtnClass} onClick={() => shareNote(activeNoteId)} title="Copy to clipboard">
-                <Share2 />
-              </button>
-              <button
-                className={cn(actionBtnClass, "hover:text-destructive")}
-                onClick={() => deleteNote(activeNoteId)}
-                title="Delete"
-              >
-                <Trash2 />
-              </button>
-            </div>
-          )}
         </div>
       )}
 
@@ -1088,8 +1098,8 @@ export default function NotesWorkspace({ notes }: NotesWorkspaceProps) {
             </div>
           )}
 
-          {/* ── Note header bar — mirrors search bar structure exactly ─ */}
-          <div className="notes-search-bar notes-note-header">
+          {/* ── Note header bar — mobile only (desktop uses editable tab) ─ */}
+          <div className="notes-search-bar notes-note-header lg:hidden">
             {/* Chevron back — mobile only, same tap target as sidebar icon buttons */}
             <div className="notes-search-tap lg:hidden">
               <button

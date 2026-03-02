@@ -143,6 +143,30 @@
 .notes-skeleton-line:nth-child(5) { width: 50%; animation-delay: 0.4s; }
 .notes-skeleton-line:nth-child(6) { width: 75%; animation-delay: 0.5s; }
 
+/* Desktop tab appearance — rounded top corners, border on 3 sides, bottom merges with content */
+@media (min-width: 1024px) {
+  /* All tabs: rounded top corners, border on top + left + right */
+  .notes-tab-bar-scroll .group {
+    border-radius: 7px 7px 0 0;
+    border-top: 1px solid hsl(var(--border));
+    border-left: 1px solid hsl(var(--border));
+    border-right: 1px solid hsl(var(--border));
+    margin-bottom: -1px; /* push 1px below so active tab seals over the bar's bottom border */
+  }
+
+  /* Active tab: lifted feel with inner shadow, bottom sealed to content */
+  .notes-tab-bar-scroll .group[data-active="true"] {
+    border-bottom: 1px solid hsl(var(--card));
+    background-color: hsl(var(--card));
+    box-shadow: inset 0 1px 0 0 hsl(var(--primary) / 0.25);
+  }
+
+  /* Inactive tabs: bottom border sits on the tab bar baseline */
+  .notes-tab-bar-scroll .group:not([data-active="true"]) {
+    border-bottom: 1px solid hsl(var(--border));
+  }
+}
+
 /* Tab close button — show on parent hover/active */
 .notes-tab-close-btn {
   opacity: 0;
@@ -156,6 +180,10 @@
 
 /* Desktop — compact VSCode-style toolbar (≥1024px) */
 @media (min-width: 1024px) {
+  .notes-note-header {
+    display: none !important;
+  }
+
   .notes-search-bar {
     height: 1.875rem;
     gap: 0.125rem;
