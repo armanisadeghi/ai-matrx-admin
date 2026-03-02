@@ -242,6 +242,7 @@
     "uuid": "latest",
     "vaul": "latest",
     "wavesurfer.js": "^7.12.1",
+    "web-vitals": "^5.1.0",
     "websocket": "^1.0.35",
     "xlsx": "latest",
     "zod": "^3.25.76",

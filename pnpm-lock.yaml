@@ -629,6 +629,9 @@ importers:
       wavesurfer.js:
         specifier: ^7.12.1
         version: 7.12.1
+      web-vitals:
+        specifier: ^5.1.0
+        version: 5.1.0
       websocket:
         specifier: ^1.0.35
         version: 1.0.35

@@ -1,21 +1,16 @@
-// app/(ssr)/layout.tsx — Static-First SSR Shell Layout
-// Server-rendered structural core. Auth resolved server-side via JWT (0ms).
-// One DB round-trip (get_ssr_shell_data RPC) fetches everything in parallel:
-//   user session, admin status, preferences, AI models, context menu, SMS badge.
-// Shell chrome (Header, Sidebar, Dock) = server components, receive data as props.
-// Page content wrapped in LiteStoreProvider — store pre-hydrated before first paint.
-
 import "./shell.css";
 import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { getSSRShellData } from "@/utils/supabase/ssrShellData";
 import { mapUserData } from "@/utils/userDataMapper";
+import { createServerTimer } from "@/utils/performance/serverTiming";
 import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
 import MobileDock from "./_components/MobileDock";
 import MobileSideSheet from "./_components/MobileSideSheet";
 import ThemeScript from "./_components/ThemeScript";
 import SSRShellProviders from "./_components/SSRShellProviders";
+import DevPerfOverlay from "./_components/DevPerfOverlay";
 import type { LiteInitialReduxState } from "@/types/reduxTypes";
 
 export const metadata = {
@@ -24,11 +19,11 @@ export const metadata = {
 };
 
 export default async function SSRLayout({ children }: { children: React.ReactNode }) {
-  // Resolve auth server-side — no client-side fetch needed
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const timer = createServerTimer();
 
-  // Extract display name, email, and avatar from user metadata (for shell chrome props)
+  const supabase = await timer.measure('createClient', () => createClient());
+  const { data: { user } } = await timer.measure('auth.getUser', () => supabase.auth.getUser());
+
   let authUser: { name: string; email?: string; avatarUrl?: string } | null = null;
   if (user) {
     const meta = user.user_metadata ?? {};
@@ -42,16 +37,15 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
     authUser = { name, email: user.email, avatarUrl };
   }
 
-  // Single RPC — fetches everything in parallel inside Postgres:
-  // admin status, preferences, AI models, context menu rows, SMS unread count
   let isAdmin = false;
   let initialState: LiteInitialReduxState | undefined;
 
   if (user) {
     try {
-      const shellData = await getSSRShellData(supabase, user.id);
+      const shellData = await timer.measure('rpc:shell_data', () => getSSRShellData(supabase, user.id), 'get_ssr_shell_data RPC');
       isAdmin = shellData.is_admin;
 
+      timer.mark('state-mapping');
       const userData = mapUserData(user, undefined, isAdmin);
       initialState = {
         user: userData,
@@ -73,10 +67,12 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
     }
   }
 
-  // Get current pathname for active route detection
-  const headersList = await headers();
+  const headersList = await timer.measure('headers', () => headers());
   const fullUrl = headersList.get("x-url") || headersList.get("x-invoke-path") || "";
   const pathname = headersList.get("x-pathname") || new URL(fullUrl || "http://localhost/ssr/dashboard").pathname;
+
+  timer.mark('render-start');
+  timer.done('(ssr) Layout');
 
   return (
     <>
@@ -106,6 +102,8 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
         {/* Mobile Off-canvas Side Sheet — server component */}
         <MobileSideSheet pathname={pathname} isAdmin={isAdmin} />
       </div>
+
+      <DevPerfOverlay />
     </>
   );
 }
