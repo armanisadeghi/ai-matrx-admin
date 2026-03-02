@@ -1,26 +1,33 @@
-// app/(ssr)/_components/SSRShellProviders.tsx
-// Client boundary wrapping LiteStoreProvider for the SSR shell.
-//
-// Hydration strategy — all via preloadedState, zero client fetches:
-//   • user, userPreferences → user session from RPC
-//   • modelRegistry         → 65 AI models from RPC
-//   • contextMenuCache      → all placement types from RPC
-//   • sms.unreadTotal       → badge count from RPC
-//
-// Nothing here blocks rendering. Store is created with data already present.
+'use client';
+
+// SSRShellProviders — all synchronous context providers for the SSR shell.
+// None of these make network calls or block rendering in any way.
+// Cost: microseconds of JS context creation, invisible to the user.
 
 import LiteStoreProvider from '@/providers/LiteStoreProvider';
-import { LiteInitialReduxState } from '@/types/reduxTypes';
+import { ThemeProvider } from '@/styles/themes';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { ToastProvider } from '@/providers/toast-context';
+import { Toaster } from '@/components/ui/toaster';
+import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
 
 interface SSRShellProvidersProps {
     children: React.ReactNode;
-    initialState?: LiteInitialReduxState;
 }
 
-export default function SSRShellProviders({ children, initialState }: SSRShellProvidersProps) {
+export default function SSRShellProviders({ children }: SSRShellProvidersProps) {
     return (
-        <LiteStoreProvider initialState={initialState}>
-            {children}
-        </LiteStoreProvider>
+        <ReactQueryProvider>
+            <LiteStoreProvider>
+                <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                    <ToastProvider>
+                        <TooltipProvider delayDuration={200}>
+                            {children}
+                            <Toaster />
+                        </TooltipProvider>
+                    </ToastProvider>
+                </ThemeProvider>
+            </LiteStoreProvider>
+        </ReactQueryProvider>
     );
 }

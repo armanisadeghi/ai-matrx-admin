@@ -1,5 +1,4 @@
 import "./shell.css";
-import { Suspense } from "react";
 import { headers } from "next/headers";
 import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
@@ -16,7 +15,7 @@ export const metadata = {
 };
 
 export default async function SSRLayout({ children }: { children: React.ReactNode }) {
-  // Only headers() — no auth, no DB, no async blocking
+  // Only headers() — no auth, no DB, nothing async blocking paint
   const headersList = await headers();
   const fullUrl = headersList.get("x-url") || headersList.get("x-invoke-path") || "";
   const pathname = headersList.get("x-pathname") || new URL(fullUrl || "http://localhost/ssr/dashboard").pathname;
@@ -25,8 +24,11 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
     <>
       <ThemeScript />
 
-      {/* Provider wraps entire shell so all client islands (Header, Sidebar, etc.) can access the store */}
+      {/* Provider wraps entire shell so all client islands can access the store */}
       <SSRShellProviders>
+        {/* Fires after first paint — fetches user + shell data, hydrates store */}
+        <DeferredShellData />
+
         <div className="shell-root">
           <input type="checkbox" id="shell-sidebar-toggle" aria-hidden="true" />
           <input type="checkbox" id="shell-mobile-menu" aria-hidden="true" />
@@ -35,10 +37,6 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
           <Header />
 
           <main className="shell-main">
-            {/* Auth + RPC happens here, inside Suspense — never blocks paint */}
-            <Suspense fallback={null}>
-              <DeferredShellData />
-            </Suspense>
             {children}
           </main>
 
