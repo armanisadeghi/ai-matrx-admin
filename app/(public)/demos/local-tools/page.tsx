@@ -100,7 +100,7 @@ const QUICK_PRESETS: QuickPreset[] = [
     {
         label: 'Browser Screenshot',
         sequence: [
-            { tool: 'BrowserNavigate', input: { url: 'https://example.com' } },
+            { tool: 'BrowserNavigate', input: { url: 'https://aimatrx.com' } },
             { tool: 'BrowserScreenshot', input: {} },
         ],
     },
@@ -159,56 +159,45 @@ export default function LocalToolsDemo() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-                <div className="max-w-screen-2xl mx-auto space-y-5">
-                    {/* Header */}
-                    {/* <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold flex items-center gap-2">
-                                <Wifi className="w-5 h-5" />
-                                Matrx Local
-                            </h1>
-                        </div>
-                    </div> */}
-
-                    {/* Connection Bar */}
-                    <ConnectionBar hook={local} />
+            <div className="shrink-0 border-b px-3 py-1">
+                <ConnectionBar hook={local} />
+            </div>
+            <div className="flex-1 overflow-y-auto px-3 py-3">
+                <div className="max-w-screen-2xl mx-auto space-y-3">
 
                     {/* Navigation Grid */}
-                    <div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                             {SUB_PAGES.map((page) => {
                                 const Icon = page.icon;
                                 return (
                                     <Link key={page.href} href={page.href}>
-                                        <div className="border rounded-lg p-3 bg-card hover:bg-accent transition-colors cursor-pointer group">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Icon className="w-4 h-4 text-primary shrink-0" />
-                                                    <span className="text-sm font-medium">{page.label}</span>
+                                        <div className="border rounded-lg p-2.5 bg-card hover:bg-accent transition-colors cursor-pointer group">
+                                            <div className="flex items-center justify-between gap-1">
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                    <span className="text-xs font-medium truncate">{page.label}</span>
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1 shrink-0">
                                                     {'badge' in page && (
-                                                        <Badge variant="default" className="text-[10px] h-4 px-1.5">
+                                                        <Badge variant="default" className="text-[9px] h-3.5 px-1">
                                                             {page.badge}
                                                         </Badge>
                                                     )}
-                                                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                                                    <ChevronRight className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-muted-foreground mt-1 ml-6">
+                                            <p className="text-[10px] text-muted-foreground mt-0.5 ml-5 leading-tight">
                                                 {page.description}
                                             </p>
                                         </div>
                                     </Link>
                                 );
                             })}
-                        </div>
                     </div>
 
                     {/* Quick presets */}
-                    <div className="border rounded-lg p-3 bg-card">
-                        <h2 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">
+                    <div className="border rounded-lg p-2.5 bg-card">
+                        <h2 className="text-[10px] font-semibold mb-1.5 text-muted-foreground uppercase tracking-wider">
                             Quick Fire
                         </h2>
                         <div className="flex flex-wrap gap-2">
@@ -262,8 +251,8 @@ export default function LocalToolsDemo() {
                     </div>
 
                     {/* Custom tool invocation */}
-                    <div className="border rounded-lg p-3 bg-card space-y-2">
-                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <div className="border rounded-lg p-2.5 bg-card space-y-2">
+                        <h2 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                             Custom Tool Call
                         </h2>
                         <div className="flex gap-2 flex-wrap">
@@ -315,44 +304,29 @@ export default function LocalToolsDemo() {
                     </div>
 
                     {/* Result + Log */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         <ResultPanel result={activeResult} loading={!!loading} />
                         <div>
                             <MessageLog logs={logs} onClear={clearLogs} />
                             <div ref={logEndRef} />
                         </div>
                     </div>
-
-                    {/* WS Monitor summary */}
-                    <div className="border rounded-lg p-3 bg-card">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Activity className="w-4 h-4" />
-                            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Connection Info
-                            </h2>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                            <div>
-                                <p className="text-muted-foreground">REST Endpoint</p>
-                                <p className="font-mono truncate">{local.baseUrl}/tools/invoke</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground">WS Endpoint</p>
-                                <p className="font-mono truncate">
-                                    {local.baseUrl.replace(/^http/, 'ws')}/ws
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground">Transport</p>
-                                <p>{local.useWebSocket ? 'WebSocket' : 'REST'}</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground">Messages</p>
-                                <p>{logs.length} logged</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
+            </div>
+
+            {/* Connection info footer */}
+            <div className="shrink-0 border-t bg-card px-3 py-1 flex items-center gap-4 text-[10px] text-muted-foreground font-mono overflow-x-auto">
+                <span className="flex items-center gap-1">
+                    <Activity className="w-3 h-3 shrink-0" />
+                    <span className="text-foreground/60">REST</span>
+                    <span className="truncate max-w-48">{local.baseUrl}/tools/invoke</span>
+                </span>
+                <span className="shrink-0">·</span>
+                <span className="truncate max-w-48">{local.baseUrl.replace(/^http/, 'ws')}/ws</span>
+                <span className="shrink-0">·</span>
+                <span className="shrink-0">{local.useWebSocket ? 'WebSocket' : 'REST'}</span>
+                <span className="shrink-0">·</span>
+                <span className="shrink-0">{logs.length} msgs</span>
             </div>
         </div>
     );

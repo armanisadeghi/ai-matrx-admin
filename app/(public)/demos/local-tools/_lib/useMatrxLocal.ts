@@ -23,55 +23,95 @@ import type {
 } from './types';
 
 // ---------------------------------------------------------------------------
-// Auth helpers
+// Module-level token cache
 // ---------------------------------------------------------------------------
+// One shared promise across all calls so concurrent requests don't each call
+// getSession(). The token is cached until it expires, then lazily re-fetched.
 
-async function getAuthToken(): Promise<string | null> {
-    const { data } = await supabase.auth.getSession();
-    return data.session?.access_token ?? null;
+let _cachedToken: string | null = null;
+let _tokenExpiresAt: number = 0;          // unix ms
+let _inflightTokenFetch: Promise<string | null> | null = null;
+
+async function getToken(): Promise<string | null> {
+    const now = Date.now();
+
+    // Return cached token if still valid (30-second safety buffer)
+    if (_cachedToken && now < _tokenExpiresAt - 30_000) {
+        return _cachedToken;
+    }
+
+    // Deduplicate concurrent calls: only one getSession() in-flight at a time
+    if (_inflightTokenFetch) return _inflightTokenFetch;
+
+    _inflightTokenFetch = (async () => {
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
+        _cachedToken = session?.access_token ?? null;
+        // exp is seconds since epoch
+        _tokenExpiresAt = session?.expires_at ? session.expires_at * 1000 : 0;
+        return _cachedToken;
+    })();
+
+    try {
+        return await _inflightTokenFetch;
+    } finally {
+        _inflightTokenFetch = null;
+    }
+}
+
+/** Force-refresh the token (used after a 401 response). */
+async function refreshToken(): Promise<string | null> {
+    _cachedToken = null;
+    _tokenExpiresAt = 0;
+    const { data } = await supabase.auth.refreshSession();
+    const session = data.session;
+    _cachedToken = session?.access_token ?? null;
+    _tokenExpiresAt = session?.expires_at ? session.expires_at * 1000 : 0;
+    return _cachedToken;
 }
 
 async function buildAuthHeaders(extra?: Record<string, string>): Promise<Record<string, string>> {
-    const token = await getAuthToken();
+    const token = await getToken();
     const headers: Record<string, string> = { ...extra };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;
 }
 
 // Browser WebSocket API does not support custom headers.
-// Pass the token as a query param — the engine middleware accepts both.
+// Pass the token as a query param — the engine accepts both.
 async function buildWsUrl(httpUrl: string): Promise<string> {
-    const token = await getAuthToken();
+    const token = await getToken();
     const wsBase = httpUrl.replace(/^http/, 'ws') + '/ws';
-    if (!token) return wsBase;
+    if (!token) {
+        console.warn('[MatrxLocal] WS: no auth token — connection will be rejected');
+        return wsBase;
+    }
     return `${wsBase}?token=${encodeURIComponent(token)}`;
 }
 
 // ---------------------------------------------------------------------------
-// Fix #4: Authenticated fetch with automatic 401 → session refresh → retry
+// Authenticated fetch: 401 → force-refresh token → retry once
 // ---------------------------------------------------------------------------
 
-async function authenticatedFetch(url: string, opts: RequestInit): Promise<Response> {
+async function engineFetch(url: string, opts: RequestInit): Promise<Response> {
     const res = await fetch(url, opts);
-    if (res.status === 401) {
-        const { data } = await supabase.auth.refreshSession();
-        if (data.session) {
-            const retryOpts: RequestInit = {
-                ...opts,
-                headers: {
-                    ...(opts.headers as Record<string, string>),
-                    Authorization: `Bearer ${data.session.access_token}`,
-                },
-            };
-            return fetch(url, retryOpts);
-        }
-    }
-    return res;
+    if (res.status !== 401) return res;
+
+    // Token may be stale — force a refresh and retry exactly once
+    const newToken = await refreshToken();
+    if (!newToken) return res;
+
+    return fetch(url, {
+        ...opts,
+        headers: {
+            ...(opts.headers as Record<string, string>),
+            Authorization: `Bearer ${newToken}`,
+        },
+    });
 }
 
 // ---------------------------------------------------------------------------
-// Fix #3: Port discovery — probe /health (lighter weight than /tools/list)
-// Fix #7: Capture version from /health response at discovery time
+// Port discovery
 // ---------------------------------------------------------------------------
 
 export interface DiscoveryResult extends ConnectionInfo {
@@ -84,7 +124,6 @@ export async function discoverMatrxLocal(): Promise<DiscoveryResult | null> {
         const port = MATRX_LOCAL_PORT_START + offset;
         const url = `http://127.0.0.1:${port}`;
         try {
-            // Fix #3: probe /health instead of /tools/list
             const healthRes = await fetch(`${url}/health`, {
                 signal: AbortSignal.timeout(DISCOVERY_TIMEOUT),
             });
@@ -92,9 +131,9 @@ export async function discoverMatrxLocal(): Promise<DiscoveryResult | null> {
 
             const healthData = await healthRes.json().catch(() => ({})) as HealthInfo;
 
-            // Fix #1: fetch actual tool list from server
+            // /tools/list requires auth — use token cache
             const authHeaders = await buildAuthHeaders();
-            const toolsRes = await authenticatedFetch(`${url}/tools/list`, {
+            const toolsRes = await engineFetch(`${url}/tools/list`, {
                 headers: authHeaders,
                 signal: AbortSignal.timeout(2000),
             });
@@ -107,7 +146,6 @@ export async function discoverMatrxLocal(): Promise<DiscoveryResult | null> {
                 ws: `ws://127.0.0.1:${port}/ws`,
                 port,
                 availableTools,
-                // Fix #7: capture version at discovery time instead of polling it every 15s
                 version: healthData.version ?? null,
             };
         } catch {
@@ -118,7 +156,7 @@ export async function discoverMatrxLocal(): Promise<DiscoveryResult | null> {
 }
 
 // ---------------------------------------------------------------------------
-// Hook
+// Hook interface
 // ---------------------------------------------------------------------------
 
 export interface UseMatrxLocalReturn {
@@ -159,6 +197,10 @@ export interface UseMatrxLocalReturn {
     restDelete: (path: string, headers?: Record<string, string>) => Promise<unknown>;
 }
 
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 export function useMatrxLocal(): UseMatrxLocalReturn {
     const [baseUrl, setBaseUrl] = useState(DEFAULT_LOCAL_URL);
     const [status, setStatus] = useState<ConnectionStatus>('disconnected');
@@ -181,15 +223,26 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const wsRef = useRef<WebSocket | null>(null);
     const pendingCallbacks = useRef<Map<string, (result: ToolResult) => void>>(new Map());
-    // Keep a ref so REST helpers and status check have stable identity across state changes
+
+    // Refs for values needed inside stable callbacks (no re-creation on state change)
     const baseUrlRef = useRef(baseUrl);
-    // WS auto-reconnect backoff state
+    const wsConnectedRef = useRef(wsConnected);
+    const useWebSocketRef = useRef(useWebSocket);
+
+    // WS auto-reconnect state
     const wsRetryCountRef = useRef(0);
     const wsRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wsAutoReconnect = useRef(true);
+    // Guards: ensure one-shot effects don't fire more than once
+    const healthFetchedRef = useRef(false);
+    const initialStatusCheckedRef = useRef(false);
 
-    // Keep baseUrlRef in sync so REST helpers don't need to close over baseUrl state
+    // Keep refs in sync with state
     useEffect(() => { baseUrlRef.current = baseUrl; }, [baseUrl]);
+    useEffect(() => { wsConnectedRef.current = wsConnected; }, [wsConnected]);
+    useEffect(() => { useWebSocketRef.current = useWebSocket; }, [useWebSocket]);
+
+    // ── Logging ─────────────────────────────────────────────────────────────
 
     const addLog = useCallback((direction: 'sent' | 'received', data: unknown, tool?: string) => {
         setLogs(prev => [
@@ -206,22 +259,17 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const clearLogs = useCallback(() => setLogs([]), []);
 
-    // ── Port discovery ──────────────────────────────────────────────────────
+    // ── Port discovery ───────────────────────────────────────────────────────
 
     const discover = useCallback(async () => {
         setStatus('discovering');
         const result = await discoverMatrxLocal();
         if (result) {
             setBaseUrl(result.url);
+            baseUrlRef.current = result.url;
             setStatus('disconnected');
-            // Fix #1: populate available tools from server
-            if (result.availableTools.length > 0) {
-                setAvailableTools(result.availableTools);
-            }
-            // Fix #7: set version from discovery, skip separate /version polling
-            if (result.version) {
-                setVersionInfo({ version: result.version });
-            }
+            if (result.availableTools.length > 0) setAvailableTools(result.availableTools);
+            if (result.version) setVersionInfo({ version: result.version });
             addLog('received', { event: 'discovered', ...result });
         } else {
             setStatus('disconnected');
@@ -229,10 +277,8 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         }
     }, [addLog]);
 
-    // ── One-shot REST status check ─────────────────────────────────────────
-    // WS onopen/onclose drives status while the socket is alive.
-    // This single check handles the initial REST-only connection state on mount
-    // and whenever the user manually changes baseUrl.
+    // ── One-shot REST status check ───────────────────────────────────────────
+    // Only runs once per mount (guarded). WS onopen/onclose drives status after that.
 
     const checkRestStatus = useCallback(async () => {
         try {
@@ -249,14 +295,22 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         }
     }, []);
 
-    // Run once on mount; also re-run when baseUrl changes (manual URL edit)
     useEffect(() => {
+        if (initialStatusCheckedRef.current) return;
+        initialStatusCheckedRef.current = true;
         checkRestStatus();
-    }, [baseUrl, checkRestStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    // ── Health / Ports — one-shot on mount, manual refresh exposed ────────
-    // /health and /ports are public — no auth headers needed.
-    // We do NOT poll these on a timer; the admin can click Refresh Health manually.
+    // Re-check when user manually edits the URL (not on every state change)
+    const handleSetBaseUrl = useCallback((url: string) => {
+        setBaseUrl(url);
+        baseUrlRef.current = url;
+        initialStatusCheckedRef.current = false; // allow re-check on new URL
+        checkRestStatus();
+    }, [checkRestStatus]);
+
+    // ── Health / Ports — one-shot on mount, manual refresh exposed ───────────
 
     const refreshHealth = useCallback(async () => {
         try {
@@ -274,29 +328,41 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             }
             setHealthCheckedAt(new Date());
         } catch {
-            // Silently ignore — health data is optional display info
+            // Health is optional display info — silently ignore
         }
     }, []);
 
-    // Run once on mount only
     useEffect(() => {
+        if (healthFetchedRef.current) return;
+        healthFetchedRef.current = true;
         refreshHealth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ── WebSocket connection ────────────────────────────────────────────────
+    // ── WebSocket connection ─────────────────────────────────────────────────
+    // connectWs is stable (empty deps) — it reads state via refs.
 
     const connectWs = useCallback(async () => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return;
         setStatus('connecting');
 
-        const wsUrl = await buildWsUrl(baseUrl);
+        // Wait for token before attempting WS — prevents the 403 "missing token" errors
+        const token = await getToken();
+        if (!token) {
+            addLog('received', { event: 'ws_skipped', reason: 'no_auth_token' });
+            setStatus('disconnected');
+            return;
+        }
+
+        const wsBase = baseUrlRef.current.replace(/^http/, 'ws') + '/ws';
+        const wsUrl = `${wsBase}?token=${encodeURIComponent(token)}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             setWsConnected(true);
+            wsConnectedRef.current = true;
             setStatus('connected');
-            wsRetryCountRef.current = 0; // Reset backoff on successful connect
+            wsRetryCountRef.current = 0;
             addLog('received', { event: 'connected', url: wsUrl });
         };
 
@@ -316,13 +382,14 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
         ws.onclose = () => {
             setWsConnected(false);
+            wsConnectedRef.current = false;
             setStatus('disconnected');
             addLog('received', { event: 'disconnected' });
             pendingCallbacks.current.clear();
             setActiveRequests([]);
 
-            // Enhancement: auto-reconnect with exponential backoff (max 30s)
             if (wsAutoReconnect.current) {
+                // Exponential backoff: 2s, 4s, 8s … max 30s
                 const delay = Math.min(2000 * Math.pow(2, wsRetryCountRef.current), 30_000);
                 wsRetryCountRef.current += 1;
                 addLog('received', { event: 'reconnect_scheduled', delay_ms: delay });
@@ -332,6 +399,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
         ws.onerror = () => {
             setWsConnected(false);
+            wsConnectedRef.current = false;
             setStatus('disconnected');
             addLog('received', { event: 'error' });
             pendingCallbacks.current.clear();
@@ -339,10 +407,10 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         };
 
         wsRef.current = ws;
-    }, [baseUrl, addLog]);
+    // addLog is stable (useCallback [])
+    }, [addLog]);
 
     const disconnectWs = useCallback(() => {
-        // Disable auto-reconnect when the user explicitly disconnects
         wsAutoReconnect.current = false;
         if (wsRetryTimerRef.current) {
             clearTimeout(wsRetryTimerRef.current);
@@ -352,28 +420,28 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         wsRef.current = null;
     }, []);
 
-    // Re-enable auto-reconnect whenever connectWs is called manually
     const connectWsWithReconnect = useCallback(async () => {
         wsAutoReconnect.current = true;
         wsRetryCountRef.current = 0;
         await connectWs();
     }, [connectWs]);
 
+    // Cleanup on unmount
     useEffect(() => () => {
         wsAutoReconnect.current = false;
         if (wsRetryTimerRef.current) clearTimeout(wsRetryTimerRef.current);
         disconnectWs();
     }, [disconnectWs]);
 
-    // Auto-connect WS on mount — no manual "Connect" button needed
+    // Auto-connect WS on mount — single attempt, small delay to allow token to load
     useEffect(() => {
-        const t = setTimeout(() => connectWsWithReconnect(), 800);
+        const t = setTimeout(() => connectWsWithReconnect(), 200);
         return () => clearTimeout(t);
-    // connectWsWithReconnect is stable — intentionally run once on mount
+    // connectWsWithReconnect is stable — intentionally run once
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ── Cancel ──────────────────────────────────────────────────────────────
+    // ── Cancel ───────────────────────────────────────────────────────────────
 
     const cancelAll = useCallback(() => {
         const ws = wsRef.current;
@@ -386,20 +454,17 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         addLog('sent', { action: 'cancel_all' });
     }, [addLog]);
 
-    const cancelRequest = useCallback(
-        (id: string) => {
-            const ws = wsRef.current;
-            if (ws?.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ id, action: 'cancel' }));
-            }
-            pendingCallbacks.current.delete(id);
-            setActiveRequests(prev => prev.filter(r => r.id !== id));
-            addLog('sent', { id, action: 'cancel' });
-        },
-        [addLog],
-    );
+    const cancelRequest = useCallback((id: string) => {
+        const ws = wsRef.current;
+        if (ws?.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ id, action: 'cancel' }));
+        }
+        pendingCallbacks.current.delete(id);
+        setActiveRequests(prev => prev.filter(r => r.id !== id));
+        addLog('sent', { id, action: 'cancel' });
+    }, [addLog]);
 
-    // ── Tool execution ──────────────────────────────────────────────────────
+    // ── Tool execution ───────────────────────────────────────────────────────
 
     const invokeViaWs = useCallback(
         (tool: string, input: Record<string, unknown>, timeoutMs = WS_TIMEOUT_DEFAULT): Promise<ToolResult> => {
@@ -411,11 +476,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 const reqId = `req-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
                 const msg = { id: reqId, tool, input };
                 addLog('sent', msg, tool);
-
                 setActiveRequests(prev => [...prev, { id: reqId, tool, startedAt: new Date() }]);
-
-                pendingCallbacks.current.set(reqId, resolve);
-                wsRef.current.send(JSON.stringify(msg));
 
                 const timer = setTimeout(() => {
                     if (pendingCallbacks.current.has(reqId)) {
@@ -425,11 +486,12 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                     }
                 }, timeoutMs);
 
-                // Clear timer on early resolution
                 pendingCallbacks.current.set(reqId, (result) => {
                     clearTimeout(timer);
                     resolve(result);
                 });
+
+                wsRef.current.send(JSON.stringify(msg));
             });
         },
         [addLog],
@@ -446,20 +508,16 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
             try {
                 const headers = await buildAuthHeaders({ 'Content-Type': 'application/json' });
-                const res = await authenticatedFetch(url, {
+                const res = await engineFetch(url, {
                     method: 'POST',
                     headers,
                     body: JSON.stringify(body),
                     signal: controller.signal,
                 });
 
-                // Fix #5: check status before parsing as ToolResult
                 if (!res.ok) {
                     const errText = await res.text().catch(() => '');
-                    const result: ToolResult = {
-                        type: 'error',
-                        output: `HTTP ${res.status}: ${errText || res.statusText}`,
-                    };
+                    const result: ToolResult = { type: 'error', output: `HTTP ${res.status}: ${errText || res.statusText}` };
                     addLog('received', result, tool);
                     return result;
                 }
@@ -481,35 +539,33 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             setLoading(key);
 
             try {
-                const result =
-                    useWebSocket && wsConnected
-                        ? await invokeViaWs(tool, input, effectiveTimeout)
-                        : await invokeViaRest(tool, input, effectiveTimeout);
+                const result = useWebSocketRef.current && wsConnectedRef.current
+                    ? await invokeViaWs(tool, input, effectiveTimeout)
+                    : await invokeViaRest(tool, input, effectiveTimeout);
                 return result;
             } catch (err) {
-                const error = err instanceof Error ? err.message : 'Unknown error';
-                return { type: 'error', output: error };
+                return { type: 'error', output: err instanceof Error ? err.message : 'Unknown error' };
             } finally {
                 setLoading(null);
             }
         },
-        [useWebSocket, wsConnected, invokeViaWs, invokeViaRest],
+        [invokeViaWs, invokeViaRest],
     );
 
-    // ── Generic REST helpers (for non-tool endpoints) ───────────────────────
+    // ── REST helpers (all authenticated, all stable) ─────────────────────────
+    // Use baseUrlRef so identity never changes across state updates.
+    // Token is fetched via the module-level cache — one getSession() shared by all.
 
-    // REST helpers use baseUrlRef so their identity is stable across state changes.
-    // baseUrlRef is kept in sync via the useEffect above.
     const restGet = useCallback(
-        async (path: string, headers?: Record<string, string>): Promise<unknown> => {
-            const authHeaders = await buildAuthHeaders(headers);
-            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
+        async (path: string, extraHeaders?: Record<string, string>): Promise<unknown> => {
+            const headers = await buildAuthHeaders(extraHeaders);
+            const res = await engineFetch(`${baseUrlRef.current}${path}`, {
+                headers,
                 signal: AbortSignal.timeout(10_000),
-                headers: authHeaders,
             });
             if (!res.ok) {
                 const body = await res.text().catch(() => '');
-                throw new Error(`GET ${path} failed (${res.status}): ${body || res.statusText}`);
+                throw new Error(`GET ${path} → ${res.status}: ${body || res.statusText}`);
             }
             return res.json();
         },
@@ -517,17 +573,17 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     );
 
     const restPost = useCallback(
-        async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
-            const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
-            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
+        async (path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<unknown> => {
+            const headers = await buildAuthHeaders({ 'Content-Type': 'application/json', ...extraHeaders });
+            const res = await engineFetch(`${baseUrlRef.current}${path}`, {
                 method: 'POST',
-                headers: authHeaders,
-                body: body ? JSON.stringify(body) : undefined,
+                headers,
+                body: body !== undefined ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(30_000),
             });
             if (!res.ok) {
                 const errBody = await res.text().catch(() => '');
-                throw new Error(`POST ${path} failed (${res.status}): ${errBody || res.statusText}`);
+                throw new Error(`POST ${path} → ${res.status}: ${errBody || res.statusText}`);
             }
             return res.json();
         },
@@ -535,17 +591,17 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     );
 
     const restPut = useCallback(
-        async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
-            const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
-            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
+        async (path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<unknown> => {
+            const headers = await buildAuthHeaders({ 'Content-Type': 'application/json', ...extraHeaders });
+            const res = await engineFetch(`${baseUrlRef.current}${path}`, {
                 method: 'PUT',
-                headers: authHeaders,
-                body: body ? JSON.stringify(body) : undefined,
+                headers,
+                body: body !== undefined ? JSON.stringify(body) : undefined,
                 signal: AbortSignal.timeout(10_000),
             });
             if (!res.ok) {
                 const errBody = await res.text().catch(() => '');
-                throw new Error(`PUT ${path} failed (${res.status}): ${errBody || res.statusText}`);
+                throw new Error(`PUT ${path} → ${res.status}: ${errBody || res.statusText}`);
             }
             return res.json();
         },
@@ -553,17 +609,17 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     );
 
     const restDelete = useCallback(
-        async (path: string, headers?: Record<string, string>): Promise<unknown> => {
-            const authHeaders = await buildAuthHeaders(headers);
-            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
+        async (path: string, extraHeaders?: Record<string, string>): Promise<unknown> => {
+            const headers = await buildAuthHeaders(extraHeaders);
+            const res = await engineFetch(`${baseUrlRef.current}${path}`, {
                 method: 'DELETE',
-                headers: authHeaders,
+                headers,
                 signal: AbortSignal.timeout(10_000),
             });
             if (res.status === 204) return { ok: true };
             if (!res.ok) {
                 const errBody = await res.text().catch(() => '');
-                throw new Error(`DELETE ${path} failed (${res.status}): ${errBody || res.statusText}`);
+                throw new Error(`DELETE ${path} → ${res.status}: ${errBody || res.statusText}`);
             }
             return res.json();
         },
@@ -572,7 +628,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     return {
         baseUrl,
-        setBaseUrl,
+        setBaseUrl: handleSetBaseUrl,
         status,
         wsConnected,
         loading,

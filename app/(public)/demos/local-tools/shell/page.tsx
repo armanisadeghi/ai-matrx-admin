@@ -160,36 +160,32 @@ export default function ShellPage() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
-            <div className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-screen-2xl mx-auto space-y-4">
-                    {/* Header */}
-                    <div className="flex items-center gap-3">
-                        <Link href="/demos/local-tools">
-                            <Button variant="ghost" size="sm" className="gap-1 h-7 text-xs">
-                                <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
-                            </Button>
-                        </Link>
-                        <div>
-                            <h1 className="text-xl font-bold flex items-center gap-2">
-                                <Terminal className="w-5 h-5" />
-                                Shell Execution
-                            </h1>
-                            <p className="text-xs text-muted-foreground">
-                                Bash, background processes, BashOutput polling, TaskStop
-                            </p>
-                        </div>
-                    </div>
-
-                    <ConnectionBar hook={local} />
+            {/* Header strip */}
+            <div className="flex items-center gap-2 px-3 py-1.5 border-b bg-card shrink-0">
+                <Link href="/demos/local-tools">
+                    <Button variant="ghost" size="sm" className="gap-1 h-6 text-xs px-1.5">
+                        <ArrowLeft className="w-3 h-3" />
+                        Back
+                    </Button>
+                </Link>
+                <Terminal className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-sm font-semibold">Shell Execution</span>
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                    Bash · background processes · BashOutput · TaskStop
+                </span>
+            </div>
+            <div className="shrink-0 border-b px-3 py-1">
+                <ConnectionBar hook={local} />
+            </div>
+            <div className="flex-1 overflow-y-auto p-3">
+                <div className="max-w-screen-2xl mx-auto space-y-3">
 
                     {/* Foreground Bash */}
-                    <div className="border rounded-lg p-4 bg-card space-y-3">
-                        <div className="flex items-center gap-2">
-                            <Terminal className="w-4 h-4 text-primary" />
-                            <div>
-                                <h3 className="text-sm font-semibold">Bash (foreground)</h3>
-                                <p className="text-xs text-muted-foreground">Execute a command and wait for output</p>
-                            </div>
+                    <div className="border rounded-lg p-3 bg-card space-y-2">
+                        <div className="flex items-center gap-1.5">
+                            <Terminal className="w-3 h-3 text-primary" />
+                            <span className="text-xs font-semibold">Bash (foreground)</span>
+                            <span className="text-[10px] text-muted-foreground">— execute a command and wait for output</span>
                         </div>
                         <div className="flex gap-2">
                             <input
@@ -232,13 +228,11 @@ export default function ShellPage() {
                     </div>
 
                     {/* Background shells */}
-                    <div className="border rounded-lg p-4 bg-card space-y-3">
-                        <div className="flex items-center gap-2">
-                            <Terminal className="w-4 h-4 text-primary" />
-                            <div>
-                                <h3 className="text-sm font-semibold">Background Shell</h3>
-                                <p className="text-xs text-muted-foreground">Launch long-running commands, poll output, stop them</p>
-                            </div>
+                    <div className="border rounded-lg p-3 bg-card space-y-2">
+                        <div className="flex items-center gap-1.5">
+                            <Terminal className="w-3 h-3 text-primary" />
+                            <span className="text-xs font-semibold">Background Shell</span>
+                            <span className="text-[10px] text-muted-foreground">— launch long-running commands, poll output, stop them</span>
                         </div>
                         <div className="flex gap-2">
                             <input
@@ -329,20 +323,19 @@ export default function ShellPage() {
                     </div>
 
                     {/* Manual BashOutput / TaskStop */}
-                    <div className="border rounded-lg p-4 bg-card">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Terminal className="w-4 h-4 text-primary" />
-                            <div>
-                                <h3 className="text-sm font-semibold">Manual Control</h3>
-                                <p className="text-xs text-muted-foreground">Call BashOutput or TaskStop directly with a shell_id</p>
-                            </div>
+                    <div className="border rounded-lg p-3 bg-card space-y-2">
+                        <div className="flex items-center gap-1.5">
+                            <Terminal className="w-3 h-3 text-primary" />
+                            <span className="text-xs font-semibold">Manual Control</span>
+                            <span className="text-[10px] text-muted-foreground">— call BashOutput or TaskStop with a shell_id</span>
                         </div>
                         <ManualControl local={local} />
                     </div>
-
-                    {/* Message log */}
-                    <MessageLog logs={logs} onClear={clearLogs} />
                 </div>
+            </div>
+            {/* Message log pinned at bottom */}
+            <div className="h-40 border-t shrink-0 flex flex-col overflow-hidden">
+                <MessageLog logs={logs} onClear={clearLogs} maxHeight="max-h-full" />
             </div>
         </div>
     );
