@@ -14,7 +14,7 @@ import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 
 export default function EnginePage() {
     const local = useMatrxLocalContext();
-    const { healthInfo, versionInfo, portInfo, restGet, restPut } = local;
+    const { healthInfo, versionInfo, portInfo, restGet, restPut, status } = local;
 
     const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
     const [settingsJson, setSettingsJson] = useState('');
@@ -52,9 +52,10 @@ export default function EnginePage() {
     };
 
     useEffect(() => {
-        fetchSettings();
+        if (status === 'connected') fetchSettings();
+        // fetchSettings is stable — intentionally omitted from deps
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [status]);
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">

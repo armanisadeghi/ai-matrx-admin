@@ -25,7 +25,7 @@ import { useMatrxLocalContext } from '../_lib/MatrxLocalContext';
 
 export default function CloudSyncPage() {
     const local = useMatrxLocalContext();
-    const { restGet, restPost, restPut } = local;
+    const { restGet, restPost, restPut, status } = local;
 
     // Configure form
     const [jwt, setJwt] = useState('');
@@ -127,10 +127,13 @@ export default function CloudSyncPage() {
     };
 
     useEffect(() => {
-        fetchSettings();
-        fetchInstances();
+        if (status === 'connected') {
+            fetchSettings();
+            fetchInstances();
+        }
+        // fetchSettings/fetchInstances are stable — intentionally omitted from deps
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [status]);
 
     const MsgBanner = ({ msg }: { msg: { type: 'success' | 'error'; text: string } | null }) =>
         msg ? (

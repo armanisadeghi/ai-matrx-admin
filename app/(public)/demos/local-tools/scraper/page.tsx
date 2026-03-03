@@ -8,6 +8,7 @@ import {
     ArrowLeft,
     ChevronDown,
     ChevronUp,
+    Copy,
     Globe,
     Loader2,
     Search,
@@ -480,39 +481,184 @@ function ResearchPanel({ local }: { local: UseMatrxLocalReturn }) {
 // Comparison Panel
 // ---------------------------------------------------------------------------
 
+interface CompareResult {
+    content: string;
+    elapsedMs: number;
+}
+
+type ContentGrade = 'failure' | 'thin' | 'success';
+
+function gradeContent(content: string): ContentGrade {
+    const len = content.trim().length;
+    if (len < 200) return 'failure';
+    if (len <= 1000) return 'thin';
+    return 'success';
+}
+
+const GRADE_CONFIG: Record<ContentGrade, { label: string; classes: string; barColor: string }> = {
+    failure: { label: 'Failure', classes: 'text-red-600 border-red-500 bg-red-500/10', barColor: 'bg-red-500' },
+    thin: { label: 'Thin Content', classes: 'text-yellow-600 border-yellow-500 bg-yellow-500/10', barColor: 'bg-yellow-500' },
+    success: { label: 'Success', classes: 'text-green-600 border-green-500 bg-green-500/10', barColor: 'bg-green-500' },
+};
+
+function countWords(text: string): number {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function ResultCard({
+    label,
+    result,
+    isLoading,
+}: {
+    label: string;
+    result: CompareResult | null;
+    isLoading: boolean;
+}) {
+    const [expanded, setExpanded] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const PREVIEW_CHARS = 2000;
+
+    const grade = result ? gradeContent(result.content) : null;
+    const gradeConfig = grade ? GRADE_CONFIG[grade] : null;
+    const isLong = result && result.content.length > PREVIEW_CHARS;
+
+    const handleCopy = async () => {
+        if (!result?.content) return;
+        await navigator.clipboard.writeText(result.content);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="border rounded-lg overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="px-3 py-2.5 bg-muted/50 border-b flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold">{label}</p>
+                {gradeConfig && (
+                    <Badge variant="outline" className={`text-[10px] h-5 px-1.5 shrink-0 ${gradeConfig.classes}`}>
+                        {gradeConfig.label}
+                    </Badge>
+                )}
+            </div>
+
+            {/* Metrics bar */}
+            {result && (
+                <div className="flex items-center gap-x-3 px-3 py-1.5 bg-muted/20 border-b text-[11px]">
+                    <span className="text-muted-foreground">
+                        <span className="font-semibold text-foreground">{result.content.trim().length.toLocaleString()}</span> chars
+                    </span>
+                    <span className="text-muted-foreground">
+                        <span className="font-semibold text-foreground">{countWords(result.content).toLocaleString()}</span> words
+                    </span>
+                    <span className="text-muted-foreground ml-auto">
+                        <span className="font-semibold text-foreground">{result.elapsedMs.toLocaleString()}</span>ms
+                    </span>
+                    <button
+                        onClick={handleCopy}
+                        title="Copy to clipboard"
+                        className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        {copied
+                            ? <><span className="text-green-600">✓</span><span className="text-green-600 text-[10px]">Copied</span></>
+                            : <Copy className="w-3.5 h-3.5" />
+                        }
+                    </button>
+                </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1">
+                {isLoading && !result && (
+                    <div className="flex items-center justify-center h-20">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    </div>
+                )}
+                {!isLoading && !result && (
+                    <p className="text-xs text-muted-foreground text-center py-6">No result</p>
+                )}
+                {result && (
+                    <div>
+                        <div className="max-h-72 overflow-y-auto p-2">
+                            <pre className="text-[10px] font-mono whitespace-pre-wrap break-all">
+                                {expanded ? result.content : result.content.slice(0, PREVIEW_CHARS)}
+                                {!expanded && isLong && <span className="text-muted-foreground"> …</span>}
+                            </pre>
+                        </div>
+                        {isLong && (
+                            <button
+                                onClick={() => setExpanded(p => !p)}
+                                className="w-full flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-primary hover:bg-muted/40 border-t transition-colors"
+                            >
+                                {expanded
+                                    ? <><ChevronUp className="w-3 h-3" /> Collapse</>
+                                    : <><ChevronDown className="w-3 h-3" /> Show all ({(result.content.length - PREVIEW_CHARS).toLocaleString()} more chars)</>
+                                }
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function ComparisonPanel({ local }: { local: UseMatrxLocalReturn }) {
     const { invokeViaRest, loading } = local;
-    const [url, setUrl] = useState('https://httpbin.org/html');
-    const [fetchResult, setFetchResult] = useState<string | null>(null);
-    const [browserResult, setBrowserResult] = useState<string | null>(null);
-    const [scrapeResult, setScrapeResult] = useState<string | null>(null);
+    const [url, setUrl] = useState('https://titaniumsuccess.com/');
+    const [results, setResults] = useState<[CompareResult | null, CompareResult | null, CompareResult | null]>([null, null, null]);
     const [comparing, setComparing] = useState(false);
 
     const runComparison = async () => {
         if (!url.trim()) return;
         const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`;
         setComparing(true);
-        setFetchResult(null);
-        setBrowserResult(null);
-        setScrapeResult(null);
+        setResults([null, null, null]);
 
-        const [fetch_, browser_, scrape_] = await Promise.allSettled([
-            invokeViaRest('FetchUrl', { url: normalizedUrl }),
-            invokeViaRest('FetchWithBrowser', { url: normalizedUrl, extract_text: true }),
-            invokeViaRest('Scrape', { urls: [normalizedUrl], use_cache: false, output_mode: 'rich' }),
+        // Server scrape: Next.js API route → Python backend (runs from data center)
+        const serverScrape = async (): Promise<CompareResult> => {
+            const t = Date.now();
+            const res = await fetch('/api/scraper/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: normalizedUrl }),
+            });
+            const elapsed = Date.now() - t;
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: res.statusText }));
+                return { content: `Error: ${err.error || res.statusText}`, elapsedMs: elapsed };
+            }
+            const data = await res.json();
+            const content = data.textContent || data.overview?.page_title || JSON.stringify(data);
+            return { content, elapsedMs: elapsed };
+        };
+
+        const [server_, localScrape_, localBrowser_] = await Promise.allSettled([
+            serverScrape(),
+            (async () => {
+                const t = Date.now();
+                const r = await invokeViaRest('Scrape', { urls: [normalizedUrl], use_cache: false, output_mode: 'rich' });
+                return { content: r.output, elapsedMs: Date.now() - t };
+            })(),
+            (async () => {
+                const t = Date.now();
+                const r = await invokeViaRest('FetchWithBrowser', { url: normalizedUrl, extract_text: true });
+                return { content: r.output, elapsedMs: Date.now() - t };
+            })(),
         ]);
 
-        setFetchResult(fetch_.status === 'fulfilled' ? fetch_.value.output : `Error: ${(fetch_ as PromiseRejectedResult).reason}`);
-        setBrowserResult(browser_.status === 'fulfilled' ? browser_.value.output : `Error: ${(browser_ as PromiseRejectedResult).reason}`);
-        setScrapeResult(scrape_.status === 'fulfilled' ? scrape_.value.output : `Error: ${(scrape_ as PromiseRejectedResult).reason}`);
+        const toResult = (r: PromiseSettledResult<CompareResult>): CompareResult =>
+            r.status === 'fulfilled' ? r.value : { content: `Error: ${(r as PromiseRejectedResult).reason}`, elapsedMs: 0 };
+
+        setResults([toResult(server_), toResult(localScrape_), toResult(localBrowser_)]);
         setComparing(false);
     };
 
+    const labels = ['Data Center Server Scrape', 'Local PC Scrape', 'Local PC Browser Scrape'];
+    const anyResult = results.some(r => r !== null);
+
     return (
-        <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-                Compare the three fetch methods on the same URL. Runs via REST for parallel execution.
-            </p>
+        <div className="space-y-4">
+            {/* URL input */}
             <div className="flex gap-2">
                 <input
                     type="text"
@@ -529,34 +675,60 @@ function ComparisonPanel({ local }: { local: UseMatrxLocalReturn }) {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                {[
-                    { label: 'FetchUrl', desc: 'Raw HTTP response', content: fetchResult },
-                    { label: 'FetchWithBrowser', desc: 'Playwright rendered', content: browserResult },
-                    { label: 'Scrape', desc: 'Cleaned + structured', content: scrapeResult },
-                ].map(({ label, desc, content }) => (
-                    <div key={label} className="border rounded-lg overflow-hidden">
-                        <div className="px-3 py-2 bg-muted/50 border-b">
-                            <p className="text-xs font-semibold">{label}</p>
-                            <p className="text-[10px] text-muted-foreground">{desc}</p>
-                        </div>
-                        <div className="p-2 max-h-64 overflow-y-auto">
-                            {comparing && !content && (
-                                <div className="flex items-center justify-center h-16">
-                                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            {/* Summary bar */}
+            {anyResult && (
+                <div className="rounded-lg border overflow-hidden">
+                    <div className="divide-y">
+                        {labels.map((label, i) => {
+                            const r = results[i];
+                            const grade = r ? gradeContent(r.content) : null;
+                            const gradeConfig = grade ? GRADE_CONFIG[grade] : null;
+                            const maxChars = Math.max(...results.map(x => x?.content.trim().length ?? 0), 1);
+                            const pct = r ? Math.round((r.content.trim().length / maxChars) * 100) : 0;
+                            return (
+                                <div key={label} className="flex items-center gap-3 px-3 py-2 text-xs">
+                                    <span className="w-48 font-medium shrink-0 text-[11px]">{label}</span>
+                                    {r ? (
+                                        <>
+                                            <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-500 ${gradeConfig?.barColor ?? 'bg-primary'}`}
+                                                    style={{ width: `${pct}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-muted-foreground w-24 text-right shrink-0">
+                                                {r.content.trim().length.toLocaleString()} chars
+                                            </span>
+                                            <span className="text-muted-foreground w-16 text-right shrink-0">
+                                                {r.elapsedMs.toLocaleString()}ms
+                                            </span>
+                                            {gradeConfig && (
+                                                <Badge variant="outline" className={`text-[10px] h-4 px-1.5 w-24 justify-center shrink-0 ${gradeConfig.classes}`}>
+                                                    {gradeConfig.label}
+                                                </Badge>
+                                            )}
+                                        </>
+                                    ) : comparing ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                                    ) : (
+                                        <span className="text-muted-foreground">—</span>
+                                    )}
                                 </div>
-                            )}
-                            {content && (
-                                <pre className="text-[10px] font-mono whitespace-pre-wrap break-all">
-                                    {content.slice(0, 3000)}
-                                    {content.length > 3000 && '\n[truncated…]'}
-                                </pre>
-                            )}
-                            {!comparing && !content && (
-                                <p className="text-xs text-muted-foreground text-center py-4">No result</p>
-                            )}
-                        </div>
+                            );
+                        })}
                     </div>
+                </div>
+            )}
+
+            {/* Result cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                {labels.map((label, i) => (
+                    <ResultCard
+                        key={label}
+                        label={label}
+                        result={results[i]}
+                        isLoading={comparing}
+                    />
                 ))}
             </div>
         </div>

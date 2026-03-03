@@ -285,7 +285,7 @@ function FolderTree({
 
 export default function DocumentsPage() {
     const local = useMatrxLocalContext();
-    const { restGet, restPost, restPut, restDelete } = local;
+    const { restGet, restPost, restPut, restDelete, status } = local;
 
     const [activeTab, setActiveTab] = useState<ActiveTab>('notes');
     const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -365,8 +365,15 @@ export default function DocumentsPage() {
         }
     }, [restGet, selectedFolderId, searchQuery]);
 
-    useEffect(() => { fetchTree(); }, [fetchTree]);
-    useEffect(() => { fetchNotes(); }, [fetchNotes]);
+    // Only fetch once the backend connection is established.
+    // restGet/restPost are now stable refs, so these effects fire exactly once on connect.
+    useEffect(() => {
+        if (status === 'connected') fetchTree();
+    }, [status, fetchTree]);
+
+    useEffect(() => {
+        if (status === 'connected') fetchNotes();
+    }, [status, fetchNotes]);
 
     // ── Folder CRUD ──────────────────────────────────────────────────────────
 

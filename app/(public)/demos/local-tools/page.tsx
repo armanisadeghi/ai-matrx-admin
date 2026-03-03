@@ -87,12 +87,23 @@ const SUB_PAGES = [
 // Quick presets
 // ---------------------------------------------------------------------------
 
-const QUICK_PRESETS: { label: string; tool: string; input: Record<string, unknown> }[] = [
+type QuickPreset =
+    | { label: string; tool: string; input: Record<string, unknown>; sequence?: never }
+    | { label: string; tool?: never; input?: never; sequence: { tool: string; input: Record<string, unknown> }[] };
+
+const QUICK_PRESETS: QuickPreset[] = [
     { label: 'System Info', tool: 'SystemInfo', input: {} },
     { label: 'List Home', tool: 'ListDirectory', input: { show_hidden: false } },
     { label: 'ls -la', tool: 'Bash', input: { command: 'ls -la', timeout: 10000 } },
     { label: 'Find .py', tool: 'Glob', input: { pattern: '*.py', path: '.' } },
-    { label: 'Screenshot', tool: 'Screenshot', input: {} },
+    { label: 'Desktop Screenshot', tool: 'Screenshot', input: {} },
+    {
+        label: 'Browser Screenshot',
+        sequence: [
+            { tool: 'BrowserNavigate', input: { url: 'https://example.com' } },
+            { tool: 'BrowserScreenshot', input: {} },
+        ],
+    },
     { label: 'Clipboard', tool: 'ClipboardRead', input: {} },
     {
         label: 'Scrape Example',
@@ -148,38 +159,29 @@ export default function LocalToolsDemo() {
 
     return (
         <div className="h-[calc(100dvh-var(--header-height))] flex flex-col overflow-hidden bg-textured">
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4">
                 <div className="max-w-screen-2xl mx-auto space-y-5">
                     {/* Header */}
-                    <div className="flex items-center justify-between">
+                    {/* <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-xl font-bold flex items-center gap-2">
                                 <Wifi className="w-5 h-5" />
                                 Matrx Local
                             </h1>
-                            <p className="text-sm text-muted-foreground">
-                                Connect to your local machine and test all {ALL_TOOLS.length} tools
-                            </p>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
-                            {ALL_TOOLS.length} tools
-                        </Badge>
-                    </div>
+                    </div> */}
 
                     {/* Connection Bar */}
                     <ConnectionBar hook={local} />
 
                     {/* Navigation Grid */}
                     <div>
-                        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                            Feature Pages
-                        </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             {SUB_PAGES.map((page) => {
                                 const Icon = page.icon;
                                 return (
                                     <Link key={page.href} href={page.href}>
-                                        <div className="border rounded-lg p-3 bg-card hover:bg-accent/50 transition-colors cursor-pointer group">
+                                        <div className="border rounded-lg p-3 bg-card hover:bg-accent transition-colors cursor-pointer group">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <Icon className="w-4 h-4 text-primary shrink-0" />
@@ -211,6 +213,33 @@ export default function LocalToolsDemo() {
                         </h2>
                         <div className="flex flex-wrap gap-2">
                             {QUICK_PRESETS.map((preset) => {
+                                if (preset.sequence) {
+                                    const tools = preset.sequence.map(s => s.tool);
+                                    const allAvailable = tools.every(t => isToolAvailable(t));
+                                    const isRunning = typeof loading === 'string' && tools.some(t => loading.startsWith(`${t}-`));
+                                    return (
+                                        <Button
+                                            key={`sequence-${preset.label}`}
+                                            variant="outline"
+                                            size="sm"
+                                            className={`h-7 text-xs ${!allAvailable ? 'opacity-40' : ''}`}
+                                            disabled={isDisabled || !allAvailable}
+                                            title={!allAvailable ? `One or more tools (${tools.join(', ')}) are not available on this engine version` : `Runs: ${tools.join(' → ')}`}
+                                            onClick={async () => {
+                                                setActiveResult(null);
+                                                for (const step of preset.sequence) {
+                                                    const result = await invokeTool(step.tool, step.input);
+                                                    setActiveResult(result);
+                                                    if (result.type === 'error') break;
+                                                }
+                                            }}
+                                        >
+                                            {isRunning && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+                                            {preset.label}
+                                        </Button>
+                                    );
+                                }
+
                                 const available = isToolAvailable(preset.tool);
                                 return (
                                     <Button

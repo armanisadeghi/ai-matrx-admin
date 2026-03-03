@@ -5,10 +5,8 @@ import { supabase } from '@/utils/supabase/client';
 import {
     DEFAULT_LOCAL_URL,
     DISCOVERY_TIMEOUT,
-    HEALTH_POLL_INTERVAL,
     MATRX_LOCAL_PORT_RANGE,
     MATRX_LOCAL_PORT_START,
-    STATUS_POLL_INTERVAL,
     WS_TIMEOUT_DEFAULT,
     WS_TIMEOUT_RESEARCH,
 } from './constants';
@@ -145,8 +143,10 @@ export interface UseMatrxLocalReturn {
     healthInfo: HealthInfo | null;
     versionInfo: VersionInfo | null;
     portInfo: PortInfo | null;
+    healthCheckedAt: Date | null;
+    refreshHealth: () => Promise<void>;
 
-    // Fix #1: live tool list from server
+    // Live tool list from server
     availableTools: string[];
 
     // Active request tracking
@@ -171,8 +171,9 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     const [healthInfo, setHealthInfo] = useState<HealthInfo | null>(null);
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [portInfo, setPortInfo] = useState<PortInfo | null>(null);
+    const [healthCheckedAt, setHealthCheckedAt] = useState<Date | null>(null);
 
-    // Fix #1: server-reported available tools
+    // Server-reported available tools
     const [availableTools, setAvailableTools] = useState<string[]>([]);
 
     // Active requests
@@ -180,12 +181,15 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const wsRef = useRef<WebSocket | null>(null);
     const pendingCallbacks = useRef<Map<string, (result: ToolResult) => void>>(new Map());
-    const statusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const healthPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    // Enhancement: WS auto-reconnect backoff state
+    // Keep a ref so REST helpers and status check have stable identity across state changes
+    const baseUrlRef = useRef(baseUrl);
+    // WS auto-reconnect backoff state
     const wsRetryCountRef = useRef(0);
     const wsRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wsAutoReconnect = useRef(true);
+
+    // Keep baseUrlRef in sync so REST helpers don't need to close over baseUrl state
+    useEffect(() => { baseUrlRef.current = baseUrl; }, [baseUrl]);
 
     const addLog = useCallback((direction: 'sent' | 'received', data: unknown, tool?: string) => {
         setLogs(prev => [
@@ -225,42 +229,40 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         }
     }, [addLog]);
 
-    // ── Status polling ──────────────────────────────────────────────────────
+    // ── One-shot REST status check ─────────────────────────────────────────
+    // WS onopen/onclose drives status while the socket is alive.
+    // This single check handles the initial REST-only connection state on mount
+    // and whenever the user manually changes baseUrl.
 
     const checkRestStatus = useCallback(async () => {
         try {
-            // Fix #3: poll /health (already public) instead of /tools/list
-            const res = await fetch(`${baseUrl}/health`, {
+            const res = await fetch(`${baseUrlRef.current}/health`, {
                 signal: AbortSignal.timeout(2000),
             });
-            if (res.ok && !wsConnected) {
+            if (res.ok && wsRef.current?.readyState !== WebSocket.OPEN) {
                 setStatus('connected');
             }
         } catch {
-            if (!wsConnected) {
+            if (wsRef.current?.readyState !== WebSocket.OPEN) {
                 setStatus('disconnected');
             }
         }
-    }, [baseUrl, wsConnected]);
+    }, []);
 
+    // Run once on mount; also re-run when baseUrl changes (manual URL edit)
     useEffect(() => {
         checkRestStatus();
-        statusPollRef.current = setInterval(checkRestStatus, STATUS_POLL_INTERVAL);
-        return () => {
-            if (statusPollRef.current) clearInterval(statusPollRef.current);
-        };
-    }, [checkRestStatus]);
+    }, [baseUrl, checkRestStatus]);
 
+    // ── Health / Ports — one-shot on mount, manual refresh exposed ────────
+    // /health and /ports are public — no auth headers needed.
+    // We do NOT poll these on a timer; the admin can click Refresh Health manually.
 
-    // ── Health / Ports polling ────────────────────────────────────────────
-    // Fix #2: /health and /ports are public — no auth headers needed
-    // Fix #7: /version no longer polled — fetched once at discovery
-
-    const pollHealth = useCallback(async () => {
+    const refreshHealth = useCallback(async () => {
         try {
             const [healthRes, portsRes] = await Promise.allSettled([
-                fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(3000) }),
-                fetch(`${baseUrl}/ports`, { signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrlRef.current}/health`, { signal: AbortSignal.timeout(3000) }),
+                fetch(`${baseUrlRef.current}/ports`, { signal: AbortSignal.timeout(3000) }),
             ]);
             if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
                 setHealthInfo(await healthRes.value.json());
@@ -270,18 +272,17 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             if (portsRes.status === 'fulfilled' && portsRes.value.ok) {
                 setPortInfo(await portsRes.value.json());
             }
+            setHealthCheckedAt(new Date());
         } catch {
-            // Silently ignore — health data is optional
+            // Silently ignore — health data is optional display info
         }
-    }, [baseUrl]);
+    }, []);
 
+    // Run once on mount only
     useEffect(() => {
-        pollHealth();
-        healthPollRef.current = setInterval(pollHealth, HEALTH_POLL_INTERVAL);
-        return () => {
-            if (healthPollRef.current) clearInterval(healthPollRef.current);
-        };
-    }, [pollHealth]);
+        refreshHealth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // ── WebSocket connection ────────────────────────────────────────────────
 
@@ -436,7 +437,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     const invokeViaRest = useCallback(
         async (tool: string, input: Record<string, unknown>, timeoutMs = WS_TIMEOUT_DEFAULT): Promise<ToolResult> => {
-            const url = `${baseUrl}/tools/invoke`;
+            const url = `${baseUrlRef.current}/tools/invoke`;
             const body = { tool, input };
             addLog('sent', body, tool);
 
@@ -470,7 +471,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
                 clearTimeout(timer);
             }
         },
-        [baseUrl, addLog],
+        [addLog],
     );
 
     const invokeTool = useCallback(
@@ -497,10 +498,12 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
 
     // ── Generic REST helpers (for non-tool endpoints) ───────────────────────
 
+    // REST helpers use baseUrlRef so their identity is stable across state changes.
+    // baseUrlRef is kept in sync via the useEffect above.
     const restGet = useCallback(
         async (path: string, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders(headers);
-            const res = await authenticatedFetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
                 signal: AbortSignal.timeout(10_000),
                 headers: authHeaders,
             });
@@ -510,13 +513,13 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             }
             return res.json();
         },
-        [baseUrl],
+        [],
     );
 
     const restPost = useCallback(
         async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
-            const res = await authenticatedFetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
                 method: 'POST',
                 headers: authHeaders,
                 body: body ? JSON.stringify(body) : undefined,
@@ -528,13 +531,13 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             }
             return res.json();
         },
-        [baseUrl],
+        [],
     );
 
     const restPut = useCallback(
         async (path: string, body?: unknown, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders({ 'Content-Type': 'application/json', ...headers });
-            const res = await authenticatedFetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
                 method: 'PUT',
                 headers: authHeaders,
                 body: body ? JSON.stringify(body) : undefined,
@@ -546,13 +549,13 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             }
             return res.json();
         },
-        [baseUrl],
+        [],
     );
 
     const restDelete = useCallback(
         async (path: string, headers?: Record<string, string>): Promise<unknown> => {
             const authHeaders = await buildAuthHeaders(headers);
-            const res = await authenticatedFetch(`${baseUrl}${path}`, {
+            const res = await authenticatedFetch(`${baseUrlRef.current}${path}`, {
                 method: 'DELETE',
                 headers: authHeaders,
                 signal: AbortSignal.timeout(10_000),
@@ -564,7 +567,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
             }
             return res.json();
         },
-        [baseUrl],
+        [],
     );
 
     return {
@@ -587,6 +590,8 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
         healthInfo,
         versionInfo,
         portInfo,
+        healthCheckedAt,
+        refreshHealth,
         availableTools,
         activeRequests,
         restGet,

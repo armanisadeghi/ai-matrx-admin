@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { Activity, HeartPulse, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { UseMatrxLocalReturn } from './useMatrxLocal';
@@ -26,13 +26,37 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
         versionInfo,
         activeRequests,
         availableTools,
+        healthCheckedAt,
+        refreshHealth,
     } = hook;
 
     const [showRequests, setShowRequests] = useState(false);
+    const [refreshingHealth, setRefreshingHealth] = useState(false);
 
     const isDiscovering = status === 'discovering';
     const isConnecting = status === 'connecting';
     const restOnline = status === 'connected' || wsConnected;
+
+    const engineHealthy = healthInfo && (healthInfo.status === 'ok' || healthInfo.status === 'healthy');
+    const engineBad = healthInfo && !engineHealthy;
+    const version = versionInfo?.version || healthInfo?.version;
+
+    const handleRefreshHealth = async () => {
+        setRefreshingHealth(true);
+        try {
+            await refreshHealth();
+        } finally {
+            setRefreshingHealth(false);
+        }
+    };
+
+    const checkedAgo = healthCheckedAt
+        ? (() => {
+              const secs = Math.round((Date.now() - healthCheckedAt.getTime()) / 1000);
+              if (secs < 60) return `${secs}s ago`;
+              return `${Math.round(secs / 60)}m ago`;
+          })()
+        : null;
 
     return (
         <div className="border rounded-lg bg-card">
@@ -49,7 +73,7 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
                     />
                 </div>
 
-                {/* Recheck */}
+                {/* Scan / discover */}
                 <Button
                     size="sm"
                     variant="outline"
@@ -62,7 +86,25 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
                         ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         : <RefreshCw className="w-3.5 h-3.5" />
                     }
-                    <span className="text-xs">{isDiscovering ? 'Scanning…' : 'Recheck'}</span>
+                    <span className="text-xs">{isDiscovering ? 'Scanning…' : 'Scan'}</span>
+                </Button>
+
+                {/* Manual health refresh */}
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleRefreshHealth}
+                    disabled={refreshingHealth}
+                    className="h-8 px-2.5 gap-1.5 shrink-0 text-muted-foreground"
+                    title={checkedAgo ? `Health last checked ${checkedAgo}` : 'Check engine health'}
+                >
+                    {refreshingHealth
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <HeartPulse className="w-3.5 h-3.5" />
+                    }
+                    <span className="text-xs hidden sm:inline">
+                        {refreshingHealth ? 'Checking…' : checkedAgo ? `Health · ${checkedAgo}` : 'Health'}
+                    </span>
                 </Button>
 
                 <div className="w-px h-6 bg-border shrink-0" />
@@ -80,6 +122,29 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
                     online={wsConnected}
                     checking={isConnecting}
                 />
+
+                {/* Engine health dot — only when connected and we have health data */}
+                {healthInfo && (
+                    <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${engineHealthy ? 'bg-green-500' : 'bg-yellow-500'}`}
+                        title={engineHealthy ? 'Engine healthy' : `Engine: ${healthInfo.status}`}
+                    />
+                )}
+
+                {/* Version + tool count — hidden on mobile, shown inline on desktop */}
+                {(version || availableTools.length > 0) && (
+                    <span className="hidden sm:flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
+                        {version && (
+                            <span className="flex items-center gap-1">
+                                <Activity className="w-3 h-3" />
+                                v{version}
+                            </span>
+                        )}
+                        {availableTools.length > 0 && (
+                            <span>{availableTools.length} tools</span>
+                        )}
+                    </span>
+                )}
 
                 {/* Transport toggle */}
                 {showTransportToggle && (
@@ -134,30 +199,25 @@ export function ConnectionBar({ hook, showTransportToggle = true }: ConnectionBa
                         <XCircle className="w-3 h-3" /> Cancel
                     </Button>
                 )}
-            </div>
 
-            {/* Info strip */}
-            {(healthInfo || versionInfo || availableTools.length > 0) && (
-                <div className="flex items-center gap-3 px-3 pb-2.5 text-[11px] text-muted-foreground border-t pt-2">
-                    {(versionInfo?.version || healthInfo?.version) && (
-                        <span className="flex items-center gap-1">
-                            <Activity className="w-3 h-3" />
-                            v{versionInfo?.version || healthInfo?.version}
-                        </span>
-                    )}
-                    {healthInfo && (
-                        <span className={healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'text-green-600' : 'text-yellow-600'}>
-                            {healthInfo.status === 'ok' || healthInfo.status === 'healthy' ? 'Engine healthy' : `Engine: ${healthInfo.status}`}
-                        </span>
-                    )}
-                    {availableTools.length > 0 && (
-                        <span>{availableTools.length} tools available</span>
-                    )}
-                    <span className="ml-auto">
-                        Transport: <span className="font-medium text-foreground">{useWebSocket ? 'WebSocket' : 'REST'}</span>
-                    </span>
-                </div>
-            )}
+                {/* Mobile-only second line: version + tool count */}
+                {(version || availableTools.length > 0) && (
+                    <div className="flex sm:hidden w-full items-center gap-3 pt-1 text-[11px] text-muted-foreground border-t">
+                        {version && (
+                            <span className="flex items-center gap-1">
+                                <Activity className="w-3 h-3" />
+                                v{version}
+                            </span>
+                        )}
+                        {availableTools.length > 0 && (
+                            <span>{availableTools.length} tools</span>
+                        )}
+                        {engineBad && (
+                            <span className="text-yellow-600">Engine: {healthInfo?.status}</span>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
