@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     ArrowLeft,
     Bell,
@@ -147,7 +146,7 @@ export default function SystemPage() {
                         <input type="text" value={clipboardText} onChange={e => setClipboardText(e.target.value)}
                             className={inputCls} style={{ fontSize: '16px' }} />
                         <Button size="sm" disabled={!!loading} className="w-full h-7 text-xs gap-1"
-                            onClick={() => run('clipboard-write', 'ClipboardWrite', { text: clipboardText })}>
+                            onClick={() => run('clipboard-write', 'ClipboardWrite', { content: clipboardText })}>
                             {isLoading('clipboard-write') ? <Loader2 className="w-3 h-3 animate-spin" /> : <Clipboard className="w-3 h-3" />}
                             Write Clipboard
                         </Button>
@@ -199,79 +198,75 @@ export default function SystemPage() {
                     </div>
                 </div>
 
-                {/* ── RIGHT: results + log ── */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    {/* Result panel — takes most space */}
-                    <div className="flex-1 overflow-hidden flex flex-col">
-                        <div className="px-3 py-1.5 border-b bg-muted/40 flex items-center gap-2 shrink-0">
-                            <span className="text-xs font-semibold">
-                                {activeSection ? `Result — ${activeSection}` : 'Result'}
-                            </span>
-                            {activeResult && (
-                                <Badge
-                                    variant={activeResult.type === 'success' ? 'outline' : 'destructive'}
-                                    className="text-[10px] h-4 px-1"
-                                >
-                                    {activeResult.type}
-                                </Badge>
-                            )}
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            {loading && (
-                                <div className="flex items-center justify-center p-8">
-                                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                                </div>
-                            )}
-                            {!loading && activeResult && (
-                                <div className="p-3 space-y-3">
-                                    <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted/30 rounded p-2">
-                                        {activeResult.output}
-                                    </pre>
-                                    {activeResult.image && (
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-1">Image:</p>
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={`data:${activeResult.image.media_type};base64,${activeResult.image.base64_data}`}
-                                                alt="Tool result"
-                                                className="max-w-full rounded border"
-                                            />
-                                        </div>
-                                    )}
-                                    {activeResult.metadata && (
-                                        <details className="text-xs">
-                                            <summary className="cursor-pointer text-muted-foreground hover:text-foreground flex items-center gap-1">
-                                                Metadata
-                                            </summary>
-                                            <pre className="mt-1 p-2 bg-muted rounded font-mono text-[10px] overflow-auto max-h-40">
-                                                {JSON.stringify(activeResult.metadata, null, 2)}
-                                            </pre>
-                                        </details>
-                                    )}
-                                </div>
-                            )}
-                            {!loading && !activeResult && (
-                                <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                                    Run a tool to see results
-                                </div>
-                            )}
-                            {screenshotImage && !activeResult?.image && (
-                                <div className="p-3">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={`data:${screenshotImage.media_type};base64,${screenshotImage.base64_data}`}
-                                        alt="Screenshot"
-                                        className="w-full rounded border"
-                                    />
-                                </div>
-                            )}
-                        </div>
+                {/* ── MIDDLE: result ── */}
+                <div className="flex-1 flex flex-col overflow-hidden border-r">
+                    <div className="px-3 py-1.5 border-b bg-muted/40 flex items-center gap-2 shrink-0">
+                        <span className="text-xs font-semibold">
+                            {activeSection ? `Result — ${activeSection}` : 'Result'}
+                        </span>
+                        {activeResult && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${
+                                activeResult.type === 'success'
+                                    ? 'text-green-600 border-green-400'
+                                    : 'text-red-500 border-red-400'
+                            }`}>{activeResult.type}</span>
+                        )}
                     </div>
+                    <div className="flex-1 overflow-y-auto">
+                        {loading && (
+                            <div className="flex items-center justify-center p-8">
+                                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                            </div>
+                        )}
+                        {!loading && activeResult && (
+                            <div className="p-3 space-y-3">
+                                <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted/30 rounded p-2">
+                                    {activeResult.output}
+                                </pre>
+                                {activeResult.image && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">Image:</p>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={`data:${activeResult.image.media_type};base64,${activeResult.image.base64_data}`}
+                                            alt="Tool result"
+                                            className="max-w-full rounded border"
+                                        />
+                                    </div>
+                                )}
+                                {activeResult.metadata && (
+                                    <details className="text-xs">
+                                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground flex items-center gap-1">
+                                            Metadata
+                                        </summary>
+                                        <pre className="mt-1 p-2 bg-muted rounded font-mono text-[10px] overflow-auto">
+                                            {JSON.stringify(activeResult.metadata, null, 2)}
+                                        </pre>
+                                    </details>
+                                )}
+                            </div>
+                        )}
+                        {!loading && !activeResult && (
+                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                                Run a tool to see results
+                            </div>
+                        )}
+                        {screenshotImage && !activeResult?.image && (
+                            <div className="p-3">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={`data:${screenshotImage.media_type};base64,${screenshotImage.base64_data}`}
+                                    alt="Screenshot"
+                                    className="w-full rounded border"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
 
-                    {/* Message Log — fixed height at bottom */}
-                    <div className="h-48 border-t shrink-0 flex flex-col overflow-hidden">
-                        <MessageLog logs={logs} onClear={clearLogs} maxHeight="max-h-full" />
-                    </div>
+                {/* ── RIGHT: message log ── */}
+                <div className="w-80 shrink-0 flex flex-col overflow-hidden">
+                    <MessageLog logs={logs} onClear={clearLogs} className="flex-1 rounded-none border-0 border-none" maxHeight="max-h-full" />
                 </div>
             </div>
         </div>

@@ -17,6 +17,7 @@ import {
     Settings2,
     Terminal,
     Wifi,
+    Zap,
 } from 'lucide-react';
 import { ConnectionBar } from './_lib/ConnectionBar';
 import { MessageLog, ResultPanel } from './_lib/ResultPanel';
@@ -79,6 +80,13 @@ const SUB_PAGES = [
         icon: Settings2,
         label: 'Engine Settings',
         description: 'Health, version, ports, engine configuration',
+        badge: 'New',
+    },
+    {
+        href: '/demos/local-tools/powershell',
+        icon: Zap,
+        label: 'PowerShell Tools',
+        description: 'Env vars · Registry · Services · Event Log · Windows Features',
         badge: 'New',
     },
 ] as const;

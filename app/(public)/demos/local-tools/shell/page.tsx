@@ -177,8 +177,9 @@ export default function ShellPage() {
             <div className="shrink-0 border-b px-3 py-1">
                 <ConnectionBar hook={local} />
             </div>
-            <div className="flex-1 overflow-y-auto p-3">
-                <div className="max-w-screen-2xl mx-auto space-y-3">
+            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-3 border-r">
+                <div className="space-y-3">
 
                     {/* Foreground Bash */}
                     <div className="border rounded-lg p-3 bg-card space-y-2">
@@ -333,9 +334,10 @@ export default function ShellPage() {
                     </div>
                 </div>
             </div>
-            {/* Message log pinned at bottom */}
-            <div className="h-40 border-t shrink-0 flex flex-col overflow-hidden">
-                <MessageLog logs={logs} onClear={clearLogs} maxHeight="max-h-full" />
+            {/* Message log — full-height right column */}
+            <div className="w-80 shrink-0 flex flex-col overflow-hidden">
+                <MessageLog logs={logs} onClear={clearLogs} className="flex-1 rounded-none border-0" maxHeight="max-h-full" />
+            </div>
             </div>
         </div>
     );

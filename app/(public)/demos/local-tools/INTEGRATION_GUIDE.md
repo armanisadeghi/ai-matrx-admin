@@ -227,7 +227,7 @@ Multiple tool calls can run simultaneously on the same WebSocket. Each gets its 
 | Tool | Parameters | Description |
 |------|-----------|-------------|
 | `ClipboardRead` | *(none)* | Read clipboard text |
-| `ClipboardWrite` | `text: string` | Write text to clipboard |
+| `ClipboardWrite` | `content: string` | Write text to clipboard |
 
 ### Notifications
 

@@ -86,11 +86,12 @@ interface MessageLogProps {
     logs: LogEntry[];
     onClear: () => void;
     maxHeight?: string;
+    className?: string;
 }
 
-export function MessageLog({ logs, onClear, maxHeight = 'max-h-[400px]' }: MessageLogProps) {
+export function MessageLog({ logs, onClear, maxHeight = 'max-h-[400px]', className = '' }: MessageLogProps) {
     return (
-        <div className="border rounded-lg flex flex-col overflow-hidden">
+        <div className={`border rounded-lg flex flex-col overflow-hidden ${className}`}>
             <div className="px-3 py-2 border-b bg-muted/50 flex items-center justify-between">
                 <h2 className="text-xs font-semibold">Message Log</h2>
                 <Button variant="ghost" size="sm" className="h-6 text-[10px] px-1.5" onClick={onClear}>

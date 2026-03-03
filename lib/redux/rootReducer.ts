@@ -54,6 +54,7 @@ import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 
 // Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
+import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
@@ -146,6 +147,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         broker: brokerSlice, // Concept broker implementation
 
         overlays: overlaySlice,
+        contextMenuCache: contextMenuCacheReducer,
         promptCache: promptCacheReducer,
         promptRunner: promptRunnerReducer,
         promptExecution: promptExecutionReducer,

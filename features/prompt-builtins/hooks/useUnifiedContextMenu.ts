@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/utils/supabase/client';
 import { buildCategoryHierarchy } from '@/features/prompt-builtins/utils/menuHierarchy';
 import type { CategoryGroup } from '@/features/prompt-builtins/types/menu';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { cachePrompt } from '@/lib/redux/slices/promptCacheSlice';
 import type { CachedPrompt } from '@/lib/redux/slices/promptCacheSlice';
-import type { ContextMenuCacheState } from '@/lib/redux/slices/contextMenuCacheSlice';
-import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
+import { selectContextMenuRows, selectContextMenuHydrated } from '@/lib/redux/slices/contextMenuCacheSlice';
 
 interface UseUnifiedContextMenuReturn {
   categoryGroups: CategoryGroup[];
@@ -41,32 +40,20 @@ export function useUnifiedContextMenu(
   enabled: boolean = true
 ): UseUnifiedContextMenuReturn {
   const dispatch = useAppDispatch();
-  // Cast through unknown — contextMenuCache only exists in LiteRootState, not full RootState.
-  // Both stores use the same reducer key, so this is safe at runtime.
-  const cachedRows = useAppSelector(
-    (state) => ((state as unknown as { contextMenuCache: ContextMenuCacheState }).contextMenuCache?.rows ?? []) as ContextMenuRow[]
-  );
-  const isHydrated = useAppSelector(
-    (state) => (state as unknown as { contextMenuCache: ContextMenuCacheState }).contextMenuCache?.hydrated ?? false
-  );
 
-  // Stabilize the array reference so callers can pass inline literals without
-  // triggering an infinite effect loop. We compare by sorted join, same pattern
-  // used in useContextMenuShortcuts.
-  const placementTypesKey = [...placementTypes].sort().join(',');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const stablePlacementTypes = useMemo(() => placementTypes, [placementTypesKey]);
+  const cachedRows = useAppSelector(selectContextMenuRows);
+  const isHydrated = useAppSelector(selectContextMenuHydrated);
 
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const cacheBuiltinsFromGroups = useCallback((groups: CategoryGroup[]) => {
+  const cacheBuiltins = (groups: CategoryGroup[]) => {
     const cacheItems = (items: unknown[]) => {
       (items as Array<{ type: string; prompt_builtin?: Record<string, unknown> }>).forEach(item => {
         if (item.type === 'prompt_shortcut' && item.prompt_builtin) {
           const builtin = item.prompt_builtin;
-          const cachedPrompt: CachedPrompt = {
+          dispatch(cachePrompt({
             id: builtin.id as string,
             name: builtin.name as string,
             description: (builtin.description as string) || undefined,
@@ -77,37 +64,24 @@ export function useUnifiedContextMenu(
             source: 'prompt_builtins',
             fetchedAt: Date.now(),
             status: 'cached',
-          };
-          dispatch(cachePrompt(cachedPrompt));
+          } satisfies CachedPrompt));
         }
       });
     };
-
     const recurse = (children: CategoryGroup[]) => {
       children.forEach(child => {
         if (child.items) cacheItems(child.items as unknown[]);
         if (child.children) recurse(child.children);
       });
     };
-
     groups.forEach(group => {
       if (group.items) cacheItems(group.items as unknown[]);
       if (group.children) recurse(group.children);
     });
-  }, [dispatch]);
+  };
 
-  const buildFromRows = useCallback((rows: ViewResponse[]) => {
-    const filtered = rows.filter(r => stablePlacementTypes.includes(r.placement_type));
-    const allGroups = filtered.flatMap(row =>
-      // categories_flat is jsonb from DB — shape matches FlatCategory[] at runtime
-      buildCategoryHierarchy(row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0], contextFilter)
-    );
-    cacheBuiltinsFromGroups(allGroups);
-    return allGroups;
-  }, [stablePlacementTypes, contextFilter, cacheBuiltinsFromGroups]);
-
-  const loadMenuItems = useCallback(async () => {
-    if (!enabled || stablePlacementTypes.length === 0) {
+  const loadMenuItems = async () => {
+    if (!enabled || placementTypes.length === 0) {
       setCategoryGroups([]);
       setLoading(false);
       return;
@@ -116,7 +90,11 @@ export function useUnifiedContextMenu(
     // ── Fast path: rows already in Redux from SSR RPC ─────────────────────
     if (isHydrated && cachedRows.length > 0) {
       try {
-        const allGroups = buildFromRows(cachedRows as ViewResponse[]);
+        const rows = cachedRows as unknown as ViewResponse[];
+        const allGroups = rows
+          .filter(r => placementTypes.includes(r.placement_type))
+          .flatMap(row => buildCategoryHierarchy(row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0], contextFilter));
+        cacheBuiltins(allGroups);
         setCategoryGroups(allGroups);
         setError(null);
       } catch (err) {
@@ -128,22 +106,24 @@ export function useUnifiedContextMenu(
       return;
     }
 
-    // ── Fallback: fetch from Supabase (public routes / cache miss) ─────────
+    // ── Fallback: fetch from Supabase ──────────────────────────────────────
     try {
       setLoading(true);
       setError(null);
 
-      const supabase = createClient();
       const { data, error: queryError } = await supabase
         .from('context_menu_unified_view')
         .select('placement_type, categories_flat')
-        .in('placement_type', stablePlacementTypes);
+        .in('placement_type', placementTypes);
 
       if (queryError) {
         throw new Error(`Failed to load menu: ${queryError.message}`);
       }
 
-      const allGroups = buildFromRows((data as ViewResponse[]) || []);
+      const allGroups = ((data as ViewResponse[]) || []).flatMap(row =>
+        buildCategoryHierarchy(row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0], contextFilter)
+      );
+      cacheBuiltins(allGroups);
       setCategoryGroups(allGroups);
 
     } catch (err) {
@@ -152,11 +132,12 @@ export function useUnifiedContextMenu(
     } finally {
       setLoading(false);
     }
-  }, [enabled, stablePlacementTypes, contextFilter, isHydrated, cachedRows, buildFromRows]);
+  };
 
   useEffect(() => {
     loadMenuItems();
-  }, [loadMenuItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(placementTypes), contextFilter, enabled, isHydrated]);
 
   return {
     categoryGroups,

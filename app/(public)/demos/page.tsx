@@ -31,12 +31,24 @@ async function getDemoRoutes(dir: string, baseRoute: string = ""): Promise<strin
 function groupRoutes(routes: string[]): Record<string, string[]> {
   const groups: Record<string, string[]> = {};
 
+  // Collect all top-level segments that also have children
+  const parentSegments = new Set(
+    routes.filter((r) => r.includes("/")).map((r) => r.split("/")[0])
+  );
+
   for (const route of routes) {
     const parts = route.split("/");
-    // Top-level routes (no slash) go into their own single-item group
-    const groupKey = parts.length > 1 ? parts[0] : "__root__";
-    if (!groups[groupKey]) groups[groupKey] = [];
-    groups[groupKey].push(route);
+    const isTopLevel = parts.length === 1;
+
+    if (isTopLevel && parentSegments.has(route)) {
+      // This route is both a parent page and a group — add it as the first entry in its own group
+      if (!groups[route]) groups[route] = [];
+      groups[route].unshift(route);
+    } else {
+      const groupKey = parts.length > 1 ? parts[0] : "__root__";
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(route);
+    }
   }
 
   return groups;
@@ -48,6 +60,8 @@ function formatSegment(segment: string): string {
 
 function getRouteLabel(route: string, groupKey: string): string {
   if (groupKey === "__root__") return formatSegment(route);
+  // Parent page entry — the route equals the group key
+  if (route === groupKey) return `${formatSegment(route)} (overview)`;
   // Strip the group prefix so we only show the child path
   const parts = route.split("/");
   const childParts = parts.slice(1);

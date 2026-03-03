@@ -102,6 +102,15 @@ export const ALL_TOOLS = [
   "ReadDocument",
   "WriteDocument",
   "SearchDocuments",
+  // ── PowerShell / System Integration ─────────────────────────────
+  "PSGetEnv",
+  "PSSetEnv",
+  "RegistryRead",
+  "RegistryWrite",
+  "ServiceList",
+  "ServiceControl",
+  "EventLog",
+  "WindowsFeatures",
 ] as const;
 
 export type ToolName = (typeof ALL_TOOLS)[number];
@@ -174,6 +183,16 @@ export const TOOL_CATEGORIES = {
     "ReadDocument",
     "WriteDocument",
     "SearchDocuments",
+  ],
+  "PowerShell": [
+    "PSGetEnv",
+    "PSSetEnv",
+    "RegistryRead",
+    "RegistryWrite",
+    "ServiceList",
+    "ServiceControl",
+    "EventLog",
+    "WindowsFeatures",
   ],
 } as const;
 

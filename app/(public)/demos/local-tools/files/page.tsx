@@ -238,26 +238,65 @@ export default function FilesPage() {
                     </div>
                 </div>
 
-                {/* ── RIGHT: results + log ── */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-hidden flex flex-col">
-                        <div className="px-3 py-1.5 border-b bg-muted/40 shrink-0">
-                            <span className="text-xs font-semibold">
-                                {activeSection ? `Result — ${activeSection}` : 'Result'}
-                            </span>
-                        </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <ResultPanel
-                                result={activeResult}
-                                loading={!!loading}
-                                title=""
-                                maxHeight="max-h-full"
-                            />
-                        </div>
+                {/* ── MIDDLE: result ── */}
+                <div className="flex-1 flex flex-col overflow-hidden border-r">
+                    <div className="px-3 py-1.5 border-b bg-muted/40 shrink-0 flex items-center gap-2">
+                        <span className="text-xs font-semibold">
+                            {activeSection ? `Result — ${activeSection}` : 'Result'}
+                        </span>
+                        {activeResult && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${
+                                activeResult.type === 'success'
+                                    ? 'text-green-600 border-green-400'
+                                    : 'text-red-500 border-red-400'
+                            }`}>{activeResult.type}</span>
+                        )}
                     </div>
-                    <div className="h-48 border-t shrink-0 flex flex-col overflow-hidden">
-                        <MessageLog logs={logs} onClear={clearLogs} maxHeight="max-h-full" />
+                    <div className="flex-1 overflow-y-auto">
+                        {!!loading && (
+                            <div className="flex items-center justify-center p-8">
+                                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                            </div>
+                        )}
+                        {!loading && activeResult && (
+                            <div className="p-3 space-y-3">
+                                <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted/30 rounded p-2">
+                                    {activeResult.output}
+                                </pre>
+                                {activeResult.image && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">Image:</p>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={`data:${activeResult.image.media_type};base64,${activeResult.image.base64_data}`}
+                                            alt="Tool result"
+                                            className="max-w-full rounded border"
+                                        />
+                                    </div>
+                                )}
+                                {activeResult.metadata && (
+                                    <details className="text-xs">
+                                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                                            Metadata
+                                        </summary>
+                                        <pre className="mt-1 p-2 bg-muted rounded font-mono text-[10px] overflow-auto">
+                                            {JSON.stringify(activeResult.metadata, null, 2)}
+                                        </pre>
+                                    </details>
+                                )}
+                            </div>
+                        )}
+                        {!loading && !activeResult && (
+                            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                                Run a tool to see results
+                            </div>
+                        )}
                     </div>
+                </div>
+
+                {/* ── RIGHT: message log ── */}
+                <div className="w-80 shrink-0 flex flex-col overflow-hidden">
+                    <MessageLog logs={logs} onClear={clearLogs} className="flex-1 rounded-none border-0 border-none" maxHeight="max-h-full" />
                 </div>
             </div>
         </div>
