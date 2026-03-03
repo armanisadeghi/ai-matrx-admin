@@ -173,6 +173,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   // ── Create folder dialog state ──────────────────────────────────────
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [showFolderSubmenu, setShowFolderSubmenu] = useState(false);
 
   // ── Folder expand/collapse state ──────────────────────────────────────
   const activeNoteFolder = useMemo(() => {
@@ -320,6 +321,7 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
     setFolderContextMenu(null);
+    setShowFolderSubmenu(false);
   }, []);
 
   // ── Folder operations ────────────────────────────────────────────────
@@ -663,32 +665,40 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
             <Download /> Export
           </button>
 
-          {/* Move to folder submenu */}
+          {/* Move to folder — collapsible second tier */}
           <div className="h-px my-1 mx-1.5 bg-border" />
-          <div className="px-2.5 py-1 text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider">
-            Move to folder
-          </div>
-          {orderedFolders.map((folder) => {
-            const currentFolder = notes.find((n) => n.id === contextMenu.noteId)?.folder_name;
-            const isCurrentFolder = currentFolder === folder;
-            return (
-              <button
-                key={folder}
-                className={cn(
-                  "flex items-center gap-2 w-full px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground",
-                  isCurrentFolder
-                    ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                    : "text-foreground hover:bg-accent",
-                )}
-                onClick={() => moveToFolder(contextMenu.noteId, folder)}
-                disabled={isCurrentFolder}
-              >
-                <FolderInput />
-                {folder}
-                {isCurrentFolder && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
-              </button>
-            );
-          })}
+          <button
+            className="flex items-center justify-between gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
+            onClick={(e) => { e.stopPropagation(); setShowFolderSubmenu((v) => !v); }}
+          >
+            <span className="flex items-center gap-2"><FolderInput /> Move to folder</span>
+            <ChevronRight className={cn("!w-3 !h-3 transition-transform", showFolderSubmenu && "rotate-90")} />
+          </button>
+          {showFolderSubmenu && (
+            <div className="ml-3 max-h-[200px] overflow-y-auto notes-scrollable">
+              {orderedFolders.map((folder) => {
+                const currentFolder = notes.find((n) => n.id === contextMenu.noteId)?.folder_name;
+                const isCurrentFolder = currentFolder === folder;
+                return (
+                  <button
+                    key={folder}
+                    className={cn(
+                      "flex items-center gap-2 w-full px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground",
+                      isCurrentFolder
+                        ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
+                        : "text-foreground hover:bg-accent",
+                    )}
+                    onClick={() => moveToFolder(contextMenu.noteId, folder)}
+                    disabled={isCurrentFolder}
+                  >
+                    <FolderInput />
+                    {folder}
+                    {isCurrentFolder && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className="h-px my-1 mx-1.5 bg-border" />
           <button

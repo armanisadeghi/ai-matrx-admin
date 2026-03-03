@@ -84,6 +84,19 @@
 
 ---
 
+## Bug Fixes & UX Improvements
+
+| Fix | Description |
+|-----|-------------|
+| **Z-index stacking** | Added `z-index: 0` to `.notes-root` so content renders BEHIND shell header (z-40) and dock (z-40). Share dialog and mobile bottom sheet portaled to `document.body` to escape the stacking context. |
+| **AI Actions debugging** | Added console.log statements throughout NoteAiMenu.tsx data flow: Redux cache check, Supabase fallback, buildCategoryHierarchy results, render state. Open DevTools console and click "AI Actions" in context menu to see diagnostics. |
+| **Context menu folder submenu** | Replaced flat folder list (unusable with 15+ folders) with collapsible "Move to folder ›" second tier in both NotesWorkspace and SidebarClient context menus. |
+| **Tab bar folder selector** | Added folder icon button in active tab's action bar (next to Save/Copy/Share/Delete). Click to open dropdown for quick folder change. |
+| **Mobile folder drawer** | Mobile bottom sheet now shows folder as clickable row with chevron. Tap to enter folder selection mode with back button navigation. |
+| **Undefined CSS classes** | Fixed `notes-context-item`, `notes-context-item-danger`, `notes-context-divider` — these were never defined in CSS. Replaced with Tailwind utility classes matching `contextItemClass`. |
+
+---
+
 ## Architecture Notes
 
 All implemented features follow the SSR route's core principles:
@@ -96,3 +109,4 @@ All implemented features follow the SSR route's core principles:
 6. **URL state**: Sort field, sort order, search query, folder filter, tabs all in URL params
 7. **No backgrounds on floating elements**: Headers/search bar use glass/transparent overlays, content scrolls behind
 8. **Suspense-free loading**: No `<Suspense>` wrappers — skeleton states handled inline with save state tracking
+9. **Portal-based overlays**: Share dialog and mobile bottom sheet use `createPortal(jsx, document.body)` to escape the notes `z-index: 0` stacking context, ensuring they render above shell header/dock

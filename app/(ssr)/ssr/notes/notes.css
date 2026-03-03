@@ -14,6 +14,7 @@
   height: 100%;
   overflow: hidden;
   position: relative;
+  z-index: 0; /* Stacking context below shell header (z-40) and dock (z-40) */
 }
 
 .notes-sidebar {
