@@ -47,7 +47,7 @@ export function LiteProviders({ children, initialState }: LiteProvidersProps) {
     return (
         <ReactQueryProvider>
             <LiteStoreProvider initialState={initialState}>
-                <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                <ThemeProvider>
                     <ToastProvider>
                         <TooltipProvider delayDuration={200}>
                             {children}

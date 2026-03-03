@@ -9,7 +9,7 @@ import { setUser } from '@/lib/redux/slices/userSlice';
 import { setModulePreferences, type UserPreferences } from '@/lib/redux/slices/userPreferencesSlice';
 import { setContextMenuRows } from '@/lib/redux/slices/contextMenuCacheSlice';
 import { hydrateModels, type AIModel } from '@/lib/redux/slices/modelRegistrySlice';
-import { setUnreadTotal } from '@/features/sms/redux/smsSlice';
+// smsSlice imported lazily — avoids pulling the full SMS feature into the shell bundle
 import { supabase } from '@/utils/supabase/client';
 import { getSSRShellData } from '@/utils/supabase/ssrShellData';
 import { mapUserData } from '@/utils/userDataMapper';
@@ -23,12 +23,19 @@ export default function DeferredShellData() {
         if (fetched.current) return;
         fetched.current = true;
 
+        const t0 = performance.now();
+        console.debug(`⚡DeferredShellData effect started at ${t0.toFixed(2)}ms`);
+
         async function load() {
             try {
+                const t1 = performance.now();
                 const { data: { user } } = await supabase.auth.getUser();
+                console.debug(`⚡DeferredShellData getUser: ${(performance.now() - t1).toFixed(2)}ms`);
                 if (!user) return;
 
+                const t2 = performance.now();
                 const shellData = await getSSRShellData(supabase, user.id);
+                console.debug(`⚡DeferredShellData getSSRShellData: ${(performance.now() - t2).toFixed(2)}ms`);
                 const userData = mapUserData(user, undefined, shellData.is_admin);
 
                 dispatch(setUser(userData));
@@ -56,11 +63,12 @@ export default function DeferredShellData() {
                 }
 
                 if (shellData.sms_unread_total > 0) {
+                    const { setUnreadTotal } = await import('@/features/sms/redux/smsSlice');
                     dispatch(setUnreadTotal(shellData.sms_unread_total));
                 }
+                console.debug(`⚡DeferredShellData dispatches done at ${performance.now().toFixed(2)}ms (total: ${(performance.now() - t0).toFixed(2)}ms)`);
             } catch (err) {
                 console.error('[DeferredShellData]', err);
-                // Non-critical — store stays empty, page still works
             }
         }
 

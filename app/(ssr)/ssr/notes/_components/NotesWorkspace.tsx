@@ -23,28 +23,22 @@ import {
   type ChangeEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import PageHeader from "@/app/(ssr)/_components/PageHeader";
 import {
   X,
   NotebookPen,
   Save,
   ChevronLeft,
-  ChevronDown,
-  ChevronRight,
   Folder,
   Copy,
   Trash2,
   FileText,
   Eye,
   SplitSquareHorizontal,
-  Download,
-  Share2,
   FolderInput,
-  Sparkles,
   MoreHorizontal,
   Plus,
-  Check,
-  Link2,
-  Tag,
+  Share2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
@@ -57,7 +51,17 @@ const MarkdownStream = dynamic<MarkdownStreamProps>(
   { ssr: false, loading: () => <div className="notes-preview-empty">Loading preview...</div> },
 );
 
-const NoteAiMenu = dynamic(() => import("./NoteAiMenu"), {
+const NoteShareDialog = dynamic(() => import("./NoteShareDialog"), {
+  ssr: false,
+  loading: () => null,
+});
+
+const NoteContextMenu = dynamic(() => import("./NoteContextMenu"), {
+  ssr: false,
+  loading: () => null,
+});
+
+const NoteOptionsSheet = dynamic(() => import("./NoteOptionsSheet"), {
   ssr: false,
   loading: () => null,
 });
@@ -134,11 +138,19 @@ interface NotesWorkspaceProps {
   notes?: NoteSummary[];
 }
 
+// Module evaluated = NotesWorkspace bundle parsed. Large gap to mount = hydration cost.
+console.debug(`⚡NotesWorkspace module evaluated at ${performance.now().toFixed(2)}ms`);
+
 export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorkspaceProps) {
   const [notes, setNotes] = useState<NoteSummary[]>(initialNotes);
 
+  useEffect(() => {
+    console.debug(`⚡NotesWorkspace mounted at ${performance.now().toFixed(2)}ms`);
+  }, []);
+
   // Fetch notes after mount — directly from Supabase, no server roundtrip
   useEffect(() => {
+    const t0 = performance.now();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       supabase
@@ -148,6 +160,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false })
         .then(({ data }) => {
+          console.debug(`⚡NotesWorkspace notes fetched in ${(performance.now() - t0).toFixed(2)}ms`);
           if (!data) return;
           setNotes(data.map(n => ({
             id: n.id,
@@ -181,14 +194,8 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
     noteId: string;
     type: "tab" | "editor";
   } | null>(null);
-  const [showAiMenu, setShowAiMenu] = useState(false);
   const [showNoteOptions, setShowNoteOptions] = useState(false);
 
-  // Portal target for header center
-  const [headerCenter, setHeaderCenter] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    setHeaderCenter(document.getElementById("shell-header-center"));
-  }, []);
 
   // Portal root for overlays that need to escape the notes z-index stacking context
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
@@ -726,7 +733,6 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
   // Share dialog state
   const [shareDialogNoteId, setShareDialogNoteId] = useState<string | null>(null);
-  const [shareCopied, setShareCopied] = useState(false);
 
   // Tag editing state (per-note, pushed deep)
   const [editingTags, setEditingTags] = useState(false);
@@ -734,9 +740,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
   // Folder selector state
   const [showFolderSelect, setShowFolderSelect] = useState(false);
-  const [showFolderSubmenu, setShowFolderSubmenu] = useState(false);
   const [showTabFolderDrop, setShowTabFolderDrop] = useState<string | null>(null);
-  const [mobileFolderMode, setMobileFolderMode] = useState(false);
 
   // ── Tag management ────────────────────────────────────────────────────
 
@@ -776,26 +780,6 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
       updateTags(noteId, cached.data.tags.filter((t) => t !== tag));
     },
     [noteCache, updateTags],
-  );
-
-  // ── Share link generation ──────────────────────────────────────────────
-
-  const generateShareLink = useCallback((noteId: string) => {
-    return `${window.location.origin}/notes/share/${noteId}`;
-  }, []);
-
-  const copyShareLink = useCallback(
-    async (noteId: string) => {
-      const link = generateShareLink(noteId);
-      try {
-        await navigator.clipboard.writeText(link);
-        setShareCopied(true);
-        setTimeout(() => setShareCopied(false), 2000);
-      } catch {
-        // fallback
-      }
-    },
-    [generateShareLink],
   );
 
   // ── Resolve conflict ──────────────────────────────────────────────────
@@ -868,7 +852,7 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
   useEffect(() => {
     if (!contextMenu) return;
-    const close = () => { setContextMenu(null); setShowAiMenu(false); setShowFolderSubmenu(false); };
+    const close = () => setContextMenu(null);
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, [contextMenu]);
@@ -951,22 +935,13 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
   const actionBtnClass =
     "flex items-center justify-center w-6 h-6 rounded cursor-pointer transition-colors text-muted-foreground hover:bg-accent hover:text-foreground [&_svg]:w-3.5 [&_svg]:h-3.5";
 
-  const contextItemClass =
-    "flex items-center gap-2 w-full py-1.5 px-2.5 text-xs text-muted-foreground bg-transparent border-none rounded-md cursor-pointer text-left transition-colors hover:bg-accent hover:text-foreground [&_svg]:w-[0.8125rem] [&_svg]:h-[0.8125rem] [&_svg]:shrink-0";
-
-  // Bottom sheet row style — mirrors UserMenuPanel item style
-  const noteOptionItemClass =
-    "flex items-center gap-2.5 w-full px-3 py-1.5 text-[0.8125rem] text-foreground rounded-lg cursor-pointer transition-colors hover:bg-[var(--shell-glass-bg-hover)] bg-transparent border-none text-left";
-
   // ─── RENDER ─────────────────────────────────────────────────────────────
 
   return (
     <>
-      {/* ── Portal: View mode buttons into shell header center ─────── */}
-      {headerCenter &&
-        activeNoteId &&
-        activeCached &&
-        createPortal(
+      {/* ── Header center: View mode buttons via PageHeader ────────── */}
+      {activeNoteId && activeCached && (
+        <PageHeader>
           <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
             <button
               className={cn(
@@ -1005,9 +980,9 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
             >
               <Eye /> Preview
             </button>
-          </div>,
-          headerCenter,
-        )}
+          </div>
+        </PageHeader>
+      )}
 
       {/* ── Compact Tab Row (VSCode-style) ─────────────────────────── */}
       {visibleTabs.length > 0 && (
@@ -1140,135 +1115,32 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
       {/* ── Context Menu ───────────────────────────────────────────── */}
       {contextMenu && (
-        <div
-          className="fixed z-[100] min-w-[200px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {noteCache.get(contextMenu.noteId)?.saveState === "dirty" && (
-            <button
-              className={contextItemClass}
-              onClick={() => {
-                forceSave(contextMenu.noteId);
-                setContextMenu(null);
-              }}
-            >
-              <Save /> Save
-            </button>
-          )}
-          <button
-            className={contextItemClass}
-            onClick={() => {
-              duplicateNote(contextMenu.noteId);
-              setContextMenu(null);
-            }}
-          >
-            <Copy /> Duplicate
-          </button>
-          <button
-            className={contextItemClass}
-            onClick={() => {
-              exportNote(contextMenu.noteId);
-              setContextMenu(null);
-            }}
-          >
-            <Download /> Export as Markdown
-          </button>
-          <button className={contextItemClass} onClick={() => { setShareDialogNoteId(contextMenu.noteId); setContextMenu(null); }}>
-            <Link2 /> Share Link
-          </button>
-          <button className={contextItemClass} onClick={() => { shareNote(contextMenu.noteId); setContextMenu(null); }}>
-            <Share2 /> Copy to Clipboard
-          </button>
-
-          {/* Move to folder — collapsible second tier */}
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button
-            className={cn(contextItemClass, "justify-between")}
-            onClick={(e) => { e.stopPropagation(); setShowFolderSubmenu((v) => !v); }}
-          >
-            <span className="flex items-center gap-2"><FolderInput /> Move to folder</span>
-            <ChevronRight className={cn("!w-3 !h-3 transition-transform", showFolderSubmenu && "rotate-90")} />
-          </button>
-          {showFolderSubmenu && (
-            <div className="ml-3 max-h-[200px] overflow-y-auto notes-scrollable">
-              {allFolders.map((folder) => {
-                const currentFolder = noteCache.get(contextMenu.noteId)?.data.folder_name;
-                const isCurrent = currentFolder === folder;
-                return (
-                  <button
-                    key={folder}
-                    className={cn(
-                      contextItemClass,
-                      isCurrent && "text-amber-600 dark:text-amber-400 bg-amber-500/5",
-                    )}
-                    onClick={() => { moveNote(contextMenu.noteId, folder); setContextMenu(null); }}
-                    disabled={isCurrent}
-                  >
-                    <FolderInput />
-                    {folder}
-                    {isCurrent && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="h-px my-1 mx-1.5 bg-border" />
-
-          {/* AI Actions toggle */}
-          <button
-            className={cn(contextItemClass, "[&_svg]:text-purple-500")}
-            onClick={(e) => { e.stopPropagation(); setShowAiMenu(!showAiMenu); }}
-          >
-            <Sparkles /> AI Actions
-          </button>
-          {showAiMenu && (
-            <NoteAiMenu
-              noteId={contextMenu.noteId}
-              noteContent={
-                noteCache.get(contextMenu.noteId)?.localEdits?.content ??
-                noteCache.get(contextMenu.noteId)?.data.content ?? ""
-              }
-              selectedText={selectedTextRef.current || undefined}
-              onResult={handleAiResult}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
-
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button className={contextItemClass} onClick={() => { closeTab(contextMenu.noteId); setContextMenu(null); }}>
-            <X /> Close Tab
-          </button>
-          <button
-            className={contextItemClass}
-            onClick={() => {
-              closeOtherTabs(contextMenu.noteId);
-              setContextMenu(null);
-            }}
-          >
-            <X /> Close Other Tabs
-          </button>
-          <button
-            className={contextItemClass}
-            onClick={() => {
-              closeAllTabs();
-              setContextMenu(null);
-            }}
-          >
-            <X /> Close All Tabs
-          </button>
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button
-            className={cn(contextItemClass, "text-destructive hover:bg-destructive/10 hover:text-destructive")}
-            onClick={() => {
-              deleteNote(contextMenu.noteId);
-              setContextMenu(null);
-            }}
-          >
-            <Trash2 /> Delete Note
-          </button>
-        </div>
+        <NoteContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          noteId={contextMenu.noteId}
+          type={contextMenu.type}
+          isDirty={noteCache.get(contextMenu.noteId)?.saveState === "dirty"}
+          allFolders={allFolders}
+          currentFolder={noteCache.get(contextMenu.noteId)?.data.folder_name}
+          noteContent={
+            noteCache.get(contextMenu.noteId)?.localEdits?.content ??
+            noteCache.get(contextMenu.noteId)?.data.content ?? ""
+          }
+          selectedText={selectedTextRef.current}
+          onSave={() => forceSave(contextMenu.noteId)}
+          onDuplicate={() => duplicateNote(contextMenu.noteId)}
+          onExport={() => exportNote(contextMenu.noteId)}
+          onShareLink={() => setShareDialogNoteId(contextMenu.noteId)}
+          onShareClipboard={() => shareNote(contextMenu.noteId)}
+          onMove={(folder) => moveNote(contextMenu.noteId, folder)}
+          onAiResult={handleAiResult}
+          onCloseTab={() => closeTab(contextMenu.noteId)}
+          onCloseOtherTabs={() => closeOtherTabs(contextMenu.noteId)}
+          onCloseAllTabs={closeAllTabs}
+          onDelete={() => deleteNote(contextMenu.noteId)}
+          onClose={() => setContextMenu(null)}
+        />
       )}
 
       {/* ── Editor or Empty State ──────────────────────────────────── */}
@@ -1342,121 +1214,21 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
             </div>
           </div>
 
-          {/* ── Note Options Bottom Sheet (portaled for z-index) ──── */}
+          {/* ── Note Options Bottom Sheet (mobile, portaled for z-index) ──── */}
           {showNoteOptions && activeNoteId && activeCached && portalRoot && createPortal(
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-[100]"
-                onClick={() => { setShowNoteOptions(false); setMobileFolderMode(false); }}
-              />
-              {/* Sheet */}
-              <div className="fixed inset-x-3 z-[110] rounded-2xl p-2 bg-(--shell-glass-bg) backdrop-blur-[20px] saturate-[1.5] border border-(--shell-glass-border) shadow-2xl bottom-[calc(var(--shell-dock-h)+var(--shell-dock-bottom)+env(safe-area-inset-bottom,0px)+0.5rem)]">
-                {mobileFolderMode ? (
-                  <>
-                    {/* Folder selection mode — header with back button */}
-                    <div className="flex items-center gap-2.5 px-3 py-2 text-[0.8125rem] text-foreground">
-                      <button
-                        className="flex items-center justify-center w-6 h-6 rounded-full cursor-pointer hover:bg-accent [&_svg]:w-4 [&_svg]:h-4 text-muted-foreground"
-                        onClick={() => setMobileFolderMode(false)}
-                      >
-                        <ChevronLeft />
-                      </button>
-                      <span className="font-medium">Move to Folder</span>
-                    </div>
-                    <div className="h-px my-1 mx-2 bg-(--shell-glass-border)" />
-                    {allFolders.map((f) => {
-                      const isCurrent = activeCached.data.folder_name === f;
-                      return (
-                        <button
-                          key={f}
-                          className={cn(
-                            noteOptionItemClass,
-                            isCurrent && "text-amber-600 dark:text-amber-400",
-                          )}
-                          onClick={() => { moveNote(activeNoteId, f); setShowNoteOptions(false); setMobileFolderMode(false); }}
-                          disabled={isCurrent}
-                        >
-                          <FolderInput className="w-4 h-4 shrink-0" />
-                          {f}
-                          {isCurrent && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
-                        </button>
-                      );
-                    })}
-                  </>
-                ) : (
-                  <>
-                    {/* Folder — click to change */}
-                    <button
-                      className={noteOptionItemClass}
-                      onClick={() => setMobileFolderMode(true)}
-                    >
-                      <Folder className="w-4 h-4 shrink-0" />
-                      <span className="flex-1 truncate">{activeCached.data.folder_name ?? "Draft"}</span>
-                      <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground" />
-                    </button>
-
-                    <div className="h-px my-1 mx-2 bg-(--shell-glass-border)" />
-
-                    {/* Save */}
-                    <button
-                      className={cn(noteOptionItemClass, saveState === "dirty" && "text-amber-500 [&_svg]:text-amber-500")}
-                      onClick={() => { forceSave(activeNoteId); setShowNoteOptions(false); }}
-                    >
-                      <Save className="w-4 h-4 shrink-0" />
-                      {saveState === "dirty" ? "Save Changes" : "Saved"}
-                    </button>
-
-                    {/* Duplicate */}
-                    <button
-                      className={noteOptionItemClass}
-                      onClick={() => { duplicateNote(activeNoteId); setShowNoteOptions(false); }}
-                    >
-                      <Copy className="w-4 h-4 shrink-0" />
-                      Duplicate
-                    </button>
-
-                    {/* Share link */}
-                    <button
-                      className={noteOptionItemClass}
-                      onClick={() => { setShareDialogNoteId(activeNoteId); setShowNoteOptions(false); }}
-                    >
-                      <Link2 className="w-4 h-4 shrink-0" />
-                      Share Note
-                    </button>
-
-                    {/* Copy to clipboard */}
-                    <button
-                      className={noteOptionItemClass}
-                      onClick={() => { shareNote(activeNoteId); setShowNoteOptions(false); }}
-                    >
-                      <Share2 className="w-4 h-4 shrink-0" />
-                      Copy to Clipboard
-                    </button>
-
-                    {/* Export as markdown */}
-                    <button
-                      className={noteOptionItemClass}
-                      onClick={() => { exportNote(activeNoteId); setShowNoteOptions(false); }}
-                    >
-                      <Download className="w-4 h-4 shrink-0" />
-                      Export as Markdown
-                    </button>
-
-                    <div className="h-px my-1 mx-2 bg-(--shell-glass-border)" />
-
-                    {/* Delete */}
-                    <button
-                      className={cn(noteOptionItemClass, "text-destructive [&_svg]:text-destructive")}
-                      onClick={() => { deleteNote(activeNoteId); setShowNoteOptions(false); }}
-                    >
-                      <Trash2 className="w-4 h-4 shrink-0" />
-                      Delete Note
-                    </button>
-                  </>
-                )}
-              </div>
-            </>,
+            <NoteOptionsSheet
+              currentFolder={activeCached.data.folder_name ?? "Draft"}
+              allFolders={allFolders}
+              saveState={saveState}
+              onSave={() => forceSave(activeNoteId)}
+              onDuplicate={() => duplicateNote(activeNoteId)}
+              onShareLink={() => setShareDialogNoteId(activeNoteId)}
+              onShareClipboard={() => shareNote(activeNoteId)}
+              onExport={() => exportNote(activeNoteId)}
+              onMove={(folder) => moveNote(activeNoteId, folder)}
+              onDelete={() => deleteNote(activeNoteId)}
+              onClose={() => setShowNoteOptions(false)}
+            />,
             portalRoot,
           )}
 
@@ -1655,42 +1427,10 @@ export default function NotesWorkspace({ notes: initialNotes = [] }: NotesWorksp
 
       {/* ── Share Dialog (portaled for z-index) ─────────────────────── */}
       {shareDialogNoteId && portalRoot && createPortal(
-        <>
-          <div className="fixed inset-0 z-[110] bg-black/20" onClick={() => { setShareDialogNoteId(null); setShareCopied(false); }} />
-          <div className="fixed z-[120] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(400px,90vw)] p-5 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-xl shadow-xl">
-            <h3 className="text-sm font-medium mb-1">Share Note</h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              Anyone with this link can view and save a copy of this note.
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                className="flex-1 h-8 px-3 text-xs bg-muted rounded-lg border border-border outline-none min-w-0 text-muted-foreground"
-                value={generateShareLink(shareDialogNoteId)}
-                readOnly
-                onClick={(e) => e.currentTarget.select()}
-              />
-              <button
-                className={cn(
-                  "flex items-center justify-center h-8 w-8 rounded-lg border border-border cursor-pointer transition-colors [&_svg]:w-4 [&_svg]:h-4",
-                  shareCopied
-                    ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
-                    : "bg-muted text-muted-foreground hover:text-foreground",
-                )}
-                onClick={() => copyShareLink(shareDialogNoteId)}
-              >
-                {shareCopied ? <Check /> : <Copy />}
-              </button>
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                className="px-3 py-1.5 text-xs rounded-md border border-border text-muted-foreground cursor-pointer hover:bg-accent"
-                onClick={() => { setShareDialogNoteId(null); setShareCopied(false); }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </>,
+        <NoteShareDialog
+          noteId={shareDialogNoteId}
+          onClose={() => setShareDialogNoteId(null)}
+        />,
         portalRoot,
       )}
     </>

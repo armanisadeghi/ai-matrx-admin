@@ -1,0 +1,743 @@
+/* =============================================================================
+   Header Variants CSS — Companion to shell.css
+   
+   Uses --shell-* tokens defined in shell.css. Never defines its own glass 
+   values — only references the single source of truth.
+   
+   Prefix: hdr-*  (header variant components)
+   
+   Principles enforced:
+     1. No background on any layout/container element — only on glass children.
+     2. Tap targets: 44×44 transparent outer, ~30px visible glass inner.
+     3. Mobile overflow → glass bottom sheet. Desktop overflow → glass dropdown.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Glass Button — Atomic tap-target unit
+   --------------------------------------------------------------------------- */
+
+/* Outer: transparent 44×44 tap target */
+.hdr-glass-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;   /* 44px */
+  height: 2.75rem;  /* 44px */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+/* Inner: visible glass pill */
+.hdr-glass-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;  /* 30px */
+  height: 1.875rem; /* 30px */
+  border-radius: 9999px;
+  color: var(--shell-nav-icon-hover);
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Shared Variant Layouts
+   --------------------------------------------------------------------------- */
+
+/* Variant roots fill the full inject zone width and use a 3-column flex
+   layout: [back slot] [center — flex:1] [actions slot].
+   This is the same pattern as .shell-header itself. */
+.hdr-structured,
+.hdr-toggle-root,
+.hdr-icontitle-root {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 2.75rem;
+  min-width: 0;
+  background: transparent !important;
+}
+
+/* Back slot — left column, fixed width, no shrink */
+.hdr-back-slot {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Actions slot — right column, fixed width, no shrink */
+.hdr-actions-slot {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Center zone — takes all remaining space, content centered within */
+.hdr-structured-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Actions wrapper — no bg, just flex */
+.hdr-actions-desktop,
+.hdr-actions-mobile {
+  align-items: center;
+  gap: 0.125rem;
+  background: transparent !important;
+}
+
+.hdr-actions-overflow-anchor {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------------
+   3. HeaderStructured (Variant 2)
+   --------------------------------------------------------------------------- */
+
+/* Static title */
+.hdr-structured-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--shell-nav-text-hover);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 12rem;
+  letter-spacing: -0.01em;
+}
+
+/* Dropdown trigger — glass pill */
+.hdr-structured-dropdown-anchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hdr-structured-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.875rem;
+  padding: 0 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--shell-nav-text-hover);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.hdr-structured-dropdown-icon {
+  color: var(--shell-nav-icon-hover);
+  flex-shrink: 0;
+}
+
+.hdr-structured-dropdown-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 10rem;
+}
+
+.hdr-structured-dropdown-chevron {
+  color: var(--shell-nav-icon);
+  flex-shrink: 0;
+  transition: transform var(--shell-duration-fast) var(--shell-ease-spring);
+}
+
+.hdr-chevron-flipped {
+  transform: rotate(180deg);
+}
+
+/* ---------------------------------------------------------------------------
+   4. HeaderToggle (Variant 3)
+   --------------------------------------------------------------------------- */
+
+.hdr-toggle-root {
+  gap: 0.25rem;
+}
+
+/* Track — glass container that holds both thumbs */
+.hdr-toggle-track {
+  display: flex;
+  align-items: center;
+  height: 1.875rem;
+  border-radius: 9999px;
+  padding: 0.125rem;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+/* Individual thumb */
+.hdr-toggle-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 1.625rem;
+  padding: 0 0.75rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--shell-duration-fast) var(--shell-ease-smooth),
+    color var(--shell-duration-fast) var(--shell-ease-smooth),
+    box-shadow var(--shell-duration-fast) var(--shell-ease-smooth);
+  color: var(--shell-nav-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hdr-toggle-thumb:hover:not(.hdr-toggle-thumb-active) {
+  background: var(--shell-glass-bg-hover);
+  color: var(--shell-nav-text-hover);
+}
+
+/* Active thumb — filled pill inside the glass track */
+.hdr-toggle-thumb-active {
+  background: var(--shell-pill-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  color: var(--shell-pill-text);
+  font-weight: 600;
+}
+
+.hdr-toggle-thumb-active .hdr-toggle-icon {
+  color: var(--shell-pill-text);
+}
+
+.hdr-toggle-icon {
+  color: var(--shell-nav-icon);
+  flex-shrink: 0;
+  transition: color var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+.hdr-toggle-label {
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   5. HeaderIconTitle (Variant 4)
+   --------------------------------------------------------------------------- */
+
+.hdr-icontitle-lockup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 1.875rem;
+  padding: 0 0.875rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hdr-icontitle-icon {
+  color: var(--shell-pill-text);
+  flex-shrink: 0;
+}
+
+.hdr-icontitle-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--shell-nav-text-hover);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 10rem;
+}
+
+/* ---------------------------------------------------------------------------
+   6. HeaderPills (Variant 5)
+   --------------------------------------------------------------------------- */
+
+.hdr-pills-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0 0.25rem;
+  background: transparent !important;
+}
+
+.hdr-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  height: 1.875rem;
+  padding: 0 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--shell-duration-fast) var(--shell-ease-smooth),
+    border-color var(--shell-duration-fast) var(--shell-ease-smooth),
+    color var(--shell-duration-fast) var(--shell-ease-smooth);
+  color: var(--shell-nav-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.hdr-pill:hover:not(.hdr-pill-active) {
+  background: var(--shell-glass-bg);
+  color: var(--shell-nav-text-hover);
+}
+
+/* Active pill — glass + blue accent (matches shell-active-pill pattern) */
+.hdr-pill-active {
+  background: var(--shell-pill-bg) !important;
+  border-color: var(--shell-pill-border) !important;
+  color: var(--shell-pill-text);
+  font-weight: 600;
+}
+
+.hdr-pill-active .hdr-pill-icon {
+  color: var(--shell-pill-text);
+}
+
+.hdr-pill-icon {
+  color: var(--shell-nav-icon);
+  flex-shrink: 0;
+  transition: color var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+.hdr-pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badge */
+.hdr-pill-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--shell-glass-bg-active);
+  color: var(--shell-nav-text);
+  flex-shrink: 0;
+}
+
+.hdr-pill-badge-active {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--shell-pill-text);
+}
+
+/* ---------------------------------------------------------------------------
+   7. HeaderTabs (Variant 6)
+   --------------------------------------------------------------------------- */
+
+.hdr-tabs-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  width: 100%;
+  padding: 0 0.5rem;
+  background: transparent !important;
+}
+
+.hdr-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 2.75rem; /* full header height — underline sits at bottom */
+  padding: 0 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--shell-nav-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--shell-duration-fast) var(--shell-ease-smooth);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.hdr-tab:hover:not(.hdr-tab-active) {
+  color: var(--shell-nav-text-hover);
+}
+
+.hdr-tab-active {
+  color: var(--shell-pill-text);
+  font-weight: 600;
+}
+
+/* Label + badge wrapper — badge floats top-right, label stays clean */
+.hdr-tab-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Badge — superscript dot, floats top-right of the label text */
+.hdr-tab-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.625rem;
+  min-width: 0.875rem;
+  height: 0.875rem;
+  padding: 0 0.1875rem;
+  border-radius: 9999px;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 0.875rem;
+  text-align: center;
+  background: var(--shell-glass-bg-active);
+  color: var(--shell-nav-text);
+  pointer-events: none;
+}
+
+.hdr-tab-badge-active {
+  background: var(--shell-pill-text);
+  color: #fff;
+}
+
+/* Underline indicator */
+.hdr-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 60%;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--shell-pill-text);
+  transition:
+    transform var(--shell-duration-normal) var(--shell-ease-spring),
+    opacity var(--shell-duration-fast) var(--shell-ease-smooth);
+  opacity: 0;
+}
+
+.hdr-tab-indicator-active {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   8. Glass Dropdown — Desktop floating menu
+   --------------------------------------------------------------------------- */
+
+.hdr-dropdown {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  z-index: 60;
+  min-width: 10rem;
+  max-width: 16rem;
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  animation: hdr-dropdown-in var(--shell-duration-fast) var(--shell-ease-spring);
+  box-shadow: var(--shell-glass-shadow-lg);
+}
+
+.hdr-dropdown-center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hdr-dropdown-left {
+  left: 0;
+}
+
+.hdr-dropdown-right {
+  right: 0;
+}
+
+@keyframes hdr-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Recompute for center-aligned (animation must also account for translateX) */
+.hdr-dropdown-center {
+  animation: hdr-dropdown-in-center var(--shell-duration-fast) var(--shell-ease-spring);
+}
+
+@keyframes hdr-dropdown-in-center {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.hdr-dropdown-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--shell-nav-text-hover);
+  transition: background var(--shell-duration-fast) var(--shell-ease-smooth);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hdr-dropdown-row:hover {
+  background: var(--shell-glass-bg-hover);
+}
+
+.hdr-dropdown-row:active {
+  background: var(--shell-glass-bg-active);
+}
+
+.hdr-dropdown-row-icon {
+  color: var(--shell-nav-icon);
+  flex-shrink: 0;
+}
+
+.hdr-dropdown-row-destructive {
+  color: #ef4444;
+}
+
+.hdr-dropdown-row-destructive .hdr-dropdown-row-icon {
+  color: #ef4444;
+}
+
+/* ---------------------------------------------------------------------------
+   9. Bottom Sheet — Mobile glass drawer
+   --------------------------------------------------------------------------- */
+
+.hdr-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: hdr-sheet-overlay-in var(--shell-duration-fast) var(--shell-ease-smooth);
+}
+
+@keyframes hdr-sheet-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Backdrop */
+.hdr-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--shell-overlay-bg);
+}
+
+/* Sheet panel */
+.hdr-sheet-panel {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  border-radius: 1.25rem 1.25rem 0 0;
+  padding: 0.5rem 0.75rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  /* Glass applied via .shell-glass-sheet utility from shell.css */
+  background: var(--shell-sheet-bg);
+  backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
+  -webkit-backdrop-filter: blur(var(--shell-sheet-blur)) saturate(1.5);
+  border-top: 1px solid var(--shell-sheet-border);
+  animation: hdr-sheet-slide-up var(--shell-duration-slow) var(--shell-ease-spring);
+}
+
+@keyframes hdr-sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Grabber handle */
+.hdr-sheet-handle {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0.75rem;
+}
+
+.hdr-sheet-handle-bar {
+  width: 2.25rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  background: var(--shell-nav-icon);
+  opacity: 0.4;
+}
+
+/* Optional title */
+.hdr-sheet-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--shell-nav-text-hover);
+  padding: 0 0.5rem 0.625rem;
+  letter-spacing: -0.01em;
+}
+
+/* Action rows */
+.hdr-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.hdr-sheet-action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 0.75rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  color: var(--shell-nav-text-hover);
+  transition: background var(--shell-duration-fast) var(--shell-ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hdr-sheet-action-row:hover {
+  background: var(--shell-glass-bg-hover);
+}
+
+.hdr-sheet-action-row:active {
+  background: var(--shell-glass-bg-active);
+}
+
+.hdr-sheet-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.625rem;
+  background: var(--shell-glass-bg);
+  color: var(--shell-nav-icon-hover);
+  flex-shrink: 0;
+}
+
+.hdr-sheet-action-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* Destructive row */
+.hdr-sheet-action-destructive {
+  color: #ef4444;
+}
+
+.hdr-sheet-action-destructive .hdr-sheet-action-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Cancel button */
+.hdr-sheet-cancel-wrap {
+  padding-top: 0.5rem;
+  margin-top: 0.375rem;
+  border-top: 1px solid var(--shell-glass-border);
+}
+
+.hdr-sheet-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--shell-pill-text);
+  transition: background var(--shell-duration-fast) var(--shell-ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hdr-sheet-cancel:hover {
+  background: var(--shell-glass-bg-hover);
+}
+
+.hdr-sheet-cancel:active {
+  background: var(--shell-glass-bg-active);
+}
+
+/* ---------------------------------------------------------------------------
+   10. Responsive Fine-Tuning
+   --------------------------------------------------------------------------- */
+
+/* On very narrow screens, pills and tabs shrink gracefully */
+@media (max-width: 374px) {
+  .hdr-pill {
+    padding: 0 0.375rem;
+    font-size: 0.6875rem;
+  }
+
+  .hdr-pill-icon {
+    display: none;
+  }
+
+  .hdr-tab {
+    padding: 0 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .hdr-toggle-thumb {
+    padding: 0 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .hdr-toggle-thumb .hdr-toggle-icon {
+    display: none;
+  }
+}
+
+/* Ensure transparent containers can't accidentally inherit bg */
+.hdr-structured *,
+.hdr-toggle-root *,
+.hdr-icontitle-root *,
+.hdr-pills-track *,
+.hdr-tabs-track * {
+  /* Only override elements that shouldn't have bg — NOT the glass children */
+}

@@ -20,7 +20,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const { toast: showToast, dismiss } = useToast();
 
     useEffect(() => {
-        console.debug(`[perf] ToastProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
+        console.debug(`⚡ToastProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
     }, []);
 
     const createToastAction = (options?: any): ToastActionElement | undefined => {

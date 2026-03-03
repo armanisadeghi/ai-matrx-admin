@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
 import { setMode } from './themeSlice';
 
 export type ThemeMode = 'light' | 'dark';
@@ -21,7 +21,7 @@ export const ThemeProvider: React.FC<{
     enableSystem?: boolean
 }> = ({
           children,
-          defaultTheme = 'dark',
+          defaultTheme,
           enableSystem = false
       }) => {
     const dispatch = useDispatch();
@@ -29,7 +29,7 @@ export const ThemeProvider: React.FC<{
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        console.debug(`[perf] ThemeProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
+        console.debug(`⚡ThemeProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
     }, []);
 
     useEffect(() => {
@@ -37,8 +37,11 @@ export const ThemeProvider: React.FC<{
         const savedTheme = document.cookie.split('; ').find(row => row.startsWith('theme='))?.split('=')[1] as ThemeMode | undefined;
         if (savedTheme) {
             dispatch(setMode(savedTheme));
-        } else {
+        } else if (defaultTheme) {
             dispatch(setMode(defaultTheme));
+        } else {
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            dispatch(setMode(systemPrefersDark ? 'dark' : 'light'));
         }
     }, [dispatch, defaultTheme]);
 

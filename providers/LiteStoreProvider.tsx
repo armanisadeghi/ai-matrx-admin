@@ -34,7 +34,7 @@ export default function LiteStoreProvider({ children, initialState }: LiteStoreP
         const t0 = performance.now();
         storeRef.current = makeLiteStore(initialState);
         const t1 = performance.now();
-        console.debug(`[perf] LiteStoreProvider store created in ${(t1 - t0).toFixed(3)}ms`);
+        console.debug(`⚡LiteStoreProvider store created in ${(t1 - t0).toFixed(3)}ms`);
     }
 
     if (!storeRef.current) {
@@ -42,7 +42,7 @@ export default function LiteStoreProvider({ children, initialState }: LiteStoreP
     }
 
     useEffect(() => {
-        console.debug(`[perf] LiteStoreProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
+        console.debug(`⚡LiteStoreProvider mounted at ${performance.now().toFixed(2)}ms since page start`);
     }, []);
 
     return <Provider store={storeRef.current}>{children}</Provider>;

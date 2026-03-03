@@ -4,6 +4,7 @@
 // Uses usePathname() to stay in sync with client-side navigation (pushState).
 // Active pill animates via View Transitions API + CSS spring keyframes.
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ShellIcon from "./ShellIcon";
@@ -11,6 +12,10 @@ import { dockItems } from "../nav-data";
 
 export default function MobileDock() {
   const pathname = usePathname();
+
+  useEffect(() => {
+    console.debug(`⚡MobileDock mounted at ${performance.now().toFixed(2)}ms`);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/ssr/dashboard") {

@@ -7,7 +7,7 @@ import MobileSideSheet from "./_components/MobileSideSheet";
 import ThemeScript from "./_components/ThemeScript";
 import SSRShellProviders from "./_components/SSRShellProviders";
 import DeferredShellData from "./_components/DeferredShellData";
-import DevPerfOverlay from "./_components/DevPerfOverlay";
+import DevPerfOverlayIsland from "./_components/DevPerfOverlayIsland";
 
 export const metadata = {
   title: "AI Matrx",
@@ -43,7 +43,7 @@ export default async function SSRLayout({ children }: { children: React.ReactNod
           <MobileSideSheet pathname={pathname} isAdmin={false} />
         </div>
 
-        <DevPerfOverlay />
+        <DevPerfOverlayIsland />
       </SSRShellProviders>
     </>
   );

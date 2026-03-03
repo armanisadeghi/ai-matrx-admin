@@ -21,22 +21,30 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  NotebookPen,
-  Trash2,
-  Copy,
-  Download,
-  FolderInput,
-  Plus,
   ChevronsDownUp,
   ChevronsUpDown,
   FolderPlus,
-  Pencil,
   ArrowUpDown,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import type { NoteSummary } from "../layout";
 import NewNoteButton from "./NewNoteButton";
+
+// Context menus and rename dialog — loaded only on first right-click
+const SidebarNoteContextMenu = dynamic(
+  () => import("./SidebarContextMenus").then(m => ({ default: m.SidebarNoteContextMenu })),
+  { ssr: false },
+);
+const SidebarFolderContextMenu = dynamic(
+  () => import("./SidebarContextMenus").then(m => ({ default: m.SidebarFolderContextMenu })),
+  { ssr: false },
+);
+const RenameFolderDialog = dynamic(
+  () => import("./SidebarContextMenus").then(m => ({ default: m.RenameFolderDialog })),
+  { ssr: false },
+);
 
 // Folder icon mapping
 const FOLDER_ICONS: Record<string, typeof FileText> = {
@@ -173,7 +181,6 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   // ── Create folder dialog state ──────────────────────────────────────
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const [showFolderSubmenu, setShowFolderSubmenu] = useState(false);
 
   // ── Folder expand/collapse state ──────────────────────────────────────
   const activeNoteFolder = useMemo(() => {
@@ -321,7 +328,6 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
     setFolderContextMenu(null);
-    setShowFolderSubmenu(false);
   }, []);
 
   // ── Folder operations ────────────────────────────────────────────────
@@ -543,9 +549,9 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
                 }}
               >
                 {isExpanded ? (
-                  <ChevronDown className="!w-3.5 !h-3.5 opacity-60" />
+                  <ChevronDown className="w-3.5! h-3.5! opacity-60" />
                 ) : (
-                  <ChevronRight className="!w-3.5 !h-3.5 opacity-60" />
+                  <ChevronRight className="w-3.5! h-3.5! opacity-60" />
                 )}
                 {isExpanded ? <FolderOpen className="opacity-70" /> : <Icon className="opacity-70" />}
                 <span className="flex-1 text-left truncate">{folder}</span>
@@ -636,177 +642,50 @@ export default function SidebarClient({ notes: initialNotes = [], folderCounts: 
 
       {/* ── Context menu for notes ─────────────────────────────────────── */}
       {contextMenu && (
-        <div
-          className="fixed z-[100] min-w-[200px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-            onClick={() => { navigateToNote(contextMenu.noteId); setContextMenu(null); }}
-          >
-            <NotebookPen /> Open Note
-          </button>
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-            onClick={async () => {
-              const { data: userData } = await (await import("@/utils/supabase/client")).supabase.auth.getUser();
-              if (!userData?.user?.id) return;
-              navigateToNote(contextMenu.noteId);
-              setContextMenu(null);
-            }}
-          >
-            <Copy /> Duplicate
-          </button>
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-            onClick={() => { navigateToNote(contextMenu.noteId); setContextMenu(null); }}
-          >
-            <Download /> Export
-          </button>
-
-          {/* Move to folder — collapsible second tier */}
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button
-            className="flex items-center justify-between gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-            onClick={(e) => { e.stopPropagation(); setShowFolderSubmenu((v) => !v); }}
-          >
-            <span className="flex items-center gap-2"><FolderInput /> Move to folder</span>
-            <ChevronRight className={cn("!w-3 !h-3 transition-transform", showFolderSubmenu && "rotate-90")} />
-          </button>
-          {showFolderSubmenu && (
-            <div className="ml-3 max-h-[200px] overflow-y-auto notes-scrollable">
-              {orderedFolders.map((folder) => {
-                const currentFolder = notes.find((n) => n.id === contextMenu.noteId)?.folder_name;
-                const isCurrentFolder = currentFolder === folder;
-                return (
-                  <button
-                    key={folder}
-                    className={cn(
-                      "flex items-center gap-2 w-full px-2.5 py-1 text-xs rounded-md cursor-pointer transition-colors [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground",
-                      isCurrentFolder
-                        ? "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                        : "text-foreground hover:bg-accent",
-                    )}
-                    onClick={() => moveToFolder(contextMenu.noteId, folder)}
-                    disabled={isCurrentFolder}
-                  >
-                    <FolderInput />
-                    {folder}
-                    {isCurrentFolder && <span className="ml-auto text-[0.625rem] opacity-50">current</span>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-destructive rounded-md cursor-pointer transition-colors hover:bg-destructive/10 [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onClick={async () => {
-              const { supabase: sb } = await import("@/utils/supabase/client");
-              await sb.from("notes").update({ is_deleted: true }).eq("id", contextMenu.noteId);
-              window.dispatchEvent(
-                new CustomEvent("notes:deleted", { detail: { noteId: contextMenu.noteId } }),
-              );
-              setContextMenu(null);
-            }}
-          >
-            <Trash2 /> Delete Note
-          </button>
-        </div>
+        <SidebarNoteContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          noteId={contextMenu.noteId}
+          noteFolder={notes.find((n) => n.id === contextMenu.noteId)?.folder_name}
+          orderedFolders={orderedFolders}
+          onOpen={() => navigateToNote(contextMenu.noteId)}
+          onDuplicate={() => navigateToNote(contextMenu.noteId)}
+          onExport={() => navigateToNote(contextMenu.noteId)}
+          onMove={(folder) => moveToFolder(contextMenu.noteId, folder)}
+          onDelete={async () => {
+            const { supabase: sb } = await import("@/utils/supabase/client");
+            await sb.from("notes").update({ is_deleted: true }).eq("id", contextMenu.noteId);
+            window.dispatchEvent(new CustomEvent("notes:deleted", { detail: { noteId: contextMenu.noteId } }));
+          }}
+          onClose={() => setContextMenu(null)}
+        />
       )}
 
       {/* ── Folder context menu ──────────────────────────────────────────── */}
       {folderContextMenu && (
-        <div
-          className="fixed z-[100] min-w-[200px] p-1 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-lg shadow-lg"
-          style={{ top: folderContextMenu.y, left: folderContextMenu.x }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-            onClick={() => {
-              createNoteInFolder(folderContextMenu.folder);
-              setFolderContextMenu(null);
-            }}
-          >
-            <Plus /> New Note in {folderContextMenu.folder}
-          </button>
-          {!DEFAULT_FOLDER_ORDER.includes(folderContextMenu.folder) && (
-            <button
-              className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-              onClick={() => {
-                setRenamingFolder(folderContextMenu.folder);
-                setRenameValue(folderContextMenu.folder);
-                setFolderContextMenu(null);
-              }}
-            >
-              <Pencil /> Rename Folder
-            </button>
-          )}
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-foreground rounded-md cursor-pointer transition-colors hover:bg-accent [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:text-muted-foreground"
-            onClick={() => {
-              toggleFolder(folderContextMenu.folder);
-              setFolderContextMenu(null);
-            }}
-          >
-            {expandedFolders.has(folderContextMenu.folder) ? <ChevronsDownUp /> : <ChevronsUpDown />}
-            {expandedFolders.has(folderContextMenu.folder) ? "Collapse" : "Expand"}
-          </button>
-          <div className="h-px my-1 mx-1.5 bg-border" />
-          <button
-            className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-destructive rounded-md cursor-pointer transition-colors hover:bg-destructive/10 [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onClick={() => {
-              deleteFolderNotes(folderContextMenu.folder);
-              setFolderContextMenu(null);
-            }}
-          >
-            <Trash2 /> Delete All Notes
-          </button>
-        </div>
+        <SidebarFolderContextMenu
+          x={folderContextMenu.x}
+          y={folderContextMenu.y}
+          folder={folderContextMenu.folder}
+          isDefaultFolder={DEFAULT_FOLDER_ORDER.includes(folderContextMenu.folder)}
+          isExpanded={expandedFolders.has(folderContextMenu.folder)}
+          onNewNote={() => createNoteInFolder(folderContextMenu.folder)}
+          onRename={() => { setRenamingFolder(folderContextMenu.folder); setRenameValue(folderContextMenu.folder); }}
+          onToggle={() => toggleFolder(folderContextMenu.folder)}
+          onDeleteAll={() => deleteFolderNotes(folderContextMenu.folder)}
+          onClose={() => setFolderContextMenu(null)}
+        />
       )}
 
-      {/* ── Rename folder inline input ────────────────────────────────────── */}
+      {/* ── Rename folder dialog ─────────────────────────────────────────── */}
       {renamingFolder && (
-        <div
-          className="fixed inset-0 z-[110] flex items-center justify-center"
-          onClick={() => setRenamingFolder(null)}
-        >
-          <div
-            className="p-4 bg-card/95 backdrop-blur-2xl saturate-150 border border-border rounded-xl shadow-xl min-w-[280px]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-sm font-medium mb-2">
-              Rename &ldquo;{renamingFolder}&rdquo;
-            </h3>
-            <input
-              className="w-full h-8 px-3 text-sm bg-muted rounded-lg border border-border outline-none"
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") renameFolder(renamingFolder, renameValue);
-                if (e.key === "Escape") setRenamingFolder(null);
-              }}
-              autoFocus
-            />
-            <div className="flex justify-end gap-2 mt-3">
-              <button
-                className="px-3 py-1 text-xs rounded-md border border-border text-muted-foreground cursor-pointer hover:bg-accent"
-                onClick={() => setRenamingFolder(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-3 py-1 text-xs rounded-md bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90"
-                onClick={() => renameFolder(renamingFolder, renameValue)}
-              >
-                Rename
-              </button>
-            </div>
-          </div>
-        </div>
+        <RenameFolderDialog
+          folder={renamingFolder}
+          value={renameValue}
+          onChange={setRenameValue}
+          onConfirm={() => renameFolder(renamingFolder, renameValue)}
+          onCancel={() => setRenamingFolder(null)}
+        />
       )}
 
       {/* ── Create folder button (bottom of sidebar) ─────────────────────── */}

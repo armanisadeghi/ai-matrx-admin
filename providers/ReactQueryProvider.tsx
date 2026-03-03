@@ -1,8 +1,13 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+// Only downloaded in development — zero production bundle cost
+const ReactQueryDevtools = process.env.NODE_ENV === 'development'
+    ? dynamic(() => import('@tanstack/react-query-devtools').then(m => ({ default: m.ReactQueryDevtools })), { ssr: false })
+    : () => null;
 
 export function ReactQueryProvider({ children }: { children: React.ReactNode }) {
     // Toggle this to show/hide the React Query DevTools widget
@@ -10,7 +15,7 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
 
     useEffect(() => {
         const t = performance.now();
-        console.debug(`[perf] ReactQueryProvider mounted in ${t.toFixed(2)}ms since page start`);
+        console.debug(`⚡ReactQueryProvider mounted in ${t.toFixed(2)}ms since page start`);
     }, []);
 
     // Create a client instance per component mount
@@ -30,7 +35,7 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
             },
         });
         const t1 = performance.now();
-        console.debug(`[perf] ReactQueryProvider QueryClient created in ${(t1 - t0).toFixed(3)}ms`);
+        console.debug(`⚡ReactQueryProvider QueryClient created in ${(t1 - t0).toFixed(3)}ms`);
         return client;
     });
 

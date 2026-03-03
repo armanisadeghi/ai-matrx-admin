@@ -5,7 +5,7 @@ import React from 'react';
 
 // ===== PERFORMANCE TIMING LOGS =====
 if (typeof window !== 'undefined') {
-    console.log(`[PERF] LazyGoogleAPIProvider module loaded at: ${performance.now().toFixed(2)}ms`);
+    console.log(`⚡LazyGoogleAPIProvider module loaded at: ${performance.now().toFixed(2)}ms`);
 }
 
 /**

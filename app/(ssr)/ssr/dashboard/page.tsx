@@ -3,6 +3,7 @@
 // Data fetched server-side where possible, tiny Suspense islands for dynamic data.
 
 import { createClient } from "@/utils/supabase/server";
+import PageHeader from "@/app/(ssr)/_components/PageHeader";
 import DashboardGrid from "./components/DashboardGrid";
 import QuickActions from "./components/QuickActions";
 import WelcomeCard from "./components/WelcomeCard";
@@ -29,7 +30,14 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 py-4 pb-8">
+    <>
+      <PageHeader>
+        <span className="shell-glass h-[1.875rem] px-3 rounded-full text-[0.6875rem] font-medium text-(--shell-nav-text-hover) flex items-center">
+          Dashboard
+        </span>
+      </PageHeader>
+
+      <div className="flex flex-col gap-5 py-4 pb-8">
       {/* Welcome greeting */}
       <WelcomeCard user={dashboardUser} />
 
@@ -50,6 +58,7 @@ export default async function DashboardPage() {
         <h2 className="shell-section-heading">What&apos;s New</h2>
         <RecentActivity />
       </section>
-    </div>
+      </div>
+    </>
   );
 }

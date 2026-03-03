@@ -524,6 +524,21 @@
   min-width: 0;
 }
 
+/* Injection wrapper — spans the full center zone width so variant roots
+   can use flex left/center/right layout inside it. Height matches the
+   left/right anchors (2.75rem) for consistent vertical alignment. */
+.shell-header-inject {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 2.75rem;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-width: 0;
+}
+
 /* ---------------------------------------------------------------------------
    11. Auth Island — Immutable Glass Container
    --------------------------------------------------------------------------- */

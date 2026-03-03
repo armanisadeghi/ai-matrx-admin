@@ -442,7 +442,7 @@ export const PromptExecutionDebugPanel: React.FC<PromptExecutionDebugPanelProps>
             <div className="space-y-4">
               <div className="bg-red-50 dark:bg-red-950/30 border-2 border-red-400 dark:border-red-600 rounded p-3">
                 <p className="text-xs text-red-900 dark:text-red-200 font-semibold">
-                  ⚡ THIS IS THE ACTUAL API PAYLOAD ⚡
+                  ⚡THIS IS THE ACTUAL API PAYLOAD ⚡
                 </p>
                 <p className="text-xs text-red-800 dark:text-red-200 mt-2">
                   This is built using the EXACT SAME LOGIC as executeMessageThunk.ts.

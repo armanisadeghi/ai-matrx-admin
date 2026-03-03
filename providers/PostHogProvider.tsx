@@ -36,6 +36,8 @@ export function PostHogProvider({ children }: PostHogProviderProps) {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
       capture_pageview: false,
       enable_recording_console_log: false,
+      // Silent in development — no console spam, no events sent to PostHog servers
+      opt_out_capturing_by_default: process.env.NODE_ENV === "development",
       // Prevents PostHog from injecting <script> tags for remote config/surveys,
       // which cause React hydration mismatches.
       disable_external_dependency_loading: true,
@@ -43,11 +45,6 @@ export function PostHogProvider({ children }: PostHogProviderProps) {
       session_recording: {
         maskAllInputs: true,
         maskInputOptions: { password: true },
-      },
-      loaded: (ph) => {
-        if (process.env.NODE_ENV === "development") {
-          ph.debug();
-        }
       },
     });
   }, []);

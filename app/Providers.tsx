@@ -69,7 +69,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                 <StoreProvider initialState={initialReduxState}>
                     <GlobalBrokerRegistration>
                         <GlobalBrokersInitializer user={initialReduxState.user} />
-                        <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                        <ThemeProvider>
                             <PersistentComponentProvider>
                                 <EntityProvider>
                                         <ContextMenuProvider>

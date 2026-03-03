@@ -301,7 +301,7 @@ Rules:
 Format ideas with:
 💡 **Core Concept**
 🎯 **Unique Angle**
-⚡ **Why It Works**
+⚡**Why It Works**
 🚀 **Next Steps**`
             },
             {

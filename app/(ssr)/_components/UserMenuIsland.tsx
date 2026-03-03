@@ -108,12 +108,14 @@ export default function UserMenuIsland() {
             height={22}
             className="w-[22px] h-[22px] rounded-full object-cover"
           />
-        ) : (
+        ) : user?.name ? (
           <span
             className="w-[22px] h-[22px] rounded-full bg-[var(--shell-glass-bg-active)] flex items-center justify-center text-[10px] font-semibold text-[var(--shell-nav-text)]"
           >
-            {user?.name?.charAt(0)?.toUpperCase() ?? "?"}
+            {user.name.charAt(0).toUpperCase()}
           </span>
+        ) : (
+          <span className="w-[22px] h-[22px] rounded-full animate-pulse bg-[var(--shell-glass-bg-active)]" />
         )}
       </button>
       </div>

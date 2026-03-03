@@ -18,6 +18,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/slices/userSlice';
 import { selectIsUsingLocalhost } from '@/lib/redux/slices/adminPreferencesSlice';
 import { MessageCircle, Share2, List, Layers } from 'lucide-react';
+import PageHeader from '@/app/(ssr)/_components/PageHeader';
 
 // Chat infrastructure
 import { ChatProvider, useChatContext } from '@/features/public-chat/context/ChatContext';
@@ -352,16 +353,42 @@ function ChatWorkspaceInner() {
     const hasVariables = activeVariables.length > 0;
     const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
 
+    // Header content — agent name on welcome, conversation snippet in conversation mode
+    const headerLabel = !isWelcomeScreen && state.messages[0]?.content
+        ? state.messages[0].content.slice(0, 40) + (state.messages[0].content.length > 40 ? '…' : '')
+        : (state.currentAgent?.name || 'Chat');
+
+    const headerContent = (
+        <div className="flex items-center gap-2">
+            <span className="shell-glass flex items-center gap-1.5 h-[1.875rem] px-3 rounded-full text-[0.6875rem] font-medium text-(--shell-nav-text-hover) max-w-[240px] truncate">
+                <MessageCircle className="w-3 h-3 shrink-0 text-(--shell-nav-icon)" />
+                <span className="truncate">{headerLabel}</span>
+            </span>
+            {isAuthenticated && state.dbConversationId && (
+                <button
+                    onClick={() => setIsShareOpen(true)}
+                    className="shell-glass shell-tactile flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full text-(--shell-nav-icon) hover:text-(--shell-nav-text-hover) cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
+                    title="Share conversation"
+                >
+                    <Share2 />
+                </button>
+            )}
+        </div>
+    );
+
     // ========================================================================
     // LOADING STATE
     // ========================================================================
 
     if (isLoadingConversation) {
         return (
-            <div className="h-full flex flex-col items-center justify-center">
-                <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
-                <p className="text-sm text-muted-foreground">Loading conversation...</p>
-            </div>
+            <>
+                <PageHeader>{headerContent}</PageHeader>
+                <div className="h-full flex flex-col items-center justify-center">
+                    <MessageCircle className="h-8 w-8 text-primary animate-pulse mb-3" />
+                    <p className="text-sm text-muted-foreground">Loading conversation...</p>
+                </div>
+            </>
         );
     }
 
@@ -389,6 +416,8 @@ function ChatWorkspaceInner() {
         // Guided mode: pin input to bottom
         if (useGuidedVars && hasVariables) {
             return (
+                <>
+                <PageHeader>{headerContent}</PageHeader>
                 <div className="h-full flex flex-col">
                     <div className="flex-1 min-h-0 overflow-y-auto">
                         <div className="flex flex-col items-center justify-end min-h-full px-3 md:px-8 pb-4">
@@ -455,11 +484,14 @@ function ChatWorkspaceInner() {
                         </div>
                     </div>
                 </div>
+                </>
             );
         }
 
         // Classic mode (or no variables): centered layout
         return (
+            <>
+            <PageHeader>{headerContent}</PageHeader>
             <div className="h-full flex flex-col">
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <div className={`min-h-full flex flex-col items-center px-3 md:px-8 ${varCount > 2 ? 'justify-start pt-8 md:pt-16 md:justify-center' : 'justify-center'}`}>
@@ -532,6 +564,7 @@ function ChatWorkspaceInner() {
                     </div>
                 </div>
             </div>
+            </>
         );
     }
 
@@ -543,6 +576,8 @@ function ChatWorkspaceInner() {
     const conversationTitle = state.messages[0]?.content?.slice(0, 60) || 'Chat';
 
     return (
+        <>
+        <PageHeader>{headerContent}</PageHeader>
         <div className="h-full flex flex-col">
             {/* Share Modal — lazy-loaded, only rendered on click */}
             {isShareOpen && shareConversationId && (
@@ -562,17 +597,6 @@ function ChatWorkspaceInner() {
 
                 <div className="h-full overflow-y-auto chat-messages-scroll">
                     <div className="w-full max-w-[800px] mx-auto px-3 pt-12 pb-2 md:px-3 md:pt-12 md:pb-4 relative">
-                        {isAuthenticated && shareConversationId && (
-                            <div className="absolute top-1 right-3 z-10 hidden md:block">
-                                <button
-                                    onClick={() => setIsShareOpen(true)}
-                                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-                                    title="Share conversation"
-                                >
-                                    <Share2 className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
-                        )}
                         <MessageList
                             messages={messages}
                             streamEvents={streamEvents.length > 0 ? streamEvents : undefined}
@@ -633,6 +657,7 @@ function ChatWorkspaceInner() {
                 </div>
             </div>
         </div>
+        </>
     );
 }
 
