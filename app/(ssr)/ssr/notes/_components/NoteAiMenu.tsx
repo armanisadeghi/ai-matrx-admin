@@ -50,15 +50,19 @@ export default function NoteAiMenu({
 
   // ── Build hierarchy from Redux cache or fetch from Supabase ──────────
   useEffect(() => {
+    console.log("[NoteAiMenu] Init: hydrated =", isReduxHydrated, ", cachedRows =", cachedRows.length);
+
     // Fast path: rows already hydrated from SSR RPC — build hierarchy immediately
     if (isReduxHydrated && cachedRows.length > 0) {
       const aiRows = cachedRows.filter((r) => r.placement_type === "ai-action");
+      console.log("[NoteAiMenu] Fast path: aiRows =", aiRows.length);
       const built = aiRows.flatMap((row) =>
         buildCategoryHierarchy(
           row.categories_flat as Parameters<typeof buildCategoryHierarchy>[0],
           "note-editor"
         )
       );
+      console.log("[NoteAiMenu] Fast path built groups:", built.length, built);
       setGroups(built);
       setLoading(false);
       return;
@@ -66,14 +70,17 @@ export default function NoteAiMenu({
 
     // Fallback: fetch from Supabase (public routes or cache miss)
     (async () => {
+      console.log("[NoteAiMenu] Fallback: fetching from context_menu_unified_view...");
       try {
         const { data, error } = await supabase
           .from("context_menu_unified_view")
           .select("placement_type, categories_flat")
           .in("placement_type", ["ai-action"]);
 
+        console.log("[NoteAiMenu] Supabase result:", data?.length ?? 0, "rows, error:", error);
+
         if (error || !data) {
-          console.error("Failed to load AI actions:", error);
+          console.error("[NoteAiMenu] Failed to load AI actions:", error);
           setLoading(false);
           return;
         }
@@ -86,9 +93,10 @@ export default function NoteAiMenu({
             )
           );
 
+        console.log("[NoteAiMenu] Supabase built groups:", built.length, built);
         setGroups(built);
       } catch (err) {
-        console.error("Failed to load AI actions:", err);
+        console.error("[NoteAiMenu] Failed to load AI actions:", err);
       } finally {
         setLoading(false);
       }
@@ -257,6 +265,9 @@ export default function NoteAiMenu({
 
   // ── Render menu items from database ─────────────────────────────────
   const allItems = groups.flatMap((g) => collectShortcuts(g));
+  if (!loading) {
+    console.log("[NoteAiMenu] Render:", { groupsCount: groups.length, itemsCount: allItems.length, groups });
+  }
 
   if (allItems.length === 0) {
     return (
