@@ -1,0 +1,425 @@
+/**
+ * MicrophoneIconButtonCore
+ *
+ * Full stateful implementation. Dynamically imported by MicrophoneIconButton —
+ * never included in the initial JS bundle.
+ *
+ * Handles all three variants:
+ *   icon-only      — fixed icon footprint, state communicated via icon + color + animation
+ *   inline-expand  — expands to recording indicator + stop button while active
+ *   modal-controls — fixed icon footprint; all recording interaction happens in a modal
+ */
+
+'use client';
+
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { Mic, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useChunkedRecordAndTranscribe } from '@/features/audio/hooks';
+import { TranscriptionResult } from '@/features/audio/types';
+import { RecordingIndicator } from './RecordingIndicator';
+import { TranscriptionLoader } from './TranscriptionLoader';
+import { VoiceTroubleshootingModal } from './VoiceTroubleshootingModal';
+import { MicrophoneRecordingModal } from './MicrophoneRecordingModal';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+
+export type MicVariant = 'icon-only' | 'inline-expand' | 'modal-controls';
+
+export interface MicrophoneIconButtonCoreProps {
+  onTranscriptionComplete: (text: string) => void;
+  onError?: (error: string, code?: string) => void;
+  variant?: MicVariant;
+  /** When true the component starts recording as soon as it mounts. */
+  autoStart?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+  disabled?: boolean;
+}
+
+// ── Size maps ───────────────────────────────────────────────────────────────
+const buttonSizeMap = { sm: 'h-7 w-7', md: 'h-8 w-8', lg: 'h-9 w-9' } as const;
+const iconSizeMap   = { sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' } as const;
+
+// Default export required by React.lazy()
+export default function MicrophoneIconButtonCore({
+  onTranscriptionComplete,
+  onError,
+  variant = 'icon-only',
+  autoStart = false,
+  size = 'md',
+  className,
+  disabled = false,
+}: MicrophoneIconButtonCoreProps) {
+  const [showTroubleshooting, setShowTroubleshooting] = useState(false);
+  const [lastError, setLastError] = useState<{ message: string; code: string } | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [transcribedText, setTranscribedText] = useState<string | null>(null);
+
+  // Guard against React StrictMode double-mount firing autoStart twice
+  const autoStartFired = useRef(false);
+
+  // ── Transcription success handler ────────────────────────────────────────
+  const handleTranscriptionComplete = useCallback(
+    (result: TranscriptionResult) => {
+      if (!result.success || !result.text) return;
+
+      if (variant === 'modal-controls') {
+        // APPEND each session's result so Add More doesn't overwrite
+        setTranscribedText(prev => prev ? prev + ' ' + result.text : result.text);
+      } else {
+        onTranscriptionComplete(result.text);
+      }
+    },
+    [variant, onTranscriptionComplete],
+  );
+
+  // ── Error handler ────────────────────────────────────────────────────────
+  const handleError = useCallback(
+    (error: string, errorCode?: string) => {
+      const code = errorCode ?? 'UNKNOWN_ERROR';
+      setLastError({ message: error, code });
+
+      toast.error('Voice input failed', {
+        description: error,
+        duration: 10000,
+        action: {
+          label: 'Get Help',
+          onClick: () => setShowTroubleshooting(true),
+        },
+      });
+
+      onError?.(error, code);
+
+      if (variant === 'modal-controls') {
+        setModalOpen(false);
+      }
+    },
+    [onError, variant],
+  );
+
+  // ── Core hook (chunked — safe for any recording length) ─────────────────
+  const {
+    isRecording,
+    isTranscribing,
+    isPaused,
+    duration,
+    audioLevel,
+    liveTranscript,
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    resumeRecording,
+    reset,
+  } = useChunkedRecordAndTranscribe({
+    onTranscriptionComplete: handleTranscriptionComplete,
+    onError: handleError,
+  });
+
+  // ── Auto-start on first mount ────────────────────────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!autoStart || autoStartFired.current) return;
+    autoStartFired.current = true;
+
+    if (variant === 'modal-controls') {
+      setModalOpen(true);
+    }
+    startRecording();
+  }, []);
+
+  // ── Primary click handler (for idle icon button) ─────────────────────────
+  const handleClick = useCallback(async () => {
+    if (disabled || isTranscribing) return;
+
+    if (variant === 'modal-controls') {
+      setModalOpen(true);
+      if (!isRecording) await startRecording();
+      return;
+    }
+
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  }, [disabled, isTranscribing, variant, isRecording, startRecording, stopRecording]);
+
+  // ── Modal: keep liveTranscript synced — APPEND to edited text ─────────────
+  // liveTranscript is passed to modal as a live preview only (not accumulated here).
+  // Text accumulation happens through onTranscriptionComplete (fires once per session).
+  // This avoids double-counting between incremental chunks and the final callback.
+
+  // ── Modal handlers ───────────────────────────────────────────────────────
+  const handleModalCancel = useCallback(() => {
+    if (isRecording) stopRecording();
+    reset();
+    setTranscribedText(null);
+    setModalOpen(false);
+  }, [isRecording, stopRecording, reset]);
+
+  const handleModalAccept = useCallback(
+    (text: string) => {
+      onTranscriptionComplete(text);
+      setTranscribedText(null);
+      setModalOpen(false);
+      reset();
+    },
+    [onTranscriptionComplete, reset],
+  );
+
+  const handleModalRetry = useCallback(async () => {
+    setTranscribedText(null);
+    reset();
+    await startRecording();
+  }, [reset, startRecording]);
+
+  // Add more: keeps accumulated text, starts a fresh recording pass that appends
+  const handleModalAddMore = useCallback(async () => {
+    reset(); // clears liveTranscript in the hook; transcribedText stays in local state
+    await startRecording();
+  }, [reset, startRecording]);
+
+  // ── Shared base button classes ───────────────────────────────────────────
+  const baseBtn = cn(
+    'inline-flex items-center justify-center rounded-full',
+    'transition-all duration-200',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    buttonSizeMap[size],
+    disabled && 'opacity-50 cursor-not-allowed',
+  );
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // VARIANT: icon-only
+  // 3-layer design:
+  //   outer  — 48 × 48 transparent tap target, invisible
+  //   middle — glass pill (backdrop blur + glass border)
+  //   inner  — mic icon / spinner
+  // Audio-reactive rings are rendered outside the glass layer so they can
+  // breathe past the glass edge without being clipped.
+  // ══════════════════════════════════════════════════════════════════════════
+  if (variant === 'icon-only') {
+    const glassIdle = [
+      'bg-white/10 dark:bg-white/5',
+      'backdrop-blur-md',
+      'shadow-sm',
+    ].join(' ');
+
+    const glassRecording = [
+      'bg-primary/15 dark:bg-primary/10',
+      'backdrop-blur-md',
+      'shadow-md',
+    ].join(' ');
+
+    const glassProcessing = [
+      'bg-blue-500/10 dark:bg-blue-500/5',
+      'backdrop-blur-md',
+    ].join(' ');
+
+    return (
+      <>
+        {/* OUTER — transparent 48 × 48 tap target */}
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={disabled || isTranscribing}
+          title={
+            isRecording ? 'Tap to stop recording'
+            : isTranscribing ? 'Processing…'
+            : 'Start recording'
+          }
+          className={cn(
+            'relative inline-flex items-center justify-center',
+            'h-12 w-12 rounded-full',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+            disabled && 'cursor-not-allowed opacity-50',
+            isTranscribing && 'cursor-wait',
+            className,
+          )}
+        >
+          {/* Audio-reactive breathing ring — lives between outer and middle */}
+          {isRecording && (
+            <span
+              className="absolute inset-0 rounded-full bg-primary/20 transition-transform duration-75"
+              style={{ transform: `scale(${1 + (audioLevel ?? 0) / 110})` }}
+            />
+          )}
+          {isRecording && (
+            <span className="absolute inset-0 rounded-full bg-primary/25 animate-ping" />
+          )}
+
+          {/* MIDDLE — glass pill */}
+          <span
+            className={cn(
+              'relative z-10 inline-flex items-center justify-center rounded-full',
+              'h-8 w-8 transition-all duration-200',
+              isRecording && !isTranscribing && glassRecording,
+              isTranscribing && glassProcessing,
+              !isRecording && !isTranscribing && glassIdle,
+              'hover:scale-105 active:scale-95',
+            )}
+          >
+            {/* INNER — icon */}
+            {isTranscribing ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500 dark:text-blue-400" />
+            ) : (
+              <Mic
+                className={cn(
+                  'h-3.5 w-3.5',
+                  isRecording ? 'text-primary' : 'text-foreground/70',
+                )}
+              />
+            )}
+          </span>
+        </button>
+
+        <VoiceTroubleshootingModal
+          isOpen={showTroubleshooting}
+          onClose={() => setShowTroubleshooting(false)}
+          error={lastError?.message}
+          errorCode={lastError?.code}
+        />
+      </>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // VARIANT: inline-expand
+  // Expands to show recording indicator + stop button while active.
+  // ══════════════════════════════════════════════════════════════════════════
+  if (variant === 'inline-expand') {
+    if (isTranscribing) {
+      return (
+        <>
+          <TranscriptionLoader duration={duration} size={size} />
+          <VoiceTroubleshootingModal
+            isOpen={showTroubleshooting}
+            onClose={() => setShowTroubleshooting(false)}
+            error={lastError?.message}
+            errorCode={lastError?.code}
+          />
+        </>
+      );
+    }
+
+    if (isRecording) {
+      return (
+        <>
+          <div className={cn('flex items-center gap-1.5 flex-wrap', className)}>
+            <RecordingIndicator
+              duration={duration}
+              audioLevel={audioLevel}
+              size={size}
+              color="blue"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={stopRecording}
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
+            >
+              Stop
+            </Button>
+          </div>
+          <VoiceTroubleshootingModal
+            isOpen={showTroubleshooting}
+            onClose={() => setShowTroubleshooting(false)}
+            error={lastError?.message}
+            errorCode={lastError?.code}
+          />
+        </>
+      );
+    }
+
+    // Idle
+    return (
+      <>
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={disabled}
+          title="Start recording"
+          className={cn(baseBtn, 'hover:bg-accent text-muted-foreground', className)}
+        >
+          <Mic className={iconSizeMap[size]} />
+        </button>
+        <VoiceTroubleshootingModal
+          isOpen={showTroubleshooting}
+          onClose={() => setShowTroubleshooting(false)}
+          error={lastError?.message}
+          errorCode={lastError?.code}
+        />
+      </>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // VARIANT: modal-controls
+  // Fixed footprint. All interaction happens inside the modal.
+  // ══════════════════════════════════════════════════════════════════════════
+  const ModalIcon = isTranscribing ? Loader2 : Mic;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={disabled}
+        title="Open voice recorder"
+        className={cn(
+          baseBtn,
+          'relative overflow-visible',
+          isRecording && 'text-primary',
+          isTranscribing && 'cursor-wait text-blue-600 dark:text-blue-400',
+          !isRecording && !isTranscribing && 'hover:bg-accent text-muted-foreground',
+          className,
+        )}
+      >
+        {/* Audio-reactive ring — same as icon-only */}
+        {isRecording && (
+          <span
+            className="absolute inset-0 rounded-full bg-primary/25 transition-transform duration-75"
+            style={{ transform: `scale(${1 + (audioLevel ?? 0) / 120})` }}
+          />
+        )}
+        {isRecording && (
+          <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
+        )}
+        <ModalIcon
+          className={cn(
+            iconSizeMap[size],
+            'relative',
+            isTranscribing && 'animate-spin text-blue-600 dark:text-blue-400',
+          )}
+        />
+      </button>
+
+      <MicrophoneRecordingModal
+        isOpen={modalOpen}
+        isRecording={isRecording}
+        isTranscribing={isTranscribing}
+        isPaused={isPaused}
+        duration={duration}
+        audioLevel={audioLevel}
+        transcribedText={transcribedText}
+        livePreview={liveTranscript || null}
+        onStartRecording={startRecording}
+        onStopRecording={stopRecording}
+        onPauseRecording={pauseRecording}
+        onResumeRecording={resumeRecording}
+        onAccept={handleModalAccept}
+        onRetry={handleModalRetry}
+        onAddMore={handleModalAddMore}
+        onCancel={handleModalCancel}
+      />
+
+      <VoiceTroubleshootingModal
+        isOpen={showTroubleshooting}
+        onClose={() => setShowTroubleshooting(false)}
+        error={lastError?.message}
+        errorCode={lastError?.code}
+      />
+    </>
+  );
+}

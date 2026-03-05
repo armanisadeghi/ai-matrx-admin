@@ -179,7 +179,7 @@ export default function FeedbackDialog({ onClose }: FeedbackDialogProps) {
           {/* Description */}
           <textarea
             ref={textareaRef}
-            className="w-full h-28 px-3 py-2 text-xs leading-relaxed text-foreground bg-[var(--shell-glass-bg-active)] border border-[var(--shell-glass-border)] rounded-lg outline-none resize-none transition-colors placeholder:text-muted-foreground/50 focus:border-ring notes-scrollable"
+            className="w-full h-28 px-3 py-2 text-xs leading-relaxed text-foreground bg-[var(--shell-glass-bg-active)] border border-[var(--shell-glass-border)] rounded-lg outline-none resize-none transition-colors placeholder:text-muted-foreground/50 focus:border-ring scrollbar-thin-auto"
             placeholder="Describe the issue, feature, or suggestion..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}

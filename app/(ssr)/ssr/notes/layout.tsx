@@ -2,7 +2,6 @@
 // Synchronous layout — no auth, no DB, no async work.
 // SidebarClient and NotesWorkspace fetch their own data after mount via Supabase client.
 
-import "./notes.css";
 import SidebarClient from "./_components/SidebarClient";
 import NotesWorkspace from "./_components/NotesWorkspace";
 
@@ -23,8 +22,8 @@ export interface NoteSummary {
 
 export default function NotesLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="notes-root">
-      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30">
+    <div className="notes-root grid grid-cols-[280px_1fr] grid-rows-[1fr] h-full overflow-hidden relative z-0">
+      <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30 pt-0 pb-2.5">
         <SidebarClient />
       </aside>
 
