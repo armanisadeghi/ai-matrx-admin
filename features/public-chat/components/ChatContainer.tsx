@@ -39,7 +39,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const searchParams = useSearchParams();
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
     const { onAgentChange, isLoadingConversation, focusKey, openAgentPicker } = useLayoutAgent();
-    const { sidebarEvents } = useAgentsContext();
+    const { builtinPrompts, sidebarEvents } = useAgentsContext();
 
     // Default to guided mode; ?vars=classic → stacked rows
     const useGuidedVars = searchParams.get('vars') !== 'classic';
@@ -180,13 +180,23 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     // Response mode selection — switches agent via the unified system
     const handleModeSelect = (_modeId: string, agentId: string | null) => {
         if (!agentId) return;
-        // Find the matching DEFAULT_AGENT for full metadata
+        // Check hardcoded agents first, then builtins
         const match = DEFAULT_AGENTS.find(a => a.promptId === agentId);
+        if (match) {
+            onAgentChange({
+                promptId: agentId,
+                name: match.name,
+                description: match.description,
+                variableDefaults: match.variableDefaults,
+            });
+            return;
+        }
+        const builtin = builtinPrompts.find(p => p.id === agentId);
         onAgentChange({
             promptId: agentId,
-            name: match?.name || '',
-            description: match?.description,
-            variableDefaults: match?.variableDefaults,
+            name: builtin?.name || '',
+            description: builtin?.description || undefined,
+            variableDefaults: builtin?.variable_defaults || undefined,
         });
     };
 
