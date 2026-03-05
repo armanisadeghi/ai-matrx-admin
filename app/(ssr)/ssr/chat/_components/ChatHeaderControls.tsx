@@ -9,6 +9,7 @@ import { PanelLeft, SquarePen, Share2, MessageCircle, ChevronDown } from 'lucide
 import PageHeader from '@/app/(ssr)/_components/PageHeader';
 import { AgentPickerSheet } from '@/features/public-chat/components/AgentPickerSheet';
 import type { AgentConfig } from '@/features/public-chat/context/ChatContext';
+import { useChatSidebar } from './ChatSidebarContext';
 
 interface ChatHeaderControlsProps {
     agentName: string;
@@ -20,11 +21,6 @@ interface ChatHeaderControlsProps {
     onAgentSelect: (agent: AgentConfig) => void;
     onNewChat: () => void;
     onShare?: () => void;
-}
-
-function toggleChatSidebar() {
-    const checkbox = document.getElementById('chat-sidebar-toggle') as HTMLInputElement | null;
-    if (checkbox) checkbox.checked = !checkbox.checked;
 }
 
 export default function ChatHeaderControls({
@@ -39,6 +35,7 @@ export default function ChatHeaderControls({
     onShare,
 }: ChatHeaderControlsProps) {
     const [pickerOpen, setPickerOpen] = useState(false);
+    const { toggle } = useChatSidebar();
 
     const handleAgentSelect = useCallback((agent: AgentConfig) => {
         onAgentSelect(agent);
@@ -51,7 +48,7 @@ export default function ChatHeaderControls({
             <div className="flex items-center gap-1.5">
                 {/* Toggle chat sidebar */}
                 <button
-                    onClick={toggleChatSidebar}
+                    onClick={toggle}
                     className="shell-glass shell-tactile flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full text-(--shell-nav-icon) hover:text-(--shell-nav-text-hover) cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
                     title="Toggle chat sidebar"
                 >
@@ -99,7 +96,7 @@ export default function ChatHeaderControls({
         <div className="flex items-center gap-1 w-full justify-between">
             <div className="flex items-center gap-1">
                 <button
-                    onClick={toggleChatSidebar}
+                    onClick={toggle}
                     className="shell-glass shell-tactile flex items-center justify-center w-[1.875rem] h-[1.875rem] rounded-full text-(--shell-nav-icon) hover:text-(--shell-nav-text-hover) cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
                     title="Toggle chat sidebar"
                 >

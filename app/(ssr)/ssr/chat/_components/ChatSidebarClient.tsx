@@ -20,6 +20,7 @@ import { DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector'
 import { useAgentsContext } from '@/features/public-chat/context/AgentsContext';
 import type { CxConversationSummary } from '@/features/public-chat/types/cx-tables';
 import { supabase } from '@/utils/supabase/client';
+import { useChatSidebar } from './ChatSidebarContext';
 
 // ============================================================================
 // HELPERS
@@ -66,11 +67,6 @@ function formatTime(dateStr: string): string {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function closeChatSidebar() {
-    const checkbox = document.getElementById('chat-sidebar-toggle') as HTMLInputElement | null;
-    if (checkbox) checkbox.checked = false;
-}
-
 // ============================================================================
 // SKELETON
 // ============================================================================
@@ -96,6 +92,7 @@ export default function ChatSidebarClient() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { builtinPrompts, userPrompts } = useAgentsContext();
+    const { close: closeSidebar } = useChatSidebar();
 
     const [conversations, setConversations] = useState<CxConversationSummary[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -221,7 +218,7 @@ export default function ChatSidebarClient() {
                 <div className="flex items-center gap-1.5">
                     <button
                         className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer"
-                        onClick={closeChatSidebar}
+                        onClick={closeSidebar}
                         title="Close sidebar"
                     >
                         <PanelLeftClose className="w-4 h-4" />
