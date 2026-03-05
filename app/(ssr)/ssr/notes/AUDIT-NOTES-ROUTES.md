@@ -89,7 +89,7 @@
 | Fix | Description |
 |-----|-------------|
 | **Z-index stacking** | Added `z-index: 0` to `.notes-root` so content renders BEHIND shell header (z-40) and dock (z-40). Share dialog and mobile bottom sheet portaled to `document.body` to escape the stacking context. |
-| **AI Actions debugging** | Added console.log statements throughout NoteAiMenu.tsx data flow: Redux cache check, Supabase fallback, buildCategoryHierarchy results, render state. Open DevTools console and click "AI Actions" in context menu to see diagnostics. |
+| **AI Actions — DB not deployed** | Root cause found: `context_menu_unified_view`, `get_ssr_shell_data` RPC, and underlying tables (`shortcut_categories`, `prompt_shortcuts`, `prompt_builtins`) do not exist in the Supabase database. The SQL schemas in `features/prompt-builtins/DB.md` and `migrations/` were never deployed. Migration SQL created at `migrations/create_context_menu_unified_view.sql`. NoteAiMenu now shows a clear "DB setup required" error state instead of silent "No AI actions available". `ssrShellData.ts` gracefully handles missing RPC instead of crashing. |
 | **Context menu folder submenu** | Replaced flat folder list (unusable with 15+ folders) with collapsible "Move to folder ›" second tier in both NotesWorkspace and SidebarClient context menus. |
 | **Tab bar folder selector** | Added folder icon button in active tab's action bar (next to Save/Copy/Share/Delete). Click to open dropdown for quick folder change. |
 | **Mobile folder drawer** | Mobile bottom sheet now shows folder as clickable row with chevron. Tap to enter folder selection mode with back button navigation. |
