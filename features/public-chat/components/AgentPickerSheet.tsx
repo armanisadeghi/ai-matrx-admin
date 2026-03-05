@@ -93,36 +93,45 @@ function MobileAgentListContent({
     selectedAgent,
     onSelect,
     searchQuery,
+    filter,
 }: {
     selectedAgent?: AgentConfig | null;
     onSelect: (agent: AgentConfig) => void;
     searchQuery: string;
+    filter: FilterType;
 }) {
-    const { userPrompts, userPromptsLoading, userPromptsError } = useAgentsContext();
+    const { userPrompts, builtinPrompts, userPromptsLoading, userPromptsError } = useAgentsContext();
 
-    const filteredSystem = useMemo(() => {
-        if (!searchQuery.trim()) return DEFAULT_AGENTS;
-        const q = searchQuery.toLowerCase();
-        return DEFAULT_AGENTS.filter(
-            a => a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q)
-        );
-    }, [searchQuery]);
-
-    const filteredUser = useMemo(() => {
-        const mapped = userPrompts.map(p => ({
+    // Map builtins to agent config shape
+    const builtinAgents = useMemo(() =>
+        builtinPrompts.map(p => ({
             promptId: p.id,
             name: p.name || 'Untitled',
             description: p.description || undefined,
             variableDefaults: p.variable_defaults || undefined,
-        }));
-        if (!searchQuery.trim()) return mapped;
-        const q = searchQuery.toLowerCase();
-        return mapped.filter(
-            a => a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q)
-        );
-    }, [userPrompts, searchQuery]);
+        })),
+    [builtinPrompts]);
 
-    const hasSystem = filteredSystem.length > 0;
+    const { filteredSystem, filteredBuiltins, filteredUser } = useMemo(() => {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesQuery = (a: { name: string; description?: string | null }) =>
+            !q || a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q);
+
+        const sys = filter === 'mine' ? [] : DEFAULT_AGENTS.filter(matchesQuery);
+        const builtins = filter === 'mine' ? [] : builtinAgents.filter(matchesQuery);
+        const usr = filter === 'system' ? [] : userPrompts
+            .map(p => ({
+                promptId: p.id,
+                name: p.name || 'Untitled',
+                description: p.description || undefined,
+                variableDefaults: p.variable_defaults || undefined,
+            }))
+            .filter(matchesQuery);
+
+        return { filteredSystem: sys, filteredBuiltins: builtins, filteredUser: usr };
+    }, [searchQuery, filter, builtinAgents, userPrompts]);
+
+    const hasSystem = filteredSystem.length > 0 || filteredBuiltins.length > 0;
     const hasUser = filteredUser.length > 0;
 
     return (
@@ -145,6 +154,14 @@ function MobileAgentListContent({
                                         variableDefaults: agent.variableDefaults,
                                     })
                                 }
+                            />
+                        ))}
+                        {filteredBuiltins.map(agent => (
+                            <MobileAgentItem
+                                key={agent.promptId}
+                                agent={agent}
+                                isSelected={selectedAgent?.promptId === agent.promptId}
+                                onSelect={() => onSelect(agent)}
                             />
                         ))}
                     </div>
@@ -196,12 +213,15 @@ function MobileAgentListContent({
 function MobileAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: AgentPickerSheetProps) {
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState<FilterType>('all');
+    const { userPrompts, builtinPrompts } = useAgentsContext();
 
     const handleSelect = (agent: AgentConfig) => {
         onSelect(agent);
         onOpenChange(false);
         setSearchQuery('');
         setShowSearch(false);
+        setFilter('all');
     };
 
     const handleOpenChange = (isOpen: boolean) => {
@@ -209,8 +229,12 @@ function MobileAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Agen
         if (!isOpen) {
             setSearchQuery('');
             setShowSearch(false);
+            setFilter('all');
         }
     };
+
+    const systemCount = DEFAULT_AGENTS.length + builtinPrompts.length;
+    const userCount = userPrompts.length;
 
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -247,11 +271,22 @@ function MobileAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Agen
                     </div>
                 )}
 
+                {/* Filter toggles */}
+                <div className="px-4 pb-2">
+                    <MobileFilterToggles
+                        active={filter}
+                        onChange={setFilter}
+                        systemCount={systemCount}
+                        userCount={userCount}
+                    />
+                </div>
+
                 <div className="flex-1 overflow-y-auto overscroll-contain pb-safe" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}>
                     <MobileAgentListContent
                         selectedAgent={selectedAgent}
                         onSelect={handleSelect}
                         searchQuery={searchQuery}
+                        filter={filter}
                     />
                 </div>
             </DrawerContent>
@@ -333,7 +368,7 @@ function DesktopAgentCard({
 }
 
 // ============================================================================
-// FILTER TOGGLE
+// FILTER TOGGLES
 // ============================================================================
 
 const FILTERS: { id: FilterType; label: string; icon: React.ReactNode }[] = [
@@ -342,22 +377,66 @@ const FILTERS: { id: FilterType; label: string; icon: React.ReactNode }[] = [
     { id: 'mine', label: 'My Agents', icon: <User className="h-3 w-3" /> },
 ];
 
-function FilterToggles({
+function MobileFilterToggles({
     active,
     onChange,
+    systemCount,
     userCount,
 }: {
     active: FilterType;
     onChange: (filter: FilterType) => void;
+    systemCount: number;
     userCount: number;
+}) {
+    return (
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+            {FILTERS.map(f => {
+                const isActive = active === f.id;
+                const count = f.id === 'system' ? systemCount
+                    : f.id === 'mine' ? userCount
+                    : systemCount + userCount;
+
+                return (
+                    <button
+                        key={f.id}
+                        onClick={() => onChange(f.id)}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex-shrink-0 ${
+                            isActive
+                                ? 'bg-foreground text-background'
+                                : 'bg-muted text-muted-foreground hover:text-foreground active:bg-accent'
+                        }`}
+                    >
+                        {f.icon}
+                        <span>{f.label}</span>
+                        <span className={`ml-0.5 ${isActive ? 'text-background/70' : 'text-muted-foreground/60'}`}>
+                            {count}
+                        </span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+function FilterToggles({
+    active,
+    onChange,
+    userCount,
+    systemCount,
+}: {
+    active: FilterType;
+    onChange: (filter: FilterType) => void;
+    userCount: number;
+    systemCount?: number;
 }) {
     return (
         <div className="flex items-center gap-1">
             {FILTERS.map(f => {
                 const isActive = active === f.id;
-                const count = f.id === 'system' ? DEFAULT_AGENTS.length
+                const sysCount = systemCount ?? DEFAULT_AGENTS.length;
+                const count = f.id === 'system' ? sysCount
                     : f.id === 'mine' ? userCount
-                    : DEFAULT_AGENTS.length + userCount;
+                    : sysCount + userCount;
 
                 return (
                     <button
@@ -389,7 +468,7 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState<FilterType>('all');
     const inputRef = useRef<HTMLInputElement>(null);
-    const { userPrompts, userPromptsLoading, userPromptsError } = useAgentsContext();
+    const { userPrompts, builtinPrompts, userPromptsLoading, userPromptsError } = useAgentsContext();
 
     // Focus search input on open
     useEffect(() => {
@@ -427,22 +506,31 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
         })),
     [userPrompts]);
 
+    // Map builtins to agent config shape
+    const builtinAgents = useMemo(() =>
+        builtinPrompts.map(p => ({
+            promptId: p.id,
+            name: p.name || 'Untitled',
+            description: p.description || undefined,
+            variableDefaults: p.variable_defaults || undefined,
+        })),
+    [builtinPrompts]);
+
     // Filter + search
-    const { systemAgents, myAgents } = useMemo(() => {
+    const { systemAgents, builtinAgentsList, myAgents } = useMemo(() => {
         const q = searchQuery.toLowerCase().trim();
+        const matchesQuery = (a: { name: string; description?: string | null }) =>
+            !q || a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q);
 
-        let sys = filter === 'mine' ? [] : [...DEFAULT_AGENTS];
-        let usr = filter === 'system' ? [] : [...userAgents];
+        const sys = filter === 'mine' ? [] : DEFAULT_AGENTS.filter(matchesQuery);
+        const builtins = filter === 'mine' ? [] : builtinAgents.filter(matchesQuery);
+        const usr = filter === 'system' ? [] : userAgents.filter(matchesQuery);
 
-        if (q) {
-            sys = sys.filter(a => a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q));
-            usr = usr.filter(a => a.name.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q));
-        }
+        return { systemAgents: sys, builtinAgentsList: builtins, myAgents: usr };
+    }, [searchQuery, filter, userAgents, builtinAgents]);
 
-        return { systemAgents: sys, myAgents: usr };
-    }, [searchQuery, filter, userAgents]);
-
-    const totalResults = systemAgents.length + myAgents.length;
+    const systemCount = DEFAULT_AGENTS.length + builtinPrompts.length;
+    const totalResults = systemAgents.length + builtinAgentsList.length + myAgents.length;
 
     if (!open) return null;
 
@@ -488,6 +576,7 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
                                 active={filter}
                                 onChange={setFilter}
                                 userCount={userAgents.length}
+                                systemCount={systemCount}
                             />
                             {searchQuery && (
                                 <span className="text-xs text-muted-foreground">
@@ -501,8 +590,8 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
 
                     {/* Agent grid */}
                     <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">
-                        {/* System agents */}
-                        {systemAgents.length > 0 && (
+                        {/* System agents (hardcoded + builtins) */}
+                        {(systemAgents.length > 0 || builtinAgentsList.length > 0) && (
                             <div className="mb-4">
                                 {filter === 'all' && myAgents.length > 0 && (
                                     <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -527,6 +616,15 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
                                             badge="System"
                                         />
                                     ))}
+                                    {builtinAgentsList.map(agent => (
+                                        <DesktopAgentCard
+                                            key={agent.promptId}
+                                            agent={agent}
+                                            isSelected={selectedAgent?.promptId === agent.promptId}
+                                            onSelect={() => handleSelect(agent)}
+                                            badge="System"
+                                        />
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -534,7 +632,7 @@ function DesktopAgentPicker({ open, onOpenChange, selectedAgent, onSelect }: Age
                         {/* User agents */}
                         {myAgents.length > 0 && (
                             <div className="mb-2">
-                                {filter === 'all' && systemAgents.length > 0 && (
+                                {filter === 'all' && (systemAgents.length > 0 || builtinAgentsList.length > 0) && (
                                     <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                         My Agents
                                     </div>
