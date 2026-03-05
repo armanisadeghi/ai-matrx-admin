@@ -19,9 +19,11 @@ const nextConfig = {
     devIndicators: false,  // disables the indicator entirely
 
     compiler: {
-        removeConsole: process.env.NODE_ENV === 'production' ? {
-            exclude: ['error', 'warn'],
-        } : false,
+        // TODO: Restore this when done debugging — removes console.log in production but keeps error/warn
+        // removeConsole: process.env.NODE_ENV === 'production' ? {
+        //     exclude: ['error', 'warn'],
+        // } : false,
+        removeConsole: false,
     },
     
     // Moved from experimental (Next.js 15+)

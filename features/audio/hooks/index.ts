@@ -7,4 +7,5 @@
 export { useAudioTranscription } from './useAudioTranscription';
 export { useSimpleRecorder } from './useSimpleRecorder';
 export { useRecordAndTranscribe } from './useRecordAndTranscribe';
+export { useChunkedRecordAndTranscribe } from './useChunkedRecordAndTranscribe';
 
