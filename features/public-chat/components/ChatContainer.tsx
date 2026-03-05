@@ -13,7 +13,7 @@ import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
 import { GuidedVariableInputs } from './GuidedVariableInputs';
-import { AgentActionButtons, DEFAULT_AGENTS } from './AgentSelector';
+import { ResponseModeButtons, BackToStartButton, DEFAULT_AGENTS } from './AgentSelector';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
@@ -39,7 +39,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
     const searchParams = useSearchParams();
     const { state, setAgent, addMessage, setUseLocalhost, updateMessage, setDbConversationId } = useChatContext();
     const { onAgentChange, isLoadingConversation, focusKey, openAgentPicker } = useLayoutAgent();
-    const { sidebarEvents } = useAgentsContext();
+    const { builtinPrompts, sidebarEvents } = useAgentsContext();
 
     // Default to guided mode; ?vars=classic → stacked rows
     const useGuidedVars = searchParams.get('vars') !== 'classic';
@@ -177,6 +177,40 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         });
     };
 
+    // Response mode selection — switches agent via the unified system
+    const handleModeSelect = (_modeId: string, agentId: string | null) => {
+        if (!agentId) return;
+        // Check hardcoded agents first, then builtins
+        const match = DEFAULT_AGENTS.find(a => a.promptId === agentId);
+        if (match) {
+            onAgentChange({
+                promptId: agentId,
+                name: match.name,
+                description: match.description,
+                variableDefaults: match.variableDefaults,
+            });
+            return;
+        }
+        const builtin = builtinPrompts.find(p => p.id === agentId);
+        onAgentChange({
+            promptId: agentId,
+            name: builtin?.name || '',
+            description: builtin?.description || undefined,
+            variableDefaults: builtin?.variable_defaults || undefined,
+        });
+    };
+
+    // Navigate back to the default agent (starting screen)
+    const handleBackToStart = () => {
+        const defaultAgent = DEFAULT_AGENTS[0];
+        onAgentChange({
+            promptId: defaultAgent.promptId,
+            name: defaultAgent.name,
+            description: defaultAgent.description,
+            variableDefaults: defaultAgent.variableDefaults,
+        });
+    };
+
     const handleVariableChange = (name: string, value: string) => {
         setVariableValues((prev) => ({ ...prev, [name]: value }));
     };
@@ -228,7 +262,6 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         updateMessage(messageId, { content: newContent });
     };
 
-    const currentAgentOption = DEFAULT_AGENTS.find((a) => a.promptId === state.currentAgent?.promptId) || DEFAULT_AGENTS[0];
     const hasVariables = activeVariables.length > 0;
     const isWelcomeScreen = messages.length === 0 && !isLoadingConversation;
 
@@ -313,12 +346,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
                                 <button
                                     type="button"
                                     onClick={() => router.replace(toggleUrl)}
@@ -392,12 +420,15 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                {hasVariables ? (
+                                    <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
+                                ) : (
+                                    <ResponseModeButtons
+                                        disabled={isExecuting}
+                                        selectedAgentId={state.currentAgent?.promptId}
+                                        onModeSelect={handleModeSelect}
+                                    />
+                                )}
                                 {hasVariables && (
                                     <button
                                         type="button"

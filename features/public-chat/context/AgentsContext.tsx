@@ -47,6 +47,7 @@ export class SidebarEvents {
 
 interface AgentsContextValue {
     userPrompts: MinimalPrompt[];
+    builtinPrompts: MinimalPrompt[];
     userPromptsLoading: boolean;
     userPromptsError: string | null;
     sidebarEvents: SidebarEvents;
@@ -66,10 +67,38 @@ export function useAgentsContext() {
 
 export function AgentsProvider({ children }: { children: ReactNode }) {
     const [userPrompts, setUserPrompts] = useState<MinimalPrompt[]>([]);
+    const [builtinPrompts, setBuiltinPrompts] = useState<MinimalPrompt[]>([]);
     const [userPromptsLoading, setUserPromptsLoading] = useState(false);
     const [userPromptsError, setUserPromptsError] = useState<string | null>(null);
     const sidebarEventsRef = useRef(new SidebarEvents());
 
+    // Fetch prompt_builtins (public, no auth required)
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchBuiltins = async () => {
+            try {
+                const supabase = createClient();
+                const { data, error } = await supabase
+                    .from('prompt_builtins')
+                    .select('id, name, description, variable_defaults')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                if (isMounted && !error) {
+                    setBuiltinPrompts(data || []);
+                }
+            } catch {
+                // Non-critical — builtins enhance resolution but aren't required
+            }
+        };
+
+        fetchBuiltins();
+
+        return () => { isMounted = false; };
+    }, []);
+
+    // Fetch user prompts (requires auth)
     useEffect(() => {
         let isMounted = true;
 
@@ -84,7 +113,7 @@ export function AgentsProvider({ children }: { children: ReactNode }) {
                 // public routes where the user is a guest. getSession() reads from
                 // local storage (no network call, no error).
                 const { data: { session } } = await supabase.auth.getSession();
-                
+
                 if (!session?.user) {
                     // No session — guest user, no user prompts to fetch
                     if (isMounted) {
@@ -132,6 +161,7 @@ export function AgentsProvider({ children }: { children: ReactNode }) {
 
     const value: AgentsContextValue = {
         userPrompts,
+        builtinPrompts,
         userPromptsLoading,
         userPromptsError,
         sidebarEvents: sidebarEventsRef.current,

@@ -10,12 +10,15 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
 };
 
 /**
- * Resolves an AgentConfig from an agent ID by checking system agents first,
- * then falling back to user prompts.
+ * Resolves an AgentConfig from an agent ID by checking:
+ * 1. Hardcoded DEFAULT_AGENTS (system agents)
+ * 2. prompt_builtins (public system prompts)
+ * 3. User prompts (personal prompts)
  */
 export function resolveAgentFromId(
     agentId: string | null,
     userPrompts: MinimalPrompt[] = [],
+    builtinPrompts: MinimalPrompt[] = [],
 ): AgentConfig | null {
     if (!agentId) return null;
 
@@ -26,6 +29,16 @@ export function resolveAgentFromId(
             name: systemAgent.name,
             description: systemAgent.description,
             variableDefaults: systemAgent.variableDefaults,
+        };
+    }
+
+    const builtinAgent = builtinPrompts.find(p => p.id === agentId);
+    if (builtinAgent) {
+        return {
+            promptId: builtinAgent.id,
+            name: builtinAgent.name || 'Untitled',
+            description: builtinAgent.description || undefined,
+            variableDefaults: builtinAgent.variable_defaults || undefined,
         };
     }
 

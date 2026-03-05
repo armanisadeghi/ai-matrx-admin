@@ -7,7 +7,6 @@ import {
     X,
     Minimize2,
     Maximize2,
-    Mic,
     Plus,
     ChevronDown,
     Paperclip,
@@ -18,10 +17,8 @@ import {
     Youtube,
     Globe,
 } from 'lucide-react';
-import { FaMicrophoneLines } from 'react-icons/fa6';
 
-import { useChatContext } from '../context/ChatContext';
-import ToggleButton from '@/components/matrx/toggles/ToggleButton';
+import { VoiceMicButton } from './VoiceMicButton';
 import { usePublicFileUpload, PublicUploadResult } from '@/hooks/usePublicFileUpload';
 import { useClipboardPaste } from '@/components/ui/file-upload/useClipboardPaste';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -258,6 +255,7 @@ interface InputBottomControlsProps {
     onOpenAgentPicker?: () => void;
     selectedAgent?: AgentConfig | null;
     seamless?: boolean;
+    onTranscription?: (text: string) => void;
 }
 
 function InputBottomControls({
@@ -270,9 +268,8 @@ function InputBottomControls({
     onOpenAgentPicker,
     selectedAgent,
     seamless = false,
+    onTranscription,
 }: InputBottomControlsProps) {
-    const { state, updateSettings } = useChatContext();
-    const { settings } = state;
     const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
 
     return (
@@ -317,30 +314,25 @@ function InputBottomControls({
                     <button
                         onClick={onOpenAgentPicker}
                         disabled={disabled}
-                        className="p-1.5 px-2 rounded-xl flex items-center gap-1.5 border-2 border-border transition-colors text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm min-w-0 max-w-[250px]"
+                        className="flex items-center gap-1 px-1 py-0.5 rounded-md transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed min-w-0 max-w-[200px]"
                         title={selectedAgent?.name ? `Switch agent: ${selectedAgent.name}` : 'Select Agent'}
                     >
-                        <span className="text-[11px] font-medium truncate" title={selectedAgent?.name}>
-                            {selectedAgent?.name
-                                ? (selectedAgent.name.length > 30 ? selectedAgent.name.substring(0, 30) + '\u2026' : selectedAgent.name)
-                                : 'Select Agent'}
+                        <span className="text-xs truncate" title={selectedAgent?.name}>
+                            {selectedAgent?.name || 'Select Agent'}
                         </span>
-                        <ChevronDown size={14} className="flex-shrink-0" />
+                        <ChevronDown size={12} className="flex-shrink-0" />
                     </button>
                 )}
             </div>
 
             {/* Right side controls */}
-            <div className="absolute bottom-2 right-4 flex items-center space-x-3">
-                <ToggleButton
-                    isEnabled={settings.audioEnabled}
-                    onClick={() => updateSettings({ audioEnabled: !settings.audioEnabled })}
-                    disabled={disabled}
-                    label=""
-                    defaultIcon={<Mic />}
-                    enabledIcon={<FaMicrophoneLines />}
-                    tooltip="Listen for Speech Input"
-                />
+            <div className="absolute bottom-2 right-4 flex items-center space-x-2">
+                {onTranscription && (
+                    <VoiceMicButton
+                        disabled={disabled}
+                        onTranscription={onTranscription}
+                    />
+                )}
                 <button
                     className={`p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors ${
                         disabled ? 'opacity-50 cursor-not-allowed' : ''
@@ -453,6 +445,14 @@ export function ChatInputWithControls({
         setContent(newContent);
     }, []);
 
+    // Handle voice transcription — append to existing content
+    const handleTranscription = useCallback((text: string) => {
+        setContent((prev) => {
+            if (!prev.trim()) return text;
+            return `${prev}\n${text}`;
+        });
+    }, []);
+
     const handleRemoveResource = useCallback((index: number) => {
         setResources(prev => prev.filter((_, i) => i !== index));
     }, []);
@@ -490,7 +490,7 @@ export function ChatInputWithControls({
 
     return (
         <div className="relative">
-            <div className={`relative border border-border bg-muted overflow-hidden ${seamless ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'}`}>
+            <div className={`relative border border-border bg-muted ${seamless ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'}`}>
                 {/* Resource chips display */}
                 {(resources.length > 0 || isUploading) && (
                     <div className="pt-2">
@@ -518,6 +518,8 @@ export function ChatInputWithControls({
                     placeholder={placeholder}
                 />
 
+                {/* InputBottomControls rendered inside the border container but with
+                    overflow-visible so tooltips can escape above the input area */}
                 <InputBottomControls
                     disabled={isDisabled}
                     onSendMessage={handleSubmit}
@@ -528,6 +530,7 @@ export function ChatInputWithControls({
                     onOpenAgentPicker={onOpenAgentPicker}
                     selectedAgent={selectedAgent}
                     seamless={seamless}
+                    onTranscription={handleTranscription}
                 />
             </div>
         </div>
