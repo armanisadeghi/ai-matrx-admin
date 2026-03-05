@@ -73,8 +73,8 @@ export function ChatMobileHeader({
 
     return (
         <header className="absolute top-0 left-0 right-0 z-50 flex items-center h-10 px-1.5 pointer-events-none">
-            {/* Left group: sidebar, new chat, agent selector */}
-            {/* Hides when sidebar is open to avoid overlapping sidebar content */}
+            {/* Left group: sidebar toggle, new chat, agent selector
+                Hidden when sidebar is open (sidebar's own header has these same controls) */}
             <div className={`flex items-center gap-0.5 min-w-0 flex-1 pointer-events-auto transition-opacity duration-200 ${
                 isSidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
             }`}>
@@ -92,7 +92,6 @@ export function ChatMobileHeader({
                 >
                     <SquarePen className="h-[18px] w-[18px]" />
                 </button>
-                {/* Agent name — opens unified picker */}
                 <button
                     onClick={onOpenAgentPicker}
                     className="flex items-center gap-1 min-w-0 px-1.5 py-1 rounded-md hover:bg-accent/50 transition-colors"

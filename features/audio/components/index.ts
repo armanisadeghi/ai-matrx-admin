@@ -1,8 +1,12 @@
 /**
  * Audio Feature Components
- * 
+ *
  * Barrel export for all audio-related components
  */
+
+// ── Standalone self-contained microphone icon (recommended for new usage) ──
+export { MicrophoneIconButton, type MicrophoneIconButtonProps, type MicVariant } from './MicrophoneIconButton';
+export { MicrophoneRecordingModal, type MicrophoneRecordingModalProps } from './MicrophoneRecordingModal';
 
 // Helper components (used internally)
 export { MicrophoneButton } from './MicrophoneButton';

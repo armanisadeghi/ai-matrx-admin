@@ -227,7 +227,7 @@ export default function NoteAiMenu({
           <Sparkles className="w-3 h-3 text-purple-500" />
           {executing ? "Processing..." : "Result"}
         </div>
-        <div className="px-2.5 py-1.5 text-xs text-foreground leading-relaxed max-h-48 overflow-y-auto notes-scrollable whitespace-pre-wrap">
+        <div className="px-2.5 py-1.5 text-xs text-foreground leading-relaxed max-h-48 overflow-y-auto scrollbar-thin-auto whitespace-pre-wrap">
           {streamResult || (
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Loader2 className="w-3 h-3 animate-spin" />

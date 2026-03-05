@@ -56,11 +56,11 @@ function formatTime(dateStr: string): string {
 
 function ConversationSkeleton() {
     return (
-        <div style={{ padding: '0.5rem 0' }}>
+        <div className="py-2">
             {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="chat-skeleton-item">
-                    <div className="chat-skeleton-icon" />
-                    <div className="chat-skeleton-text" />
+                <div key={i} className="flex items-center gap-2 px-3 py-2 mx-1">
+                    <div className="w-4 h-4 rounded shrink-0 bg-linear-to-r from-muted/30 via-muted/60 to-muted/30 bg-[length:200px_100%] animate-ssr-shimmer" />
+                    <div className="h-3 rounded flex-1 bg-linear-to-r from-muted/30 via-muted/60 to-muted/30 bg-[length:200px_100%] animate-ssr-shimmer" />
                 </div>
             ))}
         </div>
@@ -165,11 +165,11 @@ export default function ChatSidebarClient() {
 
     return (
         <>
-            <div className="chat-sidebar-header">
+            <div className="shrink-0 p-3 border-b border-border/20">
                 <div className="flex items-center justify-between">
-                    <h2>Chat</h2>
+                    <h2 className="text-[0.8125rem] font-semibold tracking-[-0.01em] text-foreground m-0">Chat</h2>
                     <button
-                        className="chat-new-btn w-auto m-0 px-2.5 py-1 text-xs"
+                        className="flex items-center justify-center gap-1.5 w-auto m-0 px-2.5 py-1 rounded-lg border border-dashed border-border/40 bg-transparent text-muted-foreground cursor-pointer text-xs font-medium transition-all duration-150 hover:border-primary/40 hover:text-primary hover:bg-primary/5 font-[inherit]"
                         onClick={() => navigateToNewChat()}
                     >
                         <Plus size={14} />
@@ -178,7 +178,7 @@ export default function ChatSidebarClient() {
                 </div>
             </div>
 
-            <div className="chat-sidebar-search">
+            <div className="shrink-0 px-3 py-2">
                 <div className="relative">
                     <SearchIcon size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
                     <input
@@ -186,19 +186,22 @@ export default function ChatSidebarClient() {
                         placeholder="Search conversations..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        className="pl-7"
+                        className="w-full h-8 px-2 pl-7 rounded-lg border border-border/30 bg-muted/30 text-xs text-foreground outline-none transition-[border-color,background] duration-150 focus:border-primary/50 focus:bg-background/80 placeholder:text-muted-foreground/60"
                     />
                 </div>
             </div>
 
-            <div className="chat-sidebar-agents">
-                <div className="chat-sidebar-agents-label">Agents</div>
+            <div className="shrink-0 border-t border-border/20 p-2">
+                <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-muted-foreground/60 px-1 pb-2 pt-1 select-none">Agents</div>
                 <div className="flex flex-wrap">
                     {DEFAULT_AGENTS.map(agent => (
                         <button
                             key={agent.id}
-                            className="chat-sidebar-agent-chip"
-                            data-active={activeAgentId === agent.promptId || (!activeAgentId && agent.id === 'general-chat')}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 m-0.5 rounded-full text-xs font-medium border cursor-pointer transition-all duration-150 ${
+                                activeAgentId === agent.promptId || (!activeAgentId && agent.id === 'general-chat')
+                                    ? 'bg-primary/10 border-primary/30 text-primary font-semibold'
+                                    : 'border-border/30 bg-muted/20 text-foreground/70 hover:bg-accent/50 hover:border-border/50'
+                            }`}
                             onClick={() => navigateToNewChat(agent.promptId)}
                             title={agent.description}
                         >
@@ -209,7 +212,7 @@ export default function ChatSidebarClient() {
                 </div>
             </div>
 
-            <div className="chat-sidebar-list">
+            <div className="flex-1 min-h-0 overflow-y-auto py-1 scrollbar-thin-visible">
                 {isLoading ? (
                     <ConversationSkeleton />
                 ) : groups.length === 0 ? (
@@ -222,17 +225,22 @@ export default function ChatSidebarClient() {
                 ) : (
                     groups.map(group => (
                         <div key={group.label}>
-                            <div className="chat-sidebar-group-label">{group.label}</div>
+                            <div className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-muted-foreground/60 px-3 pt-3 pb-1 select-none lg:text-[0.625rem] lg:pt-2">{group.label}</div>
                             {group.items.map(conv => (
                                 <button
                                     key={conv.id}
-                                    className="chat-sidebar-item"
-                                    data-active={activeConversationId === conv.id}
+                                    className={`flex items-center gap-2 py-1.5 px-3 mx-1 rounded-md cursor-pointer transition-[background] duration-[120ms] min-h-8 no-underline text-inherit border-none bg-transparent w-[calc(100%-0.5rem)] text-left font-[inherit] lg:py-[0.3125rem] lg:min-h-7 ${
+                                        activeConversationId === conv.id
+                                            ? 'bg-accent'
+                                            : 'hover:bg-accent/50'
+                                    }`}
                                     onClick={() => navigateToConversation(conv.id)}
                                 >
-                                    <MessageCircle size={14} className="chat-sidebar-item-icon" />
-                                    <span className="chat-sidebar-item-title">{conv.title || 'Untitled Chat'}</span>
-                                    <span className="chat-sidebar-item-time">{formatTime(conv.updated_at)}</span>
+                                    <MessageCircle size={14} className="shrink-0 w-4 h-4 text-muted-foreground/50" />
+                                    <span className={`flex-1 text-[0.8125rem] leading-[1.3] text-foreground/80 whitespace-nowrap overflow-hidden text-ellipsis lg:text-xs ${
+                                        activeConversationId === conv.id ? 'font-semibold text-foreground' : ''
+                                    }`}>{conv.title || 'Untitled Chat'}</span>
+                                    <span className="shrink-0 text-[0.6875rem] text-muted-foreground/50">{formatTime(conv.updated_at)}</span>
                                 </button>
                             ))}
                         </div>

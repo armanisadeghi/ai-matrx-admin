@@ -34,7 +34,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
     } = useChatContext();
 
     const { loadConversation: loadConversationFromDb } = useChatPersistence();
-    const { userPrompts, sidebarEvents } = useAgentsContext();
+    const { userPrompts, builtinPrompts, sidebarEvents } = useAgentsContext();
 
     const [isLoadingConversation, setIsLoadingConversation] = useState(false);
     const [focusKey, setFocusKey] = useState(0);
@@ -67,23 +67,23 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         setAgent(selectedAgent);
     }, [selectedAgent, setAgent]);
 
-    // Resolve agent from user prompts when they load (for custom agent URLs)
+    // Resolve agent from user/builtin prompts when they load (for custom agent URLs)
     useEffect(() => {
-        if (!urlAgentId || userPrompts.length === 0) return;
+        if (!urlAgentId || (userPrompts.length === 0 && builtinPrompts.length === 0)) return;
         if (selectedAgent.promptId === urlAgentId) return;
 
-        const resolved = resolveAgentFromId(urlAgentId, userPrompts);
+        const resolved = resolveAgentFromId(urlAgentId, userPrompts, builtinPrompts);
         if (resolved) {
             setSelectedAgent(resolved);
         }
-    }, [urlAgentId, userPrompts, selectedAgent.promptId]);
+    }, [urlAgentId, userPrompts, builtinPrompts, selectedAgent.promptId]);
 
     // Handle back/forward navigation changing the agent route
     useEffect(() => {
         if (!urlAgentId) return;
         if (urlAgentId === selectedAgent.promptId) return;
 
-        const resolved = resolveAgentFromId(urlAgentId, userPrompts);
+        const resolved = resolveAgentFromId(urlAgentId, userPrompts, builtinPrompts);
         if (resolved) {
             setSelectedAgent(resolved);
             if (!urlConversationId && state.messages.length > 0) {
@@ -165,7 +165,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
 
             const agentParam = searchParams.get('agent');
             if (agentParam) {
-                const resolved = resolveAgentFromId(agentParam, userPrompts);
+                const resolved = resolveAgentFromId(agentParam, userPrompts, builtinPrompts);
                 if (resolved) setSelectedAgent(resolved);
             }
 
@@ -238,14 +238,7 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                 onSelect={handleAgentChange}
             />
 
-            <div className="h-full w-full relative">
-                <ChatMobileHeader
-                    onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
-                    onNewChat={handleNewChat}
-                    selectedAgent={selectedAgent}
-                    onOpenAgentPicker={openAgentPicker}
-                    isSidebarOpen={isSidebarOpen}
-                />
+            <div className="h-full w-full relative flex">
                 <ChatSidebar
                     activeRequestId={activeConversationId}
                     onSelectChat={handleSelectChat}
@@ -256,7 +249,14 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
                     isOpen={isSidebarOpen}
                     onOpenChange={setIsSidebarOpen}
                 />
-                <div className="h-full">
+                <div className="h-full flex-1 min-w-0 relative">
+                    <ChatMobileHeader
+                        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+                        onNewChat={handleNewChat}
+                        selectedAgent={selectedAgent}
+                        onOpenAgentPicker={openAgentPicker}
+                        isSidebarOpen={isSidebarOpen}
+                    />
                     {children}
                 </div>
             </div>

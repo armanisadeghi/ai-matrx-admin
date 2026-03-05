@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { ChevronDown, Bot, Sparkles, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { ChevronDown, ChevronLeft, Bot, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb, Video, BarChart, ChefHat } from 'lucide-react';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -187,14 +187,6 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
                                                 {agent.description}
                                             </div>
                                         )}
-                                        {agent.variableDefaults && agent.variableDefaults.length > 0 && (
-                                            <div className="flex items-center gap-1 mt-1.5">
-                                                <Sparkles size={12} className="text-amber-500" />
-                                                <span className="text-xs text-amber-600 dark:text-amber-400">
-                                                    {agent.variableDefaults.length} variable{agent.variableDefaults.length > 1 ? 's' : ''}
-                                                </span>
-                                            </div>
-                                        )}
                                     </div>
                                     {selected.id === agent.id && (
                                         <div className="flex-shrink-0">
@@ -212,41 +204,116 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
 }
 
 // ============================================================================
-// AGENT ACTION BUTTONS (Alternative UI)
+// RESPONSE MODE BUTTONS (matches authenticated chat style)
 // ============================================================================
 
-interface AgentActionButtonsProps {
-    agents: AgentOption[];
-    selectedAgent: AgentOption | null;
-    onSelect: (agent: AgentOption) => void;
-    disabled?: boolean;
+/**
+ * Maps each response mode to a system agent ID.
+ * Modes with an agentId will switch the active agent when clicked.
+ * Modes without an agentId are placeholders for future functionality.
+ */
+export const RESPONSE_MODE_AGENT_MAP: Record<string, string | null> = {
+    text:       'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
+    images:     'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
+    videos:     '7def859b-6bdc-4867-9471-4b2de7a7e2f7',
+    research:   '7a90bace-1c2b-4d40-829d-b6d875573324',
+    brainstorm: '01120af5-5511-4fe7-a4f2-586db6f05a4e',
+    data:       'f76a6b8f-b720-4730-87de-606e0bfa0e0c',
+    recipe:     null,
+    code:       null,
+};
+
+// Reverse map: agentId → modeId for deriving active state from selected agent
+const AGENT_TO_MODE: Record<string, string> = {};
+for (const [modeId, agentId] of Object.entries(RESPONSE_MODE_AGENT_MAP)) {
+    if (agentId && !AGENT_TO_MODE[agentId]) {
+        AGENT_TO_MODE[agentId] = modeId;
+    }
 }
 
-export function AgentActionButtons({ agents, selectedAgent, onSelect, disabled }: AgentActionButtonsProps) {
-    const displayAgents = agents.length > 0 ? agents : DEFAULT_AGENTS;
-    const selected = selectedAgent || displayAgents[0];
+const RESPONSE_MODES = [
+    { id: 'text', label: 'Text', icon: <MessageCircle size={16} /> },
+    { id: 'images', label: 'Images', icon: <Image size={16} /> },
+    { id: 'videos', label: 'Videos', icon: <Video size={16} /> },
+    { id: 'research', label: 'Research', icon: <Search size={16} /> },
+    { id: 'brainstorm', label: 'Brainstorm', icon: <Lightbulb size={16} /> },
+    { id: 'data', label: 'Data', icon: <BarChart size={16} /> },
+    { id: 'recipe', label: 'Recipe', icon: <ChefHat size={16} /> },
+    { id: 'code', label: 'Code', icon: <Code size={16} /> },
+] as const;
+
+interface ResponseModeButtonsProps {
+    disabled?: boolean;
+    /** The currently selected agent's promptId — used to derive active mode */
+    selectedAgentId?: string | null;
+    /** Called when a mode button is clicked. Receives modeId and mapped agentId. */
+    onModeSelect?: (modeId: string, agentId: string | null) => void;
+}
+
+export function ResponseModeButtons({ disabled, selectedAgentId, onModeSelect }: ResponseModeButtonsProps) {
+    // Derive active mode from the selected agent instead of local state
+    const activeMode = useMemo(() => {
+        if (!selectedAgentId) return 'text';
+        return AGENT_TO_MODE[selectedAgentId] || null;
+    }, [selectedAgentId]);
+
+    const handleSelect = (modeId: string) => {
+        if (disabled) return;
+        const agentId = RESPONSE_MODE_AGENT_MAP[modeId];
+        if (agentId) {
+            onModeSelect?.(modeId, agentId);
+        }
+    };
 
     return (
-        <div className="flex flex-wrap gap-1.5 md:gap-2">
-            {displayAgents.map((agent) => (
-                <button
-                    key={agent.id}
-                    onClick={() => !disabled && onSelect(agent)}
-                    disabled={disabled}
-                    title={agent.name}
-                    className={`flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl border transition-all ${
-                        selected.id === agent.id
-                            ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-card border-border text-foreground/80 hover:bg-accent'
-                    } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                    <span className={selected.id === agent.id ? 'text-white' : 'text-muted-foreground dark:text-gray-400'}>
-                        {agent.icon || <Bot size={16} />}
-                    </span>
-                    <span className="text-sm font-medium hidden md:inline">{agent.name}</span>
-                </button>
-            ))}
+        <div className="flex flex-wrap justify-center gap-1 md:gap-1.5">
+            {RESPONSE_MODES.map((mode) => {
+                const agentId = RESPONSE_MODE_AGENT_MAP[mode.id];
+                const isActive = activeMode === mode.id;
+                const isMapped = agentId !== null;
+                return (
+                    <button
+                        key={mode.id}
+                        onClick={() => handleSelect(mode.id)}
+                        disabled={disabled || !isMapped}
+                        className={`py-1 px-2.5 rounded-full flex items-center gap-1 border text-xs transition-colors ${
+                            isActive
+                                ? 'bg-zinc-300 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 border-zinc-300 dark:border-zinc-700'
+                                : isMapped
+                                    ? 'text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 border-zinc-300 dark:border-zinc-700'
+                                    : 'text-gray-400 dark:text-gray-600 border-zinc-200 dark:border-zinc-800 cursor-not-allowed'
+                        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        <span className={isActive ? 'text-yellow-500' : ''}>
+                            {mode.icon}
+                        </span>
+                        <span className="pr-0.5">{mode.label}</span>
+                    </button>
+                );
+            })}
         </div>
+    );
+}
+
+// ============================================================================
+// BACK BUTTON — navigates back to the starting welcome screen
+// ============================================================================
+
+interface BackToStartButtonProps {
+    onBack: () => void;
+    agentName?: string;
+}
+
+export function BackToStartButton({ onBack, agentName }: BackToStartButtonProps) {
+    return (
+        <button
+            onClick={onBack}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors text-xs"
+            title="Back to agent selection"
+        >
+            <ChevronLeft size={14} />
+            <span className="hidden md:inline">{agentName || 'Back'}</span>
+        </button>
     );
 }
 

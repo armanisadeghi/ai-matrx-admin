@@ -73,7 +73,7 @@ export function SidebarNoteContextMenu({
         <ChevronRight className={cn("w-3! h-3! transition-transform", showFolderSubmenu && "rotate-90")} />
       </button>
       {showFolderSubmenu && (
-        <div className="ml-3 max-h-[200px] overflow-y-auto notes-scrollable">
+        <div className="ml-3 max-h-[200px] overflow-y-auto scrollbar-thin-auto">
           {orderedFolders.map((folder) => {
             const isCurrent = noteFolder === folder;
             return (

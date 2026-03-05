@@ -84,10 +84,12 @@ export function ChatSidebar({
     // Shared sidebar content rendered inside both mobile and desktop panels
     const sidebarContent = (
         <div className="h-full flex flex-col">
-            {/* Section 0: Agent Header — opens unified picker */}
+            {/* Section 0: Top controls — collapse, new chat, agent picker */}
             <SidebarAgentHeader
                 selectedAgent={selectedAgent}
                 onAgentSelect={onOpenAgentPicker ? () => onOpenAgentPicker() : onAgentSelect}
+                onCollapse={closeSidebar}
+                onNewChat={handleNewChat}
             />
 
             {/* Section 1: Actions — fixed at top */}
@@ -123,14 +125,9 @@ export function ChatSidebar({
 
     return (
         <>
-            {/* ── Desktop: Fixed toggle button — hidden on mobile (now handled by floating header) ── */}
-            {/* Toggle button removed — sidebar toggle is in the floating ChatMobileHeader on all viewports */}
-
-            {/* Desktop floating agent selector removed — now in the floating ChatMobileHeader */}
-
-            {/* ── Overlay backdrop (all viewports) ── */}
+            {/* ── Mobile overlay backdrop (mobile only) ── */}
             <div
-                className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${
+                className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 md:hidden ${
                     isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
                 onClick={closeSidebar}
@@ -146,13 +143,15 @@ export function ChatSidebar({
                 {sidebarContent}
             </div>
 
-            {/* ── Desktop panel ── */}
+            {/* ── Desktop sidebar — in-flow, displaces content ── */}
             <div
-                className={`hidden md:block fixed left-0 top-0 bottom-0 w-[256px] bg-card border-r border-border z-40 transition-transform duration-300 ease-in-out ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`hidden md:flex flex-shrink-0 h-full bg-card border-r border-border transition-[width] duration-300 ease-in-out overflow-hidden ${
+                    isOpen ? 'w-[256px]' : 'w-0'
                 }`}
             >
-                {sidebarContent}
+                <div className="w-[256px] h-full flex-shrink-0">
+                    {sidebarContent}
+                </div>
             </div>
         </>
     );

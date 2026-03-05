@@ -30,7 +30,7 @@ import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat
 // Eager imports — always rendered in conversation mode
 import { ChatInputWithControls } from '@/features/public-chat/components/ChatInputWithControls';
 import { MessageList } from '@/features/public-chat/components/MessageDisplay';
-import { AgentActionButtons, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+import { ResponseModeButtons, BackToStartButton, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 
 // Lazy imports — conditionally rendered, not needed on first paint
 const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ default: m.ShareModal })), { ssr: false });
@@ -295,6 +295,16 @@ function ChatWorkspaceInner() {
         setFocusKey(k => k + 1);
     }, [searchParams, setAgent]);
 
+    const handleModeSelect = useCallback((_modeId: string, agentId: string | null) => {
+        if (!agentId) return;
+        const match = DEFAULT_AGENTS.find(a => a.promptId === agentId);
+        handleAgentSelect(match || { ...DEFAULT_AGENTS[0], promptId: agentId, id: agentId });
+    }, [handleAgentSelect]);
+
+    const handleBackToStart = useCallback(() => {
+        handleAgentSelect(DEFAULT_AGENTS[0]);
+    }, [handleAgentSelect]);
+
     const handleVariableChange = useCallback((name: string, value: string) => {
         setVariableValues(prev => ({ ...prev, [name]: value }));
     }, []);
@@ -463,12 +473,7 @@ function ChatWorkspaceInner() {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -540,12 +545,15 @@ function ChatWorkspaceInner() {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <AgentActionButtons
-                                    agents={DEFAULT_AGENTS}
-                                    selectedAgent={currentAgentOption}
-                                    onSelect={handleAgentSelect}
-                                    disabled={isExecuting}
-                                />
+                                {hasVariables ? (
+                                    <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
+                                ) : (
+                                    <ResponseModeButtons
+                                        disabled={isExecuting}
+                                        selectedAgentId={state.currentAgent?.promptId}
+                                        onModeSelect={handleModeSelect}
+                                    />
+                                )}
                                 {hasVariables && (
                                     <button
                                         type="button"
@@ -595,7 +603,7 @@ function ChatWorkspaceInner() {
             <div className="flex-1 min-h-0 relative">
                 <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
 
-                <div className="h-full overflow-y-auto chat-messages-scroll">
+                <div className="h-full overflow-y-auto scrollbar-thin-hover">
                     <div className="w-full max-w-[800px] mx-auto px-3 pt-12 pb-2 md:px-3 md:pt-12 md:pb-4 relative">
                         <MessageList
                             messages={messages}
