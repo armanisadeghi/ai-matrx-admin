@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { ChevronDown, Bot, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb, Video, BarChart, ChefHat } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { ChevronDown, ChevronLeft, Bot, Search, BookOpen, Code, Image, MessageCircle, Newspaper, Lightbulb, Video, BarChart, ChefHat } from 'lucide-react';
 import type { AgentConfig } from '../context/ChatContext';
 
 // ============================================================================
@@ -210,7 +210,7 @@ export function AgentSelector({ agents, selectedAgent, onSelect, disabled }: Age
 /**
  * Maps each response mode to a system agent ID.
  * Modes with an agentId will switch the active agent when clicked.
- * Modes without an agentId will console.log (placeholder for future functionality).
+ * Modes without an agentId are placeholders for future functionality.
  */
 export const RESPONSE_MODE_AGENT_MAP: Record<string, string | null> = {
     text:       'ce7c5e71-cbdc-4ed1-8dd9-a7eac930b6b8',
@@ -223,59 +223,97 @@ export const RESPONSE_MODE_AGENT_MAP: Record<string, string | null> = {
     code:       null,
 };
 
+// Reverse map: agentId → modeId for deriving active state from selected agent
+const AGENT_TO_MODE: Record<string, string> = {};
+for (const [modeId, agentId] of Object.entries(RESPONSE_MODE_AGENT_MAP)) {
+    if (agentId && !AGENT_TO_MODE[agentId]) {
+        AGENT_TO_MODE[agentId] = modeId;
+    }
+}
+
 const RESPONSE_MODES = [
-    { id: 'text', label: 'Text', icon: <MessageCircle size={18} /> },
-    { id: 'images', label: 'Images', icon: <Image size={18} /> },
-    { id: 'videos', label: 'Videos', icon: <Video size={18} /> },
-    { id: 'research', label: 'Research', icon: <Search size={18} /> },
-    { id: 'brainstorm', label: 'Brainstorm', icon: <Lightbulb size={18} /> },
-    { id: 'data', label: 'Data', icon: <BarChart size={18} /> },
-    { id: 'recipe', label: 'Recipe', icon: <ChefHat size={18} /> },
-    { id: 'code', label: 'Code', icon: <Code size={18} /> },
+    { id: 'text', label: 'Text', icon: <MessageCircle size={16} /> },
+    { id: 'images', label: 'Images', icon: <Image size={16} /> },
+    { id: 'videos', label: 'Videos', icon: <Video size={16} /> },
+    { id: 'research', label: 'Research', icon: <Search size={16} /> },
+    { id: 'brainstorm', label: 'Brainstorm', icon: <Lightbulb size={16} /> },
+    { id: 'data', label: 'Data', icon: <BarChart size={16} /> },
+    { id: 'recipe', label: 'Recipe', icon: <ChefHat size={16} /> },
+    { id: 'code', label: 'Code', icon: <Code size={16} /> },
 ] as const;
 
 interface ResponseModeButtonsProps {
     disabled?: boolean;
+    /** The currently selected agent's promptId — used to derive active mode */
+    selectedAgentId?: string | null;
+    /** Called when a mode button is clicked. Receives modeId and mapped agentId. */
     onModeSelect?: (modeId: string, agentId: string | null) => void;
 }
 
-export function ResponseModeButtons({ disabled, onModeSelect }: ResponseModeButtonsProps) {
-    const [activeMode, setActiveMode] = useState<string>('text');
+export function ResponseModeButtons({ disabled, selectedAgentId, onModeSelect }: ResponseModeButtonsProps) {
+    // Derive active mode from the selected agent instead of local state
+    const activeMode = useMemo(() => {
+        if (!selectedAgentId) return 'text';
+        return AGENT_TO_MODE[selectedAgentId] || null;
+    }, [selectedAgentId]);
 
     const handleSelect = (modeId: string) => {
         if (disabled) return;
-        setActiveMode(modeId);
         const agentId = RESPONSE_MODE_AGENT_MAP[modeId];
         if (agentId) {
             onModeSelect?.(modeId, agentId);
-        } else {
-            console.log(`[ResponseMode] "${modeId}" selected — no agent mapped yet`);
         }
     };
 
     return (
-        <div className="flex flex-wrap justify-center gap-1">
+        <div className="flex flex-wrap justify-center gap-1 md:gap-1.5">
             {RESPONSE_MODES.map((mode) => {
+                const agentId = RESPONSE_MODE_AGENT_MAP[mode.id];
                 const isActive = activeMode === mode.id;
+                const isMapped = agentId !== null;
                 return (
                     <button
                         key={mode.id}
                         onClick={() => handleSelect(mode.id)}
-                        disabled={disabled}
-                        className={`py-1 px-2 rounded-full flex items-center border transition-colors ${
+                        disabled={disabled || !isMapped}
+                        className={`py-1 px-2.5 rounded-full flex items-center gap-1 border text-xs transition-colors ${
                             isActive
                                 ? 'bg-zinc-300 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 border-zinc-300 dark:border-zinc-700'
-                                : 'text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 border-zinc-300 dark:border-zinc-700'
+                                : isMapped
+                                    ? 'text-gray-800 dark:text-gray-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 border-zinc-300 dark:border-zinc-700'
+                                    : 'text-gray-400 dark:text-gray-600 border-zinc-200 dark:border-zinc-800 cursor-not-allowed'
                         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <span className={isActive ? 'text-yellow-500' : ''}>
                             {mode.icon}
                         </span>
-                        <span className="text-xs ml-1 pr-1">{mode.label}</span>
+                        <span className="pr-0.5">{mode.label}</span>
                     </button>
                 );
             })}
         </div>
+    );
+}
+
+// ============================================================================
+// BACK BUTTON — navigates back to the starting welcome screen
+// ============================================================================
+
+interface BackToStartButtonProps {
+    onBack: () => void;
+    agentName?: string;
+}
+
+export function BackToStartButton({ onBack, agentName }: BackToStartButtonProps) {
+    return (
+        <button
+            onClick={onBack}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors text-xs"
+            title="Back to agent selection"
+        >
+            <ChevronLeft size={14} />
+            <span className="hidden md:inline">{agentName || 'Back'}</span>
+        </button>
     );
 }
 

@@ -30,7 +30,7 @@ import { resolveAgentFromId, DEFAULT_AGENT_CONFIG } from '@/features/public-chat
 // Eager imports — always rendered in conversation mode
 import { ChatInputWithControls } from '@/features/public-chat/components/ChatInputWithControls';
 import { MessageList } from '@/features/public-chat/components/MessageDisplay';
-import { ResponseModeButtons, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
+import { ResponseModeButtons, BackToStartButton, DEFAULT_AGENTS } from '@/features/public-chat/components/AgentSelector';
 
 // Lazy imports — conditionally rendered, not needed on first paint
 const ShareModal = dynamic(() => import('@/features/sharing').then(m => ({ default: m.ShareModal })), { ssr: false });
@@ -295,6 +295,16 @@ function ChatWorkspaceInner() {
         setFocusKey(k => k + 1);
     }, [searchParams, setAgent]);
 
+    const handleModeSelect = useCallback((_modeId: string, agentId: string | null) => {
+        if (!agentId) return;
+        const match = DEFAULT_AGENTS.find(a => a.promptId === agentId);
+        handleAgentSelect(match || { ...DEFAULT_AGENTS[0], promptId: agentId, id: agentId });
+    }, [handleAgentSelect]);
+
+    const handleBackToStart = useCallback(() => {
+        handleAgentSelect(DEFAULT_AGENTS[0]);
+    }, [handleAgentSelect]);
+
     const handleVariableChange = useCallback((name: string, value: string) => {
         setVariableValues(prev => ({ ...prev, [name]: value }));
     }, []);
@@ -463,7 +473,7 @@ function ChatWorkspaceInner() {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <ResponseModeButtons disabled={isExecuting} />
+                                <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -535,7 +545,15 @@ function ChatWorkspaceInner() {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <ResponseModeButtons disabled={isExecuting} />
+                                {hasVariables ? (
+                                    <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
+                                ) : (
+                                    <ResponseModeButtons
+                                        disabled={isExecuting}
+                                        selectedAgentId={state.currentAgent?.promptId}
+                                        onModeSelect={handleModeSelect}
+                                    />
+                                )}
                                 {hasVariables && (
                                     <button
                                         type="button"

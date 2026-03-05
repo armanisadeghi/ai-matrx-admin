@@ -13,7 +13,7 @@ import { ChatInputWithControls } from './ChatInputWithControls';
 import { MessageList } from './MessageDisplay';
 import { PublicVariableInputs } from './PublicVariableInputs';
 import { GuidedVariableInputs } from './GuidedVariableInputs';
-import { ResponseModeButtons, DEFAULT_AGENTS } from './AgentSelector';
+import { ResponseModeButtons, BackToStartButton, DEFAULT_AGENTS } from './AgentSelector';
 import type { StreamEvent } from '@/types/python-generated/stream-events';
 import { formatText } from '@/utils/text/text-case-converter';
 import type { PublicResource } from '../types/content';
@@ -177,10 +177,28 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
         });
     };
 
-    // Response mode selection — switches agent based on mode→agent mapping
+    // Response mode selection — switches agent via the unified system
     const handleModeSelect = (_modeId: string, agentId: string | null) => {
         if (!agentId) return;
-        onAgentChange({ promptId: agentId, name: '' });
+        // Find the matching DEFAULT_AGENT for full metadata
+        const match = DEFAULT_AGENTS.find(a => a.promptId === agentId);
+        onAgentChange({
+            promptId: agentId,
+            name: match?.name || '',
+            description: match?.description,
+            variableDefaults: match?.variableDefaults,
+        });
+    };
+
+    // Navigate back to the default agent (starting screen)
+    const handleBackToStart = () => {
+        const defaultAgent = DEFAULT_AGENTS[0];
+        onAgentChange({
+            promptId: defaultAgent.promptId,
+            name: defaultAgent.name,
+            description: defaultAgent.description,
+            variableDefaults: defaultAgent.variableDefaults,
+        });
     };
 
     const handleVariableChange = (name: string, value: string) => {
@@ -318,7 +336,7 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                                 />
                             </div>
                             <div className="flex items-center justify-between mt-3 pb-2">
-                                <ResponseModeButtons disabled={isExecuting} onModeSelect={handleModeSelect} />
+                                <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
                                 <button
                                     type="button"
                                     onClick={() => router.replace(toggleUrl)}
@@ -392,7 +410,15 @@ export function ChatContainer({ className = '' }: ChatContainerProps) {
                             </div>
 
                             <div className="flex items-center justify-between mt-3 md:mt-6 pb-4">
-                                <ResponseModeButtons disabled={isExecuting} onModeSelect={handleModeSelect} />
+                                {hasVariables ? (
+                                    <BackToStartButton onBack={handleBackToStart} agentName={agentName || undefined} />
+                                ) : (
+                                    <ResponseModeButtons
+                                        disabled={isExecuting}
+                                        selectedAgentId={state.currentAgent?.promptId}
+                                        onModeSelect={handleModeSelect}
+                                    />
+                                )}
                                 {hasVariables && (
                                     <button
                                         type="button"
