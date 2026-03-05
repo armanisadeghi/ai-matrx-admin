@@ -56,6 +56,7 @@
   position: relative;
 }
 
+
 /* ── Tap target ──────────────────────────────────────────────────────────── */
 .notes-toolbar-tap {
   display: flex;
@@ -101,11 +102,13 @@
 .notes-toolbar-btn--active { color: hsl(38 92% 50%); }
 .notes-toolbar-btn--active:hover { color: hsl(38 92% 42%); }
 
-/* ── Center group ─────────────────────────────────────────────────────────── */
+/* ── Center group: grows to fill all space between + and search, centers icons within */
 .notes-toolbar-center {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
   gap: 0;
   position: relative;
 }
@@ -197,8 +200,7 @@
 /* Touch defaults — these are the base values used by the toolbar */
 
 .notes-toolbar-search {
-  /* Pushes to right */
-  margin-left: auto;
+  /* Right zone (notes-toolbar-right) handles positioning — no margin needed */
   /* Height matches icon-btn-glass at every tier — set here and overridden by container queries */
   height: 1.875rem;
   /* Collapsed: square pill, icon only */

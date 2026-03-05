@@ -111,10 +111,10 @@ export default function NotesSidebarToolbar({
   return (
     <div className="notes-toolbar" role="toolbar" aria-label="Notes toolbar">
 
-      {/* ── LEFT: New note ────────────────────────────────────────────────── */}
+      {/* ── LEFT: New note — fixed, no wrapper ───────────────────────────── */}
       {newNoteSlot}
 
-      {/* ── CENTER: Controls or ">>" overflow ────────────────────────────── */}
+      {/* ── CENTER: flex:1 fills all space between + and search, centers content */}
       <div className="notes-toolbar-center">
 
         {/* ">>" overflow trigger — shown when search is open */}
@@ -191,7 +191,7 @@ export default function NotesSidebarToolbar({
         </div>
       </div>
 
-      {/* ── RIGHT: Search ─────────────────────────────────────────────────── */}
+      {/* ── RIGHT: Search — fixed size, center absorbs all slack ─────────── */}
       <div
         className={cn("notes-toolbar-search", searchOpen && "notes-toolbar-search--open")}
         onClick={!searchOpen ? openSearch : undefined}
